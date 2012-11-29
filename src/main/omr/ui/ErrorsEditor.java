@@ -131,21 +131,21 @@ public class ErrorsEditor
 
         SwingUtilities.invokeLater(
                 new Runnable()
-                {
-                    // This part is run on swing thread
-                    @Override
-                    public void run ()
-                    {
-                        if (recordSet.add(new Record(step, node, glyph, text))) {
-                            // Update the model
-                            model.removeAllElements();
+        {
+            // This part is run on swing thread
+            @Override
+            public void run ()
+            {
+                if (recordSet.add(new Record(step, node, glyph, text))) {
+                    // Update the model
+                    model.removeAllElements();
 
-                            for (Record record : recordSet) {
-                                model.addElement(record);
-                            }
-                        }
+                    for (Record record : recordSet) {
+                        model.addElement(record);
                     }
-                });
+                }
+            }
+        });
     }
 
     //-------//
@@ -158,15 +158,15 @@ public class ErrorsEditor
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-                {
-                    // This part is run on swing thread
-                    @Override
-                    public void run ()
-                    {
-                        recordSet.clear();
-                        model.removeAllElements();
-                    }
-                });
+        {
+            // This part is run on swing thread
+            @Override
+            public void run ()
+            {
+                recordSet.clear();
+                model.removeAllElements();
+            }
+        });
     }
 
     //-----------//
@@ -181,29 +181,29 @@ public class ErrorsEditor
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-                {
-                    // This part is run on swing thread
-                    @Override
-                    public void run ()
-                    {
-                        logger.fine("Clearing errors for {0}", step);
-                        for (Iterator<Record> it = recordSet.iterator();
-                                it.hasNext();) {
-                            Record record = it.next();
+        {
+            // This part is run on swing thread
+            @Override
+            public void run ()
+            {
+                logger.fine("Clearing errors for {0}", step);
+                for (Iterator<Record> it = recordSet.iterator();
+                        it.hasNext();) {
+                    Record record = it.next();
 
-                            if (record.step == step) {
-                                it.remove();
-                            }
-                        }
-
-                        // Update the model
-                        model.removeAllElements();
-
-                        for (Record record : recordSet) {
-                            model.addElement(record);
-                        }
+                    if (record.step == step) {
+                        it.remove();
                     }
-                });
+                }
+
+                // Update the model
+                model.removeAllElements();
+
+                for (Record record : recordSet) {
+                    model.addElement(record);
+                }
+            }
+        });
     }
 
     //-------------//
@@ -222,29 +222,31 @@ public class ErrorsEditor
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-                {
-                    // This part is run on swing thread
-                    @Override
-                    public void run ()
-                    {
-                        for (Iterator<Record> it = recordSet.iterator();
-                                it.hasNext();) {
-                            Record record = it.next();
+        {
+            // This part is run on swing thread
+            @Override
+            public void run ()
+            {
+                logger.fine("Clearing errors for {0} system {1}",
+                        step, systemId);
+                for (Iterator<Record> it = recordSet.iterator();
+                        it.hasNext();) {
+                    Record record = it.next();
 
-                            if ((record.step == step)
-                                && (record.node.getSystem().getId() == systemId)) {
-                                it.remove();
-                            }
-                        }
-
-                        // Update the model
-                        model.removeAllElements();
-
-                        for (Record record : recordSet) {
-                            model.addElement(record);
-                        }
+                    if ((record.step == step)
+                        && (record.node.getSystem().getId() == systemId)) {
+                        it.remove();
                     }
-                });
+                }
+
+                // Update the model
+                model.removeAllElements();
+
+                for (Record record : recordSet) {
+                    model.addElement(record);
+                }
+            }
+        });
     }
 
     //--------------//

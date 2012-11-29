@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.step;
 
-import omr.Main;
-
 import omr.log.Logger;
 
 import omr.sheet.Sheet;
@@ -78,12 +76,7 @@ public class SticksStep
     public void doSystem (SystemInfo system)
         throws StepException
     {
-        if (Main.getGui() != null) {
-            system.getSheet()
-                  .getErrorsEditor()
-                  .clearSystem(this, system.getId());
-        }
-
+        clearSystemErrors(system);
         system.retrieveVerticals();
         system.retrieveHorizontals();
     }

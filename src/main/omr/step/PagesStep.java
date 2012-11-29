@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.step;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -33,7 +31,8 @@ import omr.util.WrappedBoolean;
 import java.util.Collection;
 
 /**
- * Class {@code PagesStep} translates glyphs into score entities for a page.
+ * Class {@code PagesStep} translates glyphs into score entities for
+ * a page.
  *
  * @author Hervé Bitteur
  */
@@ -94,14 +93,11 @@ public class PagesStep
 
         for (int iter = 1; modified.isSet() && (iter <= iterMax); iter++) {
             modified.set(false);
-            logger.fine("System#{0} translation iter #{1}", 
+            logger.fine("System#{0} translation iter #{1}",
                     system.getId(), iter);
 
             // Clear errors for this system only (and this step)
-            if (Main.getGui() != null) {
-                system.getSheet().getErrorsEditor().clearSystem(this, system.
-                        getId());
-            }
+            clearSystemErrors(system);
 
             // Cleanup the system, staves, measures, barlines, ...
             // and clear glyph (& sentence) translations

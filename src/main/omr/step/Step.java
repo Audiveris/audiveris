@@ -44,6 +44,7 @@ public interface Step
         MANDATORY,
         /** Non mandatory */
         OPTIONAL;
+
     }
 
     public enum Level
@@ -54,11 +55,23 @@ public interface Step
         SCORE_LEVEL,
         /** The step can be performed at sheet level */
         SHEET_LEVEL;
+
     }
 
     //~ Methods ----------------------------------------------------------------
     //
-    /** Make the related user interface visible for this step. */
+    /**
+     * Clear the errors that relate to this step on the provided sheet.
+     *
+     * @param sheet the sheet to work upon
+     */
+    public void clearErrors (Sheet sheet);
+
+    /**
+     * Make the related user interface visible for this step.
+     *
+     * @param sheet the sheet to work upon
+     */
     public void displayUI (Sheet sheet);
 
     /**
@@ -73,7 +86,9 @@ public interface Step
             throws StepException;
 
     /**
-     * Flag this step as done.
+     * Flag this step as done for the provided sheet.
+     *
+     * @param sheet the sheet to work upon
      */
     public void done (Sheet sheet);
 

@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.step;
 
-import omr.Main;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -116,11 +114,7 @@ public class SymbolsStep
         for (int iter = 1; iter <= constants.MaxPatternsIterations.getValue();
                 iter++) {
             logger.fine("System#{0} patterns iter #{1}", system.getId(), iter);
-
-            if (Main.getGui() != null) {
-                system.getSheet().getErrorsEditor().clearSystem(this, system.
-                        getId());
-            }
+            clearSystemErrors(system);
 
             if (!system.runPatterns()) {
                 return; // No more progress made

@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.step;
 
+import omr.Main;
+
 import omr.log.Logger;
 
 import omr.sheet.Sheet;
@@ -59,6 +61,31 @@ public abstract class AbstractSystemStep
     }
 
     //~ Methods ----------------------------------------------------------------
+    //
+    //-------------//
+    // clearErrors //
+    //-------------//
+    @Override
+    public void clearErrors (Sheet sheet)
+    {
+        // Void, since this is done system per system
+    }
+
+    //-------------------//
+    // clearSystemErrors //
+    //-------------------//
+    /**
+     * Clear the errors of just the provided system
+     *
+     * @param system the system to clear of errors
+     */
+    protected void clearSystemErrors (SystemInfo system)
+    {
+        if (Main.getGui() != null) {
+            system.getSheet().getErrorsEditor().clearSystem(this, system.getId());
+        }
+    }
+
     //----------//
     // doSystem //
     //----------//
@@ -155,27 +182,27 @@ public abstract class AbstractSystemStep
                 final SystemInfo system = info;
                 tasks.add(
                         new Callable<Void>()
-                        {
-                            @Override
-                            public Void call ()
-                                    throws Exception
-                            {
-                                try {
-                                    logger.fine("{0} doSystem #{1}",
-                                            AbstractSystemStep.this,
-                                            system.idString());
+                {
+                    @Override
+                    public Void call ()
+                            throws Exception
+                    {
+                        try {
+                            logger.fine("{0} doSystem #{1}",
+                                    AbstractSystemStep.this,
+                                    system.idString());
 
-                                    doSystem(system);
-                                } catch (Exception ex) {
-                                    logger.warning(sheet.getLogPrefix()
-                                                   + "Interrupt on "
-                                                   + system.idString(),
-                                            ex);
-                                }
+                            doSystem(system);
+                        } catch (Exception ex) {
+                            logger.warning(sheet.getLogPrefix()
+                                           + "Interrupt on "
+                                           + system.idString(),
+                                    ex);
+                        }
 
-                                return null;
-                            }
-                        });
+                        return null;
+                    }
+                });
             }
 
             // Launch all system tasks in parallel and wait for their completion

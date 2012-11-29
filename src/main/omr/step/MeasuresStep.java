@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.step;
 
-import omr.Main;
-
 import omr.log.Logger;
 
 import omr.score.MeasureBasicNumberer;
@@ -63,12 +61,7 @@ public class MeasuresStep
     public void doSystem (SystemInfo system)
         throws StepException
     {
-        if (Main.getGui() != null) {
-            system.getSheet()
-                  .getErrorsEditor()
-                  .clearSystem(this, system.getId());
-        }
-
+        clearSystemErrors(system);
         system.buildMeasures(); // For Measures
     }
 

@@ -11,11 +11,11 @@
 // </editor-fold>
 package omr.step;
 
-import omr.text.TextScanner;
-
 import omr.log.Logger;
 
 import omr.sheet.SystemInfo;
+
+import omr.text.TextScanner;
 
 /**
  * Class {@code TextsStep} discovers text items in a system area.
@@ -57,6 +57,7 @@ public class TextsStep
     public void doSystem (SystemInfo system)
             throws StepException
     {
+        clearSystemErrors(system);
         new TextScanner(system).scanSystem();
     }
 }

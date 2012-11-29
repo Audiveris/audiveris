@@ -98,10 +98,7 @@ public abstract class AbstractStep
             started(sheet);
             Stepping.notifyStep(sheet, this); // Start
 
-            // Clear errors for this step
-            if (Main.getGui() != null) {
-                sheet.getErrorsEditor().clearStep(this);
-            }
+            clearErrors(sheet);
 
             doit(systems, sheet);
 
@@ -113,6 +110,17 @@ public abstract class AbstractStep
                 sheet.setCurrentStep(null);
                 Stepping.notifyStep(sheet, this); // Stop
             }
+        }
+    }
+
+    //-------------//
+    // clearErrors //
+    //-------------//
+    @Override
+    public void clearErrors (Sheet sheet)
+    {
+        if (Main.getGui() != null) {
+            sheet.getErrorsEditor().clearStep(this);
         }
     }
 
