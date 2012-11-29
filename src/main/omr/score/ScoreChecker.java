@@ -34,6 +34,7 @@ import omr.score.entity.Measure;
 import omr.score.entity.Note;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
+import omr.score.entity.SystemPart;
 import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.AbstractScoreVisitor;
@@ -129,7 +130,7 @@ public class ScoreChecker
     {
         try {
             Glyph glyph = beam.getFirstItem().getGlyph();
-            
+
             if (!beam.isHook() || glyph.isManualShape()) {
                 return true;
             }
@@ -301,6 +302,24 @@ public class ScoreChecker
         }
 
         return false;
+    }
+
+    //------------------//
+    // visit SystemPart //
+    //------------------//
+    /**
+     * Check that all slurs have embraced notes on each end, except
+     * perhaps on left and right sides of the part
+     *
+     * @param systemPart the part to process
+     * @return true, since measures below must be visited too
+     */
+    @Override
+    public boolean visit (SystemPart systemPart)
+    {
+        systemPart.checkSlurConnections();
+        
+        return true;
     }
 
     //---------------------//

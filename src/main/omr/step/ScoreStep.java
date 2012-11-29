@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.step;
 
-import omr.Main;
-
 import omr.log.Logger;
 
 import omr.score.DurationRetriever;

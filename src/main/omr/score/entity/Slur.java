@@ -68,7 +68,19 @@ public class Slur
         }
     };
 
-    /** Predicate for a orphan slur at the end of its system/part. */
+    /** 
+     * Predicate for a slur not connected on both ends.
+     */
+    public static final Predicate<Slur> isOrphan = new Predicate<Slur>()
+    {
+        @Override
+        public boolean check (Slur slur)
+        {
+            return slur.getLeftNote() == null || slur.getRightNote() == null;
+        }
+    };
+
+    /** Predicate for an orphan slur at the end of its system/part. */
     public static final Predicate<Slur> isEndingOrphan = new Predicate<Slur>()
     {
         @Override
@@ -92,7 +104,7 @@ public class Slur
         }
     };
 
-    /** Predicate for a orphan slur at the beginning of its system/part. */
+    /** Predicate for an orphan slur at the beginning of its system/part. */
     public static final Predicate<Slur> isBeginningOrphan = new Predicate<Slur>()
     {
         @Override

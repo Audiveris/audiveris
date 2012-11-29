@@ -241,8 +241,7 @@ public class SystemPart
             // Check previous orphans
             for (Slur prevSlur : precedingOrphans) {
                 if (prevSlur.getRightExtension() == null) {
-                    prevSlur.
-                            addError(
+                    prevSlur.addError(
                             " Could not right-connect slur #" + prevSlur.getId());
                 }
             }
@@ -367,7 +366,7 @@ public class SystemPart
                     nextPart.getBox().y,
                     measure.getBox().width,
                     nextPart.getBox().height));
-            
+
             isFirstMeasure = false;
         }
 
@@ -982,5 +981,27 @@ public class SystemPart
     public PartInfo getInfo ()
     {
         return info;
+    }
+
+    //----------------------//
+    // checkSlurConnections //
+    //----------------------//
+    public void checkSlurConnections ()
+    {
+        List<Slur> orphans = getSlurs(Slur.isOrphan);
+        
+        // Discard the slurs on each end for the time being
+        orphans.removeAll(getSlurs(Slur.isBeginningOrphan));
+        orphans.removeAll(getSlurs(Slur.isEndingOrphan));
+
+        for (Slur slur : orphans) {
+            if ( slur.getLeftNote() == null && slur.getLeftExtension() == null) {
+                slur.addError("Non left-connected slur");
+            } 
+            
+            if (slur.getRightNote() == null && slur.getRightExtension() == null) {
+                slur.addError("Non right-connected slur");
+            }
+        }
     }
 }

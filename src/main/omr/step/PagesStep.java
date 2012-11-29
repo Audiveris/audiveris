@@ -106,7 +106,7 @@ public class PagesStep
             // Real translation
             system.translateSystem();
 
-            /** Final checks at system level */
+            // Final checks at system level 
             scoreSystem.acceptChildren(new ScoreChecker(modified));
         }
     }
@@ -150,19 +150,6 @@ public class PagesStep
 
                 // 2/ Adapt time sigs to intrinsic measure & chord durations
                 page.accept(new TimeSignatureFixer());
-
-                //                if (Main.getGui() != null) {
-                //                    try {
-                //                        // Invalidate score data within MidiAgent, if so needed
-                //                        MidiAgent agent = MidiAgent.getInstance();
-                //
-                //                        if (agent.getScore() == sheet.getScore()) {
-                //                            agent.reset();
-                //                        }
-                //                    } catch (Exception ex) {
-                //                        logger.warning("Cannot access Midi agent", ex);
-                //                    }
-                //                }
             }
         }
     }
