@@ -278,6 +278,19 @@ public class Sheet
         doneSteps.add(step);
     }
 
+    //---------//
+    // notDone //
+    //---------//
+    /**
+     * Mark the provided step as not done on the sheet.
+     *
+     * @param step the provided step
+     */
+    public final void notDone (Step step)
+    {
+        doneSteps.remove(step);
+    }
+
     //----------//
     // addError //
     //----------//

@@ -794,16 +794,20 @@ public class Measure
     // getDirectionChord //
     //-------------------//
     /**
-     * Retrieve the most suitable chord for a direction, looking at
-     * staff above if any, otherwise the staff below.
+     * Retrieve the most suitable chord for a direction.
      *
      * @param point the system-based location
      * @return the most suitable chord, or null
      */
     public Chord getDirectionChord (PixelPoint point)
     {
-        // First choose the staff, then the slot/chord
-        Chord chord = getClosestChordAbove(point);
+        // Priority on slot
+        Chord chord = getEventChord(point);
+
+        // Then on staff
+        if (chord == null) {
+            chord = getClosestChordAbove(point);
+        }
 
         if (chord == null) {
             chord = getClosestChordBelow(point);

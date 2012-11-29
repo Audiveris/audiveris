@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.score.entity;
 
-import java.awt.Graphics2D;
-import java.awt.geom.Line2D;
-import java.util.Arrays;
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
@@ -22,6 +19,8 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;
 
+import java.awt.geom.Line2D;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;

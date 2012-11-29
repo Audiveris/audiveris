@@ -852,7 +852,7 @@ public class Slur
                 "Ordinate extension when looking for embraced notes");
 
         Scale.Fraction areaXMargin = new Scale.Fraction(
-                0.5,
+                0.7,
                 "Abscissa inside margin when looking for embraced notes");
 
         Scale.Fraction maxDeltaY = new Scale.Fraction(

@@ -244,7 +244,10 @@ class BasicGeometry
 
         // Text shape: use specific reference
         if (shape.isText()) {
-            return glyph.getTextLocation();
+            PixelPoint loc = glyph.getTextLocation();
+            if (loc != null) {
+                return loc;
+            }
         }
 
         // Other shape: check with the related symbol if any
@@ -453,7 +456,7 @@ class BasicGeometry
         } catch (Exception ex) {
             logger.warning(
                     "Glyph #{0} Cannot compute moments with unit set to 0",
-                           glyph.getId());
+                    glyph.getId());
         }
     }
 }
