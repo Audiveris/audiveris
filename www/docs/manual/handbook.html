@@ -24,6 +24,7 @@
         <link rel="stylesheet" href="../../branding/css/global.css" />
         <link rel="stylesheet" href="../../branding/css/title-numbering.css" />
         <link rel="stylesheet" href="../../branding/css/left-nav.css" />
+        <link rel="stylesheet" href="../../branding/css/expansion.css" />
 
         <style type="text/css">
             /*<![CDATA[*/
@@ -87,45 +88,9 @@
             article {
                 transition:all .5s ease;
             }
-
-            /* -- Expandable TOC items -- */
-            input {
-                border-style: none;
-                background: #fafaff;
-                color: gray;
-                margin: 0;
-                padding: 0;
-            }
-            .expandable {
-                -moz-transition: height .5s;
-                -ms-transition: height .5s;
-                -o-transition: height .5s;
-                -webkit-transition: height .5s;
-                transition: height .5s;
-                height: 0;
-                overflow: hidden;
-            }  
+            
             /*]]>*/
         </style>
-
-        <script>
-            function expand(input) {
-                if (document.querySelector) {
-                    var div = input.parentNode.querySelector(".expandable");
-                    if (div.clientHeight) {
-                        // Collapse div
-                        div.style.height = 0;
-                    } else {
-                        // Expand div
-                        var wrapper = div.querySelector("*");
-                        div.style.height = wrapper.clientHeight + "px";
-                    }
-
-                    // Toggle button value
-                    input.value = input.value === '+' ? '-' : '+';
-                }
-            }
-        </script>
     </head>
 
     <body>
@@ -2441,8 +2406,9 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
             <nav>
                 <p class="center"><a href="#content">Content</a></p>
                 <ol>
-                    <li><a class="inline" href="#getting-started">Getting started</a> 
-                        <input type="button" onclick="expand(this)" value="+">
+                    <li>
+                        <input type="button"  value="+" class="expander" onclick="toggleInput(this)">
+                        <a class="inline" href="#getting-started">Getting started</a> 
                         <div class="expandable">                            
                             <ul>                  
                                 <li><a href="#installation">Installation</a>
@@ -2467,8 +2433,9 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                             </ul>
                         </div>
                     </li>
-                    <li><a class="inline" href="#basics">Basics</a>
-                        <input type="button" onclick="expand(this)" value="+">
+                    <li>
+                        <input type="button"  value="+" class="expander" onclick="toggleInput(this)">
+                        <a class="inline" href="#basics">Basics</a>
                         <div class="expandable">                            
                             <ul>                  
                                 <li><a href="#entities">Entities</a></li>
@@ -2490,8 +2457,9 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                             </ul>
                         </div>
                     </li>
-                    <li><a class="inline" href="#advanced">Advanced</a>
-                        <input type="button" onclick="expand(this)" value="+">
+                    <li>
+                        <input type="button"  value="+" class="expander" onclick="toggleInput(this)">
+                        <a class="inline" href="#advanced">Advanced</a>
                         <div class="expandable">                            
                             <ul>                  
                                 <li><a href="#building">Building from source</a></li>
@@ -2510,8 +2478,9 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                             </ul>
                         </div>
                     </li>
-                    <li><a class="inline" href="#internals">Internals</a>
-                        <input type="button" onclick="expand(this)" value="+">
+                    <li>
+                        <input type="button"  value="+" class="expander" onclick="toggleInput(this)">
+                        <a class="inline" href="#internals">Internals</a>
                         <div class="expandable">                            
                             <ul>                  
                                 <li><a href="#load-step">Load</a></li>
@@ -2530,5 +2499,10 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                 </ol>
             </nav>
         </div>
+
+        <script src="../../branding/js/expansion.js"></script> 
+        <script>
+            collapseAll();
+        </script>
     </body>
 </html>
