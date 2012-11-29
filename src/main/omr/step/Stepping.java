@@ -387,13 +387,6 @@ public class Stepping
         if ((latest == null) || (compare(latest, step) >= 0)) {
             // The range of steps to re-perform
             SortedSet<Step> stepRange = range(step, latest);
-            
-            // Mark the following steps as not done
-            Step nextStep = Steps.next(latest);
-            while (nextStep != null) {
-                sheet.notDone(nextStep);
-                nextStep = Steps.next(nextStep);
-            }
 
             notifyStart();
 

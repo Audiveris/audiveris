@@ -13,6 +13,8 @@ package omr.step;
 
 import omr.log.Logger;
 
+import omr.Main;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -95,7 +97,14 @@ public abstract class AbstractStep
             logger.fine("{0}Starting {1}", sheet.getLogPrefix(), this);
             started(sheet);
             Stepping.notifyStep(sheet, this); // Start
+
+            // Clear errors for this step
+            if (Main.getGui() != null) {
+                sheet.getErrorsEditor().clearStep(this);
+            }
+
             doit(systems, sheet);
+
             done(sheet); // Full completion
             logger.fine("{0}Finished {1}", sheet.getLogPrefix(), this);
         } finally {

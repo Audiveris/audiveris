@@ -471,35 +471,35 @@ public class ScoreActions
 
             optionPane.addPropertyChangeListener(
                     new PropertyChangeListener()
-                    {
-                        @Override
-                        public void propertyChange (PropertyChangeEvent e)
-                        {
-                            String prop = e.getPropertyName();
+            {
+                @Override
+                public void propertyChange (PropertyChangeEvent e)
+                {
+                    String prop = e.getPropertyName();
 
-                            if (dialog.isVisible()
-                                && (e.getSource() == optionPane)
-                                && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
-                                Object obj = optionPane.getValue();
-                                int value = ((Integer) obj).intValue();
-                                apply.set(value == JOptionPane.OK_OPTION);
+                    if (dialog.isVisible()
+                        && (e.getSource() == optionPane)
+                        && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
+                        Object obj = optionPane.getValue();
+                        int value = ((Integer) obj).intValue();
+                        apply.set(value == JOptionPane.OK_OPTION);
 
-                                // Exit only if user gives up or enters correct data
-                                if (!apply.isSet() || scoreParams.commit(sheet)) {
-                                    dialog.setVisible(false);
-                                    dialog.dispose();
-                                } else {
-                                    // Incorrect data, so don't exit yet
-                                    try {
-                                        // TODO: Is there a more civilized way?
-                                        optionPane.setValue(
-                                                JOptionPane.UNINITIALIZED_VALUE);
-                                    } catch (Exception ignored) {
-                                    }
-                                }
+                        // Exit only if user gives up or enters correct data
+                        if (!apply.isSet() || scoreParams.commit(sheet)) {
+                            dialog.setVisible(false);
+                            dialog.dispose();
+                        } else {
+                            // Incorrect data, so don't exit yet
+                            try {
+                                // TODO: Is there a more civilized way?
+                                optionPane.setValue(
+                                        JOptionPane.UNINITIALIZED_VALUE);
+                            } catch (Exception ignored) {
                             }
                         }
-                    });
+                    }
+                }
+            });
 
             dialog.pack();
             MainGui.getInstance().show(dialog);
@@ -649,10 +649,11 @@ public class ScoreActions
         protected Void doInBackground ()
                 throws InterruptedException
         {
+            score.setExportFile(exportFile);
             Stepping.ensureScoreStep(Steps.valueOf(Steps.SCORE), score);
 
             if (checkParameters(sheet)) {
-                ScoresManager.getInstance().export(score, exportFile, null);
+                Stepping.ensureScoreStep(Steps.valueOf(Steps.EXPORT), score);
             }
 
             return null;

@@ -275,20 +275,9 @@ public class Sheet
      */
     public final void done (Step step)
     {
-        doneSteps.add(step);
-    }
-
-    //---------//
-    // notDone //
-    //---------//
-    /**
-     * Mark the provided step as not done on the sheet.
-     *
-     * @param step the provided step
-     */
-    public final void notDone (Step step)
-    {
-        doneSteps.remove(step);
+        if (step.isMandatory()) {
+            doneSteps.add(step);
+        }
     }
 
     //----------//
@@ -970,19 +959,19 @@ public class Sheet
         Collections.sort(
                 neighbors,
                 new Comparator<SystemInfo>()
-                {
-                    @Override
-                    public int compare (SystemInfo s1,
-                                        SystemInfo s2)
-                    {
-                        int y1 = (s1.getTop() + s1.getBottom()) / 2;
-                        int d1 = Math.abs(point.y - y1);
-                        int y2 = (s2.getTop() + s2.getBottom()) / 2;
-                        int d2 = Math.abs(point.y - y2);
+        {
+            @Override
+            public int compare (SystemInfo s1,
+                                SystemInfo s2)
+            {
+                int y1 = (s1.getTop() + s1.getBottom()) / 2;
+                int d1 = Math.abs(point.y - y1);
+                int y2 = (s2.getTop() + s2.getBottom()) / 2;
+                int d2 = Math.abs(point.y - y2);
 
-                        return Integer.signum(d1 - d2);
-                    }
-                });
+                return Integer.signum(d1 - d2);
+            }
+        });
 
         return neighbors;
     }

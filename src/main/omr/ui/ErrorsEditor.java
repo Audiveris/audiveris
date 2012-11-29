@@ -186,6 +186,7 @@ public class ErrorsEditor
                     @Override
                     public void run ()
                     {
+                        logger.fine("Clearing errors for {0}", step);
                         for (Iterator<Record> it = recordSet.iterator();
                                 it.hasNext();) {
                             Record record = it.next();

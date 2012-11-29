@@ -103,12 +103,6 @@ public class ScoreStep
     {
         Score score = sheet.getScore();
 
-        // Clear errors for this step
-        if (Main.getGui() != null) {
-            sheet.getErrorsEditor()
-                 .clearStep(this);
-        }
-
         // Merge the pages (connecting the parts across pages)
         ScoreReduction reduction = new ScoreReduction(score);
         reduction.reduce();
