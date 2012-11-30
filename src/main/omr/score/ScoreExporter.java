@@ -182,21 +182,21 @@ public class ScoreExporter
     private static final Future<Void> loading = OmrExecutors.
             getCachedLowExecutor().submit(
             new Callable<Void>()
-            {
-                @Override
-                public Void call ()
-                        throws Exception
-                {
-                    try {
-                        Marshalling.getContext();
-                    } catch (JAXBException ex) {
-                        logger.warning("Error preloading JaxbContext", ex);
-                        throw ex;
-                    }
+    {
+        @Override
+        public Void call ()
+                throws Exception
+        {
+            try {
+                Marshalling.getContext();
+            } catch (JAXBException ex) {
+                logger.warning("Error preloading JaxbContext", ex);
+                throw ex;
+            }
 
-                    return null;
-                }
-            });
+            return null;
+        }
+    });
 
     /** Default page horizontal margin */
     private static final BigDecimal pageHorizontalMargin = new BigDecimal(50);
@@ -497,7 +497,8 @@ public class ScoreExporter
                             pmBarline.setRepeat(repeat);
                         }
                     } else {
-                        // The bar is on left side
+                        // Inside barline (on left)
+                        // Or bar is on left side
                         pmBarline.setLocation(RightLeftMiddle.LEFT);
 
                         if ((shape == LEFT_REPEAT_SIGN)
@@ -914,18 +915,6 @@ public class ScoreExporter
                 current.pmMeasure.setImplicit(YesNo.YES);
             }
 
-            // Right Barline
-            if (!measure.isDummy()) {
-                measure.getBarline().accept(this);
-            }
-
-            // Left barline ?
-            Measure prevMeasure = (Measure) measure.getPreviousSibling();
-
-            if ((prevMeasure != null) && !prevMeasure.isDummy()) {
-                prevMeasure.getBarline().accept(this);
-            }
-
             // Do we need to create & export a dummy initial measure?
             if (((measureRange != null) && !measure.isTemporary()
                  && (measure.getIdValue() > 1))
@@ -1090,6 +1079,23 @@ public class ScoreExporter
                     current.pmMeasure.getNoteOrBackupOrForward().remove(
                             current.pmPrint);
                 }
+            }
+
+            // Inside barline?
+            if (measure.getInsideBarline() != null) {
+                measure.getInsideBarline().accept(this);
+            }
+
+            // Right Barline
+            if (!measure.isDummy()) {
+                measure.getBarline().accept(this);
+            }
+
+            // Left barline ?
+            Measure prevMeasure = (Measure) measure.getPreviousSibling();
+
+            if ((prevMeasure != null) && !prevMeasure.isDummy()) {
+                prevMeasure.getBarline().accept(this);
             }
 
             // Specific browsing down the measure
@@ -2861,15 +2867,15 @@ public class ScoreExporter
                 Collections.sort(
                         list,
                         new Comparator<Clef>()
-                        {
-                            @Override
-                            public int compare (Clef o1,
-                                                Clef o2)
-                            {
-                                return Integer.signum(
-                                        o1.getCenter().x - o2.getCenter().x);
-                            }
-                        });
+                {
+                    @Override
+                    public int compare (Clef o1,
+                                        Clef o2)
+                    {
+                        return Integer.signum(
+                                o1.getCenter().x - o2.getCenter().x);
+                    }
+                });
                 iters.put(entry.getKey(), list.listIterator());
             }
         }

@@ -75,7 +75,13 @@ public class Voice
      */
     private final SortedMap<Integer, ChordInfo> slotTable = new TreeMap<>();
 
-    /** How the voice finishes (WRT the measure end) */
+    /** 
+     * How the voice finishes (value = voiceEndTime - expectedMeasureEndTime)
+     * - null: We can't tell
+     * - negative: Voice is too short WRT expected measure duration
+     * - zero: Voice equals the expected measure duration
+     * - positive: Voice is too long WRT measure expected duration
+     */
     private Rational termination;
 
     /** Whole chord of the voice, if any */

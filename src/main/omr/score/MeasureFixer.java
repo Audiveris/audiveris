@@ -293,8 +293,8 @@ public class MeasureFixer
     {
         return (im == 1)
                && (prevVerticals.get(0).getActualDuration().equals(
-                Rational.ZERO))
-               && (measureTermination != null);
+                Rational.ZERO));
+               ///&& (measureTermination != null); // Too strict!
     }
 
     //--------------------//

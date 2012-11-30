@@ -826,7 +826,7 @@ public abstract class PagePainter
     private void paintWord (TextWord word)
     {
         FontInfo meanFont = word.getTextLine().getMeanFont();
-        
+
         if (meanFont != null) {
             Font font = new TextFont(meanFont);
             FontRenderContext frc = g.getFontRenderContext();
@@ -1130,7 +1130,11 @@ public abstract class PagePainter
     protected void paint (TextLayout layout,
                           PixelPoint location)
     {
-        paint(layout, location, defaultAlignment);
+        if (layout != null) {
+            paint(layout, location, defaultAlignment);
+        } else {
+            logger.fine("null layout");
+        }
     }
 
     //-------//
