@@ -54,16 +54,12 @@ Windows: %ProgramFiles%/AudiverisLtd/audiveris/
 ./examples/                             WellKnowns.EXAMPLES_FOLDER (read-only)
 ./examples/Dichterliebe01.pdf
 ./examples/SchbAvMaSample.pdf
-./examples/Straight_Page_1.png
 ./examples/allegretto.png
 ./examples/batuque.png
 ./examples/carmen-1.png
 ./examples/chula.1bit.bmp
 ./examples/chula.png
 ./examples/cucaracha.png
-./examples/estudio.png
-./examples/hove.png
-./examples/tzigane2.png
 ./examples/zizi.png
 
 ./gs/                                   WellKnowns.GS_FOLDER (read-only)
