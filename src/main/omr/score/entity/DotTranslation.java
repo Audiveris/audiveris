@@ -89,7 +89,7 @@ public class DotTranslation
         }
 
         Shape shape = glyph.getShape();
-        
+
         /** To remember results of trials */
         SortedSet<Trial.Result> results = new TreeSet<>();
 
@@ -324,6 +324,10 @@ public class DotTranslation
                               Measure measure,
                               PixelPoint dotCenter)
         {
+            if (glyph.isVip()) {
+                logger.info("RepeatTrial. process {0}", glyph.idString());
+            }
+
             SortedMap<Double, Barline> distances = new TreeMap<>();
 
             // Check vertical pitch position within the staff: close to +1 or -1
@@ -336,10 +340,15 @@ public class DotTranslation
             final Scale scale = measure.getScale();
             final int maxDx = scale.toPixels(constants.maxRepeatDotDx);
 
-            // Check  wrt starting barline on left and ending barline on right
-            Measure prevMeasure = (Measure) measure.getPreviousSibling();
-            Barline leftBar = (prevMeasure != null) ? prevMeasure.getBarline()
-                    : measure.getPart().getStartingBarline();
+            // Check wrt inside/starting barline on left & ending barline on right
+            Barline leftBar;
+            if (measure.getInsideBarline() != null) {
+                leftBar = measure.getInsideBarline();
+            } else {
+                Measure prevMeasure = (Measure) measure.getPreviousSibling();
+                leftBar = (prevMeasure != null) ? prevMeasure.getBarline()
+                        : measure.getPart().getStartingBarline();
+            }
             Barline rightBar = measure.getBarline();
 
             for (Barline bar : Arrays.asList(leftBar, rightBar)) {

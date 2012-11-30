@@ -13,8 +13,6 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
-import omr.grid.StaffInfo;
-
 import omr.log.Logger;
 
 import omr.math.Rational;
