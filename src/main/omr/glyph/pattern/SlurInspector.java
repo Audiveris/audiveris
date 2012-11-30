@@ -956,7 +956,8 @@ public class SlurInspector
      */
     private double extendedDistance (double lastDistance)
     {
-        return (lastDistance + params.maxCircleDistance) / 2;
+        double ratio = constants.distanceExtensionRatio.getValue();
+        return lastDistance + ratio * (params.maxCircleDistance - lastDistance);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -1417,6 +1418,10 @@ public class SlurInspector
                 "tangent",
                 0.05,
                 "Maximum slope for staff line tangent");
+
+        Constant.Ratio distanceExtensionRatio = new Constant.Ratio(
+                0.67,
+                "Acceptable distance extension to maximum limit");
 
     }
 }
