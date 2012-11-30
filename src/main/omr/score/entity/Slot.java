@@ -249,24 +249,28 @@ public class Slot
         return refPoint.x;
     }
 
-    //---------------//
-    // getChordAbove //
-    //---------------//
+    //-------------------//
+    // getChordJustAbove //
+    //-------------------//
     /**
-     * Report the chord which is just above the given point in this
-     * slot.
+     * Report the chord which is in staff just above the given point
+     * in this slot.
      *
      * @param point the given point
      * @return the chord above, or null
      */
-    public Chord getChordAbove (PixelPoint point)
+    public Chord getChordJustAbove (PixelPoint point)
     {
         Chord chordAbove = null;
+
+        // Staff at or above point
+        Staff targetStaff = measure.getPart().getStaffJustAbove(point);
 
         // We look for the chord just above
         for (Chord chord : getChords()) {
             PixelPoint head = chord.getHeadLocation();
-            if (head != null && head.y < point.y) {
+            if (head != null && head.y < point.y
+                && chord.getStaff() == targetStaff) {
                 chordAbove = chord;
             } else {
                 break;
@@ -276,22 +280,26 @@ public class Slot
         return chordAbove;
     }
 
-    //---------------//
-    // getChordBelow //
-    //---------------//
+    //-------------------//
+    // getChordJustBelow //
+    //-------------------//
     /**
-     * Report the chord which is just below the given point in this
-     * slot.
+     * Report the chord which is in staff just below the given point
+     * in this slot.
      *
      * @param point the given point
      * @return the chord below, or null
      */
-    public Chord getChordBelow (PixelPoint point)
+    public Chord getChordJustBelow (PixelPoint point)
     {
+        // Staff at or below
+        Staff targetStaff = measure.getPart().getStaffJustBelow(point);
+
         // We look for the chord just below
         for (Chord chord : getChords()) {
             PixelPoint head = chord.getHeadLocation();
-            if (head != null && head.y > point.y) {
+            if (head != null && head.y > point.y
+                && chord.getStaff() == targetStaff) {
                 return chord;
             }
         }

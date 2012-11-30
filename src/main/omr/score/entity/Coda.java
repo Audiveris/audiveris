@@ -73,7 +73,7 @@ public class Coda
 
         Slot slot = measure.getClosestSlot(point);
         glyph.setTranslation(
-                new Coda(measure, point, slot.getChordBelow(point), glyph));
+                new Coda(measure, point, slot.getChordJustBelow(point), glyph));
     }
 
     //--------//

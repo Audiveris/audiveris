@@ -637,6 +637,46 @@ public class SystemPart
         }
     }
 
+    //-------------------//
+    // getStaffJustAbove //
+    //-------------------//
+    /**
+     * Report the staff which is at or above the provided point
+     *
+     * @param point the provided point
+     * @return the staff just above
+     */
+    public Staff getStaffJustAbove (PixelPoint point)
+    {
+        Staff pointStaff = getStaffAt(point);
+        double pitch = pointStaff.pitchPositionOf(point);
+        if (pitch < 0 && pointStaff != getFirstStaff()) {
+            return (Staff) pointStaff.getPreviousSibling();
+        } else {
+            return pointStaff;
+        }
+    }
+
+    //-------------------//
+    // getStaffJustBelow //
+    //-------------------//
+    /**
+     * Report the staff which is at or below the provided point
+     *
+     * @param point the provided point
+     * @return the staff just below
+     */
+    public Staff getStaffJustBelow (PixelPoint point)
+    {
+        Staff pointStaff = getStaffAt(point);
+        double pitch = pointStaff.pitchPositionOf(point);
+        if (pitch > 0 && pointStaff != getLastStaff()) {
+            return (Staff) pointStaff.getNextSibling();
+        } else {
+            return pointStaff;
+        }
+    }
+
     //------------------//
     // getStaffPosition //
     //------------------//
@@ -989,16 +1029,16 @@ public class SystemPart
     public void checkSlurConnections ()
     {
         List<Slur> orphans = getSlurs(Slur.isOrphan);
-        
+
         // Discard the slurs on each end for the time being
         orphans.removeAll(getSlurs(Slur.isBeginningOrphan));
         orphans.removeAll(getSlurs(Slur.isEndingOrphan));
 
         for (Slur slur : orphans) {
-            if ( slur.getLeftNote() == null && slur.getLeftExtension() == null) {
+            if (slur.getLeftNote() == null && slur.getLeftExtension() == null) {
                 slur.addError("Non left-connected slur");
-            } 
-            
+            }
+
             if (slur.getRightNote() == null && slur.getRightExtension() == null) {
                 slur.addError("Non right-connected slur");
             }

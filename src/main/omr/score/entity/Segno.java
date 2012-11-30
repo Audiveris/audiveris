@@ -75,7 +75,7 @@ public class Segno
 
         if (slot != null) {
             glyph.setTranslation(
-                new Segno(measure, point, slot.getChordBelow(point), glyph));
+                new Segno(measure, point, slot.getChordJustBelow(point), glyph));
         }
     }
 

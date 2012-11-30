@@ -91,7 +91,7 @@ public class Ornament
         Slot slot = measure.getClosestSlot(point);
 
         if (slot != null) {
-            Chord chord = slot.getChordBelow(point);
+            Chord chord = slot.getChordJustBelow(point);
 
             if (chord != null) {
                 glyph.setTranslation(

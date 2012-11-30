@@ -829,14 +829,14 @@ public class Measure
         Slot slot = getClosestSlot(point);
 
         if (slot != null) {
-            // First, try above
-            Chord chordAbove = slot.getChordAbove(point);
+            // First, try staff just above
+            Chord chordAbove = slot.getChordJustAbove(point);
             if (chordAbove != null) {
                 return chordAbove;
             }
 
-            // Second, try below
-            Chord chordBelow = slot.getChordBelow(point);
+            // Second, try staff just below
+            Chord chordBelow = slot.getChordJustBelow(point);
             if (chordBelow != null) {
                 return chordBelow;
             }
