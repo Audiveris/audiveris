@@ -179,13 +179,13 @@ public class ScaleBuilder
             throws StepException
     {
         Picture picture = sheet.getPicture();
-        histoKeeper = new HistoKeeper(picture.getHeight() - 1);
 
         // Binarization: Retrieve the whole table of foreground runs
-
+        histoKeeper = new HistoKeeper(picture.getHeight() - 1);
         FilterDescriptor desc = sheet.getPage().getFilterParam().getTarget();
         logger.info("{0}{1} {2}", sheet.getLogPrefix(), "Binarization", desc);
         sheet.getPage().getFilterParam().setActual(desc);
+        
         StopWatch watch = new StopWatch("Binarization "
                                         + sheet.getPage().getId() + " " + desc);
         watch.start("Vertical runs");
@@ -436,15 +436,28 @@ public class ScaleBuilder
     // retrievePeaks //
     //---------------//
     private void retrievePeaks ()
+            throws StepException
     {
         StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
         // Foreground peak
         forePeak = getPeak(foreHisto, foreSpreadRatio, 0);
         sb.append("fore:").append(forePeak);
+        if (forePeak.getValue() == 1d) {
+            String msg = "All image pixels are foreground."
+                         + " Check binarization parameters";
+            logger.warning(msg);
+            throw new StepException(msg);
+        }
 
         // Background peak
         backPeak = getPeak(backHisto, backSpreadRatio, 0);
         sb.append(" back:").append(backPeak);
+        if (backPeak.getValue() == 1d) {
+            String msg = "All image pixels are background."
+                         + " Check binarization parameters";
+            logger.warning(msg);
+            throw new StepException(msg);
+        }
 
         // Second foreground peak (beam)?
         if ((forePeak != null) && (backPeak != null)) {
