@@ -1270,9 +1270,9 @@ public class ScoreExporter
                 TimeModification timeModification = factory.
                         createTimeModification();
                 timeModification.setActualNotes(
-                        new BigInteger("" + chord.getTupletFactor().den));
+                        new BigInteger("" + chord.getTupletFactor().actualDen));
                 timeModification.setNormalNotes(
-                        new BigInteger("" + chord.getTupletFactor().num));
+                        new BigInteger("" + chord.getTupletFactor().actualNum));
                 current.pmNote.setTimeModification(timeModification);
             }
 

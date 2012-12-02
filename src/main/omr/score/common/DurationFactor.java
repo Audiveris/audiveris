@@ -22,6 +22,14 @@ import omr.math.Rational;
 public class DurationFactor
     extends Rational
 {
+    //~ Instance fields --------------------------------------------------------
+
+    /** Actual numerator value, generally 2 or 4. */
+    public final int actualNum;
+
+    /** Actual denominator value, generally 3 or 6. */
+    public final int actualDen;
+
     //~ Constructors -----------------------------------------------------------
 
     //----------------//
@@ -37,5 +45,22 @@ public class DurationFactor
                            int den)
     {
         super(num, den);
+        
+        actualNum = num;
+        actualDen = den;
     }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        if (actualDen == 1) {
+            return actualNum + "";
+        } else {
+            return actualNum + "/" + actualDen;
+        }
+    }
+    
 }

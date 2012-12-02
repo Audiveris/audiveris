@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.score.entity;
 
-import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.util.Arrays;
 import omr.constant.ConstantSet;
