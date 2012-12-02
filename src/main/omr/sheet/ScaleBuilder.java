@@ -258,7 +258,7 @@ public class ScaleBuilder
                     sheet.getId() + LINE_SEPARATOR + "With an interline value of "
                     + interline + " pixels," + LINE_SEPARATOR
                     + "either this page contains no staves," + LINE_SEPARATOR
-                    + "or the picture resolution is too low.");
+                    + "or the picture resolution is too low (try 300 DPI).");
         }
     }
 
