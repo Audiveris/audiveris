@@ -978,7 +978,7 @@ public class Score
 
         Constant.Integer defaultVolume = new Constant.Integer(
                 "Volume",
-                64,
+                78,
                 "Default Volume in 0..127 range");
 
     }
