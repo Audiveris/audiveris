@@ -97,6 +97,7 @@ import proxymusic.Kind;
 import proxymusic.Lyric;
 import proxymusic.LyricFont;
 import proxymusic.MarginType;
+import proxymusic.MeasureNumberingValue;
 import proxymusic.MidiInstrument;
 import proxymusic.Notations;
 import proxymusic.NoteType;
@@ -469,11 +470,10 @@ public class ScoreExporter
     public boolean visit (Barline barline)
     {
         try {
-            logger.fine("Visiting {0}", barline);
-
             if (barline == null) {
                 return false;
             }
+            logger.fine("Visiting {0}", barline);
 
             Shape shape = barline.getShape();
 
@@ -557,7 +557,7 @@ public class ScoreExporter
             logger.fine("Visiting {0}", clef);
 
             if (isNewClef(clef)) {
-                getMeasureAttributes().getClef().add(buildClef(clef));
+                getAttributes().getClef().add(buildClef(clef));
             }
         } catch (Exception ex) {
             logger.warning(
@@ -862,7 +862,7 @@ public class ScoreExporter
                 key.setFifths(new BigInteger("" + keySignature.getKey()));
 
                 // Trick: add this key signature only if it does not already exist
-                List<Key> keys = getMeasureAttributes().getKey();
+                List<Key> keys = getAttributes().getKey();
 
                 for (Key k : keys) {
                     if (areEqual(k, key)) {
@@ -923,182 +923,70 @@ public class ScoreExporter
                 insertCurrentContext(measure);
             }
 
+            // Print?
             if (isFirst.measure) {
-                // Allocate Print
-                boolean printUsed = false;
-                current.pmPrint = factory.createPrint();
-                current.pmMeasure.getNoteOrBackupOrForward().
-                        add(current.pmPrint);
+                new MeasurePrint(measure).process();
+            }
 
-                if (isFirst.system) {
-                    // New page?
-                    if (!isFirst.page) {
-                        current.pmPrint.setNewPage(YesNo.YES);
-                        printUsed = true;
-                    }
-
-                    // Divisions
-                    try {
-                        getMeasureAttributes().setDivisions(
-                                new BigDecimal(
-                                score.simpleDurationOf(
-                                omr.score.entity.Note.QUARTER_DURATION)));
-                    } catch (Exception ex) {
-                        if (score.getDurationDivisor() == null) {
-                            logger.
-                                    warning(
-                                    "Not able to infer division value for part {0}",
-                                    current.scorePart.getPid());
-                        } else {
-                            logger.warning("Error on divisions", ex);
-                        }
-                    }
-
-                    // Number of staves, if > 1
-                    if (current.scorePart.isMultiStaff()) {
-                        getMeasureAttributes().setStaves(
-                                new BigInteger(
-                                "" + current.scorePart.getStaffCount()));
-                    }
-                } else {
-                    // New system
-                    current.pmPrint.setNewSystem(YesNo.YES);
-                    printUsed = true;
-                }
-
-                if (!measure.isDummy()) {
-                    if (isFirst.scorePart) {
-                        // SystemLayout
-                        SystemLayout systemLayout = factory.createSystemLayout();
-                        current.pmPrint.setSystemLayout(systemLayout);
-                        printUsed = true;
-
-                        // SystemMargins
-                        SystemMargins systemMargins = factory.createSystemMargins();
-                        systemLayout.setSystemMargins(systemMargins);
-                        systemMargins.setLeftMargin(
-                                toTenths(current.system.getTopLeft().x));
-                        systemMargins.setRightMargin(
-                                toTenths(
-                                current.page.getDimension().width
-                                - current.system.getTopLeft().x
-                                - current.system.getDimension().width));
-
-                        if (isFirst.system) {
-                            // TopSystemDistance
-                            systemLayout.setTopSystemDistance(
-                                    toTenths(current.system.getTopLeft().y));
-
-                        } else {
-                            // SystemDistance
-                            ScoreSystem prevSystem = (ScoreSystem) current.system.
-                                    getPreviousSibling();
-                            systemLayout.setSystemDistance(
-                                    toTenths(
-                                    current.system.getTopLeft().y
-                                    - prevSystem.getTopLeft().y
-                                    - prevSystem.getDimension().height
-                                    - prevSystem.getLastPart().getLastStaff().
-                                    getHeight()));
-                        }
-                    }
-                    
-                    if (isFirst.system) {
-                        // Tempo
-                        Direction direction = factory.createDirection();
-                        current.pmMeasure.getNoteOrBackupOrForward().add(
-                                direction);
-
-                        DirectionType directionType = factory.createDirectionType();
-                        direction.getDirectionType().add(directionType);
-
-                        // Use a dummy words element
-                        FormattedText pmWords = factory.
-                                createFormattedText();
-                        directionType.getWords().add(pmWords);
-                        pmWords.setValue("");
-
-                        Sound sound = factory.createSound();
-                        sound.setTempo(new BigDecimal(score.getTempoParam().getTarget()));
-                        direction.setSound(sound);
-                        
+            // Divisions?
+            if (isFirst.page && isFirst.system && isFirst.measure) {
+                try {
+                    getAttributes().setDivisions(
+                            new BigDecimal(
+                            score.simpleDurationOf(
+                            omr.score.entity.Note.QUARTER_DURATION)));
+                } catch (Exception ex) {
+                    if (score.getDurationDivisor() == null) {
+                        logger.warning(
+                                "Not able to infer division value for part {0}",
+                                current.scorePart.getPid());
+                    } else {
+                        logger.warning("Error on divisions", ex);
                     }
                 }
+            }
+            
+            // Number of staves, if > 1
+            if (isFirst.page && isFirst.system && isFirst.measure 
+                && current.scorePart.isMultiStaff()) {
+                getAttributes().setStaves(
+                        new BigInteger("" + current.scorePart.getStaffCount()));
 
-                // StaffLayout for all staves in this scorePart, except 1st system staff
-                if (!measure.isDummy()) {
-                    for (TreeNode sNode : measure.getPart().getStaves()) {
-                        Staff staff = (Staff) sNode;
+            }
 
-                        if (!isFirst.scorePart || (staff.getId() > 1)) {
-                            try {
-                                StaffLayout staffLayout = factory.
-                                        createStaffLayout();
-                                staffLayout.setNumber(
-                                        new BigInteger("" + staff.getId()));
+            // Tempo?
+            if (isFirst.page && isFirst.system && isFirst.measure
+                && !measure.isDummy()) {
+                Direction direction = factory.createDirection();
+                current.pmMeasure.getNoteOrBackupOrForward().add(direction);
 
-                                Staff prevStaff = (Staff) staff.
-                                        getPreviousSibling();
+                DirectionType directionType = factory.createDirectionType();
+                direction.getDirectionType().add(directionType);
 
-                                if (prevStaff == null) {
-                                    SystemPart prevPart = (SystemPart) measure.
-                                            getPart().getPreviousSibling();
+                // Use a dummy words element
+                FormattedText pmWords = factory.
+                        createFormattedText();
+                directionType.getWords().add(pmWords);
+                pmWords.setValue("");
 
-                                    if (!prevPart.isDummy()) {
-                                        prevStaff = prevPart.getLastStaff();
-                                    }
-                                }
-
-                                if (prevStaff != null) {
-                                    staffLayout.setStaffDistance(
-                                            toTenths(
-                                            staff.getTopLeft().y
-                                            - prevStaff.getTopLeft().y
-                                            - prevStaff.getHeight()));
-                                    current.pmPrint.getStaffLayout().add(
-                                            staffLayout);
-                                    printUsed = true;
-                                }
-                            } catch (Exception ex) {
-                                logger.warning(
-                                        "Error exporting staff layout system#"
-                                        + current.system.getId() + " part#"
-                                        + current.scorePart.getId() + " staff#"
-                                        + staff.getId(),
-                                        ex);
-                            }
-                        }
-                    }
-                }
-
-                // Do not print artificial parts
-                StaffDetails staffDetails = factory.createStaffDetails();
-                staffDetails.setPrintObject(
-                        measure.isDummy() ? YesNo.NO : YesNo.YES);
-                getMeasureAttributes().getStaffDetails().add(staffDetails);
-
-                // Nothing to print?
-                if (!printUsed) {
-                    current.pmMeasure.getNoteOrBackupOrForward().remove(
-                            current.pmPrint);
-                }
+                Sound sound = factory.createSound();
+                sound.setTempo(
+                        new BigDecimal(score.getTempoParam().getTarget()));
+                direction.setSound(sound);
             }
 
             // Inside barline?
-            if (measure.getInsideBarline() != null) {
-                measure.getInsideBarline().accept(this);
-            }
+            visit(measure.getInsideBarline());
 
             // Right Barline
             if (!measure.isDummy()) {
-                measure.getBarline().accept(this);
+                visit(measure.getBarline());
             }
 
             // Left barline ?
             Measure prevMeasure = (Measure) measure.getPreviousSibling();
-
             if ((prevMeasure != null) && !prevMeasure.isDummy()) {
-                prevMeasure.getBarline().accept(this);
+                visit(prevMeasure.getBarline());
             }
 
             // Specific browsing down the measure
@@ -2036,7 +1924,7 @@ public class ScoreExporter
                 }
 
                 // Trick: add this time signature only if it does not already exist
-                List<Time> times = getMeasureAttributes().getTime();
+                List<Time> times = getAttributes().getTime();
 
                 for (Time t : times) {
                     if (areEqual(t, time)) {
@@ -2172,6 +2060,8 @@ public class ScoreExporter
         return true;
     }
 
+    //- Utilities --------------------------------------------------------------
+    //
     //-------------//
     // setFontInfo //
     //-------------//
@@ -2307,12 +2197,12 @@ public class ScoreExporter
     private Notations getNotations ()
     {
         // Notations allocated?
-        if (current.notations == null) {
-            current.notations = factory.createNotations();
-            current.pmNote.getNotations().add(current.notations);
+        if (current.pmNotations == null) {
+            current.pmNotations = factory.createNotations();
+            current.pmNote.getNotations().add(current.pmNotations);
         }
 
-        return current.notations;
+        return current.pmNotations;
     }
 
     //--------//
@@ -2405,23 +2295,23 @@ public class ScoreExporter
         return pmClef;
     }
 
-    //----------------------//
-    // getMeasureAttributes //
-    //----------------------//
+    //---------------//
+    // getAttributes //
+    //---------------//
     /**
      * Report (after creating it if necessary) the measure attributes
      * element.
      *
      * @return the measure attributes element
      */
-    private Attributes getMeasureAttributes ()
+    private Attributes getAttributes ()
     {
-        if (current.attributes == null) {
-            current.attributes = new Attributes();
-            current.pmMeasure.getNoteOrBackupOrForward().add(current.attributes);
+        if (current.pmAttributes == null) {
+            current.pmAttributes = new Attributes();
+            current.pmMeasure.getNoteOrBackupOrForward().add(current.pmAttributes);
         }
 
-        return current.attributes;
+        return current.pmAttributes;
     }
 
     //--------------//
@@ -2705,6 +2595,7 @@ public class ScoreExporter
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //
     //---------//
     // Current //
     //---------//
@@ -2743,11 +2634,9 @@ public class ScoreExporter
 
         proxymusic.Note pmNote;
 
-        proxymusic.Notations notations;
+        proxymusic.Notations pmNotations;
 
-        proxymusic.Print pmPrint;
-
-        proxymusic.Attributes attributes;
+        proxymusic.Attributes pmAttributes;
 
         //~ Methods ------------------------------------------------------------
         // Cleanup at end of measure
@@ -2765,9 +2654,8 @@ public class ScoreExporter
         {
             note = null;
             pmNote = null;
-            notations = null;
-            pmPrint = null;
-            attributes = null;
+            pmNotations = null;
+            pmAttributes = null;
         }
     }
 
@@ -2924,6 +2812,151 @@ public class ScoreExporter
                         it.next().accept(ScoreExporter.this);
                     }
                 }
+            }
+        }
+    }
+
+    //--------------//
+    // MeasurePrint //
+    //--------------//
+    /**
+     * Handles the print element for a measure.
+     */
+    private class MeasurePrint
+    {
+
+        private final Measure measure;
+
+        private final proxymusic.Print pmPrint;
+
+        /** Needed to remove the element if not actually used. */
+        private boolean used = false;
+
+        public MeasurePrint (Measure measure)
+        {
+            this.measure = measure;
+
+            // Allocate and insert Print immediately
+            pmPrint = factory.createPrint();
+            current.pmMeasure.getNoteOrBackupOrForward().add(pmPrint);
+        }
+
+        private proxymusic.Print getPrint ()
+        {
+            used = true;
+            return pmPrint;
+        }
+
+        public void process ()
+        {
+            if (isFirst.system) {
+                // New page?
+                if (!isFirst.page) {
+                    getPrint().setNewPage(YesNo.YES);
+                }
+            } else {
+                // New system
+                getPrint().setNewSystem(YesNo.YES);
+            }
+
+            if (!measure.isDummy()) {
+                if (isFirst.scorePart) {
+                    // SystemLayout
+                    SystemLayout systemLayout = factory.createSystemLayout();
+
+                    // SystemMargins
+                    SystemMargins systemMargins = factory.createSystemMargins();
+                    systemLayout.setSystemMargins(systemMargins);
+                    systemMargins.setLeftMargin(
+                            toTenths(current.system.getTopLeft().x));
+                    systemMargins.setRightMargin(
+                            toTenths(
+                            current.page.getDimension().width
+                            - current.system.getTopLeft().x
+                            - current.system.getDimension().width));
+
+                    if (isFirst.system) {
+                        // TopSystemDistance
+                        systemLayout.setTopSystemDistance(
+                                toTenths(current.system.getTopLeft().y));
+
+                    } else {
+                        // SystemDistance
+                        ScoreSystem prevSystem = (ScoreSystem) current.system.
+                                getPreviousSibling();
+                        systemLayout.setSystemDistance(
+                                toTenths(
+                                current.system.getTopLeft().y
+                                - prevSystem.getTopLeft().y
+                                - prevSystem.getDimension().height
+                                - prevSystem.getLastPart().getLastStaff().
+                                getHeight()));
+                    }
+
+                    getPrint().setSystemLayout(systemLayout);
+                }
+            }
+
+            // StaffLayout for all staves in this scorePart, except 1st system staff
+            if (!measure.isDummy()) {
+                for (TreeNode sNode : measure.getPart().getStaves()) {
+                    Staff staff = (Staff) sNode;
+
+                    if (!isFirst.scorePart || (staff.getId() > 1)) {
+                        try {
+                            StaffLayout staffLayout = factory.createStaffLayout();
+                            staffLayout.setNumber(new BigInteger("" + staff.getId()));
+
+                            Staff prevStaff = (Staff) staff.getPreviousSibling();
+
+                            if (prevStaff == null) {
+                                SystemPart prevPart = (SystemPart) measure.
+                                        getPart().getPreviousSibling();
+
+                                if (!prevPart.isDummy()) {
+                                    prevStaff = prevPart.getLastStaff();
+                                }
+                            }
+
+                            if (prevStaff != null) {
+                                staffLayout.setStaffDistance(
+                                        toTenths(
+                                        staff.getTopLeft().y
+                                        - prevStaff.getTopLeft().y
+                                        - prevStaff.getHeight()));
+                                getPrint().getStaffLayout().add(staffLayout);
+                            }
+                        } catch (Exception ex) {
+                            logger.warning(
+                                    "Error exporting staff layout system#"
+                                    + current.system.getId() + " part#"
+                                    + current.scorePart.getId() + " staff#"
+                                    + staff.getId(),
+                                    ex);
+                        }
+                    }
+                }
+            }
+
+            // Do not print artificial parts
+            StaffDetails staffDetails = factory.createStaffDetails();
+            staffDetails.setPrintObject(measure.isDummy() ? YesNo.NO : YesNo.YES);
+            getAttributes().getStaffDetails().add(staffDetails);
+
+            // Measure numbering?
+            if (isFirst.system) {
+                proxymusic.MeasureNumbering pmNumbering = factory.createMeasureNumbering();
+                if (isFirst.scorePart) {
+                    pmNumbering.setValue(MeasureNumberingValue.SYSTEM);
+                } else {
+                    pmNumbering.setValue(MeasureNumberingValue.NONE);
+                }
+                getPrint().setMeasureNumbering(pmNumbering);
+            }
+
+            // Something to print actually?
+            if (!used) {
+                current.pmMeasure.getNoteOrBackupOrForward().remove(pmPrint);
             }
         }
     }

@@ -68,7 +68,7 @@ public class Slur
         }
     };
 
-    /** 
+    /**
      * Predicate for a slur not connected on both ends.
      */
     public static final Predicate<Slur> isOrphan = new Predicate<Slur>()
@@ -192,7 +192,7 @@ public class Slur
         }
 
         // Tie ?
-        tie = haveSameHeight(leftNote, rightNote);
+        tie = isTie(leftNote, rightNote);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -844,6 +844,29 @@ public class Slur
                 new PixelPoint((int) curve.getX2(), (int) curve.getY2()));
 
         return below;
+    }
+
+    //-------//
+    // isTie //
+    //-------//
+    private boolean isTie (Note leftNote,
+                           Note rightNote)
+    {
+        if (!haveSameHeight(leftNote, rightNote)) {
+            return false;
+        }
+
+        // Check that we are not embracing several chords of the same bean group
+        Chord leftChord = leftNote.getChord();
+        BeamGroup leftGroup = leftChord.getBeamGroup();
+        Chord rightChord = rightNote.getChord();
+        BeamGroup rightGroup = rightChord.getBeamGroup();
+
+        if (leftGroup != null && leftGroup == rightGroup) {
+            return false;
+        }
+        
+        return true;
     }
 
     //~ Inner Classes ----------------------------------------------------------

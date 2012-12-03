@@ -166,8 +166,6 @@ public class SystemTranslator
 
         // Chord, Note
         translate(new ChordTranslator());
-        // Slur (-> chord or note)
-        translate(new SlurTranslator());
         // Beam (-> chord), BeamItem, BeamGroup
         translate(new BeamTranslator());
         // Flag (-> chord)
@@ -176,14 +174,16 @@ public class SystemTranslator
         translate(new DotTranslator());
         // Tuplets (-> chords)
         translate(new TupletTranslator());
+        // Accidental (-> note)
+        translate(new AccidentalTranslator());
+        // Slur (-> chord or note)
+        translate(new SlurTranslator());
         // Finalize measure slots, ties, voices & durations, barlines
         translate(new MeasureTranslator());
 
         // Local impact
         //-------------
 
-        // Accidental (-> note)
-        translate(new AccidentalTranslator());
         // Fermata
         translate(new FermataTranslator());
         // Arpeggiate
