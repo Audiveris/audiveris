@@ -200,10 +200,10 @@ public class ScoreExporter
     });
 
     /** Default page horizontal margin */
-    private static final BigDecimal pageHorizontalMargin = new BigDecimal(50);
+    private static final BigDecimal pageHorizontalMargin = new BigDecimal(80);
 
     /** Default page vertical margin */
-    private static final BigDecimal pageVerticalMargin = new BigDecimal(50);
+    private static final BigDecimal pageVerticalMargin = new BigDecimal(80);
 
     //~ Instance fields --------------------------------------------------------
     /** The related score */
@@ -255,22 +255,7 @@ public class ScoreExporter
     }
 
     //~ Methods ----------------------------------------------------------------
-    //--------------------//
-    // buildScorePartwise //
-    //--------------------//
-    /**
-     * Fill a ScorePartwise with the Score information.
-     *
-     * @return the filled document
-     */
-    public ScorePartwise buildScorePartwise ()
-    {
-        // Let visited nodes fill the scorePartwise proxy
-        score.accept(this);
-
-        return scorePartwise;
-    }
-
+    //
     //--------//
     // export //
     //--------//
@@ -322,6 +307,7 @@ public class ScoreExporter
     //--------//
     /**
      * Export the score to DOM node.
+     * (No longer used, it was meant for Audiveris->Zong pure java transfer)
      *
      * @param node            the DOM node to export to (cannot be null)
      * @param injectSignature should we inject our signature?
@@ -367,23 +353,6 @@ public class ScoreExporter
     public void setMeasureRange (MeasureRange measureRange)
     {
         this.measureRange = measureRange;
-    }
-
-    //----------//
-    // toTenths //
-    //----------//
-    /**
-     * Convert a distance expressed in pixels to a string value
-     * expressed in tenths of interline.
-     *
-     * @param dist the distance in pixels
-     * @return the number of tenths as a string
-     */
-    public BigDecimal toTenths (double dist)
-    {
-        return new BigDecimal(
-                "" + (int) Math.
-                rint((10f * dist) / current.scale.getInterline()));
     }
 
     //- All Visiting Methods ---------------------------------------------------
@@ -924,8 +893,20 @@ public class ScoreExporter
             }
 
             // Print?
-            if (isFirst.measure) {
-                new MeasurePrint(measure).process();
+            new MeasurePrint(measure).process();
+
+            // Inside barline?
+            visit(measure.getInsideBarline());
+
+            // Right Barline
+            if (!measure.isDummy()) {
+                visit(measure.getBarline());
+            }
+
+            // Left barline ?
+            Measure prevMeasure = (Measure) measure.getPreviousSibling();
+            if ((prevMeasure != null) && !prevMeasure.isDummy()) {
+                visit(prevMeasure.getBarline());
             }
 
             // Divisions?
@@ -945,9 +926,9 @@ public class ScoreExporter
                     }
                 }
             }
-            
+
             // Number of staves, if > 1
-            if (isFirst.page && isFirst.system && isFirst.measure 
+            if (isFirst.page && isFirst.system && isFirst.measure
                 && current.scorePart.isMultiStaff()) {
                 getAttributes().setStaves(
                         new BigInteger("" + current.scorePart.getStaffCount()));
@@ -973,20 +954,6 @@ public class ScoreExporter
                 sound.setTempo(
                         new BigDecimal(score.getTempoParam().getTarget()));
                 direction.setSound(sound);
-            }
-
-            // Inside barline?
-            visit(measure.getInsideBarline());
-
-            // Right Barline
-            if (!measure.isDummy()) {
-                visit(measure.getBarline());
-            }
-
-            // Left barline ?
-            Measure prevMeasure = (Measure) measure.getPreviousSibling();
-            if ((prevMeasure != null) && !prevMeasure.isDummy()) {
-                visit(prevMeasure.getBarline());
             }
 
             // Specific browsing down the measure
@@ -2062,6 +2029,23 @@ public class ScoreExporter
 
     //- Utilities --------------------------------------------------------------
     //
+    //----------//
+    // toTenths //
+    //----------//
+    /**
+     * Convert a distance expressed in pixels to a string value
+     * expressed in tenths of interline.
+     *
+     * @param dist the distance in pixels
+     * @return the number of tenths as a string
+     */
+    private BigDecimal toTenths (double dist)
+    {
+        return new BigDecimal(
+                "" + (int) Math.
+                rint((10f * dist) / current.scale.getInterline()));
+    }
+
     //-------------//
     // setFontInfo //
     //-------------//
@@ -2102,8 +2086,8 @@ public class ScoreExporter
      * @param staff    the related staff
      * @return the upward-oriented ordinate wrt staff top line (in tenths)
      */
-    public BigDecimal yOf (double ordinate,
-                           Staff staff)
+    private BigDecimal yOf (double ordinate,
+                            Staff staff)
     {
         return toTenths(staff.getTopLeft().y - ordinate);
     }
@@ -2120,8 +2104,8 @@ public class ScoreExporter
      * @param staff the related staff
      * @return the upward-oriented ordinate wrt staff top line (in tenths)
      */
-    public BigDecimal yOf (PixelPoint point,
-                           Staff staff)
+    private BigDecimal yOf (PixelPoint point,
+                            Staff staff)
     {
         return yOf(point.y, staff);
     }
@@ -2336,6 +2320,22 @@ public class ScoreExporter
         getNotations().getTiedOrSlurOrTuplet().add(ornaments);
 
         return ornaments;
+    }
+
+    //--------------------//
+    // buildScorePartwise //
+    //--------------------//
+    /**
+     * Fill a ScorePartwise with the Score information.
+     *
+     * @return the filled document
+     */
+    private ScorePartwise buildScorePartwise ()
+    {
+        // Let visited nodes fill the scorePartwise proxy
+        score.accept(this);
+
+        return scorePartwise;
     }
 
     //--------------//
@@ -2849,56 +2849,71 @@ public class ScoreExporter
 
         public void process ()
         {
-            if (isFirst.system) {
-                // New page?
-                if (!isFirst.page) {
-                    getPrint().setNewPage(YesNo.YES);
+            populatePrint();
+
+            // Something to print actually?
+            if (!used) {
+                current.pmMeasure.getNoteOrBackupOrForward().remove(pmPrint);
+            }
+        }
+
+        private void populatePrint ()
+        {
+            // New system?
+            if (isFirst.measure) {
+                if (!isFirst.system) {
+                    getPrint().setNewSystem(YesNo.YES);
                 }
             } else {
-                // New system
-                getPrint().setNewSystem(YesNo.YES);
+                getPrint().setNewSystem(YesNo.NO);
             }
 
-            if (!measure.isDummy()) {
-                if (isFirst.scorePart) {
-                    // SystemLayout
-                    SystemLayout systemLayout = factory.createSystemLayout();
+            // New page?
+            if (!isFirst.page && isFirst.system && isFirst.measure) {
+                getPrint().setNewPage(YesNo.YES);
+            }
 
-                    // SystemMargins
-                    SystemMargins systemMargins = factory.createSystemMargins();
-                    systemLayout.setSystemMargins(systemMargins);
-                    systemMargins.setLeftMargin(
-                            toTenths(current.system.getTopLeft().x));
-                    systemMargins.setRightMargin(
+            // SystemLayout?
+            if (isFirst.measure && !measure.isDummy()) {
+                SystemLayout systemLayout = factory.createSystemLayout();
+
+                // SystemMargins
+                SystemMargins systemMargins = factory.createSystemMargins();
+                systemLayout.setSystemMargins(systemMargins);
+                systemMargins.setLeftMargin(
+                        toTenths(current.system.getTopLeft().x)
+                        .subtract(pageHorizontalMargin));
+                systemMargins.setRightMargin(
+                        toTenths(
+                        current.page.getDimension().width
+                        - current.system.getTopLeft().x
+                        - current.system.getDimension().width)
+                        .subtract(pageHorizontalMargin));
+
+                if (isFirst.system) {
+                    // TopSystemDistance
+                    systemLayout.setTopSystemDistance(
+                            toTenths(current.system.getTopLeft().y)
+                            .subtract(pageVerticalMargin));
+
+                } else {
+                    // SystemDistance
+                    ScoreSystem prevSystem = (ScoreSystem) current.system.
+                            getPreviousSibling();
+                    systemLayout.setSystemDistance(
                             toTenths(
-                            current.page.getDimension().width
-                            - current.system.getTopLeft().x
-                            - current.system.getDimension().width));
-
-                    if (isFirst.system) {
-                        // TopSystemDistance
-                        systemLayout.setTopSystemDistance(
-                                toTenths(current.system.getTopLeft().y));
-
-                    } else {
-                        // SystemDistance
-                        ScoreSystem prevSystem = (ScoreSystem) current.system.
-                                getPreviousSibling();
-                        systemLayout.setSystemDistance(
-                                toTenths(
-                                current.system.getTopLeft().y
-                                - prevSystem.getTopLeft().y
-                                - prevSystem.getDimension().height
-                                - prevSystem.getLastPart().getLastStaff().
-                                getHeight()));
-                    }
-
-                    getPrint().setSystemLayout(systemLayout);
+                            current.system.getTopLeft().y
+                            - prevSystem.getTopLeft().y
+                            - prevSystem.getDimension().height
+                            - prevSystem.getLastPart().getLastStaff().
+                            getHeight()));
                 }
+
+                getPrint().setSystemLayout(systemLayout);
             }
 
             // StaffLayout for all staves in this scorePart, except 1st system staff
-            if (!measure.isDummy()) {
+            if (isFirst.measure && !measure.isDummy()) {
                 for (TreeNode sNode : measure.getPart().getStaves()) {
                     Staff staff = (Staff) sNode;
 
@@ -2939,24 +2954,22 @@ public class ScoreExporter
             }
 
             // Do not print artificial parts
-            StaffDetails staffDetails = factory.createStaffDetails();
-            staffDetails.setPrintObject(measure.isDummy() ? YesNo.NO : YesNo.YES);
-            getAttributes().getStaffDetails().add(staffDetails);
+            if (isFirst.measure) {
+                StaffDetails staffDetails = factory.createStaffDetails();
+                staffDetails.setPrintObject(measure.isDummy() ? YesNo.NO : YesNo.YES);
+                getAttributes().getStaffDetails().add(staffDetails);
+            }
 
             // Measure numbering?
-            if (isFirst.system) {
-                proxymusic.MeasureNumbering pmNumbering = factory.createMeasureNumbering();
+            if (isFirst.system && isFirst.measure) {
+                proxymusic.MeasureNumbering pmNumbering =
+                        factory.createMeasureNumbering();
                 if (isFirst.scorePart) {
                     pmNumbering.setValue(MeasureNumberingValue.SYSTEM);
                 } else {
                     pmNumbering.setValue(MeasureNumberingValue.NONE);
                 }
                 getPrint().setMeasureNumbering(pmNumbering);
-            }
-
-            // Something to print actually?
-            if (!used) {
-                current.pmMeasure.getNoteOrBackupOrForward().remove(pmPrint);
             }
         }
     }
