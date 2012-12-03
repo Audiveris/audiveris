@@ -28,6 +28,7 @@ import omr.score.entity.MeasureId.MeasureRange;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreNode;
 import omr.score.entity.ScorePart;
+import omr.score.entity.Tempo;
 import omr.score.ui.ScoreTree;
 import omr.score.visitor.ScoreVisitor;
 
@@ -96,9 +97,6 @@ public class Score
     /** ScorePart list for the whole score */
     private List<ScorePart> partList;
 
-    /** The specified tempo, if any */
-    private Integer tempo;
-
     /** The specified volume, if any */
     private Integer volume;
 
@@ -126,6 +124,10 @@ public class Score
     /** Handling of binarization filter parameter. */
     private final Param<FilterDescriptor> filterParam =
             new Param<>(FilterDescriptor.defaultFilter);
+
+    /** Handling of tempo parameter. */
+    private final Param<Integer> tempoParam =
+            new Param<>(Tempo.defaultTempo);
 
     /** Handling of language parameter. */
     private final Param<String> textParam =
@@ -282,6 +284,14 @@ public class Score
         return filterParam;
     }
 
+    //----------------//
+    // getTempoParam //
+    //----------------//
+    public Param<Integer> getTempoParam ()
+    {
+        return tempoParam;
+    }
+
     //--------------//
     // getTextParam //
     //--------------//
@@ -296,19 +306,6 @@ public class Score
     public Param<List<PartData>> getPartsParam ()
     {
         return partsParam;
-    }
-
-    //-----------------//
-    // getDefaultTempo //
-    //-----------------//
-    /**
-     * Report default value for Midi tempo.
-     *
-     * @return the default tempo value
-     */
-    public static int getDefaultTempo ()
-    {
-        return constants.defaultTempo.getValue();
     }
 
     //------------------//
@@ -699,24 +696,6 @@ public class Score
         return scriptFile;
     }
 
-    //----------//
-    // getTempo //
-    //----------//
-    /**
-     * Report the assigned tempo, if any.
-     * If the value is not yet set, it is set to the default value and returned.
-     *
-     * @return the assigned tempo, or null
-     */
-    public Integer getTempo ()
-    {
-        if (!hasTempo()) {
-            tempo = getDefaultTempo();
-        }
-
-        return tempo;
-    }
-
     //-----------//
     // getVolume //
     //-----------//
@@ -746,19 +725,6 @@ public class Score
     public boolean hasLanguage ()
     {
         return language != null;
-    }
-
-    //----------//
-    // hasTempo //
-    //----------//
-    /**
-     * Check whether a tempo has been defined for this score.
-     *
-     * @return true if a tempo is defined
-     */
-    public boolean hasTempo ()
-    {
-        return tempo != null;
     }
 
     //-----------//
@@ -891,19 +857,6 @@ public class Score
         this.scriptFile = scriptFile;
     }
 
-    //----------//
-    // setTempo //
-    //----------//
-    /**
-     * Assign a tempo value.
-     *
-     * @param tempo the tempo value to be assigned
-     */
-    public void setTempo (Integer tempo)
-    {
-        this.tempo = tempo;
-    }
-
     //-----------//
     // setVolume //
     //-----------//
@@ -973,7 +926,7 @@ public class Score
 
         Constant.Integer defaultTempo = new Constant.Integer(
                 "QuartersPerMn",
-                100,
+                120,
                 "Default tempo, stated in number of quarters per minute");
 
         Constant.Integer defaultVolume = new Constant.Integer(
@@ -1014,7 +967,6 @@ public class Score
         @Override
         public boolean setSpecific (List<PartData> specific)
         {
-            ///if (!getSpecific().equals(specific)) {
             try {
                 for (int i = 0; i < specific.size(); i++) {
                     PartData data = specific.get(i);
@@ -1033,7 +985,6 @@ public class Score
             } catch (Exception ex) {
                 logger.warning("Error updating score parts", ex);
             }
-            ///}
 
             return false;
         }

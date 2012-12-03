@@ -966,59 +966,62 @@ public class ScoreExporter
                     printUsed = true;
                 }
 
-                if (isFirst.scorePart && !measure.isDummy()) {
-                    // SystemLayout
-                    SystemLayout systemLayout = factory.createSystemLayout();
-                    current.pmPrint.setSystemLayout(systemLayout);
-                    printUsed = true;
+                if (!measure.isDummy()) {
+                    if (isFirst.scorePart) {
+                        // SystemLayout
+                        SystemLayout systemLayout = factory.createSystemLayout();
+                        current.pmPrint.setSystemLayout(systemLayout);
+                        printUsed = true;
 
-                    // SystemMargins
-                    SystemMargins systemMargins = factory.createSystemMargins();
-                    systemLayout.setSystemMargins(systemMargins);
-                    systemMargins.setLeftMargin(
-                            toTenths(current.system.getTopLeft().x));
-                    systemMargins.setRightMargin(
-                            toTenths(
-                            current.page.getDimension().width
-                            - current.system.getTopLeft().x
-                            - current.system.getDimension().width));
-
-                    if (isFirst.system) {
-                        // TopSystemDistance
-                        systemLayout.setTopSystemDistance(
-                                toTenths(current.system.getTopLeft().y));
-
-                        // Tempo?
-                        if (score.hasTempo()) {
-                            Direction direction = factory.createDirection();
-                            current.pmMeasure.getNoteOrBackupOrForward().add(
-                                    direction);
-
-                            DirectionType directionType = factory.
-                                    createDirectionType();
-                            direction.getDirectionType().add(directionType);
-
-                            // Use a dummy words element
-                            FormattedText pmWords = factory.
-                                    createFormattedText();
-                            directionType.getWords().add(pmWords);
-                            pmWords.setValue("");
-
-                            Sound sound = factory.createSound();
-                            sound.setTempo(new BigDecimal(score.getTempo()));
-                            direction.setSound(sound);
-                        }
-                    } else {
-                        // SystemDistance
-                        ScoreSystem prevSystem = (ScoreSystem) current.system.
-                                getPreviousSibling();
-                        systemLayout.setSystemDistance(
+                        // SystemMargins
+                        SystemMargins systemMargins = factory.createSystemMargins();
+                        systemLayout.setSystemMargins(systemMargins);
+                        systemMargins.setLeftMargin(
+                                toTenths(current.system.getTopLeft().x));
+                        systemMargins.setRightMargin(
                                 toTenths(
-                                current.system.getTopLeft().y
-                                - prevSystem.getTopLeft().y
-                                - prevSystem.getDimension().height
-                                - prevSystem.getLastPart().getLastStaff().
-                                getHeight()));
+                                current.page.getDimension().width
+                                - current.system.getTopLeft().x
+                                - current.system.getDimension().width));
+
+                        if (isFirst.system) {
+                            // TopSystemDistance
+                            systemLayout.setTopSystemDistance(
+                                    toTenths(current.system.getTopLeft().y));
+
+                        } else {
+                            // SystemDistance
+                            ScoreSystem prevSystem = (ScoreSystem) current.system.
+                                    getPreviousSibling();
+                            systemLayout.setSystemDistance(
+                                    toTenths(
+                                    current.system.getTopLeft().y
+                                    - prevSystem.getTopLeft().y
+                                    - prevSystem.getDimension().height
+                                    - prevSystem.getLastPart().getLastStaff().
+                                    getHeight()));
+                        }
+                    }
+                    
+                    if (isFirst.system) {
+                        // Tempo
+                        Direction direction = factory.createDirection();
+                        current.pmMeasure.getNoteOrBackupOrForward().add(
+                                direction);
+
+                        DirectionType directionType = factory.createDirectionType();
+                        direction.getDirectionType().add(directionType);
+
+                        // Use a dummy words element
+                        FormattedText pmWords = factory.
+                                createFormattedText();
+                        directionType.getWords().add(pmWords);
+                        pmWords.setValue("");
+
+                        Sound sound = factory.createSound();
+                        sound.setTempo(new BigDecimal(score.getTempoParam().getTarget()));
+                        direction.setSound(sound);
+                        
                     }
                 }
 

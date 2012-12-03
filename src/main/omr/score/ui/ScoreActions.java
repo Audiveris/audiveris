@@ -429,10 +429,6 @@ public class ScoreActions
         }
 
         // Score global data
-        if (!score.hasTempo()) {
-            score.setTempo(Score.getDefaultTempo());
-        }
-
         if (!score.hasVolume()) {
             score.setVolume(Score.getDefaultVolume());
         }

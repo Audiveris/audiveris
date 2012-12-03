@@ -55,6 +55,10 @@ public class ParametersTask
     @XmlElement(name = "language")
     private String language;
 
+    /** Tempo value. */
+    @XmlElement(name="tempo")
+    private Integer tempo;
+    
     /** Pixel filter. */
     @XmlElements({
         @XmlElement(name = "global-filter",
@@ -128,6 +132,14 @@ public class ParametersTask
             if (score.getTextParam().setSpecific(language)) {
                 sb.append(" language:")
                         .append(language);
+            }
+        }
+
+        // Score Tempo
+        if (tempo != null) {
+            if (score.getTempoParam().setSpecific(tempo)) {
+                sb.append(" tempo:")
+                        .append(tempo);
             }
         }
 
@@ -278,6 +290,19 @@ public class ParametersTask
         } else {
             this.language = language;
         }
+    }
+
+    //----------//
+    // setTempo //
+    //----------//
+    /**
+     * Set score tempo.
+     *
+     * @param tempo the tempo value
+     */
+    public void setTempo (Integer tempo)
+    {
+        this.tempo = tempo;
     }
 
     //-----------------//

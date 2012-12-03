@@ -21,6 +21,7 @@ import omr.run.GlobalDescriptor;
 import omr.score.Score;
 import omr.score.entity.Page;
 import omr.score.entity.ScorePart;
+import omr.score.entity.Tempo;
 import omr.score.midi.MidiAbstractions;
 
 import omr.script.ParametersTask;
@@ -63,6 +64,7 @@ import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
+import javax.swing.SpinnerModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
@@ -168,10 +170,13 @@ public class ScoreParameters
                 null, null, null, Language.defaultSpecification);
         FilterPane defaultFilterPane = new FilterPane(
                 null, null, null, FilterDescriptor.defaultFilter);
+        TempoPane defaultTempoPane = new TempoPane(
+                null, null, Tempo.defaultTempo);
 
         defaultPanel = new MyPanel("Default settings",
                 defaultTextPane,
                 defaultFilterPane,
+                defaultTempoPane,
                 new DnDPane(),
                 new ScriptPane(),
                 new StackPane(),
@@ -190,6 +195,9 @@ public class ScoreParameters
             FilterPane scoreFilterPane = new FilterPane(
                     score, null, defaultFilterPane, score.getFilterParam());
             panes.add(scoreFilterPane);
+
+            panes.add(new TempoPane(
+                    score, defaultTempoPane, score.getTempoParam()));
 
             if (score.getPartList() != null) {
                 // Part by part information
@@ -535,7 +543,7 @@ public class ScoreParameters
 
         /**
          * Check whether all the pane data are valid, and feed the
-         * ParametersTask accordingly
+         * ParametersTask accordingly with score or page information.
          *
          * @return true if everything is OK, false otherwise
          */
@@ -682,14 +690,17 @@ public class ScoreParameters
 
         // Data for global
         private final SpinData globalData = new SpinData("Threshold",
-                "Global threshold for foreground pixels", 0, 255, 1);
+                "Global threshold for foreground pixels",
+                new SpinnerNumberModel(0, 0, 255, 1));
 
         // Data for local
         private final SpinData localDataMean = new SpinData("Coeff for Mean",
-                "Coefficient for mean pixel value", 0.5, 1.5, 0.1);
+                "Coefficient for mean pixel value",
+                new SpinnerNumberModel(0.5, 0.5, 1.5, 0.1));
 
         private final SpinData localDataDev = new SpinData("Coeff for StdDev",
-                "Coefficient for standard deviation value", 0.2, 1.5, 0.1);
+                "Coefficient for standard deviation value",
+                new SpinnerNumberModel(0.2, 0.2, 1.5, 0.1));
 
         //~ Constructors -------------------------------------------------------
         public FilterPane (Score score,
@@ -780,7 +791,7 @@ public class ScoreParameters
 
             return (readKind() == FilterKind.GLOBAL)
                     ? new GlobalDescriptor(
-                    ((Number) globalData.spinner.getValue()).intValue())
+                    (int) globalData.spinner.getValue())
                     : new AdaptiveDescriptor(
                     (double) localDataMean.spinner.getValue(),
                     (double) localDataDev.spinner.getValue());
@@ -1070,6 +1081,79 @@ public class ScoreParameters
         }
     }
 
+    //-----------//
+    // Tempopane //
+    //-----------//
+    /**
+     * Pane to set the dominant tempo value.
+     * Scope can be: default, score.
+     */
+    private class TempoPane
+            extends Pane<Integer>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        // Tempo value
+        private final SpinData tempo = new SpinData("Quarters/Min",
+                "Tempo in quarters per minute",
+                new SpinnerNumberModel(20, 20, 400, 1));
+
+        //~ Constructors -------------------------------------------------------
+        public TempoPane (Score score,
+                          Pane parent,
+                          Param<Integer> backup)
+        {
+            super("Tempo", score, null, parent, backup);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int r)
+        {
+            r = super.defineLayout(builder, cst, r);
+
+            return tempo.defineLayout(builder, cst, r);
+        }
+
+        @Override
+        protected Integer read ()
+        {
+            commitSpinners();
+
+            return (int) tempo.spinner.getValue();
+        }
+
+        @Override
+        protected void display (Integer content)
+        {
+            tempo.spinner.setValue(content);
+        }
+
+        @Override
+        protected void setEnabled (boolean bool)
+        {
+            tempo.setEnabled(bool);
+        }
+
+        @Override
+        public boolean isValid ()
+        {
+            task.setTempo(read());
+
+            return true;
+        }
+
+        private void commitSpinners ()
+        {
+            try {
+                tempo.spinner.commitEdit();
+            } catch (ParseException ignored) {
+            }
+        }
+    }
+
     //----------//
     // TextPane //
     //----------//
@@ -1274,14 +1358,10 @@ public class ScoreParameters
 
         public SpinData (String label,
                          String tip,
-                         double minimum,
-                         double maximum,
-                         double stepSize)
+                         SpinnerModel model)
         {
             this.label = new JLabel(label, SwingConstants.RIGHT);
 
-            SpinnerNumberModel model = new SpinnerNumberModel(
-                    minimum, minimum, maximum, stepSize);
             spinner = new JSpinner(model);
             SpinnerUtilities.setRightAlignment(spinner);
             SpinnerUtilities.setEditable(spinner, true);
