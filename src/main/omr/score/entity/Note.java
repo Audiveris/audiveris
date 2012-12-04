@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.score.entity;
 
-import java.awt.geom.Line2D;
-import java.util.Arrays;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
@@ -35,8 +33,12 @@ import omr.sheet.Scale;
 
 import omr.util.TreeNode;
 
+import java.awt.geom.Line2D;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
@@ -463,60 +465,58 @@ public class Note
      */
     public static void populateAccidental (Glyph glyph,
                                            Measure measure,
-                                           PixelPoint accidCenter)
+                                           final PixelPoint accidCenter)
     {
+        if (glyph.isVip()) {
+            logger.info("Note. populateAccidental {0}", glyph.idString());
+        }
+
         final Scale scale = measure.getScale();
         final int minDx = scale.toPixels(constants.minAccidDx);
         final int maxDx = scale.toPixels(constants.maxAccidDx);
         final int maxDy = scale.toPixels(constants.maxAccidDy);
-        final Set<Note> candidates = new HashSet<>();
+        final List<Note> candidates = new ArrayList<>();
 
         // An accidental impacts the note right after (even if mirrored)
-        ChordLoop:
+        // Use an intersection rectangle defined from accidCenter
+        PixelRectangle rect = new PixelRectangle(
+                accidCenter.x + minDx, accidCenter.y - maxDy,
+                maxDx - minDx, 2 * maxDy);
+        glyph.addAttachment("#", rect);
         for (TreeNode node : measure.getChords()) {
             final Chord chord = (Chord) node;
-
             for (TreeNode n : chord.getNotes()) {
                 final Note note = (Note) n;
-
-                if (!note.isRest()) {
-                    final PixelPoint noteRef = note.getCenterLeft();
-                    final PixelPoint toNote = new PixelPoint(
-                            noteRef.x - accidCenter.x,
-                            noteRef.y - accidCenter.y);
-                    logger.fine("{0} {1}",
-                            measure.getContextString(), toNote);
-
-                    if (toNote.x > (2 * maxDx)) {
-                        break ChordLoop; // Other chords/notes will be too far
-                    }
-
-                    if ((toNote.x >= minDx)
-                        && (toNote.x <= maxDx)
-                        && (Math.abs(toNote.y) <= maxDy)) {
-                        candidates.add(note);
-                    }
+                if (!note.isRest() && rect.contains(note.getCenterLeft())) {
+                    candidates.add(note);
                 }
             }
         }
 
-        logger.fine("{0} Candidates={1}", candidates.size(), candidates);
-
-        // Select the best note candidate, the one whose ordinate is closest
+        // Select the closest candidate note using euclidian distance
+        // from accidental center to note left center
         if (!candidates.isEmpty()) {
-            int bestDy = Integer.MAX_VALUE;
-            Note bestNote = null;
-            glyph.clearTranslations();
+            Collections.sort(candidates, new Comparator<Note>()
+            {
+                @Override
+                public int compare (Note n1,
+                                    Note n2)
+                {
+                    double dx1 = n1.getCenterLeft().x - accidCenter.x;
+                    double dy1 = n1.getCenterLeft().y - accidCenter.y;
+                    double ds1 = dx1 * dx1 + dy1 * dy1;
 
-            for (Note note : candidates) {
-                int dy = Math.abs(note.getCenter().y - accidCenter.y);
+                    double dx2 = n2.getCenterLeft().x - accidCenter.x;
+                    double dy2 = n2.getCenterLeft().y - accidCenter.y;
+                    double ds2 = dx2 * dx2 + dy2 * dy2;
 
-                if (dy < bestDy) {
-                    bestDy = dy;
-                    bestNote = note;
+                    return Double.compare(ds1, ds2);
                 }
-            }
+            });
+            logger.fine("{0} Candidates={1}", candidates.size(), candidates);
 
+            glyph.clearTranslations();
+            Note bestNote = candidates.get(0);
             bestNote.accidental = glyph;
             glyph.addTranslation(bestNote);
             logger.fine("{0} accidental {1} at {2}",

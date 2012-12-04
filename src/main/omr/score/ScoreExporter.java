@@ -14,6 +14,9 @@ package omr.score;
 import omr.Main;
 import omr.WellKnowns;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
@@ -176,6 +179,9 @@ public class ScoreExporter
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(ScoreExporter.class);
 
@@ -183,27 +189,29 @@ public class ScoreExporter
     private static final Future<Void> loading = OmrExecutors.
             getCachedLowExecutor().submit(
             new Callable<Void>()
-    {
-        @Override
-        public Void call ()
-                throws Exception
-        {
-            try {
-                Marshalling.getContext();
-            } catch (JAXBException ex) {
-                logger.warning("Error preloading JaxbContext", ex);
-                throw ex;
-            }
+            {
+                @Override
+                public Void call ()
+                        throws Exception
+                {
+                    try {
+                        Marshalling.getContext();
+                    } catch (JAXBException ex) {
+                        logger.warning("Error preloading JaxbContext", ex);
+                        throw ex;
+                    }
 
-            return null;
-        }
-    });
+                    return null;
+                }
+            });
 
     /** Default page horizontal margin */
-    private static final BigDecimal pageHorizontalMargin = new BigDecimal(80);
+    private static final BigDecimal pageHorizontalMargin =
+            new BigDecimal(constants.pageHorizontalMargin.getValue());
 
     /** Default page vertical margin */
-    private static final BigDecimal pageVerticalMargin = new BigDecimal(80);
+    private static final BigDecimal pageVerticalMargin =
+            new BigDecimal(constants.pageVerticalMargin.getValue());
 
     //~ Instance fields --------------------------------------------------------
     /** The related score */
@@ -378,10 +386,7 @@ public class ScoreExporter
             //
             getNotations().getTiedOrSlurOrTuplet().add(pmArpeggiate);
         } catch (Exception ex) {
-            logger.
-                    warning(
-                    getClass().getSimpleName() + " Error visiting " + arpeggiate,
-                    ex);
+            logger.warning("Error visiting " + arpeggiate, ex);
         }
 
         return false;
@@ -423,10 +428,7 @@ public class ScoreExporter
             // Include in Articulations
             getArticulations().getAccentOrStrongAccentOrStaccato().add(element);
         } catch (Exception ex) {
-            logger.
-                    warning(
-                    getClass().getSimpleName() + " Error visiting " + articulation,
-                    ex);
+            logger.warning("Error visiting " + articulation, ex);
         }
 
         return false;
@@ -497,9 +499,7 @@ public class ScoreExporter
                 }
             }
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + barline,
-                    ex);
+            logger.warning("Error visiting " + barline, ex);
         }
 
         return true;
@@ -529,9 +529,7 @@ public class ScoreExporter
                 getAttributes().getClef().add(buildClef(clef));
             }
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + clef,
-                    ex);
+            logger.warning("Error visiting " + clef, ex);
         }
 
         return true;
@@ -577,9 +575,7 @@ public class ScoreExporter
             // Everything is now OK
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + coda,
-                    ex);
+            logger.warning("Error visiting " + coda, ex);
         }
 
         return true;
@@ -631,9 +627,7 @@ public class ScoreExporter
                 current.pmMeasure.getNoteOrBackupOrForward().add(direction);
             }
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + words,
-                    ex);
+            logger.warning("Error visiting " + words, ex);
         }
 
         return true;
@@ -703,9 +697,7 @@ public class ScoreExporter
             }
             current.pmMeasure.getNoteOrBackupOrForward().add(harmony);
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + words,
-                    ex);
+            logger.warning("Error visiting " + words, ex);
         }
 
         return true;
@@ -767,9 +759,7 @@ public class ScoreExporter
             direction.getDirectionType().add(directionType);
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + dynamics,
-                    ex);
+            logger.warning("Error visiting " + dynamics, ex);
         }
 
         return false;
@@ -809,9 +799,7 @@ public class ScoreExporter
             // Everything is now OK
             getNotations().getTiedOrSlurOrTuplet().add(pmFermata);
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + fermata,
-                    ex);
+            logger.warning("Error visiting " + fermata, ex);
         }
 
         return false;
@@ -842,10 +830,7 @@ public class ScoreExporter
                 keys.add(key);
             }
         } catch (Exception ex) {
-            logger.
-                    warning(
-                    getClass().getSimpleName() + " Error visiting " + keySignature,
-                    ex);
+            logger.warning("Error visiting " + keySignature, ex);
         }
 
         return true;
@@ -1038,10 +1023,7 @@ public class ScoreExporter
             // Everything is now OK
             current.pmPart.getMeasure().add(current.pmMeasure);
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + measure
-                    + " in " + current.page,
-                    ex);
+            logger.warning("Error visiting " + measure + " in " + current.page, ex);
         }
 
         // Safer...
@@ -1265,9 +1247,7 @@ public class ScoreExporter
             // Everything is OK
             current.pmMeasure.getNoteOrBackupOrForward().add(current.pmNote);
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + note,
-                    ex);
+            logger.warning("Error visiting " + note, ex);
         }
 
         // Safer...
@@ -1301,9 +1281,7 @@ public class ScoreExporter
             // Include in ornaments
             getOrnaments().getTrillMarkOrTurnOrDelayedTurn().add(element);
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + ornament,
-                    ex);
+            logger.warning("Error visiting " + ornament, ex);
         }
 
         return false;
@@ -1329,9 +1307,7 @@ public class ScoreExporter
                        + prevPage.getDeltaMeasureId());
             current.scale = page.getScale();
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + page,
-                    ex);
+            logger.warning("Error visiting " + page, ex);
         }
 
         return true;
@@ -1379,9 +1355,7 @@ public class ScoreExporter
             direction.getDirectionType().add(directionType);
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + pedal,
-                    ex);
+            logger.warning("Error visiting " + pedal, ex);
         }
 
         return true;
@@ -1501,9 +1475,7 @@ public class ScoreExporter
                 }
             }
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + score,
-                    ex);
+            logger.warning("Error visiting " + score, ex);
         }
 
         return false; // We don't go this way
@@ -1547,9 +1519,7 @@ public class ScoreExporter
                 isFirst.system = false;
             }
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + system,
-                    ex);
+            logger.warning("Error visiting " + system, ex);
         }
 
         return false; // No default browsing this way
@@ -1594,9 +1564,7 @@ public class ScoreExporter
             direction.getDirectionType().add(directionType);
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + segno,
-                    ex);
+            logger.warning("Error visiting " + segno, ex);
         }
 
         return true;
@@ -1736,9 +1704,7 @@ public class ScoreExporter
                 getNotations().getTiedOrSlurOrTuplet().add(pmSlur);
             }
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + slur,
-                    ex);
+            logger.warning("Error visiting " + slur, ex);
         }
 
         return true;
@@ -1763,10 +1729,7 @@ public class ScoreExporter
                 ((Measure) node).accept(this);
             }
         } catch (Exception ex) {
-            logger.
-                    warning(
-                    getClass().getSimpleName() + " Error visiting " + systemPart,
-                    ex);
+            logger.warning("Error visiting " + systemPart, ex);
         }
 
         return false; // No default browsing this way
@@ -1845,9 +1808,7 @@ public class ScoreExporter
             pmCredit.getLinkOrBookmarkOrCreditImage().add(creditWords);
             scorePartwise.getCredit().add(pmCredit);
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + text,
-                    ex);
+            logger.warning("Error visiting " + text, ex);
         }
 
         return true;
@@ -1903,10 +1864,7 @@ public class ScoreExporter
             } catch (InvalidTimeSignature ex) {
             }
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting "
-                    + timeSignature,
-                    ex);
+            logger.warning("Error visiting " + timeSignature, ex);
         }
 
         return true;
@@ -1923,8 +1881,10 @@ public class ScoreExporter
 
             proxymusic.Tuplet pmTuplet = factory.createTuplet();
 
-            // Bracket
-            // TODO
+            // Brackets
+            if (constants.avoidTupletBrackets.isSet()) {
+                pmTuplet.setBracket(YesNo.NO);
+            }
 
             // Placement
             if (tuplet.getChord() == current.note.getChord()) { // i.e. start
@@ -1958,9 +1918,7 @@ public class ScoreExporter
 
             getNotations().getTiedOrSlurOrTuplet().add(pmTuplet);
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + tuplet,
-                    ex);
+            logger.warning("Error visiting " + tuplet, ex);
         }
 
         return false;
@@ -2019,9 +1977,7 @@ public class ScoreExporter
             direction.getDirectionType().add(directionType);
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warning(
-                    getClass().getSimpleName() + " Error visiting " + wedge,
-                    ex);
+            logger.warning("Error visiting " + wedge, ex);
         }
 
         return true;
@@ -2758,15 +2714,15 @@ public class ScoreExporter
                 Collections.sort(
                         list,
                         new Comparator<Clef>()
-                {
-                    @Override
-                    public int compare (Clef o1,
-                                        Clef o2)
-                    {
-                        return Integer.signum(
-                                o1.getCenter().x - o2.getCenter().x);
-                    }
-                });
+                        {
+                            @Override
+                            public int compare (Clef o1,
+                                                Clef o2)
+                            {
+                                return Integer.signum(
+                                        o1.getCenter().x - o2.getCenter().x);
+                            }
+                        });
                 iters.put(entry.getKey(), list.listIterator());
             }
         }
@@ -2972,5 +2928,29 @@ public class ScoreExporter
                 getPrint().setMeasureNumbering(pmNumbering);
             }
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Constant.Integer pageHorizontalMargin = new Constant.Integer(
+                "tenths",
+                80,
+                "Page horizontal margin");
+
+        Constant.Integer pageVerticalMargin = new Constant.Integer(
+                "tenths",
+                80,
+                "Page vertical margin");
+
+        Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
+                false,
+                "Should we avoid brackets for all tuplets");
+
     }
 }
