@@ -119,6 +119,7 @@ article h2 {
     border-bottom: 1px solid #cccccc;      
 }
 
+.code,
 code {
     color: #cc6600;
 }
@@ -187,18 +188,19 @@ img.icon {
     box-shadow: none;
 }
 
-pre, code {
+code,
+.code {
     font-size: 95%;
-    font-family: "Bitstream Vera Mono", "Lucida Console", "Courier New", monospace;
+    font-family: "Lucida Console", "Bitstream Vera Mono", "Courier New", monospace;
 }
 
-pre {
+/*pre {
     width: 95%;
     overflow: auto;
     overflow-y: hidden;
     background: ivory;
     color: #555;
-}
+}*/
 
 pre strong {
     font-weight: normal;
@@ -226,6 +228,10 @@ strong {
 
 .clear {
     clear: both;
+}
+
+.code {
+    margin-left: 25px;
 }
 
 .creation-date {

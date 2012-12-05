@@ -88,7 +88,7 @@
             article {
                 transition:all .5s ease;
             }
-            
+
             /*]]>*/
         </style>
     </head>
@@ -107,7 +107,8 @@
                     Handbook
                 </h1>
                 <p>
-                    This documentation applies to Audiveris version 4.2 and above.
+                    This documentation applies to Audiveris version 4.2 and 
+                    above, for Windows and Linux environments.
                 </p>
             </header>
 
@@ -119,19 +120,10 @@
                 </h2>
 
                 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-                <article id="installation">
+                <article id="windows">
                     <h3>
-                        Installation
+                        Windows environment
                     </h3>
-                    <p>
-                        This version of Audiveris runs on Windows and Linux system
-                        environments.
-                    </p>
-                    <h4 id="windows">
-                        Windows
-                    </h4>
-                    <img class="side" width="305" height="239" title="Welcome screen" 
-                         alt="msi-welcome" src="../images/msi-welcome.png" />
                     <p>
                         For Windows users, a pair of Microsoft Installer files 
                         is available in the 
@@ -141,25 +133,33 @@
                         <code>audiveris-V.v.revision-x86.msi</code> (for 32-bit) and
                         <code>audiveris-V.v.revision-x64.msi</code> (for 64-bit).
                     </p>
-                    <p>Nota: Audiveris Java code calls some C++ files via 
-                        <code>jni</code>.
-                        On a 64-bit machine, with a 64-bit
-                        Java environment, make sure to use the 64-bit 
-                        Audiveris release otherwise the C++ library will
-                        fail to load.
+                    <p>The Windows installer will take care of all needed 
+                        components:
+                        Application code and data, Java runtime, C++ runtime,
+                        Tesseract OCR and language files, Ghostscript software,
+                        musical font, etc.
                     </p>
                     <p>                    
-                        Download the file that fits your architecture 
-                        and launch the installation by a double-click on the 
-                        downloaded file. 
+                        <b>Important:</b> Download the installer that fits
+                        your architecture. 
+                        In the specific case of a 64-bit machine with a 64-bit
+                        Java environment, make sure to use the 64-bit 
+                        Audiveris release otherwise the C++ library will
+                        fail to load when invoked from Java.
+                    </p>
+                    <img class="side" width="305" height="239" title="Welcome screen" 
+                         alt="msi-welcome" src="../images/msi-welcome.png" />
+                    <p>                    
+                        Launch the installation by a double-click on the 
+                        downloaded installer file.
+                        The installer presents a welcome screen.
                     </p>
 
                     <br class="clear"/>
                     <img class="side" width="305" height="239" title="License screen" 
                          alt="msi-license" src="../images/msi-license.png" />
                     <p>
-                        The first screen after the welcome screen allows to 
-                        browse the Audiveris license:
+                        The next screen allows to  browse the Audiveris license:
                         <a href="http://www.gnu.org/licenses/gpl-2.0.html#SEC1">
                             GNU GPL V2</a>.
                         If you agree with the license, check the dedicated check
@@ -189,31 +189,19 @@
                         simply relaunch the installer program, it will prompt you for
                         your new decisions.
                     </p>
-                    <h5 id="launching-audiveris">
-                        Launching Audiveris
-                    </h5>
-                    <p>
-                        To launch Audiveris under Windows use:
-                    </p>
-                    <p class="indent">
-                        <code>Start</code> | <code>All Programs</code> | 
-                        <code>audiveris</code> | <code>audiveris application</code>
-                    </p>
-                    <p>
-                        There are other ways to launch Audiveris, for example to open a
-                        Console, to run in batch, to specify launch parameters, etc.
-                        These other ways are described in the <a href="#cli">Command
-                            Line Interface</a> section of the Advanced chapter.
-                    </p>
-                    <div id="java-snippet" class="snippet">
-                        <strong>Java check:</strong>
-                        <img class="right" width="375" height="154"
+                    
+                    <div id="java-snippet" class="snippet clear">
+                        <img class="right"
                              title="Java runtime" alt="java-requirement" 
                              src="../images/java-requirement.png" />
+                        <strong>Java check:</strong>
                         <p>
-                            At the very first launch, your computer system will be
-                            checked for the needed Java runtime (Java 7 as of this
-                            writing). If the check fails, you will be prompted by a 
+                            Audiveris installation will complete with the Java runtime
+                            (JRE) check performed at launch time.
+                        </p>
+                        <p>
+                            Java 7 is the required JRE as of this writing. 
+                            If the check fails, you will be prompted by a 
                             Launch4j dialog.
                         </p>
                         <p>
@@ -233,52 +221,396 @@
                                 Audiveris.</li>
                         </ol>
                     </div>
-                    <h4 id="linux">
-                        Linux
-                    </h4>
-                    <p>
-                        For Linux, there is yet no integrated installer similar to what
-                        we have for Windows system. For the time being, you have to
-                        build the application from the sources.
-                    </p>
-                    <p>
-                        The source distribution is available on the 
-                        <a href="http://kenai.com/projects/audiveris/downloads">
-                            download area</a> of Audiveris project and matches the
-                        <code>audiveris-V.v.revision-src.zip</code> naming
-                        schema.
-                        <br/>
-                        Download the distribution file, create a dedicated directory
-                        and expand the downloaded file into this directory.
-                        <br/>
-                        For further information, see the <a href="#building">Building
-                        </a> section.
-                    </p>
                 </article>
 
                 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
-                <article id="tessdata">
+                <article id="linux">
                     <h3>
-                        OCR languages
+                        Linux environment
                     </h3>
+                    <p> 
+                        Due to impossibility to support the sheer number of Linux
+                        distributions and different binary formats used, we 
+                        provide fully automated installation packages only for 
+                        Ubuntu. 
+                    </p>
                     <p>
-                        Audiveris uses Tesseract as the 
-                        <abbr title="Optical Character Recognition">OCR</abbr>
+                        For all other distributions we provide generic 
+                        application packages coupled with detailed installation
+                        instructions.
+                        On non-Ubuntu Linux you would need to install various
+                        required components manually. 
+                        For further information, please refer to the 
+                        <a href="#generic-linux">Manual installation</a>
+                        section
+                    </p>
+                    <h4 id="linux-debian"> Installing Audiveris on Ubuntu 
+                        12.04 and above
+                    </h4>
+                    <p> The Ubuntu 12.04 packages are available on the 
+                        <a href="http://kenai.com/projects/audiveris/downloads">
+                            download area</a> of Audiveris project and matches 
+                        the <code>audiveris-V.v-ubuntu-arch.deb</code>
+                        naming schema, where <q>V.v</q> denotes Audiveris'
+                        version and <q>arch</q> the hardware architecture.
+                        Pick up the proper file, matching your hardware 
+                        architecture (<code>i386</code> for Intel 32bit or 
+                        <code>amd64</code> for 64bit), download it, double click
+                        on its icon and follow the instructions to install 
+                        Audiveris.
+                    </p>
+                    <p>
+                        <b>IMPORTANT:</b> our Ubuntu packages won't work on versions
+                        prior to 12.04 or architectures other than Intel 
+                        i386/amd64!
+                    </p>                    
+
+                    <h4 id="linux-generic">Installing Audiveris application</h4>
+                    <p>
+                        Generic RPM packages suitable for installation on OpenSUSE, Fedora,
+                        Madriva and others are available on the <a href="http://kenai.com/projects/audiveris/downloads">
+                            download area</a> of Audiveris project and matches the <code>Audiveris-V.v-arch.rpm</code>
+                        naming schema, where <q>V.v</q> denotes Audiveris' version
+                        und <q>arch</q> - hardware architecture. Pick up the proper
+                        file, matching your hardware architecture (<code>i386</code> for Intel 32bit or
+                        'x86_64' for 64bit), download it, double click on its icon and
+                        follow the instructions to install Audiveris.
+                    </p>
+                    <p><b>Note:</b> please ensure that Tesseract libraries are already
+                        installed before trying to install these packages.
+                    </p>
+
+                    <h4 id="linux-others">
+                        Other Linux than Ubuntu, OpenSUSE or Fedora</h4>
+                    <p>
+                        The basic steps will be the same as given in the
+                        <a href="#linux-manual">Manual installation</a> section,
+                        though the real commands will vary heavily depending on your
+                        distribution and hardware architecture.
+                        Please ask the <a href="http://www.leptonica.com/download.html">Audiveris
+                            forum</a> for detailed instructions.
+                    </p>                    
+
+                    <h4 id="linux-manual">Manual Installation</h4>
+                    <p> 
+                        This section provides step-by-step guide on how to install
+                        Audiveris on different, mainly non-Ubuntu, Linux distributions,
+                        because those don't provide pre-built binary libraries for Tesseract
+                        3.02. 
+                        You are assumed to be familiar with the process of compiling
+                        and installing software from source. 
+                        Moreover, this guide assumes
+                        some basic level of familiarity with command line operation. 
+                    </p>
+                    <p> 
+                        Basically, the installation of Audiveris on a particular
+                        Linux distribution consists of the following steps 
+                        (most of them require the user to type commands in a 
+                        terminal):
+                    </p>
+                    <ul>
+                        <li>(compiling and) installing Google's Tesseract
+                            optical character recognition engine</li>
+                        <li>installing language files for Tesseract</li>
+                        <li>installing Java Runtime Environment</li>
+                        <li>installing Ghostscript - an open-source tool for
+                            manipulating PDF documents</li>
+                    </ul>
+
+                    <h5 id="manual-ocr">Installing Tesseract OCR</h5>
+                    <p>
+                        At the time of this writing, Tesseract project doesn't 
+                        officially provide binary packages for Linux. 
+                        Therefore, you need to compile and install Tesseract 
+                        libraries manually.
+                    </p>
+                    <dl>
+                        <dt>Installing Tesseract on OpenSUSE 12.2</dt>
+
+                        <dd>
+                            <p>
+                                OpenSUSE 12.2 offers unofficial binary packages
+                                for Tesseract' shared libraries. 
+                                This simplifies the installation greatly. 
+                                Please proceed as follows:
+                            </p>
+                            <ol>
+                                <li>in your browser, go to <a href="http://software.opensuse.org/package/liblept3">
+                                        Leptonica download page</a> , select "OpenSUSE 12.2" then "Show
+                                    unstable packages". Click on the proper package from "Lazy_Kent"
+                                    according to your hardware architecture (32 or 64 bit) and follow
+                                    the instructions to install Leptonica.
+                                </li>
+                                <li>in your browser, go to <a href="http://software.opensuse.org/package/libtesseract3">
+                                        Tesseract download page</a> , select "OpenSUSE 12.2" then "Show
+                                    unstable packages". Click on the proper package from "Lazy_Kent"
+                                    (version 3.02.02!) according to your hardware architecture (32 or
+                                    64 bit) and follow the instructions to install Tesseract' shared
+                                    libraries.
+                                </li>
+                            </ol>
+                        </dd>
+
+                        <dt>Installing Tesseract on Fedora 17</dt>
+                        <dd>
+                            <p>
+                                Due to the lack of any binary packages for 
+                                Tesseract in the Fedora distribution, you need 
+                                to compile this software manually.
+                            </p>
+
+                            <dl>
+
+                                <dt>Installing development tools</dt>
+                                <dd>
+                                    <p>In order to be able to compile software from sources, you need to
+                                        install development tools first because those are likely not present
+                                        on your system by default. Please run the following commands in your
+                                        terminal:
+                                    </p>
+                                    <p class="code">
+                                        sudo yum groupinstall "Development Tools"
+                                    </p>
+                                </dd>
+
+                                <dt>Installing Tesseract dependencies</dt>
+                                <dd>
+                                    <p>
+                                        Tesseract OCR depends on the image processing library called
+                                        "Leptonica", which, in turn, depends on several image formats like
+                                        JPEG, PNG, TIFF and GIF. These formats are usually supported by
+                                        external libraries. You need to install the development versions for
+                                        each of those libraries:
+                                    </p>
+                                    <p class="code">sudo yum
+                                        install zlib-devel libpng-devel libjpeg-devel libtiff-devel
+                                        giflib-devel</p>
+                                    <p>Now check out Leptonica's source code and unpack it:</p>
+                                    <pre class="code">
+sudo yum install wget
+wget http://www.leptonica.com/source/leptonica-1.69.tar.gz
+gunzip leptonica-1.69.tar.gz
+tar -xvf leptonica-1.69.tar</pre>
+                                    <p>Alternatively, you can download the source using your browser here:
+                                        <a href="http://www.leptonica.com/download.html">http://www.leptonica.com/download.html</a></p>
+                                    <p>Let us configure, build and install Leptonica now:</p>
+                                    <pre class="code">
+cd [path to leptonica-1.69 folder]
+./configure --disable-programs
+make
+sudo make install</pre>
+                                    <p>This will install Leptonica libraries to
+                                        /usr/local/lib.</p>
+                                </dd>
+                                <dt>Compiling and installing Tesseract</dt>
+                                <dd>
+                                    <ul>
+                                        <li>Download Tesseract source using your browser or <code>wget</code>
+                                            from here:
+                                            http://tesseract-ocr.googlecode.com/files/tesseract-ocr-3.02.02.tar.gz</li>
+                                        <li>Unpack it to an easily accessible directory, for example
+                                            '/home/user/Documents/'. You should see "tesseract-ocr" folder in
+                                            your working directory.
+                                        </li>
+                                        <li>Start up the terminal and change to that source directory: 
+                                            <pre class="code">cd /home/user/Documents/tesseract-ocr</pre></li>
+                                        <li>Now run the following commands in order to compile und install
+                                            Tesseract to /usr/local/lib:
+                                            <pre class="code">
+./autogen.sh
+./configure
+make
+sudo make install</pre>
+                                        </li>
+                                    </ul>
+                                    <p style="margin-top: -4px;" role="link"><u>The following instructions
+                                    in this section are only valid for the Fedora 17 distribution!</u>
+                                </p>
+                                <p style="margin-top: -4px;" role="link">Fedora, as a Red-Hat<code></code>-derived
+                                    distribution, doesn't include "/usr/local/lib" in its library search
+                                    path. Therefore, it's necessary to add that path so that Tesseract
+                                    shared libraries can be be found by Audiveris application. Please
+                                    proceed as follows:</p>
+                                <pre class="code">su - -c 'gedit /etc/ld.so.conf'</pre>
+                                <p>Append the following path to
+                                    the end of the file if it's not already there:
+                                </p>
+                                <pre class="code">/usr/local/lib</pre>
+                                <p>Save the file and reconfigure
+                                    the dynamic linker by issuing the following command:
+                                </p>
+                                <pre class="code">sudo ldconfig</pre>
+                        </dd>
+                    </dl>
+                    </dd>
+                    </dl>
+
+                    <h5 id="manual-ocr-files">
+                        Installing language files for Tesseract
+                    </h5>
+                    <p>
+                        Tesseract requires several language data files to be present on
+                        your machine. The following commands will install data for English<code></code>,
+                        German, French and Italian languages:
+                    </p>
+                    <ul>
+                        <li>Create the working directory named <code>tesseract-ocr</code> somewhere,
+                            for example: <code>/home/user/Documents/tesseract-ocr</code>.
+                            If you have compiled Tesseract from sources, this 
+                            will be the source code directory.
+                        </li>
+                        <li>Download required language files from here:
+                            <a href="http://code.google.com/p/tesseract-ocr/downloads/">
+                                http://code.google.com/p/tesseract-ocr/downloads/</a>.
+                            These files
+                            follow the naming schema <code>tesseract-ocr-3.02.XXX.tar.gz</code>
+                            where <q>XXX</q> denotes language code, i.e. eng = English,
+                            deu = German, ita = Italian and fra = French.</li>
+                        <li>Place the obtained language files into parent directory of
+                            <code>tesseract-ocr</code>, i.e. <code>/home/user/Documents/</code>.</li>
+                        <li>Double-click them to unpack.
+                            The data will be automatically extracted into 
+                            <code>tessdata</code> directory inside of the 
+                            <code>tesseract-ocr</code> directory.</li>
+                        <li>Start up the terminal and run the following command: 
+                            <pre class="code">sudo cp -r <i>path_to_tessdata_folder</i> <i>destination</i></pre> 
+                            where <q>path_to_tessdata_folder</q> denotes
+                            <code>/home/user/Documents/tesseract-ocr/tessdata </code>
+                            in this example and <q>destination</q> - either
+                            <code>/usr/local/share</code> when compiled from 
+                            source or <code>/usr/share</code> when
+                            installed using OpenSUSE binary packages.</li>
+                    </ul>
+                    <p>
+                        You need to set <code>TESSDATA_PREFIX</code> environment
+                        variable to point to the parent directory of the 
+                        <code>tessdata</code> in order to tell Audiveris
+                        where language data are located.
+                    </p>
+                    <p>
+                        To edit the global profile, run the following command 
+                        in the terminal:
+                    </p>
+                    <ul>
+                        <li>
+                            <code>su - -c 'gedit /etc/profile.local'</code>
+                            on OpenSUSE,
+                        </li>
+                        <li>
+                            <code>su - -c 'gedit /etc/profile.d/local.sh'</code>
+                            on Fedora.
+                        </li>
+                    </ul>
+
+                    <p>
+                        Append the following line:
+                    </p>
+                    <ul>
+                        <li>
+                            <code>export TESSDATA_PREFIX=/usr/local/share</code>
+                            on Fedora 17,
+                        </li>
+                        <li>
+                            <code>export TESSDATA_PREFIX=/usr/share</code>
+                            on OpenSUSE.
+                        </li>
+                    </ul>
+                    <p>
+                        Save the file, then log out and log in again in order
+                        to activate the changes.
+                    </p>
+
+                    <h5 id="manual-jre">
+                        Installing Java Runtime Environment (JRE)
+                    </h5>
+                    <p>Audiveris requires Java 7. Please install it as follows:</p>
+                    <ul>
+                        <li>
+                            <code>sudo zypper install java-1_7_0-openjdk</code>
+                            on OpenSUSE,
+                        </li>
+                        <li>
+                            <code>sudo yum install java-1.7.0-openjdk</code>
+                            on Fedora.
+                        </li>
+                    </ul>
+                    <p>
+                        To test your JRE installation, run the following command:
+                    </p>
+                    <pre class="code">java -version</pre>
+
+                    <p>
+                        You should see something similar to:
+                    </p>
+                    <pre class="code">
+java version "1.7.0_09-icedtea"
+OpenJDK Runtime Environment (fedora-2.3.3.fc17-x86_64)
+OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
+
+                    <h5 id="manual-ghostscript">
+                        Installing Ghostscript
+                    </h5>
+                    <p>
+                        Audiveris requires Ghostscript (an interpreter for the PostScript
+                        language and for PDF) in order to deal with PDF files.
+                        Ghostscript is already installed by default on both
+                        OpenSUSE and Fedora.
+                        Audiveris requires Ghostscript 9.05 or higher.
+                        To verify that, run the following command in the terminal:
+                    </p>
+                    <pre class="code">gs --version</pre>
+                </article>
+
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+                <article id="adding-languages">
+                    <h3>
+                        Adding OCR languages
+                    </h3>
+                    <p> 
+                        Audiveris uses Tesseract as the <abbr 
+                            title="Optical Character Recognition">OCR</abbr>
                         engine to retrieve and transcribe all score text items.
                     </p>
-                    <p>
-                        Since OCR language files can exhibit huge sizes, only selected
-                        languages are contained in Audiveris installation package.
-                        The default languages are: deu, eng, fra et ita.
+                    <p> 
+                        Since OCR language files can exhibit huge sizes, only
+                        selected languages are contained in Audiveris 
+                        installation packages for Windows and Ubuntu Linux.
+                        The default languages are: German (deu),
+                        English (eng), French (fra) and Italian (ita). 
                     </p>
-                    <p>
-                        Your can simply download additional languages and put them
-                        into the <code>ocr/tessdata</code> folder.
-                        All languages files are available for download on the
+                    <p> 
+                        <b>On Windows</b>, you can simply download additional
+                        languages and put them into the <code>ocr/tessdata</code>
+                        folder.
+                        All languages files are available for download on the 
                         <a href="http://code.google.com/p/tesseract-ocr/downloads/list">
                             Tesseract site</a>.
                     </p>
+                    <p>
+                        <b>On Linux</b>, you need to install additional
+                        language files manually as described in the beginning 
+                        of the <a href="#manual-ocr-files">Installing
+                            language files</a> section. 
+                        Please be aware of different locations of the 
+                        <code>tessdata</code> folder where language files go 
+                        into.
+                        These are:
+                    </p>
+                    <ul>
+                        <li>
+                            <code>/usr/share/tesseract-ocr/tessdata</code> 
+                            on Ubuntu 12.04,
+                        </li>
+                        <li>
+                            <code>/usr/share/tessdata</code> on OpenSUSE 12.2,
+                        </li>
+                        <li>
+                            <code>/usr/local/share/tessdata</code> when compiled
+                            from sources.
+                        </li>
+                    </ul>
                 </article>
 
                 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - -->
@@ -303,8 +635,7 @@
                         Another way to load an input file, is to directly use a drag n'
                         drop from the file explorer to the Audiveris application window.
                     </p>
-                    <br class="clear"/>
-                    <p>
+                    <p class="clear">
                         A few hints:
                     </p>
                     <ul>
@@ -2411,17 +2742,24 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         <a class="inline" href="#getting-started">Getting started</a> 
                         <div class="expandable">                            
                             <ul>                  
-                                <li><a href="#installation">Installation</a>
+                                <li><a href="#windows">On Windows</a>
+                                </li>
+                                <li><a href="#linux">On Linux</a>
                                     <ul>
-                                        <li><a href="#windows">Windows</a>
+                                        <li><a href="#linux-debian">Ubuntu</a></li>
+                                        <li><a href="#linux-generic">Generic RPMs</a></li>
+                                        <li><a href="#linux-others">Others</a></li>
+                                        <li><a href="#linux-manual">Manual install</a>
                                             <ul>
-                                                <li><a href="#launching-audiveris">Launching</a></li>
+                                                <li><a href="#manual-ocr">OCR</a></li>
+                                                <li><a href="#manual-ocr-files">Languages</a></li>
+                                                <li><a href="#manual-jre">Java runtime</a></li>
+                                                <li><a href="#manual-ghostscript">Ghostscript</a></li>
                                             </ul>
                                         </li>
-                                        <li><a href="#linux">Linux</a></li>
-                                    </ul>
+                                    </ul>                                
                                 </li>
-                                <li> <a href="#tessdata">OCR languages</a></li>
+                                <li><a href="#adding-languages">Adding languages</a></li>
                                 <li><a href="#loading-an-image">Loading an image</a></li>
                                 <li><a href="#transcription">Transcription</a>
                                     <ul>
