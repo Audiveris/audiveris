@@ -204,8 +204,9 @@
                              src="../images/java-requirement.png" />
                         <strong>Java check:</strong>
                         <p>
-                            Audiveris installation will complete with the Java runtime
-                            (JRE) check performed at launch time.
+                            Audiveris installation will complete with the Java 
+                            Runtime Environment (JRE) check performed at launch 
+                            time.
                         </p>
                         <p>
                             Java 7 is the required JRE as of this writing. 
@@ -723,7 +724,7 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                     <h4 id="main-window-layout">
                         Main window layout
                     </h4>
-                    <img class="right" width="650" height="520" 
+                    <img class="right" width="629" height="481" 
                          src="../images/chula-score.png"
                          alt="score" title="Application main window"/>
                     <p>
@@ -1265,12 +1266,15 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                         application runs)
                     </p>
                     <dl>
-                        <dt>Text</dt>
+                        <dt>Language</dt>
                         <dd>Define the specification of dominant languages for OCR'ed 
                             text (note that you can select several languages)</dd>
                         <dt>Binarization</dt>
                         <dd>Select the kind of filter (global or adaptive) and adjust
                             the related values.</dd>
+                        <dt>Tempo</dt>
+                        <dd>Define the default tempo in number of quarters per 
+                            minute.</dd>
                         <dt>Drag n' Drop</dt>
                         <dd>Define the default step to be performed when an
                             image file is dropped on the application window</dd>
@@ -1320,18 +1324,18 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                     <h4 id="errors-window">
                         Errors window
                     </h4>
-                    <p>The <code>PAGES</code> and <code>SCORE</code> steps are able to 
-                        detect possible errors and sometimes to correct them
-                        automatically.
-                        Remaining errors are displayed in the error window located at
-                        the bottom of the main window.</p>
+                    <p>Several steps are able to detect possible errors and 
+                        sometimes to correct them automatically.
+                        Remaining errors are displayed in the error window 
+                        located at the bottom of the main window.</p>
                     <img class="side" title="Errors window" alt="errors-window"
                          width="356" height="99"
                          src="../images/errors-window.png" />
                     <p>The picture next to this paragraph presents the content of this 
                         window after running <code>SCORE</code> on the example image.
-                        If the windows is not displayed, make sure to open it through 
-                        menu <code>Views</code> | <code>Display errors window</code>.
+                        If the error window is not displayed, make sure to open
+                        it through menu <code>Views</code> | <code>Display 
+                            errors window</code>.
                     </p>
                     <p>The errors list is sorted, and every error message begins 
                         with a context indication.
@@ -1630,14 +1634,23 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
 
                 <article id="whole-examples">
                     <h3>
-                        Whole examples
+                        Wiki on whole examples
                     </h3>
+                    <p>
+                        A <a href="http://kenai.com/projects/audiveris/pages/Home">
+                            Wiki</a> is available online to document
+                        the use and evolution of Audiveris software.
+                    </p>
                     <p>
                         Audiveris is installed with a hand-full of typical 
                         input files located in the <code>examples</code> folder
                         of program installation directory.
                         Almost all pictures used in this handbook are snapshots
                         of these examples.
+                        The processing of these simple examples is documented 
+                        in this 
+                        <a href="http://kenai.com/projects/audiveris/pages/SimpleExamples">
+                            Wiki page</a>.
                     </p>
                     <p>
                         Another source of examples is the online repository of
@@ -1655,9 +1668,9 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                         examples with as good results as possible, even if some
                         manual processing was still necessary.
                         The detailed processing of each of these examples is 
-                        documented in the dedicated online 
+                        documented in the dedicated  
                         <a href="http://kenai.com/projects/audiveris/pages/RecordareExamples">
-                            Audiveris Wiki page</a>.
+                            Wiki page</a>.
                         Browsing this Wiki should give you a more realistic view
                         of concrete Audiveris processing and manual interactions.
                     </p>
@@ -1700,11 +1713,11 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                                 you through 3 steps:
                             </p>
                             <ol>
-                                <li>In the "Mercurial Repository" step, set the
+                                <li>In the <q>Mercurial Repository</q> step, set the
                                     Repository URL to the Kenai address 
                                     <code>https://hg.kenai.com/hg/audiveris~hg</code></li>
-                                <li>In the "Mercurial Paths" step, you can keep the proposed paths</li>
-                                <li>In the "Destination Directory" step, select
+                                <li>In the <q>Mercurial Paths</q> step, you can keep the proposed paths</li>
+                                <li>In the <q>Destination Directory</q> step, select
                                     the Parent Directory and the Clone Name of
                                     your choice, for example "audiveris~hg"</li>
                             </ol>
@@ -1839,9 +1852,10 @@ Known step names are in order (non case-sensitive):
    PLUGIN      : Launch the default plugin (MuseScore)
                     </textarea>
 
-                    <p>You can also use the executables named <code>audiveris.exe</code>
-                        or <code>audiveris-console.exe</code> which are just wrappers 
-                        around the <code>java</code> command.
+                    <p>On Windows, you can also use the executables named
+                        <code>audiveris.exe</code> or 
+                        <code>audiveris-console.exe</code> which are just 
+                        wrappers around the <code>java</code> command.
                         This command line syntax is also correct: 
                         <code>audiveris.exe [parameters*]</code>, it takes the JVM 
                         options declared in the related file 
@@ -1854,8 +1868,9 @@ Known step names are in order (non case-sensitive):
                         <dt>-batch</dt>
                         <dd>Launches Audiveris without any Graphic User Interface.</dd>
                         <dt>-step (STEPNAME | @STEPLIST)+</dt>
-                        <dd>Performs all the specified steps (including the steps which
-                            are mandatory to get to the specified ones).
+                        <dd>Performs all the specified steps (automatically
+                            including the steps which are mandatory to get to 
+                            the specified ones).
                             <br>
                             'STEPNAME' can be any one of the step names (the case is
                             irrelevant).
@@ -2272,9 +2287,12 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                          title="User Interface to train the evaluator"  />
                     <dl>
                         <dt>Selection</dt>
-                        <dd>This panel is in charge of selecting and loading the glyph 
-                            XML files, as stored from the predefined symbols and from
-                            previous sheet recognitions.
+                        <dd>
+                            <p>
+                                This panel is in charge of selecting and loading the glyph 
+                                XML files, as stored from the predefined symbols and from
+                                previous sheet recognitions.
+                            </p>
                             <p>
                                 Use the <code class="button">Select Core</code>
                                 button when you want to identify a 
@@ -2284,12 +2302,15 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                                 and repopulated by the core selected glyph files.
                             </p>
                         <dt>Neural Training</dt>
-                        <dd>Here we launch and monitor the training of the neural 
-                            network.
-                            <br/>
-                            On the left, radio buttons allow to select either the 
-                            <code class="button">Whole</code> base (default option) or the 
-                            <code class="button">Core</code> base.
+                        <dd>
+                            <p>
+                                Here we launch and monitor the training of the neural 
+                                network.
+                                <br/>
+                                On the left, radio buttons allow to select either the 
+                                <code class="button">Whole</code> base (default option) or the 
+                                <code class="button">Core</code> base.
+                            </p>
                             <p>The main decision is to choose between a 
                                 <code class="button">Re-Train</code>, which consists in retraining from
                                 scratch, or only an <code class="button">Inc-Train</code>, which works
@@ -2313,11 +2334,14 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         </dd>
 
                         <dt>Validation</dt>
-                        <dd>At any time, even while the neural network is being trained,
-                            you can test the evaluator against the selected population 
-                            (either the Whole base, or the Core base, according to the
-                            selection made via the radio buttons. Note that we can train
-                            and validate on different bases).
+                        <dd>
+                            <p>
+                                At any time, even while the neural network is being trained,
+                                you can test the evaluator against the selected population 
+                                (either the Whole base, or the Core base, according to the
+                                selection made via the radio buttons. Note that we can train
+                                and validate on different bases).
+                            </p>
                             <p>
                                 The samples which are either not recognized or (worse) 
                                 mistaken for another shape are pointed out.
@@ -2328,8 +2352,12 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         </dd>
 
                         <dt>Regression Training</dt>
-                        <dd>This allows to compute the parameters of a linear evaluator,
-                            which is less and less used. You can safely ignore this.</dd>
+                        <dd>
+                            <p>
+                                This allows to compute the parameters of a linear evaluator,
+                                which is less and less used. You can safely ignore this.
+                            </p>
+                        </dd>
                     </dl>
                 </article>
             </section>
@@ -2562,13 +2590,15 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     <p>
                         You can still manually modify the border, by starting a boundary
                         edition session via the (right-click) context menu
-                        <code>Boundaries...</code> | <code>Start</code>.
+                        <code>Boundaries...</code> | <code>Start edition</code>.
                         The broken lines of all boundaries are highlighted in red color.
                         With the mouse, you can adjust the border by simply dragging the
                         lines and points.
+                        An intermediate point is automatically removed when
+                        it gets aligned with the previous and the next point.
                         When you are done, end the session by 
-                        <code>Boundaries...</code> | <code>Complete</code> so that
-                        modifications are immediately taken into account.
+                        <code>Boundaries...</code> | <code>Complete edition</code> so that
+                        modifications get immediately taken into account.
                     </p>
                 </article>
 
