@@ -1776,9 +1776,17 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
 
                         <dt>Building Linux installers</dt>
                         <dd>
-                            <p>
-                                *TO BE PROVIDED*
-                            </p>
+                            <ul>
+                                <li>
+                                    The outputs of the Ant installers task are
+                                    processed with <b>debhelper</b> to provide
+                                    the <code>.deb</code> packages.
+                                </li>
+                                <li>
+                                    Then <b>alien</b> is used to convert them to 
+                                    <code>.rpm</code> packages.
+                                </li>
+                            </ul>                            
                         </dd>
 
                         <dt> 
