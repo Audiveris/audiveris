@@ -130,8 +130,10 @@
                         <a href="http://kenai.com/projects/audiveris/downloads">
                             download area</a> of Audiveris project.
                         The files are named respectively
-                        <code>audiveris-V.v.revision-x86.msi</code> (for 32-bit) and
-                        <code>audiveris-V.v.revision-x64.msi</code> (for 64-bit).
+                        <code>audiveris-<i>V.v.r</i>-x86.msi</code> (for 32-bit)
+                        and
+                        <code>audiveris-<i>V.v.r</i>-x64.msi</code> (for 64-bit)
+                        where <q>V.v.r</q> stands for Audiveris version+revision.
                     </p>
                     <p>The Windows installer will take care of all needed 
                         components:
@@ -153,6 +155,12 @@
                         Launch the installation by a double-click on the 
                         downloaded installer file.
                         The installer presents a welcome screen.
+                    </p>
+                    <p>
+                        <b>Note:</b> If an older Audiveris version is already
+                        installed, you'll get a warning dialog asking you to
+                        uninstall it via Windows configuration panel prior to 
+                        installing the new version.
                     </p>
 
                     <br class="clear"/>
@@ -181,7 +189,7 @@
                     <p>
                         If you select the custom setup, you have the ability to choose
                         the installation location and decide on the installation of
-                        optional components (Examples, Plugins, Training material).
+                        optional components.
                     </p>
                     <p>
                         Note that you can always change your mind later and add or
@@ -189,7 +197,7 @@
                         simply relaunch the installer program, it will prompt you for
                         your new decisions.
                     </p>
-                    
+
                     <div id="java-snippet" class="snippet clear">
                         <img class="right"
                              title="Java runtime" alt="java-requirement" 
@@ -233,7 +241,7 @@
                         Due to impossibility to support the sheer number of Linux
                         distributions and different binary formats used, we 
                         provide fully automated installation packages only for 
-                        Ubuntu. 
+                        <b>Ubuntu</b>.
                     </p>
                     <p>
                         For all other distributions we provide generic 
@@ -245,51 +253,59 @@
                         <a href="#generic-linux">Manual installation</a>
                         section
                     </p>
-                    <h4 id="linux-debian"> Installing Audiveris on Ubuntu 
-                        12.04 and above
+                    <h4 id="linux-debian">
+                        Full installation on Ubuntu 12.04 and above
                     </h4>
-                    <p> The Ubuntu 12.04 packages are available on the 
-                        <a href="http://kenai.com/projects/audiveris/downloads">
-                            download area</a> of Audiveris project and matches 
-                        the <code>audiveris-V.v-ubuntu-arch.deb</code>
-                        naming schema, where <q>V.v</q> denotes Audiveris'
-                        version and <q>arch</q> the hardware architecture.
-                        Pick up the proper file, matching your hardware 
-                        architecture (<code>i386</code> for Intel 32bit or 
-                        <code>amd64</code> for 64bit), download it, double click
-                        on its icon and follow the instructions to install 
-                        Audiveris.
-                    </p>
                     <p>
-                        <b>IMPORTANT:</b> our Ubuntu packages won't work on versions
-                        prior to 12.04 or architectures other than Intel 
-                        i386/amd64!
+                        <b>Note:</b> Our Ubuntu packages won't work on 
+                        versions prior to 12.04 or architectures other than 
+                        Intel i386/amd64.
                     </p>                    
-
-                    <h4 id="linux-generic">Installing Audiveris application</h4>
-                    <p>
-                        Generic RPM packages suitable for installation on OpenSUSE, Fedora,
-                        Madriva and others are available on the <a href="http://kenai.com/projects/audiveris/downloads">
-                            download area</a> of Audiveris project and matches the <code>Audiveris-V.v-arch.rpm</code>
-                        naming schema, where <q>V.v</q> denotes Audiveris' version
-                        und <q>arch</q> - hardware architecture. Pick up the proper
-                        file, matching your hardware architecture (<code>i386</code> for Intel 32bit or
-                        'x86_64' for 64bit), download it, double click on its icon and
-                        follow the instructions to install Audiveris.
+                    <p> The <b>Ubuntu 12.04</b> packages are available on the 
+                        <a href="http://kenai.com/projects/audiveris/downloads">
+                            download area</a> of Audiveris project and match the
+                        <code>audiveris-<i>V.v.r</i>-ubuntu-<i>arch</i>.deb</code>
+                        naming schema, where <q>V.v.r</q> denotes Audiveris
+                        version+revision and <q>arch</q> the hardware 
+                        architecture (<code>i386</code> for Intel 32bit or 
+                        <code>amd64</code> for 64bit).
                     </p>
-                    <p><b>Note:</b> please ensure that Tesseract libraries are already
-                        installed before trying to install these packages.
+
+                    <h4 id="linux-generic">Generic Audiveris package</h4>
+                    <p><b>Note:</b>
+                        This <q>generic</q> Audiveris application package is 
+                        intended to install on any Linux the Audiveris 
+                        application, music font and desktop integration.
+                        However, this package requires that <b>Tesseract</b>
+                        shared libraries are already present or the installation
+                        will fail.
+                        So, refer to section <a href="#manual-ocr">Installing 
+                            Tesseract OCR</a> to install Tesseract beforehand.
+                    </p>
+                    <p>
+                        Generic RPM packages suitable for installation on
+                        <b>OpenSUSE</b>, <b>Fedora</b>, <b>Madriva</b> and 
+                        others are available on the 
+                        <a href="http://kenai.com/projects/audiveris/downloads">
+                            download area</a> of Audiveris project.
+                        The packages match the 
+                        <code>Audiveris-<i>V.v.r</i>-<i>arch</i>.rpm</code>
+                        naming schema, where <q>V.v.r</q> denotes Audiveris
+                        version+revision and <q>arch</q> the hardware 
+                        architecture (<code>i386</code> for Intel 32bit or
+                        <code>x86_64</code> for 64bit).
                     </p>
 
                     <h4 id="linux-others">
-                        Other Linux than Ubuntu, OpenSUSE or Fedora</h4>
+                        Other targets than Ubuntu, OpenSUSE or Fedora</h4>
                     <p>
                         The basic steps will be the same as given in the
                         <a href="#linux-manual">Manual installation</a> section,
                         though the real commands will vary heavily depending on your
                         distribution and hardware architecture.
-                        Please ask the <a href="http://www.leptonica.com/download.html">Audiveris
-                            forum</a> for detailed instructions.
+                        You can post requests on 
+                        <a href="http://www.leptonica.com/download.html">Audiveris
+                            forum</a> if you need additional instructions.
                     </p>                    
 
                     <h4 id="linux-manual">Manual Installation</h4>
@@ -337,14 +353,14 @@
                             </p>
                             <ol>
                                 <li>in your browser, go to <a href="http://software.opensuse.org/package/liblept3">
-                                        Leptonica download page</a> , select "OpenSUSE 12.2" then "Show
-                                    unstable packages". Click on the proper package from "Lazy_Kent"
+                                        Leptonica download page</a> , select <q>OpenSUSE 12.2</q> then <q>Show
+                                        unstable packages</q>. Click on the proper package from <q>Lazy_Kent</q>
                                     according to your hardware architecture (32 or 64 bit) and follow
                                     the instructions to install Leptonica.
                                 </li>
                                 <li>in your browser, go to <a href="http://software.opensuse.org/package/libtesseract3">
-                                        Tesseract download page</a> , select "OpenSUSE 12.2" then "Show
-                                    unstable packages". Click on the proper package from "Lazy_Kent"
+                                        Tesseract download page</a> , select <q>OpenSUSE 12.2</q> then <q>Show
+                                        unstable packages</q>. Click on the proper package from <q>Lazy_Kent</q>
                                     (version 3.02.02!) according to your hardware architecture (32 or
                                     64 bit) and follow the instructions to install Tesseract' shared
                                     libraries.
@@ -378,7 +394,7 @@
                                 <dd>
                                     <p>
                                         Tesseract OCR depends on the image processing library called
-                                        "Leptonica", which, in turn, depends on several image formats like
+                                        <b>Leptonica</b>, which, in turn, depends on several image formats like
                                         JPEG, PNG, TIFF and GIF. These formats are usually supported by
                                         external libraries. You need to install the development versions for
                                         each of those libraries:
@@ -410,7 +426,8 @@ sudo make install</pre>
                                             from here:
                                             http://tesseract-ocr.googlecode.com/files/tesseract-ocr-3.02.02.tar.gz</li>
                                         <li>Unpack it to an easily accessible directory, for example
-                                            '/home/user/Documents/'. You should see "tesseract-ocr" folder in
+                                            <code>/home/user/Documents/</code>. 
+                                            You should see <code>tesseract-ocr</code> folder in
                                             your working directory.
                                         </li>
                                         <li>Start up the terminal and change to that source directory: 
@@ -428,7 +445,7 @@ sudo make install</pre>
                                     in this section are only valid for the Fedora 17 distribution!</u>
                                 </p>
                                 <p style="margin-top: -4px;" role="link">Fedora, as a Red-Hat<code></code>-derived
-                                    distribution, doesn't include "/usr/local/lib" in its library search
+                                    distribution, doesn't include <code>/usr/local/lib</code> in its library search
                                     path. Therefore, it's necessary to add that path so that Tesseract
                                     shared libraries can be be found by Audiveris application. Please
                                     proceed as follows:</p>

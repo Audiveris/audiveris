@@ -5,7 +5,7 @@
 /* -------------------------------------------------------------------------- */
 
 /* Variable to modify according to your environment */
-var pathToExec = "P:/prog/Finale NotePad 2011/Finale NotePad.exe";
+var pathToExec = "C:/Program Files (x86)/Finale NotePad 2012/Finale NotePad.exe";
 
 /* Title for menu item */
 pluginTitle = 'Finale Notepad';
