@@ -53,6 +53,14 @@
         <mkdir dir="${dist.dir}/AudiverisLinux/AudiverisApp"/>
         <!--<mkdir dir="${dist.dir}/AudiverisLinux/AudiverisApp/dist"/> -->
         
+        <!-- add the plugin generator -->
+        <copy 
+           verbose="${verbose}"
+           todir="${dist.dir}/AudiverisLinux/AudiverisApp"
+           file="${dev.dir}/unix/AddPlugins.sh">
+        </copy>
+
+        <!-- copy over the application and associated libraries -->        
         <copy 
            verbose="${verbose}"
            todir="${dist.dir}/AudiverisLinux/AudiverisApp/dist">
