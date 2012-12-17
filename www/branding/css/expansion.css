@@ -18,6 +18,7 @@
 }
 .expander:hover {
     background-color:#535898;
+    color: white;
 }
 .expander:active {
     box-shadow:  0px 2px 2px 0px rgba(0,0,0,0.8) inset;

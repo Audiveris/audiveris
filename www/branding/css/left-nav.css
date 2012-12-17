@@ -1,9 +1,9 @@
 /* --------------------------------------------------------------------------*/
 /*                                                                           */
-/*                                 n a v . c s s                             */
+/*                            l e f t - n a v . c s s                        */
 /*                                                                           */
 /*    Layout with a fixed navigation menu on the left side                   */
-/*    Inspired from http://www.alsacreations.com/static/gabarits/            */
+/*                                                                           */
 /* --------------------------------------------------------------------------*/
 
 /* --- Layout --- */
@@ -12,35 +12,23 @@
 .left-column {
     position: fixed;
     width: 170px;
-    height: 100%;
     overflow-y: scroll;
-    background-color: white;
 }
 
-/* Main content */
+/* Shift main content to the right of left-column */
 .main {
-    float: left;
-    margin: 0 0 0 170px; /* top right bottom left */
-    color: #363B29;
-    background-color: rgba(250,250,255,1); 
-}
-.main li {
-    margin-top: 5pt;
-}
-.main strong {
-    color: #181A12;
+    position: fixed;
+    left: 170px;
 }
 
 /* Navigation */
-nav {
+.left-column nav {
     font-size: 90%;
     font-size: 0.75em; 
     line-height: 0.75;
 }
-nav a {
+.left-column nav a {
     color: #8888ff;
-    display: block;
-    height: 1%;
     padding: 0;
     line-height: 1.5;
     font-size: .9em;
@@ -48,49 +36,31 @@ nav a {
     color:#000000;
     font-weight: bold;
 }
-nav a:hover, 
-nav a:focus {
+.left-column nav a:hover, 
+.left-column nav a:focus {
     background: rgba(250,250,255,1); 
     color: #4444ff;
 }
-nav ul {
+.left-column nav ul {
     margin: 0;
     padding: 0;
     list-style: none;
 }
-nav ul li {
+.left-column nav ul li {
     margin-left: 10px;
     padding: 0;
     list-style: none;
 }
-nav li a {
+.left-column nav li a {
     color: #000000;
 }
-nav li li a {
+.left-column nav li li a {
     color: #000000;
     font-weight: normal;
 }
-nav li li li a {
+.left-column nav li li li a {
     color: #666666;
 }
-nav li li li li a {
+.left-column nav li li li li a {
     color: #aaaaaa;
-}
-
-/* Header */
-header {
-    float: left;
-    width: 100%;
-    position: static;
-    height: 400px;
-}
-header figure {
-    border-bottom: 1px blue solid;
-}
-header img {
-    box-shadow: none;
-}
-header a {
-    color: #000000;
-    text-decoration: none;
 }

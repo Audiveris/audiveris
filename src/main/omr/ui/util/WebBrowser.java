@@ -104,7 +104,7 @@ public class WebBrowser
         String osName = System.getProperty("os.name");
 
         if (false) {
-            logger.info(
+            logger.fine(
                     "Desktop.browse {0} with {1} on {2}", uri, this, osName);
 
             try {
@@ -115,7 +115,7 @@ public class WebBrowser
             }
         } else {
             // Delegate to BareBonesBrowserLaunch-like code
-            logger.info("openURL {0} with {1} on {2}", uri, this, osName);
+            logger.fine("openURL {0} with {1} on {2}", uri, this, osName);
             openURL(uri.toString());
         }
     }

@@ -22,8 +22,9 @@
               type="image/x-icon" />
 
         <link rel="stylesheet" href="../../branding/css/global.css" />
-        <link rel="stylesheet" href="../../branding/css/title-numbering.css" />
         <link rel="stylesheet" href="../../branding/css/left-nav.css" />
+        <link rel="stylesheet" href="../../branding/css/top-nav.css"/>
+        <link rel="stylesheet" href="../../branding/css/title-numbering.css" />
         <link rel="stylesheet" href="../../branding/css/expansion.css" />
 
         <style type="text/css">
@@ -37,10 +38,6 @@
             }
 
             /* -- Content -- */
-            h1 {
-                font-size: 6em;
-                text-align: center;
-            }
             h2 {
                 text-align: center;
                 padding-top: 2em;
@@ -79,38 +76,35 @@
             }
             article:target {
                 margin-top: 2em;
+                margin-bottom: 2em;
                 background-color: #fffaf2;
                 border-radius: 12px;
                 box-shadow: 0px 4px 4px 2px rgba(45,20,6,0.8);
             }
+            h1,
             h2,
             h3,
             article {
                 transition:all .5s ease;
             }
-
             /*]]>*/
         </style>
     </head>
 
     <body>
-        <div class="main" id="content">
-            <header>
-                <a href="../../index.html">
-                    <figure>
-                        <img alt="logo" 
-                             src="../../branding/images/logo-audiveris-195x80.png" />                
-                        <figcaption>Open Music Scanner</figcaption>
-                    </figure>
-                </a>
-                <h1>
-                    Handbook
-                </h1>
-                <p>
-                    This documentation applies to Audiveris version 4.2 and 
-                    above, for Windows and Linux environments.
-                </p>
-            </header>
+        <!-- Standard top header -->
+        <script src="../../branding/js/header.js"></script> 
+        
+        <div class="main">
+            <span id="top"></span>
+            
+            <h1>
+                Handbook
+            </h1>
+            <p>
+                This documentation applies to Audiveris version 4.2 and 
+                above, for Windows and Linux environments.
+            </p>
 
             <!-- =========================================================== -->
 
@@ -127,7 +121,7 @@
                     <p>
                         For Windows users, a pair of Microsoft Installer files 
                         is available in the 
-                        <a href="http://kenai.com/projects/audiveris/downloads">
+                        <a href="http://kenai.com/projects/audiveris/downloads?field=title&order=desc">
                             download area</a> of Audiveris project.
                         The files are named respectively
                         <code>audiveris-<i>V.v.r</i>-x86.msi</code> (for 32-bit)
@@ -290,7 +284,7 @@
                         <a href="http://kenai.com/projects/audiveris/downloads">
                             download area</a> of Audiveris project.
                         The packages match the 
-                        <code>Audiveris-<i>V.v.r</i>-<i>arch</i>.rpm</code>
+                        <code>audiveris-<i>V.v.r</i>-generic-<i>arch</i>.rpm</code>
                         naming schema, where <q>V.v.r</q> denotes Audiveris
                         version+revision and <q>arch</q> the hardware 
                         architecture (<code>i386</code> for Intel 32bit or
@@ -2788,9 +2782,10 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
 
         <!-- =============================================================== -->
 
+        <!-- Table of content in left-column -->
         <div class="left-column">
             <nav>
-                <p class="center"><a href="#content">Content</a></p>
+                <p style="text-align: right;"><a href="#top">Top</a></p>
                 <ol>
                     <li>
                         <input type="button"  value="+" class="expander" onclick="toggleInput(this)">
@@ -2893,6 +2888,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
             </nav>
         </div>
 
+        <!-- Needed initializations for expansion mechanism -->
         <script src="../../branding/js/expansion.js"></script> 
         <script>
             collapseAll();

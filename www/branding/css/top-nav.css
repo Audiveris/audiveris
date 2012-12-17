@@ -2,29 +2,55 @@
 /*                                                                           */
 /*                             t o p - n a v . c s s                         */
 /*                                                                           */
-/*    Layout with a fixed navigation menu on the top                         */
+/*    Layout with a fixed header on the top with navigation tabs             */
 /*                                                                           */
 /* --------------------------------------------------------------------------*/
 
-/* Main content */
-.main {
+/* Header */
+header {
+    height: 120px;
+    max-height: 15%;
     float: left;
-    margin: 15px;
-    margin-top: 120px;
+    width: 100%;
+    position: static;
+}
+header figure {
+    border-bottom: 1px blue solid;
+}
+header img {
+    box-shadow: none;
+}
+header a {
+    color: #000000;
+    text-decoration: none;
+}
+
+/* -- Shift left-column, if any, under top-header -- */
+.left-column {
+    position: fixed;
+    top: 20%;
+    max-height: 80%;
+}
+
+/* -- Shift main, if any, under top-header -- */
+.main {
+    position: fixed;
+    top: 15%;
+    max-height: 85%;
+    overflow: scroll;
 }
 
 /* Global navigation bar */
 ul.tabs {
     position:relative; 
+    text-align: center;
     top: 10px;
-    z-index: 10;
     height: 21px;
-    width: 450px;
+    width: 375px;
     margin-left: auto;
     margin-right: auto;
     margin-top: 0px;
     margin-bottom: 0px;
-    padding-left: 36px;
 }
 
 .tabs li {
@@ -42,6 +68,12 @@ ul.tabs {
     text-decoration: none;
     border-radius:3px;
     box-shadow: 0px 2px 2px 0px rgba(0,0,0,0.5), 0px 2px 2px 0px rgba(255, 255, 255, 0.5) inset;
+
+    -webkit-transition: background .5s ease;
+    -moz-transition: background-color .5s ease;
+    -ms-transition: background .5s ease;
+    -o-transition: background .5s ease;
+    transition: background-color .5s ease;                
 }
 
 .tabs a:link,
@@ -110,4 +142,14 @@ ul.tabs {
     color: black;
     font-size: 14px;
     text-shadow: 0px 2px 3px rgba(0,0,0,0.3);
+}
+
+/* z-index */
+header,
+#logo,
+#logo-subtitle,
+ul.tabs,
+#download-button,
+#download-version {    
+    z-index: 10;
 }

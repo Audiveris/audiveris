@@ -5,8 +5,8 @@
 <html lang="en">
     <head>
         <title>Audiveris - Snapshots</title>
-        <script>context = {page:"Snapshots", root:"../../"};</script>
-        
+        <script>context = {page: "Snapshots", root: "../../"};</script>
+
         <meta name="author" content="Hervé Bitteur" />
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="icon" href="../../branding/images/audiveris-icons-256.ico" type="image/x-icon" />
@@ -14,92 +14,171 @@
         <link rel="stylesheet" href="../../branding/css/top-nav.css"/>
         <style type="text/css">
             /*<![CDATA[*/
-            #slideshow{
-                background-color:#F5F5F5;
-                border:1px solid #FFFFFF;
-                height:753px;
-                margin:150px auto 0;
-                position:relative;
-                width:808px;
-
-                -moz-box-shadow:0 0 11px rgba(45,20,6,0.5);
-                -webkit-box-shadow:0 0 11px rgba(45,20,6,0.5);
-                box-shadow:0 0 11px rgba(45,20,6,0.5);
+            .main {
+                width: 100%;
+            }
+            ul {
+                margin: 0;
+                padding: 0;
+            }
+            ol, ul {
+                list-style: none;
             }
 
-            #slideshow ul{
-                height:753px;
-                left:0px;
-                list-style:none outside none;
+            /* Legend */
+            #two-legends {                
+                text-align: center;
+            } 
+            .legend {
+                display: inline-block;
+                width: 222px;
+                border-top-left-radius:  60px 60px;
+                border-top-right-radius: 60px 60px;
+                box-shadow: 0px 2px 2px 0px rgba(0,0,0,0.5), 0px 2px 2px 0px rgba(255, 255, 255, 0.5) inset;
+                overflow: hidden;
+                text-align: center;
+                background-color: #eeeeee;
+            }
+            .legend p {
+                display: inline-block;
+                width: 80px;
+                margin: 5px;
+                text-align: center;
+            } 
+
+            /* Container for slides */
+            #li-slider {
+                position: relative;
+                top: 50px;
+                left: -600px;
+            }
+            #slider {
+                background:#ffffff;
+                border:5px solid #eaeaea;
+                box-shadow:1px 1px 5px rgba(0,0,0,0.7);
+                height:409px;
+                width:785px;
+                margin:40px auto 0;
+                padding: 0;
+                position:relative;           
                 overflow:hidden;
-                position:absolute;
-                top:0px;
-                padding: 0px;
-                margin: 0px;
-                width:810px;
             }
 
-            #slideshow li{
-                position:absolute;
-                display:none;
-                z-index:10;
+            /* All images side by side in one sprite */
+            #sprite {
+                width: 4710px; /* Sum of all images widths */
+                display: inline-block;
+                position: relative;
+                left: 0px;
+
+                -webkit-transition: left 2s ease-in-out;
+                -moz-transition: left 2s ease-in-out;
+                -ms-transition: left 2s ease-in-out;
+                -o-transition: left 2s ease-in-out;
+                transition: left 2s ease-in-out;                    
+            }
+            #sprite img {
+                margin: 0;
+                padding: 0;
+                border: 0;
             }
 
-            #slideshow li:first-child{
-                display:block;
-                z-index:1000;
+            /* dots */
+            .dots  {
+                position: relative;
+                top: 0px;
+                text-align:center;
+            }
+            ul.dots {
+                top: -40px;
+                height: 500px;
+                width: 450px;
+            }
+            .dots li {
+                display:inline;
+                padding:0; 
+                margin:0;
+                list-style:none;
+            }
+            .dots a {
+                position: relative;
+                display: inline-block;
+                background-color: #ccccbb;
             }
 
-            #slideshow .slideActive{
-                z-index:1000;
+            /* Hover mechanism to shift slider */
+            #d1:hover ~ li #sprite {left:     0px;}
+            #d2:hover ~ li #sprite {left:  -785px;}
+            #d3:hover ~ li #sprite {left: -1570px;}
+            #d4:hover ~ li #sprite {left: -2355px;}
+            #d5:hover ~ li #sprite {left: -3140px;}
+            #d6:hover ~ li #sprite {left: -3925px;}
+
+            /* Target mechanism to shift slider */
+            #w1:target #sprite {left:    0px;}
+            #w2:target #sprite {left: -785px;}
+            #w3:target #sprite {left: -1570px;}
+            #w4:target #sprite {left: -2355px;}
+            #w5:target #sprite {left: -3140px;}
+            #w6:target #sprite {left: -3925px;}
+
+            /* Target mechanism to mark current dot */
+            #w1:target a[href="#w1"], 
+            #w2:target a[href="#w2"], 
+            #w3:target a[href="#w3"], 
+            #w4:target a[href="#w4"], 
+            #w5:target a[href="#w5"],
+            #w6:target a[href="#w6"]
+            {
+                background-color:#030878;
             }
-
-            #slideshow canvas{
-                display:none;
-                position:absolute;
-                z-index:100;
-            }
-
-            #slideshow .arrow{
-                height:86px;
-                width:60px;
-                position:absolute;
-                background:url('../../branding/images/arrows.png') no-repeat;
-                top:50%;
-                margin-top:-43px;
-                cursor:pointer;
-                z-index:5000;
-            }
-
-            #slideshow .previous{ background-position:left top;left:0;}
-            #slideshow .previous:hover{ background-position:left bottom;}
-
-            #slideshow .next{ background-position:right top;right:0;}
-            #slideshow .next:hover{ background-position:right bottom;}            /*]]>*/
+            /*]]>*/
         </style>
     </head>
     <body>
         <script src="../../branding/js/header.js"></script> 
-        <div  id="slideshow">
+        <div class="main">
+            <span id="top"></span>
 
-            <ul class="slides">
-                <li><img src="../images/main-picture-input.png"  alt="main-data-input" /></li>
-                <li><img src="../images/main-picture-both.png"   alt="main-data-both" /></li>
-                <li><img src="../images/main-picture-output.png" alt="main-data-output" /></li>
-                <li><img src="../images/main-data-input.png"  alt="main-data-input" /></li>
-                <li><img src="../images/main-data-both.png"   alt="main-data-both" /></li>
-                <li><img src="../images/main-data-output.png"  alt="main-data-output" /></li>
-                <li><img src="../images/main-data-output-voices-annot.png"  alt="main-data-output" /></li>
-            </ul>
+            <h1>Snapshots</h1>
 
-            <span class="arrow previous"></span>
-            <span class="arrow next"></span>
+            <div id="two-legends">
+                <div class="legend">
+                    <p>Picture tab</p>
+                </div>
+                <div class="legend">
+                    <p>Data tab</p>
+                </div>
+            </div>
+
+            <div id="w1"><div id="w2"><div id="w3"><div id="w4"><div id="w5"><div id="w6">
+
+                                    <ul class="tabs dots">
+                                        <li id="d1"><a href="#w1">Physical</a></li><!--
+                                        --><li id="d2"><a href="#w2">Combined</a></li><!--
+                                        --><li id="d3"><a href="#w3">Logical</a></li>
+
+
+                                        <li id="d4"><a href="#w4">Physical</a></li><!--
+                                        --><li id="d5"><a href="#w5">Combined</a></li><!--
+                                        --><li id="d6"><a href="#w6">Logical</a></li>
+                                        <li id="li-slider">
+                                            <div id="slider">
+                                                <div id="sprite">
+                                                    <img src="../images/main-picture-input.png" alt="picture-input"/><!--
+                                                    --><img src="../images/main-picture-both.png" alt="picture-both"/><!--
+                                                    --><img src="../images/main-picture-output.png" alt="picture-output"/><!--
+                                                    --><img src="../images/main-data-input.png" alt="data-input"/><!--
+                                                    --><img src="../images/main-data-both.png" alt="data-both"/><!--
+                                                    --><img src="../images/main-data-output.png" alt="data-output"/>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    </ul>
+
+                                </div></div></div></div></div></div>
+
+            <script src="../../branding/js/footer.js"></script> 
         </div>
-
-        <script src="../../branding/js/footer.js"></script> 
-
-        <script src="../../branding/js/jquery.min.js"></script>        
-        <script src="../../branding/js/slideshow.js"></script>        
-        <script src="../../branding/js/autoadvance.js"></script>        
     </body>
 </html>

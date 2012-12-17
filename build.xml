@@ -148,8 +148,8 @@
 
             <!-- NetBeans project -->
             <zipfileset dir="${basedir}/nbproject" prefix="${name}/nbproject"
-                        includes="**"
-                        excludes="${dist.excludes}, **/configs/*"/>
+                        includes="*"
+                        excludes="${dist.excludes},configs,private"/>
         
             <!-- Ini Launch4J files -->
             <zipfileset dir="${basedir}" prefix="${name}"
@@ -175,11 +175,6 @@
             <zipfileset dir="${eval.dir}" prefix="${name}/eval"
                         includes="**"
                         excludes="${dist.excludes}"/>
-        
-            <!-- settings files -->
-            <zipfileset dir="${settings.dir}" prefix="${name}/settings"
-                        includes="**"
-                        excludes="${dist.excludes}, **/run.properties"/>
         
             <!-- plugins files -->
             <zipfileset dir="${plugins.dir}" prefix="${name}/plugins"
@@ -316,8 +311,7 @@
     <!-- ===================== -->
     <!--  - P O S T - I N I T  -->
     <!-- ===================== -->
-    <target name="-post-init"
-	    depends="-hg-tip, -no-hg-tip">
+    <target name="-post-init">
         <echo level="verbose" message="-post-init impl.name=${impl.name}" />
     </target>
 
@@ -326,25 +320,37 @@
     <!-- =================== -->
     <target name="-post-jar">
         <delete verbose="${verbose}">
+            
+            <!-- The generated README.TXT is irrelevant -->
             <fileset dir="${dist.dir}" 
                      includes="README.TXT"/>
+            
+            <!-- Delete the temporary manifest -->
             <fileset dir="${basedir}" 
                      includes="manifest.mf"/>
         </delete>
     </target>
 
-    <!-- ================= -->
-    <!--  - P R E - J A R  -->
-    <!-- ================= -->
-    <target name="-pre-jar">
+    <!-- =================== -->
+    <!--  - P R E - I N I T  -->
+    <!-- =================== -->
+    <target name="-pre-init"
+	    depends="-hg-tip, -no-hg-tip">
 
-        <!-- Prepare a (half) manifest -->
+        <!-- Prepare a (half) temporary manifest -->
+        <echo message="Pre-populating ${basedir}/manifest.mf" />
         <echo file="${basedir}/manifest.mf" append="false">Manifest-Version: 1.0
 Built-By: ${Company}
 Specification-Title: ${Name}
 Specification-Vendor: ${Company}
 Specification-Version: ${impl.version}
 </echo>
+    </target>
+
+    <!-- ================= -->
+    <!--  - P R E - J A R  -->
+    <!-- ================= -->
+    <target name="-pre-jar">
 
         <!-- Copy resource properties to classes -->
         <copy todir="${build.classes.dir}" verbose="$verbose">
