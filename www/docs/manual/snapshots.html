@@ -10,19 +10,14 @@
         <meta name="author" content="Hervé Bitteur" />
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link rel="icon" href="../../branding/images/audiveris-icons-256.ico" type="image/x-icon" />
+
+        <link rel="stylesheet" href="../../branding/css/slideshow.css"/>
         <link rel="stylesheet" href="../../branding/css/global.css"/>
         <link rel="stylesheet" href="../../branding/css/top-nav.css"/>
         <style type="text/css">
             /*<![CDATA[*/
             .main {
                 width: 100%;
-            }
-            ul {
-                margin: 0;
-                padding: 0;
-            }
-            ol, ul {
-                list-style: none;
             }
 
             /* Legend */
@@ -32,6 +27,7 @@
             .legend {
                 display: inline-block;
                 width: 222px;
+                border: 1px solid lightgray;
                 border-top-left-radius:  60px 60px;
                 border-top-right-radius: 60px 60px;
                 box-shadow: 0px 2px 2px 0px rgba(0,0,0,0.5), 0px 2px 2px 0px rgba(255, 255, 255, 0.5) inset;
@@ -46,97 +42,41 @@
                 text-align: center;
             } 
 
+            /* Status */
+            #slideshow #status {
+                position: absolute;
+                top: 30px;
+                left: 50%;
+                margin-left: 320px;
+                font-family: fantasy;
+                font-weight: bold;
+                color: coral;
+            }
+
             /* Container for slides */
-            #li-slider {
-                position: relative;
-                top: 50px;
-                left: -600px;
+            #slideshow {
+                margin-bottom: 100px;
             }
-            #slider {
-                background:#ffffff;
-                border:5px solid #eaeaea;
-                box-shadow:1px 1px 5px rgba(0,0,0,0.7);
-                height:409px;
-                width:785px;
-                margin:40px auto 0;
-                padding: 0;
-                position:relative;           
-                overflow:hidden;
+            #slideshow ul.labels {
+                top: 0;
+                width: 100%;
             }
-
-            /* All images side by side in one sprite */
-            #sprite {
-                width: 4710px; /* Sum of all images widths */
-                display: inline-block;
-                position: relative;
-                left: 0px;
-
-                -webkit-transition: left 2s ease-in-out;
-                -moz-transition: left 2s ease-in-out;
-                -ms-transition: left 2s ease-in-out;
-                -o-transition: left 2s ease-in-out;
-                transition: left 2s ease-in-out;                    
-            }
-            #sprite img {
-                margin: 0;
-                padding: 0;
-                border: 0;
-            }
-
-            /* dots */
-            .dots  {
-                position: relative;
-                top: 0px;
-                text-align:center;
-            }
-            ul.dots {
-                top: -40px;
-                height: 500px;
-                width: 450px;
-            }
-            .dots li {
-                display:inline;
-                padding:0; 
-                margin:0;
-                list-style:none;
-            }
-            .dots a {
-                position: relative;
-                display: inline-block;
-                background-color: #ccccbb;
-            }
-
-            /* Hover mechanism to shift slider */
-            #d1:hover ~ li #sprite {left:     0px;}
-            #d2:hover ~ li #sprite {left:  -785px;}
-            #d3:hover ~ li #sprite {left: -1570px;}
-            #d4:hover ~ li #sprite {left: -2355px;}
-            #d5:hover ~ li #sprite {left: -3140px;}
-            #d6:hover ~ li #sprite {left: -3925px;}
-
-            /* Target mechanism to shift slider */
-            #w1:target #sprite {left:    0px;}
-            #w2:target #sprite {left: -785px;}
-            #w3:target #sprite {left: -1570px;}
-            #w4:target #sprite {left: -2355px;}
-            #w5:target #sprite {left: -3140px;}
-            #w6:target #sprite {left: -3925px;}
-
-            /* Target mechanism to mark current dot */
-            #w1:target a[href="#w1"], 
-            #w2:target a[href="#w2"], 
-            #w3:target a[href="#w3"], 
-            #w4:target a[href="#w4"], 
-            #w5:target a[href="#w5"],
-            #w6:target a[href="#w6"]
-            {
+            #slideshow ul.labels li.active a {
                 background-color:#030878;
+            }
+            #slideshow ul.slides {
+                top: 30px;
+                height: 409px;
+                width:785px;
+                margin-left: auto;
+                margin-right: auto;
             }
             /*]]>*/
         </style>
     </head>
     <body>
         <script src="../../branding/js/header.js"></script> 
+
         <div class="main">
             <span id="top"></span>
 
@@ -151,34 +91,45 @@
                 </div>
             </div>
 
-            <div id="w1"><div id="w2"><div id="w3"><div id="w4"><div id="w5"><div id="w6">
+            <div id="slideshow">
+                <ul class="tabs labels">
+                    <li><a href="#">Physical</a></li><!--
+                    --><li><a href="#">Combined</a></li><!--
+                    --><li><a href="#">Logical</a></li>
 
-                                    <ul class="tabs dots">
-                                        <li id="d1"><a href="#w1">Physical</a></li><!--
-                                        --><li id="d2"><a href="#w2">Combined</a></li><!--
-                                        --><li id="d3"><a href="#w3">Logical</a></li>
+                    <li><a href="#">Physical</a></li><!--
+                    --><li><a href="#">Combined</a></li><!--
+                    --><li><a href="#">Logical</a></li>
+                </ul>
 
+                <!-- Status -->
+                <div id="status">PAUSED</div>
 
-                                        <li id="d4"><a href="#w4">Physical</a></li><!--
-                                        --><li id="d5"><a href="#w5">Combined</a></li><!--
-                                        --><li id="d6"><a href="#w6">Logical</a></li>
-                                        <li id="li-slider">
-                                            <div id="slider">
-                                                <div id="sprite">
-                                                    <img src="../images/main-picture-input.png" alt="picture-input"/><!--
-                                                    --><img src="../images/main-picture-both.png" alt="picture-both"/><!--
-                                                    --><img src="../images/main-picture-output.png" alt="picture-output"/><!--
-                                                    --><img src="../images/main-data-input.png" alt="data-input"/><!--
-                                                    --><img src="../images/main-data-both.png" alt="data-both"/><!--
-                                                    --><img src="../images/main-data-output.png" alt="data-output"/>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    </ul>
+                <ul class="slides">
+                    <li><img src="../images/main-picture-input.png" title="Picture physical"/></li>
+                    <li><img src="../images/main-picture-both.png" title="Picture combined"/></li>
+                    <li><img src="../images/main-picture-output.png" title="Picture logical"/></li>
+                    <li><img src="../images/main-data-input.png" title="Data physical"/></li>
+                    <li><img src="../images/main-data-both.png" title="Data combined"/></li>
+                    <li><img src="../images/main-data-output.png" title="Data logical"/></li>
+                </ul>
 
-                                </div></div></div></div></div></div>
+                <!-- Previous / Next commands -->
+                <a class="command previous"></a>
+                <a class="command next"></a>
+
+            </div>
 
             <script src="../../branding/js/footer.js"></script> 
         </div>
+
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script src="../../branding/js/slideshow.js"></script>
+        <script>
+            // Customization
+            slideshow.period = 4000;   // in ms
+            slideshow.fading = 800;    // in ms
+            slideshow.ease = "swing";  // "linear" or "swing"
+        </script>
     </body>
 </html>

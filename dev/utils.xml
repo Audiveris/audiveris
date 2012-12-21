@@ -89,7 +89,7 @@
             destfile="${backup.dir}/${name}/${DSTAMP}-${machine.name}-src.zip" >
             <fileset dir="${basedir}"  
                      includes="build.xml, dev/**, src/**, settings/**, eval/**, symbols/**, www/**, train/*.def, nb/jp/**"
-                     excludes="${dist.excludes},www/docs/api/**,www/branding/**,dev/externals/**,dev/tools/**"/>
+                     excludes="${dist.excludes},www/docs/api/**,dev/externals/**,dev/tools/**"/>
         </zip>
 
     </target>
