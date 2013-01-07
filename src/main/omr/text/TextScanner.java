@@ -162,7 +162,7 @@ public class TextScanner
      */
     private Collection<Glyph> retrieveRegionGlyphs ()
     {
-        /** Map staff -> contour */
+        /** Map staff -> contour. */
         final Map<StaffInfo, GeoPath> pathMap = new HashMap<>();
 
         // Define system region with staves removed
@@ -176,42 +176,55 @@ public class TextScanner
         // Discard glyphs that intersect a stave core area
         return Glyphs.lookupGlyphs(system.getGlyphs(),
                 new Predicate<Glyph>()
-                {
-                    @Override
-                    public boolean check (Glyph glyph)
-                    {
-                        // Reject manual non-text glyphs
-                        if (glyph.isManualShape() && !glyph.isText()) {
-                            return false;
-                        }
+        {
+            @Override
+            public boolean check (Glyph glyph)
+            {
+                // Reject manual non-text glyphs
+                if (glyph.isManualShape() && !glyph.isText()) {
+                    return false;
+                }
 
-                        // Keep known text
-                        if (glyph.isText()) {
-                            return true;
-                        }
+                // Keep known text
+                if (glyph.isText()) {
+                    return true;
+                }
 
-                        // Check position wrt closest staff
-                        StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
-                        GeoPath contour = pathMap.get(staff);
-                        if (contour != null && contour.intersects(glyph.getBounds())) {
-                            return false;
-                        }
-
-                        // Discard too large glyphs
-                        PixelRectangle bounds = glyph.getBounds();
-
-                        if (bounds.width > params.maxGlyphWidth) {
-                            return false;
-                        }
-
-                        if (bounds.height > params.maxGlyphHeight) {
-                            return false;
-                        }
-
-                        // All tests are OK
-                        return true;
+                // Check position wrt closest staff
+                StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
+                GeoPath contour = pathMap.get(staff);
+                if (contour != null) {
+                    if (contour.intersects(glyph.getBounds())) {
+                        return false;
                     }
-                });
+
+                    // Also, to cope with edition of system boundaries,
+                    // reject glyphs that belong to a structure intersecting
+                    // a staff region (this former structure appeared as one
+                    // glyph before being segmented along stems)
+                    for (HorizontalSide side : HorizontalSide.values()) {
+                        Glyph stem = glyph.getStem(side);
+                        if (stem != null && contour.intersects(stem.getBounds())) {
+                            return false;
+                        }
+                    }
+                }
+
+                // Discard too large glyphs
+                PixelRectangle bounds = glyph.getBounds();
+
+                if (bounds.width > params.maxGlyphWidth) {
+                    return false;
+                }
+
+                if (bounds.height > params.maxGlyphHeight) {
+                    return false;
+                }
+
+                // All tests are OK
+                return true;
+            }
+        });
     }
 
     //----------------//
