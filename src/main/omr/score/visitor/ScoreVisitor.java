@@ -17,7 +17,7 @@ import omr.score.entity.Articulation;
 import omr.score.entity.Barline;
 import omr.score.entity.Beam;
 import omr.score.entity.Chord;
-import omr.score.entity.ChordStatement;
+import omr.score.entity.ChordSymbol;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
 import omr.score.entity.DirectionStatement;
@@ -76,7 +76,7 @@ public interface ScoreVisitor
 
     boolean visit (Chord node);
 
-    boolean visit (ChordStatement node);
+    boolean visit (ChordSymbol node);
 
     boolean visit (Clef node);
 

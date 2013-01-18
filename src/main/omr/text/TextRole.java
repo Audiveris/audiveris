@@ -12,6 +12,7 @@
 package omr.text;
 
 import omr.constant.ConstantSet;
+import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
@@ -100,21 +101,44 @@ public enum TextRole
     /**
      * Try to infer the role of this textual item.
      * For the time being, this is a simple algorithm based on sentence location
-     * within the page.
+     * within the page, augmented by valid chord name, etc.
      *
-     * @param box        the sentence bounds
+     * @param line       the sentence
      * @param systemInfo the containing system
-     * @param isItalic   indicates if the item is (mainly) in italics
-     *                   (null if unknown)
      * @return the role information inferred for the provided sentence glyph
      */
-    public static TextRoleInfo guessRole (PixelRectangle box,
-                                          SystemInfo systemInfo,
-                                          Boolean isItalic)
+    public static TextRoleInfo guessRole (TextLine line,
+                                          SystemInfo systemInfo)
     {
+        if (line == null) {
+            return null;
+        }
+
+        int chordCount = 0;
+        for (TextWord word : line.getWords()) {
+            // At least one word/glyph with a role manually assigned
+            Glyph glyph = word.getGlyph();
+            if (glyph != null) {
+                if (glyph.getManualRole() != null) {
+                    return glyph.getManualRole();
+                }
+            }
+            // Word that could be a chord symbol?
+            if (word.guessChordInfo() != null) {
+                chordCount++;
+            }
+        }
+
+        // Is line made entirely of potential chord symbols?
+        boolean isAllChord = chordCount == line.getWords().size();
+
+        PixelRectangle box = line.getBounds();
         if (box == null) {
             return null;
         }
+
+        // Is line mainly in italic? 
+        boolean isMainlyItalic = systemInfo.getTextBuilder().isMainlyItalic(line);
 
         Sheet sheet = systemInfo.getSheet();
         ScoreSystem system = systemInfo.getScoreSystem();
@@ -143,7 +167,7 @@ public enum TextRole
         boolean closeToStaff = staffDy
                                <= scale.toPixels(constants.maxStaffDy);
 
-        // Begins before the part?
+        // Begins on left side of the part?
         boolean leftOfStaves = system.isLeftOfStaves(left);
 
         // At the center of page width?
@@ -180,10 +204,14 @@ public enum TextRole
 
         // Decisions ...
         switch (systemPosition) {
-        case ABOVE_STAVES: // Title, Number, Creator, Direction (Chord)
+        case ABOVE_STAVES: // Title, Number, Creator, Direction, Chord
 
             if (tinySentence) {
-                return new TextRoleInfo(TextRole.UnknownRole);
+                if (isAllChord) {
+                    return new TextRoleInfo(TextRole.Chord);
+                } else {
+                    return new TextRoleInfo(TextRole.UnknownRole);
+                }
             }
 
             if (firstSystem) {
@@ -196,7 +224,11 @@ public enum TextRole
                             TextRole.Creator,
                             Text.CreatorText.CreatorType.composer);
                 } else if (closeToStaff) {
-                    return new TextRoleInfo(TextRole.Direction);
+                    if (isAllChord) {
+                        return new TextRoleInfo(TextRole.Chord);
+                    } else {
+                        return new TextRoleInfo(TextRole.Direction);
+                    }
                 } else if (pageCentered) { // Title, Number
                     if (highText) {
                         return new TextRoleInfo(TextRole.Title);
@@ -205,7 +237,11 @@ public enum TextRole
                     }
                 }
             } else {
-                return new TextRoleInfo(TextRole.Direction);
+                if (isAllChord) {
+                    return new TextRoleInfo(TextRole.Chord);
+                } else {
+                    return new TextRoleInfo(TextRole.Direction);
+                }
             }
 
             break;
@@ -215,7 +251,7 @@ public enum TextRole
             if (leftOfStaves) {
                 return new TextRoleInfo(TextRole.Name);
             } else if (partPosition == StaffPosition.BELOW_STAVES
-                       && (isItalic == null || !isItalic)) {
+                       && !isMainlyItalic) {
                 return new TextRoleInfo(TextRole.Lyrics);
             } else {
                 return new TextRoleInfo(TextRole.Direction);

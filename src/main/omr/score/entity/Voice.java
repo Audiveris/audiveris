@@ -64,7 +64,7 @@ public class Voice
     private int id;
 
     /**
-     * Map (SlotId -> ChordInfo) to store chord information for each slot.
+     * Map (SlotId -> VoiceChord) to store chord information for each slot.
      * If a voice is assigned to a whole/multi rest, then this rest chord is
      * defined as the wholeChord of this voice, and the whole slot table is left
      * empty.
@@ -73,7 +73,7 @@ public class Voice
      * difference between a slot where the chord starts, and the potential
      * following slots for which the chord is still active.
      */
-    private final SortedMap<Integer, ChordInfo> slotTable = new TreeMap<>();
+    private final SortedMap<Integer, VoiceChord> slotTable = new TreeMap<>();
 
     /** 
      * How the voice finishes (value = voiceEndTime - expectedMeasureEndTime)
@@ -122,7 +122,7 @@ public class Voice
     public Chord getChordBefore (Slot slot)
     {
         for (int sid = slot.getId() - 1; sid > 0; sid--) {
-            ChordInfo info = slotTable.get(sid);
+            VoiceChord info = slotTable.get(sid);
             if (info != null) {
                 return info.getChord();
             }
@@ -147,7 +147,7 @@ public class Voice
             } else {
                 Rational timeCounter = Rational.ZERO;
 
-                for (ChordInfo info : slotTable.values()) {
+                for (VoiceChord info : slotTable.values()) {
                     if (info.getStatus() == Status.BEGIN) {
                         Chord chord = info.getChord();
                         Slot slot = chord.getSlot();
@@ -255,8 +255,8 @@ public class Voice
             // Current beam group, if any
             BeamGroup currentGroup = null;
 
-            for (Map.Entry<Integer, ChordInfo> entry : slotTable.entrySet()) {
-                ChordInfo info = entry.getValue();
+            for (Map.Entry<Integer, VoiceChord> entry : slotTable.entrySet()) {
+                VoiceChord info = entry.getValue();
 
                 if (info.getStatus() == Voice.Status.BEGIN) {
                     Chord chord = info.getChord();
@@ -348,7 +348,7 @@ public class Voice
             return wholeChord;
         } else {
             for (int k = slotTable.lastKey(); k > 0; k--) {
-                ChordInfo info = slotTable.get(k);
+                VoiceChord info = slotTable.get(k);
 
                 if (info != null) {
                     return info.getChord();
@@ -373,8 +373,8 @@ public class Voice
     {
         Chord prevChord = null;
 
-        for (Map.Entry<Integer, ChordInfo> entry : slotTable.entrySet()) {
-            ChordInfo info = entry.getValue();
+        for (Map.Entry<Integer, VoiceChord> entry : slotTable.entrySet()) {
+            VoiceChord info = entry.getValue();
 
             if (info.getChord() == chord) {
                 break;
@@ -395,7 +395,7 @@ public class Voice
      * @param slot the specified slot
      * @return chordInfo the precise chord information, or null
      */
-    public ChordInfo getSlotInfo (Slot slot)
+    public VoiceChord getSlotInfo (Slot slot)
     {
         return slotTable.get(slot.getId());
     }
@@ -464,7 +464,7 @@ public class Voice
      * @param chordInfo the precise chord information, or null to free the slot
      */
     public void setSlotInfo (Slot slot,
-                             ChordInfo chordInfo)
+                             VoiceChord chordInfo)
     {
         if (isWhole()) {
             logger.severe("You cannot insert a slot in a whole-only voice");
@@ -515,7 +515,7 @@ public class Voice
             sb.append("|W");
         } else {
             for (Slot slot : measure.getSlots()) {
-                ChordInfo info = getSlotInfo(slot);
+                VoiceChord info = getSlotInfo(slot);
 
                 if (info != null) { // Active chord => busy
 
@@ -550,7 +550,7 @@ public class Voice
 
         for (Slot slot : measure.getSlots()) {
             if (slot.getStartTime() != null) {
-                ChordInfo info = getSlotInfo(slot);
+                VoiceChord info = getSlotInfo(slot);
 
                 if (info == null) {
                     if ((lastChord != null)
@@ -558,7 +558,7 @@ public class Voice
                             getStartTime()) > 0)) {
                         setSlotInfo(
                                 slot,
-                                new ChordInfo(lastChord, Status.CONTINUE));
+                                new VoiceChord(lastChord, Status.CONTINUE));
                     }
                 } else {
                     lastChord = info.chord;
@@ -639,10 +639,11 @@ public class Voice
     }
 
     //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // ChordInfo //
-    //-----------//
-    public static class ChordInfo
+    //
+    //------------//
+    // VoiceChord //
+    //------------//
+    public static class VoiceChord
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -653,7 +654,7 @@ public class Voice
         private final Status status;
 
         //~ Constructors -------------------------------------------------------
-        public ChordInfo (Chord chord,
+        public VoiceChord (Chord chord,
                           Status status)
         {
             this.chord = chord;

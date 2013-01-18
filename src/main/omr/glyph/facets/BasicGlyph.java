@@ -171,8 +171,10 @@ public class BasicGlyph
             theAlignment = (GlyphAlignment) constructor.newInstance(
                     new Object[]{this});
         } catch (Exception ex) {
-            logger.severe("Cannot instantiate BasicGlyph with {0} ex:{1}",
-                    alignmentClass, ex);
+            logger.severe(
+                    "Cannot instantiate BasicGlyph with {0} ex:{1}",
+                    alignmentClass,
+                    ex);
         }
 
         addFacet(alignment = theAlignment);
@@ -246,6 +248,17 @@ public class BasicGlyph
     public void drawAscii ()
     {
         display.drawAscii();
+    }
+
+    //------//
+    // dump //
+    //------//
+    @Override
+    public void dump ()
+    {
+        for (GlyphFacet facet : facets) {
+            facet.dump();
+        }
     }
 
     @Override
@@ -419,6 +432,13 @@ public class BasicGlyph
     }
 
     @Override
+    public TextRoleInfo getManualRole ()
+    {
+        return getContent()
+                .getManualRole();
+    }
+
+    @Override
     public String getManualValue ()
     {
         return getContent()
@@ -588,17 +608,17 @@ public class BasicGlyph
     }
 
     @Override
-    public TextRoleInfo getTextRole ()
-    {
-        return getContent()
-                .getTextRole();
-    }
-
-    @Override
     public PixelPoint getTextLocation ()
     {
         return getContent()
                 .getTextLocation();
+    }
+
+    @Override
+    public TextRoleInfo getTextRole ()
+    {
+        return getContent()
+                .getTextRole();
     }
 
     @Override
@@ -611,7 +631,8 @@ public class BasicGlyph
     @Override
     public TextWord getTextWord ()
     {
-        return getContent().getTextWord();
+        return getContent()
+                .getTextWord();
     }
 
     @Override
@@ -655,6 +676,18 @@ public class BasicGlyph
     public boolean intersects (PixelRectangle rectangle)
     {
         return geometry.intersects(rectangle);
+    }
+
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    @Override
+    public void invalidateCache ()
+    {
+        // Invalidate all allocated facets
+        for (GlyphFacet facet : facets) {
+            facet.invalidateCache();
+        }
     }
 
     @Override
@@ -828,6 +861,13 @@ public class BasicGlyph
     }
 
     @Override
+    public void setManualRole (TextRoleInfo manualRole)
+    {
+        getContent()
+                .setManualRole(manualRole);
+    }
+
+    @Override
     public void setManualValue (String manualValue)
     {
         getContent()
@@ -838,14 +878,6 @@ public class BasicGlyph
     public void setNest (Nest nest)
     {
         administration.setNest(nest);
-    }
-
-    @Override
-    public void setTextWord (String ocrLanguage,
-                             TextWord textWord)
-    {
-        getContent()
-                .setTextWord(ocrLanguage, textWord);
     }
 
     @Override
@@ -905,6 +937,14 @@ public class BasicGlyph
     }
 
     @Override
+    public void setTextWord (String ocrLanguage,
+                             TextWord textWord)
+    {
+        getContent()
+                .setTextWord(ocrLanguage, textWord);
+    }
+
+    @Override
     public void setTimeRational (TimeRational timeRational)
     {
         recognition.setTimeRational(timeRational);
@@ -934,23 +974,30 @@ public class BasicGlyph
         composition.stealSections(that);
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{")
+                .append(getClass().getSimpleName())
+                .append("#")
+                .append(this.getId());
+
+        sb.append(internalsString());
+
+        sb.append("}");
+
+        return sb.toString();
+    }
+
     @Override
     public void translate (PixelPoint vector)
     {
         geometry.translate(vector);
-    }
-
-    //----------//
-    // addFacet //
-    //----------//
-    /**
-     * Register a facet
-     *
-     * @param facet the facet to register
-     */
-    final void addFacet (GlyphFacet facet)
-    {
-        facets.add(facet);
     }
 
     //--------------//
@@ -981,49 +1028,6 @@ public class BasicGlyph
         }
 
         return content;
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    @Override
-    public void invalidateCache ()
-    {
-        // Invalidate all allocated facets
-        for (GlyphFacet facet : facets) {
-            facet.invalidateCache();
-        }
-    }
-
-    //------//
-    // dump //
-    //------//
-    @Override
-    public void dump ()
-    {
-        for (GlyphFacet facet : facets) {
-            facet.dump();
-        }
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("{")
-                .append(getClass().getSimpleName())
-                .append("#")
-                .append(this.getId());
-
-        sb.append(internalsString());
-
-        sb.append("}");
-
-        return sb.toString();
     }
 
     //-----------------//
@@ -1077,5 +1081,18 @@ public class BasicGlyph
         }
 
         return sb.toString();
+    }
+
+    //----------//
+    // addFacet //
+    //----------//
+    /**
+     * Register a facet
+     *
+     * @param facet the facet to register
+     */
+    final void addFacet (GlyphFacet facet)
+    {
+        facets.add(facet);
     }
 }

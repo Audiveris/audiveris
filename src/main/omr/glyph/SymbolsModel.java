@@ -23,12 +23,15 @@ import omr.sheet.SystemInfo;
 import omr.step.Steps;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import omr.text.TextBuilder;
 import omr.text.TextLine;
+import omr.text.TextRole;
 import omr.text.TextRoleInfo;
 import omr.text.TextWord;
 
@@ -83,12 +86,44 @@ public class SymbolsModel
     {
         // Do the job
         for (Glyph glyph : glyphs) {
+            SystemInfo system = glyph.getSystem();
+            String language = system.getSheet().getPage().getTextParam().getTarget();
+            TextBuilder textBuilder = system.getTextBuilder();
             TextWord word = glyph.getTextWord();
-            TextLine line = (word != null) ? word.getTextLine() : null;
+            List<TextLine> lines = new ArrayList<>();
+
+            if (word == null) {
+                word = TextWord.createManualWord(glyph, textContent);
+                glyph.setTextWord(language, word);
+                TextLine line = new TextLine(system, Arrays.asList(word));
+                lines = Arrays.asList(line);
+                lines = textBuilder.recomposeLines(lines);
+                system.getSentences().remove(line);
+                system.getSentences().addAll(lines);
+            } else if (word.getTextLine() != null) {
+                lines = Arrays.asList(word.getTextLine());
+            }
 
             // Force text role
-            if (line != null) {
-                line.setRole(roleInfo);
+            glyph.setManualRole(roleInfo);
+            for (TextLine line : lines) {
+                // For Chord role, we don't spread the role to other words
+                // but rather trigger a line split
+                if (roleInfo.role == TextRole.Chord
+                    && line.getWords().size() > 1) {
+                    line.setRole(roleInfo);
+                    List<TextLine> subLines = textBuilder.recomposeLines(
+                            Arrays.asList(line));
+                    system.getSentences().remove(line);
+                    for (TextLine l : subLines) {
+                        if (!l.getWords().contains(word)) {
+                            l.setRole(null);
+                        }
+                    }
+                    system.getSentences().addAll(subLines);
+                } else {
+                    line.setRole(roleInfo);
+                }
             }
 
             // Force text only if it is not empty
@@ -143,7 +178,7 @@ public class SymbolsModel
          * and the neighboring (non-assigned) glyphs.
          */
         Set<SystemInfo> impactedSystems = new HashSet<>();
-        
+
         for (Glyph stem : stems) {
             SystemInfo system = sheet.getSystemOf(stem);
             system.removeGlyph(stem);
@@ -180,17 +215,17 @@ public class SymbolsModel
         case STEM:
             logger.fine("Deassigning a Stem as glyph {0}", glyph.getId());
             cancelStems(Collections.singletonList(glyph));
-            
+
             break;
-        
+
         case NOISE:
             logger.info("Skipping Noise as glyph {0}", glyph.getId());
-            
+
             break;
-        
+
         default:
             super.deassignGlyph(glyph);
-            
+
             break;
         }
     }
@@ -202,7 +237,7 @@ public class SymbolsModel
                                boolean isShort)
     {
         deassignGlyphs(glyphs);
-        
+
         for (Glyph glyph : new ArrayList<>(glyphs)) {
             SystemInfo system = sheet.getSystemOf(glyph);
             system.segmentGlyphOnStems(glyph, isShort);
@@ -215,16 +250,16 @@ public class SymbolsModel
     public void trimSlurs (Collection<Glyph> glyphs)
     {
         List<Glyph> slurs = new ArrayList<>();
-        
+
         for (Glyph glyph : new ArrayList<>(glyphs)) {
             SystemInfo system = sheet.getSystemOf(glyph);
             Glyph slur = system.trimSlur(glyph);
-            
+
             if (slur != null) {
                 slurs.add(slur);
             }
         }
-        
+
         if (!slurs.isEmpty()) {
             assignGlyphs(slurs, Shape.SLUR, false, Evaluation.MANUAL);
         }
@@ -234,7 +269,7 @@ public class SymbolsModel
     // assignGlyph //
     //-------------//
     /**
-     * Assign a Shape to a glyph, inserting the glyph to its containing 
+     * Assign a Shape to a glyph, inserting the glyph to its containing
      * system and lag if it is still transient
      *
      * @param glyph the glyph to be assigned
@@ -257,14 +292,14 @@ public class SymbolsModel
             // (since environment may have changed since the time they
             // have been computed)
             SystemInfo system = sheet.getSystemOf(glyph);
-            
+
             if (system != null) {
                 system.computeGlyphFeatures(glyph);
-                
+
                 return super.assignGlyph(glyph, shape, grade);
             }
         }
-        
+
         return glyph;
     }
 }

@@ -19,7 +19,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.logging.Level;
 
 /**
  * Class {@code FileUtil} gathers convenient utility methods for files

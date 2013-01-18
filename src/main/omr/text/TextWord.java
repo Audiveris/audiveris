@@ -16,6 +16,7 @@ import omr.glyph.facets.Glyph;
 import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
+import omr.score.entity.ChordInfo;
 
 import omr.ui.symbol.TextFont;
 
@@ -47,7 +48,8 @@ public class TextWord
         public int compare (TextWord o1,
                             TextWord o2)
         {
-            return Integer.compare(o1.getValue().length(),
+            return Integer.compare(
+                    o1.getValue().length(),
                     o2.getValue().length());
         }
     };
@@ -79,6 +81,9 @@ public class TextWord
 
     /** Precise font size, lazily computed. */
     private Float preciseFontSize;
+
+    /** Possible chord info, if any. */
+    private ChordInfo chordInfo;
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -137,6 +142,19 @@ public class TextWord
     }
 
     //~ Methods ----------------------------------------------------------------
+    //---------//
+    // addChar //
+    //---------//
+    /**
+     * Append a char descriptor.
+     *
+     * @param ch the char descriptor
+     */
+    public void addChar (TextChar ch)
+    {
+        chars.add(ch);
+    }
+
     //
     //------------------//
     // createManualWord //
@@ -154,13 +172,13 @@ public class TextWord
                                              String value)
     {
         PixelRectangle box = glyph.getBounds();
-        int fontSize = (int) Math.
-                rint(
+        int fontSize = (int) Math.rint(
                 TextFont.computeFontSize(value, FontInfo.DEFAULT, box.getSize()));
         TextWord word = new TextWord(
                 box,
                 value,
-                new Line2D.Double(box.x,
+                new Line2D.Double(
+                box.x,
                 box.y + box.height,
                 box.x + box.width,
                 box.y + box.height),
@@ -174,116 +192,6 @@ public class TextWord
     }
 
     //----------//
-    // getValue //
-    //----------//
-    /**
-     * Overridden to use glyph manual value if any, and fall back using
-     * initial value otherwise.
-     *
-     * @return the value to be used
-     */
-    @Override
-    public String getValue ()
-    {
-        if (glyph != null && glyph.getManualValue() != null) {
-            return glyph.getManualValue();
-        } else {
-            return getInternalValue();
-        }
-    }
-
-    //------------------//
-    // getInternalValue //
-    //------------------//
-    public String getInternalValue ()
-    {
-        return super.getValue();
-    }
-
-    /**
-     * Report the length of this word value, expressed in a number of
-     * chars.
-     *
-     * @return the length of the manual value of the associated glyph if any,
-     *         otherwise the length of the internal value.
-     */
-    public int getLength ()
-    {
-        return getValue().length();
-    }
-
-    //-------------//
-    // setTextLine //
-    //-------------//
-    /**
-     * Assign a new containing TextLine instance
-     *
-     * @param textLine the new containing line
-     */
-    public void setTextLine (TextLine textLine)
-    {
-        this.textLine = textLine;
-    }
-
-    //-------------//
-    // getTextLine //
-    //-------------//
-    /**
-     * Report the containing TextLine instance
-     *
-     * @return the containing line
-     */
-    public TextLine getTextLine ()
-    {
-        return textLine;
-    }
-
-    //---------//
-    // mergeOf //
-    //---------//
-    /**
-     * Return a word which results from the merge of the provided words.
-     *
-     * @param words the words to merge
-     * @return the compound word
-     */
-    public static TextWord mergeOf (TextWord... words)
-    {
-        List<TextChar> chars = new ArrayList<>();
-        StringBuilder sb = new StringBuilder();
-
-        for (TextWord word : words) {
-            chars.addAll(word.getChars());
-            sb.append(word.getValue());
-        }
-
-        // Use font info of first word. What else?
-        FontInfo fontInfo = words[0]
-                .getFontInfo();
-        TextLine line = words[0].textLine;
-
-        return new TextWord(baselineOf(Arrays.asList(words)),
-                sb.toString(),
-                fontInfo,
-                confidenceOf(Arrays.asList(words)),
-                chars,
-                line);
-    }
-
-    //---------//
-    // addChar //
-    //---------//
-    /**
-     * Append a char descriptor.
-     *
-     * @param ch the char descriptor
-     */
-    public void addChar (TextChar ch)
-    {
-        chars.add(ch);
-    }
-
-    //----------//
     // getChars //
     //----------//
     /**
@@ -294,6 +202,19 @@ public class TextWord
     public List<TextChar> getChars ()
     {
         return chars;
+    }
+
+    //--------------//
+    // getChordInfo //
+    //--------------//
+    /**
+     * Report the related chord info, if any.
+     *
+     * @return the chordInfo or null
+     */
+    public ChordInfo getChordInfo ()
+    {
+        return chordInfo;
     }
 
     //-------------//
@@ -338,12 +259,112 @@ public class TextWord
     public float getPreciseFontSize ()
     {
         if (preciseFontSize == null) {
-            preciseFontSize = TextFont.computeFontSize(getValue(),
+            preciseFontSize = TextFont.computeFontSize(
+                    getValue(),
                     fontInfo,
                     getBounds().getSize());
         }
 
         return preciseFontSize;
+    }
+
+    //---------//
+    // mergeOf //
+    //---------//
+    /**
+     * Return a word which results from the merge of the provided words.
+     *
+     * @param words the words to merge
+     * @return the compound word
+     */
+    public static TextWord mergeOf (TextWord... words)
+    {
+        List<TextChar> chars = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+
+        for (TextWord word : words) {
+            chars.addAll(word.getChars());
+            sb.append(word.getValue());
+        }
+
+        // Use font info of first word. What else?
+        FontInfo fontInfo = words[0].getFontInfo();
+        TextLine line = words[0].textLine;
+
+        return new TextWord(
+                baselineOf(Arrays.asList(words)),
+                sb.toString(),
+                fontInfo,
+                confidenceOf(Arrays.asList(words)),
+                chars,
+                line);
+    }
+
+    //------------------//
+    // getInternalValue //
+    //------------------//
+    public String getInternalValue ()
+    {
+        return super.getValue();
+    }
+
+    /**
+     * Report the length of this word value, expressed in a number of
+     * chars.
+     *
+     * @return the length of the manual value of the associated glyph if any,
+     *         otherwise the length of the internal value.
+     */
+    public int getLength ()
+    {
+        return getValue()
+                .length();
+    }
+
+    //-------------//
+    // getTextLine //
+    //-------------//
+    /**
+     * Report the containing TextLine instance
+     *
+     * @return the containing line
+     */
+    public TextLine getTextLine ()
+    {
+        return textLine;
+    }
+
+    //----------//
+    // getValue //
+    //----------//
+    /**
+     * Overridden to use glyph manual value if any, and fall back using
+     * initial value otherwise.
+     *
+     * @return the value to be used
+     */
+    @Override
+    public String getValue ()
+    {
+        if ((glyph != null) && (glyph.getManualValue() != null)) {
+            return glyph.getManualValue();
+        } else {
+            return getInternalValue();
+        }
+    }
+
+    //----------------//
+    // guessChordInfo //
+    //----------------//
+    /**
+     * Try to guess a chord info, based on text content.
+     * If positive, record the info into the instance
+     *
+     * @return the guessed chordInfo or null
+     */
+    public ChordInfo guessChordInfo ()
+    {
+        return chordInfo = ChordInfo.create(getValue());
     }
 
     //----------//
@@ -357,6 +378,10 @@ public class TextWord
     public void setGlyph (Glyph glyph)
     {
         this.glyph = glyph;
+
+        if (glyph.isVip()) {
+            setVip();
+        }
     }
 
     //--------------------//
@@ -371,6 +396,23 @@ public class TextWord
     public void setPreciseFontSize (Float preciseFontSize)
     {
         this.preciseFontSize = preciseFontSize;
+    }
+
+    //-------------//
+    // setTextLine //
+    //-------------//
+    /**
+     * Assign a new containing TextLine instance
+     *
+     * @param textLine the new containing line
+     */
+    public void setTextLine (TextLine textLine)
+    {
+        this.textLine = textLine;
+
+        if (isVip() && (textLine != null)) {
+            textLine.setVip();
+        }
     }
 
     //-----------//
@@ -400,6 +442,28 @@ public class TextWord
         checkValue();
     }
 
+    //-----------------//
+    // internalsString //
+    //-----------------//
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    protected String internalsString ()
+    {
+        StringBuilder sb = new StringBuilder(super.internalsString());
+
+        sb.append(" ")
+                .append(getFontInfo());
+
+        if (getGlyph() != null) {
+            sb.append(" ")
+                    .append(getGlyph().idString());
+        }
+
+        return sb.toString();
+    }
+
     //------------//
     // checkValue //
     //------------//
@@ -416,30 +480,14 @@ public class TextWord
 
         String sbValue = sb.toString();
 
-        if (!getInternalValue().equals(sbValue)) {
-            logger.fine("Word at {0} updated from ''{1}'' to ''{2}''",
-                    getBounds(), getInternalValue(), sbValue);
+        if (!getInternalValue()
+                .equals(sbValue)) {
+            logger.fine(
+                    "Word at {0} updated from ''{1}'' to ''{2}''",
+                    getBounds(),
+                    getInternalValue(),
+                    sbValue);
             setValue(sbValue);
         }
-    }
-
-    //-----------------//
-    // internalsString //
-    //-----------------//
-    /**
-     * {@inheritDoc }
-     */
-    @Override
-    protected String internalsString ()
-    {
-        StringBuilder sb = new StringBuilder(super.internalsString());
-
-        sb.append(" ").append(getFontInfo());
-
-        if (getGlyph() != null) {
-            sb.append(" ").append(getGlyph().idString());
-        }
-
-        return sb.toString();
     }
 }

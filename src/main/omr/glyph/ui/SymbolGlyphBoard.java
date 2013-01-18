@@ -161,6 +161,7 @@ public class SymbolGlyphBoard
                 "Role",
                 "Role of the Text",
                 TextRole.values());
+        roleCombo.getField().setMaximumRowCount(TextRole.values().length);
         roleCombo.addActionListener(paramAction);
 
         // Additional combo for text type

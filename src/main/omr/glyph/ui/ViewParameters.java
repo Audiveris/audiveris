@@ -54,6 +54,9 @@ public class ViewParameters
     /** Should the translation links be painted */
     public static final String TRANSLATION_PAINTING = "translationPainting";
 
+    /** Should the sentence links be painted */
+    public static final String SENTENCE_PAINTING = "sentencePainting";
+
     //~ Instance fields --------------------------------------------------------
 
     /** Dynamic flag to remember if section mode is enabled */
@@ -77,12 +80,20 @@ public class ViewParameters
         return constants.attachmentPainting.getValue();
     }
 
-    //--------------_--------//
+    //-----------------------//
     // isTranslationPainting //
-    //---------------_-------//
+    //-----------------------//
     public boolean isTranslationPainting ()
     {
         return constants.translationPainting.getValue();
+    }
+
+    //--------------------//
+    // isSentencePainting //
+    //--------------------//
+    public boolean isSentencePainting ()
+    {
+        return constants.sentencePainting.getValue();
     }
 
     //---------------------//
@@ -127,6 +138,16 @@ public class ViewParameters
         boolean oldValue = constants.translationPainting.getValue();
         constants.translationPainting.setValue(value);
         firePropertyChange(TRANSLATION_PAINTING, oldValue, value);
+    }
+
+    //---------------------//
+    // setSentencePainting //
+    //---------------------//
+    public void setSentencePainting (boolean value)
+    {
+        boolean oldValue = constants.sentencePainting.getValue();
+        constants.sentencePainting.setValue(value);
+        firePropertyChange(SENTENCE_PAINTING, oldValue, value);
     }
 
     //----------------------//
@@ -175,11 +196,23 @@ public class ViewParameters
     // toggleTranslations //
     //--------------------//
     /**
-     * Action that toggles the display of translations in selected sticks
+     * Action that toggles the display of translations in selected glyphs
      * @param e the event that triggered this action
      */
     @Action(selectedProperty = TRANSLATION_PAINTING)
     public void toggleTranslations (ActionEvent e)
+    {
+    }
+
+    //-----------------//
+    // toggleSentences //
+    //-----------------//
+    /**
+     * Action that toggles the display of sentences in selected glyphs
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = SENTENCE_PAINTING)
+    public void toggleSentences (ActionEvent e)
     {
     }
 
@@ -256,5 +289,9 @@ public class ViewParameters
         final Constant.Boolean translationPainting = new Constant.Boolean(
             true,
             "Should the glyph translations links be painted");
+
+        final Constant.Boolean sentencePainting = new Constant.Boolean(
+            true,
+            "Should the sentence words links be painted");
     }
 }

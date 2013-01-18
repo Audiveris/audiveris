@@ -21,6 +21,7 @@ import omr.score.entity.Note;
 
 import proxymusic.AccidentalText;
 import proxymusic.BarStyle;
+import proxymusic.DegreeTypeValue;
 import proxymusic.Empty;
 import proxymusic.EmptyPlacement;
 import proxymusic.KindValue;
@@ -329,12 +330,27 @@ public class MusicXML
     // kindOf //
     //--------//
     /**
-     * Convert from Audiveris ChordStatement.Type type to Proxymusic KindValue type
-     * @param type Audiveris enum ChordStatement.Type
+     * Convert from Audiveris ChordInfo.Kind.Type type to
+     * Proxymusic KindValue type
+     * @param type Audiveris enum ChordSymbol.Type
      * @return Proxymusic enum KindValue
      */
-    public static KindValue kindOf (omr.score.entity.ChordStatement.Type type)
+    public static KindValue kindOf (omr.score.entity.ChordInfo.Kind.Type type)
     {
         return KindValue.valueOf(type.toString());
+    }
+
+    //--------//
+    // typeOf //
+    //--------//
+    /**
+     * Convert from Audiveris ChordInfo.Degree.DegreeType  to
+     * Proxymusic DegreeTypeValue
+     * @param type Audiveris enum DegreeType
+     * @return Proxymusic enum DegreeTypeValue
+     */
+    public static DegreeTypeValue typeOf (omr.score.entity.ChordInfo.Degree.DegreeType type)
+    {
+        return DegreeTypeValue.valueOf(type.toString());
     }
 }

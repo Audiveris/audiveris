@@ -47,6 +47,9 @@ public class BasicContent
     /** Manual value if any. */
     private String manualValue;
 
+    /** Manual role if any. */
+    private TextRoleInfo manualRole;
+
     /** Language used for OCR. */
     private String ocrLanguage;
 
@@ -69,23 +72,6 @@ public class BasicContent
     }
 
     //~ Methods ----------------------------------------------------------------
-    //
-    //-------------//
-    // isSeparator //
-    //-------------//
-    /**
-     * Predicate to detect a separator.
-     *
-     * @param str the character to check
-     *
-     * @return true if this is a separator
-     */
-    public static boolean isSeparator (String str)
-    {
-        return str.equals(EXTENSION_STRING) || str.equals(ELISION_STRING)
-                || str.equals(HYPHEN_STRING);
-    }
-
     //------//
     // dump //
     //------//
@@ -100,9 +86,19 @@ public class BasicContent
         }
 
         if (textWord != null) {
-            System.out.println("   textWord=" + textWord
-                    + " textLine=" + textWord.getTextLine());
+            System.out.println(
+                    "   textWord=" + textWord + " textLine="
+                    + textWord.getTextLine());
         }
+    }
+
+    //---------------//
+    // getManualRole //
+    //---------------//
+    @Override
+    public TextRoleInfo getManualRole ()
+    {
+        return manualRole;
     }
 
     //----------------//
@@ -123,28 +119,6 @@ public class BasicContent
         return ocrLanguage;
     }
 
-    //-------------//
-    // getTextWord //
-    //-------------//
-    @Override
-    public TextWord getTextWord ()
-    {
-        return textWord;
-    }
-
-    //-------------//
-    // getTextRole //
-    //-------------//
-    @Override
-    public TextRoleInfo getTextRole ()
-    {
-        if (textWord != null) {
-            return textWord.getTextLine().getRole();
-        } else {
-            return null;
-        }
-    }
-
     //-----------------//
     // getTextLocation //
     //-----------------//
@@ -156,6 +130,27 @@ public class BasicContent
         } else {
             return null;
         }
+    }
+
+    //-------------//
+    // getTextRole //
+    //-------------//
+    @Override
+    public TextRoleInfo getTextRole ()
+    {
+        if (manualRole != null) {
+            return manualRole;
+        }
+        
+        if (textWord != null) {
+            TextLine line = textWord.getTextLine();
+
+            if (line != null) {
+                return line.getRole();
+            }
+        }
+
+        return null;
     }
 
     //--------------//
@@ -175,6 +170,15 @@ public class BasicContent
         }
     }
 
+    //-------------//
+    // getTextWord //
+    //-------------//
+    @Override
+    public TextWord getTextWord ()
+    {
+        return textWord;
+    }
+
     //-----------------//
     // invalidateCache //
     //-----------------//
@@ -182,6 +186,32 @@ public class BasicContent
     public void invalidateCache ()
     {
         // TBD
+    }
+
+    //
+    //-------------//
+    // isSeparator //
+    //-------------//
+    /**
+     * Predicate to detect a separator.
+     *
+     * @param str the character to check
+     *
+     * @return true if this is a separator
+     */
+    public static boolean isSeparator (String str)
+    {
+        return str.equals(EXTENSION_STRING) || str.equals(ELISION_STRING)
+               || str.equals(HYPHEN_STRING);
+    }
+
+    //---------------//
+    // setManualRole //
+    //---------------//
+    @Override
+    public void setManualRole (TextRoleInfo manualRole)
+    {
+        this.manualRole = manualRole;
     }
 
     //----------------//

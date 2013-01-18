@@ -126,11 +126,8 @@ public abstract class SystemNode
     public void addError (Glyph glyph,
                           String text)
     {
-        if ((getPage() != null) && (getPage()
-                .getSheet() != null)) {
-            getPage()
-                    .getSheet()
-                    .addError(this, glyph, text);
+        if ((getPage() != null) && (getPage().getSheet() != null)) {
+            getPage().getSheet().addError(this, glyph, text);
         }
     }
 
@@ -316,7 +313,7 @@ public abstract class SystemNode
         if (glyphsBox == null) {
             return null;
         }
-        
+
         return new PixelPoint(
                 glyphsBox.x + (glyphsBox.width / 2),
                 glyphsBox.y + (glyphsBox.height / 2));

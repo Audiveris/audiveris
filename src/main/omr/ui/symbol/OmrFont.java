@@ -23,9 +23,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.text.AttributedCharacterIterator;
 import java.util.ConcurrentModificationException;
-import java.util.Map;
 
 /**
  * Class {@code OmrFont} is meant to simplify the use of rendering 

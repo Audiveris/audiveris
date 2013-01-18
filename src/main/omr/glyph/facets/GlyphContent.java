@@ -23,7 +23,7 @@ import omr.text.TextWord;
  * @author Hervé Bitteur
  */
 public interface GlyphContent
-        extends GlyphFacet
+    extends GlyphFacet
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -37,12 +37,18 @@ public interface GlyphContent
     String HYPHEN_STRING = "-";
 
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * Report the manually assigned role, if any.
+     *
+     * @return the manual role for this glyph, or null
+     */
+    TextRoleInfo getManualRole ();
+
     /**
      * Report the manually assigned text, if any.
      *
-     * @return manualValue the manual string value for this glyph, or null
-     *
-     * @see #setManualValue
+     * @return the manual string value for this glyph, or null
      */
     String getManualValue ();
 
@@ -54,12 +60,12 @@ public interface GlyphContent
     String getOcrLanguage ();
 
     /**
-     * Return the corresponding text word for this glyph, if any.
+     * Report the starting point of this text glyph, which is the left
+     * side abscissa and the baseline ordinate.
      *
-     * @return the related text word, null otherwise.
-     * @see #setTextWord(java.lang.String, omr.text.TextWord)
+     * @return the starting point of the text glyph, specified in pixels
      */
-    TextWord getTextWord ();
+    PixelPoint getTextLocation ();
 
     /**
      * Report the text role of the textual glyph within the score.
@@ -67,14 +73,6 @@ public interface GlyphContent
      * @return the role of this textual glyph
      */
     TextRoleInfo getTextRole ();
-
-    /**
-     * Report the starting point of this text glyph, which is the left
-     * side abscissa and the baseline ordinate.
-     *
-     * @return the starting point of the text glyph, specified in pixels
-     */
-    PixelPoint getTextLocation ();
 
     /**
      * Report the string value of this text glyph if any.
@@ -85,11 +83,23 @@ public interface GlyphContent
     String getTextValue ();
 
     /**
+     * Return the corresponding text word for this glyph, if any.
+     *
+     * @return the related text word, null otherwise.
+     */
+    TextWord getTextWord ();
+
+    /**
+     * Manually assign a text role to the glyph.
+     *
+     * @param manualRole the role for this text glyph
+     */
+    void setManualRole (TextRoleInfo manualRole);
+
+    /**
      * Manually assign a text meaning to the glyph.
      *
      * @param manualValue the string value for this text glyph
-     *
-     * @see #getManualValue
      */
     void setManualValue (String manualValue);
 
@@ -98,8 +108,7 @@ public interface GlyphContent
      *
      * @param ocrLanguage the language provided to OCR engine for recognition
      * @param textWord    the TextWord for this glyph
-     * @see #getTextWord
      */
-    void setTextWord (String ocrLanguage,
+    void setTextWord (String   ocrLanguage,
                       TextWord textWord);
 }

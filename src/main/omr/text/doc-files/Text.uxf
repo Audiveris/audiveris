@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="11.5">
+<diagram program="umlet" version="11.5.1">
   <help_text>
 fontsize=14
 
@@ -63,12 +63,13 @@ getSystemPart()</panel_attributes>
       <x>320</x>
       <y>540</y>
       <w>130</w>
-      <h>120</h>
+      <h>140</h>
     </coordinates>
     <panel_attributes>*Glyph (Content)*
 bg=#aaffff
 --
 manualValue
+manualRole
 ocrLanguage
 --
 getTextLocation()
@@ -82,13 +83,14 @@ getTextValue()</panel_attributes>
       <x>320</x>
       <y>270</y>
       <w>140</w>
-      <h>160</h>
+      <h>170</h>
     </coordinates>
     <panel_attributes>*TextWord*
 bg=#ffffaa
 --
 fontInfo
 preciseFontSize
+chordInfo
 --
 translate()
 getInternalValue()
@@ -113,12 +115,12 @@ createManualWord()</panel_attributes>
     <type>com.umlet.element.Relation</type>
     <coordinates>
       <x>360</x>
-      <y>400</y>
+      <y>410</y>
       <w>50</w>
-      <h>160</h>
+      <h>150</h>
     </coordinates>
     <panel_attributes>lt=-</panel_attributes>
-    <additional_attributes>30;140;30;30</additional_attributes>
+    <additional_attributes>30;130;30;30</additional_attributes>
   </element>
   <element>
     <type>com.umlet.element.Class</type>

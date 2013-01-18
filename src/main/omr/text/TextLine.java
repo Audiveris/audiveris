@@ -15,6 +15,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.log.Logger;
 
+import omr.score.entity.PartNode;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 import omr.score.entity.Staff;
@@ -31,7 +32,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import omr.score.entity.PartNode;
 
 /**
  * Class {@code TextLine} defines a non-mutable structure to report all
@@ -390,10 +390,7 @@ public class TextLine
     {
         if (roleInfo == null) {
             // Guess role
-            roleInfo = TextRole.guessRole(
-                    getBounds(),
-                    system,
-                    system.getTextBuilder().isMainlyItalic(this));
+            roleInfo = TextRole.guessRole(this, system);
         }
 
         return roleInfo;
@@ -534,6 +531,19 @@ public class TextLine
     public boolean isLyrics ()
     {
         return getRole().role == TextRole.Lyrics;
+    }
+
+    //---------//
+    // isChord //
+    //---------//
+    /**
+     * Report whether this line has the Chord role
+     *
+     * @return true for chord line
+     */
+    public boolean isChord ()
+    {
+        return getRole().role == TextRole.Chord;
     }
 
     //-------------//

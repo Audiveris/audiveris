@@ -31,7 +31,7 @@ import omr.score.entity.Articulation;
 import omr.score.entity.Barline;
 import omr.score.entity.Beam;
 import omr.score.entity.Chord;
-import omr.score.entity.ChordStatement;
+import omr.score.entity.ChordSymbol;
 import omr.score.entity.Clef;
 import omr.score.entity.Coda;
 import omr.score.entity.DirectionStatement;
@@ -58,7 +58,7 @@ import omr.score.entity.TimeSignature;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.entity.Tuplet;
 import omr.score.entity.Voice;
-import omr.score.entity.Voice.ChordInfo;
+import omr.score.entity.Voice.VoiceChord;
 import omr.score.entity.Wedge;
 import omr.score.midi.MidiAbstractions;
 import omr.score.visitor.AbstractScoreVisitor;
@@ -79,10 +79,17 @@ import proxymusic.Attributes;
 import proxymusic.Backup;
 import proxymusic.BackwardForward;
 import proxymusic.BarStyle;
+import proxymusic.Bass;
+import proxymusic.BassAlter;
+import proxymusic.BassStep;
 import proxymusic.BeamValue;
 import proxymusic.ClefSign;
 import proxymusic.Credit;
 import proxymusic.Defaults;
+import proxymusic.Degree;
+import proxymusic.DegreeAlter;
+import proxymusic.DegreeType;
+import proxymusic.DegreeValue;
 import proxymusic.Direction;
 import proxymusic.DirectionType;
 import proxymusic.DisplayStepOctave;
@@ -189,21 +196,21 @@ public class ScoreExporter
     private static final Future<Void> loading = OmrExecutors.
             getCachedLowExecutor().submit(
             new Callable<Void>()
-            {
-                @Override
-                public Void call ()
-                        throws Exception
-                {
-                    try {
-                        Marshalling.getContext();
-                    } catch (JAXBException ex) {
-                        logger.warning("Error preloading JaxbContext", ex);
-                        throw ex;
-                    }
+    {
+        @Override
+        public Void call ()
+                throws Exception
+        {
+            try {
+                Marshalling.getContext();
+            } catch (JAXBException ex) {
+                logger.warning("Error preloading JaxbContext", ex);
+                throw ex;
+            }
 
-                    return null;
-                }
-            });
+            return null;
+        }
+    });
 
     /** Default page horizontal margin */
     private static final BigDecimal pageHorizontalMargin =
@@ -633,71 +640,102 @@ public class ScoreExporter
         return true;
     }
 
-    //----------------------//
-    // visit ChordStatement //
-    //----------------------//
+    //-------------------//
+    // visit ChordSymbol //
+    //-------------------//
     @Override
-    public boolean visit (ChordStatement words)
+    public boolean visit (ChordSymbol symbol)
     {
         try {
-            logger.fine("Visiting {0}", words);
+            logger.fine("Visiting {0}", symbol);
 
-            String content = words.getText().getContent();
+            omr.score.entity.ChordInfo info = symbol.getInfo();
             Staff staff = current.note.getStaff();
-
             Harmony harmony = factory.createHarmony();
 
-            Kind kind = null;
-
-            // Root
-            Root root = factory.createRoot();
-            RootStep step = factory.createRootStep();
-            step.setValue(stepOf(words.getStep()));
-            step.setText(content);
-
-            step.setDefaultY(yOf(words.getReferencePoint(), staff));
+            // default-y
+            harmony.setDefaultY(yOf(symbol.getReferencePoint(), staff));
 
             // font-size
-            step.setFontSize("" + words.getText().getExportedFontSize());
+            harmony.setFontSize("" + symbol.getText().getExportedFontSize());
 
             // relative-x
-            step.setRelativeX(
+            harmony.setRelativeX(
                     toTenths(
-                    words.getReferencePoint().x
+                    symbol.getReferencePoint().x 
                     - current.note.getCenterLeft().x));
 
-            root.setRootStep(step);
-
-            // RootAlter
-            if (words.getAlter() != 0) {
-                RootAlter alter = factory.createRootAlter();
-                alter.setValue(new BigDecimal(words.getAlter()));
-                alter.setPrintObject(YesNo.NO);
-                root.setRootAlter(alter);
-            }
-
-            if (words.getType() != ChordStatement.Type.MAJOR) {
-                kind = factory.createKind();
-                kind.setValue(kindOf(words.getType()));
-                kind.setText("");
-            }
+            // Placement
+            harmony.setPlacement(
+                    (symbol.getReferencePoint().y < current.note.getCenter().y)
+                    ? AboveBelow.ABOVE : AboveBelow.BELOW);
 
             // Staff
             insertStaffId(harmony, staff);
 
-            // Placement
-            harmony.setPlacement(
-                    (words.getReferencePoint().y < current.note.getCenter().y)
-                    ? AboveBelow.ABOVE : AboveBelow.BELOW);
+            // Root
+            Root root = factory.createRoot();
+            RootStep rootStep = factory.createRootStep();
+            rootStep.setValue(stepOf(info.getRoot().step));
+            root.setRootStep(rootStep);
+
+            if (info.getRoot().alter != 0) {
+                RootAlter alter = factory.createRootAlter();
+                alter.setValue(new BigDecimal(info.getRoot().alter));
+                root.setRootAlter(alter);
+            }
+            harmony.getHarmonyChord().add(root);
+
+            // Kind
+            Kind kind = factory.createKind();
+            kind.setValue(kindOf(info.getKind().type));
+            kind.setText(info.getKind().text);
+            if (info.getKind().paren) {
+                kind.setParenthesesDegrees(YesNo.YES);
+            }
+            if (info.getKind().symbol) {
+                kind.setUseSymbols(YesNo.YES);
+            }
+            harmony.getHarmonyChord().add(kind);
+
+            // Bass
+            if (info.getBass() != null) {
+                Bass bass = factory.createBass();
+                BassStep bassStep = factory.createBassStep();
+                bassStep.setValue(stepOf(info.getBass().step));
+                bass.setBassStep(bassStep);
+
+                if (info.getBass().alter != 0) {
+                    BassAlter bassAlter = factory.createBassAlter();
+                    bassAlter.setValue(new BigDecimal(info.getBass().alter));
+                    bass.setBassAlter(bassAlter);
+                }
+                harmony.getHarmonyChord().add(bass);
+            }
+
+            // Degrees?
+            for (omr.score.entity.ChordInfo.Degree deg : info.getDegrees()) {
+                Degree degree = factory.createDegree();
+
+                DegreeValue value = factory.createDegreeValue();
+                value.setValue(new BigInteger("" + deg.value));
+                degree.setDegreeValue(value);
+
+                DegreeAlter alter = factory.createDegreeAlter();
+                alter.setValue(new BigDecimal(deg.alter));
+                degree.setDegreeAlter(alter);
+
+                DegreeType type = factory.createDegreeType();
+                type.setValue(typeOf(deg.type));
+                degree.setDegreeType(type);
+
+                harmony.getHarmonyChord().add(degree);
+            }
 
             // Everything is now OK
-            harmony.getHarmonyChord().add(root);
-            if (kind != null) {
-                harmony.getHarmonyChord().add(kind);
-            }
             current.pmMeasure.getNoteOrBackupOrForward().add(harmony);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + words, ex);
+            logger.warning("Error visiting " + symbol, ex);
         }
 
         return true;
@@ -978,7 +1016,7 @@ public class ScoreExporter
                     timeCounter = measure.getExpectedDuration();
                 } else {
                     for (Slot slot : measure.getSlots()) {
-                        ChordInfo info = voice.getSlotInfo(slot);
+                        VoiceChord info = voice.getSlotInfo(slot);
 
                         if ((info != null) && // Skip free slots
                                 (info.getStatus() == Voice.Status.BEGIN)) {
@@ -1047,14 +1085,15 @@ public class ScoreExporter
 
             Chord chord = note.getChord();
 
-            // Chord direction events for first note in chord
+            // For first note in chord
             if (chord.getNotes().indexOf(note) == 0) {
+                // Chord direction events 
                 for (omr.score.entity.Direction node : chord.getDirections()) {
                     node.accept(this);
                 }
-                for (omr.score.entity.ChordStatement node : chord.
-                        getChordStatements()) {
-                    node.accept(this);
+                // Chord symbol, if any
+                if (chord.getChordSymbol() != null) {
+                    chord.getChordSymbol().accept(this);
                 }
             }
 
@@ -2714,15 +2753,15 @@ public class ScoreExporter
                 Collections.sort(
                         list,
                         new Comparator<Clef>()
-                        {
-                            @Override
-                            public int compare (Clef o1,
-                                                Clef o2)
-                            {
-                                return Integer.signum(
-                                        o1.getCenter().x - o2.getCenter().x);
-                            }
-                        });
+                {
+                    @Override
+                    public int compare (Clef o1,
+                                        Clef o2)
+                    {
+                        return Integer.signum(
+                                o1.getCenter().x - o2.getCenter().x);
+                    }
+                });
                 iters.put(entry.getKey(), list.listIterator());
             }
         }

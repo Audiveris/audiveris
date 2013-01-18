@@ -208,14 +208,12 @@ public abstract class Text
             break;
 
         case Direction:
-
             Measure measure = systemPart.getMeasureAt(location);
             sentence.setGlyphsTranslation(
                     new DirectionStatement(
                     measure,
                     location,
                     measure.getDirectionChord(location),
-                    sentence,
                     new DirectionText(sentence)));
 
             break;
@@ -243,11 +241,10 @@ public abstract class Text
         case Chord:
             measure = systemPart.getMeasureAt(location);
             sentence.setGlyphsTranslation(
-                    new ChordStatement(
+                    new ChordSymbol(
                     measure,
                     location,
                     measure.getEventChord(location),
-                    sentence,
                     new ChordText(sentence)));
 
             break;
@@ -493,9 +490,9 @@ public abstract class Text
         }
     }
 
-    //------------//
+    //-----------//
     // ChordText //
-    //------------//
+    //-----------//
     /** Subclass of Text, dedicated to a chord marker. */
     public static class ChordText
             extends Text

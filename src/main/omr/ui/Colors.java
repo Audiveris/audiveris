@@ -14,8 +14,9 @@ package omr.ui;
 import java.awt.Color;
 
 /**
- * Class {@code Colors} gathers alphabetically in one place the various colors
- * used by Audiveris displays, in order to ensure consistency and compatibility.
+ * Class {@code Colors} gathers alphabetically in one place the various
+ * colors used by Audiveris displays, in order to ensure consistency
+ * and compatibility.
  *
  * @author Hervé Bitteur
  */
@@ -92,6 +93,12 @@ public class Colors
     /** Rubber rule / cross */
     public static final Color RUBBER_RULE = new Color(255, 0, 0, 100);
 
+    /** Sentence baseline */
+    public static final Color SENTENCE_BASELINE = Color.red;
+
+    /** Sentence gaps among words */
+    public static final Color SENTENCE_GAPS = new Color(100, 100, 255, 50);
+
     /** Unknown shape */
     public static final Color SHAPE_UNKNOWN = Color.red;
 
@@ -116,6 +123,11 @@ public class Colors
     /** Warping points */
     public static final Color WARP_POINT = Color.red;
 
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Not meant to be instantiated.
+     */
     private Colors ()
     {
     }

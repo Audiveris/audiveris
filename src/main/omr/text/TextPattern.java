@@ -23,6 +23,7 @@ import omr.sheet.SystemInfo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -71,7 +72,8 @@ public class TextPattern
     {
         List<TextLine> toRemove = new ArrayList<>();
         // Check each sentence for inactive, non-text glyph, modified value
-        for (TextLine line : system.getSentences()) {
+        // Use a input copy of sentences collection, since it can get modified
+        for (TextLine line : new LinkedHashSet<>(system.getSentences()) ){
             checkModifiedValue(line);
 
             purgeWords(line);
@@ -81,6 +83,7 @@ public class TextPattern
                 toRemove.add(line);
             }
         }
+        
         system.getSentences().removeAll(toRemove);
 
         // Look for active text glyphs left over (no word, or no line)
@@ -131,12 +134,13 @@ public class TextPattern
                 logger.fine("Orphan text {0}", glyph.idString());
                 List<TextLine> lines = textBuilder.retrieveOcrLine(glyph,
                         language);
-                if (lines != null) {
+                if (lines != null && !lines.isEmpty()) {
                     lines = textBuilder.recomposeLines(lines);
-                    textBuilder.mapGlyphs(lines,
-                            glyph.getMembers(),
-                            language);
-
+                    if (!lines.isEmpty()) {
+                        textBuilder.mapGlyphs(lines,
+                                glyph.getMembers(),
+                                language);
+                    }
                 }
                 if (lines == null || lines.isEmpty()) {
                     logger.fine("{0} No valid text in {1}",
@@ -147,14 +151,13 @@ public class TextPattern
                 }
             }
         }
-
     }
 
     //----------//
     // isOrphan //
     //----------//
     /**
-     * Check whether the provided glyph is an text orphan.
+     * Check whether the provided glyph is a text orphan.
      *
      * @param glyph the glyph to check
      * @return true if orphan

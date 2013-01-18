@@ -22,6 +22,7 @@ import omr.run.Orientation;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
 
+import omr.util.GeoUtil;
 import omr.util.Vip;
 
 import java.awt.Graphics2D;
@@ -431,17 +432,13 @@ public class LineCluster
                 // Check for horizontal room
                 // For filaments one above the other, check resulting thickness
                 for (Section section : line.fil.getMembers()) {
-                    PixelRectangle sctBox = section.getBounds();
-                    int xStart = Math.max(filBox.x, sctBox.x);
-                    int xStop = Math.min(
-                            filBox.x + filBox.width,
-                            sctBox.x + sctBox.width);
-
                     // Horizontal overlap?
-                    if (xStop > xStart) {
+                    PixelRectangle sctBox = section.getBounds();
+                    int overlap = GeoUtil.xOverlap(filBox, sctBox);
+                    if (overlap > 0) {
                         // Check resulting thickness
                         double thickness = Glyphs.getThicknessAt(
-                                (xStart + xStop) / 2,
+                                Math.max(filBox.x, sctBox.x) + overlap / 2,
                                 Orientation.HORIZONTAL,
                                 filament,
                                 line.fil);

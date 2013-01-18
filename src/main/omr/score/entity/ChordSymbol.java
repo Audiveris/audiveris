@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                    D i r e c t i o n S t a t e m e n t                     //
+//                           C h o r d S y m b o l                            //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -16,46 +16,59 @@ import omr.log.Logger;
 import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
-import omr.text.TextLine;
-
 /**
- * Class {@code DirectionStatement} represents a direction in the score
+ * Class {@code ChordSymbol} represents a chord symbol in the score.
  *
+ * @author Chris Lahey
  * @author Hervé Bitteur
  */
-public class DirectionStatement
-        extends AbstractDirection
+public class ChordSymbol
+        extends MeasureElement
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(
-            DirectionStatement.class);
+            ChordSymbol.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** The underlying text */
-    private Text.DirectionText text;
+    //
+    /** Underlying text. */
+    private final Text.ChordText text;
+
+    /** The underlying chord information. */
+    public ChordInfo info;
 
     //~ Constructors -----------------------------------------------------------
-    //--------------------//
-    // DirectionStatement //
-    //--------------------//
+    //-------------//
+    // ChordSymbol //
+    //-------------//
     /**
-     * Creates a new instance of DirectionStatement event
+     * Creates a new instance of ChordSymbol event
      *
      * @param measure        measure that contains this mark
      * @param referencePoint the reference location of the mark
      * @param chord          the chord related to the mark, if any
      * @param text           the sentence text
      */
-    public DirectionStatement (Measure measure,
-                               PixelPoint referencePoint,
-                               Chord chord,
-                               Text.DirectionText text)
+    public ChordSymbol (Measure measure,
+                        PixelPoint referencePoint,
+                        Chord chord,
+                        Text.ChordText text)
     {
-        super(measure, referencePoint, chord,
+        super(measure, true, referencePoint, chord,
                 text.getSentence().getFirstWord().getGlyph());
+
         this.text = text;
+
+        info = ChordInfo.create(text.getContent());
+
+        // Register at its related chord
+        if (chord != null) {
+            chord.setChordSymbol(this);
+        } else {
+            addError(getGlyph(), "Chord statement with no related chord");
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -71,9 +84,17 @@ public class DirectionStatement
     //---------//
     // getText //
     //---------//
-    public Text.DirectionText getText ()
+    public Text.ChordText getText ()
     {
         return text;
+    }
+
+    //---------//
+    // getInfo //
+    //---------//
+    public ChordInfo getInfo ()
+    {
+        return info;
     }
 
     //-----------------------//
@@ -91,6 +112,6 @@ public class DirectionStatement
     @Override
     protected String internalsString ()
     {
-        return text.toString();
+        return info.toString();
     }
 }

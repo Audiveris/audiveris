@@ -25,7 +25,7 @@ import omr.math.Rational;
 import omr.score.common.DurationFactor;
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
-import omr.score.entity.Voice.ChordInfo;
+import omr.score.entity.Voice.VoiceChord;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -191,8 +191,8 @@ public class Chord
     /** Directions (loosely) related to this chord */
     private List<Direction> directions = new ArrayList<>();
 
-    /** Chord Statements related to this chord */
-    private List<ChordStatement> chordStatements = new ArrayList<>();
+    /** Symbol (chord name), if any, related to this chord */
+    private ChordSymbol chordSymbol;
 
     /** Compare two beams linked to this chord, ordered from tail. */
     private Comparator<Beam> byLevel = new Comparator<Beam>()
@@ -447,7 +447,7 @@ public class Chord
         if (glyph.isVip()) {
             logger.info("Chord. populate {0}", glyph.idString());
         }
-        
+
         glyph.clearTranslations();
         Set<Integer> assigned = new HashSet<>();
 
@@ -567,18 +567,17 @@ public class Chord
         directions.add(direction);
     }
 
-    //-------------------//
-    // addChordStatement //
-    //-------------------//
+    //----------------//
+    // setChordSymbol //
+    //----------------//
     /**
-     * Add a chord statement element that should appear right before
-     * the chord first note
+     * Set the chord symbol for this chord
      *
-     * @param chordStatement the chord statement to add
+     * @param chordSymbol the symbol to assign
      */
-    public void addChordStatement (ChordStatement chordStatement)
+    public void setChordSymbol (ChordSymbol chordSymbol)
     {
-        chordStatements.add(chordStatement);
+        this.chordSymbol = chordSymbol;
     }
 
     //--------------//
@@ -632,19 +631,19 @@ public class Chord
         // Incoming ties
         SplitOrder order = checkTies(
                 new TieRelation()
-                {
-                    @Override
-                    public Note getDistantNote (Slur slur)
-                    {
-                        return slur.getLeftNote();
-                    }
+        {
+            @Override
+            public Note getDistantNote (Slur slur)
+            {
+                return slur.getLeftNote();
+            }
 
-                    @Override
-                    public Note getLocalNote (Slur slur)
-                    {
-                        return slur.getRightNote();
-                    }
-                });
+            @Override
+            public Note getLocalNote (Slur slur)
+            {
+                return slur.getRightNote();
+            }
+        });
 
         if (order != null) {
             split(order);
@@ -655,19 +654,19 @@ public class Chord
         // Outgoing ties
         order = checkTies(
                 new TieRelation()
-                {
-                    @Override
-                    public Note getDistantNote (Slur slur)
-                    {
-                        return slur.getRightNote();
-                    }
+        {
+            @Override
+            public Note getDistantNote (Slur slur)
+            {
+                return slur.getRightNote();
+            }
 
-                    @Override
-                    public Note getLocalNote (Slur slur)
-                    {
-                        return slur.getLeftNote();
-                    }
-                });
+            @Override
+            public Note getLocalNote (Slur slur)
+            {
+                return slur.getLeftNote();
+            }
+        });
 
         if (order != null) {
             split(order);
@@ -755,17 +754,17 @@ public class Chord
         return directions;
     }
 
-    //--------------------//
-    // getChordStatements //
-    //--------------------//
+    //----------------//
+    // getChordSymbol //
+    //----------------//
     /**
-     * Report the chord statements loosely related to this chord
+     * Report the symbol (chord name) related to this chord
      *
-     * @return the collection of related chord statements, perhaps empty
+     * @return the chord symbol, perhaps null
      */
-    public Collection<? extends ChordStatement> getChordStatements ()
+    public ChordSymbol getChordSymbol ()
     {
-        return chordStatements;
+        return chordSymbol;
     }
 
     //---------------//
@@ -1295,7 +1294,7 @@ public class Chord
                 if (slot != null) {
                     voice.setSlotInfo(
                             slot,
-                            new ChordInfo(this, Voice.Status.BEGIN));
+                            new VoiceChord(this, Voice.Status.BEGIN));
                 }
 
                 // Extend this info to other grouped chords if any
@@ -1340,7 +1339,7 @@ public class Chord
                 if (slot != null) {
                     voice.setSlotInfo(
                             slot,
-                            new ChordInfo(this, Voice.Status.BEGIN));
+                            new VoiceChord(this, Voice.Status.BEGIN));
                 }
             }
         }

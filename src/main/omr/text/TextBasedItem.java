@@ -11,12 +11,15 @@
 // </editor-fold>
 package omr.text;
 
+import omr.score.common.PixelPoint;
+
+import omr.util.Vip;
+
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.List;
-import omr.score.common.PixelPoint;
 
 /**
  * Class {@code TextBasedItem} is an abstract TextItem with
@@ -26,6 +29,7 @@ import omr.score.common.PixelPoint;
  */
 public abstract class TextBasedItem
         extends TextItem
+        implements Vip
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -34,6 +38,9 @@ public abstract class TextBasedItem
 
     /** OCR confidence. */
     private Integer confidence;
+
+    /** (Debug) flag this object as VIP. */
+    private boolean vip;
 
     //~ Constructors -----------------------------------------------------------
     /**
@@ -94,7 +101,7 @@ public abstract class TextBasedItem
         }
 
         return new PixelPoint((int) Math.rint(bl.getX1()),
-                              (int) Math.rint(bl.getY1()));
+                (int) Math.rint(bl.getY1()));
     }
 
     //---------------//
@@ -138,8 +145,8 @@ public abstract class TextBasedItem
 
         if (getBaseline() != null) {
             sb.append(String.format(" base[%.0f,%.0f]-[%.0f,%.0f]",
-                                    baseline.getX1(), baseline.getY1(),
-                                    baseline.getX2(), baseline.getY2()));
+                    baseline.getX1(), baseline.getY1(),
+                    baseline.getX2(), baseline.getY2()));
         }
 
         return sb.toString();
@@ -164,7 +171,7 @@ public abstract class TextBasedItem
         // Translate baseline
         if (getBaseline() != null) {
             baseline.setLine(baseline.getX1() + dx, baseline.getY1() + dy,
-                             baseline.getX2() + dx, baseline.getY2() + dy);
+                    baseline.getX2() + dx, baseline.getY2() + dy);
         }
     }
 
@@ -191,5 +198,23 @@ public abstract class TextBasedItem
         }
 
         return (int) Math.rint(total / items.size());
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    @Override
+    public boolean isVip ()
+    {
+        return vip;
+    }
+
+    //--------//
+    // setVip //
+    //--------//
+    @Override
+    public void setVip ()
+    {
+        vip = true;
     }
 }

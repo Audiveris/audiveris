@@ -31,6 +31,7 @@ import omr.sheet.SystemInfo;
 
 import omr.text.tesseract.TesseractOCR;
 
+import omr.util.GeoUtil;
 import omr.util.LiveParam;
 import omr.util.WrappedBoolean;
 import omr.util.XmlUtilities;
@@ -301,7 +302,13 @@ public class TextBuilder
 
                     // Link TextWord -> Glyph
                     word.setGlyph(wordGlyph);
-                    logger.fine("      mapped {0}", word);
+                    if (word.isVip()) {
+                        line.setVip();
+                    }
+
+                    if (word.isVip() || logger.isFineEnabled()) {
+                        logger.info("      mapped {0}", word);
+                    }
 
                     // Link Glyph -> TextWord
                     wordGlyph.setTextWord(language, word);
@@ -431,6 +438,7 @@ public class TextBuilder
         if (logger.isFineEnabled()) {
             logger.info("{0} recomposeLines", system.idString());
         }
+        
         // Separate lyrics and standard populations
         List<TextLine> standards = new ArrayList<>();
         List<TextLine> lyrics = new ArrayList<>();
@@ -587,7 +595,9 @@ public class TextBuilder
                 }
             }
             line = mergeLines(chunks);
-            logger.fine("      result {0}", line);
+            if (line.isVip() || logger.isFineEnabled()) {
+                logger.info("      merge result {0}", line);
+            }
         }
 
         return line;
@@ -671,7 +681,8 @@ public class TextBuilder
             CandidateLoop:
             while (true) {
                 final Rectangle candidateBounds = getDeskewedCore(candidate);
-                candidateBounds.grow(params.maxWordDx, params.maxLyricsDy);
+                final Rectangle candidateFatBox = new Rectangle(candidateBounds);
+                candidateFatBox.grow(getWordGap(candidate), params.maxLyricsDy);
 
                 HeadsLoop:
                 for (TextLine head : oldStandards) {
@@ -680,9 +691,21 @@ public class TextBuilder
                     }
                     if (head != candidate && !head.isProcessed()) {
                         Rectangle headBounds = getDeskewedCore(head);
-                        if (headBounds.intersects(candidateBounds)) {
-                            logger.fine("   merging {0} into {1}",
-                                    candidate, head);
+                        if (headBounds.intersects(candidateFatBox)) {
+                            if (head.isChord()) {
+                                // Check actual dx between head & candidate
+                                int gap = GeoUtil.xGap(headBounds, candidateBounds);
+                                if (gap <= params.maxChordDx) {
+                                    continue;
+                                }
+                            }
+
+                            if (candidate.isVip() || head.isVip()
+                                || logger.isFineEnabled()) {
+                                logger.info("   merging {0} into {1}",
+                                        candidate, head);
+                            }
+
                             head.addWords(candidate.getWords());
                             candidate.setProcessed(true);
                             candidate = head;
@@ -887,8 +910,11 @@ public class TextBuilder
         List<TextLine> newStandards = new ArrayList<>();
 
         for (TextLine line : oldStandards) {
-            logger.fine("   checking {0}", line);
+            if (line.isVip() || logger.isFineEnabled()) {
+                logger.info("split checking {0}", line);
+            }
 
+            final int maxAbscissaGap = getWordGap(line);
             List<TextWord> words = line.getWords();
             boolean splitting = true;
 
@@ -904,12 +930,15 @@ public class TextBuilder
                     if (stop != null) {
                         int gap = bounds.x - stop;
 
-                        if (gap > params.maxWordDx) {
+                        if (gap > maxAbscissaGap) {
                             int splitPos = words.indexOf(word);
                             List<TextWord> lineWords = words.subList(0,
                                     splitPos);
                             TextLine newLine = new TextLine(system, lineWords);
-                            logger.fine("      subLine {0}", newLine);
+                            newLine.setRole(line.getRole());
+                            if (line.isVip() || logger.isFineEnabled()) {
+                                logger.info("      subLine {0}", newLine);
+                            }
                             newStandards.add(newLine);
 
                             words = words.subList(splitPos, words.size());
@@ -926,7 +955,10 @@ public class TextBuilder
             // Pending words?
             if (words.size() < line.getWords().size()) {
                 TextLine newLine = new TextLine(system, words);
-                logger.fine("      subLine {0}", newLine);
+                newLine.setRole(line.getRole());
+                if (line.isVip() || logger.isFineEnabled()) {
+                    logger.info("      subLine {0}", newLine);
+                }
                 newStandards.add(newLine);
             } else {
                 newStandards.add(line);
@@ -1136,6 +1168,23 @@ public class TextBuilder
         }
     }
 
+    //------------//
+    // getWordGap //
+    //------------//
+    /**
+     * Report the maximum abscissa gap between two consecutive words
+     * of the provided line.
+     * We use a smaller horizontal gap between chord names than between words
+     * of ordinary standard lines.
+     *
+     * @param line the line provided
+     * @return the maximum abscissa gap to use
+     */
+    private int getWordGap (TextLine line)
+    {
+        return line.isChord() ? params.maxChordDx : params.maxWordDx;
+    }
+
     //~ Inner Classes ----------------------------------------------------------
     //-----------//
     // Constants //
@@ -1183,6 +1232,10 @@ public class TextBuilder
                 0.25,
                 "Min horizontal gap between two non-lyrics words");
 
+        Scale.Fraction maxChordDx = new Scale.Fraction(
+                1.0,
+                "Max horizontal gap between two chord words");
+
     }
 
     //------------//
@@ -1200,6 +1253,8 @@ public class TextBuilder
 
         final int minWordDx;
 
+        final int maxChordDx;
+
         //~ Constructors -------------------------------------------------------
         public Parameters (Scale scale)
         {
@@ -1207,6 +1262,7 @@ public class TextBuilder
             maxLyricsDy = scale.toPixels(constants.maxLyricsDy);
             maxWordDx = scale.toPixels(constants.maxWordDx);
             minWordDx = scale.toPixels(constants.minWordDx);
+            maxChordDx = scale.toPixels(constants.maxChordDx);
         }
     }
 }
