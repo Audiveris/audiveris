@@ -462,8 +462,7 @@ public class BasicLag
         SelectionHint hint = locationEvent.hint;
         MouseMovement movement = locationEvent.movement;
 
-        if ((hint != SelectionHint.LOCATION_ADD)
-            && (hint != SelectionHint.LOCATION_INIT)) {
+        if (!hint.isLocation() && !hint.isContext()) {
             return;
         }
 
@@ -505,8 +504,7 @@ public class BasicLag
         SelectionHint hint = runEvent.hint;
         MouseMovement movement = runEvent.movement;
 
-        if ((hint != SelectionHint.LOCATION_ADD)
-            && (hint != SelectionHint.LOCATION_INIT)) {
+        if (!hint.isLocation() && !hint.isContext()) {
             return;
         }
 
@@ -577,14 +575,14 @@ public class BasicLag
             if (hint == SelectionHint.LOCATION_ADD) {
                 if (section != null) {
                     if (movement == MouseMovement.PRESSING) {
-                        // Adding to (or Removing from) the set of glyphs
+                        // Adding to (or Removing from) the set of sections
                         if (sections.contains(section)) {
                             sections.remove(section);
                         } else {
                             sections.add(section);
                         }
                     } else if (movement == MouseMovement.DRAGGING) {
-                        // Always adding to the set of glyphs
+                        // Always adding to the set of sections
                         sections.add(section);
                     }
                 }
@@ -604,9 +602,7 @@ public class BasicLag
             publish(new SectionSetEvent(this, hint, movement, sections));
         } else if (glyphService != null) {
             // Section -> Glyph
-            if ((hint == LOCATION_ADD)
-                || (hint == LOCATION_INIT)
-                || (hint == SECTION_INIT)) {
+            if (hint.isLocation() || hint.isContext() || hint.isSection()) {
                 // Select related Glyph if any
                 Glyph glyph = (section != null) ? section.getGlyph() : null;
 

@@ -299,20 +299,4 @@ public class GlyphsController
                                    glyph));
         }
     }
-
-    //---------//
-    // publish //
-    //---------//
-    protected void publish (Set<Glyph> glyphs)
-    {
-        // Update immediately the glyph info as displayed
-        if (model.getSheet() != null) {
-            getNest().getGlyphService().publish(
-                    new GlyphSetEvent(
-                    this,
-                    SelectionHint.GLYPH_MODIFIED,
-                    null,
-                    glyphs));
-        }
-    }
 }

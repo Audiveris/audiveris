@@ -130,7 +130,7 @@ public class RubberPanel
     public void contextAdded (Point pt,
                               MouseMovement movement)
     {
-        setFocusLocation(new Rectangle(pt), movement, LOCATION_ADD);
+        // Nothing by default
     }
 
     //-----------------//

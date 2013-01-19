@@ -26,6 +26,7 @@ import omr.sheet.PartInfo;
 import omr.util.Predicate;
 import omr.util.TreeNode;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -498,7 +499,7 @@ public class SystemPart
      * @param point page-based coordinates of the given point
      * @return the containing measure
      */
-    public Measure getMeasureAt (PixelPoint point)
+    public Measure getMeasureAt (Point point)
     {
         Measure measure = null;
 

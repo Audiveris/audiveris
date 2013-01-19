@@ -72,7 +72,7 @@ public class PagesStep
     public void displayUI (Sheet sheet)
     {
         // Since we may have purged slots, let's reset highlighted slot if any
-        sheet.getSymbolsEditor().highLight(null, null);
+        sheet.getSymbolsEditor().highLight(null);
 
         Steps.valueOf(Steps.SYMBOLS).displayUI(sheet);
     }

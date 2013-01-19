@@ -15,8 +15,6 @@ import omr.log.Logger;
 
 import omr.score.common.PixelRectangle;
 
-import java.awt.Rectangle;
-
 /**
  * Class {@code LocationEvent} is UI Event that represents a new
  * location (a rectangle, perhaps degenerated to a point) within the

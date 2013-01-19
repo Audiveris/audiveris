@@ -90,6 +90,19 @@ public class Slot
 
     //~ Methods ----------------------------------------------------------------
     //
+    //------------//
+    // getMeasure //
+    //------------//
+    /**
+     * Report the measure that contains this slot
+     *
+     * @return the containing measure
+     */
+    public Measure getMeasure ()
+    {
+        return measure;
+    }
+
     //-----------------//
     // dumpSystemSlots //
     //-----------------//

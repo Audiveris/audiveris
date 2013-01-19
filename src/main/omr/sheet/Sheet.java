@@ -782,7 +782,7 @@ public class Sheet
      * @return the containing system info
      *         (or null if there is no enclosing system)
      */
-    public SystemInfo getSystemOf (PixelPoint point)
+    public SystemInfo getSystemOf (Point point)
     {
         for (SystemInfo info : getSystems()) {
             SystemBoundary boundary = info.getBoundary();

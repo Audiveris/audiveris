@@ -211,8 +211,7 @@ public class RunsTableView
         SelectionHint hint = locationEvent.hint;
         MouseMovement movement = locationEvent.movement;
 
-        if ((hint != SelectionHint.LOCATION_ADD)
-            && (hint != SelectionHint.LOCATION_INIT)) {
+        if (!hint.isLocation()) {
             return;
         }
 

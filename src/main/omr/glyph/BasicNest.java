@@ -619,7 +619,7 @@ public class BasicNest
         MouseMovement movement = locationEvent.movement;
         PixelRectangle rect = locationEvent.getData();
 
-        if ((hint != LOCATION_ADD) && (hint != LOCATION_INIT)) {
+        if (!hint.isLocation() && !hint.isContext()) {
             return;
         }
 
@@ -702,12 +702,15 @@ public class BasicNest
                         glyphs.add(glyph);
                     }
                 }
+            } else if (hint == CONTEXT_ADD) {
+                // Don't modify the set
             } else {
                 // Overwriting the set of glyphs
                 if (glyph != null) {
                     // Make a one-glyph set
                     glyphs = Glyphs.sortedSet(glyph);
                 } else {
+                    // Make an empty set
                     glyphs = Glyphs.sortedSet();
                 }
             }

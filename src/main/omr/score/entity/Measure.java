@@ -24,6 +24,7 @@ import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -696,7 +697,7 @@ public class Measure
      * @param point the reference point
      * @return the abscissa-wise closest slot
      */
-    public Slot getClosestSlot (PixelPoint point)
+    public Slot getClosestSlot (Point point)
     {
         Slot bestSlot = null;
         int bestDx = Integer.MAX_VALUE;

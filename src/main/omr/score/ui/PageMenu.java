@@ -160,20 +160,15 @@ public class PageMenu
 
         if (systems != null) {
             SystemInfo systemInfo = sheet.getSystemOf(point);
-
             if (systemInfo != null) {
                 system = systemInfo.getScoreSystem();
-
-                SystemPart part = system.getPartAt(point);
-                measure = part.getMeasureAt(point);
-
-                if (measure != null) {
-                    slot = measure.getClosestSlot(point);
-                } else {
-                    slot = null;
-                }
-
-                page.getSheet().getSymbolsEditor().highLight(measure, slot);
+            }
+            
+            slot = sheet.getSymbolsEditor().getSlotAt(point);
+            if (slot != null) {
+                measure = slot.getMeasure();
+            } else {
+                measure = null;
             }
 
             // Update all dynamic actions accordingly
@@ -386,35 +381,37 @@ public class PageMenu
             Set<Glyph> glyphs = controller.getNest().getSelectedGlyphSet();
             selectedChords = new HashSet<>();
 
-            for (Glyph glyph : glyphs) {
-                for (Object obj : glyph.getTranslations()) {
-                    if (obj instanceof Note) {
-                        Note note = (Note) obj;
-                        Chord chord = note.getChord();
-                        if (chord != null) {
-                            selectedChords.add(chord);
+            if (glyphs != null) {
+                for (Glyph glyph : glyphs) {
+                    for (Object obj : glyph.getTranslations()) {
+                        if (obj instanceof Note) {
+                            Note note = (Note) obj;
+                            Chord chord = note.getChord();
+                            if (chord != null) {
+                                selectedChords.add(chord);
+                            }
+                        } else if (obj instanceof Chord) {
+                            selectedChords.add((Chord) obj);
                         }
-                    } else if (obj instanceof Chord) {
-                        selectedChords.add((Chord) obj);
                     }
                 }
-            }
 
-            if (!selectedChords.isEmpty()) {
-                List<Chord> chordList = new ArrayList<>(selectedChords);
-                Collections.sort(chordList, Chord.byAbscissa);
+                if (!selectedChords.isEmpty()) {
+                    List<Chord> chordList = new ArrayList<>(selectedChords);
+                    Collections.sort(chordList, Chord.byAbscissa);
 
-                StringBuilder sb = new StringBuilder();
-                for (Chord chord : chordList) {
-                    if (sb.length() > 0) {
-                        sb.append(", ");
+                    StringBuilder sb = new StringBuilder();
+                    for (Chord chord : chordList) {
+                        if (sb.length() > 0) {
+                            sb.append(", ");
+                        }
+                        sb.append("Chord #")
+                                .append(chord.getId());
                     }
-                    sb.append("Chord #")
-                            .append(chord.getId());
-                }
-                sb.append(" ...");
+                    sb.append(" ...");
 
-                menu.setText(sb.toString());
+                    menu.setText(sb.toString());
+                }
             }
 
             return selectedChords.size();

@@ -24,6 +24,7 @@ import omr.sheet.SystemInfo;
 
 import omr.util.TreeNode;
 
+import java.awt.Point;
 import java.util.Collections;
 import java.util.List;
 
@@ -301,7 +302,7 @@ public class ScoreSystem
      * @param point the given point
      * @return the containing part
      */
-    public SystemPart getPartAt (PixelPoint point)
+    public SystemPart getPartAt (Point point)
     {
         Staff staff = getStaffAt(point);
 
@@ -384,7 +385,7 @@ public class ScoreSystem
      * @param sysPt the given point
      * @return the closest staff
      */
-    public Staff getStaffAt (PixelPoint sysPt)
+    public Staff getStaffAt (Point sysPt)
     {
         int bestDy = Integer.MAX_VALUE;
         Staff best = null;

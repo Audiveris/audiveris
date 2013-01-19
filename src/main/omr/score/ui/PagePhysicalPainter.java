@@ -108,11 +108,9 @@ public class PagePhysicalPainter
     /**
      * Highlight a slot with its related chords (stem / notehead)
      *
-     * @param measure the containing measure
-     * @param slot    the slot to highlight
+     * @param slot the slot to highlight
      */
-    public void highlightSlot (Measure measure,
-                               Slot slot)
+    public void highlightSlot (Slot slot)
     {
         Color oldColor = g.getColor();
         g.setColor(Colors.SLOT_CURRENT);
@@ -127,7 +125,7 @@ public class PagePhysicalPainter
         }
 
         // Highlight the vertical slot line
-        drawSlot(false, measure, slot, Colors.SLOT_CURRENT);
+        drawSlot(false, slot, Colors.SLOT_CURRENT);
         g.setColor(oldColor);
     }
 
@@ -139,15 +137,14 @@ public class PagePhysicalPainter
      *
      * @param wholeSystem if true, the slot will embrace the whole system,
      *                    otherwise only the part is embraced
-     * @param measure     the containing measure
      * @param slot        the slot to draw
      * @param color       the color to use in drawing
      */
     public void drawSlot (boolean wholeSystem,
-                          Measure measure,
                           Slot slot,
                           Color color)
     {
+        final Measure measure = slot.getMeasure();
         final Color oldColor = g.getColor();
         g.setColor(color);
 
@@ -375,7 +372,7 @@ public class PagePhysicalPainter
                 if (parameters.isSlotPainting()
                     && (measure.getSlots() != null)) {
                     for (Slot slot : measure.getSlots()) {
-                        drawSlot(false, measure, slot, Colors.SLOT);
+                        drawSlot(false, slot, Colors.SLOT);
                     }
                 }
 
