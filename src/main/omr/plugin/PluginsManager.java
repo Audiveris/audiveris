@@ -27,6 +27,7 @@ import omr.sheet.ui.SheetsController;
 import omr.ui.util.SeparableMenu;
 
 import omr.util.FileUtil;
+import omr.util.Param;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
@@ -34,6 +35,7 @@ import org.jdesktop.application.Task;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileFilter;
+import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -41,6 +43,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
+import omr.step.PluginStep;
+import omr.step.Steps;
 
 /**
  * Class {@code PluginsManager} handles the collection of application
@@ -66,10 +70,10 @@ public class PluginsManager
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(PluginsManager.class);
 
-    /** Singleton */
+    /** Singleton. */
     private static PluginsManager INSTANCE;
 
-    /** Filter for plugin script files */
+    /** Filter for plugin script files. */
     private static final FileFilter pluginFilter = new FileFilter()
     {
         @Override
@@ -86,17 +90,22 @@ public class PluginsManager
         }
     };
 
+    /** Default plugin id. */
+    public static final Param<String> defaultPluginId = new Default();
+
     //~ Instance fields --------------------------------------------------------
-    /** The concrete UI menu */
+    //
+    /** The concrete UI menu. */
     private JMenu menu;
 
-    /** The sorted collection of registered plugins: ID -> Plugin */
+    /** The sorted collection of registered plugins: ID -> Plugin. */
     private final Map<String, Plugin> map = new TreeMap<>();
 
-    /** The default plugin */
+    /** The default plugin. */
     private Plugin defaultPlugin;
 
     //~ Constructors -----------------------------------------------------------
+    //
     //----------------//
     // PluginsManager //
     //----------------//
@@ -118,22 +127,29 @@ public class PluginsManager
                     map.put(plugin.getId(), plugin);
                 } catch (Exception ex) {
                     logger.warning("Could not process plugin file {0} [{1}]",
-                                   file, ex);
+                            file, ex);
                 }
             }
 
             // Default plugin, if any is defined
-            String defaultId = constants.defaultPlugin.getValue()
-                    .trim();
-            defaultPlugin = findDefaultPlugin(defaultId);
-
-            if (!defaultId.isEmpty() && (defaultPlugin == null)) {
-                logger.warning("Could not find default plugin {0}", defaultId);
-            }
+            setDefaultPlugin(constants.defaultPlugin.getValue().trim());
         }
     }
 
     //~ Methods ----------------------------------------------------------------
+    //------------//
+    // getPlugins //
+    //------------//
+    /**
+     * Report the collection of plugins ids
+     *
+     * @return the various plugins ids
+     */
+    public Collection<String> getPluginIds ()
+    {
+        return map.keySet();
+    }
+
     //------------------//
     // getDefaultPlugin //
     //------------------//
@@ -145,6 +161,40 @@ public class PluginsManager
     public Plugin getDefaultPlugin ()
     {
         return defaultPlugin;
+    }
+
+    //------------------//
+    // setDefaultPlugin //
+    //------------------//
+    /**
+     * Assign the default plugin.
+     */
+    public final void setDefaultPlugin (String pluginId)
+    {
+        Plugin plugin = findDefaultPlugin(pluginId);
+
+        if (!pluginId.isEmpty() && (plugin == null)) {
+            logger.warning("Could not find default plugin {0}", pluginId);
+        } else {
+            setDefaultPlugin(plugin);
+        }
+    }
+
+    //------------------//
+    // setDefaultPlugin //
+    //------------------//
+    /**
+     * Assign the default plugin.
+     */
+    public final void setDefaultPlugin (Plugin defaultPlugin)
+    {
+        Plugin oldDefaultPlugin = this.defaultPlugin;
+        this.defaultPlugin = defaultPlugin;
+        
+        if (oldDefaultPlugin != null) {
+           PluginStep pluginStep = (PluginStep) Steps.valueOf(Steps.PLUGIN);
+           pluginStep.setPlugin(defaultPlugin);
+        }
     }
 
     //-------------//
@@ -224,8 +274,7 @@ public class PluginsManager
     private Plugin findDefaultPlugin (String pluginId)
     {
         for (Plugin plugin : map.values()) {
-            if (plugin.getId()
-                    .equalsIgnoreCase(constants.defaultPlugin.getValue())) {
+            if (plugin.getId().equalsIgnoreCase(pluginId)) {
                 return plugin;
             }
         }
@@ -245,11 +294,12 @@ public class PluginsManager
         Constant.String defaultPlugin = new Constant.String(
                 "musescore",
                 "Name of default plugin");
+
     }
 
-    //----------------//
-    // MyMenuListener //
-    //----------------//
+//----------------//
+// MyMenuListener //
+//----------------//
     /**
      * Class {@code MyMenuListener} is triggered when menu is entered.
      * This is meant to enable menu items only when a sheet is selected.
@@ -282,6 +332,34 @@ public class PluginsManager
                     menuItem.setEnabled(enabled);
                 }
             }
+        }
+    }
+
+    //---------//
+    // Default //
+    //---------//
+    private static class Default
+            extends Param<String>
+    {
+
+        @Override
+        public String getSpecific ()
+        {
+            return constants.defaultPlugin.getValue();
+        }
+
+        @Override
+        public boolean setSpecific (String specific)
+        {
+            if (!getSpecific().equals(specific)) {
+                constants.defaultPlugin.setValue(specific);
+                getInstance().setDefaultPlugin(specific);
+                logger.info("Default plugin is now ''{0}''", specific);
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

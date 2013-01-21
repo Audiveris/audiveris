@@ -5,7 +5,7 @@
 /* -------------------------------------------------------------------------- */
 
 /* Variable to modify according to your environment */
-var pathToExec = "C:/Program Files/Finale 2011 Demo/Findemo.exe";
+var pathToExec = "C:/Program Files (x86)/Finale 2012/Finale.exe";
 
 /* Title for menu item */
 pluginTitle = 'Finale';

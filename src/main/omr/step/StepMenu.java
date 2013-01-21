@@ -45,7 +45,8 @@ public class StepMenu
     private static final Logger logger = Logger.getLogger(StepMenu.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** The concrete UI menu */
+    //
+    /** The concrete UI menu. */
     private final JMenu menu;
 
     //~ Constructors -----------------------------------------------------------
@@ -63,24 +64,13 @@ public class StepMenu
         if (menu == null) {
             menu = new JMenu();
         }
+        this.menu = menu;
 
-        Step prevStep = null;
-
-        // List of Steps classes in proper order
-        for (Step step : Steps.values()) {
-            if ((prevStep != null)
-                    && (prevStep.isMandatory() != step.isMandatory())) {
-                menu.addSeparator();
-            }
-
-            menu.add(new StepItem(step));
-            prevStep = step;
-        }
+        // Build the menu content
+        updateMenu();
 
         // Listener to modify attributes on-the-fly
         menu.addMenuListener(new MyMenuListener());
-
-        this.menu = menu;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -95,6 +85,30 @@ public class StepMenu
     public JMenu getMenu ()
     {
         return menu;
+    }
+
+    //------------//
+    // updateMenu //
+    //------------//
+    /**
+     * Update/rebuild the content of menu.
+     */
+    public final void updateMenu ()
+    {
+        menu.removeAll();
+        
+        Step prevStep = null;
+
+        // List of Steps classes in proper order
+        for (Step step : Steps.values()) {
+            if ((prevStep != null)
+                && (prevStep.isMandatory() != step.isMandatory())) {
+                menu.addSeparator();
+            }
+
+            menu.add(new StepItem(step));
+            prevStep = step;
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -176,7 +190,7 @@ public class StepMenu
                     Step sofar = Stepping.getLatestMandatoryStep(sheet);
 
                     if ((sofar == null)
-                            || (Steps.compare(sofar, step) <= 0)) {
+                        || (Steps.compare(sofar, step) <= 0)) {
                         // Here we progress on all sheets of the score
                         new StepTask(step).run(sheet);
                     } else {

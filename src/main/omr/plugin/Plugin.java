@@ -63,16 +63,17 @@ public class Plugin
     private static final Logger logger = Logger.getLogger(Plugin.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** Related javascript file */
+    //
+    /** Related javascript file. */
     private final File file;
 
-    /** Related engine */
+    /** Related engine. */
     private ScriptEngine engine;
 
-    /** Plugin title */
+    /** Plugin title. */
     private String title;
 
-    /** Description used for tool tip */
+    /** Description used for tool tip. */
     private String tip;
 
     //~ Constructors -----------------------------------------------------------

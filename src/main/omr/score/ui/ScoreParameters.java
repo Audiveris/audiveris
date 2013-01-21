@@ -71,6 +71,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import omr.plugin.Plugin;
+import omr.plugin.PluginsManager;
 
 /**
  * Class {@code ScoreParameters} is a dialog that allows the user to
@@ -177,6 +179,7 @@ public class ScoreParameters
                 defaultTextPane,
                 defaultFilterPane,
                 defaultTempoPane,
+                new PluginPane(),
                 new DnDPane(),
                 new ScriptPane(),
                 new StackPane(),
@@ -1078,6 +1081,69 @@ public class ScoreParameters
         {
             stepCombo.setEnabled(bool);
             stepLabel.setEnabled(bool);
+        }
+    }
+
+    //------------//
+    // PluginPane //
+    //------------//
+    /**
+     * Which Plugin should be the default one.
+     * Scope can be: default.
+     */
+    private class PluginPane
+            extends Pane<String>
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** ComboBox for registered plugins */
+        private final JComboBox<String> pluginCombo;
+
+        private final JLabel pluginLabel = new JLabel("Default plugin",
+                SwingConstants.RIGHT);
+
+        //~ Constructors -------------------------------------------------------
+        public PluginPane ()
+        {
+            super("Plugin", null, null, null, PluginsManager.defaultPluginId);
+
+            // ComboBox for triggered step
+            pluginCombo = new JComboBox<>(
+                   PluginsManager.getInstance().getPluginIds().toArray(new String[0]));
+            pluginCombo.setToolTipText("Default plugin to be launched");
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int r)
+        {
+            r = super.defineLayout(builder, cst, r);
+
+            builder.add(pluginLabel, cst.xyw(5, r, 3));
+            builder.add(pluginCombo, cst.xyw(9, r, 3));
+
+            return r + 2;
+        }
+
+        @Override
+        protected String read ()
+        {
+            return pluginCombo.getItemAt(pluginCombo.getSelectedIndex());
+        }
+
+        @Override
+        protected void display (String content)
+        {
+            pluginCombo.setSelectedItem(content);
+        }
+
+        @Override
+        protected void setEnabled (boolean bool)
+        {
+            pluginCombo.setEnabled(bool);
+            pluginLabel.setEnabled(bool);
         }
     }
 

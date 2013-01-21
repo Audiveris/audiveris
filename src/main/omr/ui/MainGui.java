@@ -96,8 +96,7 @@ import javax.swing.SwingUtilities;
  */
 public class MainGui
         extends SingleFrameApplication
-        implements EventSubscriber<SheetEvent>,
-                   PropertyChangeListener
+        implements EventSubscriber<SheetEvent>, PropertyChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -141,6 +140,9 @@ public class MainGui
 
     /** History of recent files. */
     private JMenuItem historyMenu;
+
+    /** Step menu. */
+    private StepMenu stepMenu;
 
     //~ Constructors -----------------------------------------------------------
     //---------//
@@ -320,6 +322,19 @@ public class MainGui
         return "MainGui";
     }
 
+    //-------------//
+    // getStepMenu //
+    //-------------//
+    /**
+     * Report the menu dedicated to steps
+     *
+     * @return the step menu
+     */
+    public StepMenu getStepMenu ()
+    {
+        return stepMenu;
+    }
+
     //------------//
     // hideErrors //
     //------------//
@@ -331,7 +346,8 @@ public class MainGui
     public void hideErrors (JComponent component)
     {
         // To avoid race conditions, check we remove the proper component
-        if ((component != null) && (component == bottomPane.getRightComponent())) {
+        if ((component != null)
+            && (component == bottomPane.getRightComponent())) {
             bottomPane.setRightComponent(null);
         }
     }
@@ -367,28 +383,26 @@ public class MainGui
             final Sheet sheet = sheetEvent.getData();
             SwingUtilities.invokeLater(
                     new Runnable()
-                    {
-                        @Override
-                        public void run ()
-                        {
-                            final StringBuilder sb = new StringBuilder();
+            {
+                @Override
+                public void run ()
+                {
+                    final StringBuilder sb = new StringBuilder();
 
-                            if (sheet != null) {
-                                Score score = sheet.getScore();
-                                // Frame title tells score name
-                                sb.append(score.getImageFile().getName());
-                            }
+                    if (sheet != null) {
+                        Score score = sheet.getScore();
+                        // Frame title tells score name
+                        sb.append(score.getImageFile().getName());
+                    }
 
-                            // Update frame title
-                            sb.append(" - ");
-                            sb.append(
-                                    MainGui.this.getContext().getResourceMap().
-                                    getString(
-                                    "mainFrame.title"));
-                            frame.setTitle(sb.toString());
-                        }
-                    });
-
+                    // Update frame title
+                    sb.append(" - ");
+                    sb.append(
+                            MainGui.this.getContext().getResourceMap().getString(
+                            "mainFrame.title"));
+                    frame.setTitle(sb.toString());
+                }
+            });
         } catch (Exception ex) {
             logger.warning(getClass().getName() + " onEvent error", ex);
         }
@@ -407,8 +421,10 @@ public class MainGui
     {
         String propertyName = evt.getPropertyName();
         Boolean display = (Boolean) evt.getNewValue();
+
         switch (propertyName) {
         case GuiActions.BOARDS_DISPLAYED:
+
             // Toggle display of boards
             if (display) {
                 appPane.add(boardsScrollPane, BorderLayout.EAST);
@@ -417,32 +433,40 @@ public class MainGui
             }
 
             appPane.revalidate();
+
             break;
 
         case GuiActions.LOG_DISPLAYED:
+
             // Toggle display of log
             if (display) {
                 bottomPane.setLeftComponent(logPane.getComponent());
             } else {
                 bottomPane.setLeftComponent(null);
             }
+
             break;
 
         case GuiActions.ERRORS_DISPLAYED:
+
             // Toggle display of errors
             if (display) {
                 JComponent comp = null;
                 Sheet sheet = sheetsController.getSelectedSheet();
+
                 if (sheet != null) {
                     ErrorsEditor editor = sheet.getErrorsEditor();
+
                     if (editor != null) {
                         comp = editor.getComponent();
                     }
                 }
+
                 bottomPane.setRightComponent(comp);
             } else {
                 bottomPane.setRightComponent(null);
             }
+
             break;
         }
 
@@ -453,20 +477,6 @@ public class MainGui
         } else {
             mainPane.setBottomComponent(null);
         }
-    }
-
-    //----------------//
-    // needBottomPane //
-    //----------------//
-    /**
-     * Check whether we should keep the bottomPane.
-     *
-     * @return true if bottomPane is not empty
-     */
-    private boolean needBottomPane ()
-    {
-        return GuiActions.getInstance().isLogDisplayed()
-               || GuiActions.getInstance().isErrorsDisplayed();
     }
 
     //------------------//
@@ -491,6 +501,14 @@ public class MainGui
     public void setBoardsPane (JComponent boards)
     {
         boardsScrollPane.setBoards(boards);
+    }
+
+    //-------------------//
+    // setHistoryEnabled //
+    //-------------------//
+    public void setHistoryEnabled (boolean bool)
+    {
+        historyMenu.setEnabled(bool);
     }
 
     //------------//
@@ -527,6 +545,7 @@ public class MainGui
         if (constants.preloadCostlyPackages.getValue()) {
             JaiLoader.preload();
             ScoreExporter.preload();
+
             ///MidiAgentFactory.preload();
         }
     }
@@ -548,7 +567,8 @@ public class MainGui
 
         // Weakly listen to GUI Actions parameters
         PropertyChangeListener weak = new WeakPropertyChangeListener(this);
-        GuiActions.getInstance().addPropertyChangeListener(weak);
+        GuiActions.getInstance()
+                .addPropertyChangeListener(weak);
 
         // Make the GUI instance available for the other classes
         Main.setGui(this);
@@ -561,12 +581,14 @@ public class MainGui
 
         // Launch scores
         for (Callable<Void> task : Main.getFilesTasks()) {
-            OmrExecutors.getCachedLowExecutor().submit(task);
+            OmrExecutors.getCachedLowExecutor()
+                    .submit(task);
         }
 
         // Launch scripts
         for (Callable<Void> task : Main.getScriptsTasks()) {
-            OmrExecutors.getCachedLowExecutor().submit(task);
+            OmrExecutors.getCachedLowExecutor()
+                    .submit(task);
         }
     }
 
@@ -594,25 +616,28 @@ public class MainGui
         frame.setGlassPane(glassPane);
 
         // Use the defined application name
-        appName = getContext().getResourceMap().getString("Application.name");
+        appName = getContext()
+                .getResourceMap()
+                .getString("Application.name");
 
         // Define an exit listener
         addExitListener(
                 new ExitListener()
-                {
-                    @Override
-                    public boolean canExit (EventObject e)
-                    {
-                        return true;
-                    }
+        {
+            @Override
+            public boolean canExit (EventObject e)
+            {
+                return true;
+            }
 
-                    @Override
-                    public void willExit (EventObject e)
-                    {
-                        // Store latest constant values on disk
-                        ConstantManager.getInstance().storeResource();
-                    }
-                });
+            @Override
+            public void willExit (EventObject e)
+            {
+                // Store latest constant values on disk
+                ConstantManager.getInstance()
+                        .storeResource();
+            }
+        });
 
         show(frame);
     }
@@ -666,7 +691,9 @@ public class MainGui
 
         // mainPane =  sheetsController / bottomPane
         mainPane = new JSplitPane(
-                JSplitPane.VERTICAL_SPLIT, sheetsController.getComponent(), null);
+                JSplitPane.VERTICAL_SPLIT,
+                sheetsController.getComponent(),
+                null);
         mainPane.setBorder(null);
         mainPane.setDividerSize(1);
         mainPane.setResizeWeight(0.9d); // Give bulk space to upper part
@@ -675,7 +702,8 @@ public class MainGui
         JPanel toolKeyPanel = new JPanel();
         toolKeyPanel.setLayout(new BorderLayout());
 
-        JComponent stepPanel = Stepping.createMonitor().getComponent();
+        JComponent stepPanel = Stepping.createMonitor()
+                .getComponent();
         toolKeyPanel.add(stepPanel, BorderLayout.CENTER);
 
         JComponent memoryPanel = new MemoryMeter().getComponent();
@@ -691,32 +719,38 @@ public class MainGui
 
         // Global layout: Use a toolbar on top and a double split pane below
         toolBar.add(toolKeyPanel);
-        frame.getContentPane().setLayout(new BorderLayout());
-        frame.getContentPane().add(toolBar, BorderLayout.NORTH);
-        frame.getContentPane().add(appPane, BorderLayout.CENTER);
+        frame.getContentPane()
+                .setLayout(new BorderLayout());
+        frame.getContentPane()
+                .add(toolBar, BorderLayout.NORTH);
+        frame.getContentPane()
+                .add(appPane, BorderLayout.CENTER);
 
         // Suppress all internal borders, recursively
         UIUtilities.suppressBorders(frame.getContentPane());
-        
+
         // Display the boards pane?
-        if (GuiActions.getInstance().isBoardsDisplayed()) {
+        if (GuiActions.getInstance()
+                .isBoardsDisplayed()) {
             appPane.add(boardsScrollPane, BorderLayout.EAST);
         }
 
         // Display the log pane?
-        if (GuiActions.getInstance().isLogDisplayed()) {
+        if (GuiActions.getInstance()
+                .isLogDisplayed()) {
             bottomPane.setLeftComponent(logPane.getComponent());
         }
 
         // Display the errors pane?
-        if (GuiActions.getInstance().isErrorsDisplayed()) {
+        if (GuiActions.getInstance()
+                .isErrorsDisplayed()) {
             bottomPane.setRightComponent(null);
         }
 
         // BottomPane = Log & Errors
         if (needBottomPane()) {
             mainPane.setBottomComponent(bottomPane);
-        }        
+        }
     }
 
     //-------------//
@@ -728,27 +762,30 @@ public class MainGui
         JMenu sheetMenu = new SeparableMenu();
 
         // Specific history sub-menu
-        NameSet history = ScoresManager.getInstance().getHistory();
+        NameSet history = ScoresManager.getInstance()
+                .getHistory();
         historyMenu = history.menu("Sheet History", new HistoryListener());
         setHistoryEnabled(!history.isEmpty());
         sheetMenu.add(historyMenu);
 
         // Specific step menu
-        JMenu stepMenu = new StepMenu(new SeparableMenu()).getMenu();
+        stepMenu = new StepMenu(new SeparableMenu());
 
         // Specific plugin menu
-        JMenu pluginMenu = PluginsManager.getInstance().getMenu(null);
+        JMenu pluginMenu = PluginsManager.getInstance()
+                .getMenu(null);
 
         // For history sub-menu
-        ResourceMap resource = MainGui.getInstance().getContext().getResourceMap(
-                Actions.class);
+        ResourceMap resource = MainGui.getInstance()
+                .getContext()
+                .getResourceMap(Actions.class);
         historyMenu.setName("historyMenu");
         resource.injectComponents(historyMenu);
 
         // For some specific top-level menus
         ActionManager mgr = ActionManager.getInstance();
         mgr.injectMenu(Actions.Domain.FILE.name(), sheetMenu);
-        mgr.injectMenu(Actions.Domain.STEP.name(), stepMenu);
+        mgr.injectMenu(Actions.Domain.STEP.name(), stepMenu.getMenu());
         mgr.injectMenu(Actions.Domain.PLUGIN.name(), pluginMenu);
 
         // All other commands
@@ -767,12 +804,20 @@ public class MainGui
         }
     }
 
-    //-------------------//
-    // setHistoryEnabled //
-    //-------------------//
-    public void setHistoryEnabled (boolean bool)
+    //----------------//
+    // needBottomPane //
+    //----------------//
+    /**
+     * Check whether we should keep the bottomPane.
+     *
+     * @return true if bottomPane is not empty
+     */
+    private boolean needBottomPane ()
     {
-        historyMenu.setEnabled(bool);
+        return GuiActions.getInstance()
+                .isLogDisplayed()
+               || GuiActions.getInstance()
+                .isErrorsDisplayed();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -825,7 +870,8 @@ public class MainGui
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            final String name = e.getActionCommand().trim();
+            final String name = e.getActionCommand()
+                    .trim();
 
             if (!name.isEmpty()) {
                 File file = new File(name);

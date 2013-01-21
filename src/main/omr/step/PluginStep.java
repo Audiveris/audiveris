@@ -30,7 +30,7 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class PluginStep
-    extends AbstractStep
+        extends AbstractStep
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -38,12 +38,11 @@ public class PluginStep
     private static final Logger logger = Logger.getLogger(PluginStep.class);
 
     //~ Instance fields --------------------------------------------------------
-
-    /** The defined default plugin */
-    private final Plugin plugin;
+    //
+    /** The current default plugin. */
+    private Plugin plugin;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // PluginStep //
     //------------//
@@ -53,33 +52,51 @@ public class PluginStep
     public PluginStep (Plugin plugin)
     {
         super(
-            Steps.PLUGIN,
-            Level.SCORE_LEVEL,
-            Mandatory.OPTIONAL,
-            DATA_TAB,
-            "Launch the default plugin");
+                Steps.PLUGIN,
+                Level.SCORE_LEVEL,
+                Mandatory.OPTIONAL,
+                DATA_TAB,
+                "Launch the default plugin");
 
         this.plugin = plugin;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // doit //
     //------//
     @Override
     public void doit (Collection<SystemInfo> systems,
-                      Sheet                  sheet)
-        throws StepException
+                      Sheet sheet)
+            throws StepException
     {
         Score score = sheet.getScore();
 
         // Interactive or Batch?
         if (Main.getGui() != null) {
             plugin.getTask(score)
-            .execute();
+                    .execute();
         } else {
             plugin.runPlugin(score);
+        }
+    }
+
+    //-----------//
+    // setPlugin //
+    //-----------//
+    /**
+     * Set the default plugin.
+     *
+     * @param plugin the (new) default plugin
+     */
+    public void setPlugin (Plugin plugin)
+    {
+        Plugin oldPlugin = this.plugin;
+        this.plugin = plugin;
+
+        if (oldPlugin != null) {
+            // Update step tooltip with this new plugin
+            Main.getGui().getStepMenu().updateMenu();
         }
     }
 
@@ -88,6 +105,7 @@ public class PluginStep
     //----------------//
     /**
      * Augment the description with the plugin title
+     *
      * @return a named description
      */
     @Override
