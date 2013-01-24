@@ -195,9 +195,21 @@
             <zipfileset dir="${www.dir}" prefix="${name}/www"
                         includes="**"
                         excludes="${dist.excludes}, docs/api/**"/>
-
-            <!-- Train files -->
-            <zipfileset dir="${train.dir}" prefix="${name}/train"
+        </zip>
+    </target>
+    
+    <!-- ================= -->
+    <!--  T R A I N I N G  -->
+    <!-- ================= -->
+    <target name="training"
+            depends="init"
+            description="Pack the whole training material">
+        
+        <!-- Generate the training zip archive -->
+        <zip 
+            destfile="${basedir}/${name}-${spec.version}-training.zip" >
+            
+            <zipfileset dir="${train.dir}" prefix="train"
                         includes="**/*.xml,**/.glyphignore"
                         excludes="${dist.excludes}"/>
         </zip>
@@ -237,9 +249,7 @@
                  classpathref="tools.classpath"
                  classname="net.sourceforge.ant4hg.taskdefs.HgTask"/>           
         
-        <hg cmd="log" dir="${basedir}">
-            <arg value="-rtip"/>
-        </hg>
+        <hg cmd="log" dir="${basedir}" revision="tip" />
         
         <!-- 
         <echo message="==========================" />
