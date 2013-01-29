@@ -284,7 +284,7 @@
     <!--  - I N S T A L L E R S - W I N D O W S  -->
     <!-- ======================================= -->
     <target name="-installers-windows" if="${is.windows}">
-      <antcall target="windows.-installers" />
+        <antcall target="windows.-installers" />
     </target>
     
     <!-- ============================= -->
@@ -292,7 +292,7 @@
     <!-- ============================= -->
     <!-- Generate project documentation -->
     <target name="-javadoc-build"
-            depends="-uml, audiveris-impl.-javadoc-build, -publish-doc"/>
+            depends="-uml, audiveris-impl.-javadoc-build, -publish-api"/>
 
     <!-- ===================== -->
     <!--  - N O - H G - T I P  -->
@@ -316,13 +316,6 @@
         <delete verbose="${verbose}">
             <fileset dir="${basedir}" includes="*.zip"/>
         </delete> 
-    </target>
-
-    <!-- ===================== -->
-    <!--  - P O S T - I N I T  -->
-    <!-- ===================== -->
-    <target name="-post-init">
-        <echo level="verbose" message="-post-init impl.name=${impl.name}" />
     </target>
 
     <!-- =================== -->
@@ -386,14 +379,29 @@ Specification-Version: ${impl.version}
     </target>
 
     <!-- ========================= -->
-    <!--  - P U B L I S H - D O C  -->
+    <!--  - P U B L I S H - A P I  -->
     <!-- ========================= -->
-    <target name="-publish-doc">
+    <target name="-publish-api">
         <!-- Copy JavaDoc from dist folder to the www folder -->
         <mkdir dir="${www.dir}/docs/api"/>
         <copy todir="${www.dir}/docs/api/" verbose="$verbose">
             <fileset dir="${dist.javadoc.dir}" includes="**/*"/>
         </copy>
+    </target>
+
+    <!-- ======================= -->
+    <!--  - R E M O V E - A P I  -->
+    <!-- ======================= -->
+    <target name="-remove-api">
+        <!-- Remove the JavaDoc from the www folder -->
+        <echo message="Removing API folder" />
+        <delete
+            verbose="${verbose}"
+            includeEmptyDirs="true"
+            failonerror="false">
+            <fileset dir="${www.dir}/docs/api/" includes="**/*"/>
+            <fileset dir="${www.dir}/docs/" includes="api"/>
+        </delete>
     </target>
 
     <!-- ========= -->

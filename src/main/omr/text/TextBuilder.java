@@ -500,6 +500,7 @@ public class TextBuilder
                 if (line.isLyrics()) {
                     lyrics.add(line);
                 } else {
+                    line.setRole(null); // To force role recomputing later
                     standards.add(line);
                 }
 

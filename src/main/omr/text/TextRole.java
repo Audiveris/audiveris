@@ -113,6 +113,10 @@ public enum TextRole
         if (line == null) {
             return null;
         }
+        
+        if (line.isVip()) {
+            logger.info("TextRoleInfo. guessRole for {0}", line.getValue());
+        }
 
         int chordCount = 0;
         for (TextWord word : line.getWords()) {

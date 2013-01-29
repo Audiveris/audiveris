@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.glyph.pattern;
 
-import java.util.logging.Level;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 

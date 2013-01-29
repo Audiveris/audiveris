@@ -282,11 +282,12 @@ public class Slot
         // We look for the chord just above
         for (Chord chord : getChords()) {
             PixelPoint head = chord.getHeadLocation();
-            if (head != null && head.y < point.y
-                && chord.getStaff() == targetStaff) {
-                chordAbove = chord;
+            if (head != null && head.y < point.y) {
+                if (chord.getStaff() == targetStaff) {
+                    chordAbove = chord;
+                }
             } else {
-                break;
+                break; // Since slot chords are sorted from top to bottom
             }
         }
 
