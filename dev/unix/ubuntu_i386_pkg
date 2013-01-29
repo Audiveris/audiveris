@@ -1,0 +1,3 @@
+unix.package.name=ubuntu
+unix.package.type=deb
+unix.package.arch=i386

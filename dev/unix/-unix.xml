@@ -15,7 +15,11 @@
     </description>
   
     <!--
-      TODO: Populate this skeleton as needed.
+      In order to generate Unix packages you need to execute the "installers"
+      target of the main build script and specify an appropriate property file.
+      Example:
+      
+      ant -propertyfile ./dev/unix/ubuntu_amd64_pkg installers
     -->    
   
     <!-- ===  Internal Targets  ============================================ --> 
@@ -26,66 +30,151 @@
     <!-- ============= -->
     <target name="-clean"
             if="${is.unix}">
-        <!-- Remove all the generated outputs for Unix -->
-        <delete dir="${dist.dir}/AudiverisLinux" includeemptydirs="true"/>
+        <!-- Remove all the generated packages for Unix -->
+        <delete dir="${dist.dir}/deb" includeemptydirs="true"/>
     </target>
-  
+    
+    <!-- ================================ -->
+    <!-- Set several important conditions -->
+    <!-- ================================ -->
+    <condition property="is.deb" else="false">
+        <equals arg1="${unix.package.type}" arg2="deb"/>
+    </condition>
+    
+    <condition property="is.rpm" else="false">
+        <equals arg1="${unix.package.type}" arg2="rpm"/>
+    </condition>
+    
+    <condition property="jni.src.prefix" value="32bit">
+        <equals arg1="${unix.package.arch}" arg2="i386"/>
+    </condition>
+    
+    <condition property="jni.src.prefix" value="64bit">
+        <equals arg1="${unix.package.arch}" arg2="amd64"/>
+    </condition>
+
+    <!-- ================================================-->
+    <!--  Copy files shared by both DEB and RPM systems  -->
+    <!-- ================================================-->
+    <target name="-copy-shared-files">
+        <!-- copy the wrapper script -->
+        <copy verbose="${verbose}" tofile="${param1}/usr/bin/${name}"
+              file="${dev.dir}/unix/${name}.sh">
+        </copy>
+        
+        <!-- copy TessBridge JNI library according to target architecture -->
+        <copy verbose="${verbose}" todir="${param1}/usr/lib/jni"
+              file="${dev.dir}/unix/TessBridgeJNI/${jni.src.prefix}/libjniTessBridge.so">
+        </copy>
+        
+        <!-- copy desktop file and resources -->
+        <copy verbose="${verbose}" todir="${param1}/usr/share/applications"
+              file="${dev.dir}/unix/${Name}.desktop">
+        </copy>
+        
+        <copy verbose="${verbose}" todir="${param1}/usr/share/fonts"
+              file="${dev.dir}/material/MusicalSymbols.ttf">
+        </copy>
+
+        <copy verbose="${verbose}"
+              tofile="${param1}/usr/share/icons/${name}/${name}.png"
+              file="${res.dir}/icon-256.png">
+        </copy>
+
+        <copy verbose="${verbose}" todir="${param1}/usr/share/doc/${name}"
+              file="${dev.dir}/unix/copyright">
+        </copy>
+        
+        <!-- add plugins generator -->
+        <copy verbose="${verbose}" todir="${param1}/usr/share/${name}"
+              file="${dev.dir}/unix/AddPlugins.sh">
+        </copy>
+        
+        <!-- copy over the application jar and associated libraries -->
+        <copy verbose="${verbose}" todir="${param1}/usr/share/${name}/dist">
+            <fileset dir="${dist.dir}" includes="*.jar"/>
+        </copy>
+
+        <copy verbose="${verbose}" todir="${param1}/usr/share/${name}/dist/lib">
+            <fileset dir="${dist.dir}/lib"/>
+        </copy>
+
+        <!-- copy over resources, examples and documentation -->
+        <copy verbose="${verbose}" todir="${param1}/usr/share/${name}/res">
+            <fileset dir="${res.dir}"/>
+        </copy>
+
+        <copy verbose="${verbose}" todir="${param1}/usr/share/${name}/examples">
+            <fileset dir="${examples.dir}"/>
+        </copy>
+
+        <copy verbose="${verbose}" todir="${param1}/usr/share/${name}/www">
+            <fileset dir="${www.dir}" excludes="**/*.db"/>
+        </copy>
+    </target>
+
+    <!-- ============================-->
+    <!--  DEBIAN Package generation  -->
+    <!-- ============================-->  
+    <target name="-deb-build"
+            depends=""
+            if="${is.deb}">
+        <echo message="Building ${unix.package.name} ${unix.package.arch} package" />
+        
+        <mkdir dir="${dist.dir}/deb"/>
+        <mkdir dir="${dist.dir}/deb/control"/>
+        <mkdir dir="${dist.dir}/deb/data"/>
+        
+        <antcall target="-copy-shared-files">
+            <param name="param1" value="${dist.dir}/deb/data"/>
+        </antcall>
+        
+        <taskdef name="jdeb" classpath="${tools.dir}/jdeb.jar"
+                 classname="org.vafer.jdeb.ant.DebAntTask"/>
+        
+        <copy todir="${dist.dir}/deb/control" overwrite="true">
+            <fileset dir="${dev.dir}/unix/deb" />
+            <filterset>
+                <filter token="VERSION" value="${spec.version}"/>
+                <filter token="ARCHITECTURE" value="${unix.package.arch}"/>
+            </filterset>
+        </copy>
+        
+        <!-- tar our data in order to be able to set executable permissions -->
+        <tar longfile="gnu" destfile="${dist.dir}/deb/data.tar.gz" compression="gzip">
+            <tarfileset dir="${dist.dir}/deb/data" mode="755">
+                <include name="**/usr/bin/**"/>
+            </tarfileset>
+            <tarfileset dir="${dist.dir}/deb/data" mode="755">
+                <include name="**/*.sh"/>
+            </tarfileset>
+            <tarfileset dir="${dist.dir}/deb/data">
+                <exclude name="**/*.sh"/>
+                <exclude name="**/usr/bin/**"/>
+            </tarfileset>
+        </tar>
+
+        <!-- delegate the actual packaging job to JDEB task -->
+        <jdeb destfile="${dist.dir}/${name}-${impl.version}-ubuntu-${unix.package.arch}.deb"
+              control="${dist.dir}/deb/control" verbose="false">
+            <data src="${dist.dir}/deb/data.tar.gz" type="archive"/>
+        </jdeb>
+    </target>
   
     <!-- ======================= -->
     <!--  - I N S T A L L E R S  -->
     <!-- ======================= -->
-    <!-- Build Unix installers for x86 and x64 architectures-->
+    <!-- Build Unix installers according to build properties -->
     <target name="-installers"
-            depends=""
+            depends="-deb-build, -rpm-build"
             if="${is.unix}">
-        <echo message="Build generic Linux package" />
-        
-        <!-- First phase: building generic Linux package -->
-        <!-- add the wrapper script -->
-        <mkdir dir="${dist.dir}/AudiverisLinux"/>
-        <copy 
-           verbose="${verbose}"
-           todir="${dist.dir}/AudiverisLinux"
-           file="${dev.dir}/unix/audiveris.sh">
-        </copy>
-        
-        <!-- copy over application jar and its libraries -->
-        <mkdir dir="${dist.dir}/AudiverisLinux/AudiverisApp"/>
-        <!--<mkdir dir="${dist.dir}/AudiverisLinux/AudiverisApp/dist"/> -->
-        
-        <!-- add the plugin generator -->
-        <copy 
-           verbose="${verbose}"
-           todir="${dist.dir}/AudiverisLinux/AudiverisApp"
-           file="${dev.dir}/unix/AddPlugins.sh">
-        </copy>
-
-        <!-- copy over the application and associated libraries -->        
-        <copy 
-           verbose="${verbose}"
-           todir="${dist.dir}/AudiverisLinux/AudiverisApp/dist">
-           <fileset dir="${dist.dir}"
-                     includes="*.jar"/>
-        </copy>
-        <copy todir="${dist.dir}/AudiverisLinux/AudiverisApp/dist/lib">
-            <fileset dir="${dist.dir}/lib"/>
-        </copy>
-        
-        <!-- copy over JNI libraries -->
-        <copy todir="${dist.dir}/AudiverisLinux/AudiverisApp/TessBridgeJNI">
-            <fileset dir="${dev.dir}/unix/TessBridgeJNI"/>
-        </copy>
-        
-        <!-- copy over resources, examples and documentation -->
-        <copy todir="${dist.dir}/AudiverisLinux/AudiverisApp/res">
-            <fileset dir="${res.dir}"/>
-        </copy>
-        <copy todir="${dist.dir}/AudiverisLinux/AudiverisApp/examples">
-            <fileset dir="${examples.dir}"/>
-        </copy>
-        <copy todir="${dist.dir}/AudiverisLinux/AudiverisApp/www">
-            <fileset dir="${www.dir}"/>
-        </copy>
+    </target>
+    
+    <!-- =========================-->
+    <!--  RPM Package generation  -->
+    <!-- =========================-->  
+    <target name="-rpm-build" if="${is.rpm}">
+        <echo message="Building RPM packages is not implemented yet!" />
     </target>
   
 </project>
