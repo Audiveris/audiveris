@@ -264,7 +264,7 @@ public class PictureLoader
         gsArgs.add("-dNOPAUSE");
         gsArgs.add("-dBATCH");
         gsArgs.add("-dSAFER");
-        gsArgs.add("-sDEVICE=tiffscaled8");
+        gsArgs.add("-sDEVICE=" + constants.pdfDevice.getValue());
         gsArgs.add("-r" + constants.pdfResolution.getValue());
         gsArgs.add("-sOutputFile=" + temp);
         if (id != null) {
@@ -337,6 +337,10 @@ public class PictureLoader
                 "DPI",
                 300,
                 "DPI resolution for PDF images");
+
+        Constant.String pdfDevice = new Constant.String(
+                "tiff24nc",
+                "Ghostscript output device (tiff24nc or tiffscaled8)");
 
     }
 }
