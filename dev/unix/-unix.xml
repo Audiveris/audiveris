@@ -64,6 +64,7 @@
         
         <!-- copy TessBridge JNI library according to target architecture -->
         <copy verbose="${verbose}" todir="${param1}/usr/lib/jni"
+              overwrite="true"
               file="${dev.dir}/unix/TessBridgeJNI/${jni.src.prefix}/libjniTessBridge.so">
         </copy>
         
