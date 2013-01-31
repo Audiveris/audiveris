@@ -498,11 +498,14 @@ public class ScoreXmlReduction
                         si.setId("P" + result.getId() + "-I" + idx);
 
                         // Related Midi instrument
-                        for (MidiInstrument midi : old.getMidiInstrument()) {
-                            if (midi.getId() == si) {
-                                newSP.getMidiInstrument().add(midi);
+                        for (Object obj : old.getMidiDeviceAndMidiInstrument()) {
+                            if (obj instanceof MidiInstrument) {
+                                MidiInstrument midi = (MidiInstrument) obj;
+                                if (midi.getId() == si) {
+                                    newSP.getMidiDeviceAndMidiInstrument().add(midi);
 
-                                break;
+                                    break;
+                                }
                             }
                         }
                     } else {
@@ -673,11 +676,14 @@ public class ScoreXmlReduction
                         si.setId("P" + result.getId() + "-I" + idx);
 
                         // Related Midi instrument
-                        for (MidiInstrument midi : old.getMidiInstrument()) {
-                            if (midi.getId() == si) {
-                                newSP.getMidiInstrument().add(midi);
+                        for (Object obj : old.getMidiDeviceAndMidiInstrument()) {
+                            if (obj instanceof MidiInstrument) {
+                                MidiInstrument midi = (MidiInstrument) obj;
+                                if (midi.getId() == si) {
+                                    newSP.getMidiDeviceAndMidiInstrument().add(midi);
 
-                                break;
+                                    break;
+                                }
                             }
                         }
                     } else {
@@ -700,10 +706,11 @@ public class ScoreXmlReduction
                 }
 
                 // Midi device
-                if ((old.getMidiDevice() != null)
-                    && (newSP.getMidiDevice() == null)) {
-                    newSP.setMidiDevice(old.getMidiDevice());
-                }
+                //TODO: Translate this from MusicXML 2.0 to 3.0
+//                if ((old.getMidiDevice() != null)
+//                    && (newSP.getMidiDevice() == null)) {
+//                    newSP.setMidiDevice(old.getMidiDevice());
+//                }
 
                 // Name display
                 if ((old.getPartNameDisplay() != null)

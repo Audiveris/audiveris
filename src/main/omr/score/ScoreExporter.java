@@ -92,9 +92,8 @@ import proxymusic.DegreeType;
 import proxymusic.DegreeValue;
 import proxymusic.Direction;
 import proxymusic.DirectionType;
-import proxymusic.DisplayStepOctave;
 import proxymusic.Empty;
-import proxymusic.EmptyPrintStyle;
+import proxymusic.EmptyPrintStyleAlign;
 import proxymusic.Encoding;
 import proxymusic.FontStyle;
 import proxymusic.FontWeight;
@@ -121,6 +120,7 @@ import proxymusic.PartList;
 import proxymusic.PartName;
 import proxymusic.Pitch;
 import proxymusic.Repeat;
+import proxymusic.Rest;
 import proxymusic.RightLeftMiddle;
 import proxymusic.Root;
 import proxymusic.RootStep;
@@ -132,7 +132,7 @@ import proxymusic.Sound;
 import proxymusic.StaffDetails;
 import proxymusic.StaffLayout;
 import proxymusic.StartStop;
-import proxymusic.StartStopChange;
+import proxymusic.StartStopChangeContinue;
 import proxymusic.StartStopContinue;
 import proxymusic.Stem;
 import proxymusic.StemValue;
@@ -557,7 +557,7 @@ public class ScoreExporter
             Staff staff = current.note.getStaff();
             insertStaffId(direction, staff);
 
-            proxymusic.EmptyPrintStyle pmCoda = factory.createEmptyPrintStyle();
+            proxymusic.EmptyPrintStyleAlign pmCoda = factory.createEmptyPrintStyleAlign();
             // default-x
             pmCoda.setDefaultX(
                     toTenths(
@@ -662,7 +662,7 @@ public class ScoreExporter
             // relative-x
             harmony.setRelativeX(
                     toTenths(
-                    symbol.getReferencePoint().x 
+                    symbol.getReferencePoint().x
                     - current.note.getCenterLeft().x));
 
             // Placement
@@ -793,7 +793,7 @@ public class ScoreExporter
             }
 
             // Everything is now OK
-            directionType.setDynamics(pmDynamics);
+            directionType.getDynamics().add(pmDynamics);
             direction.getDirectionType().add(directionType);
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
@@ -1120,10 +1120,15 @@ public class ScoreExporter
 
             // Rest ?
             if (note.isRest()) {
-                DisplayStepOctave displayStepOctave = factory.
-                        createDisplayStepOctave();
+                Rest rest = factory.createRest();
+
+                // Rest for the whole measure?
+                if (chord.isWholeDuration()) {
+                    rest.setMeasure(YesNo.YES);
+                }
+
                 /// TODO ??? Set Step or Octave ???
-                current.pmNote.setRest(displayStepOctave);
+                current.pmNote.setRest(rest);
             } else {
                 // Pitch
                 Pitch pitch = factory.createPitch();
@@ -1180,7 +1185,10 @@ public class ScoreExporter
             if (!note.getMeasure().isDummy()) {
                 NoteType noteType = factory.createNoteType();
                 noteType.setValue("" + getNoteTypeName(note));
-                current.pmNote.setType(noteType);
+
+                if (!chord.isWholeDuration()) {
+                    current.pmNote.setType(noteType);
+                }
             }
 
             // For specific mirrored note
@@ -1227,7 +1235,7 @@ public class ScoreExporter
             if (note.getAccidental() != null) {
                 Accidental accidental = factory.createAccidental();
                 accidental.setValue(
-                        accidentalTextOf(note.getAccidental().getShape()));
+                        accidentalValueOf(note.getAccidental().getShape()));
                 current.pmNote.setAccidental(accidental);
             }
 
@@ -1369,9 +1377,10 @@ public class ScoreExporter
             pmPedal.setLine(YesNo.NO);
 
             // Start / Stop type
-            pmPedal.
-                    setType(
-                    pedal.isStart() ? StartStopChange.START : StartStopChange.STOP);
+            pmPedal.setType(
+                    pedal.isStart()
+                    ? StartStopChangeContinue.START
+                    : StartStopChangeContinue.STOP);
 
             // Staff ?
             Staff staff = current.note.getStaff();
@@ -1576,7 +1585,7 @@ public class ScoreExporter
             Direction direction = new Direction();
             DirectionType directionType = factory.createDirectionType();
 
-            EmptyPrintStyle empty = factory.createEmptyPrintStyle();
+            EmptyPrintStyleAlign empty = factory.createEmptyPrintStyleAlign();
 
             // Staff ?
             Staff staff = current.note.getStaff();
@@ -1650,7 +1659,7 @@ public class ScoreExporter
                 Tied tied = factory.createTied();
 
                 // Type
-                tied.setType(isStart ? StartStop.START : StartStop.STOP);
+                tied.setType(isStart ? StartStopContinue.START : StartStopContinue.STOP);
 
                 // Orientation
                 if (isStart) {
@@ -1844,7 +1853,7 @@ public class ScoreExporter
             creditWords.setDefaultY(
                     toTenths(current.page.getDimension().height - pt.y));
 
-            pmCredit.getLinkOrBookmarkOrCreditImage().add(creditWords);
+            pmCredit.getCreditTypeOrLinkOrBookmark().add(creditWords);
             scorePartwise.getCredit().add(pmCredit);
         } catch (Exception ex) {
             logger.warning("Error visiting " + text, ex);
@@ -1866,12 +1875,12 @@ public class ScoreExporter
                 Time time = factory.createTime();
 
                 // Beats
-                time.getBeatsAndBeatType().add(
+                time.getTimeSignature().add(
                         factory.createTimeBeats(
                         "" + timeSignature.getNumerator()));
 
                 // BeatType
-                time.getBeatsAndBeatType().add(
+                time.getTimeSignature().add(
                         factory.createTimeBeatType(
                         "" + timeSignature.getDenominator()));
 
@@ -2153,7 +2162,7 @@ public class ScoreExporter
     //--------//
     private static java.lang.String getDen (Time time)
     {
-        for (JAXBElement<java.lang.String> elem : time.getBeatsAndBeatType()) {
+        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
             if (elem.getName().getLocalPart().equals("beat-type")) {
                 return elem.getValue();
             }
@@ -2189,7 +2198,7 @@ public class ScoreExporter
     //--------//
     private static java.lang.String getNum (Time time)
     {
-        for (JAXBElement<java.lang.String> elem : time.getBeatsAndBeatType()) {
+        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
             if (elem.getName().getLocalPart().equals("beats")) {
                 return elem.getValue();
             }
@@ -2374,7 +2383,7 @@ public class ScoreExporter
 
         // Midi instrument
         MidiInstrument midiInstrument = factory.createMidiInstrument();
-        pmScorePart.getMidiInstrument().add(midiInstrument);
+        pmScorePart.getMidiDeviceAndMidiInstrument().add(midiInstrument);
         midiInstrument.setId(scoreInstrument);
         midiInstrument.setMidiChannel(scorePart.getId());
         midiInstrument.setMidiProgram(midiProgram);

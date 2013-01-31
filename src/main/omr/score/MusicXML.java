@@ -20,6 +20,7 @@ import omr.score.entity.LyricsItem;
 import omr.score.entity.Note;
 
 import proxymusic.AccidentalText;
+import proxymusic.AccidentalValue;
 import proxymusic.BarStyle;
 import proxymusic.DegreeTypeValue;
 import proxymusic.Empty;
@@ -74,12 +75,24 @@ public class MusicXML
     //------------------//
     public static AccidentalText accidentalTextOf (Shape shape)
     {
+        ObjectFactory  factory = new ObjectFactory();
+        AccidentalText accidentaltext = factory.createAccidentalText();
+        accidentaltext.setValue(accidentalValueOf(shape));
+
+        return accidentaltext;
+    }
+
+    //-------------------//
+    // accidentalValueOf //
+    //-------------------//
+    public static AccidentalValue accidentalValueOf (Shape shape)
+    {
         ///sharp, natural, flat, double-sharp, sharp-sharp, flat-flat
         // But no double-flat ???
         if (shape == Shape.DOUBLE_FLAT) {
-            return AccidentalText.FLAT_FLAT;
+            return AccidentalValue.FLAT_FLAT;
         } else {
-            return AccidentalText.valueOf(shape.toString());
+            return AccidentalValue.valueOf(shape.toString());
         }
     }
 
@@ -297,7 +310,7 @@ public class MusicXML
                 factory.createEmptyTrillSound());
 
         case TURN :
-            return factory.createOrnamentsTurn(factory.createEmptyTrillSound());
+            return factory.createOrnamentsTurn(factory.createHorizontalTurn());
         }
 
         logger.severe("Unsupported ornament shape:{0}", shape);
@@ -314,19 +327,6 @@ public class MusicXML
     }
 
     //--------//
-    // stepOf //
-    //--------//
-    /**
-     * Convert from Audiveris Step type to Proxymusic Step type
-     * @param step Audiveris enum step
-     * @return Proxymusic enum step
-     */
-    public static Step stepOf (omr.score.entity.Note.Step step)
-    {
-        return Step.fromValue(step.toString());
-    }
-
-    //--------//
     // kindOf //
     //--------//
     /**
@@ -338,6 +338,19 @@ public class MusicXML
     public static KindValue kindOf (omr.score.entity.ChordInfo.Kind.Type type)
     {
         return KindValue.valueOf(type.toString());
+    }
+
+    //--------//
+    // stepOf //
+    //--------//
+    /**
+     * Convert from Audiveris Step type to Proxymusic Step type
+     * @param step Audiveris enum step
+     * @return Proxymusic enum step
+     */
+    public static Step stepOf (omr.score.entity.Note.Step step)
+    {
+        return Step.fromValue(step.toString());
     }
 
     //--------//
