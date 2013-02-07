@@ -185,7 +185,7 @@ public class ScaleBuilder
         FilterDescriptor desc = sheet.getPage().getFilterParam().getTarget();
         logger.info("{0}{1} {2}", sheet.getLogPrefix(), "Binarization", desc);
         sheet.getPage().getFilterParam().setActual(desc);
-        
+
         StopWatch watch = new StopWatch("Binarization "
                                         + sheet.getPage().getId() + " " + desc);
         watch.start("Vertical runs");
@@ -451,12 +451,37 @@ public class ScaleBuilder
 
         // Background peak
         backPeak = getPeak(backHisto, backSpreadRatio, 0);
-        sb.append(" back:").append(backPeak);
         if (backPeak.getValue() == 1d) {
             String msg = "All image pixels are background."
                          + " Check binarization parameters";
             logger.warning(msg);
             throw new StepException(msg);
+        }
+
+        // Second background peak?
+        secondBackPeak = getPeak(backHisto, backSpreadRatio, 1);
+
+        if (secondBackPeak != null) {
+            // Check whether we should merge with first foreground peak
+            // Test: Delta between peaks <= line thickness
+            Histogram.Peak<Double> p1 = backPeak.getKey();
+            Histogram.Peak<Double> p2 = secondBackPeak.getKey();
+            if (Math.abs(p1.best - p2.best) <= forePeak.getKey().best) {
+                backPeak = new PeakEntry(
+                        new Histogram.Peak<>(
+                        Math.min(p1.first, p2.first),
+                        (p1.best + p2.best) / 2,
+                        Math.max(p1.second, p2.second)),
+                        (backPeak.getValue() + secondBackPeak.getValue()) / 2);
+                secondBackPeak = null;
+                logger.info("Merged two close background peaks");
+            }
+        }
+        
+        sb.append(" back:").append(backPeak);
+        
+        if (secondBackPeak != null) {
+            sb.append(" secondBack:").append(secondBackPeak);
         }
 
         // Second foreground peak (beam)?
@@ -477,13 +502,6 @@ public class ScaleBuilder
                     break;
                 }
             }
-        }
-
-        // Second background peak?
-        secondBackPeak = getPeak(backHisto, backSpreadRatio, 1);
-
-        if (secondBackPeak != null) {
-            sb.append(" secondBack:").append(secondBackPeak);
         }
 
         logger.fine(sb.toString());

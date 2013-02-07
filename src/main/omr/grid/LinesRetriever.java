@@ -424,7 +424,7 @@ public class LinesRetriever
             // Check for a second interline
             Integer secondInterline = scale.getSecondInterline();
 
-            if (secondInterline != null) {
+            if (secondInterline != null && !discardedFilaments.isEmpty()) {
                 secondFilaments = discardedFilaments;
                 Collections.sort(secondFilaments, Glyph.byId);
                 logger.info("{0}Searching clusters with secondInterline: {1}",
