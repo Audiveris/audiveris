@@ -92,6 +92,14 @@ public class BarsChecker
     private static final FailureResult TOP_EXCESS = new FailureResult(
             "Bar-TooHigh");
 
+    /** Failure, since bar top is too low below first staff */
+    private static final FailureResult LOW_TOP = new FailureResult(
+            "Bar-LowTop");
+
+    /** Failure, since bar bottom is too high above last staff */
+    private static final FailureResult HIGH_BOTTOM = new FailureResult(
+            "Bar-HighBottom");
+
     /** Failure, since bar goes too low under last staff */
     private static final FailureResult BOTTOM_EXCESS = new FailureResult(
             "Bar-TooLow");
@@ -395,6 +403,9 @@ public class BarsChecker
             add(1, new BottomLeftChunkCheck());
             add(1, new BottomRightChunkCheck());
 
+            add(1, new TopInterCheck());
+            add(1, new BottomInterCheck());
+
             if (!rough) {
                 add(1, new TopCheck()); // May set topStaff
                 add(1, new BottomCheck()); // May set botStaff
@@ -651,6 +662,46 @@ public class BarsChecker
         }
     }
 
+    //------------------//
+    // BottomInterCheck //
+    //------------------//
+    private class BottomInterCheck
+            extends Check<GlyphContext>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected BottomInterCheck ()
+        {
+            super(
+                    "Bottom",
+                    "Check that bottom of stick reaches last staff",
+                    constants.maxStaffYGapLow,
+                    constants.maxStaffYGapHigh,
+                    false,
+                    HIGH_BOTTOM);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        // Retrieve the distance with proper staff border
+        @Override
+        protected double getValue (GlyphContext context)
+        {
+            Glyph stick = context.stick;
+            Point2D stop = stick.getStopPoint(VERTICAL);
+
+            // Which staff area contains the bottom of the stick?
+            StaffInfo staff = staffManager.getStaffAt(stop);
+
+            // How far are we from the stop of the staff?
+            double staffBottom = staff.getLastLine().yAt(stop.getX());
+            double dy = sheet.getScale().pixelsToFrac(Math.
+                    abs(staffBottom - stop.
+                    getY()));
+
+            return dy;
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -707,6 +758,14 @@ public class BarsChecker
                 0.5,
                 "Rough low Maximum difference between a bar length and min staff height");
 
+        Scale.Fraction maxStaffYGapLow = new Scale.Fraction(
+                2,
+                "Low Maximum dy between a bar edge and target staff line");
+
+        Scale.Fraction maxStaffYGapHigh = new Scale.Fraction(
+                3,
+                "High Maximum dy between a bar edge and target staff line");
+
         Scale.Fraction minStaffDxHigh = new Scale.Fraction(
                 0,
                 "High Minimum horizontal distance between a bar and a staff edge");
@@ -757,7 +816,6 @@ public class BarsChecker
                 0.5,
                 "* DO NOT EDIT * - switch between true & false for a boolean");
 
-        //
         Constant.Double maxCoTangentForCheck = new Constant.Double(
                 "cotangent",
                 0.1,
@@ -1143,6 +1201,45 @@ public class BarsChecker
             if (dy <= getLow()) {
                 context.topStaff = context.topArea;
             }
+
+            return dy;
+        }
+    }
+
+    //---------------//
+    // TopInterCheck //
+    //---------------//
+    private class TopInterCheck
+            extends Check<GlyphContext>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected TopInterCheck ()
+        {
+            super(
+                    "TopInter",
+                    "Check that top of stick intersects a staff",
+                    constants.maxStaffYGapLow,
+                    constants.maxStaffYGapHigh,
+                    false,
+                    LOW_TOP);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        // Retrieve the distance with proper staff line
+        @Override
+        protected double getValue (GlyphContext context)
+        {
+            Glyph stick = context.stick;
+            Point2D start = stick.getStartPoint(VERTICAL);
+
+            // Which staff area contains the top of the stick?
+            StaffInfo staff = staffManager.getStaffAt(start);
+
+            // How far are we from the start of the staff?
+            double staffTop = staff.getFirstLine().yAt(start.getX());
+            double dy = sheet.getScale().pixelsToFrac(Math.abs(staffTop - start.
+                    getY()));
 
             return dy;
         }
