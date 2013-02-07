@@ -17,9 +17,7 @@ import omr.log.Logger;
 
 import omr.ui.MainGui;
 import omr.ui.util.SeparableMenu;
-import omr.ui.util.SeparableToolBar;
 import omr.ui.util.UIUtilities;
-
 
 import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ResourceMap;
@@ -79,7 +77,7 @@ public class ActionManager
     private final Collection<Action> scoreDependentActions = new ArrayList<>();
 
     /** The tool bar that hosts some actions. */
-    private final JToolBar toolBar = new SeparableToolBar();
+    private final JToolBar toolBar = new JToolBar();
 
     /** The menu bar for all actions. */
     private final JMenuBar menuBar = new JMenuBar();
@@ -240,6 +238,9 @@ public class ActionManager
      */
     public void registerAllActions ()
     {
+        // Insert an initial separator, to let user easily grab the toolBar
+        toolBar.addSeparator();
+        
         for (String domain : Actions.getDomainNames()) {
             // Create dedicated menu for this range, if not already existing
             JMenu menu = menuMap.get(domain);
@@ -270,29 +271,9 @@ public class ActionManager
                     menuBar.add(Box.createHorizontalStrut(50));
                 }
 
-                SeparableMenu.trimSeparator(menu); // No orphan at end
+                SeparableMenu.trimSeparator(menu); // No separator at end
                 menuBar.add(menu);
             }
-        }
-    }
-
-    //--------------------//
-    // enableScoreActions //
-    //--------------------//
-    private void enableScoreActions (boolean bool)
-    {
-        for (Action action : scoreDependentActions) {
-            action.setEnabled(bool);
-        }
-    }
-
-    //--------------------//
-    // enableSheetActions //
-    //--------------------//
-    private void enableSheetActions (boolean bool)
-    {
-        for (Action action : sheetDependentActions) {
-            action.setEnabled(bool);
         }
     }
 

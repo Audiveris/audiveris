@@ -16,8 +16,8 @@ import javax.swing.JMenu;
 import javax.swing.JSeparator;
 
 /**
- * Class {@code SeparableMenu} is a menu which is able to collapse unneeded
- * separators
+ * Class {@code SeparableMenu} is a menu which is able to collapse
+ * unneeded separators.
  *
  * @author Brenton Partridge
  */
@@ -37,7 +37,7 @@ public class SeparableMenu
     /**
      * Creates a new SeparableMenu object.
      *
-     * @param action DOCUMENT ME!
+     * @param action properties are grabbed from this action
      */
     public SeparableMenu (Action action)
     {
@@ -47,19 +47,7 @@ public class SeparableMenu
     /**
      * Creates a new SeparableMenu object.
      *
-     * @param s DOCUMENT ME!
-     * @param flag DOCUMENT ME!
-     */
-    public SeparableMenu (String  s,
-                          boolean flag)
-    {
-        super(s, flag);
-    }
-
-    /**
-     * Creates a new SeparableMenu object.
-     *
-     * @param s DOCUMENT ME!
+     * @param s Text for the menu label
      */
     public SeparableMenu (String s)
     {
@@ -72,7 +60,7 @@ public class SeparableMenu
     // trimSeparator //
     //---------------//
     /**
-     * Remove any potential orphan separator at the end of the menu
+     * Remove any potential orphan separator at the end of the menu.
      * @param menu the menu to purge
      */
     public static void trimSeparator (JMenu menu)
@@ -89,7 +77,7 @@ public class SeparableMenu
     // addSeparator //
     //--------------//
     /**
-     * The separator will be inserted only if it is really necessary
+     * The separator will be inserted only if it is really necessary.
      */
     @Override
     public void addSeparator ()
@@ -106,7 +94,7 @@ public class SeparableMenu
     // trimSeparator //
     //---------------//
     /**
-     * Remove any potential orphan separator at the end of the menu
+     * Remove any potential orphan separator at the end of the menu.
      */
     public void trimSeparator ()
     {

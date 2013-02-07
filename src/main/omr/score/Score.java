@@ -38,6 +38,7 @@ import omr.script.ScriptActions;
 
 import omr.sheet.Sheet;
 import omr.sheet.picture.PictureLoader;
+import omr.sheet.ui.SheetActions;
 import omr.sheet.ui.SheetsController;
 
 import omr.step.StepException;
@@ -252,7 +253,7 @@ public class Score
             // Insert in sheet history
             ScoresManager.getInstance().getHistory().add(getImagePath());
             if (Main.getGui() != null) {
-                Main.getGui().setHistoryEnabled(true);
+                SheetActions.HistoryMenu.getInstance().setEnabled(true);
             }
         }
     }

@@ -206,7 +206,7 @@ public class ScoreTree
 
             // Resources injection
             ResourceMap resource = MainGui.getInstance().getContext().
-                    getResourceMap(ScoreTree.class);
+                    getResourceMap(getClass());
             resource.injectComponents(frame);
             frame.setTitle(
                     resource.getString("frameTitleMask", score.getRadix()));

@@ -26,7 +26,7 @@
         <!-- Jalopy task definition -->
         <taskdef name="jalopy"
                  classname="de.hunsicker.jalopy.plugin.ant.AntPlugin"
-		 classpathref="tools.classpath" />
+                 classpathref="tools.classpath" />
         
         <jalopy
             convention="${dev.dir}/jalopy/java-convention.xml"
@@ -45,7 +45,7 @@
     <!--  P R O P E R T I E S  -->
     <!-- ===================== -->
     <target name="properties"
-        description="Print out all properties for the build file.">
+            description="Print out all properties for the build file.">
         <echoproperties/>
     </target>
 
@@ -53,24 +53,24 @@
     <!--  G L O B A L - R E P L A C E  -->
     <!-- ============================= -->
     <target name="global-replace"
-        description="Modify token of every source file">
+            description="Modify token of every source file">
 	
-<!--        <replace encoding="utf8" dir="${src.dir}">
+        <!--        <replace encoding="utf8" dir="${src.dir}">
             <replacetoken>Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.</replacetoken>
             <replacevalue>Copyright © Hervé Bitteur 2000-2012. All rights reserved.  </replacevalue>
             <include name="**/*.properties"/>
         </replace>-->
 	     
 
-	<replaceregexp
-	    encoding="utf8"
-	    match="logger.log\(\s*Level.WARNING,\s*"
-	    replace="logger.warning("
-	    flags="g"
-	    byline="true">
-	    <fileset dir="${src.dir}">
-		<include name="**/BasicNest.java"/>
-	    </fileset>
+        <replaceregexp
+            encoding="utf8"
+            match="logger.log\(\s*Level.WARNING,\s*"
+            replace="logger.warning("
+            flags="g"
+            byline="true">
+            <fileset dir="${src.dir}">
+                <include name="**/BasicNest.java"/>
+            </fileset>
         </replaceregexp>
 	
     </target>
@@ -79,7 +79,7 @@
     <!--  S A V E -->
     <!-- ======== -->
     <target name="save"
-       description="Backup all important files" >
+            description="Backup all important files" >
         
         <mkdir dir="${backup.dir}/${name}"/>
 
@@ -110,6 +110,25 @@
                 <include name="**/${DSTAMP}-${machine.name}-*.zip"/>
             </fileset>
         </copy>
+    </target>
+
+    <!-- ===================== -->
+    <!--  P A C K - I C O N S  -->
+    <!-- ===================== -->
+    <target name="pack-icons"
+            description="Pack all icons into one jar">
+        
+        <!-- Remove any existing icon archive -->
+<!--        <delete
+            verbose="${verbose}"
+            failonerror="false"
+            file="${externals.dir}/crystal-icons.jar" />-->
+        
+        <!-- Pack whole crystal directory -->
+        <jar destfile="${externals.dir}/crystal-icons.jar"
+             update="false"
+             basedir="${icons.dir}"
+             includes="crystal/**"/>            
     </target>
 
 </project>

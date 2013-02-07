@@ -226,7 +226,7 @@ public class Options
         // Resources injection
         ResourceMap resource = Application.getInstance()
                 .getContext()
-                .getResourceMap(Options.class);
+                .getResourceMap(getClass());
         resource.injectComponents(frame);
 
         // Make sure the search entry field gets the focus at creation time

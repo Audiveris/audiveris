@@ -19,7 +19,6 @@ import omr.constant.ConstantSet;
 
 import omr.log.Logger;
 
-import omr.score.midi.MidiAbstractions;
 import omr.score.ui.SheetPdfOutput;
 
 import omr.script.ScriptActions;

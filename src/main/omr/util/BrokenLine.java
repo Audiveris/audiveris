@@ -502,17 +502,17 @@ public class BrokenLine
         //~ Instance fields ----------------------------------------------------
 
         Constant.Integer colinearDistance = new Constant.Integer(
-                "pixels",
+                "Pixels",
                 2,
                 "Maximum distance from a point to a segment to be colinear");
 
         Constant.Integer stickyDistance = new Constant.Integer(
-                "pixels",
+                "Pixels",
                 5,
                 "Maximum distance from a point or segment to get stuck to it");
 
         Constant.Integer draggingDistance = new Constant.Integer(
-                "pixels",
+                "Pixels",
                 25,
                 "Maximum distance from a point to drag it");
 

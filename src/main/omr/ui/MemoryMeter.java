@@ -14,6 +14,8 @@ package omr.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.ui.util.UIUtilities;
+
 import omr.util.Memory;
 
 import org.jdesktop.application.Action;
@@ -24,7 +26,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -162,7 +163,7 @@ public class MemoryMeter
         // Garbage collector button
         JButton button = new JButton(
                 applicationContext.getActionMap(this).get("collectGarbage"));
-        button.setBorder(BorderFactory.createRaisedBevelBorder());
+        button.setBorder(UIUtilities.getToolBorder());
         component.add(button, BorderLayout.EAST);
 
         // Remember the default foreground color

@@ -11,6 +11,11 @@
 // </editor-fold>
 package omr.ui.util;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
+import java.awt.Dimension;
+
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 
@@ -21,10 +26,21 @@ import javax.swing.JToolBar;
  * @author Brenton Partridge
  */
 public class SeparableToolBar
-    extends JToolBar
+        extends JToolBar
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    /**
+     * Dimension of the separator.
+     */
+    private static final Dimension gap = new Dimension(
+            constants.separatorWidth.getValue(),
+            constants.separatorWidth.getValue());
+
+    //~ Constructors -----------------------------------------------------------
     /**
      * Creates a new SeparableToolBar object.
      */
@@ -36,7 +52,7 @@ public class SeparableToolBar
     /**
      * Creates a new SeparableToolBar object.
      *
-     * @param orientation DOCUMENT ME!
+     * @param orientation Specific toolbar orientation
      */
     public SeparableToolBar (int orientation)
     {
@@ -56,17 +72,16 @@ public class SeparableToolBar
     /**
      * Creates a new SeparableToolBar object.
      *
-     * @param name DOCUMENT ME!
+     * @param name        DOCUMENT ME!
      * @param orientation DOCUMENT ME!
      */
     public SeparableToolBar (String name,
-                             int    orientation)
+                             int orientation)
     {
         super(name, orientation);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // purgeSeparator //
     //----------------//
@@ -94,7 +109,23 @@ public class SeparableToolBar
         int count = super.getComponentCount();
 
         if ((count > 0) && !(getComponent(count - 1) instanceof JSeparator)) {
-            super.addSeparator();
+            super.addSeparator(gap);
         }
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final Constant.Integer separatorWidth = new Constant.Integer(
+                "Pixels",
+                15,
+                "Width of separator");
+
     }
 }

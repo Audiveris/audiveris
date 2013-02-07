@@ -27,13 +27,12 @@ import omr.plugin.PluginsManager;
 
 import omr.score.Score;
 import omr.score.ScoreExporter;
-import omr.score.ScoresManager;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
-import omr.sheet.ui.SheetActions.OpenTask;
+import omr.sheet.ui.SheetActions;
 import omr.sheet.ui.SheetsController;
 
 import omr.step.StepMenu;
@@ -47,44 +46,32 @@ import omr.ui.util.SeparableMenu;
 import omr.ui.util.UIUtilities;
 
 import omr.util.JaiLoader;
-import omr.util.NameSet;
 import omr.util.OmrExecutors;
 import omr.util.WeakPropertyChangeListener;
-
-import com.jgoodies.looks.BorderStyle;
-import com.jgoodies.looks.HeaderStyle;
-import com.jgoodies.looks.Options;
-import com.jgoodies.looks.plastic.PlasticLookAndFeel;
 
 import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.Application;
-import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
 
 import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.GridLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.EventObject;
 import java.util.concurrent.Callable;
 
-import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
 /**
@@ -123,9 +110,6 @@ public class MainGui
     /** Log pane, which displays logging info. */
     private LogPane logPane;
 
-    /** The tool bar. */
-    private JToolBar toolBar;
-
     /** Boards pane, which displays a specific set of boards per sheet. */
     private BoardsScrollPane boardsScrollPane;
 
@@ -137,9 +121,6 @@ public class MainGui
 
     /** Application pane with Main pane on left and Boeards on right. */
     private Panel appPane;
-
-    /** History of recent files. */
-    private JMenuItem historyMenu;
 
     /** Step menu. */
     private StepMenu stepMenu;
@@ -157,17 +138,7 @@ public class MainGui
     }
 
     //~ Methods ----------------------------------------------------------------
-    //--------------//
-    // addOnToolBar //
-    //--------------//
-    public JButton addOnToolBar (Action action)
-    {
-        JButton button = toolBar.add(action);
-
-        ///button.setBorder(UIUtilities.getToolBorder());
-        return button;
-    }
-
+    //
     //----------//
     // clearLog //
     //----------//
@@ -503,14 +474,6 @@ public class MainGui
         boardsScrollPane.setBoards(boards);
     }
 
-    //-------------------//
-    // setHistoryEnabled //
-    //-------------------//
-    public void setHistoryEnabled (boolean bool)
-    {
-        historyMenu.setEnabled(bool);
-    }
-
     //------------//
     // showErrors //
     //------------//
@@ -531,7 +494,7 @@ public class MainGui
     @Override
     protected void initialize (String[] args)
     {
-        logger.fine("MainGui. initialize");
+        logger.fine("MainGui. 1/initialize");
 
         // Provide default tool parameters if not already set
 
@@ -557,18 +520,11 @@ public class MainGui
     @Override
     protected void ready ()
     {
-        logger.fine("MainGui. ready");
-
-        // Tool bar adjustments
-        toolBar.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.BOTH);
-        toolBar.putClientProperty(
-                PlasticLookAndFeel.BORDER_STYLE_KEY,
-                BorderStyle.SEPARATOR);
+        logger.fine("MainGui. 3/ready");
 
         // Weakly listen to GUI Actions parameters
         PropertyChangeListener weak = new WeakPropertyChangeListener(this);
-        GuiActions.getInstance()
-                .addPropertyChangeListener(weak);
+        GuiActions.getInstance().addPropertyChangeListener(weak);
 
         // Make the GUI instance available for the other classes
         Main.setGui(this);
@@ -599,7 +555,7 @@ public class MainGui
     @Override
     protected void startup ()
     {
-        logger.fine("MainGui. startup");
+        logger.fine("MainGui. 2/startup");
 
         frame = getMainFrame();
 
@@ -698,17 +654,6 @@ public class MainGui
         mainPane.setDividerSize(1);
         mainPane.setResizeWeight(0.9d); // Give bulk space to upper part
 
-        // toolKeyPanel = progress & memory
-        JPanel toolKeyPanel = new JPanel();
-        toolKeyPanel.setLayout(new BorderLayout());
-
-        JComponent stepPanel = Stepping.createMonitor()
-                .getComponent();
-        toolKeyPanel.add(stepPanel, BorderLayout.CENTER);
-
-        JComponent memoryPanel = new MemoryMeter().getComponent();
-        toolKeyPanel.add(memoryPanel, BorderLayout.EAST);
-
         // horiSplitPane = mainPane | boards
         appPane = new Panel();
         appPane.setNoInsets();
@@ -718,16 +663,14 @@ public class MainGui
         appPane.setName("appPane");
 
         // Global layout: Use a toolbar on top and a double split pane below
-        toolBar.add(toolKeyPanel);
-        frame.getContentPane()
-                .setLayout(new BorderLayout());
-        frame.getContentPane()
-                .add(toolBar, BorderLayout.NORTH);
-        frame.getContentPane()
-                .add(appPane, BorderLayout.CENTER);
+        ///toolBar.add(toolKeyPanel);
+        Container content = frame.getContentPane();
+        content.setLayout(new BorderLayout());
+        content.add(ActionManager.getInstance().getToolBar(), BorderLayout.NORTH);
+        content.add(appPane, BorderLayout.CENTER);
 
         // Suppress all internal borders, recursively
-        UIUtilities.suppressBorders(frame.getContentPane());
+        ///UIUtilities.suppressBorders(frame.getContentPane());
 
         // Display the boards pane?
         if (GuiActions.getInstance()
@@ -761,26 +704,14 @@ public class MainGui
         // Specific sheet menu
         JMenu sheetMenu = new SeparableMenu();
 
-        // Specific history sub-menu
-        NameSet history = ScoresManager.getInstance()
-                .getHistory();
-        historyMenu = history.menu("Sheet History", new HistoryListener());
-        setHistoryEnabled(!history.isEmpty());
-        sheetMenu.add(historyMenu);
+        // Specific history sub-menu of sheet menu
+        sheetMenu.add(SheetActions.HistoryMenu.getInstance().getMenu());
 
         // Specific step menu
         stepMenu = new StepMenu(new SeparableMenu());
 
         // Specific plugin menu
-        JMenu pluginMenu = PluginsManager.getInstance()
-                .getMenu(null);
-
-        // For history sub-menu
-        ResourceMap resource = MainGui.getInstance()
-                .getContext()
-                .getResourceMap(Actions.class);
-        historyMenu.setName("historyMenu");
-        resource.injectComponents(historyMenu);
+        JMenu pluginMenu = PluginsManager.getInstance().getMenu(null);
 
         // For some specific top-level menus
         ActionManager mgr = ActionManager.getInstance();
@@ -788,15 +719,31 @@ public class MainGui
         mgr.injectMenu(Actions.Domain.STEP.name(), stepMenu.getMenu());
         mgr.injectMenu(Actions.Domain.PLUGIN.name(), pluginMenu);
 
-        // All other commands
+        // All other commands (which may populate the toolBar as well)
         mgr.loadAllDescriptors();
         mgr.registerAllActions();
-        toolBar = mgr.getToolBar();
 
         // Menu bar 
-        JMenuBar menuBar = mgr.getMenuBar();
-        menuBar.putClientProperty(Options.HEADER_STYLE_KEY, HeaderStyle.BOTH);
-        frame.setJMenuBar(menuBar);
+        JMenuBar innerBar = mgr.getMenuBar();
+
+        // Gauges = progress + memory
+        JPanel gauges = new JPanel();
+        gauges.setLayout(new BorderLayout());
+        gauges.add(Stepping.createMonitor().getComponent(), BorderLayout.CENTER);
+        gauges.add(new MemoryMeter().getComponent(), BorderLayout.EAST);        
+
+        // Outer bar = menu + gauges
+        JMenuBar outerBar = new JMenuBar();
+        outerBar.setLayout(new GridLayout(1, 0));
+        outerBar.add(innerBar);
+        outerBar.add(gauges);
+        
+        // Remove useless borders
+        UIUtilities.suppressBorders(gauges);
+        innerBar.setBorder(null);
+        outerBar.setBorder(null);
+
+        frame.setJMenuBar(outerBar);
 
         // Mac Application menu
         if (WellKnowns.MAC_OS_X) {
@@ -814,10 +761,8 @@ public class MainGui
      */
     private boolean needBottomPane ()
     {
-        return GuiActions.getInstance()
-                .isLogDisplayed()
-               || GuiActions.getInstance()
-                .isErrorsDisplayed();
+        return GuiActions.getInstance().isLogDisplayed()
+               || GuiActions.getInstance().isErrorsDisplayed();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -853,30 +798,5 @@ public class MainGui
                 true,
                 "Should we preload costly packages in the background?");
 
-    }
-
-    //-----------------//
-    // HistoryListener //
-    //-----------------//
-    /**
-     * Class {@code HistoryListener} is used to reload an image file,
-     * when selected from the history of previous image files.
-     */
-    private static class HistoryListener
-            implements ActionListener
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            final String name = e.getActionCommand()
-                    .trim();
-
-            if (!name.isEmpty()) {
-                File file = new File(name);
-                new OpenTask(file).execute();
-            }
-        }
     }
 }

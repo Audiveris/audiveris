@@ -66,11 +66,6 @@ public class StepMonitor
      */
     public StepMonitor ()
     {
-        // Progress Bar
-        if (!WellKnowns.MAC_OS_X) {
-            bar.setBorder(UIUtilities.getToolBorder());
-        }
-
         bar.setToolTipText("On going Step activity");
         bar.setStringPainted(true);
         displayAnimation(false);

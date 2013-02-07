@@ -33,6 +33,7 @@ Windows: %ProgramFiles%/AudiverisLtd/audiveris/
 ./dist/lib/Jama-1.0.2.jar
 ./dist/lib/bsaf-1.9.1.jar
 ./dist/lib/clibwrapper_jiio.jar
+./dist/lib/crystal-icons.jar
 ./dist/lib/eventbus-1.4.jar
 ./dist/lib/iText-5.0.4.jar
 ./dist/lib/jai_codec.jar
@@ -46,7 +47,6 @@ Windows: %ProgramFiles%/AudiverisLtd/audiveris/
 ./dist/lib/jgoodies-forms-LICENSE.txt
 ./dist/lib/jgoodies-looks-2.5.2.jar
 ./dist/lib/jgoodies-looks-LICENSE.txt
-./dist/lib/jlfgr-1_0.jar
 ./dist/lib/mlibwrapper_jai.jar
 ./dist/lib/proxymusic-2.0.jar
 ./dist/lib/tesseract-3.jar
@@ -148,6 +148,7 @@ Development only folders                [exist only on a development machine]
 ./dev/externals/ALL-LICENSES.txt
 ./dev/externals/bsaf-1.9.1.jar
 ./dev/externals/clibwrapper_jiio.jar
+./dev/externals/crystal-icons.jar
 ./dev/externals/eventbus-1.4.jar
 ./dev/externals/iText-5.0.4.jar
 ./dev/externals/jai_codec.jar
@@ -164,7 +165,6 @@ Development only folders                [exist only on a development machine]
 ./dev/externals/jgoodies-forms-LICENSE.txt
 ./dev/externals/jgoodies-looks-2.5.2.jar
 ./dev/externals/jgoodies-looks-LICENSE.txt
-./dev/externals/jlfgr-1_0.jar
 ./dev/externals/mlibwrapper_jai.jar
 ./dev/externals/proxymusic-2.0.jar
 ./dev/externals/tesseract-3.jar
@@ -212,6 +212,19 @@ Development only folders                [exist only on a development machine]
 
 ./dev/unix/                             [Unix targets]
 ./dev/unix/-unix.xml
+./dev/unix/AddPlugins.sh
+./dev/unix/Audiveris.desktop
+./dev/unix/audiveris.sh
+./dev/unix/copyright
+./dev/unix/ubuntu_amd64_pkg
+./dev/unix/ubuntu_i386_pkg
+./dev/unix/TessBridgeJNI
+./dev/unix/TessBridgeJNI/32bit
+./dev/unix/TessBridgeJNI/32bit/libjniTessBridge.so
+./dev/unix/TessBridgeJNI/64bit
+./dev/unix/TessBridgeJNI/64bit/libjniTessBridge.so
+./dev/unix/deb
+./dev/unix/deb/control
 
 ./dev/windows/                          [Windows targets]
 ./dev/windows/-windows.xml

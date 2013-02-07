@@ -87,6 +87,35 @@
             article {
                 transition:all .5s ease;
             }
+
+            /* -- Folders -- */
+            table.content {
+                margin-top: 20px;
+                border-spacing: 10px;
+            }
+            .location td {
+                background-color: #ffeeee;;
+            }
+            .content td {
+                background-color: white;
+            }
+            .location td:first-child,
+            .content td:first-child {
+                font-weight: bold;
+                background-color: #f8f8ff;
+                border-radius: 15px;
+            }
+            .location td:nth-child(2),
+            .content td:nth-child(3) {
+                font-family: monospace;
+                font-size: 120%;
+            }
+            .location td,
+            .content td {
+                padding-left: 5px;
+                padding-right: 5px;
+                box-shadow: 1px 1px 1px 0px rgba(45,20,6,0.2);
+            }
             /*]]>*/
         </style>
     </head>
@@ -94,10 +123,10 @@
     <body>
         <!-- Standard top header -->
         <script src="../../branding/js/header.js"></script> 
-        
+
         <div class="main">
             <span id="top"></span>
-            
+
             <h1>
                 Handbook
             </h1>
@@ -2781,6 +2810,455 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     </ul>
                 </article>
             </section>
+
+
+            <!-- =========================================================== -->
+            <section>
+                <h2 id="folders">
+                    Folders
+                </h2>
+
+                <p>This section describes the organization of folders on the
+                    target machine, depending on the operating system.</p>
+                <p>Some folders are annotated with a <code>CONSTANT_NAME</code>
+                    which represents a direct link from Java code.</p>
+
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <article id="system-folder">
+                    <h3>
+                        System
+                    </h3>
+
+                    <p>Libraries that can be shared at system level.
+                        This applies for Tesseract libraries.
+                    </p>
+
+                    <table class="location">
+                        <tr><th>OS</th><th>Root</th></tr>
+                        <tr>
+                            <td>Windows</td>
+                            <td>C:/Windows/System32/</td>
+                        </tr>
+                        <tr>
+                            <td>Ubuntu</td>
+                            <td>/usr/lib/jni</td>
+                        </tr>
+                        <tr>
+                            <td>Generic</td>
+                            <td>???</td>
+                        </tr>
+                    </table>      
+
+                    <table class="content">
+                        <thead>
+                            <tr>
+                                <th>Folder</th>
+                                <th>Description</th>
+                                <th>Content</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>.</td>
+                                <td>(Windows) Shared libraries</td>
+                                <td>
+                                    liblept168.dll<br/>
+                                    libtesseract302.dll
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>.</td>
+                                <td>(Ubuntu) Shared libraries</td>
+                                <td>
+                                    libjniTessBridge.so
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <article id="companion-folders">
+                    <h3>
+                        Companions
+                    </h3>
+
+                    <p>This concerns only the two <b>native</b> companion 
+                        programs used by Audiveris application, namely 
+                        Ghostscript and Tesseract.
+                        (Other companions are used but they are Java libraries, 
+                        and are simply located next to Audiveris Java archive).
+                    </p>
+
+                    <h4>Ghostscript</h4>
+                    
+                    <p>A Ghostscript sub-process is used to convert on-the-fly 
+                        a PDF input file into a temporary TIFF file which is 
+                        then read by Audiveris.</p>
+                    
+                    <p>On Windows, Audiveris uses a  dedicated Ghostscript 
+                        which is embedded with Audiveris application. 
+                        See <a href="#application-folder" >application
+                        folder</a> below.</p>
+                    
+                    <p>On Linux, Audiveris uses the pre-installed Ghostscript 
+                        program.</p>
+
+                    <h4>Tesseract</h4>
+                    
+                    <p>Tesseract is used as the OCR engine, called repeatedly
+                        by Audiveris via a JNI interface.</p>
+                    
+                    <ol>
+                        <li>Because of the size of their related files,
+                            just a few languages are provided by default through
+                            Audiveris installation.
+                            <ul>
+                                <li>On Windows, they are located in the 
+                                    audiveris <code>./ocr</code> folder as 
+                                    described below.</li>
+                                <li>On Linux, they are located in the shareable
+                                    tesseract folder
+                                    <code>/usr/share/tesseract-ocr/</code>
+                                </li>
+                            </ul>
+                        <li>Additional languages can be downloaded from 
+                            Tesseract <a href="http://code.google.com/p/tesseract-ocr/">web site</a>.
+                            <ul>
+                                <li>On Windows, languages can be installed in
+                                    the audiveris ocr folder.
+                                    If Tesseract application is itself installed
+                                    (by means of
+                                    <code>tesseract-ocr-setup-3.02.02.exe</code>
+                                    for example) it will use a specific location
+                                    and define the environment variable 
+                                    <code>TESSDATA_PREFIX</code>. 
+                                    All languages pointed by TESSDATA_PREFIX
+                                    get visible to Audiveris ocr engine.
+                                </li>
+                                <li>On Linux, they are installed in the standard
+                                    shareable location.</li>
+                            </ul>
+                        </li>
+                    </ol>
+
+                </article>
+
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <article id="application-folder">
+                    <h3>
+                        Application
+                    </h3>
+
+                    <p>Audiveris application program and (read-only) data.</p>
+
+                    <p>Specific notes for <b>Ubuntu</b>:</p>
+                    <ul>
+                        <li>Folder <code>/usr/bin</code> 
+                            contains an "audiveris" executable file,
+                            a shell script to launch Audiveris application.</li>
+                        <li>Folder <code>/usr/share/doc/audiveris</code> 
+                            contains a "copyright" file that describes licenses
+                            and copyrights about Audiveris companions.</li>
+                        <li>Folder <code>/usr/share/icons/audiveris</code> 
+                            contains audiveris icon as an "audiveris.png" file.</li>
+                    </ul>
+
+                    <table class="location">
+                        <tr><th>OS</th><th>Root</th></tr>
+                        <tr>
+                            <td>Windows</td>
+                            <td>C:/Program Files/AudiverisLtd/audiveris/</td>
+                        </tr>
+                        <tr>
+                            <td>Ubuntu</td>
+                            <td>/usr/share/audiveris/AudiverisApp/</td>
+                        </tr>
+                        <tr>
+                            <td>Generic</td>
+                            <td>???</td>
+                        </tr>
+                    </table>      
+
+                    <table class="content">
+                        <thead>
+                            <tr>
+                                <th>Folder</th>
+                                <th>Description</th>
+                                <th>Content</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>.</td>
+                                <td>(Windows) Executables</td>
+                                <td>
+                                    audiveris-console.exe<br/>
+                                    audiveris-console.l4j.ini<br/>
+                                    audiveris.exe<br/>
+                                    audiveris.l4j.ini<br/>
+                                    audiveris.bat
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>./dist</td>
+                                <td>Application archive</td>
+                                <td>audiveris.jar</td>
+                            </tr>
+                            <tr>
+                                <td>./dist/lib</td>
+                                <td>Companion archives</td>
+                                <td>Jama-1.0.2.jar<br/>
+                                    bsaf-1.9.1.jar<br/>
+                                    clibwrapper_jiio.jar<br/>
+                                    crystal-icons.jar<br/>
+                                    eventbus-1.4.jar<br/>
+                                    iText-5.0.4.jar<br/>
+                                    jai_codec.jar<br/>
+                                    jai_core.jar<br/>
+                                    jai_imageio.jar<br/>
+                                    javacpp.jar<br/>
+                                    jcip-annotations.jar<br/>
+                                    jcommon-1.0.16.jar<br/>
+                                    jfreechart-1.0.13.jar<br/>
+                                    jgoodies-common-1.4.0.jar<br/>
+                                    jgoodies-forms-1.6.0.jar<br/>
+                                    jgoodies-looks-2.5.2.jar<br/>
+                                    mlibwrapper_jai.jar<br/>
+                                    proxymusic-2.0.jar<br/>
+                                    tesseract-3.jar</td>
+                            </tr>
+                            <tr>
+                                <td>./examples<br/>
+                                    <code>EXAMPLES_FOLDER</code></td>
+                                <td>Examples of input images</td>
+                                <td>allegretto.png<br/>
+                                    autothreshold_test.JPG<br/>
+                                    batuque.png<br/>
+                                    carmen-1.png<br/>
+                                    chula.1bit.bmp<br/>
+                                    chula.png<br/>
+                                    cucaracha.png<br/>
+                                    Dichterliebe01.pdf<br/>
+                                    SchbAvMaSample.pdf<br/>
+                                    zizi.png
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>./gs<br/>
+                                    <code>GS_FOLDER</code></td>
+                                <td>(Windows) Embedded ghostscript</td>
+                            </tr>
+                            <tr>
+                                <td>./gs/windows</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td>./gs/windows/x64</td>
+                                <td>(Windows) Ghostscript for 64 bit</td>
+                                <td>gsdll64.dll<br/>
+                                    gswin64c.exe</td>
+                            </tr>
+                            <tr>
+                                <td>./gs/windows/x86</td>
+                                <td>(Windows) Ghostscript for 32 bit</td>
+                                <td>gsdll32.dll<br/>
+                                    gswin32c.exe</td>
+                            </tr>
+                            <tr>
+                                <td>./ocr<br/>
+                                    <code>OCR_FOLDER</code></td>
+                                <td>(Windows) Data for Tesseract</td>
+                            </tr>
+                            <tr>
+                                <td>./ocr/tessdata</td>
+                                <td>(Windows) Data for Tesseract</td>
+                            </tr>
+                            <tr>
+                                <td>./ocr/tessdata</td>
+                                <td>(Windows) Language trained data</td>
+                                <td>LAN.traineddata<br/>
+                                    LAN.cube.word-freq<br/>
+                                    LAN.cube.size</td>
+                            </tr>
+                            <tr>
+                                <td>./res<br/>
+                                    <code>RES_FOLDER</code>
+                                </td>
+                                <td>Resources</td>
+                                <td>all-icons-256.ico<br/>
+                                    GPLv2.rtf<br/>
+                                    icon-256.ico<br/>
+                                    icon-256.png<br/>
+                                    ISO639-3.xml<br/>
+                                    linear-evaluator.xml<br/>
+                                    neural-network.xml<br/>
+                                    splash.bmp<br/>
+                                    splash.png<br/>
+                                    system-actions.xml</td>
+                            </tr>
+                            <tr>
+                                <td>./www<br/>
+                                    <code>DOC_FOLDER</code></td>
+                                <td>Application documentation</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <article id="user-config">
+                    <h3>
+                        User config 
+                    </h3>
+
+                    <p>User-specific read-write configuration data. 
+                        (On Windows, user config is merged with user data)</p>
+
+                    <table class="location">
+                        <tr><th>OS</th><th>Root</th></tr>
+                        <tr>
+                            <td>Windows</td>
+                            <td>%APPDATA%/AudiverisLtd/audiveris/</td>
+                        </tr>
+                        <tr>
+                            <td>Ubuntu</td>
+                            <td>~/.config/share/AudiverisLtd/audiveris/</td>
+                        </tr>
+                        <tr>
+                            <td>Generic</td>
+                            <td>$XDG_CONFIG_HOME/AudiverisLtd/audiveris/</td>
+                        </tr>
+                    </table>
+
+                    <table class="content">
+                        <thead>
+                            <tr>
+                                <th>Folder</th>
+                                <th>Description</th>
+                                <th>Content</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>./plugins<br/>
+                                    <code>PLUGINS_FOLDER</code></td>
+                                <td>Javascript plugins</td>
+                                <td>finale-notepad.js<br/>
+                                    finale.js<br/>
+                                    musescore.js</td>
+                            </tr>
+                            <tr>
+                                <td>./settings<br/>
+                                    <code>SETTINGS_FOLDER</code></td>
+                                <td>Configuration files</td>
+                                <td>build.properties<br/>
+                                    logging.properties<br/>
+                                    run.properties<br/>
+                                    user-actions.xml</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <article id="user-data">
+                    <h3>
+                        User data 
+                    </h3>
+
+                    <p>User-specific read-write data. 
+                        (On Windows, user data is merged with user config)</p>
+
+                    <table class="location">
+                        <tr><th>OS</th><th>Root</th></tr>
+                        <tr>
+                            <td>Windows</td>
+                            <td>%APPDATA%/AudiverisLtd/audiveris/</td>
+                        </tr>
+                        <tr>
+                            <td>Ubuntu</td>
+                            <td>~/.local/share/AudiverisLtd/audiveris/</td>
+                        </tr>
+                        <tr>
+                            <td>Generic</td>
+                            <td>$XDG_DATA_HOME/AudiverisLtd/audiveris/</td>
+                        </tr>
+                    </table>
+
+                    <table class="content">
+                        <thead>
+                            <tr>
+                                <th>Folder</th>
+                                <th>Description</th>
+                                <th>Content</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>.</td>
+                                <td>User interface persistency</td>
+                                <td>One file FRAME.session.xml per frame</td>
+                            </tr>
+                            <tr>
+                                <td>./benches<br/>
+                                    <code>DEFAULT_BENCHES_FOLDER</code></td>
+                                <td>Default location for results of program bench</td>
+                                <td>One file SCORE.bench.properties per score benched</td>
+                            </tr>
+                            <tr>
+                                <td>./eval<br/>
+                                    <code>EVAL_FOLDER</code></td>
+                                <td>User-trained data</td>
+                                <td>neural-network.xml<br/>
+                                    linear-evaluator.xml</td>
+                            </tr>
+                            <tr>
+                                <td>./print<br/>
+                                    <code>DEFAULT_PRINT_FOLDER</code></td>
+                                <td>Default location for score printing</td>
+                                <td>One file SCORE.pdf per print
+                            </tr>
+                            <tr>
+                                <td>./scores<br/>
+                                    <code>DEFAULT_SCORES_FOLDER</code></td>
+                                <td>Default location for MusicXML export</td>
+                                <td>One file SCORE.xml per export
+                            </tr>
+                            <tr>
+                                <td>./scripts<br/>
+                                    <code>DEFAULT_SCRIPTS_FOLDER</code></td>
+                                <td>Default location for user scripts</td>
+                                <td>One file SCORE.script.xml per script
+                            </tr>
+                            <tr>
+                                <td>./train<br/>
+                                    <code>TRAIN_FOLDER</code></td>
+                                <td>Material for training</td>
+                            </tr>
+                            <tr>
+                                <td>./train/samples</td>
+                                <td>Isolated samples</td>
+                                <td>One folder for samples of same sheet</td>
+                            </tr>
+                            <tr>
+                                <td>./train/sheets</td>
+                                <td>Whole sheet glyphs</td>
+                                <td>One folder per sheet</td>
+                            </tr>
+                            <tr>
+                                <td>./train/symbols<br/>
+                                    <code>SYMBOLS_FOLDER</code></td>
+                                <td>Predefined symbols based on MusicalSymbols
+                                    font</td>
+                                <td>One file SHAPE.xml per shape</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+
+            </section>
+
         </div>
 
         <!-- =============================================================== -->
@@ -2884,6 +3362,19 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                                 <li><a href="#symbols-step">Symbols</a></li>
                                 <li><a href="#pages-step">Pages</a></li>
                                 <li><a href="#score-step">Score</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <input type="button"  value="+" class="expander" onclick="toggleInput(this)">
+                        <a class="inline" href="#folders">Folders</a>
+                        <div class="expandable">                            
+                            <ul>                  
+                                <li><a href="#system-folder">System</a></li>
+                                <li><a href="#companion-folders">Companions</a></li>
+                                <li><a href="#application-folder">Application</a></li>
+                                <li><a href="#user-config">User config</a></li>
+                                <li><a href="#user-data">User data</a></li>
                             </ul>
                         </div>
                     </li>

@@ -54,41 +54,43 @@ public class UIUtilities
 
     /**
      * Customized border for tool buttons, to use consistently in all UI
-     * components
+     * components.
      */
     private static Border toolBorder;
-    public static final WindowListener closeWindow = new WindowAdapter() {
+
+    public static final WindowListener closeWindow = new WindowAdapter()
+    {
         @Override
         public void windowClosing (WindowEvent e)
         {
             e.getWindow()
-             .dispose();
+                    .dispose();
         }
     };
 
-
     //~ Methods ----------------------------------------------------------------
-
     //------------------//
     // directoryChooser //
     //------------------//
     /**
      * Let the user select a directory.
+     *
      * @param parent   the parent component for the dialog
      * @param startDir the default directory
      * @return the chosen directory, or null
      */
     public static File directoryChooser (Component parent,
-                                         File      startDir)
+                                         File startDir)
     {
         String oldMacProperty = System.getProperty(
-            "apple.awt.fileDialogForDirectories",
-            "false");
+                "apple.awt.fileDialogForDirectories",
+                "false");
         System.setProperty("apple.awt.fileDialogForDirectories", "true");
 
         OmrFileFilter directoryFilter = new OmrFileFilter(
-            "directory",
-            new String[] {  }) {
+                "directory",
+                new String[]{})
+        {
             @Override
             public boolean accept (File f)
             {
@@ -98,8 +100,8 @@ public class UIUtilities
 
         File file = fileChooser(false, parent, startDir, directoryFilter);
         System.setProperty(
-            "apple.awt.fileDialogForDirectories",
-            oldMacProperty);
+                "apple.awt.fileDialogForDirectories",
+                oldMacProperty);
 
         return file;
     }
@@ -111,11 +113,12 @@ public class UIUtilities
      * Given a list of actions, set all these actions (whether they
      * derive from AbstractAction or AbstractButton) enabled or not,
      * according to the bool parameter provided.
+     *
      * @param actions list of actions to enable/disable as a whole
      * @param bool    true for enable, false for disable
      */
     public static void enableActions (Collection<?> actions,
-                                      boolean    bool)
+                                      boolean bool)
     {
         for (Iterator<?> it = actions.iterator(); it.hasNext();) {
             Object next = it.next();
@@ -136,15 +139,16 @@ public class UIUtilities
     /**
      * A replacement for standard JFileChooser, to allow better
      * look & feel on the Mac platform.
+     *
      * @param save      true for a SAVE dialog, false for a LOAD dialog
      * @param parent    the parent component for the dialog
      * @param startFile default file, or just default directory, or null
      * @param filter    a filter to by applied on files
      * @return the selected file, or null
      */
-    public static File fileChooser (boolean       save,
-                                    Component     parent,
-                                    File          startFile,
+    public static File fileChooser (boolean save,
+                                    Component parent,
+                                    File startFile,
                                     OmrFileFilter filter)
     {
         File file = null;
@@ -152,13 +156,13 @@ public class UIUtilities
         if (WellKnowns.MAC_OS_X) {
             if ((parent == null) && (omr.Main.getGui() != null)) {
                 parent = omr.Main.getGui()
-                                 .getFrame();
+                        .getFrame();
             }
 
             Component parentFrame = parent;
 
-            while (!(parentFrame instanceof Frame) &&
-                   (parentFrame.getParent() != null)) {
+            while (!(parentFrame instanceof Frame)
+                   && (parentFrame.getParent() != null)) {
                 parentFrame = parentFrame.getParent();
             }
 
@@ -167,8 +171,8 @@ public class UIUtilities
 
                 if (startFile != null) {
                     fd.setDirectory(
-                        startFile.isDirectory() ? startFile.getPath()
-                                                : startFile.getParent());
+                            startFile.isDirectory() ? startFile.getPath()
+                            : startFile.getParent());
                 }
 
                 fd.setMode(save ? FileDialog.SAVE : FileDialog.LOAD);
@@ -184,8 +188,8 @@ public class UIUtilities
                 String dir = fd.getDirectory();
 
                 if ((dir != null) && (fileName != null)) {
-                    String fullName = dir + WellKnowns.FILE_SEPARATOR +
-                                      fileName;
+                    String fullName = dir + WellKnowns.FILE_SEPARATOR
+                                      + fileName;
                     file = new File(fullName);
                 }
             } catch (ClassCastException e) {
@@ -194,7 +198,8 @@ public class UIUtilities
         } else {
             ///final JFileChooser fc = new JFileChooser();
             // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6317789
-            final JFileChooser fc = new JFileChooser() {
+            final JFileChooser fc = new JFileChooser()
+            {
                 @Override
                 public void updateUI ()
                 {
@@ -216,7 +221,7 @@ public class UIUtilities
             fc.addChoosableFileFilter(filter);
 
             int result = save ? fc.showSaveDialog(parent)
-                         : fc.showOpenDialog(parent);
+                    : fc.showOpenDialog(parent);
 
             if (result == JFileChooser.APPROVE_OPTION) {
                 file = fc.getSelectedFile();
@@ -230,14 +235,14 @@ public class UIUtilities
     // getToolBorder //
     //---------------//
     /**
-     * Report a standard tool border entity, which is a raised bevel
-     * border.
+     * Report a standard tool border entity, which is a blank border.
+     *
      * @return the standard tool border
      */
     public static Border getToolBorder ()
     {
         if (toolBorder == null) {
-            toolBorder = BorderFactory.createRaisedBevelBorder();
+            toolBorder = BorderFactory.createEmptyBorder(1, 2, 1, 2);
         }
 
         return toolBorder;
@@ -250,18 +255,19 @@ public class UIUtilities
      * Whatever the current scaling of a graphic context, set the stroke
      * to theesired absolute width, and return the saved stroke for
      * later restore.
+     *
      * @param g     the current graphics context
      * @param width the absolute stroke width desired
      * @return the previous stroke
      */
     public static Stroke setAbsoluteStroke (Graphics g,
-                                            float    width)
+                                            float width)
     {
-        Graphics2D      g2 = (Graphics2D) g;
+        Graphics2D g2 = (Graphics2D) g;
         AffineTransform AT = g2.getTransform();
-        double          ratio = AT.getScaleX();
-        Stroke          oldStroke = g2.getStroke();
-        Stroke          stroke = new BasicStroke(width / (float) ratio);
+        double ratio = AT.getScaleX();
+        Stroke oldStroke = g2.getStroke();
+        Stroke stroke = new BasicStroke(width / (float) ratio);
         g2.setStroke(stroke);
 
         return oldStroke;
