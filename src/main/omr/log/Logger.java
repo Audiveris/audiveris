@@ -472,9 +472,6 @@ public class Logger
      */
     private static void setGlobalParameters ()
     {
-        // Global reset
-        LogManager.getLogManager().reset();
-
         // Connect a handler for console
         addConsoleHandler();
 
