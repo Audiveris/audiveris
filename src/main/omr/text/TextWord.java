@@ -95,7 +95,7 @@ public class TextWord
      * instances.
      *
      * @param baseline   word baseline
-     * @param value      UTF8 content for this word
+     * @param value      UTF-8 content for this word
      * @param fontInfo   Font information for this word
      * @param confidence confidence level in the word value
      * @param chars      The sequence of chars descriptors
@@ -123,7 +123,7 @@ public class TextWord
      * TextChar instances are meant to be added later, as detailed information
      *
      * @param bounds     Bounding box
-     * @param value      UTF8 content for this word
+     * @param value      UTF-8 content for this word
      * @param baseline   word baseline
      * @param confidence OCR confidence in this word content
      * @param fontInfo   Font information for this word

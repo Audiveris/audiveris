@@ -98,23 +98,27 @@ class BasicGeometry
     }
 
     //~ Methods ----------------------------------------------------------------
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     @Override
-    public void dump ()
+    public String dumpOf ()
     {
-        System.out.println("   bounds=" + getBounds());
-        System.out.println("   centroid=" + getCentroid());
-        System.out.println("   interline=" + getInterline());
-        System.out.println("   location=" + getLocation());
-        System.out.println("   geoMoments=" + getGeometricMoments());
-        System.out.println("   artMoments=" + getARTMoments());
-        System.out.println("   weight=" + getWeight());
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(String.format("   bounds=%s%n", getBounds()));
+        sb.append(String.format("   centroid=%s%n", getCentroid()));
+        sb.append(String.format("   interline=%s%n", getInterline()));
+        sb.append(String.format("   location=%s%n", getLocation()));
+        sb.append(String.format("   geoMoments=%s%n", getGeometricMoments()));
+        sb.append(String.format("   artMoments=%s%n", getARTMoments()));
+        sb.append(String.format("   weight=%s%n", getWeight()));
 
         if (circle != null) {
-            System.out.println("   circle=" + circle);
+            sb.append(String.format("   circle=%s%n", circle));
         }
+
+        return sb.toString();
     }
 
     //---------------//

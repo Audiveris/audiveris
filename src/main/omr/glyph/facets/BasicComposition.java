@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-
 /**
  * Class {@code BasicComposition} implements the composition facet of
  * a glyph made of sections (and possibly of other sub-glyphs).
@@ -36,7 +35,11 @@ import java.util.TreeSet;
  *
  * @author Hervé Bitteur
  */
-class BasicComposition extends BasicFacet implements GlyphComposition {
+class BasicComposition
+        extends BasicFacet
+        implements GlyphComposition
+{
+
     /** Usual logger utility */
     private static final Logger logger = Logger.getLogger(BasicComposition.class);
 
@@ -61,9 +64,11 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     //------------------//
     /**
      * Create a new BasicComposition object.
+     *
      * @param glyph our glyph
      */
-    public BasicComposition(Glyph glyph) {
+    public BasicComposition (Glyph glyph)
+    {
         super(glyph);
     }
 
@@ -71,7 +76,9 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // addSection //
     //------------//
     @Override
-    public void addSection(Section section, Linking link) {
+    public void addSection (Section section,
+                            Linking link)
+    {
         if (section == null) {
             throw new IllegalArgumentException("Cannot add a null section");
         }
@@ -100,7 +107,9 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     //-------------//
     // addSections //
     //-------------//
-    public void addSections(Glyph other, Linking linkSections) {
+    public void addSections (Glyph other,
+                             Linking linkSections)
+    {
         // Update glyph info in other sections
         for (Section section : other.getMembers()) {
             addSection(section, linkSections);
@@ -111,7 +120,8 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // containsSection //
     //-----------------//
     @Override
-    public boolean containsSection(int id) {
+    public boolean containsSection (int id)
+    {
         for (Section section : glyph.getMembers()) {
             if (section.getId() == id) {
                 return true;
@@ -125,7 +135,8 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // cutSections //
     //-------------//
     @Override
-    public void cutSections() {
+    public void cutSections ()
+    {
         for (Section section : glyph.getMembers()) {
             if (section.getGlyph() == glyph) {
                 section.setGlyph(null);
@@ -133,28 +144,33 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
         }
     }
 
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     @Override
-    public void dump ()
+    public String dumpOf ()
     {
-        System.out.println("   members=" + members);
-        
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(String.format("   members=%s%n", members));
+
         if (partOf != null) {
-            System.out.println("   partOf=" + partOf);
+            sb.append(String.format("   partOf=%s%n", partOf));
         }
-        
+
         if (result != null) {
-            System.out.println("   result=" + result);
+            sb.append(String.format("   result=%s%n", result));
         }
+
+        return sb.toString();
     }
 
     //----------------//
     // getAlienSystem //
     //----------------//
     @Override
-    public SystemInfo getAlienSystem(SystemInfo system) {
+    public SystemInfo getAlienSystem (SystemInfo system)
+    {
         // Direct members
         for (Section section : glyph.getMembers()) {
             if (section.getSystem() != system) {
@@ -170,7 +186,8 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // getAncestor //
     //-------------//
     @Override
-    public Glyph getAncestor() {
+    public Glyph getAncestor ()
+    {
         Glyph g = this.glyph;
 
         while (g.getPartOf() != null) {
@@ -184,7 +201,8 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // getFirstSection //
     //-----------------//
     @Override
-    public Section getFirstSection() {
+    public Section getFirstSection ()
+    {
         return glyph.getMembers().first();
     }
 
@@ -192,7 +210,8 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // getMembers //
     //------------//
     @Override
-    public SortedSet<Section> getMembers() {
+    public SortedSet<Section> getMembers ()
+    {
         return unmodifiableMembers;
     }
 
@@ -200,7 +219,8 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // getPartOf //
     //-----------//
     @Override
-    public Glyph getPartOf() {
+    public Glyph getPartOf ()
+    {
         return partOf;
     }
 
@@ -208,7 +228,8 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // getResult //
     //-----------//
     @Override
-    public Result getResult() {
+    public Result getResult ()
+    {
         return result;
     }
 
@@ -216,7 +237,8 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // isActive //
     //----------//
     @Override
-    public boolean isActive() {
+    public boolean isActive ()
+    {
         if (glyph.getShape() == Shape.GLYPH_PART) {
             return false;
         }
@@ -234,7 +256,8 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // isSuccessful //
     //--------------//
     @Override
-    public boolean isSuccessful() {
+    public boolean isSuccessful ()
+    {
         return result instanceof SuccessResult;
     }
 
@@ -242,7 +265,8 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // linkAllSections //
     //-----------------//
     @Override
-    public void linkAllSections() {
+    public void linkAllSections ()
+    {
         for (Section section : glyph.getMembers()) {
             section.setGlyph(glyph);
         }
@@ -252,7 +276,9 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // removeSection //
     //---------------//
     @Override
-    public boolean removeSection(Section section, Linking link) {
+    public boolean removeSection (Section section,
+                                  Linking link)
+    {
         if (link == Linking.LINK_BACK) {
             section.setGlyph(null);
         }
@@ -267,7 +293,8 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // setPartOf //
     //-----------//
     @Override
-    public void setPartOf(Glyph compound) {
+    public void setPartOf (Glyph compound)
+    {
         partOf = compound;
     }
 
@@ -275,7 +302,8 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // setResult //
     //-----------//
     @Override
-    public void setResult(Result result) {
+    public void setResult (Result result)
+    {
         this.result = result;
     }
 
@@ -283,7 +311,8 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     // stealSections //
     //---------------//
     @Override
-    public void stealSections(Glyph that) {
+    public void stealSections (Glyph that)
+    {
         for (Section section : that.getMembers()) {
             addSection(section, Linking.LINK_BACK);
         }
@@ -296,9 +325,11 @@ class BasicComposition extends BasicFacet implements GlyphComposition {
     //-----------//
     /**
      * Apply the provided translation vector to all composing sections.
+     *
      * @param vector the provided translation vector
      */
-    public void translate(PixelPoint vector) {
+    public void translate (PixelPoint vector)
+    {
         for (Section section : glyph.getMembers()) {
             section.translate(vector);
         }

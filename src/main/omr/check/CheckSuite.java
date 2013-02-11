@@ -25,7 +25,7 @@ import java.util.List;
  * importance in the suite.
  *
  * @param <C> the subtype of Checkable-compatible objects used in the
- * homogeneous collection of checks in this suite
+ *            homogeneous collection of checks in this suite
  *
  * @author Hervé Bitteur
  */
@@ -117,32 +117,34 @@ public class CheckSuite<C extends Checkable>
      */
     public void dump ()
     {
-        System.out.println();
+        StringBuilder sb = new StringBuilder(String.format("%n"));
 
         if (name != null) {
-            System.out.print(name);
+            sb.append(name);
         }
 
-        System.out.println(" Check Suite: threshold=" + threshold);
+        sb.append(String.format(" Check Suite: threshold=%d%n", threshold));
 
-        dumpSpecific();
+        dumpSpecific(sb);
 
-        System.out.println(
-                "Weight    Name             Covariant    Low       High");
-        System.out.println(
-                "------    ----                ------    ---       ----");
+        sb.append(String.format(
+                "Weight    Name             Covariant    Low       High%n"));
+        sb.append(String.format(
+                "------    ----                ------    ---       ----%n"));
 
         int index = 0;
 
         for (Check<C> check : checks) {
-            System.out.printf(
+            sb.append(String.format(
                     "%4.1f      %-19s  %5b  % 6.2f    % 6.2f %n",
                     weights.get(index++),
                     check.getName(),
                     check.isCovariant(),
                     check.getLow(),
-                    check.getHigh());
+                    check.getHigh()));
         }
+        
+        logger.info(sb.toString());
     }
 
     //-----------//
@@ -241,7 +243,7 @@ public class CheckSuite<C extends Checkable>
             if (debug) {
                 sb.append(
                         String.format("%15s:%5.2f", check.getName(),
-                                      result.value));
+                        result.value));
             }
 
             if (result.flag == Check.RED) {
@@ -339,8 +341,10 @@ public class CheckSuite<C extends Checkable>
     //--------------//
     /**
      * Just an empty placeholder, meant to be overridden.
+     *
+     * @param the StringBuilder to populate
      */
-    protected void dumpSpecific ()
+    protected void dumpSpecific (StringBuilder sb)
     {
     }
 }

@@ -95,8 +95,8 @@ public class FilamentTest
             Filament instance = createNakedInstance();
             Section  section = createSectionOne();
             instance.addSection(section);
-            instance.drawAscii();
-            instance.dump();
+            System.out.println(instance.asciiDrawing());
+            System.out.println(instance.dumpOf());
         }
     }
 
@@ -120,7 +120,7 @@ public class FilamentTest
     }
 
     /**
-     * Test of dump method, of class Filament.
+     * Test of dumpOf method, of class Filament.
      */
     @Test
     public void testDump ()
@@ -131,8 +131,8 @@ public class FilamentTest
             setOrientation(ori);
 
             Filament instance = createFil();
-            instance.drawAscii();
-            instance.dump();
+            instance.asciiDrawing();
+            instance.dumpOf();
         }
     }
 
@@ -166,7 +166,7 @@ public class FilamentTest
             setOrientation(ori);
 
             Filament instance = createFil();
-            instance.drawAscii();
+            instance.asciiDrawing();
 
             double coord = 100;
             double expResult = 25.5;
@@ -233,7 +233,7 @@ public class FilamentTest
             Point2D  expResult = orientation.absolute(
                 new Point2D.Double(100, 25.5));
             Point2D  result = instance.getStartPoint(Orientation.HORIZONTAL);
-            instance.drawAscii();
+            instance.asciiDrawing();
             assertEquals(expResult, result);
         }
     }
@@ -272,7 +272,7 @@ public class FilamentTest
             setOrientation(ori);
 
             Filament instance = createFil();
-            instance.drawAscii();
+            instance.asciiDrawing();
 
             int    coord = 100;
             int    expResult = 2;
@@ -327,8 +327,8 @@ public class FilamentTest
             that = createFilFour();
             instance.stealSections(that);
 
-            instance.drawAscii();
-            instance.dump();
+            instance.asciiDrawing();
+            instance.dumpOf();
         }
     }
 
@@ -381,8 +381,8 @@ public class FilamentTest
             Point2D    pStop = instance.getStopPoint(Orientation.HORIZONTAL);
             instance.setEndingPoints(pStart, pStop);
 
-            instance.drawAscii();
-            instance.dump();
+            instance.asciiDrawing();
+            instance.dumpOf();
         }
     }
 
@@ -398,7 +398,7 @@ public class FilamentTest
             setOrientation(ori);
 
             Filament instance = createFil();
-            instance.drawAscii();
+            instance.asciiDrawing();
 
             assertEquals(0.2, instance.slopeAt(100, ori), 0.1);
             assertEquals(0.2, instance.slopeAt(110, ori), 0.1);
@@ -423,8 +423,8 @@ public class FilamentTest
             setOrientation(ori);
 
             Filament instance = createFil();
-            instance.drawAscii();
-            instance.dump();
+            instance.asciiDrawing();
+            instance.dumpOf();
 
             int expResult = 39;
             int result = instance.trueLength();
@@ -498,7 +498,7 @@ public class FilamentTest
         Run       r2 = new Run(100, 20, level);
         s.append(r2);
 
-        //s.dump();
+        //s.dumpOf();
         return s;
     }
 
@@ -513,7 +513,7 @@ public class FilamentTest
         Run r3 = new Run(160, 5, level);
         s.append(r3);
 
-        //s.dump();
+        //s.dumpOf();
         return s;
     }
 
@@ -528,7 +528,7 @@ public class FilamentTest
         Run r3 = new Run(132, 20, level);
         s.append(r3);
 
-        //s.dump();
+        //s.dumpOf();
         return s;
     }
 }

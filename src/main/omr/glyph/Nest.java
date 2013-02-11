@@ -77,9 +77,10 @@ public interface Nest
     /**
      * Print out major internal info about this glyph nest.
      *
-     * @param title a specific title to be used for the dump
+     * @param title a specific title to be used for the dumpOf
      */
-    void dump (String title);
+    
+    String dumpOf (String title);
 
     /**
      * Export the unmodifiable collection of active glyphs of the nest.

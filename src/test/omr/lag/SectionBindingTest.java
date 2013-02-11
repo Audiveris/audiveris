@@ -112,7 +112,7 @@ public class SectionBindingTest
 
         Glyph glyph = new BasicGlyph(newValue);
         System.out.println("Glyph: " + glyph);
-        glyph.dump();
+        glyph.dumpOf();
 
         for (Section s : glyph.getMembers()) {
             System.out.println("member: " + s);

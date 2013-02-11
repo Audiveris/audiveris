@@ -161,47 +161,50 @@ public class Picture
                                int yMin,
                                int yMax)
     {
-        System.out.println();
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(String.format("%n"));
 
         if (title != null) {
-            System.out.println(title);
+            sb.append(String.format("%s%n", title));
         }
 
         // Abscissae
-        System.out.print("     ");
+        sb.append("     ");
 
         for (int x = xMin; x <= xMax; x++) {
-            System.out.printf("%4d", x);
+            sb.append(String.format("%4d", x));
         }
 
-        System.out.println();
-        System.out.print("    +");
+        sb.append(String.format("%n    +"));
 
         for (int x = xMin; x <= xMax; x++) {
-            System.out.print(" ---");
+            sb.append(" ---");
         }
 
-        System.out.println();
+        sb.append(String.format("%n"));
 
         // Pixels
         for (int y = yMin; y <= yMax; y++) {
-            System.out.printf("%4d", y);
-            System.out.print("|");
+            sb.append(String.format("%4d", y));
+            sb.append("|");
 
             for (int x = xMin; x <= xMax; x++) {
                 int pix = getPixel(x, y);
 
                 if (pix == 255) {
-                    System.out.print("   .");
+                    sb.append("   .");
                 } else {
-                    System.out.printf("%4d", pix);
+                    sb.append(String.format("%4d", pix));
                 }
             }
 
-            System.out.println();
+            sb.append(String.format("%n"));
         }
 
-        System.out.println();
+        sb.append(String.format("%n"));
+
+        logger.info(sb.toString());
     }
 
     //--------------//

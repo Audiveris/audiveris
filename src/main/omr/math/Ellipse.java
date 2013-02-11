@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.math;
 
+import omr.log.Logger;
+
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
 
@@ -34,27 +36,29 @@ public class Ellipse
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(Ellipse.class);
+
     /** Contraint such that 4*A*C - B**2 = 1 */
     private static final Matrix C1 = new Matrix(
-        new double[][] {
-            { 0, 0, 2 },
-            { 0, -1, 0 },
-            { 2, 0, 0 }
-        });
+            new double[][]{
+                {0, 0, 2},
+                {0, -1, 0},
+                {2, 0, 0}
+            });
 
     /** Inverse of Constraint */
     private static final Matrix C1inv = new Matrix(
-        new double[][] {
-            { 0, 0, 0.5 },
-            { 0, -1, 0 },
-            { 0.5, 0, 0 }
-        });
+            new double[][]{
+                {0, 0, 0.5},
+                {0, -1, 0},
+                {0.5, 0, 0}
+            });
 
     /** Epsilon value for vertical or horizontal ellipses */
     private static final double EPSILON = 1.0e-15;
 
     //~ Instance fields --------------------------------------------------------
-
     /**
      * Array of coefficients that define ellipse algebraic equation
      */
@@ -82,7 +86,6 @@ public class Ellipse
     protected double distance;
 
     // Ellipse characteristics
-
     /** Center of ellipse */
     protected Point2D.Double center;
 
@@ -96,12 +99,12 @@ public class Ellipse
     protected Double minor;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------//
     // Ellipse //
     //---------//
     /**
      * Creates a new instance of Ellipse, defined by a set of points
+     *
      * @param x array of abscissae
      * @param y array of ordinates
      */
@@ -120,7 +123,6 @@ public class Ellipse
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // getAngle //
     //----------//
@@ -384,7 +386,7 @@ public class Ellipse
         // Check input
         if (x.length != y.length) {
             throw new IllegalArgumentException(
-                "x & y arrays have different lengths");
+                    "x & y arrays have different lengths");
         }
 
         if (x.length < 6) {
@@ -393,14 +395,12 @@ public class Ellipse
 
         /**
          * Contraint matrix C is decomposed in
-         *  (C1 | 0 )
-         *  (---+---)
-         *  ( 0 | 0 )
-         **/
-
+         * (C1 | 0 )
+         * (---+---)
+         * ( 0 | 0 )
+         * */
         ///print(C1,    "C1");
         ///print(C1inv, "C1inv");
-
         /** number of points */
         int nbPoints = x.length;
 
@@ -431,18 +431,17 @@ public class Ellipse
          * (---+---)
          * (S2'| S3)
          */
-
         /** S1 = D1'.D1 */
         Matrix S1 = D1.transpose()
-                      .times(D1);
+                .times(D1);
 
         /** S2 = D1'.D2 */
         Matrix S2 = D1.transpose()
-                      .times(D2);
+                .times(D2);
 
         /** S3 = D2'.D2 */
         Matrix S3 = D2.transpose()
-                      .times(D2);
+                .times(D2);
 
         ///print(S2, "S2");
         ///print(S1, "S1");
@@ -451,9 +450,9 @@ public class Ellipse
         /**
          * Initial equation S.A = lambda.C.A can be rewritten :
          *
-         * (S1 | S2)   (A1)            (C1 | 0 )   (A1)
+         * (S1 | S2) (A1) (C1 | 0 ) (A1)
          * (---+---) . (--) = lambda . (---+---) . (--)
-         * (S2'| S3)   (A2)            ( 0 | 0 )   (A2)
+         * (S2'| S3) (A2) ( 0 | 0 ) (A2)
          *
          * which is equivalent to :
          * S1.A1 + S2.A2 = lambda.C1.A1
@@ -475,13 +474,13 @@ public class Ellipse
          * A2 = -S3inv.S2'.A1
          */
         Matrix M = C1inv.times(
-            S1.minus(S2.times(S3.inverse()).times(S2.transpose())));
+                S1.minus(S2.times(S3.inverse()).times(S2.transpose())));
 
         ///print(M, "M");
 
         /** Retrieve eigen vectors and values for A1 */
         EigenvalueDecomposition ed = new EigenvalueDecomposition(M);
-        Matrix   eigenVectors = ed.getV();
+        Matrix eigenVectors = ed.getV();
         double[] eigenValues = ed.getRealEigenvalues();
 
         ///print(eigenVectors, "EigenVectors");
@@ -496,16 +495,16 @@ public class Ellipse
          * and keep the one with positive result
          */
         Matrix A1;
-        double   lambda = 0;
-        int      index = 0;
+        double lambda = 0;
+        int index = 0;
 
         for (int i = 0; i < 3; i++) {
             A1 = eigenVectors.getMatrix(0, 2, i, i);
 
             ///print(A1, "vector " + i);
             Matrix R = A1.transpose()
-                         .times(C1)
-                         .times(A1);
+                    .times(C1)
+                    .times(A1);
 
             ///print(R, "R");
             if (R.get(0, 0) > 0) {
@@ -525,9 +524,9 @@ public class Ellipse
 
         /** Copy the 3 other coefficients from A2 = -S3inv.S2'.A1 */
         Matrix A2 = S3.inverse()
-                      .times(S2.transpose())
-                      .times(A1)
-                      .uminus();
+                .times(S2.transpose())
+                .times(A1)
+                .uminus();
 
         print(A2, "A2");
 
@@ -584,20 +583,26 @@ public class Ellipse
     protected static void print (Matrix m,
                                  String title)
     {
+        StringBuilder sb = new StringBuilder();
+
         if (title != null) {
-            System.out.println(title);
+            sb.append(String.format("%s%n", title));
+        } else {
+            sb.append(String.format("%n"));
         }
 
         for (int row = 0; row < m.getRowDimension(); row++) {
-            System.out.print("    ");
+            sb.append("    ");
 
             for (int col = 0; col < m.getColumnDimension(); col++) {
-                System.out.print(String.format("%15g  ", m.get(row, col)));
+                sb.append(String.format("%15g  ", m.get(row, col)));
             }
 
-            System.out.println();
+            sb.append(String.format("%n"));
         }
 
-        System.out.println();
+        sb.append(String.format("%n"));
+
+        logger.info(sb.toString());
     }
 }

@@ -116,6 +116,11 @@ public class Main
         } else {
             // For batch mode
 
+            // Version information
+            if (getToolBuild() != null) {
+                logger.info("Version: {0}", getToolBuild());
+            }
+
             // Remember if at least one task has failed
             boolean failure = false;
 
@@ -231,46 +236,46 @@ public class Main
 
             tasks.add(
                     new Callable<Void>()
-                    {
-                        @Override
-                        public Void call ()
-                                throws Exception
-                        {
-                            if (!parameters.desiredSteps.isEmpty()) {
-                                logger.info("Launching {0} on {1}",
-                                            parameters.desiredSteps, name);
+            {
+                @Override
+                public Void call ()
+                        throws Exception
+                {
+                    if (!parameters.desiredSteps.isEmpty()) {
+                        logger.info("Launching {0} on {1}",
+                                parameters.desiredSteps, name);
+                    }
+
+                    if (file.exists()) {
+                        final Score score = new Score(file);
+
+                        try {
+                            Stepping.processScore(
+                                    parameters.desiredSteps,
+                                    score);
+                        } catch (ProcessingCancellationException pce) {
+                            logger.warning("Cancelled " + score, pce);
+                            score.getBench().recordCancellation();
+                            throw pce;
+                        } catch (Exception ex) {
+                            logger.warning("Exception occurred", ex);
+                            throw ex;
+                        } finally {
+                            // Close (when in batch mode only)
+                            if (gui == null) {
+                                score.close();
                             }
 
-                            if (file.exists()) {
-                                final Score score = new Score(file);
-
-                                try {
-                                    Stepping.processScore(
-                                            parameters.desiredSteps,
-                                            score);
-                                } catch (ProcessingCancellationException pce) {
-                                    logger.warning("Cancelled " + score, pce);
-                                    score.getBench().recordCancellation();
-                                    throw pce;
-                                } catch (Exception ex) {
-                                    logger.warning("Exception occurred", ex);
-                                    throw ex;
-                                } finally {
-                                    // Close (when in batch mode only)
-                                    if (gui == null) {
-                                        score.close();
-                                    }
-
-                                    return null;
-                                }
-                            } else {
-                                String msg = "Could not find file "
-                                        + file.getCanonicalPath();
-                                logger.warning(msg);
-                                throw new RuntimeException(msg);
-                            }
+                            return null;
                         }
-                    });
+                    } else {
+                        String msg = "Could not find file "
+                                     + file.getCanonicalPath();
+                        logger.warning(msg);
+                        throw new RuntimeException(msg);
+                    }
+                }
+            });
         }
 
         return tasks;
@@ -333,17 +338,17 @@ public class Main
 
             tasks.add(
                     new Callable<Void>()
-                    {
-                        @Override
-                        public Void call ()
-                                throws Exception
-                        {
-                            ScriptManager.getInstance().loadAndRun(
-                                    new File(scriptName));
+            {
+                @Override
+                public Void call ()
+                        throws Exception
+                {
+                    ScriptManager.getInstance().loadAndRun(
+                            new File(scriptName));
 
-                            return null;
-                        }
-                    });
+                    return null;
+                }
+            });
         }
 
         return tasks;
@@ -476,5 +481,6 @@ public class Main
                 "Seconds",
                 300,
                 "Process time-out, specified in seconds");
+
     }
 }

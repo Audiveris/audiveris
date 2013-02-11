@@ -40,7 +40,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Abstract class {@code GlyphMenu} is the base for glyph-based 
+ * Abstract class {@code GlyphMenu} is the base for glyph-based
  * menus such as {@link SymbolMenu}.
  * It also provides implementation for basic actions: copy, paste, assign,
  * compound, deassign and dump.
@@ -62,7 +62,6 @@ public abstract class GlyphMenu
     private static final Logger logger = Logger.getLogger(GlyphMenu.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Map action -> tag to update according to context */
     private final Map<DynAction, Integer> dynActions = new LinkedHashMap<>();
 
@@ -97,12 +96,12 @@ public abstract class GlyphMenu
     protected boolean noVirtuals;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // GlyphMenu //
     //-----------//
     /**
      * Creates a new GlyphMenu object.
+     *
      * @param controller the related glyphs controller
      */
     public GlyphMenu (GlyphsController controller)
@@ -116,12 +115,12 @@ public abstract class GlyphMenu
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // getMenu //
     //---------//
     /**
      * Report the concrete menu.
+     *
      * @return the menu
      */
     public JMenu getMenu ()
@@ -134,6 +133,7 @@ public abstract class GlyphMenu
     //------------//
     /**
      * Update the menu according to the currently selected glyphs.
+     *
      * @return the number of selected glyphs
      */
     public int updateMenu ()
@@ -196,10 +196,11 @@ public abstract class GlyphMenu
     //----------//
     /**
      * Register this action instance in the set of dynamic actions
+     *
      * @param menuLevel which menu should host the action item
-     * @param action the action to register
+     * @param action    the action to register
      */
-    protected void register (int       menuLevel,
+    protected void register (int menuLevel,
                              DynAction action)
     {
         levels.put(action, menuLevel);
@@ -211,7 +212,7 @@ public abstract class GlyphMenu
     //-----------//
     /**
      * Build the menu instance, grouping the actions with the same tag
-     * and separating them from other tags, and organize actions into 
+     * and separating them from other tags, and organize actions into
      * their target menu level.
      */
     private void buildMenu ()
@@ -239,12 +240,12 @@ public abstract class GlyphMenu
 
         for (int level = 0; level <= maxLevel; level++) {
             SeparableMenu currentMenu = (level == 0) ? menu
-                                        : new SeparableMenu("Continued ...");
+                    : new SeparableMenu("Continued ...");
 
             for (Integer tag : tags) {
                 for (Entry<DynAction, Integer> entry : dynActions.entrySet()) {
                     if (entry.getValue()
-                             .equals(tag)) {
+                            .equals(tag)) {
                         DynAction action = entry.getKey();
 
                         if (levels.get(action) == level) {
@@ -268,7 +269,6 @@ public abstract class GlyphMenu
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------------//
     // AssignListener //
     //----------------//
@@ -276,16 +276,16 @@ public abstract class GlyphMenu
      * A standard listener used in all shape assignment menus.
      */
     protected class AssignListener
-        implements ActionListener
+            implements ActionListener
     {
         //~ Instance fields ----------------------------------------------------
 
         private final boolean compound;
 
         //~ Constructors -------------------------------------------------------
-
         /**
          * Creates the AssignListener, with the compound flag.
+         *
          * @param compound true if we assign a compound, false otherwise
          */
         public AssignListener (boolean compound)
@@ -294,15 +294,14 @@ public abstract class GlyphMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
             JMenuItem source = (JMenuItem) e.getSource();
             controller.asyncAssignGlyphs(
-                nest.getSelectedGlyphSet(),
-                Shape.valueOf(source.getText()),
-                compound);
+                    nest.getSelectedGlyphSet(),
+                    Shape.valueOf(source.getText()),
+                    compound);
         }
     }
 
@@ -313,7 +312,7 @@ public abstract class GlyphMenu
      * Build a compound and assign the shape selected in the menu.
      */
     protected class CompoundAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -323,7 +322,6 @@ public abstract class GlyphMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -363,7 +361,7 @@ public abstract class GlyphMenu
      * the assignment to another glyph later).
      */
     protected class CopyAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -373,7 +371,6 @@ public abstract class GlyphMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -418,7 +415,7 @@ public abstract class GlyphMenu
      * Dump each glyph in the selected collection of glyphs.
      */
     protected class DumpAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -428,12 +425,11 @@ public abstract class GlyphMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
             for (Glyph glyph : nest.getSelectedGlyphSet()) {
-                glyph.dump();
+                logger.info(glyph.dumpOf());
             }
         }
 
@@ -445,8 +441,8 @@ public abstract class GlyphMenu
 
                 StringBuilder sb = new StringBuilder();
                 sb.append("Dump ")
-                  .append(glyphNb)
-                  .append(" glyph");
+                        .append(glyphNb)
+                        .append(" glyph");
 
                 if (glyphNb > 1) {
                     sb.append("s");
@@ -470,7 +466,7 @@ public abstract class GlyphMenu
      * to be updated according to the current glyph selection context.
      */
     protected abstract class DynAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -478,14 +474,12 @@ public abstract class GlyphMenu
         protected final int tag;
 
         //~ Constructors -------------------------------------------------------
-
         public DynAction (int tag)
         {
             this.tag = tag;
         }
 
         //~ Methods ------------------------------------------------------------
-
         /**
          * Method to update the action according to the current context
          */
@@ -493,6 +487,7 @@ public abstract class GlyphMenu
 
         /**
          * Report which item class should be used to the related menu item
+         *
          * @return the precise menu item class
          */
         public JMenuItem getMenuItem ()
@@ -508,7 +503,7 @@ public abstract class GlyphMenu
      * Assign to each glyph the shape selected in the menu.
      */
     protected class AssignAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -518,7 +513,6 @@ public abstract class GlyphMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -563,7 +557,7 @@ public abstract class GlyphMenu
      * Deassign each glyph in the selected collection of glyphs.
      */
     protected class DeassignAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -573,12 +567,11 @@ public abstract class GlyphMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
             // Remember which is the current selected glyph
-            Glyph      glyph = nest.getSelectedGlyph();
+            Glyph glyph = nest.getSelectedGlyph();
 
             // Actually deassign the whole set
             Set<Glyph> glyphs = nest.getSelectedGlyphSet();
@@ -589,12 +582,12 @@ public abstract class GlyphMenu
                 // Update focus on current glyph, if reused in a compound
                 if (glyph != null) {
                     Glyph newGlyph = glyph.getFirstSection()
-                                          .getGlyph();
+                            .getGlyph();
 
                     if (glyph != newGlyph) {
                         nest.getGlyphService()
-                            .publish(
-                            new GlyphEvent(
+                                .publish(
+                                new GlyphEvent(
                                 this,
                                 SelectionHint.GLYPH_INIT,
                                 null,
@@ -617,7 +610,7 @@ public abstract class GlyphMenu
                 if (noVirtuals) {
                     sb.append("Deassign ");
                     sb.append(knownNb)
-                      .append(" glyph");
+                            .append(" glyph");
 
                     if (knownNb > 1) {
                         sb.append("s");
@@ -627,7 +620,7 @@ public abstract class GlyphMenu
 
                     if (virtualNb > 0) {
                         sb.append(virtualNb)
-                          .append(" virtual glyph");
+                                .append(" virtual glyph");
 
                         if (virtualNb > 1) {
                             sb.append("s");
@@ -637,8 +630,8 @@ public abstract class GlyphMenu
 
                 if (stemNb > 0) {
                     sb.append(" w/ ")
-                      .append(stemNb)
-                      .append(" stem");
+                            .append(stemNb)
+                            .append(" stem");
 
                     if (stemNb > 1) {
                         sb.append("s");
@@ -662,34 +655,32 @@ public abstract class GlyphMenu
      * Paste the latest shape to the glyph(s) at end.
      */
     protected class PasteAction
-        extends DynAction
+            extends DynAction
     {
         //~ Static fields/initializers -----------------------------------------
 
         private static final String PREFIX = "Paste ";
 
         //~ Constructors -------------------------------------------------------
-
         public PasteAction ()
         {
             super(10);
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
             JMenuItem source = (JMenuItem) e.getSource();
-            Shape     shape = Shape.valueOf(
-                source.getText().substring(PREFIX.length()));
-            Glyph     glyph = nest.getSelectedGlyph();
+            Shape shape = Shape.valueOf(
+                    source.getText().substring(PREFIX.length()));
+            Glyph glyph = nest.getSelectedGlyph();
 
             if (glyph != null) {
                 controller.asyncAssignGlyphs(
-                    Collections.singleton(glyph),
-                    shape,
-                    false);
+                        Collections.singleton(glyph),
+                        shape,
+                        false);
             }
         }
 

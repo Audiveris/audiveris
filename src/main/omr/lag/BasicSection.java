@@ -192,27 +192,31 @@ public class BasicSection
         return table;
     }
 
-    //-----------//
-    // drawTable //
-    //-----------//
+    //----------------//
+    // drawingOfTable //
+    //----------------//
     /**
      * Printout the filled drawing table
      *
      * @param table the filled table
      * @param box   the table limits in the image
      */
-    public static void drawTable (char[][] table,
-                                  Rectangle box)
+    public static String drawingOfTable (char[][] table,
+                                         Rectangle box)
     {
-        System.out.println(
-                "xMin=" + box.x + ", xMax=" + ((box.x + box.width) - 1));
-        System.out.println(
-                "yMin=" + box.y + ", yMax=" + ((box.y + box.height) - 1));
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%n"));
+
+        sb.append(String.format(
+                "xMin=%d, xMax=%d%n" + box.x, box.x + box.width - 1));
+        sb.append(String.format(
+                "yMin=%d, yMax=%d%n", box.y, box.y + box.height - 1));
 
         for (int iy = 0; iy < table.length; iy++) {
-            System.out.print((iy + box.y) + ": ");
-            System.out.println(table[iy]);
+            sb.append(String.format("%d:%d%n", iy + box.y, table[iy]));
         }
+
+        return sb.toString();
     }
 
     //--------------------//
@@ -299,7 +303,7 @@ public class BasicSection
         invalidateCache();
 
         logger.fine("Parameters of {0} maxRunLength={1} meanRunLength={2}"
-                + " weight={3} foreWeight={4}",
+                    + " weight={3} foreWeight={4}",
                 this, getMaxRunLength(), getMeanRunLength(),
                 weight, foreWeight);
     }
@@ -450,7 +454,7 @@ public class BasicSection
 
         char[][] table = allocateTable(box);
         fillTable(table, box);
-        drawTable(table, box);
+        drawingOfTable(table, box);
     }
 
     //-----------//

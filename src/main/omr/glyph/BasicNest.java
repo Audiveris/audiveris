@@ -179,32 +179,36 @@ public class BasicNest
         return glyph;
     }
 
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     @Override
-    public void dump (String title)
+    public String dumpOf (String title)
     {
+        StringBuilder sb = new StringBuilder();
+
         if (title != null) {
-            System.out.println(title);
+            sb.append(String.format("%s%n", title));
         }
 
         // Dump of active glyphs
-        System.out.println(
-                "\nActive glyphs (" + getActiveGlyphs().size() + ") :");
+        sb.append(String.format("Active glyphs (%s) :%n",
+                getActiveGlyphs().size()));
 
         for (Glyph glyph : getActiveGlyphs()) {
-            System.out.println(glyph.toString());
+            sb.append(String.format("%s%n", glyph));
         }
 
         // Dump of inactive glyphs
         Collection<Glyph> inactives = new ArrayList<>(getAllGlyphs());
         inactives.removeAll(getActiveGlyphs());
-        System.out.println("\nInactive glyphs (" + inactives.size() + ") :");
+        sb.append(String.format("%nInactive glyphs (%s) :%n", inactives.size()));
 
         for (Glyph glyph : inactives) {
-            System.out.println(glyph.toString());
+            sb.append(String.format("%s%n", glyph));
         }
+
+        return sb.toString();
     }
 
     //-----------------//

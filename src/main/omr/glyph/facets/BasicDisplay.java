@@ -34,8 +34,8 @@ import java.util.Map;
  * @author Hervé Bitteur
  */
 class BasicDisplay
-    extends BasicFacet
-    implements GlyphDisplay
+        extends BasicFacet
+        implements GlyphDisplay
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -43,12 +43,12 @@ class BasicDisplay
     protected AttachmentHolder attachments;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // BasicDisplay //
     //--------------//
     /**
      * Create a new BasicDisplay object.
+     *
      * @param glyph our glyph
      */
     public BasicDisplay (Glyph glyph)
@@ -57,12 +57,11 @@ class BasicDisplay
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // addAttachment //
     //---------------//
     @Override
-    public void addAttachment (String         id,
+    public void addAttachment (String id,
                                java.awt.Shape attachment)
     {
         if (attachment != null) {
@@ -88,26 +87,28 @@ class BasicDisplay
     //----------//
     @Override
     public void colorize (Collection<Section> sections,
-                          Color               color)
+                          Color color)
     {
         for (Section section : sections) {
             section.setColor(color);
         }
     }
 
-    //-----------//
-    // drawAscii //
-    //-----------//
+    //--------------//
+    // asciiDrawing //
+    //--------------//
     @Override
-    public void drawAscii ()
-    {
-        System.out.println(glyph.toString());
+    public String asciiDrawing ()
+    {        
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append(String.format("%s%n", glyph));
 
         // Determine the bounding box
         Rectangle box = glyph.getBounds();
 
         if (box == null) {
-            return; // Safer
+            return sb.toString(); // Safer
         }
 
         // Allocate the drawing table
@@ -119,18 +120,24 @@ class BasicDisplay
         }
 
         // Draw the result
-        BasicSection.drawTable(table, box);
+        sb.append(BasicSection.drawingOfTable(table, box));
+        
+        return sb.toString();
     }
 
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     @Override
-    public void dump ()
+    public String dumpOf ()
     {
+        StringBuilder sb = new StringBuilder();
+
         if (attachments != null) {
-            System.out.println("   attachments=" + getAttachments());
+            sb.append(String.format("   attachments=%s%n", getAttachments()));
         }
+
+        return sb.toString();
     }
 
     //----------------//
@@ -156,7 +163,7 @@ class BasicDisplay
             return Colors.SHAPE_UNKNOWN;
         } else {
             return glyph.getShape()
-                        .getColor();
+                    .getColor();
         }
     }
 
@@ -167,11 +174,11 @@ class BasicDisplay
     public BufferedImage getImage ()
     {
         // Determine the bounding box
-        Rectangle     box = glyph.getBounds();
+        Rectangle box = glyph.getBounds();
         BufferedImage image = new BufferedImage(
-            box.width,
-            box.height,
-            BufferedImage.TYPE_BYTE_GRAY);
+                box.width,
+                box.height,
+                BufferedImage.TYPE_BYTE_GRAY);
 
         for (Section section : glyph.getMembers()) {
             section.fillImage(image, box);

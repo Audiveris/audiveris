@@ -29,7 +29,6 @@ import org.bushe.swing.event.EventSubscriber;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -147,48 +146,49 @@ public class RunsTable
         return clone;
     }
 
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     /**
-     * Print the image of the runs table onto the provided stream
-     *
-     * @param out the output stream
+     * Report the image of the runs table.
      */
-    public void dump (PrintStream out)
+    public String dumpOf ()
     {
-        out.println(toString());
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(String.format("%s%n", this));
 
         // Prepare output buffer
         PixelsBuffer buffer = getBuffer();
 
         // Print the buffer
-        out.print('+');
+        sb.append('+');
 
         for (int c = 0; c < dimension.width; c++) {
-            out.print('=');
+            sb.append('=');
         }
 
-        out.println('+');
+        sb.append(String.format("+%n"));
 
         for (int row = 0; row < dimension.height; row++) {
-            out.print('|');
+            sb.append('|');
 
             for (int col = 0; col < buffer.getWidth(); col++) {
-                out.print(
-                        (buffer.getPixel(col, row) == BACKGROUND) ? '-' : 'X');
+                sb.append((buffer.getPixel(col, row) == BACKGROUND) ? '-' : 'X');
             }
 
-            out.println('|');
+            sb.append(String.format("|%n"));
         }
 
-        out.print('+');
+        sb.append('+');
 
         for (int c = 0; c < dimension.width; c++) {
-            out.print('=');
+            sb.append('=');
         }
 
-        out.println('+');
+        sb.append(String.format("+%n"));
+
+        return sb.toString();
     }
 
     //----------//

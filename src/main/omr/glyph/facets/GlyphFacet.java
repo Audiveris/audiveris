@@ -10,10 +10,9 @@
 //----------------------------------------------------------------------------//
 package omr.glyph.facets;
 
-
 /**
- * Interface {@code GlyphFacet} is the root of any Glyph facet, gathering
- * just utility methods to be provided by each facet.
+ * Interface {@code GlyphFacet} is the root of any Glyph facet,
+ * gathering utility methods to be provided by each facet.
  *
  * @author Hervé Bitteur
  */
@@ -22,12 +21,14 @@ interface GlyphFacet
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Print out facet internal data
+     * Dump of facet internal data.
+     *
+     * @return Internal representation
      */
-    void dump ();
+    String dumpOf ();
 
     /**
-     * Reset relevant cached data
+     * Reset relevant cached data.
      */
     void invalidateCache ();
 }

@@ -22,18 +22,23 @@ import omr.sheet.SystemInfo;
 import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.Set;
+import omr.log.Logger;
 
 /**
- * Class {@code SymbolMenu} defines the menu  which is linked to
+ * Class {@code SymbolMenu} defines the menu which is linked to
  * the current selection of one or several glyphs.
  *
  * @author Hervé Bitteur
  */
 public class SymbolMenu
-    extends GlyphMenu
+        extends GlyphMenu
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
+    /** Usual logger utility */
+    private static final Logger logger = Logger.getLogger(SymbolMenu.class);
+
+    //~ Instance fields --------------------------------------------------------
     // Links to partnering entities
     private final ShapeFocusBoard shapeFocus;
 
@@ -41,22 +46,23 @@ public class SymbolMenu
 
     // To handle proposed compound shape
     private Glyph proposedGlyph;
+
     private Shape proposedShape;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // SymbolMenu //
     //------------//
     /**
      * Create the Symbol menu.
+     *
      * @param symbolsController the top companion
-     * @param evaluator the glyph evaluator
-     * @param shapeFocus the current shape focus
+     * @param evaluator         the glyph evaluator
+     * @param shapeFocus        the current shape focus
      */
     public SymbolMenu (final SymbolsController symbolsController,
-                       ShapeEvaluator          evaluator,
-                       ShapeFocusBoard         shapeFocus)
+                       ShapeEvaluator evaluator,
+                       ShapeFocusBoard shapeFocus)
     {
         super(symbolsController);
         this.evaluator = evaluator;
@@ -64,7 +70,6 @@ public class SymbolMenu
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------------//
     // registerActions //
     //-----------------//
@@ -113,7 +118,6 @@ public class SymbolMenu
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------------//
     // DumpTextAction //
     //----------------//
@@ -122,7 +126,7 @@ public class SymbolMenu
      * collection of glyphs.
      */
     private class DumpTextAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -132,14 +136,11 @@ public class SymbolMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
             for (Glyph glyph : nest.getSelectedGlyphSet()) {
-                //                glyph.getTextInfo()
-                //                     .dump();
-                glyph.dump();
+                logger.info(glyph.dumpOf());
             }
         }
 
@@ -151,8 +152,8 @@ public class SymbolMenu
 
                 StringBuilder sb = new StringBuilder();
                 sb.append("Dump text of ")
-                  .append(glyphNb)
-                  .append(" glyph");
+                        .append(glyphNb)
+                        .append(" glyph");
 
                 if (glyphNb > 1) {
                     sb.append("s");
@@ -175,7 +176,7 @@ public class SymbolMenu
      * Accept the proposed compound with its evaluated shape.
      */
     private class ProposedAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -185,7 +186,6 @@ public class SymbolMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -193,9 +193,9 @@ public class SymbolMenu
 
             if ((glyph != null) && (glyph == proposedGlyph)) {
                 controller.asyncAssignGlyphs(
-                    Collections.singleton(glyph),
-                    proposedShape,
-                    false);
+                        Collections.singleton(glyph),
+                        proposedShape,
+                        false);
             }
         }
 
@@ -208,9 +208,9 @@ public class SymbolMenu
             if ((glyphNb > 0) && (glyph != null) && (glyph.getId() == 0)) {
                 SystemInfo system = sheet.getSystemOf(glyph);
                 Evaluation vote = evaluator.vote(
-                    glyph,
-                    system,
-                    Grades.symbolMinGrade);
+                        glyph,
+                        system,
+                        Grades.symbolMinGrade);
 
                 if (vote != null) {
                     proposedGlyph = glyph;
@@ -239,7 +239,7 @@ public class SymbolMenu
      * Set the focus on all glyphs with the same shape.
      */
     private class ShapeAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -249,7 +249,6 @@ public class SymbolMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -257,7 +256,7 @@ public class SymbolMenu
 
             if ((glyphs != null) && (glyphs.size() == 1)) {
                 Glyph glyph = glyphs.iterator()
-                                    .next();
+                        .next();
 
                 if (glyph.getShape() != null) {
                     shapeFocus.setCurrentShape(glyph.getShape());
@@ -290,7 +289,7 @@ public class SymbolMenu
      * and leaves.
      */
     private class ShortStemSegmentAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -300,7 +299,6 @@ public class SymbolMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -330,7 +328,7 @@ public class SymbolMenu
      * Set the focus on all glyphs similar to the selected glyph.
      */
     private class SimilarAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -340,7 +338,6 @@ public class SymbolMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -348,7 +345,7 @@ public class SymbolMenu
 
             if ((glyphs != null) && (glyphs.size() == 1)) {
                 Glyph glyph = glyphs.iterator()
-                                    .next();
+                        .next();
 
                 if (glyph != null) {
                     shapeFocus.setSimilarGlyph(glyph);
@@ -365,8 +362,8 @@ public class SymbolMenu
                 setEnabled(true);
                 putValue(NAME, "Show similar glyphs");
                 putValue(
-                    SHORT_DESCRIPTION,
-                    "Display all glyphs similar to this one");
+                        SHORT_DESCRIPTION,
+                        "Display all glyphs similar to this one");
             } else {
                 setEnabled(false);
                 putValue(NAME, "Show similar");
@@ -383,7 +380,7 @@ public class SymbolMenu
      * leaves.
      */
     private class StemSegmentAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -393,7 +390,6 @@ public class SymbolMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -423,7 +419,7 @@ public class SymbolMenu
      * Display the score entity that translates this glyph.
      */
     private class TranslationAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -433,7 +429,6 @@ public class SymbolMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -453,8 +448,8 @@ public class SymbolMenu
                         sb.append("Show translations");
                         putValue(NAME, sb.toString());
                         putValue(
-                            SHORT_DESCRIPTION,
-                            "Show translations related to the glyph(s)");
+                                SHORT_DESCRIPTION,
+                                "Show translations related to the glyph(s)");
 
                         return;
                     }
@@ -475,7 +470,7 @@ public class SymbolMenu
      * Cleanup a glyph with focus on its slur shape.
      */
     private class TrimSlurAction
-        extends DynAction
+            extends DynAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -485,7 +480,6 @@ public class SymbolMenu
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {

@@ -31,7 +31,6 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,7 +44,6 @@ import java.util.Observer;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -57,7 +55,8 @@ import javax.swing.KeyStroke;
 /**
  * Class {@code SelectionPanel} handles a user panel to select <B>names</B>
  * from glyph repository, either the whole population or a core set of
- * glyphs. This class is a dedicated companion of {@link GlyphTrainer}.
+ * glyphs.
+ * This class is a dedicated companion of {@link GlyphTrainer}.
  *
  * @author Hervé Bitteur
  */
@@ -498,7 +497,7 @@ class SelectionPanel
         {
             List<String> gNames = getBase(trainingPanel.useWhole());
             System.out.println(
-                "\nContent of " +
+                "Content of " +
                 (trainingPanel.useWhole() ? "whole" : "core") +
                 " population (" + gNames.size() + "):");
             Collections.sort(gNames, GlyphRepository.shapeComparator);

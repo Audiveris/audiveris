@@ -307,9 +307,9 @@ public class VerticalsBuilder
 
         //~ Methods ------------------------------------------------------------
         @Override
-        protected void dumpSpecific ()
+        protected void dumpSpecific (StringBuilder sb)
         {
-            System.out.println(system.toString());
+            sb.append(String.format("%s%n", system));
         }
     }
 

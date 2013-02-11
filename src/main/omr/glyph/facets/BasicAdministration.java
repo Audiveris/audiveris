@@ -20,8 +20,8 @@ import omr.glyph.Nest;
  * @author Hervé Bitteur
  */
 class BasicAdministration
-    extends BasicFacet
-    implements GlyphAdministration
+        extends BasicFacet
+        implements GlyphAdministration
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -36,17 +36,17 @@ class BasicAdministration
 
     /** VIP flag. */
     protected boolean vip;
-    
+
     /** Related id string (prebuilt once for all) */
     protected String idString;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------------//
     // BasicAdministration //
     //---------------------//
     /**
      * Create a new BasicAdministration object
+     *
      * @param glyph our glyph
      */
     public BasicAdministration (Glyph glyph)
@@ -55,18 +55,21 @@ class BasicAdministration
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     @Override
-    public void dump ()
+    public String dumpOf ()
     {
-        System.out.println(
-            glyph.getClass().getName() + "@" +
-            Integer.toHexString(glyph.hashCode()));
-        System.out.println("   id=" + getId());
-        System.out.println("   nest=" + getNest());
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(String.format("Glyph: %s@%s%n",
+                glyph.getClass().getName(),
+                Integer.toHexString(glyph.hashCode())));
+        sb.append(String.format("   id=%d%n", getId()));
+        sb.append(String.format("   nest=%s%n", getNest()));
+
+        return sb.toString();
     }
 
     //-------//

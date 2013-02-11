@@ -181,19 +181,22 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     @Override
     public void dump ()
     {
+        StringBuilder sb = new StringBuilder();
+
         // The vertex
-        System.out.print(" ");
-        System.out.println(this);
+        sb.append(String.format("%s%n", this));
 
         // The in edges
         for (V vertex : sources) {
-            System.out.println("  - edge from " + vertex);
+            sb.append(String.format("  edge from %s%n", vertex));
         }
 
         // The out edges
         for (V vertex : targets) {
-            System.out.println("  + edge to   " + vertex);
+            sb.append(String.format("  edge to %s%n", vertex));
         }
+
+        logger.info(sb.toString());
     }
 
     //----------//

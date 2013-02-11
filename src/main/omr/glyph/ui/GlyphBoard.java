@@ -186,7 +186,7 @@ public class GlyphBoard
                 Glyph glyph = glyphEvent.getData();
                 
                 if (glyph != null) {
-                    glyph.dump();
+                    logger.info(glyph.dumpOf());
                 }
             }
         });

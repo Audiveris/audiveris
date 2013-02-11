@@ -233,28 +233,25 @@ public class NeuralNetwork
      */
     public void dump ()
     {
-        System.out.println();
-        System.out.println("Network");
-        System.out.println("=======");
-        System.out.println("LearningRate = " + learningRate);
-        System.out.println("Momentum     = " + momentum);
-        System.out.println("MaxError     = " + maxError);
-        System.out.println("Epochs       = " + epochs);
-        System.out.println();
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("Network%n"));
+        sb.append(String.format("LearningRate = %d%n", learningRate));
+        sb.append(String.format("Momentum     = %d%n", momentum));
+        sb.append(String.format("MaxError     = %d%n", maxError));
+        sb.append(String.format("Epochs       = %d%n", epochs));
 
         // Input
-        System.out.print("Inputs  : " + inputSize);
-        System.out.println(" cells\n");
+        sb.append(String.format("%nInputs  : %d cells%n", inputSize));
 
         // Hidden
-        dumpMatrix(hiddenWeights);
-        System.out.print("Hidden  : " + hiddenSize);
-        System.out.println(" cells\n");
+        sb.append(dumpOfMatrix(hiddenWeights));
+        sb.append(String.format("%nHidden  : %d cells%n", hiddenSize));
 
         // Output
-        dumpMatrix(outputWeights);
-        System.out.print("Outputs : " + outputSize);
-        System.out.println(" cells\n");
+        sb.append(dumpOfMatrix(outputWeights));
+        sb.append(String.format("%nOutputs : %d cells%n", outputSize));
+
+        logger.info(sb.toString());
     }
 
     //---------------//
@@ -737,28 +734,29 @@ public class NeuralNetwork
      * with all rows of the same length).
      *
      * @param matrix the matrix to dump
+     * @return the matrix representation
      */
-    private void dumpMatrix (double[][] matrix)
+    private String dumpOfMatrix (double[][] matrix)
     {
-        System.out.print("");
-
+        StringBuilder sb = new StringBuilder();
+        
         for (int col = 0; col < matrix[0].length; col++) {
-            System.out.printf("%14d", col);
+            sb.append(String.format("%14d", col));
         }
 
-        System.out.println();
+        sb.append(String.format("%n"));
 
         for (int row = 0; row < matrix.length; row++) {
-            System.out.printf("%2d:", row);
+            sb.append(String.format("%2d:", row));
 
             for (int col = 0; col < matrix[0].length; col++) {
-                System.out.printf("%14e", matrix[row][col]);
+                sb.append(String.format("%14e", matrix[row][col]));
             }
 
-            System.out.println();
+            sb.append(String.format("%n"));
         }
 
-        System.out.println();
+        return sb.toString();
     }
 
     //---------//

@@ -34,7 +34,7 @@ public class StdOutErrLevel
         Level.INFO.intValue() + 53);
 
     /**
-     * Level for STDERR activity
+     * Level for STDERR activity.
      */
     public static Level STDERR = new StdOutErrLevel(
         "STDERR",

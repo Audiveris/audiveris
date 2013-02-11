@@ -181,7 +181,7 @@ public class UnitManager
     public void checkDirtySets ()
     {
         int rookies = 0;
-        
+
         // We use (and clear) the collection of rookies
         for (Iterator<String> it = dirtySets.iterator(); it.hasNext();) {
             String name = it.next();
@@ -211,8 +211,8 @@ public class UnitManager
      */
     public void dumpAllUnits ()
     {
-        System.out.println("\nUnitManager. All Units:");
-        System.out.println("=======================");
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("UnitManager. All Units:%n"));
 
         // Use alphabetical order for easier reading
         List<Node> nodes = new ArrayList<>(mapOfNodes.values());
@@ -226,10 +226,12 @@ public class UnitManager
                 ConstantSet set = unit.getConstantSet();
 
                 if (set != null) {
-                    set.dump();
+                    sb.append(String.format("%n%s", set.dumpOf()));
                 }
             }
         }
+        
+        logger.info(sb.toString());
     }
 
     //---------//
@@ -390,17 +392,15 @@ public class UnitManager
     private void dumpStrings (String title,
                               Collection<String> strings)
     {
-        System.out.println("\n" + title + ":");
-
-        for (int i = 0; i < title.length(); i++) {
-            System.out.print("-");
-        }
-
-        System.out.println();
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append(String.format("%s:%n", title));
 
         for (String string : strings) {
-            System.out.println(string);
+            sb.append(String.format("%s%n", string));
         }
+
+        logger.info(sb.toString());
     }
 
     //    //-----//

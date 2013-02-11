@@ -59,6 +59,9 @@
             #plugins-snippet {
                 width: 500px;
             }
+            #ini-snippet {
+                width: 560px;
+            }
             #script-snippet {
                 width: 580px;
             }
@@ -715,8 +718,8 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                     </p>
                     <p>
                         The same action can be launched directly from the toolbar icon
-                        <img class="icon" width="16" height="16" 
-                             src="../images/StepForward16.gif" />
+                        <img class="icon" 
+                             src="../images/forward.png" />
                     </p>
                     <br class="clear"/>
 
@@ -747,7 +750,7 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                     <h4 id="main-window-layout">
                         Main window layout
                     </h4>
-                    <img class="right" width="629" height="481" 
+                    <img class="right"
                          src="../images/chula-score.png"
                          alt="score" title="Application main window"/>
                     <p>
@@ -864,7 +867,7 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                         You can also use the <code class="key">F12</code> function key
                         or the related toolbar icon
                         <img class="icon" width="16" height="16" 
-                             src="../images/Search16.gif" />
+                             src="../images/kbemusedsrv.png" />
                     </p>
                 </article>
 
@@ -1030,10 +1033,10 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                                 <li>
                                     By using the predefined buttons
                                     <img class="icon" width="16" height="16" 
-                                         src="../images/AlignJustifyHorizontal16.gif" />
+                                         src="../images/border_horizontal.png" />
                                     and
                                     <img class="icon" width="16" height="16" 
-                                         src="../images/AlignJustifyVertical16.gif" />,
+                                         src="../images/border_vertical.png" />,
                                     you can adjust the zoom according to the 
                                     page width or height, respectively.
                                 </li>
@@ -1064,7 +1067,7 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                                 <code>Enable section selection</code> or the 
                                 related toolbar icon
                                 <img class="icon" width="16" height="16" 
-                                     src="../images/Application16.gif" />
+                                     src="../images/kjumpingcube.png" />
                             </p>
                             <p>
                                 The mouse-based selection works as expected, 
@@ -1274,8 +1277,8 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                     <p>This dialog let you display and modify major parameters.
                         It can be accessed through menu <code>Score</code> | 
                         <code>Set parameters...</code> or via the related toolbar icon 
-                        <img class="icon" width="16" height="16" 
-                             src="../images/Edit16.gif" />.
+                        <img class="icon" 
+                             src="../images/kmenuedit.png" />.
                     </p>
                     <p>
                         It is organized in several tabs to describe default, score and 
@@ -1839,9 +1842,10 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                         <dt>Organization</dt>
                         <dd>
                             For your information, the general organization of
-                            the Audiveris directories is described in the file 
+                            the Audiveris directories is listed in file 
                             <a href="../../../dev/material/global-tree.txt">
-                                dev/material/global-tree.text</a>.                            
+                                dev/material/global-tree.text</a> and detailed
+                                in the <a href="#folders">Folders</a> section.                            
                         </dd>
                     </dl>
                 </article>
@@ -1855,7 +1859,9 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                     <p>Here is the summary you get when launching Audiveris with the 
                         <code>-help</code> parameter:</p>
 
-                    <textarea id="cli-snippet" class="snippet" rows="28">
+                    <textarea id="cli-snippet" class="snippet" rows="30">
+Version:
+   4.2.3336
 Command line syntax:
    java [JVM options] -jar &lt;audiveris.jar&gt; [parameters*]
 Parameters syntax:
@@ -1957,6 +1963,152 @@ Known step names are in order (non case-sensitive):
                             <br/>
                             Same note as for -bench option.</dd>
                     </dl>
+                </article>
+
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+                <article id="memory">
+                    <h3>
+                        Memory
+                    </h3>
+
+                    <p>
+                        Audiveris is a Java application which is given a default
+                        amount of memory.
+                        You may get the exception <code>OutOfmemoryError</code>
+                        when memory is exhausted, typically when processing
+                        a score with too many pages.
+                    </p>
+                    <p>
+                        You can provide more memory to Audiveris application 
+                        via the JVM option <code>-Xmx</code>, for example
+                        <code>-Xmx512M</code> for 512 megabytes, 
+                        or <code>-Xmx2G</code> for 2 gigabytes.
+                        Please note that you cannot really go beyond the physical
+                        memory available on your machine, or memory swapping will
+                        severely impact the processing speed.
+                    </p>
+                    <p>
+                        How to set this memory option depends on the way you
+                        launch Audiveris:
+                    </p>
+                    <dl>
+                        <dt>Windows audiveris.exe</dt>
+                        <dd>
+                            <p>
+                                This executable is launched by any of the following
+                                actions:</p>
+                            <ul>
+                                <li>A double-click on the file icon in Windows
+                                    Explorer,</li>
+                                <li>A double-click on Audiveris desktop icon
+                                    <img class="icon" 
+                                         src="../images/shortcut.png" />,</li>
+                                <li>A click on Windows start button and 
+                                    selection of the Audiveris menu item,</li>
+                                <li>Entering its name from the command line 
+                                    interface in a Terminal window.</li>
+                            </ul>
+                            <p>
+                                Whatever the launching mechanism, the executable is
+                                driven by the related file <code>audiveris.l4j.ini</code>
+                                located in the same folder and listed below.</p>
+                            <p>Simply modify the line that begins with "-Xmx".
+                            </p>
+
+                            <figure id="ini-snippet" class="snippet">
+                                <pre>
+#------------------------------------------------------------------------------#
+#                       a u d i v e r i s . l 4 j . i n i                      #
+#------------------------------------------------------------------------------#
+# Launch4j runtime config file for audiveris.exe                               #
+#------------------------------------------------------------------------------#
+
+# Initial memory
+-Xms384M
+
+# Maximum memory
+<b>-Xmx384M</b>
+
+# Uncomment to specify logging parameters other than settings/logging.properties
+# -Djava.util.logging.config.file=path/to/some-other-file.properties
+
+# Uncomment to specify another target for audiveris.log file
+# -Dstdouterr=path/to/some-other-audiveris.log
+                                </pre>
+                                <figcaption>Content of audiveris.l4j.ini</figcaption>
+                            </figure>
+                        </dd>
+
+                        <dt>Windows audiveris-console.exe</dt>
+                        <dd>
+                            <p>This executable, which displays the console content,
+                                is similarly driven by the related file
+                                <code>audiveris-console.l4j.ini</code></p>
+                            <p>It can be customized as above.</p></dd>
+
+                        <dt>Java command</dt>
+                        <dd>
+                            <p>
+                                From a Terminal window, whatever the operating 
+                                system, the command line interface can be used to
+                                launch the Java program on audiveris application:
+                                <br/>
+                                <code>java -jar path-to-audiveris.jar</code>
+                            </p>
+                            <p>
+                                Simply add the option -Xmx right after the java 
+                                command as in the following example: <br>
+                                <code>java <b>-Xmx1024M</b>
+                                    -jar path-to-audiveris.jar</code>
+                            </p>
+                        </dd>
+
+                        <dt>Linux audiveris</dt>
+                        <dd>
+                            <p>
+                                For Linux, the <code>audiveris</code> executable
+                                is just a shell file that calls the Java 
+                                program as described above.
+                            </p>
+                            <p>
+                                Simply edit this file (Use <code>which audiveris</code>
+                                to know its precise location).
+                            </p>
+                        </dd>
+                    </dl>
+                </article>
+
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+                <article id="log">
+                    <h3>
+                        Log
+                    </h3>
+
+                    <p>
+                        All messages displayed in Audiveris log window are also 
+                        written into a file called <code>audiveris.log</code>.
+                        Such log is a simple text file meant for later analysis,
+                        and in particular is very useful when filing a bug 
+                        report or posting a message on Audiveris forum.
+                    </p>
+                    <p>
+                        The <code>audiveris.log</code> file is by default
+                        located in the <code>temp</code> folder of 
+                        <a href="#user-data">user data</a>.
+                        Path and file name can be changed by setting the system
+                        property <code>stdouterr</code> through a JVM option
+                        as follows:<br/>
+                        <code>-Dstdouterr=path/to/some-file.log</code>
+                    </p>
+                    <p>
+                        The advanced user can precisely customize the logged
+                        information by manually editing the configuration file
+                        <code>logging.properties</code> located in the 
+                        <code>settings</code> folder of <a href="#user-config">
+                            user config</a>.
+                    </p>
                 </article>
 
                 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
@@ -2891,24 +3043,24 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     </p>
 
                     <h4>Ghostscript</h4>
-                    
+
                     <p>A Ghostscript sub-process is used to convert on-the-fly 
                         a PDF input file into a temporary TIFF file which is 
                         then read by Audiveris.</p>
-                    
+
                     <p>On Windows, Audiveris uses a  dedicated Ghostscript 
                         which is embedded with Audiveris application. 
                         See <a href="#application-folder" >application
-                        folder</a> below.</p>
-                    
+                            folder</a> below.</p>
+
                     <p>On Linux, Audiveris uses the pre-installed Ghostscript 
                         program.</p>
 
                     <h4>Tesseract</h4>
-                    
+
                     <p>Tesseract is used as the OCR engine, called repeatedly
                         by Audiveris via a JNI interface.</p>
-                    
+
                     <ol>
                         <li>Because of the size of their related files,
                             just a few languages are provided by default through
@@ -3072,10 +3224,6 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                             </tr>
                             <tr>
                                 <td>./ocr/tessdata</td>
-                                <td>(Windows) Data for Tesseract</td>
-                            </tr>
-                            <tr>
-                                <td>./ocr/tessdata</td>
                                 <td>(Windows) Language trained data</td>
                                 <td>LAN.traineddata<br/>
                                     LAN.cube.word-freq<br/>
@@ -3217,7 +3365,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                                 <td>./print<br/>
                                     <code>DEFAULT_PRINT_FOLDER</code></td>
                                 <td>Default location for score printing</td>
-                                <td>One file SCORE.pdf per print
+                                <td>One file SCORE.pdf per print</td>
                             </tr>
                             <tr>
                                 <td>./scores<br/>
@@ -3229,7 +3377,15 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                                 <td>./scripts<br/>
                                     <code>DEFAULT_SCRIPTS_FOLDER</code></td>
                                 <td>Default location for user scripts</td>
-                                <td>One file SCORE.script.xml per script
+                                <td>One file SCORE.script.xml per script</td>
+                            </tr>
+                            <tr>
+                                <td>./temp<br/>
+                                    <code>TEMP_FOLDER</code></td>
+                                <td>Temporary files</td>
+                                <td>audiveris.log (log file)<br/>
+                                    00n-sS-scanSystem.tif (system image)<br/>
+                                    00n-sS-gGGGG-retrieveOcrLine.tif (glyph image)</td>
                             </tr>
                             <tr>
                                 <td>./train<br/>
@@ -3333,6 +3489,8 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                             <ul>                  
                                 <li><a href="#building">Building from source</a></li>
                                 <li><a href="#cli">Command line</a></li>
+                                <li><a href="#memory">Memory</a></li>
+                                <li><a href="#log">Log</a></li>
                                 <li><a href="#script">Script</a></li>
                                 <li><a href="#plugins">Plugins</a></li>
                                 <li><a href="#options">Options</a></li>

@@ -503,6 +503,9 @@ public class MainGui
             Main.setToolBuild(
                     getContext().getResourceMap().getString("Application.build"));
         }
+        
+        // Display version information
+        logger.info("Version: {0}", Main.getToolBuild());
 
         // Launch background pre-loading tasks?
         if (constants.preloadCostlyPackages.getValue()) {

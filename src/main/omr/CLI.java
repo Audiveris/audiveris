@@ -105,10 +105,13 @@ public class CLI
 
         /** No parameter expected */
         NONE,
-        /** Just a single parameter is expected */
+        /** Just a single parameter is
+         * expected */
         SINGLE,
-        /** One or several parameters are expected */
+        /** One or several
+         * parameters are expected */
         MULTIPLE;
+
     }
 
     /** For command analysis */
@@ -257,7 +260,8 @@ public class CLI
      * needed.
      *
      * @param item the item to add, which can be a plain string (which is
-     * simply added to the list) or an indirection (a string starting by the '@'
+     *             simply added to the list) or an indirection (a string starting by the '
+     * @'
      * character) which denotes a file of items to be recursively added
      * @param list the collection of items to be augmented
      */
@@ -530,6 +534,12 @@ public class CLI
         }
 
         StringBuilder buf = new StringBuilder();
+
+        // Print version
+        if (Main.getToolBuild() != null) {
+            buf.append("\nVersion:");
+            buf.append("\n   ").append(Main.getToolBuild());
+        }
 
         // Print standard command line syntax
         buf.append("\nCommand line syntax:");

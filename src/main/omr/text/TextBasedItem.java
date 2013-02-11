@@ -47,7 +47,7 @@ public abstract class TextBasedItem
      * Creates a new TextBasedItem object.
      *
      * @param bounds     Bounding box
-     * @param value      UTF8 content for this item
+     * @param value      UTF-8 content for this item
      * @param baseline   item baseline
      * @param confidence OCR confidence in this item content
      */

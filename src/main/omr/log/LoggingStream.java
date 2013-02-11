@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                   L o g g i n g O u t p u t S t r e a m                    //
+//                          L o g g i n g S t r e a m                         //
 //                                                                            //
 //----------------------------------------------------------------------------//
 package omr.log;
@@ -10,32 +10,36 @@ import omr.WellKnowns;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Class {@code LoggingOutputStream} defines an OutputStream that writes
+ * Class {@code LoggingStream} defines an OutputStream that writes
  * contents to a Logger upon each call to flush().
  * <br/>
- * <a href="http://blogs.oracle.com/nickstephen/entry/java_redirecting_system_out_and">See blog of Nick Stephen</a>
+ * <a
+ * href="http://blogs.oracle.com/nickstephen/entry/java_redirecting_system_out_and">See
+ * blog of Nick Stephen</a>
  *
  * @author Nick Stephen
  */
-public class LoggingOutputStream
-    extends ByteArrayOutputStream
+public class LoggingStream
+        extends ByteArrayOutputStream
 {
     //~ Instance fields --------------------------------------------------------
 
-    private Logger logger;
-    private Level  level;
+    private final Logger logger;
+
+    private final Level level;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Constructor
+     *
      * @param logger Logger to write to
-     * @param level Level at which to write the log message
+     * @param level  Level at which to write the log message
      */
-    public LoggingOutputStream (Logger logger,
-                                Level  level)
+    public LoggingStream (Logger logger,
+                       Level level)
     {
         super();
         this.logger = logger;
@@ -43,21 +47,21 @@ public class LoggingOutputStream
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
-     * upon flush(), write the existing contents of the OutputStream to the
-     * logger as a log record.
+     * Upon flush(), write the existing contents of the OutputStream to
+     * the logger as a log record.
+     *
      * @throws java.io.IOException in case of error
      */
     @Override
     public void flush ()
-        throws IOException
+            throws IOException
     {
         String record;
 
         synchronized (this) {
             super.flush();
-            record = this.toString();
+            record = this.toString(WellKnowns.FILE_ENCODING);
             super.reset();
         }
 

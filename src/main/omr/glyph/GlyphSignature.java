@@ -28,9 +28,6 @@ public class GlyphSignature
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Glyph (0) or GlyphChain (1) */
-    private final int chain;
-
     /** Glyph absolute weight */
     private final int weight;
 
@@ -48,7 +45,6 @@ public class GlyphSignature
      */
     public GlyphSignature (Glyph glyph)
     {
-        chain = (glyph instanceof GlyphChain) ? 1 : 0;
         weight = glyph.getWeight();
         moments = new GeometricMoments(glyph.getGeometricMoments());
     }
@@ -61,7 +57,6 @@ public class GlyphSignature
      */
     private GlyphSignature ()
     {
-        chain = 0;
         weight = 0;
         moments = null;
     }
@@ -74,12 +69,6 @@ public class GlyphSignature
     @Override
     public int compareTo (GlyphSignature other)
     {
-        if (chain < other.chain) {
-            return -1;
-        } else if (chain > other.chain) {
-            return 1;
-        }
-
         if (weight < other.weight) {
             return -1;
         } else if (weight > other.weight) {
@@ -137,14 +126,6 @@ public class GlyphSignature
         return hash;
     }
 
-    //---------//
-    // isChain //
-    //---------//
-    public boolean isChain ()
-    {
-        return chain == 1;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -152,9 +133,6 @@ public class GlyphSignature
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("{GSig");
-
-        sb.append(" chain=")
-          .append(chain);
 
         sb.append(" weight=")
           .append(weight);

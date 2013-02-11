@@ -40,8 +40,8 @@ import java.awt.geom.Point2D;
  * @author Hervé Bitteur
  */
 public class BasicAlignment
-    extends BasicFacet
-    implements GlyphAlignment
+        extends BasicFacet
+        implements GlyphAlignment
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -52,7 +52,6 @@ public class BasicAlignment
     private static final Logger logger = Logger.getLogger(BasicAlignment.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Best (curved or straight) line equation */
     protected Line line;
 
@@ -66,9 +65,9 @@ public class BasicAlignment
     protected Point2D stopPoint;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Create a new BasicAlignment object
+     *
      * @param glyph our glyph
      */
     public BasicAlignment (Glyph glyph)
@@ -77,7 +76,6 @@ public class BasicAlignment
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getAspect //
     //-----------//
@@ -117,7 +115,7 @@ public class BasicAlignment
     //------------------//
     // getIntPositionAt //
     //------------------//
-    public int getIntPositionAt (double      coord,
+    public int getIntPositionAt (double coord,
                                  Orientation orientation)
     {
         return (int) Math.rint(getPositionAt(coord, orientation));
@@ -131,8 +129,8 @@ public class BasicAlignment
     {
         checkLine();
 
-        return (stopPoint.getX() - startPoint.getX()) / (stopPoint.getY() -
-                                                        startPoint.getY());
+        return (stopPoint.getX() - startPoint.getX()) / (stopPoint.getY()
+                                                         - startPoint.getY());
     }
 
     //--------------//
@@ -212,14 +210,14 @@ public class BasicAlignment
     {
         if (orientation == VERTICAL) {
             return (int) Math.rint(
-                (getStartPoint(orientation)
-                     .getX() + getStopPoint(orientation)
-                                   .getX()) / 2.0);
+                    (getStartPoint(orientation)
+                    .getX() + getStopPoint(orientation)
+                    .getX()) / 2.0);
         } else {
             return (int) Math.rint(
-                (getStartPoint(orientation)
-                     .getY() + getStopPoint(orientation)
-                                   .getY()) / 2.0);
+                    (getStartPoint(orientation)
+                    .getY() + getStopPoint(orientation)
+                    .getY()) / 2.0);
         }
     }
 
@@ -227,15 +225,15 @@ public class BasicAlignment
     // getPositionAt //
     //---------------//
     @Override
-    public double getPositionAt (double      coord,
+    public double getPositionAt (double coord,
                                  Orientation orientation)
     {
         if (orientation == HORIZONTAL) {
             return getLine()
-                       .yAtX(coord);
+                    .yAtX(coord);
         } else {
             return getLine()
-                       .xAtY(coord);
+                    .xAtY(coord);
         }
     }
 
@@ -245,6 +243,7 @@ public class BasicAlignment
     /**
      * Report the absolute centroid of all the glyph pixels found in the
      * provided absolute ROI
+     *
      * @param absRoi the desired absolute region of interest
      * @return the absolute barycenter of the pixels found
      */
@@ -334,6 +333,7 @@ public class BasicAlignment
     //---------------//
     /**
      * Report the width of the window used to determine filament ordinate
+     *
      * @return the scale-independent probe width
      */
     public static Scale.Fraction getProbeWidth ()
@@ -341,23 +341,27 @@ public class BasicAlignment
         return constants.probeWidth;
     }
 
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     /**
-     * Print out glyph internal data
+     * Report glyph internal data
      */
     @Override
-    public void dump ()
+    public String dumpOf ()
     {
+        StringBuilder sb = new StringBuilder();
+
         if (startPoint != null) {
-            System.out.println("   start=" + startPoint);
+            sb.append(String.format("   start=%s%n", startPoint));
         }
         if (stopPoint != null) {
-            System.out.println("   stop=" + stopPoint);
+            sb.append(String.format("   stop=%s%n", stopPoint));
         }
-        
-        System.out.println("   line=" + getLine());
+
+        sb.append(String.format("   line=%s%n", getLine()));
+
+        return sb.toString();
     }
 
     //----------//
@@ -369,8 +373,8 @@ public class BasicAlignment
         if (slope == null) {
             checkLine();
 
-            slope = (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX() -
-                                                             startPoint.getX());
+            slope = (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX()
+                                                              - startPoint.getX());
         }
 
         return slope;
@@ -380,7 +384,7 @@ public class BasicAlignment
     // getThicknessAt //
     //----------------//
     @Override
-    public double getThicknessAt (double      coord,
+    public double getThicknessAt (double coord,
                                   Orientation orientation)
     {
         return Glyphs.getThicknessAt(coord, orientation, glyph);
@@ -404,17 +408,17 @@ public class BasicAlignment
     public void renderLine (Graphics2D g)
     {
         if (!glyph.getBounds()
-                  .intersects(g.getClipBounds())) {
+                .intersects(g.getClipBounds())) {
             return;
         }
 
         getLine(); // To make sure the line has been computed
 
         g.drawLine(
-            (int) Math.rint(startPoint.getX()),
-            (int) Math.rint(startPoint.getY()),
-            (int) Math.rint(stopPoint.getX()),
-            (int) Math.rint(stopPoint.getY()));
+                (int) Math.rint(startPoint.getX()),
+                (int) Math.rint(startPoint.getY()),
+                (int) Math.rint(stopPoint.getX()),
+                (int) Math.rint(stopPoint.getY()));
     }
 
     //-----------------//
@@ -541,6 +545,7 @@ public class BasicAlignment
     /**
      * Report whether the angle of the approximating line is outside
      * the range [-PI/4 - +PI/4].
+     *
      * @return true if rather vertical, false for rather horizontal
      */
     private boolean isRatherVertical ()
@@ -553,17 +558,17 @@ public class BasicAlignment
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         final Scale.Fraction probeWidth = new Scale.Fraction(
-            0.5,
-            "Width of probing window to retrieve Glyph ordinate");
+                0.5,
+                "Width of probing window to retrieve Glyph ordinate");
+
     }
 }

@@ -329,9 +329,7 @@ public class GlyphsBuilder
         // Insert in nest, which assigns an id to the glyph
         Glyph oldGlyph = nest.registerGlyph(glyph);
 
-        if (!(oldGlyph instanceof GlyphChain)) {
-            system.addToGlyphsCollection(oldGlyph);
-        }
+        system.addToGlyphsCollection(oldGlyph);
 
         return oldGlyph;
     }
@@ -519,7 +517,7 @@ public class GlyphsBuilder
         // Box for stem(s) lookup
         final PixelRectangle box = stemBoxOf(glyph, side);
         final List<Glyph> stems = new ArrayList<>();
-        
+
         for (Glyph s : glyphs) {
             // Check bounding box intersection
             if (s.isStem() && s.isActive() && s.getBounds().intersects(box)) {

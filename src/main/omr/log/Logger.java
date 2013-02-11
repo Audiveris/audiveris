@@ -13,18 +13,15 @@ package omr.log;
 
 import omr.WellKnowns;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
 import omr.constant.UnitManager;
 
 import omr.step.LogStepMonitorHandler;
-
-import omr.util.Param;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.util.GregorianCalendar;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.ConsoleHandler;
@@ -55,20 +52,23 @@ public class Logger
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
-    
-    /** Parameter that governs call-stack printing. */
-    public static final Param<Boolean> defaultStack = new DefaultStack();
+    /** Flag set once configuration has been made. */
+    private static boolean configured = false;
 
-    /** Cache this log manager */
-    private static LogManager manager;
-
-    /** Temporary mail box for logged messages */
+    /** Temporary mail box for logged messages. */
     private static ArrayBlockingQueue<FormattedRecord> logMbx;
 
-    /** Size of the mail box (cannot use a Constant) */
-    private static final int LOG_MBX_SIZE = 10000;
+    /**
+     * Size of the mail box.
+     * (This cannot be an application Constant, for elaboration dependencies)
+     */
+    private static final int LOG_MBX_SIZE = 10_000;
+
+    /** Name of default log file. */
+    private static final String LOG_FILE_NAME = "audiveris.log";
+
+    /** Logger at the top of the loggers hierarchy. */
+    private static final java.util.logging.Logger topLogger = java.util.logging.Logger.getLogger("");
 
     //~ Constructors -----------------------------------------------------------
     //--------//
@@ -117,17 +117,18 @@ public class Logger
     public static synchronized Logger getLogger (String name)
     {
         // Lazy initialization if needed
-        if (manager == null) {
-            manager = LogManager.getLogManager();
+        if (!configured) {
+            configured = true;
             setGlobalParameters();
         }
 
-        Logger result = (Logger) manager.getLogger(name);
+        // Reuse existing logger, if any with this name
+        Logger result = (Logger) LogManager.getLogManager().getLogger(name);
 
         if (result == null) {
             result = new Logger(name);
-            manager.addLogger(result);
-            result = (Logger) manager.getLogger(name);
+            LogManager.getLogManager().addLogger(result);
+            result = (Logger) LogManager.getLogManager().getLogger(name);
 
             // Insert in the hierarchy of units with logger
             UnitManager.getInstance().addLogger(result);
@@ -152,22 +153,6 @@ public class Logger
         }
 
         return logMbx;
-    }
-
-    //-----------------------//
-    // isPrintStackOnWarning //
-    //-----------------------//
-    public static boolean isPrintStackOnWarning ()
-    {
-        return constants.printStackOnWarning.getValue();
-    }
-
-    //------------------------//
-    // setPrintStackOnWarning //
-    //------------------------//
-    public static void setPrintStackOnWarning (boolean val)
-    {
-        constants.printStackOnWarning.setValue(val);
     }
 
     //-------------------//
@@ -290,7 +275,7 @@ public class Logger
     // severe //
     //--------//
     /**
-     * Log the provided message and stop.
+     * Log the provided message (and stop?).
      *
      * @param msg the (severe) message
      */
@@ -315,7 +300,7 @@ public class Logger
     // severe //
     //--------//
     /**
-     * Log the provided message and exception and stop the application.
+     * Log the provided message and exception (and stop the application?).
      *
      * @param msg    the (severe) message
      * @param thrown the exception
@@ -341,10 +326,7 @@ public class Logger
                          Throwable thrown)
     {
         super.log(Level.WARNING, "{0} [{1}]", new Object[]{msg, thrown});
-
-        if (constants.printStackOnWarning.isSet()) {
-            thrown.printStackTrace();
-        }
+        thrown.printStackTrace();
     }
 
     //---------//
@@ -354,6 +336,129 @@ public class Logger
                          Object... params)
     {
         super.log(Level.WARNING, msg, params);
+    }
+
+    //--------------//
+    // storeLogging //
+    //--------------//
+    /**
+     * Store logging data into a file, either the one defined by
+     * "stdouterr" system property, or the default file otherwise.
+     */
+    private static void storeLogging ()
+    {
+        File file = null;
+
+        // First consider a potential setting of system property stdouterr
+        final String redirection = WellKnowns.STD_OUT_ERR;
+        if (redirection != null) {
+            file = new File(redirection);
+            File dir = file.getParentFile();
+            dir.mkdirs();
+            if (!dir.exists() || !dir.isDirectory()) {
+                System.err.println("Could not get to directory " + dir);
+                file = null;
+            }
+        }
+
+        // Otherwise, use standard logging file
+        if (file == null) {
+            file = new File(WellKnowns.TEMP_FOLDER, LOG_FILE_NAME);
+            WellKnowns.TEMP_FOLDER.mkdirs();
+        }
+
+        // initialize logging to go to rolling log file
+        try {
+            String path = file.getCanonicalPath();
+
+            // Log file max size 10K, 1 rolling file, append-on-open
+            Handler fileHandler = new FileHandler(
+                    path,
+                    10000,
+                    1,
+                    false);
+            fileHandler.setFormatter(new LogBasicFormatter());
+            //fileHandler.setFormatter(new SimpleFormatter());
+            topLogger.addHandler(fileHandler);
+
+            // Tell user we are redirecting log
+            GregorianCalendar calendar = new GregorianCalendar();            
+            String msg = String.format("Logging to %s on %2$tF %2$tT", path, calendar);
+            ///topLogger.log(Level.INFO, msg);
+            System.out.println(msg);
+        } catch (IOException | SecurityException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    //-------------------//
+    // addConsoleHandler //
+    //-------------------//
+    /**
+     * If needed, create a ConsoleHandler and add it to the topLogger.
+     */
+    private static void addConsoleHandler ()
+    {
+        // Handler for console (reuse it if it already exists)
+        Handler consoleHandler = null;
+
+        for (Handler handler : topLogger.getHandlers()) {
+            if (handler instanceof ConsoleHandler) {
+                consoleHandler = handler;
+
+                break;
+            }
+        }
+
+        if (consoleHandler == null) {
+            consoleHandler = new ConsoleHandler();
+            topLogger.addHandler(consoleHandler);
+        }
+
+        consoleHandler.setFormatter(new LogBasicFormatter());
+        consoleHandler.setLevel(java.util.logging.Level.FINEST);
+        consoleHandler.setFilter(new LogEmptyMessageFilter());
+
+        try {
+            consoleHandler.setEncoding(WellKnowns.FILE_ENCODING);
+        } catch (SecurityException | UnsupportedEncodingException ex) {
+            System.err.println(
+                    "Cannot setEncoding to " + WellKnowns.FILE_ENCODING
+                    + " exception: " + ex);
+        }
+    }
+
+    //--------------//
+    // rebindStream //
+    //--------------//
+    /**
+     * Rebind the provided standard stream to a specific logger.
+     *
+     * @param level either StdOutErrLevel.STDOUT or StdOutErrLevel.STDERR
+     */
+    private static void rebindStream (Level level)
+    {
+        String name = level.getName();
+
+        try {
+
+            java.util.logging.Logger logger = LogManager.getLogManager().getLogger(name);
+
+            if (logger == null) {
+                logger = new Logger(name);
+                LogManager.getLogManager().addLogger(logger);
+                logger = (Logger) LogManager.getLogManager().getLogger(name);
+            }
+
+            LoggingStream los = new LoggingStream(logger, level);
+            if (level == StdOutErrLevel.STDOUT) {
+                System.setOut(new PrintStream(los, true, WellKnowns.FILE_ENCODING));
+            } else if (level == StdOutErrLevel.STDERR) {
+                System.setErr(new PrintStream(los, true, WellKnowns.FILE_ENCODING));
+            }
+        } catch (UnsupportedEncodingException ex) {
+            System.out.println("Cannot setEncoding to " + WellKnowns.FILE_ENCODING);
+        }
     }
 
     //---------------------//
@@ -367,135 +472,26 @@ public class Logger
      */
     private static void setGlobalParameters ()
     {
-        // Retrieve the logger at the top of the hierarchy
-        java.util.logging.Logger topLogger;
-        topLogger = java.util.logging.Logger.getLogger("");
+        // Global reset
+        LogManager.getLogManager().reset();
 
-        /** Redirecting stdout and stderr to logging */
-        String redirection = WellKnowns.STD_OUT_ERROR;
+        // Connect a handler for console
+        addConsoleHandler();
 
-        if (redirection != null) {
-            // initialize logging to go to rolling log file
-            manager.reset();
-
-            try {
-                // log file max size 10K, 1 rolling file, append-on-open
-                Handler fileHandler = new FileHandler(
-                        redirection,
-                        10_000,
-                        1,
-                        false);
-                fileHandler.setFormatter(new LogBasicFormatter()); //(new SimpleFormatter());
-                topLogger.addHandler(fileHandler);
-
-                // Tell user we are redirecting log
-                try {
-                    String path = new File(redirection).getCanonicalPath();
-                    topLogger.log(Level.INFO, "Log is redirected to {0}", path);
-                    System.out.println("Log is redirected to " + path);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-
-                // now rebind stdout/stderr to logger
-                Logger logger;
-                LoggingOutputStream los;
-
-                logger = Logger.getLogger("stdout");
-                los = new LoggingOutputStream(logger, StdOutErrLevel.STDOUT);
-                System.setOut(new PrintStream(los, true, WellKnowns.FILE_ENCODING));
-
-                logger = Logger.getLogger("stderr");
-                los = new LoggingOutputStream(logger, StdOutErrLevel.STDERR);
-                System.setErr(new PrintStream(los, true, WellKnowns.FILE_ENCODING));
-            } catch (IOException | SecurityException ex) {
-                ex.printStackTrace();
-            }
-        } else {
-            // Handler for console (reuse it if it already exists)
-            Handler consoleHandler = null;
-
-            for (Handler handler : topLogger.getHandlers()) {
-                if (handler instanceof ConsoleHandler) {
-                    consoleHandler = handler;
-
-                    break;
-                }
-            }
-
-            if (consoleHandler == null) {
-                consoleHandler = new ConsoleHandler();
-                topLogger.addHandler(consoleHandler);
-            }
-
-            consoleHandler.setFormatter(new LogBasicFormatter()); // Comment out?
-            consoleHandler.setLevel(java.util.logging.Level.FINEST);
-            consoleHandler.setFilter(new LogEmptyMessageFilter());
-
-            try {
-                consoleHandler.setEncoding(WellKnowns.FILE_ENCODING);
-            } catch (SecurityException | UnsupportedEncodingException ex) {
-                System.err.
-                        println(
-                        "Cannot setEncoding to " + WellKnowns.FILE_ENCODING + " exception: " + ex);
-            }
-        }
-
-        // Handler for GUI log pane
+        // Connect a handler for GUI log pane
         topLogger.addHandler(new LogGuiHandler());
 
-        // Handler for animation of progress in StepMonitor
+        // Connect a handler for animation in StepMonitor
         topLogger.addHandler(new LogStepMonitorHandler());
 
-        // Default level
+        // Set default level
         topLogger.setLevel(java.util.logging.Level.INFO);
-    }
 
-    //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
+        // Rebind standard output streams to dedicated loggers
+        rebindStream(StdOutErrLevel.STDOUT);
+        rebindStream(StdOutErrLevel.STDERR);
 
-        final Constant.Boolean printStackOnWarning = new Constant.Boolean(
-                true,
-                "Should we print out the stack of any warning logged with exception?");
-
-        //
-        final Constant.Boolean printThreadName = new Constant.Boolean(
-                false,
-                "Should we print out the name of the originating thread?");
-
-    }
-
-    //--------------//
-    // DefaultStack //
-    //--------------//
-    private static class DefaultStack
-            extends Param<Boolean>
-    {
-
-        @Override
-        public Boolean getSpecific ()
-        {
-            return constants.printStackOnWarning.getValue();
-        }
-
-        @Override
-        public boolean setSpecific (Boolean specific)
-        {
-            if (!getSpecific().equals(specific)) {
-                constants.printStackOnWarning.setValue(specific);
-                getAnonymousLogger().log(Level.INFO,
-                        "A call stack will {0} be printed on exception",
-                        specific ? "now" : "no longer");
-                return true;
-            } else {
-                return false;
-            }
-        }
+        // Store logging to file
+        storeLogging();
     }
 }

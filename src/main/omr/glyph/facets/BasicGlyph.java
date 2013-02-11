@@ -245,20 +245,24 @@ public class BasicGlyph
     }
 
     @Override
-    public void drawAscii ()
+    public String asciiDrawing ()
     {
-        display.drawAscii();
+        return display.asciiDrawing();
     }
 
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     @Override
-    public void dump ()
+    public String dumpOf ()
     {
+        StringBuilder sb = new StringBuilder();
+
         for (GlyphFacet facet : facets) {
-            facet.dump();
+            sb.append(facet.dumpOf());
         }
+
+        return sb.toString();
     }
 
     @Override

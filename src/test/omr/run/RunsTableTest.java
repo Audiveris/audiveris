@@ -74,10 +74,10 @@ public class RunsTableTest
         System.out.println("dump");
 
         RunsTable instance = createHorizontalInstance();
-        instance.dump(System.out);
+        System.out.println(instance.dumpOf());
 
         instance = createVerticalInstance();
-        instance.dump(System.out);
+        System.out.println(instance.dumpOf());
     }
 
     //------------------//

@@ -73,15 +73,19 @@ class BasicTranslation
         translations.clear();
     }
 
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     @Override
-    public void dump ()
+    public String dumpOf ()
     {
+        StringBuilder sb = new StringBuilder();
+
         if (!translations.isEmpty()) {
-            System.out.println("   translations=" + translations);
+            sb.append(String.format("   translations=%s%n", translations));
         }
+
+        return sb.toString();
     }
 
     //-----------------//

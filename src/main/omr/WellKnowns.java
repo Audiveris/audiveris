@@ -80,7 +80,7 @@ public class WellKnowns
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     /** Redirection, if any, of standard out and err stream. */
-    public static final String STD_OUT_ERROR = System.getProperty("stdouterr");
+    public static final String STD_OUT_ERR = System.getProperty("stdouterr");
 
     //---------//
     // PROGRAM //

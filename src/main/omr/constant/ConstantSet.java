@@ -73,15 +73,18 @@ public abstract class ConstantSet
     }
 
     //~ Methods ----------------------------------------------------------------
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     /**
      * A utility method to dump current value of each constant in the set.
+     *
+     * @return the string representation of this set
      */
-    public void dump ()
+    public String dumpOf ()
     {
-        System.out.println("\n[" + unit + "]");
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("[%s]%n", unit));
 
         for (Constant constant : getMap().values()) {
             String origin = constant.getValueOrigin();
@@ -90,7 +93,7 @@ public abstract class ConstantSet
             } else {
                 origin = "[" + origin + "]";
             }
-            System.out.printf(
+            sb.append(String.format(
                     "%-25s %12s %-14s =%5s %-25s\t%s%n",
                     constant.getName(),
                     constant.getShortTypeName(),
@@ -98,8 +101,10 @@ public abstract class ConstantSet
                     ? ("(" + constant.getQuantityUnit() + ")") : "",
                     origin,
                     constant.getCurrentString(),
-                    constant.getDescription());
+                    constant.getDescription()));
         }
+
+        return sb.toString();
     }
 
     //-------------//

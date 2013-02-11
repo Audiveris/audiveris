@@ -539,8 +539,6 @@ public class ScoreTree
 
                         Class<?> objClass = object.getClass();
 
-                        ///System.out.print(" objClass=" + objClass.getName());
-
                         // Skip primitive members
                         if (objClass.isPrimitive()) {
                             ///System.out.println(" [primitive]");

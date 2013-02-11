@@ -69,28 +69,32 @@ class BasicRecognition
         }
     }
 
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     @Override
-    public void dump ()
+    public String dumpOf ()
     {
+        StringBuilder sb = new StringBuilder();
+
         if (evaluation != null) {
-            System.out.println("   evaluation=" + evaluation);
+            sb.append(String.format("   evaluation=%s%n", evaluation));
         }
 
         Shape physical = (getShape() != null) ? getShape().getPhysicalShape() : null;
         if (physical != null) {
-            System.out.println("   physical=" + physical);
+            sb.append(String.format("   physical=%s%n", physical));
         }
 
         if (forbiddenShapes != null) {
-            System.out.println("   forbiddenShapes=" + forbiddenShapes);
+            sb.append(String.format("   forbiddenShapes=%s%n", forbiddenShapes));
         }
 
         if (timeRational != null) {
-            System.out.println("   rational=" + timeRational);
+            sb.append(String.format("   rational=%s%n", timeRational));
         }
+
+        return sb.toString();
     }
 
     //-------------//

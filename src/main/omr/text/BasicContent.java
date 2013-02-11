@@ -72,24 +72,28 @@ public class BasicContent
     }
 
     //~ Methods ----------------------------------------------------------------
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     /**
      * Write detailed text information on the standard output.
      */
     @Override
-    public void dump ()
+    public String dumpOf ()
     {
+        StringBuilder sb = new StringBuilder();
+
         if (manualValue != null) {
-            System.out.println("   manual=\"" + manualValue + "\"");
+            sb.append(String.format("   manual=\"%s\"%n", manualValue));
         }
 
         if (textWord != null) {
-            System.out.println(
-                    "   textWord=" + textWord + " textLine="
-                    + textWord.getTextLine());
+            sb.append(String.format(
+                    "   textWord=%s textLine=%s%n",
+                    textWord, textWord.getTextLine()));
         }
+
+        return sb.toString();
     }
 
     //---------------//
@@ -141,7 +145,7 @@ public class BasicContent
         if (manualRole != null) {
             return manualRole;
         }
-        
+
         if (textWord != null) {
             TextLine line = textWord.getTextLine();
 

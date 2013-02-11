@@ -349,8 +349,7 @@ public class SticksBuilder
         System.out.println("StickArea#" + id + " size=" + sticks.size());
 
         for (Glyph stick : sticks) {
-            //stick.dump(withContent);
-            stick.dump();
+            System.out.println(stick.dumpOf());
         }
     }
 

@@ -182,7 +182,6 @@ public class ScoreParameters
                 new PluginPane(),
                 new DnDPane(),
                 new ScriptPane(),
-                new StackPane(),
                 new ParallelPane());
 
         component.addTab("Default", null, defaultPanel, defaultPanel.getName());
@@ -973,29 +972,6 @@ public class ScoreParameters
                     "Prompt for save",
                     "Should we prompt for saving the script on score closing",
                     ScriptActions.defaultPrompt);
-        }
-    }
-
-    //-----------//
-    // StackPane //
-    //-----------//
-    /**
-     * Should we print the call-stack when a warning with exception
-     * occurs.
-     * Scope can be: default.
-     */
-    private class StackPane
-            extends BooleanPane
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public StackPane ()
-        {
-            super(
-                    "On error",
-                    "Print call-stack",
-                    "Should we print the call-stack when an exception occurs",
-                    Logger.defaultStack);
         }
     }
 

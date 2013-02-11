@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.util;
 
-import omr.log.Logger;
-
 /**
  * Class {@code Param} handles the context of operations performed
  * on score and/or pages.
@@ -23,12 +21,8 @@ import omr.log.Logger;
  */
 public class Param<E>
 {
-    //~ Static fields/initializers ---------------------------------------------
-
-    /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Param.class);
-
     //~ Instance fields --------------------------------------------------------
+
     //
     /** Parent param, if any, to inherit from. */
     protected final Param<E> parent;
@@ -63,26 +57,6 @@ public class Param<E>
     }
 
     //~ Methods ----------------------------------------------------------------
-    //
-    //-------------//
-    // setSpecific //
-    //-------------//
-    /**
-     * Defines a (new) specific value
-     *
-     * @param specific the new specific value
-     * @return true if the new value is actually different
-     */
-    public boolean setSpecific (E specific)
-    {
-        if (getSpecific() == null || !getSpecific().equals(specific)) {
-            this.specific = specific;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     //-------------//
     // getSpecific //
     //-------------//
@@ -105,6 +79,28 @@ public class Param<E>
         }
     }
 
+    //
+    //-------------//
+    // setSpecific //
+    //-------------//
+    /**
+     * Defines a (new) specific value
+     *
+     * @param specific the new specific value
+     * @return true if the new value is actually different
+     */
+    public boolean setSpecific (E specific)
+    {
+        if ((getSpecific() == null) || !getSpecific()
+                .equals(specific)) {
+            this.specific = specific;
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     //----------//
     // toString //
     //----------//
@@ -115,7 +111,7 @@ public class Param<E>
         sb.append(getClass().getSimpleName());
         sb.append(internalsString());
         sb.append("}");
-        
+
         return sb.toString();
     }
 
@@ -124,22 +120,24 @@ public class Param<E>
     //-----------------//
     /**
      * Return the string of the internals of this class, typically for
-     * inclusion in a toString. 
+     * inclusion in a toString.
      *
      * @return the string of internals
      */
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder();
-        
+
         if (parent != null) {
-            sb.append(" parent:").append(parent);
+            sb.append(" parent:")
+                    .append(parent);
         }
 
         if (getSpecific() != null) {
-            sb.append(" specific:").append(getSpecific());
+            sb.append(" specific:")
+                    .append(getSpecific());
         }
-        
+
         return sb.toString();
     }
 }

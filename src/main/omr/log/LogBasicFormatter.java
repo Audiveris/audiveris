@@ -18,7 +18,9 @@ import omr.util.ClassUtil;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
@@ -32,20 +34,25 @@ public class LogBasicFormatter
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Standard format */
+    /** Standard format. */
     private static final String format = "{0,time}";
 
-    /** Should we print time in log */
+    /** Should we print time in log. */
     private static final boolean PRINT_TIME = false;
 
-    /** Should we print the calling frame in log */
+    /** Should we print the calling frame in log. */
     private static final boolean PRINT_FRAME = true;
 
-    /** Classes to skip when retrieving the actual caller of the log */
+    /** Classes to skip when retrieving the actual caller of the log. */
     private static final Class<?>[] logClasses = new Class<?>[]{
         java.util.logging.Logger.class,
         omr.log.Logger.class
     };
+
+    /** Specific loggers for stdout and stderr. */
+    private static final List<String> standards = Arrays.asList(
+        StdOutErrLevel.STDERR.getName(),
+        StdOutErrLevel.STDOUT.getName());
 
     //~ Instance fields --------------------------------------------------------
     private Date dat = new Date();
@@ -55,6 +62,22 @@ public class LogBasicFormatter
     private Object[] args = new Object[1];
 
     //~ Methods ----------------------------------------------------------------
+    //----------------//
+    // isFramePrinted //
+    //----------------//
+    protected boolean isFramePrinted (LogRecord record)
+    {
+        if (PRINT_FRAME) {
+            return !standards.contains(record.getLoggerName());
+        } else {
+            return false;
+        }
+
+    }
+
+    //--------//
+    // format //
+    //--------//
     /**
      * Format the given LogRecord.
      *
@@ -64,9 +87,9 @@ public class LogBasicFormatter
     @Override
     public synchronized String format (LogRecord record)
     {
-        StringBuilder sb = new StringBuilder(256);
+        StringBuilder sb = new StringBuilder();
 
-        // First line (if any)
+        // First part (if any)
         if (PRINT_TIME) {
             dat.setTime(record.getMillis());
             args[0] = dat;
@@ -81,7 +104,7 @@ public class LogBasicFormatter
             sb.append(text);
         }
 
-        if (PRINT_FRAME) {
+        if (isFramePrinted(record)) {
             StackTraceElement frame = ClassUtil.getCallingFrame(logClasses);
 
             if (frame != null) {

@@ -49,7 +49,7 @@ public class MeasuresStep
             Level.SHEET_LEVEL,
             Mandatory.MANDATORY,
             DATA_TAB,
-            "Retrieve Measures from Bar sticks");
+            "Retrieve measures from bar sticks");
     }
 
     //~ Methods ----------------------------------------------------------------

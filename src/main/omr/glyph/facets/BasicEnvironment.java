@@ -34,13 +34,13 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 class BasicEnvironment
-    extends BasicFacet
-    implements GlyphEnvironment
+        extends BasicFacet
+        implements GlyphEnvironment
 {
     //~ Instance fields --------------------------------------------------------
 
     /** Position with respect to nearest staff. Key references are : 0 for
-       middle line (B), -2 for top line (F) and +2 for bottom line (E)  */
+     * middle line (B), -2 for top line (F) and +2 for bottom line (E) */
     private double pitchPosition;
 
     /** Number of stems it is connected to (0, 1, 2) */
@@ -56,7 +56,6 @@ class BasicEnvironment
     private boolean withLedger;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------------//
     // BasicEnvironment //
     //------------------//
@@ -71,7 +70,6 @@ class BasicEnvironment
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------------//
     // copyStemInformation //
     //---------------------//
@@ -85,45 +83,49 @@ class BasicEnvironment
         setStemNumber(other.getStemNumber());
     }
 
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     @Override
-    public void dump ()
+    public String dumpOf ()
     {
+        StringBuilder sb = new StringBuilder();
+
         if (stemNumber > 0) {
-            System.out.println("   stemNumber=" + stemNumber);
+            sb.append(String.format("   stemNumber=%s%n", stemNumber));
         }
-        
+
         if (leftStem != null) {
-            System.out.println("   leftStem=" + leftStem);
+            sb.append(String.format("   leftStem=%s%n", leftStem));
         }
-        
+
         if (rightStem != null) {
-            System.out.println("   rightStem=" + rightStem);
+            sb.append(String.format("   rightStem=%s%n", rightStem));
         }
-        
-        System.out.println("   pitchPosition=" + getPitchPosition());
-        
+
+        sb.append(String.format("   pitchPosition=%s%n", getPitchPosition()));
+
         if (withLedger) {
-            System.out.println("   withLedger");
+            sb.append(String.format("   withLedger%n"));
         }
+
+        return sb.toString();
     }
 
     //--------------------//
     // getAlienPixelsFrom //
     //--------------------//
     @Override
-    public int getAlienPixelsFrom (Lag                lag,
-                                   PixelRectangle     absRoi,
+    public int getAlienPixelsFrom (Lag lag,
+                                   PixelRectangle absRoi,
                                    Predicate<Section> predicate)
     {
         // Use lag orientation
         final Rectangle oRoi = lag.getOrientation()
-                                  .oriented(absRoi);
-        final int       posMin = oRoi.y;
-        final int       posMax = (oRoi.y + oRoi.height) - 1;
-        int             count = 0;
+                .oriented(absRoi);
+        final int posMin = oRoi.y;
+        final int posMax = (oRoi.y + oRoi.height) - 1;
+        int count = 0;
 
         for (Section section : lag.lookupIntersectedSections(absRoi)) {
             // Exclude sections that are part of the glyph
@@ -151,8 +153,8 @@ class BasicEnvironment
 
                 int coordMin = Math.max(oRoi.x, run.getStart());
                 int coordMax = Math.min(
-                    (oRoi.x + oRoi.width) - 1,
-                    run.getStop());
+                        (oRoi.x + oRoi.width) - 1,
+                        run.getStop());
 
                 if (coordMax >= coordMin) {
                     count += (coordMax - coordMin + 1);
@@ -261,8 +263,8 @@ class BasicEnvironment
     //-----------------//
     @Override
     public void getSymbolsAfter (Predicate<Glyph> predicate,
-                                 Set<Glyph>       goods,
-                                 Set<Glyph>       bads)
+                                 Set<Glyph> goods,
+                                 Set<Glyph> bads)
     {
         for (Section section : glyph.getMembers()) {
             for (Section sct : section.getTargets()) {
@@ -286,8 +288,8 @@ class BasicEnvironment
     //------------------//
     @Override
     public void getSymbolsBefore (Predicate<Glyph> predicate,
-                                  Set<Glyph>       goods,
-                                  Set<Glyph>       bads)
+                                  Set<Glyph> goods,
+                                  Set<Glyph> bads)
     {
         for (Section section : glyph.getMembers()) {
             for (Section sct : section.getSources()) {
@@ -313,7 +315,7 @@ class BasicEnvironment
     public SystemInfo getSystem ()
     {
         return glyph.getFirstSection()
-                    .getSystem();
+                .getSystem();
     }
 
     //--------------//
@@ -338,7 +340,7 @@ class BasicEnvironment
     // setStem //
     //---------//
     @Override
-    public void setStem (Glyph          stem,
+    public void setStem (Glyph stem,
                          HorizontalSide side)
     {
         if (side == HorizontalSide.LEFT) {

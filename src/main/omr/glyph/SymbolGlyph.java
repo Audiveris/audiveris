@@ -114,7 +114,7 @@ public class SymbolGlyph
         }
 
         if (logger.isFineEnabled()) {
-            dump();
+            logger.fine(dumpOf());
         }
     }
 }

@@ -80,14 +80,18 @@ public class FilamentAlignment
     }
 
     //~ Methods ----------------------------------------------------------------
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     @Override
-    public void dump ()
+    public String dumpOf ()
     {
-        super.dump();
-        System.out.println("   meanRadius:" + (float) getMeanCurvature());
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append(super.dumpOf());
+        sb.append(String.format("   meanRadius:%.3f%n", getMeanCurvature()));
+
+        return sb.toString();
     }
 
     //---------//
@@ -303,16 +307,16 @@ public class FilamentAlignment
                     Collections.sort(
                             found,
                             new Comparator<Section>()
-                            {
-                                @Override
-                                public int compare (Section s1,
-                                                    Section s2)
-                                {
-                                    return Double.compare(
-                                            point.distance(s1.getCentroid()),
-                                            point.distance(s2.getCentroid()));
-                                }
-                            });
+                    {
+                        @Override
+                        public int compare (Section s1,
+                                            Section s2)
+                        {
+                            return Double.compare(
+                                    point.distance(s1.getCentroid()),
+                                    point.distance(s2.getCentroid()));
+                        }
+                    });
                 }
 
                 Section section = found.isEmpty() ? null : found.get(0);

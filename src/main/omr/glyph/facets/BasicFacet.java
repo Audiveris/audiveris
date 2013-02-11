@@ -45,13 +45,14 @@ public class BasicFacet
 
     //~ Methods ----------------------------------------------------------------
 
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     @Override
-    public void dump ()
+    public String dumpOf ()
     {
-        // void by default
+        // Empty by default
+        return "";
     }
 
     //-----------------//

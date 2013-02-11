@@ -99,21 +99,21 @@ public class GlyphRegression
         if (Main.getGui() != null) {
             Main.getGui().addExitListener(
                     new ExitListener()
-                    {
-                        @Override
-                        public boolean canExit (EventObject eo)
-                        {
-                            return true;
-                        }
+            {
+                @Override
+                public boolean canExit (EventObject eo)
+                {
+                    return true;
+                }
 
-                        @Override
-                        public void willExit (EventObject eo)
-                        {
-                            if (engine.isDataModified()) {
-                                marshal();
-                            }
-                        }
-                    });
+                @Override
+                public void willExit (EventObject eo)
+                {
+                    if (engine.isDataModified()) {
+                        marshal();
+                    }
+                }
+            });
         }
     }
 
@@ -223,39 +223,43 @@ public class GlyphRegression
     //-------------------------//
     public void dumpOneShapeConstraints (Shape shape)
     {
-        System.out.print("Constraints for " + shape + ": ");
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(String.format("Constraints for %s: ", shape));
 
         String[] labels = ShapeDescription.getParameterLabels();
         Range[] ranges = constraintMap.get(shape);
 
         if (ranges == null) {
-            System.out.println("none");
+            sb.append(String.format("none%n"));
         } else {
-            System.out.println();
+            sb.append(String.format("%n"));
 
             for (int p = 0; p < ShapeDescription.length(); p++) {
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sbp = new StringBuilder();
                 Range range = ranges[p];
 
                 if (range != null) {
                     Double min = range.min;
 
                     if (min != null) {
-                        sb.append(" min=").append(min);
+                        sbp.append(" min=").append(min);
                     }
 
                     Double max = range.max;
 
                     if (max != null) {
-                        sb.append(" max=").append(max);
+                        sbp.append(" max=").append(max);
                     }
                 }
 
-                if (sb.length() > 0) {
-                    System.out.println("   " + labels[p] + ":" + sb.toString());
+                if (sbp.length() > 0) {
+                    sb.append(String.format("   %s:%s%n", labels[p], sbp));
                 }
             }
         }
+
+        logger.info(sb.toString());
     }
 
     //-----------//

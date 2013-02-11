@@ -81,16 +81,20 @@ public class LineFilament
         combs.put(column, comb);
     }
 
-    //------//
-    // dump //
-    //------//
+    //--------//
+    // dumpOf //
+    //--------//
     @Override
-    public void dump ()
+    public String dumpOf ()
     {
-        super.dump();
-        System.out.println("   cluster=" + cluster);
-        System.out.println("   clusterPos=" + clusterPos);
-        System.out.println("   combs=" + combs);
+        StringBuilder sb = new StringBuilder();
+        
+        sb.append(super.dumpOf());
+        sb.append(String.format("   cluster=%s%n", cluster));
+        sb.append(String.format("   clusterPos=%s%n", clusterPos));
+        sb.append(String.format("   combs=%s%n", combs));
+        
+        return sb.toString();
     }
 
     //-----------//
