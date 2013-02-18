@@ -105,10 +105,14 @@
     <!--  - C L E A N  -->
     <!-- ============= -->
     <target name="-clean"
+            depends="-wix-cleanup, -wxs-cleanup"
             if="${is.windows}">
         <!-- Remove all the generated outputs for Windows -->
-        <delete verbose="${verbose}">
+        <delete verbose="${verbose}" quiet="true">
             <fileset dir="${basedir}" includes="*.exe, *.bat"/>
+        </delete> 
+        <delete verbose="${verbose}" quiet="true">
+            <fileset dir="${basedir}/target/tools-classes" includes="wixheatuser/**"/>
         </delete> 
     </target>
   
@@ -185,6 +189,18 @@
         </launch4j>	
     </target>
   
+    <!-- ============================= -->
+    <!--  - G E T - H A R V E S T E R  -->
+    <!-- ============================= -->
+    <!-- Compile Harvester to help WiX harvest folders -->
+    <target name="-get-harvester"
+            if="${is.windows}">
+        <javac srcdir="src/tools"
+               destdir="target/tools-classes"
+               includes="wixheatuser/**">
+        </javac>
+    </target>
+  
     <!-- ======================= -->
     <!--  - I N S T A L L E R S  -->
     <!-- ======================= -->
@@ -224,7 +240,7 @@
         <echo message="Cleaning up WiX temporary files in ${dist.dir}" />
     
         <!-- Clean up temporary files in dist -->
-        <delete verbose="${verbose}"> 
+        <delete verbose="${verbose}" quiet="true"> 
             <fileset dir="${dist.dir}" includes="*.wix*"/>
         </delete>
     
@@ -238,7 +254,7 @@
         <echo message="Cleaning up generated wxs files in ${dev.windows.dir}"/>
     
         <!-- Clean up temporary files in dev/windows -->
-        <delete verbose="${verbose}"> 
+        <delete verbose="${verbose}" quiet="true"> 
             <fileset dir="${dev.windows.dir}" includes="gen-*.*"/>
         </delete>
     
@@ -248,7 +264,8 @@
     <!--  - W X S - G E N E R A T I O N  -->
     <!-- =============================== -->
     <target name="-wxs-generation"
-            if="${is.windows}">
+            if="${is.windows}"
+            depends="-get-harvester">
         <!-- Harvesting of directories -->
     
         <!-- Folders for common location -->
@@ -313,25 +330,27 @@
         <!-- Folders for user location -->    
     
         <echo message="buiding ${dev.windows.dir}/gen-user-plugins.wxs" />
-        <exec executable="java">
-            <arg line="-jar ${tools.dir}/wix-heat-user.jar"/>
+        <java 
+            classpath="target/tools-classes"
+            classname="wixheatuser.Harvester">
             <arg value="${plugins.dir}"/>
             <arg line="-dr adProductDirId"/>
             <arg line="-cg plugins.CID"/>
             <arg line="-var var.myPlugins"/>
             <arg line="-out ${dev.windows.dir}/gen-user-plugins.wxs"/>
-        </exec>
+        </java>
     
         <echo message="buiding ${dev.windows.dir}/gen-user-train.wxs" /> 
-        <exec executable="java">
-            <arg line="-jar ${tools.dir}/wix-heat-user.jar"/>
+        <java 
+            classpath="target/tools-classes"
+            classname="wixheatuser.Harvester">
             <arg value="${train.dir}"/>
             <arg line="-dr adProductDirId"/>
             <arg line="-cg train.CID"/>
             <arg line="-var var.myTrain"/> 
             <arg line="-out ${dev.windows.dir}/gen-user-train.wxs"/>
-        </exec> 
+        </java> 
     
     </target>
 
-  </project>
+</project>

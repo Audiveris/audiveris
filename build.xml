@@ -308,10 +308,14 @@
     <!-- Performs the cleanup depending on OS -->
     <target name="-post-clean"
             depends="-clean-mac, -clean-unix, -clean-windows">
+        
         <!-- Non OS dependent part -->
         <delete verbose="${verbose}">
             <fileset dir="${basedir}" includes="*.zip"/>
         </delete> 
+        
+        <echo message="Cleaning up target directory" />
+        <delete verbose="${verbose}" quiet="true" dir="${basedir}/target"/>
     </target>
 
     <!-- =================== -->
