@@ -373,7 +373,7 @@ public class ChordInfo
 
         try {
             result = matcher.group(name);
-        } catch (IllegalArgumentException ignored) {
+        } catch (Exception ignored) {
         }
 
         if (result != null) {
@@ -1027,6 +1027,7 @@ public class ChordInfo
      * minor-13th : m13|min13........ : 1 - b3 - 5 - b7 - 9 - 11 - 13
      * suspended-second : sus2....... : 1 - 2 - 5
      * suspended-fourth : sus4....... : 1 - 4 - 5
+     * suspended-ninth : sus9........ : 1 - 4 - 5 - b7 - 9 
      * Neapolitan : ................. :
      * Italian : .................... :
      * French : ..................... :

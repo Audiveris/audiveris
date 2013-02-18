@@ -25,7 +25,10 @@
     
     <!-- Create the time stamp -->
     <tstamp/>
-    
+
+    <!-- Where generated sources are written -->
+    <property name="generated.src.dir" location="${basedir}/target/generated-sources/java" /> 
+
     <!-- Mercurial -->
     <condition property="hg.present" else="false">
         <available file="${basedir}/.hg" />
@@ -52,10 +55,10 @@
     <echo level="verbose" message="is.unix=${is.unix}" />
 
     <!-- Environment -->
-    <property name="name"      value="audiveris" />
-    <property name="Name"      value="Audiveris" />
-    <property name="Company"   value="${Name} Ltd." />
-    <property name="CompanyId" value="${Name}Ltd" />
+    <property name="name"        value="audiveris" />
+    <property name="Name"        value="Audiveris" />
+    <property name="CompanyName" value="${Name} Ltd." />
+    <property name="CompanyId"   value="${Name}Ltd" />
     <property environment="env"/>    
     <property name="dev.dir"   location="${basedir}/dev"/>
     
@@ -140,7 +143,7 @@
         
         <!-- Generate the global zip archive -->
         <zip 
-            destfile="${basedir}/${impl.name}-src.zip" >
+            destfile="${basedir}/${name.version.revision}-src.zip" >
 
             <!-- Build -->
             <zipfileset dir="${basedir}"  prefix="${name}"
@@ -207,7 +210,7 @@
         
         <!-- Generate the training zip archive -->
         <zip 
-            destfile="${basedir}/${name}-${spec.version}-training.zip" >
+            destfile="${basedir}/${name.version}-training.zip" >
             
             <zipfileset dir="${train.dir}" prefix="train"
                         includes="**/*.xml,**/.glyphignore"
@@ -241,28 +244,23 @@
     <!-- =============== -->
     <!--  - H G - T I P  -->
     <!-- =============== -->
-    <!-- Retrieve Hg tip revision -->
+    <!-- Retrieve Hg information -->
     <target name="-hg-tip"
-            if="${hg.present}">
+            if="${hg.present}"
+            description="Retrieve Hg information">
         
-        <taskdef name="hg"
-                 classpathref="tools.classpath"
-                 classname="net.sourceforge.ant4hg.taskdefs.HgTask"/>           
+        <exec executable="hg"
+              outputproperty="program.revision">
+            <arg line='log -r tip --template "{rev}"' />
+        </exec>
+        <echo message="-- program.revision=${program.revision}" />
+        <exec executable="hg"
+              outputproperty="program.build">
+            <arg line='log -r tip --template "{node|short}"' />
+        </exec>
+        <echo message="-- program.build=${program.build}" />
         
-        <hg cmd="log" dir="${basedir}" revision="tip" />
-        
-        <!-- 
-        <echo message="==========================" />
-        <echo message="revision=${ant4hg.log.revision}" />
-        <echo message="changeset=${ant4hg.log.changeset}" />
-        <echo message="tag=${ant4hg.log.tag}" />
-        <echo message="user=${ant4hg.log.user}" />
-        <echo message="date=${ant4hg.log.date}" />
-        <echo message="summary=${ant4hg.log.summary}" />
-        -->
-        
-        <property name="impl.version" value="${spec.version}.${ant4hg.log.revision}" />
-        <property name="impl.name" value="${name}-${impl.version}" />
+        <property name="version.revision" value="${version}.${program.revision}" />        
 
     </target>
 
@@ -297,13 +295,11 @@
     <!-- ===================== -->
     <!--  - N O - H G - T I P  -->
     <!-- ===================== -->
-    <!-- Cope with no tip revision -->
+    <!-- Cope with no tip information -->
     <target name="-no-hg-tip"
-            unless="${hg.present}">
-         
-        <property name="impl.version" value="${spec.version}" />
-        <property name="impl.name" value="${name}-${spec.version}" />
-
+            unless="${hg.present}"
+            description="Cope with no tip information">
+        <property name="version.revision" value="${version}" />
     </target>
 
     <!-- ======================= -->
@@ -339,14 +335,18 @@
     <!-- =================== -->
     <target name="-pre-init"
 	    depends="-hg-tip, -no-hg-tip">
+        
+        <property name="name.version.revision"
+                  value="${name}-${version.revision}" />
 
         <!-- Prepare a (half) temporary manifest -->
         <echo message="Pre-populating ${basedir}/manifest.mf" />
         <echo file="${basedir}/manifest.mf" append="false">Manifest-Version: 1.0
-Built-By: ${Company}
+Built-By: ${CompanyName}
 Specification-Title: ${Name}
-Specification-Vendor: ${Company}
-Specification-Version: ${impl.version}
+Specification-Vendor: ${CompanyName}
+Specification-Version: ${version}
+Implementation-Version: ${version.revision}
 </echo>
     </target>
 
@@ -441,6 +441,49 @@ Specification-Version: ${impl.version}
         </for>
         
     </target>
+        
+    <!-- =============================== -->
+    <!--  - G E N - P R O G R A M - I D  -->
+    <!-- =============================== -->
+    <target name="gen-program-id"
+            depends="-hg-tip, -no-hg-tip"
+            description="Write a Java class to gather program identification">
+        
+        <property name="program.id.dir" location="${generated.src.dir}/omr" /> 
+        <mkdir dir="${program.id.dir}" />
+        
+        <property name="program.id.java" location="${program.id.dir}/ProgramId.java" /> 
+        <echo message="-- Writing to file ${program.id.java}" />
+        <echo file="${program.id.java}"><![CDATA[
+package omr;
+
+/** 
+ * Class {@code ProgramId} provides full program identification.
+ * This code is generated by an Ant target using Hg information.
+ */
+public class ProgramId 
+{
+    /** Precise company name: {@value} */
+    public static final java.lang.String COMPANY_NAME = "${CompanyName}";
+
+    /** Precise company id: {@value} */
+    public static final java.lang.String COMPANY_ID = "${CompanyId}";
+
+    /** Precise program name: {@value} */
+    public static final java.lang.String NAME = "${name}";
+
+    /** Precise program version: {@value} */
+    public static final java.lang.String VERSION = "${version}";
+
+    /** Precise program revision: {@value} */
+    public static final java.lang.String REVISION = "${program.revision}";
+
+    /** Precise program build: {@value} */
+    public static final java.lang.String BUILD = "${program.build}";
+}]]>
+        </echo> 
+    </target>
+    
 
 <!--
      Properties set: unix-like (if it is unix or linux), x64 (if it is 64-bits),

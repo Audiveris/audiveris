@@ -58,7 +58,7 @@
         <!-- Compilation -->
         <wix mode="candle"> 
             <candleParameter name="myArch"         value="${arch}"/>
-            <candleParameter name="myCompany"      value="${Company}"/>            
+            <candleParameter name="myCompany"      value="${CompanyName}"/>            
             <candleParameter name="myCompanyId"    value="${CompanyId}"/>            
             <candleParameter name="myConsole"      value="${name}-console"/>
             <candleParameter name="myDll"          value="${dll.dir}"/>
@@ -66,7 +66,7 @@
             <candleParameter name="myExamples"     value="${examples.dir}"/>
             <candleParameter name="myProductName"  value="${name}"/>
             <candleParameter name="myIconSource"   value="${res.dir}/all-icons-256.ico"/>
-            <candleParameter name="myImplVersion"  value="${impl.version}"/>
+            <candleParameter name="myImplVersion"  value="${version.revision}"/>
             <candleParameter name="myJar"          value="${dist.jar}"/>
             <candleParameter name="myMaterial"     value="${material.dir}"/>
             <candleParameter name="myMsmDir"       value="${dev.windows.dir}"/>
@@ -89,7 +89,7 @@
     
         <!-- Link -->
         <wix mode="light"
-             target="${dist.dir}/${impl.name}-${arch}.msi">
+             target="${dist.dir}/${name.version.revision}-${arch}.msi">
             <lightArg line="-ext WixUIExtension" />
             <lightArg line="-dWixUILicenseRtf=${res.dir}/GPLv2.rtf" />
             <lightArg line="-sice:ICE91" />
@@ -175,7 +175,7 @@
             if="${is.windows}">
     
         <!-- Build Windows executable with console -->
-        <launch4j fileVersion="${impl.version}">
+        <launch4j fileVersion="${version.revision}">
             <config headerType="console"
                     outfile="${name}-console.exe"
                     dontWrapJar="true"

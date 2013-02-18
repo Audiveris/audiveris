@@ -495,17 +495,9 @@ public class MainGui
     protected void initialize (String[] args)
     {
         logger.fine("MainGui. 1/initialize");
-
-        // Provide default tool parameters if not already set
-
-        // Tool build
-        if (Main.getToolBuild() == null) {
-            Main.setToolBuild(
-                    getContext().getResourceMap().getString("Application.build"));
-        }
         
-        // Display version information
-        logger.info("Version: {0}", Main.getToolBuild());
+        // Display software reference
+        logger.info("Reference: {0}", WellKnowns.TOOL_REF);
 
         // Launch background pre-loading tasks?
         if (constants.preloadCostlyPackages.getValue()) {

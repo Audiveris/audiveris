@@ -36,15 +36,21 @@ public class WellKnowns
     // IDENTITY //
     //----------//
     //
-    /** Application name: {@value}. */
-    public static final String TOOL_NAME = "audiveris";
-
     /** Application company name: {@value}. */
-    public static final String TOOL_COMPANY = "AudiverisLtd";
+    public static final String COMPANY_NAME = ProgramId.COMPANY_NAME;
+
+    /** Application company id: {@value}. */
+    public static final String COMPANY_ID = ProgramId.COMPANY_ID;
+
+    /** Application name: {@value}. */
+    public static final String TOOL_NAME = ProgramId.NAME;
+
+    /** Application reference: {@value}. */
+    public static final String TOOL_REF = ProgramId.VERSION + "." + ProgramId.REVISION;
 
     /** Specific prefix for application folders: {@value} */
     private static final String TOOL_PREFIX =
-            "/" + TOOL_COMPANY + "/" + TOOL_NAME;
+            "/" + COMPANY_ID + "/" + TOOL_NAME;
 
     //----------//
     // PLATFORM //
@@ -365,14 +371,14 @@ public class WellKnowns
         // are running from the development folder (with data & settings as
         // subfolders) rather than from a standard folder (installed with 
         // distinct location for application data & config).
-        
+
         // To handle the case of other program invoking audiveris.jar file
         // we add test about "res" and "eval"
-        
+
         File devFolder = new File(PROGRAM_FOLDER, "src");
         File resFolder = new File(PROGRAM_FOLDER, "res");
         File evalFolder = new File(PROGRAM_FOLDER, "eval");
-        
+
         return devFolder.exists() && resFolder.exists() && evalFolder.exists();
     }
 

@@ -536,10 +536,8 @@ public class CLI
         StringBuilder buf = new StringBuilder();
 
         // Print version
-        if (Main.getToolBuild() != null) {
-            buf.append("\nVersion:");
-            buf.append("\n   ").append(Main.getToolBuild());
-        }
+        buf.append("\nVersion:");
+        buf.append("\n   ").append(WellKnowns.TOOL_REF);
 
         // Print standard command line syntax
         buf.append("\nCommand line syntax:");

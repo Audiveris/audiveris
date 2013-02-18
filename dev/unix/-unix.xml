@@ -136,7 +136,7 @@
         <copy todir="${dist.dir}/deb/control" overwrite="true">
             <fileset dir="${dev.dir}/unix/deb" />
             <filterset>
-                <filter token="VERSION" value="${spec.version}"/>
+                <filter token="VERSION" value="${version}"/>
                 <filter token="ARCHITECTURE" value="${unix.package.arch}"/>
             </filterset>
         </copy>
@@ -156,7 +156,7 @@
         </tar>
 
         <!-- delegate the actual packaging job to JDEB task -->
-        <jdeb destfile="${dist.dir}/${name}-${impl.version}-ubuntu-${unix.package.arch}.deb"
+        <jdeb destfile="${dist.dir}/${name.version.revision}-ubuntu-${unix.package.arch}.deb"
               control="${dist.dir}/deb/control" verbose="false">
             <data src="${dist.dir}/deb/data.tar.gz" type="archive"/>
         </jdeb>

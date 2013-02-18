@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -61,9 +62,6 @@ public class Main
         /** Time stamp */
         Clock.resetTime();
     }
-
-    /** Build reference of the application as displayed to the user */
-    private static String toolBuild;
 
     /** Master View */
     private static MainGui gui;
@@ -117,9 +115,7 @@ public class Main
             // For batch mode
 
             // Version information
-            if (getToolBuild() != null) {
-                logger.info("Version: {0}", getToolBuild());
-            }
+            logger.info("Reference: {0}", WellKnowns.TOOL_REF);
 
             // Remember if at least one task has failed
             boolean failure = false;
@@ -147,7 +143,7 @@ public class Main
                     for (Future<Void> future : futures) {
                         try {
                             future.get();
-                        } catch (Exception ex) {
+                        } catch (InterruptedException | ExecutionException ex) {
                             logger.warning("Future exception", ex);
                             failure = true;
                         }
@@ -354,19 +350,6 @@ public class Main
         return tasks;
     }
 
-    //--------------//
-    // getToolBuild //
-    //--------------//
-    /**
-     * Report the build reference of the application as displayed to the user
-     *
-     * @return Build reference of the application
-     */
-    public static String getToolBuild ()
-    {
-        return toolBuild;
-    }
-
     //--------//
     // setGui //
     //--------//
@@ -378,14 +361,6 @@ public class Main
     public static void setGui (MainGui gui)
     {
         Main.gui = gui;
-    }
-
-    //--------------//
-    // setToolBuild //
-    //--------------//
-    public static void setToolBuild (String toolBuild)
-    {
-        Main.toolBuild = toolBuild;
     }
 
     //-------------//
@@ -415,10 +390,6 @@ public class Main
     {
         // (re) Open the executor services
         OmrExecutors.restart();
-
-        // Tool build
-        final Package thisPackage = Main.class.getPackage();
-        toolBuild = thisPackage.getSpecificationVersion();
     }
 
     //---------//

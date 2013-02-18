@@ -530,7 +530,7 @@ public class GuiActions
 
             // Manual injection
             resource.injectComponents(dialog);
-            Topic.version.comp.setText(Main.getToolBuild());
+            Topic.version.comp.setText(WellKnowns.TOOL_REF);
             Topic.classes.comp.setText(" " + WellKnowns.CLASS_CONTAINER);
             Topic.license.comp.setText(" " + "GNU GPL V2");
 

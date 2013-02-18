@@ -19,18 +19,18 @@ import omr.log.Logger;
 import omr.score.entity.LyricsItem;
 import omr.score.entity.Note;
 
-import proxymusic.AccidentalText;
-import proxymusic.AccidentalValue;
-import proxymusic.BarStyle;
-import proxymusic.DegreeTypeValue;
-import proxymusic.Empty;
-import proxymusic.EmptyPlacement;
-import proxymusic.KindValue;
-import proxymusic.ObjectFactory;
-import proxymusic.Step;
-import proxymusic.StrongAccent;
-import proxymusic.Syllabic;
-import proxymusic.UpDown;
+import com.audiveris.proxymusic.AccidentalText;
+import com.audiveris.proxymusic.AccidentalValue;
+import com.audiveris.proxymusic.BarStyle;
+import com.audiveris.proxymusic.DegreeTypeValue;
+import com.audiveris.proxymusic.Empty;
+import com.audiveris.proxymusic.EmptyPlacement;
+import com.audiveris.proxymusic.KindValue;
+import com.audiveris.proxymusic.ObjectFactory;
+import com.audiveris.proxymusic.Step;
+import com.audiveris.proxymusic.StrongAccent;
+import com.audiveris.proxymusic.Syllabic;
+import com.audiveris.proxymusic.UpDown;
 
 import java.lang.String; // Do not remove this line!
 
