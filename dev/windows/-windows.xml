@@ -195,8 +195,9 @@
     <!-- Compile Harvester to help WiX harvest folders -->
     <target name="-get-harvester"
             if="${is.windows}">
+        <mkdir dir="${basedir}/target/tools-classes" />
         <javac srcdir="src/tools"
-               destdir="target/tools-classes"
+               destdir="${basedir}/target/tools-classes"
                includes="wixheatuser/**">
         </javac>
     </target>
@@ -237,7 +238,7 @@
     <!-- ========================= -->
     <target name="-wix-cleanup"
             if="${is.windows}">
-        <echo message="Cleaning up WiX temporary files in ${dist.dir}" />
+        <echo message="-- Cleaning up WiX temporary files in ${dist.dir}" />
     
         <!-- Clean up temporary files in dist -->
         <delete verbose="${verbose}" quiet="true"> 
@@ -251,7 +252,7 @@
     <!-- ========================= -->
     <target name="-wxs-cleanup"
             if="${is.windows}">
-        <echo message="Cleaning up generated wxs files in ${dev.windows.dir}"/>
+        <echo message="-- Cleaning up generated wxs files in ${dev.windows.dir}"/>
     
         <!-- Clean up temporary files in dev/windows -->
         <delete verbose="${verbose}" quiet="true"> 
@@ -331,7 +332,7 @@
     
         <echo message="buiding ${dev.windows.dir}/gen-user-plugins.wxs" />
         <java 
-            classpath="target/tools-classes"
+            classpath="${basedir}/target/tools-classes"
             classname="wixheatuser.Harvester">
             <arg value="${plugins.dir}"/>
             <arg line="-dr adProductDirId"/>
@@ -342,7 +343,7 @@
     
         <echo message="buiding ${dev.windows.dir}/gen-user-train.wxs" /> 
         <java 
-            classpath="target/tools-classes"
+            classpath="${basedir}/target/tools-classes"
             classname="wixheatuser.Harvester">
             <arg value="${train.dir}"/>
             <arg line="-dr adProductDirId"/>

@@ -314,7 +314,7 @@
             <fileset dir="${basedir}" includes="*.zip"/>
         </delete> 
         
-        <echo message="Cleaning up target directory" />
+        <echo message="-- Cleaning up target directory" />
         <delete verbose="${verbose}" quiet="true" dir="${basedir}/target"/>
     </target>
 
@@ -334,17 +334,29 @@
         </delete>
     </target>
 
-    <!-- =================== -->
-    <!--  - P R E - I N I T  -->
-    <!-- =================== -->
-    <target name="-pre-init"
+    <!-- ===================== -->
+    <!--  - P O S T - I N I T  -->
+    <!-- ===================== -->
+    <target name="-post-init"
 	    depends="-hg-tip, -no-hg-tip">
         
         <property name="name.version.revision"
                   value="${name}-${version.revision}" />
+    </target>
+    
+    <!-- ========================= -->
+    <!--  - P R E - C O M P I L E  -->
+    <!-- ========================= -->
+    <target name="-pre-compile"
+            depends="-gen-program-id" />
+
+    <!-- ================= -->
+    <!--  - P R E - J A R  -->
+    <!-- ================= -->
+    <target name="-pre-jar">
 
         <!-- Prepare a (half) temporary manifest -->
-        <echo message="Pre-populating ${basedir}/manifest.mf" />
+        <echo message="-- Pre-populating ${basedir}/manifest.mf" />
         <echo file="${basedir}/manifest.mf" append="false">Manifest-Version: 1.0
 Built-By: ${CompanyName}
 Specification-Title: ${Name}
@@ -352,12 +364,6 @@ Specification-Vendor: ${CompanyName}
 Specification-Version: ${version}
 Implementation-Version: ${version.revision}
 </echo>
-    </target>
-
-    <!-- ================= -->
-    <!--  - P R E - J A R  -->
-    <!-- ================= -->
-    <target name="-pre-jar">
 
         <!-- Copy resource properties to classes -->
         <copy todir="${build.classes.dir}" verbose="$verbose">
@@ -449,15 +455,14 @@ Implementation-Version: ${version.revision}
     <!-- =============================== -->
     <!--  - G E N - P R O G R A M - I D  -->
     <!-- =============================== -->
-    <target name="gen-program-id"
-            depends="-hg-tip, -no-hg-tip"
+    <target name="-gen-program-id"
             description="Write a Java class to gather program identification">
         
         <property name="program.id.dir" location="${generated.src.dir}/omr" /> 
         <mkdir dir="${program.id.dir}" />
         
         <property name="program.id.java" location="${program.id.dir}/ProgramId.java" /> 
-        <echo message="-- Writing to file ${program.id.java}" />
+        <echo message="-- Generating ${program.id.java}" />
         <echo file="${program.id.java}"><![CDATA[
 package omr;
 
