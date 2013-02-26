@@ -477,8 +477,7 @@ public class RunsTable
         }
 
         if ((this.orientation == that.orientation)
-            && this.dimension.equals(that.dimension)
-            && this.name.equals(that.name)) {
+            && this.dimension.equals(that.dimension)) {
             // Check runs
             for (int row = 0; row < getSize(); row++) {
                 List<Run> thisSeq = getSequence(row);

@@ -208,12 +208,12 @@ public class BasicSection
         sb.append(String.format("%n"));
 
         sb.append(String.format(
-                "xMin=%d, xMax=%d%n" + box.x, box.x + box.width - 1));
+                "xMin=%d, xMax=%d%n", box.x, box.x + box.width - 1));
         sb.append(String.format(
                 "yMin=%d, yMax=%d%n", box.y, box.y + box.height - 1));
 
         for (int iy = 0; iy < table.length; iy++) {
-            sb.append(String.format("%d:%d%n", iy + box.y, table[iy]));
+            sb.append(String.format("%d:%s%n", iy + box.y, table[iy]));
         }
 
         return sb.toString();

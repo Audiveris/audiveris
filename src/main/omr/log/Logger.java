@@ -215,25 +215,6 @@ public class Logger
         return isLoggable(Level.FINE);
     }
 
-    //-----------//
-    // logAssert //
-    //-----------//
-    /**
-     * Assert the provided condition, and stop the application if the
-     * condition is false, since this is supposed to detect a
-     * programming error.
-     *
-     * @param exp the expression to check
-     * @param msg the related error message
-     */
-    public void logAssert (boolean exp,
-                           String msg)
-    {
-        if (!exp) {
-            severe(msg);
-        }
-    }
-
     //----------//
     // setLevel //
     //----------//

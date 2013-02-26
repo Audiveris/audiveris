@@ -89,7 +89,7 @@ public class LinearEvaluatorTest
         double[]        pattern = new double[] { 14, 26 };
         String          category = "A";
         LinearEvaluator instance = createTrainedInstance();
-        double          expResult = 12.16;
+        double          expResult = 18.25;
         double          result = instance.categoryDistance(pattern, category);
         assertEquals(expResult, result, 0.01);
     }

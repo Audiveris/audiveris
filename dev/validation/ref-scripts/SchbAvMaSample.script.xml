@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<script file="D:\soft\audiveris\examples\SchbAvMaSample.pdf">
+    <parameters>
+        <language>deu</language>
+    </parameters>
+    <step name="SCORE"/>
+    <step name="EXPORT"/>
+</script>

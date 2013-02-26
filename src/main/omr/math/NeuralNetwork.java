@@ -235,9 +235,9 @@ public class NeuralNetwork
     {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("Network%n"));
-        sb.append(String.format("LearningRate = %d%n", learningRate));
-        sb.append(String.format("Momentum     = %d%n", momentum));
-        sb.append(String.format("MaxError     = %d%n", maxError));
+        sb.append(String.format("LearningRate = %f%n", learningRate));
+        sb.append(String.format("Momentum     = %f%n", momentum));
+        sb.append(String.format("MaxError     = %f%n", maxError));
         sb.append(String.format("Epochs       = %d%n", epochs));
 
         // Input

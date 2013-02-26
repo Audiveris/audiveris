@@ -141,11 +141,11 @@ public class PopulationTest
 
         double v = p.getVariance();
         assertEquals("Check variance of 4 values.",
-                     10d/3, p.getVariance());
+                     2.5, p.getVariance());
 
         double sd = p.getStandardDeviation();
         assertNears("Check standard deviation of 4 values.",
-                    Math.sqrt(10d/3), p.getStandardDeviation());
+                    Math.sqrt(2.5), sd);
     }
 
     //-------------//
@@ -172,10 +172,10 @@ public class PopulationTest
 
         double v = p.getVariance();
         assertEquals("Check variance of 2 values.",
-                     2d, p.getVariance());
+                     1d, p.getVariance());
 
         double sd = p.getStandardDeviation();
         assertNears("Check standard deviation of 2 values.",
-                    Math.sqrt(2d), p.getStandardDeviation());
+                    Math.sqrt(1d), p.getStandardDeviation());
     }
 }

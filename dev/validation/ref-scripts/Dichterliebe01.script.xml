@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<script file="D:\soft\audiveris\examples\Dichterliebe01.pdf">
+    <parameters>
+        <page index="1">
+            <language>deu</language>
+        </page>
+    </parameters>
+    <step name="SCORE"/>
+    <step name="EXPORT"/>
+</script>
