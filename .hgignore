@@ -1,40 +1,3 @@
-# First, use regexp syntax -------------------------------------------------------
-syntax: regexp
-
-\.hgignore$
-\.chg\..*$
-\.conflict\~$
-\.log$
-^audiveris\.exe$
-^audiveris-console\.exe$
-\.mf$
-\.mid$
-\.msi$
-\.orig$
-\.orig\..*$
-\.rej$
-\.zip$
-^data/benches$
-^build$
-dist$
-^data/eval$
-^nbproject/configs$
-^data/print$
-^data/scores$
-^data/scripts$
-^settings$
-^target$
-^data/temp$
-tesseract\.log
-bin
-.DS_Store
-.project
-.settings
-^manifest.mf$
-nbbuild.xml
-.classpath
-
-# Now, switch to glob syntax -------------------------------------------------
 syntax: glob
 
 # Ignore .jpg and .pdf under the src directory since they are produced via umlet
@@ -43,10 +6,23 @@ src/**/*.jpg
 src/**/*.pdf
 dev/material/*.jpg
 
+.hgignore
+*.exe
+*.log
+*.mf
+build/*
+dist/*
 audiveris.bat
-manifest.mf
+installer/build/*
+data/benches
+data/print/*
 data/scores/*
+data/scripts/*
+data/temp/*
 data/train/core/*
 data/www/docs/api
-nbproject/configs
+manifest.mf
+nbproject/configs/*
+private/*
 resources/*
+target/*
