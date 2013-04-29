@@ -138,10 +138,6 @@
             <zipfileset dir="${basedir}" includes="build.xml" prefix="${name}"/>
             <!-- NetBeans project -->
             <zipfileset dir="${basedir}/nbproject" excludes="${dist.excludes},configs,private" includes="*" prefix="${name}/nbproject"/>
-            <!-- Ini Launch4J files -->
-            <zipfileset dir="${basedir}" excludes="${dist.excludes}" includes="*.ini" prefix="${name}"/>
-            <!-- ocr files -->
-            <zipfileset dir="${ocr.dir}" excludes="${dist.excludes}" includes="**" prefix="${name}/ocr"/>
             <!-- dev files -->
             <zipfileset dir="${dev.dir}" excludes="${dist.excludes}" includes="**" prefix="${name}/dev"/>
             <!-- res files -->
@@ -329,7 +325,7 @@ public class ProgramId
     <!-- -javadoc-build -->
     <!-- ============== -->
     <target depends="-uml, audiveris-impl.-javadoc-build, -publish-api" description="Generate project documentation" name="-javadoc-build"/>
-    
+
     <!-- ========== -->
     <!-- -no-hg-tip -->
     <!-- ========== -->

@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
+//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -41,7 +41,7 @@ public class Installer
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        Installer.class);
+            Installer.class);
 
     /** Single instance. */
     private static Installer INSTANCE;
@@ -62,13 +62,11 @@ public class Installer
     public static CountDownLatch latch = new CountDownLatch(1);
 
     //~ Instance fields --------------------------------------------------------
-
     //
     /** Bundle of companions to install (or insinstall). */
     private final Bundle bundle;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // Installer //
     //-----------//
@@ -78,17 +76,21 @@ public class Installer
     private Installer ()
     {
         Jnlp.extensionInstallerService.setHeading(
-            "Running Audiveris installer.");
+                "Running Audiveris installer.");
 
         // Handling the bundle of all companions, with potential UI
         bundle = new Bundle(hasUI);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getBundle //
     //-----------//
+    /**
+     * Report the bundle of companions to process.
+     *
+     * @return the bundle of companions.
+     */
     public static Bundle getBundle ()
     {
         if (INSTANCE == null) {
@@ -117,6 +119,11 @@ public class Installer
     //-------------//
     // getInstance //
     //-------------//
+    /**
+     * Report the single instance.
+     *
+     * @return the Installer single instance
+     */
     public static Installer getInstance ()
     {
         return INSTANCE;
@@ -135,7 +142,6 @@ public class Installer
         return hasUI;
     }
 
-    //
     //------//
     // main //
     //------//
@@ -151,7 +157,7 @@ public class Installer
      * @throws UnavailableServiceException
      */
     public static void main (String[] args)
-        throws UnavailableServiceException
+            throws UnavailableServiceException
     {
         if (args.length == 0) {
             throw new IllegalArgumentException("No argument for Installer");
@@ -178,7 +184,7 @@ public class Installer
             } else {
                 // Relaunch with administrator priviledges
                 logger.info(
-                    "Launching a new installer at Administrator level.");
+                        "Launching a new installer at Administrator level.");
                 descriptor.relaunchAsAdmin();
                 logger.info("Back from Administrator installer.");
             }
@@ -188,14 +194,17 @@ public class Installer
         } else {
             // Not a valid argument array
             logger.error(
-                "Illegal Installer arguments: {}",
-                Arrays.deepToString(args));
+                    "Illegal Installer arguments: {}",
+                    Arrays.deepToString(args));
         }
     }
 
     //---------//
     // install //
     //---------//
+    /**
+     * Launch installation.
+     */
     public void install ()
     {
         logger.debug("install");
@@ -211,11 +220,11 @@ public class Installer
             ///installerService.hideProgressBar();
             if (hasUI) {
                 logger.info(
-                    "\n   Please:\n" +
-                    //                    "- Select Audiveris installation folder,\n" +
-                    "- Add or remove OCR-supported languages,\n" +
-                    "- Check or uncheck optional components,\n" +
-                    "- Launch installation.\n");
+                        "\n   Please:\n"
+                        + //                    "- Select Audiveris installation folder,\n" +
+                        "- Add or remove OCR-supported languages,\n"
+                        + "- Check or uncheck optional components,\n"
+                        + "- Launch installation.\n");
 
                 // Wait until UI has finished...
                 latch.await();
@@ -234,10 +243,10 @@ public class Installer
         } catch (Throwable ex) {
             logger.error("Error encountered", ex);
             JOptionPane.showMessageDialog(
-                Installer.getFrame(),
-                "Installation has failed",
-                "Installation completion",
-                JOptionPane.WARNING_MESSAGE);
+                    Installer.getFrame(),
+                    "Installation has failed",
+                    "Installation completion",
+                    JOptionPane.WARNING_MESSAGE);
 
             Jnlp.extensionInstallerService.installFailed();
         } finally {
@@ -248,6 +257,9 @@ public class Installer
     //-----------//
     // uninstall //
     //-----------//
+    /**
+     * Launch uninstallation.
+     */
     public void uninstall ()
     {
         logger.debug("uninstall");
@@ -255,16 +267,16 @@ public class Installer
         try {
             bundle.uninstallBundle();
             JOptionPane.showMessageDialog(
-                Installer.getFrame(),
-                "Bundle successfully uninstalled",
-                "Uninstallation completion",
-                JOptionPane.INFORMATION_MESSAGE);
+                    Installer.getFrame(),
+                    "Bundle successfully uninstalled",
+                    "Uninstallation completion",
+                    JOptionPane.INFORMATION_MESSAGE);
         } catch (Throwable ex) {
             JOptionPane.showMessageDialog(
-                Installer.getFrame(),
-                "Uninstallation has failed: " + ex,
-                "Uninstallation completion",
-                JOptionPane.WARNING_MESSAGE);
+                    Installer.getFrame(),
+                    "Uninstallation has failed: " + ex,
+                    "Uninstallation completion",
+                    JOptionPane.WARNING_MESSAGE);
         } finally {
             //bundle.close();
         }
@@ -280,7 +292,7 @@ public class Installer
      * @param args the program arguments
      * @return true if found, false otherwise
      */
-    private static boolean isArgSet (String   name,
+    private static boolean isArgSet (String name,
                                      String[] args)
     {
         for (String arg : args) {

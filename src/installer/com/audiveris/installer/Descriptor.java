@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
+//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -16,6 +16,11 @@ import java.io.File;
 /**
  * Interface {@code Descriptor} defines the features to be provided
  * to the Installer by any target environment (os + arch).
+ * 
+ * <p>This interface has been defined with generality in mind, but may have
+ * suffered from the bias of the initial Windows-based implementation.
+ * Hence, it still may evolve when we hit the development of implementations for
+ * Unix and for Mac.
  *
  * @author Hervé Bitteur
  */
@@ -58,7 +63,7 @@ public interface Descriptor
     File getDataFolder ();
 
     /**
-     * Report the folder where Audiveris data is to be installed.
+     * Report the folder where Audiveris stuff is to be installed.
      * [For the time being, the user cannot choose a different folder]
      *
      * @return the install folder
