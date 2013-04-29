@@ -8,7 +8,58 @@
 <!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
 <!-- in the project's Project Properties dialog box.-->
 <project name="installer" default="default" basedir=".">
-    <description>Builds, tests, and runs the project installer.</description>
+    <description>Builds, tests, and runs the project installer.</description>    
+    
+    <property location="${basedir}/dev" name="dev.dir"/>
+    
+    <!-- Environment (developer specific), if any -->
+    <property file="${dev.dir}/build.properties"/>
+    
+    <!-- Environment (default) -->
+    <property file="${dev.dir}/build.default.properties"/>
+        
+    <path id="tools.classpath">
+        <fileset dir="${tools.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+    
+    <!-- Needed for ant-contrib tasks -->
+    <taskdef classpathref="tools.classpath" resource="net/sf/antcontrib/antlib.xml"/>
+   
+    <!-- ============== -->
+    <!-- -javadoc-build -->
+    <!-- ============== -->
+    <target depends="-uml, installer-impl.-javadoc-build" name="-javadoc-build"/>    
+    
+    <!-- ==== -->
+    <!-- -uml -->
+    <!-- ==== -->
+    <!-- Generate UML drawings with Umlet utility -->
+    <target name="-uml">
+        <for param="file">
+            <path>
+                <fileset dir="${src.dir}" includes="**/*.uxf">
+                    <depend targetdir="${src.dir}">
+                        <mapper from="*.uxf" to="*.jpg" type="glob"/>
+                    </depend>
+                </fileset>
+            </path>
+            <sequential>
+                <for list="jpg,pdf" param="format">
+                    <sequential>
+                        <echo><![CDATA[Umlet format=@{format} file=@{file}]]></echo>
+                        <java classname="com.baselet.control.Main" classpathref="tools.classpath" fork="true">
+                            <arg value="-action=convert"/>
+                            <arg value="-format=@{format}"/>
+                            <arg value="-filename=@{file}"/>
+                        </java>
+                    </sequential>
+                </for>
+            </sequential>
+        </for>
+    </target>
+    
     <import file="nbproject/build-impl.xml"/>
     <!--
 
