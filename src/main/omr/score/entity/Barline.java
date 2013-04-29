@@ -15,7 +15,7 @@ import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 
@@ -45,7 +45,7 @@ public class Barline
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Barline.class);
+    private static final Logger logger = LoggerFactory.getLogger(Barline.class);
 
     /** Predicate to detect a barline glyph (not a repeat dot) */
     public static final Predicate<Glyph> linePredicate = new Predicate<Glyph>()
@@ -326,7 +326,7 @@ public class Barline
     private String getChars (Shape shape)
     {
         if (shape == null) {
-            logger.warning("Barline. getChars() for null shape");
+            logger.warn("Barline. getChars() for null shape");
 
             return null;
         }
@@ -426,7 +426,7 @@ public class Barline
             }
 
             signature = sb.toString();
-            logger.fine("sig={0}", sb);
+            logger.debug("sig={}", sb);
         }
 
         return signature;

@@ -20,7 +20,7 @@ import omr.glyph.ShapeDescription;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.LinearEvaluator.Printer;
 
@@ -75,7 +75,7 @@ public class ShapeFocusBoard
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
         ShapeFocusBoard.class);
 
     /** Events this board is interested in */

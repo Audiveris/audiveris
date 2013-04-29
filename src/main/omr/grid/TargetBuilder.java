@@ -16,7 +16,7 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.ScoresManager;
 
@@ -24,7 +24,7 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
-import omr.sheet.picture.Picture;
+import omr.sheet.picture.jai.JaiDewarper;
 
 import omr.ui.Colors;
 import omr.ui.view.RubberPanel;
@@ -43,24 +43,18 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
-import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
-import javax.media.jai.InterpolationBilinear;
-import javax.media.jai.JAI;
-import javax.media.jai.PlanarImage;
-import javax.media.jai.Warp;
-import javax.media.jai.WarpGrid;
 
 /**
- * Class {@code TargetBuilder} is in charge of building a "perfect" definition
- * of target systems, staves and lines as well as the dewarp grid that allows to
- * transform the original image in to the perfect image.
+ * Class {@code TargetBuilder} is in charge of building a "perfect"
+ * definition of target systems, staves and lines as well as the
+ * dewarp grid that allows to transform the original image in to the
+ * perfect image.
  *
  * @author Hervé Bitteur
  */
@@ -72,7 +66,7 @@ public class TargetBuilder
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(TargetBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(TargetBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Related sheet */
@@ -99,12 +93,6 @@ public class TargetBuilder
     /** Destination points */
     private List<Point2D> dstPoints = new ArrayList<>();
 
-    /** The dewarp grid */
-    private Warp dewarpGrid;
-
-    /** The dewarped image */
-    private RenderedImage dewarpedImage;
-
     //~ Constructors -----------------------------------------------------------
     //---------------//
     // TargetBuilder //
@@ -126,10 +114,13 @@ public class TargetBuilder
     public void buildInfo ()
     {
         buildTarget();
-        buildWarpGrid();
+
+        JaiDewarper dewarper = new JaiDewarper(sheet);
+
+        buildWarpGrid(dewarper);
 
         // Dewarp the initial image
-        dewarpImage();
+        RenderedImage dewarpedImage = dewarper.dewarpImage();
 
         // Add a view on dewarped image?
         if (Main.getGui() != null) {
@@ -142,7 +133,7 @@ public class TargetBuilder
 
         // Store dewarped image on disk
         if (constants.storeDewarp.getValue()) {
-            storeImage();
+            storeImage(dewarpedImage);
         }
     }
 
@@ -235,7 +226,8 @@ public class TargetBuilder
     // buildTarget //
     //-------------//
     /**
-     * Build a perfect definition of target page, systems, staves and lines.
+     * Build a perfect definition of target page, systems, staves and
+     * lines.
      *
      * We apply a rotation on every top-left corner
      */
@@ -317,7 +309,7 @@ public class TargetBuilder
     //---------------//
     // buildWarpGrid //
     //---------------//
-    private void buildWarpGrid ()
+    private void buildWarpGrid (JaiDewarper dewarper)
     {
         int xStep = sheet.getInterline();
         int xNumCells = (int) Math.ceil(sheet.getWidth() / (double) xStep);
@@ -342,7 +334,7 @@ public class TargetBuilder
             warpPositions[i++] = (float) p.getY();
         }
 
-        dewarpGrid = new WarpGrid(
+        dewarper.createWarpGrid(
                 0,
                 xStep,
                 xNumCells,
@@ -350,20 +342,6 @@ public class TargetBuilder
                 yStep,
                 yNumCells,
                 warpPositions);
-    }
-
-    //-------------//
-    // dewarpImage //
-    //-------------//
-    private void dewarpImage ()
-    {
-        ParameterBlock pb = new ParameterBlock();
-        pb.addSource(Picture.invert(sheet.getPicture().getImage()));
-        pb.add(dewarpGrid);
-        pb.add(new InterpolationBilinear());
-
-        dewarpedImage = Picture.invert(JAI.create("warp", pb));
-        ((PlanarImage) dewarpedImage).getTiles();
     }
 
     //----------//
@@ -421,10 +399,9 @@ public class TargetBuilder
     //------------//
     // storeImage //
     //------------//
-    private void storeImage ()
+    private void storeImage (RenderedImage dewarpedImage)
     {
-        String pageId = sheet.getPage()
-                .getId();
+        String pageId = sheet.getPage().getId();
         File file = new File(
                 ScoresManager.getInstance().getDefaultDewarpDirectory(),
                 pageId + ".dewarped.png");
@@ -432,9 +409,9 @@ public class TargetBuilder
         try {
             String path = file.getCanonicalPath();
             ImageIO.write(dewarpedImage, "png", file);
-            logger.info("Wrote {0}", path);
+            logger.info("Wrote {}", path);
         } catch (IOException ex) {
-            logger.warning("Could not write {0}", file);
+            logger.warn("Could not write {}", file);
         }
     }
 
@@ -451,25 +428,22 @@ public class TargetBuilder
                 false,
                 "Should we display the dewarp grid?");
 
-        //
         Scale.LineFraction gridPointSize = new Scale.LineFraction(
                 0.2,
                 "Size of displayed grid points");
 
-        //
         Scale.Fraction systemMarkWidth = new Scale.Fraction(
                 2.0,
                 "Width of system marks");
 
-        //
         Scale.LineFraction systemMarkStroke = new Scale.LineFraction(
                 2.0,
                 "Thickness of system marks");
 
-        //
         Constant.Boolean storeDewarp = new Constant.Boolean(
                 false,
                 "Should we store the dewarped image on disk?");
+
     }
 
     //--------------//

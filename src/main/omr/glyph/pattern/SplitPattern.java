@@ -24,7 +24,7 @@ import omr.glyph.facets.GlyphComposition.Linking;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
@@ -47,7 +47,7 @@ public class SplitPattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SplitPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(SplitPattern.class);
 
     /** Set of shapes not accepted for glyph chunks. TODO: expand the set */
     private static final EnumSet<Shape> invalidShapes = EnumSet.of(
@@ -162,7 +162,7 @@ public class SplitPattern
     private boolean splitGlyph (Glyph master)
     {
         if (master.isVip()) {
-            logger.info("Trying to split G#{0}", master.getId());
+            logger.info("Trying to split G#{}", master.getId());
         }
 
         List<Split> splits = new ArrayList<>();
@@ -202,7 +202,7 @@ public class SplitPattern
 
             if (count == 2) {
                 if (master.isVip()) {
-                    logger.info("Split candidate: {0}", split);
+                    logger.info("Split candidate: {}", split);
                 }
 
                 splits.add(split);
@@ -220,8 +220,8 @@ public class SplitPattern
 
         bestSplit.register(system);
 
-        if (master.isVip() || logger.isFineEnabled()) {
-            logger.info("Checking {0}", bestSplit);
+        if (master.isVip() || logger.isDebugEnabled()) {
+            logger.info("Checking {}", bestSplit);
         }
 
         // Check whether each of the chunks can be assigned a valid shape
@@ -238,12 +238,12 @@ public class SplitPattern
                     Grades.partMinGrade);
 
             if ((vote == null) || invalidShapes.contains(vote.shape)) {
-                if (master.isVip() || logger.isFineEnabled()) {
-                    logger.info("No valid shape for chunk {0}", chunk);
+                if (master.isVip() || logger.isDebugEnabled()) {
+                    logger.info("No valid shape for chunk {}", chunk);
                 }
             } else {
-                if (master.isVip() || logger.isFineEnabled()) {
-                    logger.info("{0} for chunk {1}", vote, chunk);
+                if (master.isVip() || logger.isDebugEnabled()) {
+                    logger.info("{} for chunk {}", vote, chunk);
                 }
 
                 chunk.setEvaluation(vote);
@@ -251,8 +251,8 @@ public class SplitPattern
         }
 
         // Now actually perform the split!
-        if (master.isVip() || logger.isFineEnabled()) {
-            logger.info("{0}Performing {1}", system.getLogPrefix(), bestSplit);
+        if (master.isVip() || logger.isDebugEnabled()) {
+            logger.info("{}Performing {}", system.getLogPrefix(), bestSplit);
         }
 
         for (Glyph glyph : bestSplit.sigs.values()) {

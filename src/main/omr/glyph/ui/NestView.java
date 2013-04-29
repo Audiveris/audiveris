@@ -22,7 +22,7 @@ import omr.glyph.facets.Glyph;
 import omr.lag.Lag;
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.entity.PartNode;
 import omr.score.ui.PaintingParameters;
@@ -69,7 +69,7 @@ public class NestView
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(NestView.class);
+    private static final Logger logger = LoggerFactory.getLogger(NestView.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The underlying nest */

@@ -14,7 +14,7 @@ package omr.glyph.ui;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.ui.MainGui;
 
@@ -66,7 +66,7 @@ public class ShapeColorChooser
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
         ShapeColorChooser.class);
     private static JFrame frame;
 

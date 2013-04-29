@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.ui.symbol;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
@@ -44,7 +44,7 @@ public class BasicSymbol
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    protected static final Logger logger = Logger.getLogger(BasicSymbol.class);
+    protected static final Logger logger = LoggerFactory.getLogger(BasicSymbol.class);
 
     /** Painting origin for images */
     protected static final PixelPoint ORIGIN = new PixelPoint(0, 0);

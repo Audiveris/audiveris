@@ -79,7 +79,7 @@
     <!--  S A V E -->
     <!-- ======== -->
     <target name="save"
-            description="Backup all important files" >
+            description="Backup important files" >
         
         <mkdir dir="${backup.dir}/${name}"/>
 

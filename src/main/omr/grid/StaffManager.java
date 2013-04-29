@@ -13,7 +13,7 @@ package omr.grid;
 
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.GeoPath;
 
@@ -45,7 +45,7 @@ public class StaffManager
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(StaffManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(StaffManager.class);
 
     //~ Instance fields --------------------------------------------------------
     //

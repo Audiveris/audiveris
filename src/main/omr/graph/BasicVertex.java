@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.graph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -45,7 +45,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BasicVertex.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicVertex.class);
 
     //~ Instance fields --------------------------------------------------------
     /**
@@ -84,7 +84,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
      */
     protected BasicVertex ()
     {
-        logger.fine("new vertex");
+        logger.debug("new vertex");
     }
 
     //--------//
@@ -97,7 +97,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
      */
     protected BasicVertex (D graph)
     {
-        logger.fine("new vertex in graph {0}", graph);
+        logger.debug("new vertex in graph {}", graph);
 
         graph.addVertex(this); // Compiler warning here
     }
@@ -109,7 +109,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     @Override
     public void addTarget (V target)
     {
-        logger.fine("adding edge from {0} to {1}", this, target);
+        logger.debug("adding edge from {} to {}", this, target);
 
         // Assert we have real target
         if (target == null) {
@@ -156,7 +156,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     public void delete ()
     {
         try {
-            logger.fine("deleting vertex {0}", this);
+            logger.debug("deleting vertex {}", this);
 
             // Remove in vertices of the vertex
             for (V source : new ArrayList<>(getSources())) {
@@ -171,7 +171,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
             // Remove from graph
             graph.removeVertex(this);
         } catch (Exception ex) {
-            logger.severe("Error deleting " + this, ex);
+            logger.error("Error deleting " + this, ex);
         }
     }
 

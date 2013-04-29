@@ -22,7 +22,7 @@ import omr.glyph.ShapeEvaluator;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -81,7 +81,7 @@ public class ScoreChecker
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreChecker.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreChecker.class);
 
     /** Specific predicate for beam hooks */
     private static final Predicate<Shape> hookPredicate = new Predicate<Shape>()
@@ -170,8 +170,8 @@ public class ScoreChecker
             }
 
             // No real beam found on the same chord, so let's discard the hook
-            if (glyph.isVip() || logger.isFineEnabled()) {
-                logger.info("{0} Removing false beam hook {1}",
+            if (glyph.isVip() || logger.isDebugEnabled()) {
+                logger.info("{} Removing false beam hook {}",
                         beam.getMeasure().getContextString(), glyph.idString());
             }
 
@@ -180,7 +180,7 @@ public class ScoreChecker
 
             return true;
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + beam,
                     ex);
         }
@@ -207,7 +207,7 @@ public class ScoreChecker
             // Check note heads do not appear on both stem head and tail
             checkHeadLocations(chord);
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + chord,
                     ex);
         }
@@ -230,7 +230,7 @@ public class ScoreChecker
         try {
             dynamics.getShape();
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + dynamics,
                     ex);
         }
@@ -272,7 +272,7 @@ public class ScoreChecker
                 }
             }
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + measure,
                     ex);
         }
@@ -293,10 +293,10 @@ public class ScoreChecker
     public boolean visit (Score score)
     {
         try {
-            logger.fine("Checking score ...");
+            logger.debug("Checking score ...");
             score.acceptChildren(this);
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + score,
                     ex);
         }
@@ -336,7 +336,7 @@ public class ScoreChecker
     public boolean visit (TimeSignature timeSignature)
     {
         try {
-            logger.fine("{0} Checking {1}",
+            logger.debug("{} Checking {}",
                     timeSignature.getContextString(), timeSignature);
 
             // Trigger computation of Num & Den if not already done
@@ -351,7 +351,7 @@ public class ScoreChecker
                     timeSignature.addError(
                             "Time signature with no rational value");
                 } else {
-                    logger.fine("Complex {0}", timeSignature);
+                    logger.debug("Complex {}", timeSignature);
 
                     // Normal complex shape
                     if (!timeSignature.isDummy()) {
@@ -372,7 +372,7 @@ public class ScoreChecker
                 }
             }
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting "
                     + timeSignature,
                     ex);
@@ -396,7 +396,7 @@ public class ScoreChecker
                                     - lastNote.getPitchPosition();
 
                 if (Math.abs(deltaPitch) < minDeltaPitch) {
-                    logger.fine("Too small delta pitch between {0} & {1}",
+                    logger.debug("Too small delta pitch between {} & {}",
                             note, lastNote);
                     mergeNotes(lastNote, note);
 
@@ -460,7 +460,7 @@ public class ScoreChecker
                 }
             }
 
-            logger.fine("{0} aligned on shape {1}", chord, bestShape);
+            logger.debug("{} aligned on shape {}", chord, bestShape);
 
             final Shape baseShape = bestShape; // Must be final
             Predicate<Shape> predicate = new Predicate<Shape>()
@@ -579,14 +579,14 @@ public class ScoreChecker
                     sig = new TimeSignature(measure, staff, bestSig);
 
                     try {
-                        logger.fine("{0} Created time sig {1}/{2}",
+                        logger.debug("{} Created time sig {}/{}",
                                 sig.getContextString(),
                                 sig.getNumerator(), sig.getDenominator());
                     } catch (InvalidTimeSignature ignored) {
-                        logger.warning("InvalidTimeSignature", ignored);
+                        logger.warn("InvalidTimeSignature", ignored);
                     }
                 } else {
-                    logger.fine("{0} Existing sig {1}",
+                    logger.debug("{} Existing sig {}",
                             sig.getContextString(), sig);
                 }
             }
@@ -637,7 +637,7 @@ public class ScoreChecker
 
         if (!chord.getBeams().isEmpty()) {
             // We trust beams
-            logger.fine("{0} Head/beam conflict in {1}",
+            logger.debug("{} Head/beam conflict in {}",
                     chord.getContextString(), chord);
             fix = true;
         } else if (chord.getFlagsNumber() > 0) {
@@ -648,7 +648,7 @@ public class ScoreChecker
                 flagGrade = Math.max(flagGrade, flag.getGrade());
             }
 
-            logger.fine("{0} Head/flag conflict in {1}",
+            logger.debug("{} Head/flag conflict in {}",
                     chord.getContextString(), chord);
 
             if (noteGrade <= flagGrade) {
@@ -698,8 +698,8 @@ public class ScoreChecker
             // If note is close to tail, it can't be a note
             if (note.getBox().intersects(tailBox)) {
                 for (Glyph glyph : note.getGlyphs()) {
-                    if (logger.isFineEnabled() || glyph.isVip()) {
-                        logger.info("Note {0} too close to tail of stem {1}",
+                    if (logger.isDebugEnabled() || glyph.isVip()) {
+                        logger.info("Note {} too close to tail of stem {}",
                                 note, stem);
                     }
                     glyph.setShape(null);
@@ -769,7 +769,7 @@ public class ScoreChecker
                     sig.copy(manualSig);
                 } else {
                     // Inconsistent sigs
-                    logger.fine("Inconsistency between time sigs");
+                    logger.debug("Inconsistency between time sigs");
                     sig.addError("Inconsistent time signature ");
                     bestSig.addError("Inconsistent time signature");
 
@@ -858,7 +858,7 @@ public class ScoreChecker
             if (vote != null) {
                 compound = system.addGlyph(compound);
                 compound.setEvaluation(vote);
-                logger.fine("{0} merged two note heads", compound.idString());
+                logger.debug("{} merged two note heads", compound.idString());
             }
         }
     }
@@ -887,14 +887,14 @@ public class ScoreChecker
                 continue;
             }
 
-            logger.fine("Spurious {0}", glyph.idString());
+            logger.debug("Spurious {}", glyph.idString());
 
             // Check we are on the tail (beam) end of the stem
             // Beware, stemDir is >0 upwards, while y is >0 downwards
             PixelPoint glyphCenter = glyph.getAreaCenter();
 
             if ((chordCenter.to(glyphCenter).y * stemDir) > 0) {
-                logger.fine("{0} not on beam side", glyph.idString());
+                logger.debug("{} not on beam side", glyph.idString());
 
                 continue;
             }
@@ -909,7 +909,7 @@ public class ScoreChecker
             if (vote != null) {
                 glyph.setShape(vote.shape, Evaluation.ALGORITHM);
 
-                logger.fine("{0} recognized as {1}",
+                logger.debug("{} recognized as {}",
                         glyph.idString(), vote.shape);
 
                 modified.set(true);

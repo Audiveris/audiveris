@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score.ui;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.AdaptiveDescriptor;
 import omr.run.FilterDescriptor;
@@ -121,7 +121,7 @@ public class ScoreParameters
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             ScoreParameters.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -266,7 +266,7 @@ public class ScoreParameters
                 // Commit all specific values, if any, to their backup object
                 // Do this ONLY for the Default panel
                 MyPanel panel = defaultPanel;
-                //logger.info("{0}", panel.getName());
+                //logger.info("{}", panel.getName());
                 for (Pane pane : panel.panes) {
                     pane.commit();
                 }
@@ -276,7 +276,7 @@ public class ScoreParameters
                     task.launch(sheet);
                 }
             } catch (Exception ex) {
-                logger.warning("Could not run ParametersTask", ex);
+                logger.warn("Could not run ParametersTask", ex);
 
                 return false;
             }
@@ -357,7 +357,7 @@ public class ScoreParameters
         } catch (UnavailableOcrException ex) {
             logger.info("No language pane for lack of OCR");
         } catch (Throwable ex) {
-            logger.warning("Error creating language pane", ex);
+            logger.warn("Error creating language pane", ex);
         }
 
         return null;
@@ -509,7 +509,7 @@ public class ScoreParameters
         public void commit ()
         {
             if (isSelected()) {
-                //logger.info("   {0}: {1}", title, read());
+                //logger.info("   {}: {}", title, read());
                 backup.setSpecific(read());
             }
         }
@@ -896,7 +896,7 @@ public class ScoreParameters
         {
             // Part name
             if (name.getText().trim().length() == 0) {
-                logger.warning("Please supply a non empty part name");
+                logger.warn("Please supply a non empty part name");
 
                 return false;
             } else {

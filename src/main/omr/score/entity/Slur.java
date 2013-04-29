@@ -11,12 +11,12 @@
 // </editor-fold>
 package omr.score.entity;
 
-import java.awt.Graphics2D;
 import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import omr.math.Circle;
 
@@ -55,7 +55,7 @@ public class Slur
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Slur.class);
+    private static final Logger logger = LoggerFactory.getLogger(Slur.class);
 
     /** To order slurs vertically within a measure. */
     public static final Comparator<Slur> verticalComparator = new Comparator<Slur>()
@@ -234,7 +234,7 @@ public class Slur
                                  ScoreSystem system)
     {
         if (glyph.isVip()) {
-            logger.info("Slur. populate {0}", glyph.idString());
+            logger.info("Slur. populate {}", glyph.idString());
         }
 
         // Compute the approximating circle
@@ -243,7 +243,7 @@ public class Slur
 
         // Safer
         if (curve == null) {
-            logger.fine("No curve found for slur candidate #{0}", glyph.getId());
+            logger.debug("No curve found for slur candidate #{}", glyph.getId());
             return;
         }
 
@@ -339,7 +339,7 @@ public class Slur
             if (leftEnd != null && rightEnd != null
                 && leftEnd.note == rightEnd.note) {
                 // Slur looping on the same note!
-                logger.fine("Looping slur {0}", glyph.idString());
+                logger.debug("Looping slur {}", glyph.idString());
                 glyph.setShape(null);
             } else {
                 Slur slur = new Slur(
@@ -351,7 +351,7 @@ public class Slur
                         (rightEnd != null) ? rightEnd.note : null);
                 glyph.setTranslation(slur);
 
-                logger.finest(slur.toString());
+                logger.debug(slur.toString());
             }
         } else {
             system.addError(glyph, "Slur with no embraced notes");
@@ -412,7 +412,7 @@ public class Slur
         prevSlur.tie = isATie;
         this.tie = isATie;
 
-        logger.fine("{0} connection #{1} -> #{2}",
+        logger.debug("{} connection #{} -> #{}",
                 isATie ? "Tie" : "Slur", prevSlur.glyph.getId(), glyph.getId());
     }
 
@@ -727,8 +727,8 @@ public class Slur
                 new PixelPoint((int) curve.getX2(), (int) curve.getY2()));
 
         if (prevStaff.getId() != staff.getId()) {
-            logger.fine(
-                    "prevSlur#{0} prevStaff:{1} slur#{2} staff:{3} different staff id",
+            logger.debug(
+                    "prevSlur#{} prevStaff:{} slur#{} staff:{} different staff id",
                     prevSlur.getId(), prevStaff.getId(), getId(), staff.getId());
             return false;
         }
@@ -748,7 +748,7 @@ public class Slur
         // Compare staves and pitch positions (very roughly)
         double deltaPitch = pp - prevPp;
         boolean res = Math.abs(deltaPitch) <= (constants.maxDeltaY.getValue() * 2);
-        logger.fine("prevSlur#{0} slur#{1} deltaPitch:{2} res:{3}",
+        logger.debug("prevSlur#{} slur#{} deltaPitch:{} res:{}",
                 prevSlur.getId(), this.getId(), deltaPitch, res);
 
         return res;
@@ -865,7 +865,7 @@ public class Slur
         if (leftGroup != null && leftGroup == rightGroup) {
             return false;
         }
-        
+
         return true;
     }
 

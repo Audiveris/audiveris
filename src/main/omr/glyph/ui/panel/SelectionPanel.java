@@ -21,7 +21,7 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
@@ -69,7 +69,7 @@ class SelectionPanel
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SelectionPanel.class);
+    private static final Logger logger = LoggerFactory.getLogger(SelectionPanel.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -317,7 +317,7 @@ class SelectionPanel
 
                     shapeNotes.add(new NotedGlyph(gName, glyph, grade));
                 } catch (Exception ex) {
-                    logger.warning("Cannot evaluate {0}", glyph);
+                    logger.warn("Cannot evaluate {}", glyph);
                 }
             }
         }

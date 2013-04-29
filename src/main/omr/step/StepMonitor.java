@@ -17,7 +17,7 @@ import omr.constant.Constant;
 import omr.constant.Constant.Ratio;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.ui.util.UIUtilities;
 
@@ -39,7 +39,7 @@ public class StepMonitor
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(StepMonitor.class);
+    private static final Logger logger = LoggerFactory.getLogger(StepMonitor.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
@@ -224,7 +224,7 @@ public class StepMonitor
                 super.paintComponent(g);
             } catch (Exception ex) {
                 // Nearly ignored
-                logger.warning("StepMonitor. Ignored: {0}", ex);
+                logger.warn("StepMonitor. Ignored: {}", ex);
                 repaint(); // To trigger another painting
             }
         }

@@ -16,7 +16,7 @@ import omr.constant.ConstantSet;
 
 import omr.run.PixelSource;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelDimension;
 
@@ -24,8 +24,6 @@ import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
 import omr.selection.SelectionService;
-
-import omr.util.JaiLoader;
 
 import org.bushe.swing.event.EventSubscriber;
 
@@ -74,11 +72,7 @@ public class Picture
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Picture.class);
-
-    static {
-        JaiLoader.ensureLoaded();
-    }
+    private static final Logger logger = LoggerFactory.getLogger(Picture.class);
 
     /** Identity transformation used for display */
     private static final AffineTransform identity = new AffineTransform();
@@ -346,7 +340,7 @@ public class Picture
             levelService.publish(
                     new PixelLevelEvent(this, event.hint, event.movement, level));
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 
@@ -475,7 +469,7 @@ public class Picture
         ColorModel colorModel = image.getColorModel();
         int pixelSize = colorModel.getPixelSize();
         boolean hasAlpha = colorModel.hasAlpha();
-        logger.fine("{0}", colorModel);
+        logger.debug("{}", colorModel);
 
         if (pixelSize == 1) {
             ///image = binaryToGray(image); // Only if rotation is needed!
@@ -485,14 +479,14 @@ public class Picture
         // Check nb of bands
         SampleModel sampleModel = image.getSampleModel();
         int numBands = sampleModel.getNumBands();
-        logger.fine("numBands={0}", numBands);
+        logger.debug("numBands={}", numBands);
 
         if (numBands == 1) {
             // Pixel gray value. Nothing to do
         } else if (numBands == 2 && hasAlpha) {
             // Pixel + alpha
             // Discard alpha (TODO: check if premultiplied!!!)
-            image = JAI.create("bandselect", image, new int[]{0});
+            image = JAI.create("bandselect", image, new int[]{});
         } else if (numBands == 3 && !hasAlpha) {
             // RGB
             image = RGBToGray(image);
@@ -511,7 +505,7 @@ public class Picture
     //-------------//
     private void printBounds ()
     {
-        logger.info("minX:{0} minY:{1} maxX:{2} maxY:{3}",
+        logger.info("minX:{} minY:{} maxX:{} maxY:{}",
                 image.getMinX(), image.getMinY(),
                 image.getMaxX(), image.getMaxY());
     }
@@ -541,12 +535,12 @@ public class Picture
                 image.getData().getSampleModel(),
                 image.getData().getDataBuffer(),
                 null);
-        logger.fine("raster={0}", raster);
+        logger.debug("raster={}", raster);
 
         // Check pixel size and compute grayFactor accordingly
         ColorModel colorModel = image.getColorModel();
         int pixelSize = colorModel.getPixelSize();
-        logger.fine("colorModel={0} pixelSize={1}", colorModel, pixelSize);
+        logger.debug("colorModel={} pixelSize={}", colorModel, pixelSize);
 
         if (pixelSize == 1) {
             grayFactor = 1;
@@ -558,7 +552,7 @@ public class Picture
             throw new RuntimeException("Unsupported pixel size: " + pixelSize);
         }
 
-        logger.fine("grayFactor={0}", grayFactor);
+        logger.debug("grayFactor={}", grayFactor);
     }
 
     //~ Inner Classes ----------------------------------------------------------

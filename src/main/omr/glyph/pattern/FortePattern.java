@@ -17,7 +17,7 @@ import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 
@@ -38,7 +38,7 @@ public class FortePattern
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(FortePattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(FortePattern.class);
 
     /** Pre-forte shapes */
     public static final EnumSet<Shape> forteNeighbors = EnumSet.of(

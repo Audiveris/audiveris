@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score.midi;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 
@@ -25,7 +25,7 @@ public class MidiAbstractions
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
         MidiAbstractions.class);
 
     /** The extension used for Midi output files: {@value} */
@@ -192,7 +192,7 @@ public class MidiAbstractions
         try {
             return instrumentNames[id - 1];
         } catch (Exception ex) {
-            logger.severe("Illegal MIDI program id: " + id, ex);
+            logger.error("Illegal MIDI program id: " + id, ex);
 
             return "";
         }

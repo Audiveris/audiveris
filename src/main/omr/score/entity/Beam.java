@@ -20,7 +20,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.BasicLine;
 import omr.math.Line;
@@ -60,7 +60,7 @@ public class Beam
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Beam.class);
+    private static final Logger logger = LoggerFactory.getLogger(Beam.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -94,7 +94,7 @@ public class Beam
 
         id = 1 + getChildIndex();
 
-        logger.fine("{0} Created {1}", measure.getContextString(), this);
+        logger.debug("{} Created {}", measure.getContextString(), this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -139,7 +139,7 @@ public class Beam
 //////////////////        beam.addItem(item);
         // TODO: preserve order in items !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        logger.fine("{0} {1}", beam.getContextString(), beam);
+        logger.debug("{} {}", beam.getContextString(), beam);
 
         return beam;
     }
@@ -225,7 +225,7 @@ public class Beam
                         // We have a chord in common with this beam, so we are
                         // part of the same group
                         switchToGroup(group);
-                        logger.fine("{0} Reused {1} for {2}",
+                        logger.debug("{} Reused {} for {}",
                                 getContextString(), group, this);
 
                         return;
@@ -237,7 +237,7 @@ public class Beam
         // No compatible group found, let's build a new one
         switchToGroup(new BeamGroup(getMeasure()));
 
-        logger.fine("{0} Created new {1} for {2}",
+        logger.debug("{} Created new {} for {}",
                 getContextString(), getGroup(), this);
     }
 
@@ -459,7 +459,7 @@ public class Beam
      */
     public void switchToGroup (BeamGroup group)
     {
-        logger.fine("Switching {0} from {1} to {2}",
+        logger.debug("Switching {} from {} to {}",
                 this, this.group, group);
 
         // Trivial noop case
@@ -568,7 +568,7 @@ public class Beam
     private boolean isCompatibleWith (PixelPoint left,
                                       PixelPoint right)
     {
-        boolean logging = isVip() || logger.isFineEnabled();
+        boolean logging = isVip() || logger.isDebugEnabled();
 
         // Check alignment, using distance to line
         int centerX = (left.x + right.x) / 2;
@@ -577,7 +577,7 @@ public class Beam
                 getLine().distanceOf(centerX, centerY));
 
         if (logging) {
-            logger.info("dy={0} vs {1}", (float) Math.abs(dy),
+            logger.info("dy={} vs {}", (float) Math.abs(dy),
                     constants.maxDistance.getValue());
         }
 
@@ -592,7 +592,7 @@ public class Beam
             double dx = getScale().pixelsToFrac(itemPoint.distance(beamPoint));
 
             if (logging) {
-                logger.info("dx={0} vs {1}", (float) dx,
+                logger.info("dx={} vs {}", (float) dx,
                         constants.maxGap.getValue());
             }
 

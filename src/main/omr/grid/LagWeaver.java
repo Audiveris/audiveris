@@ -19,7 +19,7 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.Sections;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 import omr.run.Run;
@@ -47,7 +47,7 @@ public class LagWeaver
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(LagWeaver.class);
+    private static final Logger logger = LoggerFactory.getLogger(LagWeaver.class);
 
     /** Table dx/dy -> Heading */
     private static final Heading[][] headings = {
@@ -142,7 +142,7 @@ public class LagWeaver
 
         List<Section> staffLinesSections = removeStaffLines(hLag);
 
-        logger.fine("{0}StaffLine sections removed: {1}",
+        logger.debug("{}StaffLine sections removed: {}",
                 sheet.getLogPrefix(), staffLinesSections.size());
 
         watch.start("Hori <-> Hori");
@@ -164,7 +164,7 @@ public class LagWeaver
     private void addPointAbove (int x,
                                 int y)
     {
-        logger.fine("addPointAbove {0},{1}", x, y);
+        logger.debug("addPointAbove {},{}", x, y);
         pointsAbove.add(new Point(x, y));
     }
 
@@ -174,7 +174,7 @@ public class LagWeaver
     private void addPointAside (int x,
                                 int y)
     {
-        //logger.fine("addPointAside " + x + "," + y);
+        //logger.debug("addPointAside " + x + "," + y);
         pointsAside.add(new Point(x, y));
     }
 
@@ -184,7 +184,7 @@ public class LagWeaver
     private void addPointBelow (int x,
                                 int y)
     {
-        logger.fine("addPointBelow {0},{1}", x, y);
+        logger.debug("addPointBelow {},{}", x, y);
         pointsBelow.add(new Point(x, y));
     }
 
@@ -241,8 +241,8 @@ public class LagWeaver
             }
         }
 
-        if (added && logger.isFineEnabled()) {
-            logger.info("lSect#{0} checks:{1}{2}",
+        if (added && logger.isDebugEnabled()) {
+            logger.info("lSect#{} checks:{}{}",
                     lSect.getId(),
                     pointsAbove.size(),
                     Sections.toString(" sources", lSect.getSources()));
@@ -270,8 +270,8 @@ public class LagWeaver
             }
         }
 
-        if (added && logger.isFineEnabled()) {
-            logger.info("vSect#{0} checks:{1}{2}",
+        if (added && logger.isDebugEnabled()) {
+            logger.info("vSect#{} checks:{}{}",
                     vSect.getId(),
                     pointsAside.size(),
                     Sections.toString(" hSects", vSect.getOppositeSections()));
@@ -298,8 +298,8 @@ public class LagWeaver
             }
         }
 
-        if (added && logger.isFineEnabled()) {
-            logger.info("lSect#{0} checks:{1}{2}", lSect.getId(),
+        if (added && logger.isDebugEnabled()) {
+            logger.info("lSect#{} checks:{}{}", lSect.getId(),
                     pointsBelow.size(),
                     Sections.toString(" targets", lSect.getTargets()));
         }
@@ -357,7 +357,7 @@ public class LagWeaver
 
                 if (kind == SEG_LINETO) {
                     heading = getHeading(prevPt, pt);
-                    logger.fine("{0} {1} {2}", prevPt, heading, pt);
+                    logger.debug("{} {} {}", prevPt, heading, pt);
 
                     switch (heading) {
                     case NORTH:
@@ -620,7 +620,7 @@ public class LagWeaver
     private void removePointAbove (int x,
                                    int y)
     {
-        logger.fine("Removing corner above x:{0} y:{1}", x, y);
+        logger.debug("Removing corner above x:{} y:{}", x, y);
         removePoint(pointsAbove, x, y);
     }
 
@@ -639,7 +639,7 @@ public class LagWeaver
     private void removePointBelow (int x,
                                    int y)
     {
-        logger.fine("Removing corner below x:{0} y:{1}", x, y);
+        logger.debug("Removing corner below x:{} y:{}", x, y);
         removePoint(pointsBelow, x, y);
     }
 
@@ -664,8 +664,8 @@ public class LagWeaver
                              */
                             if ((section.getLength(Orientation.HORIZONTAL) == 1)
                                 && (section.getLength(Orientation.VERTICAL) > 1)) {
-                                if (section.isVip() || logger.isFineEnabled()) {
-                                    logger.info("Keeping staffline section {0}",
+                                if (section.isVip() || logger.isDebugEnabled()) {
+                                    logger.info("Keeping staffline section {}",
                                             section);
                                 }
 

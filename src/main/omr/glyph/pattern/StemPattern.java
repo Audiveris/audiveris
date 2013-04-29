@@ -21,7 +21,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.sheet.SystemInfo;
 
@@ -46,7 +46,7 @@ public class StemPattern
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(StemPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(StemPattern.class);
 
     /** Predicate to filter reliable symbols attached to a stem. */
     public static final Predicate<Glyph> reliableStemSymbols = new Predicate<Glyph>()
@@ -105,7 +105,7 @@ public class StemPattern
                 glyph.getSymbolsAfter(reliableStemSymbols, goods, bads);
 
                 if (goods.isEmpty()) {
-                    logger.fine("Suspected Stem {0}", glyph);
+                    logger.debug("Suspected Stem {}", glyph);
 
                     SuspectedStems.add(glyph);
 
@@ -113,7 +113,7 @@ public class StemPattern
                     badsMap.put(glyph, bads);
 
                     for (Glyph g : bads) {
-                        logger.fine("Deassigning bad glyph {0}", g);
+                        logger.debug("Deassigning bad glyph {}", g);
                         g.setShape((Shape) null);
                     }
                 }
@@ -143,7 +143,7 @@ public class StemPattern
                     glyph.setEvaluation(vote);
 
                     if (glyph.isWellKnown()) {
-                        logger.fine("New symbol {0}", glyph);
+                        logger.debug("New symbol {}", glyph);
                         symbols.add(glyph);
                         nb++;
                     }
@@ -192,7 +192,7 @@ public class StemPattern
                     }
                 }
             } else if (stem.isVip()) {
-                logger.info("StemPattern deassigned stem#{0}", stem.getId());
+                logger.info("StemPattern deassigned stem#{}", stem.getId());
             }
         }
 

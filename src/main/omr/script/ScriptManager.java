@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.script;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.Main;
 
@@ -41,7 +41,7 @@ public class ScriptManager
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScriptManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScriptManager.class);
 
     /** File extension for script files */
     public static final String SCRIPT_EXTENSION = ".script.xml";
@@ -90,7 +90,7 @@ public class ScriptManager
 
             return (Script) um.unmarshal(input);
         } catch (JAXBException ex) {
-            logger.warning("Cannot unmarshal script", ex);
+            logger.warn("Cannot unmarshal script", ex);
 
             return null;
         }
@@ -104,24 +104,24 @@ public class ScriptManager
         Script script = null;
         try {
             long start = System.currentTimeMillis();
-            logger.info("Loading script file {0} ...", file);
+            logger.info("Loading script file {} ...", file);
             try (FileInputStream fis = new FileInputStream(file)) {
                 script = load(fis);
             }
             script.run();
             long stop = System.currentTimeMillis();
-            logger.info("Script file {0} run in {1} ms", file, stop - start);
+            logger.info("Script file {} run in {} ms", file, stop - start);
         } catch (ProcessingCancellationException pce) {
             Score score = script.getScore();
-            logger.warning("Cancelled " + score, pce);
+            logger.warn("Cancelled " + score, pce);
 
             if (score != null) {
                 score.getBench().recordCancellation();
             }
         } catch (FileNotFoundException ex) {
-            logger.warning("Cannot find script file {0}", file);
+            logger.warn("Cannot find script file {}", file);
         } catch (Exception ex) {
-            logger.warning("Exception occurred", ex);
+            logger.warn("Exception occurred", ex);
         } finally {
             // Close when in batch mode
             if ((Main.getGui() == null) && (script != null)) {
@@ -148,7 +148,7 @@ public class ScriptManager
                        OutputStream output)
             throws JAXBException
     {
-        logger.fine("Storing {0}", script);
+        logger.debug("Storing {}", script);
 
         Marshaller m = getJaxbContext().createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);

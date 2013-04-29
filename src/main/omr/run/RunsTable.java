@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.run;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -48,7 +48,7 @@ public class RunsTable
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(RunsTable.class);
+    private static final Logger logger = LoggerFactory.getLogger(RunsTable.class);
 
     /** Events that can be published on the table run service */
     public static final Class<?>[] eventsWritten = new Class<?>[]{RunEvent.class};
@@ -550,14 +550,14 @@ public class RunsTable
                 return;
             }
 
-            logger.fine("RunsTable {0}: {1}", name, locationEvent);
+            logger.debug("RunsTable {}: {}", name, locationEvent);
 
             if (locationEvent instanceof LocationEvent) {
                 // Location => Run
                 handleEvent(locationEvent);
             }
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 

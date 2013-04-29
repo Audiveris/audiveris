@@ -15,7 +15,7 @@ import omr.glyph.*;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 
@@ -40,7 +40,7 @@ public class FermataDotPattern
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             FermataDotPattern.class);
 
     /** Dot avatars */
@@ -78,8 +78,8 @@ public class FermataDotPattern
                 continue;
             }
 
-            if (fermata.isVip() || logger.isFineEnabled()) {
-                logger.info("Checking fermata #{0} {1}",
+            if (fermata.isVip() || logger.isDebugEnabled()) {
+                logger.info("Checking fermata #{} {}",
                         fermata.getId(), fermata.getEvaluation());
             }
 
@@ -102,8 +102,8 @@ public class FermataDotPattern
             for (Glyph candidate : candidates) {
                 if (fermata.isVip()
                     || candidate.isVip()
-                    || logger.isFineEnabled()) {
-                    logger.info("Dot candidate #{0}", candidate);
+                    || logger.isDebugEnabled()) {
+                    logger.info("Dot candidate #{}", candidate);
                 }
 
                 Glyph compound = system.buildTransientCompound(
@@ -118,8 +118,8 @@ public class FermataDotPattern
                     compound = system.addGlyph(compound);
                     compound.setEvaluation(eval);
 
-                    if (compound.isVip() || logger.isFineEnabled()) {
-                        logger.info("Compound #{0} built as {1}",
+                    if (compound.isVip() || logger.isDebugEnabled()) {
+                        logger.info("Compound #{} built as {}",
                                 compound.getId(), compound.getEvaluation());
                     }
 

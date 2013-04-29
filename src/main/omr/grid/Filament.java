@@ -18,11 +18,12 @@ import omr.glyph.facets.GlyphComposition.Linking;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
-
 import omr.run.Orientation;
 
 import omr.sheet.Scale;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 
@@ -32,17 +33,19 @@ import java.util.Comparator;
  * It is used to handle candidate staff lines and bar lines.
  */
 public class Filament
-    extends BasicGlyph
+        extends BasicGlyph
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Filament.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Filament.class);
 
     /**
      * For comparing Filament instances on their top ordinate
      */
-    public static final Comparator<Filament> topComparator = new Comparator<Filament>() {
+    public static final Comparator<Filament> topComparator = new Comparator<Filament>()
+    {
         @Override
         public int compare (Filament f1,
                             Filament f2)
@@ -52,19 +55,17 @@ public class Filament
         }
     };
 
-
     //~ Instance fields --------------------------------------------------------
-
     /** Related scale */
     private final Scale scale;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // Filament //
     //----------//
     /**
      * Creates a new Filament object.
+     *
      * @param scale scaling data
      */
     public Filament (Scale scale)
@@ -77,17 +78,17 @@ public class Filament
     //----------//
     /**
      * Creates a new Filament object.
+     *
      * @param scale scaling data
      */
-    public Filament (Scale                             scale,
-                     Class<?extends FilamentAlignment> alignmentClass)
+    public Filament (Scale scale,
+                     Class<? extends FilamentAlignment> alignmentClass)
     {
         super(scale.getInterline(), alignmentClass);
         this.scale = scale;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // addSection //
     //------------//
@@ -104,7 +105,7 @@ public class Filament
                             Linking link)
     {
         getComposition()
-            .addSection(section, link);
+                .addSection(section, link);
     }
 
     //----------//
@@ -122,7 +123,7 @@ public class Filament
     public double getMeanCurvature ()
     {
         return getAlignment()
-                   .getMeanCurvature();
+                .getMeanCurvature();
     }
 
     //----------//
@@ -130,6 +131,7 @@ public class Filament
     //----------//
     /**
      * Report the scale that governs this filament.
+     *
      * @return the related scale
      */
     public Scale getScale ()
@@ -141,13 +143,13 @@ public class Filament
     // polishCurvature //
     //-----------------//
     /**
-     * Polish the filament by looking at local curvatures and removing 
+     * Polish the filament by looking at local curvatures and removing
      * sections when necessary.
      */
     public void polishCurvature ()
     {
         getAlignment()
-            .polishCurvature();
+                .polishCurvature();
     }
 
     //---------------//
@@ -155,25 +157,26 @@ public class Filament
     //---------------//
     /**
      * Report the precise filament position for the provided coordinate .
-     * @param coord the coord value (x for horizontal, y for vertical)
+     *
+     * @param coord       the coord value (x for horizontal, y for vertical)
      * @param orientation the reference orientation
      * @return the pos value (y for horizontal, x for vertical)
      */
-    public double positionAt (double      coord,
+    public double positionAt (double coord,
                               Orientation orientation)
     {
         return getAlignment()
-                   .getPositionAt(coord, orientation);
+                .getPositionAt(coord, orientation);
     }
 
     //---------//
     // slopeAt //
     //---------//
-    public double slopeAt (double      coord,
+    public double slopeAt (double coord,
                            Orientation orientation)
     {
         return getAlignment()
-                   .slopeAt(coord, orientation);
+                .slopeAt(coord, orientation);
     }
 
     //------------//
@@ -181,6 +184,7 @@ public class Filament
     //------------//
     /**
      * Report an evaluation of how this filament is filled by sections
+     *
      * @return how solid this filament is
      */
     public int trueLength ()
@@ -207,12 +211,12 @@ public class Filament
 
         if (getPartOf() != null) {
             sb.append(" anc:")
-              .append(getAncestor());
+                    .append(getAncestor());
         }
 
         if (getShape() != null) {
             sb.append(" ")
-              .append(getShape());
+                    .append(getShape());
         }
 
         return sb.toString();

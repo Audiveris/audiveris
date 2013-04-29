@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.moments;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 
@@ -28,7 +28,7 @@ public class GeometricMoments
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
         GeometricMoments.class);
 
     // Hu coefficients are optional

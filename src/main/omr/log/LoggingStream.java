@@ -7,10 +7,12 @@ package omr.log;
 
 import omr.WellKnowns;
 
+import ch.qos.logback.classic.Level;
+
+import org.slf4j.Logger;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Class {@code LoggingStream} defines an OutputStream that writes
@@ -39,7 +41,7 @@ public class LoggingStream
      * @param level  Level at which to write the log message
      */
     public LoggingStream (Logger logger,
-                       Level level)
+                          Level level)
     {
         super();
         this.logger = logger;
@@ -65,11 +67,13 @@ public class LoggingStream
             super.reset();
         }
 
+        // Avoid empty records
         if ((record.length() == 0) || record.equals(WellKnowns.LINE_SEPARATOR)) {
-            // avoid empty records
             return;
         }
 
-        logger.logp(level, "", "", record);
+        // Write to the actual logger
+        ch.qos.logback.classic.Logger theLogger = (ch.qos.logback.classic.Logger) logger;
+        theLogger.log(null, null, level.toInt(), record, null, null);
     }
 }

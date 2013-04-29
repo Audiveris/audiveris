@@ -16,7 +16,7 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 import omr.score.ScoresManager;
@@ -62,7 +62,7 @@ public class ScoreActions
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreActions.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreActions.class);
 
     /** Should we rebuild the score on each user action */
     private static final String REBUILD_ALLOWED = "rebuildAllowed";
@@ -325,7 +325,7 @@ public class ScoreActions
     @Action(selectedProperty = MANUAL_PERSISTED)
     public void togglePersist (ActionEvent e)
     {
-        logger.info("Persistency mode is {0}",
+        logger.info("Persistency mode is {}",
                 (isManualPersisted() ? "on" : "off"));
     }
 
@@ -502,7 +502,7 @@ public class ScoreActions
 
             return apply.value;
         } catch (Exception ex) {
-            logger.warning("Error in ScoreParameters", ex);
+            logger.warn("Error in ScoreParameters", ex);
             return false;
         }
     }
@@ -577,7 +577,7 @@ public class ScoreActions
                 Score score = sheet.getScore();
                 Stepping.ensureScoreStep(Steps.valueOf(Steps.SCORE), score);
             } catch (Exception ex) {
-                logger.warning("Could not build score", ex);
+                logger.warn("Could not build score", ex);
             }
 
             return null;
@@ -610,7 +610,7 @@ public class ScoreActions
                         null,
                         true);
             } catch (Exception ex) {
-                logger.warning("Could not refresh score", ex);
+                logger.warn("Could not refresh score", ex);
             }
 
             return null;

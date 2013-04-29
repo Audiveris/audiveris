@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.check;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.selection.MouseMovement;
 import omr.selection.SelectionService;
@@ -37,7 +37,7 @@ public class CheckBoard<C extends Checkable>
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(CheckBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(CheckBoard.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -100,7 +100,7 @@ public class CheckBoard<C extends Checkable>
 
             tellObject((C) event.getData()); // Compiler warning
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 

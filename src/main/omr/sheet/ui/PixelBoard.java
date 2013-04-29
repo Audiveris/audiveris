@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 
@@ -52,7 +52,7 @@ public class PixelBoard
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(PixelBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(PixelBoard.class);
 
     /** Events this entity is interested in */
     private static final Class<?>[] eventClasses = new Class<?>[] {
@@ -137,7 +137,7 @@ public class PixelBoard
                 return;
             }
 
-            logger.fine("PixelBoard: {0}", event);
+            logger.debug("PixelBoard: {}", event);
 
             if (event instanceof LocationEvent) {
                 // Display rectangle attributes
@@ -169,7 +169,7 @@ public class PixelBoard
                 }
             }
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 

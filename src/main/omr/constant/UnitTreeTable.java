@@ -11,10 +11,12 @@
 // </editor-fold>
 package omr.constant;
 
-import omr.log.Logger;
-
 import omr.ui.treetable.JTreeTable;
 import omr.ui.treetable.TreeTableModelAdapter;
+
+import ch.qos.logback.classic.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -24,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
@@ -40,9 +41,9 @@ import javax.swing.tree.TreePath;
 
 /**
  * Class {@code UnitTreeTable} is a user interface that combines a tree
- * to display the hierarchy of Units, that contains ConstantSets and/or
- * Loggers, and a table to display and edit the various Constants in
- * each ConstantSet as well as the logger level of units.
+ * to display the hierarchy of Units, that contains ConstantSets, 
+ * and a table to display and edit the various Constants in
+ * each ConstantSet.
  *
  * @author Hervé Bitteur
  */
@@ -52,21 +53,15 @@ public class UnitTreeTable
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(UnitTreeTable.class);
+    private static final Logger logger = LoggerFactory.getLogger(UnitTreeTable.class);
 
     /** Alternate color for zebra appearance */
     private static final Color zebraColor = new Color(248, 248, 255);
 
     //~ Instance fields --------------------------------------------------------
-    private TableCellRenderer loggerRenderer = new LoggerRenderer();
-
     private TableCellRenderer valueRenderer = new ValueRenderer();
 
     private TableCellRenderer pixelRenderer = new PixelRenderer();
-
-    private JComboBox<String> loggerCombo = new JComboBox<>();
-
-    private TableCellEditor loggerEditor = new DefaultCellEditor(loggerCombo);
 
     //~ Constructors -----------------------------------------------------------
     //---------------//
@@ -74,16 +69,13 @@ public class UnitTreeTable
     //---------------//
     /**
      * Create a User Interface JTreeTable dedicated to the handling of
-     * unit constants and loggers.
+     * unit constants.
      *
      * @param model the corresponding data model
      */
     public UnitTreeTable (UnitModel model)
     {
         super(model);
-
-        loggerCombo.addItem("INFO");
-        loggerCombo.addItem("FINEST");
 
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
@@ -116,22 +108,10 @@ public class UnitTreeTable
         UnitModel.Column column = UnitModel.Column.values()[col];
 
         switch (column) {
-        case LOGMOD: {
+        case MODIF: {
             Object node = nodeForRow(row);
 
-            if (node instanceof UnitNode) { // LOGGER
-
-                UnitNode unit = (UnitNode) node;
-                Logger unitLogger = unit.getLogger();
-
-                if (unitLogger != null) {
-                    Level level = unitLogger.getEffectiveLevel();
-                    loggerCombo.setSelectedItem(level.toString());
-
-                    return loggerEditor;
-                }
-            } else if (node instanceof Constant) { // MODIF
-
+            if (node instanceof Constant) {
                 return getDefaultEditor(Boolean.class);
             }
         }
@@ -173,15 +153,12 @@ public class UnitTreeTable
         UnitModel.Column column = UnitModel.Column.values()[col];
 
         switch (column) {
-        case LOGMOD: {
+        case MODIF: {
             Object obj = getModel().getValueAt(row, col);
 
             if (obj instanceof Boolean) {
                 // A constant => Modif flag
                 return getDefaultRenderer(Boolean.class);
-            } else if (obj instanceof Level) {
-                // A logger level
-                return loggerRenderer;
             } else {
                 // A node (unit or package)
                 return getDefaultRenderer(Object.class);
@@ -314,7 +291,7 @@ public class UnitTreeTable
 
         objects.add(object);
 
-        logger.fine("path to {0} objects:{1}", fullName, objects);
+        logger.debug("path to {} objects:{}", fullName, objects);
 
         return new TreePath(objects.toArray());
     }
@@ -337,7 +314,7 @@ public class UnitTreeTable
     // preExpandPackages //
     //-------------------//
     /**
-     * Before displaying the tree, expand all nodes that correspond to 
+     * Before displaying the tree, expand all nodes that correspond to
      * packages (PackageNode).
      */
     private void preExpandPackages ()
@@ -350,54 +327,6 @@ public class UnitTreeTable
     }
 
     //~ Inner Classes ----------------------------------------------------------
-    //----------------//
-    // LoggerRenderer //
-    //----------------//
-    private class LoggerRenderer
-            extends DefaultTableCellRenderer
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public Component getTableCellRendererComponent (JTable table,
-                                                        Object value,
-                                                        boolean isSelected,
-                                                        boolean hasFocus,
-                                                        int row,
-                                                        int column)
-        {
-            super.getTableCellRendererComponent(
-                    table,
-                    value,
-                    isSelected,
-                    hasFocus,
-                    row,
-                    column);
-
-            Object node = nodeForRow(row);
-
-            if (node instanceof UnitNode) {
-                UnitNode unit = (UnitNode) nodeForRow(row);
-                Logger logger = unit.getLogger();
-
-                if (logger != null) {
-                    Level level = logger.getEffectiveLevel();
-
-                    if (level != Level.INFO) {
-                        setBackground(Color.LIGHT_GRAY);
-                        setForeground(Color.WHITE);
-
-                        return this;
-                    }
-                }
-            }
-
-            setBackground(Color.WHITE);
-            setForeground(Color.BLACK);
-
-            return this;
-        }
-    }
 
     //---------------//
     // PixelRenderer //

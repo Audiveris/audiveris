@@ -13,7 +13,7 @@ package omr.sheet.ui;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 import omr.score.entity.Barline;
@@ -34,7 +34,7 @@ public class ScoreColorizer
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreColorizer.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreColorizer.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The color to use */
@@ -59,13 +59,13 @@ public class ScoreColorizer
     public boolean visit (Barline barline)
     {
         try {
-            logger.fine("Colorizing {0}", barline);
+            logger.debug("Colorizing {}", barline);
 
             for (Glyph glyph : barline.getGlyphs()) {
                 glyph.colorize(color);
             }
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + barline,
                     ex);
         }
@@ -80,10 +80,10 @@ public class ScoreColorizer
     public boolean visit (Score score)
     {
         try {
-            logger.fine("Colorizing score ...");
+            logger.debug("Colorizing score ...");
             score.acceptChildren(this);
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + score,
                     ex);
         }
@@ -105,7 +105,7 @@ public class ScoreColorizer
                 startingBarline.accept(this);
             }
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + part,
                     ex);
         }

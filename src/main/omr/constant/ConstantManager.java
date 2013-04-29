@@ -14,7 +14,7 @@ package omr.constant;
 import omr.Main;
 import omr.WellKnowns;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -83,7 +83,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * This file is modified every time the user updates the value of a constant by
  * means of the provided Constant user interface at run-time.
  * The file is not mandatory, and is located in the user application data
- * {@code settings} folder.
+ * {@code config} folder.
  * Its values override the SOURCE corresponding constants.
  * Typically, these USER values represent some modification made by the end user
  * at run-time and thus saved from one run to the other.
@@ -126,7 +126,7 @@ public class ConstantManager
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             ConstantManager.class);
 
     /** User properties file name */
@@ -144,7 +144,7 @@ public class ConstantManager
 
     /** User properties */
     private final UserHolder userHolder = new UserHolder(
-            new File(WellKnowns.SETTINGS_FOLDER, USER_FILE_NAME));
+            new File(WellKnowns.CONFIG_FOLDER, USER_FILE_NAME));
 
     //~ Constructors -----------------------------------------------------------
     //-----------------//
@@ -361,11 +361,11 @@ public class ConstantManager
                 properties.load(in);
             } catch (FileNotFoundException ignored) {
                 // This is not at all an error
-                logger.fine("[{0}" + "]" + " No property file {1}",
+                logger.debug("[{}" + "]" + " No property file {}",
                         ConstantManager.class.getName(),
                         file.getAbsolutePath());
             } catch (IOException ex) {
-                logger.severe("Error loading constants file {0}",
+                logger.error("Error loading constants file {}",
                         file.getAbsolutePath());
             }
         }
@@ -408,15 +408,15 @@ public class ConstantManager
                 final String source = constant.getSourceString();
 
                 if (!current.equals(source)) {
-                    logger.fine(
-                            "Writing User value for key: {0} = {1}",
+                    logger.debug(
+                            "Writing User value for key: {} = {}",
                             key, current);
 
                     properties.setProperty(key, current);
                 } else {
                     if (properties.remove(key) != null) {
-                        logger.fine(
-                                "Removing User value for key: {0} = {1}",
+                        logger.debug(
+                                "Removing User value for key: {} = {}",
                                 key, current);
                     }
                 }
@@ -429,11 +429,11 @@ public class ConstantManager
             cleanup();
 
             // Then, save the remaining values
-            logger.fine("Store constants into {0}", file);
+            logger.debug("Store constants into {}", file);
 
             // First make sure the directory exists (Brenton patch)
             if (file.getParentFile().mkdirs()) {
-                logger.info("Creating {0}", file);
+                logger.info("Creating {}", file);
             }
 
             // Then write down the properties
@@ -441,10 +441,10 @@ public class ConstantManager
                 properties.store(out,
                         " Audiveris user properties file. Do not edit");
             } catch (FileNotFoundException ex) {
-                logger.warning("Property file {0} not found or not writable",
+                logger.warn("Property file {} not found or not writable",
                         file.getAbsolutePath());
             } catch (IOException ex) {
-                logger.warning("Error while storing the property file {0}",
+                logger.warn("Error while storing the property file {}",
                         file.getAbsolutePath());
             }
         }

@@ -14,7 +14,7 @@ package omr.util;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.GeoPath;
 
@@ -79,7 +79,7 @@ public class BrokenLine
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BrokenLine.class);
+    private static final Logger logger = LoggerFactory.getLogger(BrokenLine.class);
 
     //~ Instance fields --------------------------------------------------------
     //

@@ -15,7 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.NaturalSpline;
 
@@ -41,7 +41,7 @@ public class LineFilamentAlignment
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             LineFilamentAlignment.class);
 
     //~ Constructors -----------------------------------------------------------
@@ -99,7 +99,7 @@ public class LineFilamentAlignment
                                  - 1;
 
                     if (insert > 0) {
-                        logger.fine("Hole before ip: {0} insert:{1} for {2}",
+                        logger.debug("Hole before ip: {} insert:{} for {}",
                                 ip, insert, this);
                         double dx = holeLength / (insert + 1);
 
@@ -118,7 +118,7 @@ public class LineFilamentAlignment
                                         getPositionAt(x, Orientation.HORIZONTAL));
                             }
 
-                            logger.fine("Inserted {0}", pt);
+                            logger.debug("Inserted {}", pt);
                             points.add(ip++, pt);
                             modified = true;
                         }

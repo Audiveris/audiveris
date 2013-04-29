@@ -15,7 +15,8 @@ import omr.Main;
 
 import omr.glyph.Shape;
 
-import omr.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelDimension;
 
@@ -28,7 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class {@code MusicFont} is meant to simplify the use of the 
+ * Class {@code MusicFont} is meant to simplify the use of the
  * underlying music font when rendering picture or score views.
  *
  * <p>The strategy is to use a properly scaled instance of this class to carry
@@ -57,7 +58,7 @@ public class MusicFont
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(MusicFont.class);
+    private static final Logger logger = LoggerFactory.getLogger(MusicFont.class);
 
     /** The music font name: {@value} (no other one is used) */
     public static final String FONT_NAME = "MusicalSymbols";
@@ -150,8 +151,8 @@ public class MusicFont
     {
         if (baseMusicFont.getFamily().equals("Dialog")) {
             String msg = FONT_NAME + " font not found." + " Please install "
-                    + FONT_NAME + ".ttf";
-            logger.severe(msg);
+                         + FONT_NAME + ".ttf";
+            logger.error(msg);
 
             if (Main.getGui() != null) {
                 Main.getGui().displayError(msg);
@@ -179,7 +180,7 @@ public class MusicFont
 
         if (font == null) {
             font = new MusicFont(4 * interline, interline);
-            logger.fine("Adding music font for interline {0}", interline);
+            logger.debug("Adding music font for interline {}", interline);
             sizeMap.put(interline, font);
         }
 
@@ -204,7 +205,7 @@ public class MusicFont
         ShapeSymbol symbol = Symbols.getSymbol(shape);
 
         if (symbol == null) {
-            logger.fine("No MusicFont symbol for {0}", shape);
+            logger.debug("No MusicFont symbol for {}", shape);
             return null;
         }
 

@@ -21,7 +21,7 @@ import omr.glyph.Shape;
 import omr.lag.Lag;
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Circle;
 import omr.math.Line;
@@ -72,7 +72,7 @@ public class BasicGlyph
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BasicGlyph.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicGlyph.class);
 
     //~ Instance fields --------------------------------------------------------
     /** All needed facets */
@@ -171,8 +171,8 @@ public class BasicGlyph
             theAlignment = (GlyphAlignment) constructor.newInstance(
                     new Object[]{this});
         } catch (Exception ex) {
-            logger.severe(
-                    "Cannot instantiate BasicGlyph with {0} ex:{1}",
+            logger.error(
+                    "Cannot instantiate BasicGlyph with {} ex:{}",
                     alignmentClass,
                     ex);
         }

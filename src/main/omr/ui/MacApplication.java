@@ -13,7 +13,7 @@ package omr.ui;
 
 import omr.WellKnowns;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 
@@ -25,7 +25,8 @@ import java.io.FileInputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.SwingWorker;
 
@@ -42,7 +43,7 @@ public class MacApplication
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(MacApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(MacApplication.class);
 
     /** Cached ApplicationEvent class */
     private static Class<?> eventClass;
@@ -102,7 +103,7 @@ public class MacApplication
 
             return true;
         } catch (Exception ex) {
-            logger.warning("Unable to setup Mac OS X GUI integration", ex);
+            logger.warn("Unable to setup Mac OS X GUI integration", ex);
 
             return false;
         }
@@ -131,7 +132,7 @@ public class MacApplication
             filename = getFilename(event);
         }
 
-        logger.fine(name);
+        logger.debug(name);
         switch (name) {
             case "handlePreferences":
                 GuiActions.getInstance()
@@ -146,7 +147,7 @@ public class MacApplication
                           .showAbout(null);
                 break;
             case "handleOpenFile":
-                logger.fine(filename);
+                logger.debug(filename);
                 if (filename.toLowerCase()
                             .endsWith(".script")) {
                     final File              file = new File(filename);
@@ -155,20 +156,20 @@ public class MacApplication
                         protected Object doInBackground ()
                         {
                             // Actually load the script
-                            logger.info("Loading script file {0} ...", file);
+                            logger.info("Loading script file {} ...", file);
 
                             try {
                                 final Script script = ScriptManager.getInstance()
                                                                    .load(
                                     new FileInputStream(file));
 
-                                if (logger.isFineEnabled()) {
+                                if (logger.isDebugEnabled()) {
                                     script.dump();
                                 }
 
                                 script.run();
                             } catch (Exception ex) {
-                                logger.warning("Error loading script file {0}", file);
+                                logger.warn("Error loading script file {}", file);
                             }
 
                             return null;

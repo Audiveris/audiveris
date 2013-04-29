@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.entity.Page;
 import omr.score.entity.ScorePart;
@@ -75,7 +75,7 @@ public class PartConnection
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(PartConnection.class);
+    private static final Logger logger = LoggerFactory.getLogger(PartConnection.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Input data */
@@ -257,11 +257,11 @@ public class PartConnection
             // Current index in results sequence (built in reverse order)
             int resultIndex = -1;
 
-            if (logger.isFineEnabled()) {
-                logger.fine("Processing new sequence ...");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Processing new sequence ...");
 
                 for (Candidate candidate : sequence) {
-                    logger.fine("- {0}", candidate);
+                    logger.debug("- {}", candidate);
                 }
             }
 
@@ -269,25 +269,25 @@ public class PartConnection
             for (ListIterator<Candidate> it = sequence.listIterator(
                     sequence.size()); it.hasPrevious();) {
                 Candidate candidate = it.previous();
-                logger.fine("Processing candidate {0} count:{1}",
+                logger.debug("Processing candidate {} count:{}",
                         candidate, candidate.getStaffCount());
 
                 // Check with scoreParts currently defined
                 resultIndex++;
-                logger.fine("scorePartIndex:{0}", resultIndex);
+                logger.debug("scorePartIndex:{}", resultIndex);
 
                 if (resultIndex >= results.size()) {
-                    logger.fine("No more scoreParts available");
+                    logger.debug("No more scoreParts available");
 
                     // Create a brand new score part for this candidate
                     createResult(resultIndex, candidate, results, rawMap);
                 } else {
                     Result result = results.get(resultIndex);
-                    logger.fine("Part:{0}", result);
+                    logger.debug("Part:{}", result);
 
                     // Check we are connectable in terms of staves
                     if (result.getStaffCount() != candidate.getStaffCount()) {
-                        logger.fine("Count incompatibility");
+                        logger.debug("Count incompatibility");
 
                         // Create a brand new score part for this candidate
                         createResult(resultIndex, candidate, results, rawMap);
@@ -299,18 +299,18 @@ public class PartConnection
                                     equalsIgnoreCase(
                                     result.getName());
 
-                            logger.fine("Names OK: {0}", namesOk);
+                            logger.debug("Names OK: {}", namesOk);
 
                             if (!namesOk) {
-                                logger.fine("\"{0}\" vs \"{1}\"",
+                                logger.debug("\"{}\" vs \"{}\"",
                                         candidate.getName(), result.getName());
                             }
                         }
 
                         // We are compatible
                         candidateMap.put(candidate, result);
-                        logger.fine("Compatible."
-                                    + " Mapped candidate {0} to result {1}",
+                        logger.debug("Compatible."
+                                    + " Mapped candidate {} to result {}",
                                 candidate, result);
 
                         rawMap.get(result).add(candidate);
@@ -331,7 +331,7 @@ public class PartConnection
             if (result.getName() == null) {
                 result.setName("Part_" + id);
             }
-            logger.fine("Final {0}", result);
+            logger.debug("Final {}", result);
         }
 
         // Now that results are ordered, we can deliver the sorted map
@@ -349,7 +349,7 @@ public class PartConnection
         Set<Candidate> candidates = new LinkedHashSet<>();
         Result result = candidate.createResult();
         candidateMap.put(candidate, result);
-        logger.fine("Creation. Mapped candidate {0} to result {1}",
+        logger.debug("Creation. Mapped candidate {} to result {}",
                 candidate, result);
 
         candidates.add(candidate);
@@ -538,7 +538,7 @@ public class PartConnection
 
             result.setName(getName());
             result.setAbbreviation(getAbbreviation());
-            logger.fine("Created {0} from {1}", result, this);
+            logger.debug("Created {} from {}", result, this);
 
             return result;
         }
@@ -583,7 +583,7 @@ public class PartConnection
 
                 String id = scorePart.getId();
 
-                ///logger.fine("scorePart id:" + id);
+                ///logger.debug("scorePart id:" + id);
                 for (ScorePartwise.Part part : scorePartwise.getPart()) {
                     if (part.getId() != scorePart) {
                         continue;
@@ -771,7 +771,7 @@ public class PartConnection
                     new ScorePart(0, getStaffCount()));
             result.setName(getName());
             result.setAbbreviation(getAbbreviation());
-            logger.fine("Created {0} from {1}", result, this);
+            logger.debug("Created {} from {}", result, this);
 
             return result;
         }
@@ -926,7 +926,7 @@ public class PartConnection
                     new ScorePart(0, getStaffCount()));
             result.setName(getName());
             result.setAbbreviation(getAbbreviation());
-            logger.fine("Created {0} from {1}", result, this);
+            logger.debug("Created {} from {}", result, this);
 
             return result;
         }

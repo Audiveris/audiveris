@@ -17,7 +17,7 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.ui.SheetPdfOutput;
 
@@ -52,7 +52,7 @@ public class ScoresManager
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoresManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoresManager.class);
 
     /** The extension used for score output files: {@value} */
     public static final String SCORE_EXTENSION = ".xml";
@@ -118,7 +118,7 @@ public class ScoresManager
      */
     public synchronized void addInstance (Score score)
     {
-        logger.fine("addInstance {0}", score);
+        logger.debug("addInstance {}", score);
 
         // Remove duplicate if any
         for (Iterator<Score> it = instances.iterator(); it.hasNext();) {
@@ -126,7 +126,7 @@ public class ScoresManager
             String path = s.getImagePath();
 
             if (path.equals(score.getImagePath())) {
-                logger.fine("Removing duplicate {0}", s);
+                logger.debug("Removing duplicate {}", s);
                 it.remove();
                 s.close();
 
@@ -191,7 +191,7 @@ public class ScoresManager
                         constants.defaultInjectSignature.getValue());
             }
 
-            logger.info("Score exported to {0}", file);
+            logger.info("Score exported to {}", file);
 
             // Remember (even across runs) the selected directory
             constants.defaultExportDirectory.setValue(file.getParent());
@@ -199,7 +199,7 @@ public class ScoresManager
             // Remember the file in the score itself
             score.setExportFile(file);
         } catch (Exception ex) {
-            logger.warning("Error storing score to " + file, ex);
+            logger.warn("Error storing score to " + file, ex);
         }
     }
 
@@ -372,7 +372,7 @@ public class ScoresManager
     //                }
     //            }
     //        } catch (Exception ex) {
-    //            logger.warning("Error closing Midi interface ", ex);
+    //            logger.warn("Error closing Midi interface ", ex);
     //        }
     //    }
     //
@@ -420,7 +420,7 @@ public class ScoresManager
     //            // Remember (even across runs) the selected directory
     //            constants.defaultMidiDirectory.setValue(file.getParent());
     //        } catch (Exception ex) {
-    //            logger.warning("Cannot write Midi to " + file, ex);
+    //            logger.warn("Cannot write Midi to " + file, ex);
     //            throw ex;
     //        }
     //    }
@@ -434,7 +434,7 @@ public class ScoresManager
      */
     public synchronized void removeInstance (Score score)
     {
-        logger.fine("removeInstance {0}", score);
+        logger.debug("removeInstance {}", score);
         instances.remove(score);
     }
 
@@ -495,13 +495,13 @@ public class ScoresManager
             bench.store(fos, complete);
 
             if (complete) {
-                logger.info("Complete score bench stored as {0}", file);
+                logger.info("Complete score bench stored as {}", file);
             }
 
             // Remember (even across runs) the selected directory
             constants.defaultBenchDirectory.setValue(file.getParent());
         } catch (Exception ex) {
-            logger.warning("Error storing score bench to " + file, ex);
+            logger.warn("Error storing score bench to " + file, ex);
         } finally {
             if (fos != null) {
                 try {
@@ -540,12 +540,12 @@ public class ScoresManager
         try {
             new SheetPdfOutput(score, file).write();
             score.setPrintFile(file);
-            logger.info("Score printed to {0}", file);
+            logger.info("Score printed to {}", file);
 
             // Remember (even across runs) the selected directory
             constants.defaultPrintDirectory.setValue(file.getParent());
         } catch (Exception ex) {
-            logger.warning("Cannot write PDF to " + file, ex);
+            logger.warn("Cannot write PDF to " + file, ex);
         }
     }
 
@@ -565,7 +565,7 @@ public class ScoresManager
             count++;
         }
 
-        logger.fine("{0} score(s) closed", count);
+        logger.debug("{} score(s) closed", count);
     }
 
     //---------------//
@@ -594,12 +594,12 @@ public class ScoresManager
             File folder = new File(canon.getParent());
 
             if (folder.mkdirs()) {
-                logger.info("Creating folder {0}", folder);
+                logger.info("Creating folder {}", folder);
             }
 
             return canon;
         } catch (IOException ex) {
-            logger.warning("Cannot getCanonicalPath", ex);
+            logger.warn("Cannot getCanonicalPath", ex);
 
             return null;
         }
@@ -648,7 +648,7 @@ public class ScoresManager
                 "Default directory for selection of image files");
 
         Constant.String defaultDewarpDirectory = new Constant.String(
-                WellKnowns.EXAMPLES_FOLDER.toString(),
+                WellKnowns.TEMP_FOLDER.toString(),
                 "Default directory for saved dewarped images");
 
     }

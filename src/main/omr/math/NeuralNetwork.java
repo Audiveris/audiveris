@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.math;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,7 +48,7 @@ public class NeuralNetwork
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(NeuralNetwork.class);
+    private static final Logger logger = LoggerFactory.getLogger(NeuralNetwork.class);
 
     /** Un/marshalling context for use with JAXB */
     private static volatile JAXBContext jaxbContext;
@@ -151,7 +151,7 @@ public class NeuralNetwork
                                                + outputLabels + " vs " + outputSize);
         }
 
-        logger.fine("Network created");
+        logger.debug("Network created");
     }
 
     //---------------//
@@ -220,7 +220,7 @@ public class NeuralNetwork
      */
     public Backup backup ()
     {
-        logger.fine("Network memory backup");
+        logger.debug("Network memory backup");
 
         return new Backup(hiddenWeights, outputWeights);
     }
@@ -308,7 +308,7 @@ public class NeuralNetwork
         Marshaller m = getJaxbContext().createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.marshal(this, os);
-        logger.fine("Network marshalled");
+        logger.debug("Network marshalled");
     }
 
     //---------//
@@ -336,7 +336,7 @@ public class NeuralNetwork
             throw new IllegalArgumentException("Incompatible backup");
         }
 
-        logger.fine("Network memory restore");
+        logger.debug("Network memory restore");
         this.hiddenWeights = cloneMatrix(backup.hiddenWeights);
         this.outputWeights = cloneMatrix(backup.outputWeights);
     }
@@ -362,10 +362,10 @@ public class NeuralNetwork
     {
         // Check size consistencies.
         if (inputs == null) {
-            logger.severe("run method. inputs array is null");
+            logger.error("run method. inputs array is null");
         } else if (inputs.length != inputSize) {
-            logger.severe("run method. input size {0} not consistent with"
-                          + " network input layer {1}",
+            logger.error("run method. input size {} not consistent with"
+                          + " network input layer {}",
                     inputs.length, inputSize);
         }
 
@@ -381,8 +381,8 @@ public class NeuralNetwork
         if (outputs == null) {
             outputs = new double[outputSize];
         } else if (outputs.length != outputSize) {
-            logger.severe("run method. output size {0} not consistent with"
-                          + " network output layer {1}",
+            logger.error("run method. output size {} not consistent with"
+                          + " network output layer {}",
                     outputs.length, outputSize);
         }
 
@@ -456,7 +456,7 @@ public class NeuralNetwork
     public void stop ()
     {
         stopping = true;
-        logger.fine("Network training being stopped ...");
+        logger.debug("Network training being stopped ...");
     }
 
     //-------//
@@ -478,7 +478,7 @@ public class NeuralNetwork
                          double[][] desiredOutputs,
                          Monitor monitor)
     {
-        logger.fine("Network being trained");
+        logger.debug("Network being trained");
         stopping = false;
 
         long startTime = System.currentTimeMillis();
@@ -528,7 +528,7 @@ public class NeuralNetwork
         for (; ie < epochs; ie++) {
             // Have we been told to stop ?
             if (stopping) {
-                logger.fine("Network stopped.");
+                logger.debug("Network stopped.");
 
                 break;
             }
@@ -616,15 +616,15 @@ public class NeuralNetwork
             if (mse <= maxError) {
                 logger.info(
                         "Network exiting training, remaining error limit reached");
-                logger.info("Network remaining error was : {0}", mse);
+                logger.info("Network remaining error was : {}", mse);
 
                 break;
             }
         } // for (int ie = 0; ie < epochs; ie++)
 
-        if (logger.isFineEnabled()) {
+        if (logger.isDebugEnabled()) {
             long stopTime = System.currentTimeMillis();
-            logger.fine(
+            logger.debug(
                     String.format(
                     "Duration  %,d seconds, %d epochs on %d patterns",
                     (stopTime - startTime) / 1000,
@@ -653,7 +653,7 @@ public class NeuralNetwork
     {
         Unmarshaller um = getJaxbContext().createUnmarshaller();
         NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
-        logger.fine("Network unmarshalled");
+        logger.debug("Network unmarshalled");
 
         return nn;
     }

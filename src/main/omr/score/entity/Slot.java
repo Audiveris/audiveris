@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.InjectionSolver;
 import omr.math.Population;
@@ -51,7 +51,7 @@ public class Slot
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Slot.class);
+    private static final Logger logger = LoggerFactory.getLogger(Slot.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -109,20 +109,20 @@ public class Slot
     public static void dumpSystemSlots (ScoreSystem system)
     {
         // Dump all measure slots
-        logger.fine(system.toString());
+        logger.debug(system.toString());
 
         for (TreeNode node : system.getParts()) {
             SystemPart part = (SystemPart) node;
 
-            logger.fine(part.toString());
+            logger.debug(part.toString());
 
             for (TreeNode mn : part.getMeasures()) {
                 Measure measure = (Measure) mn;
 
-                logger.fine(measure.toString());
+                logger.debug(measure.toString());
 
                 for (Slot slot : measure.getSlots()) {
-                    logger.fine(slot.toString());
+                    logger.debug(slot.toString());
                 }
             }
         }
@@ -165,8 +165,8 @@ public class Slot
      */
     public void buildVoices (List<Chord> endingChords)
     {
-        logger.fine("endingChords={0}", endingChords);
-        logger.fine("incomings={0}", incomings);
+        logger.debug("endingChords={}", endingChords);
+        logger.debug("incomings={}", incomings);
 
         // Sort chords vertically
         Collections.sort(incomings, Chord.byOrdinate);
@@ -213,7 +213,7 @@ public class Slot
                 // Map new chord to an ending chord?
                 if (index < endings.size()) {
                     Voice voice = endings.get(index).getVoice();
-                    logger.fine("Slot#{0} Reusing voice#{1}",
+                    logger.debug("Slot#{} Reusing voice#{}",
                             getId(), voice.getId());
 
                     Chord ch = rookies.get(i);
@@ -398,7 +398,7 @@ public class Slot
     public void setStartTime (Rational startTime)
     {
         if (this.startTime == null) {
-            logger.fine("setStartTime {0} for Slot #{1}", startTime, getId());
+            logger.debug("setStartTime {} for Slot #{}", startTime, getId());
             this.startTime = startTime;
 
             // Assign to all chords of this slot first
@@ -564,7 +564,7 @@ public class Slot
 
                 // No compatible voice found, let's create a new one
                 if (chord.getVoice() == null) {
-                    logger.fine("{0} Slot#{1} creating voice for Ch#{2}",
+                    logger.debug("{} Slot#{} creating voice for Ch#{}",
                             chord.getContextString(), id, chord.getId());
 
                     // Add a new voice

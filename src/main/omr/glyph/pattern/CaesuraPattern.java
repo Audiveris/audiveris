@@ -14,7 +14,7 @@ package omr.glyph.pattern;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.entity.Measure;
@@ -35,7 +35,7 @@ public class CaesuraPattern
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(CaesuraPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(CaesuraPattern.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -73,8 +73,8 @@ public class CaesuraPattern
 
             if (!measure.getChords()
                         .isEmpty()) {
-                if (glyph.isVip() || logger.isFineEnabled()) {
-                    logger.info("Cancelled caesura #{0}", glyph.getId());
+                if (glyph.isVip() || logger.isDebugEnabled()) {
+                    logger.info("Cancelled caesura #{}", glyph.getId());
                 }
 
                 glyph.setShape(null);

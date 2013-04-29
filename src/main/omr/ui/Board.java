@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.ui;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
@@ -69,7 +69,7 @@ public abstract class Board
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Board.class);
+    private static final Logger logger = LoggerFactory.getLogger(Board.class);
 
     // Predefined boards names with preferred display positions
     public static final Desc PIXEL = new Desc("Pixel", 100);

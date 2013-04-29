@@ -16,7 +16,7 @@ import omr.glyph.ui.ViewParameters;
 
 import omr.graph.BasicDigraph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 import omr.run.Run;
@@ -61,7 +61,7 @@ public class BasicLag
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BasicLag.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicLag.class);
 
     /** Events read on location service */
     public static final Class[] locEventsRead = new Class<?>[]{LocationEvent.class};
@@ -290,7 +290,7 @@ public class BasicLag
                 handleEvent((SectionEvent) event);
             }
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 
@@ -342,7 +342,7 @@ public class BasicLag
         for (Section section : getSections()) {
             // Check predicate on the current section
             if (predicate.check(section)) {
-                logger.fine("Purging {0}", section);
+                logger.debug("Purging {}", section);
                 purges.add(section);
             }
         }
@@ -451,7 +451,7 @@ public class BasicLag
      */
     private void handleEvent (LocationEvent locationEvent)
     {
-        logger.fine("Lag. sheetLocation:{0}", locationEvent);
+        logger.debug("Lag. sheetLocation:{}", locationEvent);
 
         PixelRectangle rect = locationEvent.getData();
 
@@ -495,7 +495,7 @@ public class BasicLag
      */
     private void handleEvent (RunEvent runEvent)
     {
-        logger.fine("Lag. run:{0}", runEvent);
+        logger.debug("Lag. run:{}", runEvent);
 
         // Lookup for Section linked to this Run
         // Search and forward section info
@@ -598,7 +598,7 @@ public class BasicLag
                 }
             }
 
-            logger.fine("{0}. Publish section set {1}", getName(), sections);
+            logger.debug("{}. Publish section set {}", getName(), sections);
             publish(new SectionSetEvent(this, hint, movement, sections));
         } else if (glyphService != null) {
             // Section -> Glyph
@@ -607,7 +607,7 @@ public class BasicLag
                 Glyph glyph = (section != null) ? section.getGlyph() : null;
 
                 if (glyph != null) {
-                    logger.fine("{0}. Publish glyph {1}", getName(), glyph);
+                    logger.debug("{}. Publish glyph {}", getName(), glyph);
                     glyphService.publish(
                             new GlyphEvent(this, hint, movement, glyph));
                 }

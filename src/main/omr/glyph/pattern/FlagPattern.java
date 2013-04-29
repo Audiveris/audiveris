@@ -17,7 +17,7 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 
@@ -41,7 +41,7 @@ public class FlagPattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(FlagPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(FlagPattern.class);
 
     //~ Constructors -----------------------------------------------------------
     //-------------//
@@ -72,15 +72,15 @@ public class FlagPattern
                 continue;
             }
 
-            if (flag.isVip() || logger.isFineEnabled()) {
-                logger.info("Checking flag #{0}", flag.getId());
+            if (flag.isVip() || logger.isDebugEnabled()) {
+                logger.info("Checking flag #{}", flag.getId());
             }
 
             Glyph stem = flag.getStem(HorizontalSide.LEFT);
 
             if (stem == null) {
-                if (flag.isVip() || logger.isFineEnabled()) {
-                    logger.info("No left stem for flag #{0}", flag.getId());
+                if (flag.isVip() || logger.isDebugEnabled()) {
+                    logger.info("No left stem for flag #{}", flag.getId());
                 }
 
                 flag.setShape(null);
@@ -101,8 +101,8 @@ public class FlagPattern
                         || ((shape == null)
                             && (g.getNormalizedWeight() >= constants.minStuffWeight.
                                 getValue()))) {
-                    if (flag.isVip() || logger.isFineEnabled()) {
-                        logger.info("Confirmed flag #{0}", flag.getId());
+                    if (flag.isVip() || logger.isDebugEnabled()) {
+                        logger.info("Confirmed flag #{}", flag.getId());
                     }
 
                     found = true;
@@ -113,8 +113,8 @@ public class FlagPattern
 
             if (!found) {
                 // Deassign this flag w/ no head neighbor
-                if (flag.isVip() || logger.isFineEnabled()) {
-                    logger.info("Cancelled flag #{0}", flag.getId());
+                if (flag.isVip() || logger.isDebugEnabled()) {
+                    logger.info("Cancelled flag #{}", flag.getId());
                 }
 
                 flag.setShape(null);

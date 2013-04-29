@@ -13,7 +13,7 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Rational;
 
@@ -50,7 +50,7 @@ public class Measure
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Measure.class);
+    private static final Logger logger = LoggerFactory.getLogger(Measure.class);
 
     //~ Instance fields --------------------------------------------------------
     /** To flag dummy barline instances */
@@ -202,7 +202,7 @@ public class Measure
 //    public void buildVoices ()
 //    {
 //        // Debug
-//        if (logger.isFineEnabled()) {
+//        if (logger.isDebugEnabled()) {
 //            printChords("Initial chords for ");
 //        }
 //
@@ -224,13 +224,13 @@ public class Measure
 //                slot.buildVoices(activeChords);
 //            }
 //        } catch (Exception ex) {
-//            logger.warning(
+//            logger.warn(
 //                    "Error building voices in measure " + getPageId(),
 //                    ex);
 //        }
 //
 //        // Debug
-//        if (logger.isFineEnabled()) {
+//        if (logger.isDebugEnabled()) {
 //            printVoices("Final voices for ");
 //        }
 //    }
@@ -380,7 +380,7 @@ public class Measure
         if (actualDuration != null) {
             return actualDuration;
         } else {
-            ///logger.warning(getContextString() + " no actual duration");
+            ///logger.warn(getContextString() + " no actual duration");
             return Rational.ZERO;
         }
     }
@@ -1753,7 +1753,7 @@ public class Measure
 
                             if (nbMarks > 0) {
                                 Mark mark = chord.getMarks().get(nbMarks - 1);
-                                logger.fine("{0} Removing final forward: {1}",
+                                logger.debug("{} Removing final forward: {}",
                                         getContextString(),
                                         (Rational) mark.getData());
                                 chord.getMarks().remove(mark);

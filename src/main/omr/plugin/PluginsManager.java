@@ -16,7 +16,7 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 import omr.score.ui.ScoreController;
@@ -68,7 +68,7 @@ public class PluginsManager
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(PluginsManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(PluginsManager.class);
 
     /** Singleton. */
     private static PluginsManager INSTANCE;
@@ -126,7 +126,7 @@ public class PluginsManager
                     Plugin plugin = new Plugin(file);
                     map.put(plugin.getId(), plugin);
                 } catch (Exception ex) {
-                    logger.warning("Could not process plugin file {0} [{1}]",
+                    logger.warn("Could not process plugin file {} [{}]",
                             file, ex);
                 }
             }
@@ -174,7 +174,7 @@ public class PluginsManager
         Plugin plugin = findDefaultPlugin(pluginId);
 
         if (!pluginId.isEmpty() && (plugin == null)) {
-            logger.warning("Could not find default plugin {0}", pluginId);
+            logger.warn("Could not find default plugin {}", pluginId);
         } else {
             setDefaultPlugin(plugin);
         }
@@ -253,7 +253,7 @@ public class PluginsManager
     public Task<Void, Void> invokeDefaultPlugin (ActionEvent e)
     {
         if (defaultPlugin == null) {
-            logger.warning("No default plugin defined");
+            logger.warn("No default plugin defined");
 
             return null;
         }
@@ -354,7 +354,7 @@ public class PluginsManager
             if (!getSpecific().equals(specific)) {
                 constants.defaultPlugin.setValue(specific);
                 getInstance().setDefaultPlugin(specific);
-                logger.info("Default plugin is now ''{0}''", specific);
+                logger.info("Default plugin is now ''{}''", specific);
 
                 return true;
             }

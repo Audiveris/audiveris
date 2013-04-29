@@ -13,7 +13,7 @@ package omr.text;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.entity.PartNode;
 import omr.score.common.PixelPoint;
@@ -45,7 +45,7 @@ public class TextLine
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(TextLine.class);
+    private static final Logger logger = LoggerFactory.getLogger(TextLine.class);
 
     /** Line comparator by deskewed abscissa. */
     public static final Comparator<TextLine> byAbscissa = new Comparator<TextLine>()
@@ -186,9 +186,9 @@ public class TextLine
      */
     public void dump ()
     {
-        logger.info("{0}", this);
+        logger.info("{}", this);
         for (TextWord word : words) {
-            logger.info("   {0}", word);
+            logger.info("   {}", word);
         }
     }
 
@@ -370,7 +370,7 @@ public class TextLine
                 if (getFirstWord() != null) {
                     meanFont = getFirstWord().getFontInfo();
                 } else {
-                    logger.severe("TextLine with no first word {0}", this);
+                    logger.error("TextLine with no first word {}", this);
                 }
             }
         }
@@ -461,7 +461,7 @@ public class TextLine
             if (glyph != null) {
                 glyphs.add(glyph);
             } else {
-                logger.warning("Word {0} with no related glyph", word);
+                logger.warn("Word {} with no related glyph", word);
             }
         }
 

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.script;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.sheet.Sheet;
 
@@ -42,7 +42,7 @@ public abstract class ScriptTask
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    protected static final Logger logger = Logger.getLogger(ScriptTask.class);
+    protected static final Logger logger = LoggerFactory.getLogger(ScriptTask.class);
 
     //~ Constructors -----------------------------------------------------------
 

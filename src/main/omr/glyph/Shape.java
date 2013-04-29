@@ -13,7 +13,7 @@ package omr.glyph;
 
 import omr.constant.Constant;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
@@ -316,7 +316,7 @@ public enum Shape
     //
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Shape.class);
+    private static final Logger logger = LoggerFactory.getLogger(Shape.class);
 
     /** Last physical shape */
     public static final Shape LAST_PHYSICAL_SHAPE = TEXT;

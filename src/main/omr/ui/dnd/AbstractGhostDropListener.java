@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.ui.dnd;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -31,7 +31,7 @@ public abstract class AbstractGhostDropListener<A>
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
         AbstractGhostDropListener.class);
 
     //~ Instance fields --------------------------------------------------------

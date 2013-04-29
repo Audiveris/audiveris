@@ -14,7 +14,7 @@ package omr.score.entity;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
@@ -30,7 +30,7 @@ public class Fermata
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Fermata.class);
+    private static final Logger logger = LoggerFactory.getLogger(Fermata.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -68,7 +68,7 @@ public class Fermata
                                  PixelPoint point)
     {
         if (glyph.isVip()) {
-            logger.info("Fermata. populate {0}", glyph.idString());
+            logger.info("Fermata. populate {}", glyph.idString());
         }
 
         // A Fermata relates to the note on the same time slot

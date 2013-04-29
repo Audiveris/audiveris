@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.grid;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.sheet.Scale;
 
@@ -29,7 +29,7 @@ public class LineFilament
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(LineFilament.class);
+    private static final Logger logger = LoggerFactory.getLogger(LineFilament.class);
 
     //~ Instance fields --------------------------------------------------------
     //

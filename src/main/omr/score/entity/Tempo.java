@@ -14,7 +14,7 @@ package omr.score.entity;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.util.Param;
 
@@ -31,7 +31,7 @@ public class Tempo
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Tempo.class);
+    private static final Logger logger = LoggerFactory.getLogger(Tempo.class);
 
     /** Default parameter. */
     public static final Param<Integer> defaultTempo = new Default();
@@ -72,7 +72,7 @@ public class Tempo
             if (!getSpecific()
                     .equals(specific)) {
                 constants.defaultTempo.setValue(specific);
-                logger.info("Default tempo is now {0}", specific);
+                logger.info("Default tempo is now {}", specific);
 
                 return true;
             } else {

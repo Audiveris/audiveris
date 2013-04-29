@@ -14,7 +14,7 @@ package omr.score.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
@@ -36,7 +36,7 @@ public class PaintingParameters
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
         PaintingParameters.class);
 
     /** Should the annotations be painted */

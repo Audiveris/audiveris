@@ -20,7 +20,7 @@ import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Histogram;
 
@@ -67,7 +67,7 @@ public class ClustersRetriever
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             ClustersRetriever.class);
 
     /**
@@ -212,7 +212,7 @@ public class ClustersRetriever
 
         // Check relevance
         if ((popSize < 4) || (popSize > 6)) {
-            logger.info("{0}Giving up spurious line comb size: {1}",
+            logger.info("{}Giving up spurious line comb size: {}",
                     sheet.getLogPrefix(), popSize);
 
             return discardedFilaments;
@@ -225,7 +225,7 @@ public class ClustersRetriever
         retrieveClusters();
 
         logger.info(
-                "{0}Retrieved line clusters: {1} of size: {2} with interline: {3}",
+                "{}Retrieved line clusters: {} of size: {} with interline: {}",
                 sheet.getLogPrefix(), clusters.size(), popSize, interline);
 
         return discardedFilaments;
@@ -391,7 +391,7 @@ public class ClustersRetriever
         final int gap = maxLeft - minRight;
         double dist;
 
-        logger.fine("gap:{0}", gap);
+        logger.debug("gap:{}", gap);
 
         if (gap <= 0) {
             // Overlap: use middle of common part
@@ -404,7 +404,7 @@ public class ClustersRetriever
                     two.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
                     deltaPos);
         } else if (gap > params.maxMergeDx) {
-            logger.fine("Gap too wide between {0} & {1}", one, two);
+            logger.debug("Gap too wide between {} & {}", one, two);
 
             return false;
         } else {
@@ -423,7 +423,7 @@ public class ClustersRetriever
         }
 
         // Check best distance
-        logger.fine("canMerge dist: {0} one:{1} two:{2}", dist, one, two);
+        logger.debug("canMerge dist: {} one:{} two:{}", dist, one, two);
 
         return dist <= params.maxMergeDy;
     }
@@ -446,7 +446,7 @@ public class ClustersRetriever
         double minLength = medianLength * constants.minClusterLengthRatio.
                 getValue();
 
-        logger.fine("medianLength: {0} minLength: {1}", medianLength, minLength);
+        logger.debug("medianLength: {} minLength: {}", medianLength, minLength);
 
         return minLength;
     }
@@ -504,7 +504,7 @@ public class ClustersRetriever
             LineCluster cluster = it.next();
 
             if (cluster.getSize() != popSize) {
-                logger.fine("Destroying non standard {0}", cluster);
+                logger.debug("Destroying non standard {}", cluster);
 
                 cluster.destroy();
                 it.remove();
@@ -535,7 +535,7 @@ public class ClustersRetriever
     private void dumpClusters ()
     {
         for (LineCluster cluster : clusters) {
-            logger.info("{0} {1}", cluster.getCenter(), cluster.toString());
+            logger.info("{} {}", cluster.getCenter(), cluster.toString());
         }
     }
 
@@ -600,11 +600,11 @@ public class ClustersRetriever
                         int index = points.indexOf(point);
 
                         if (cluster.includeFilamentByIndex(fil, index)) {
-                            if (logger.isFineEnabled()
+                            if (logger.isDebugEnabled()
                                 || fil.isVip()
                                 || cluster.isVip()) {
                                 logger.info(
-                                        "Aggregated F{0} to C{1} at index {2}",
+                                        "Aggregated F{} to C{} at index {}",
                                         fil.getId(), cluster.getId(), index);
 
                                 if (fil.isVip()) {
@@ -618,14 +618,14 @@ public class ClustersRetriever
                         }
                     } else {
                         if (areVips) {
-                            logger.info("{0}dy={1} vs {2}",
+                            logger.info("{}dy={} vs {}",
                                     vips, dy, params.maxExpandDy);
                         }
                     }
                 }
             } else {
                 if (areVips) {
-                    logger.info("{0}No box intersection", vips);
+                    logger.info("{}No box intersection", vips);
                 }
             }
         }
@@ -650,7 +650,7 @@ public class ClustersRetriever
         Collections.sort(clusters, LineCluster.reverseLengthComparator);
 
         for (LineCluster cluster : clusters) {
-            logger.fine("Expanding {0}", cluster);
+            logger.debug("Expanding {}", cluster);
 
             // Expanding on left side
             expandCluster(cluster, stopFils);
@@ -668,7 +668,7 @@ public class ClustersRetriever
      */
     private void followCombsNetwork ()
     {
-        logger.fine("Following combs network");
+        logger.debug("Following combs network");
 
         for (LineFilament fil : filaments) {
             Map<Integer, FilamentComb> combs = fil.getCombs();
@@ -724,7 +724,7 @@ public class ClustersRetriever
                 }
 
                 // Merge
-                logger.info("Pairing clusters C{0} & C{1}",
+                logger.info("Pairing clusters C{} & C{}",
                         cluster.getId(), cl.getId());
                 cluster.mergeWith(cl, 0);
                 clusters.remove(cl);
@@ -734,7 +734,7 @@ public class ClustersRetriever
 
             // Short isolated?
             if (cluster.getTrueLength() < minLength) {
-                logger.info("Destroying spurious {0}", cluster);
+                logger.info("Destroying spurious {}", cluster);
                 clusters.remove(cluster);
             } else {
                 idx++; // Move forward
@@ -781,7 +781,7 @@ public class ClustersRetriever
                     if (headBox.intersects(candidateBox)) {
                         // Try a merge
                         if (canMerge(head, candidate, deltaPos)) {
-                            logger.fine("Merging {0} with {1} delta:{2}",
+                            logger.debug("Merging {} with {} delta:{}",
                                     candidate, head, deltaPos.value);
 
                             // Do the merge
@@ -905,7 +905,7 @@ public class ClustersRetriever
         removeMergedFilaments();
 
         // Debug
-        if (logger.isFineEnabled()) {
+        if (logger.isDebugEnabled()) {
             dumpClusters();
         }
     }
@@ -969,7 +969,7 @@ public class ClustersRetriever
                             comb.append(prevFily.filament, prevFily.y);
 
                             if (prevFily.filament.isVip()) {
-                                logger.info("Created {0} with {1}",
+                                logger.info("Created {} with {}",
                                         comb, prevFily.filament);
                             }
                         }
@@ -978,7 +978,7 @@ public class ClustersRetriever
                         comb.append(fily.filament, fily.y);
 
                         if (fily.filament.isVip()) {
-                            logger.info("Appended {0} to {1}",
+                            logger.info("Appended {} to {}",
                                     fily.filament, comb);
                         }
                     } else {
@@ -1039,7 +1039,7 @@ public class ClustersRetriever
         // Should be 4 for bass tab, 5 for standard notation, 6 for guitar tab
         popSize = histo.getMaxBucket();
 
-        logger.fine("{0}Popular line comb: {1} histo:{2}",
+        logger.debug("{}Popular line comb: {} histo:{}",
                 sheet.getLogPrefix(), popSize, histo.dataString());
     }
 
@@ -1190,7 +1190,7 @@ public class ClustersRetriever
             clusterXMargin = scale.toPixels(constants.clusterXMargin);
             clusterYMargin = scale.toPixels(constants.clusterYMargin);
 
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);
             }
         }

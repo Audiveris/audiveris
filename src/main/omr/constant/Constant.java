@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.constant;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.util.DoubleValue;
 
@@ -45,7 +45,7 @@ public abstract class Constant
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Constant.class);
+    private static final Logger logger = LoggerFactory.getLogger(Constant.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -95,8 +95,8 @@ public abstract class Constant
                         java.lang.String description)
     {
         if (sourceString == null) {
-            logger.warning(
-                    "*** Constant with no sourceString. Description: {0}",
+            logger.warn(
+                    "*** Constant with no sourceString. Description: {}",
                     description);
             throw new IllegalArgumentException(
                     "Any constant must have a source-provided String");
@@ -318,7 +318,7 @@ public abstract class Constant
             //                Thread.currentThread().getName() + ": " + "Done unit:" + unit +
             //                " name:" + name);
         } catch (Exception ex) {
-            logger.warning("Error registering constant {0}", qName);
+            logger.warn("Error registering constant {}", qName);
             ex.printStackTrace();
         }
     }

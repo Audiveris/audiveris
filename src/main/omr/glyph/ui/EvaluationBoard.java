@@ -21,7 +21,7 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
@@ -71,7 +71,7 @@ class EvaluationBoard
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             EvaluationBoard.class);
 
     /** Events this board is interested in */
@@ -222,7 +222,7 @@ class EvaluationBoard
                 evaluate(glyph);
             }
         } catch (Exception ex) {
-            logger.warning(sheet.getLogPrefix() + 
+            logger.warn(sheet.getLogPrefix() + 
                            getClass().getName() + " output error", ex);
         }
     }

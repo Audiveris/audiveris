@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.action;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class Actions
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Actions.class);
+    private static final Logger logger = LoggerFactory.getLogger(Actions.class);
 
     /** Context for JAXB unmarshalling */
     private static volatile JAXBContext jaxbContext;
@@ -182,7 +182,7 @@ public class Actions
         Actions actions = (Actions) um.unmarshal(in);
 
         for (ActionDescriptor desc : actions.descriptors) {
-            logger.fine("Descriptor unmarshalled {0}", desc);
+            logger.debug("Descriptor unmarshalled {}", desc);
         }
 
         // Verify that all actions have a domain and a section assigned
@@ -191,14 +191,14 @@ public class Actions
             ActionDescriptor desc = it.next();
 
             if (desc.domain == null) {
-                logger.warning("No domain specified for {0}", desc);
+                logger.warn("No domain specified for {}", desc);
                 it.remove();
 
                 continue;
             }
 
             if (desc.section == null) {
-                logger.warning("No section specified for {0}", desc);
+                logger.warn("No section specified for {}", desc);
                 it.remove();
 
                 continue;

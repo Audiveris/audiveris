@@ -21,7 +21,7 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 
@@ -84,7 +84,7 @@ public class ShapeBoard
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ShapeBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(ShapeBoard.class);
 
     /** To force the width of the various panels */
     private static final int BOARD_WIDTH = 280;

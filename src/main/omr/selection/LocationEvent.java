@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.selection;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 
@@ -28,7 +28,7 @@ public class LocationEvent
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(LocationEvent.class);
+    private static final Logger logger = LoggerFactory.getLogger(LocationEvent.class);
 
     //~ Instance fields --------------------------------------------------------
 

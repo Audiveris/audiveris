@@ -17,7 +17,7 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 import omr.score.ui.ScoreController;
@@ -59,7 +59,7 @@ public class ScriptActions
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScriptActions.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScriptActions.class);
 
     /** Singleton */
     private static ScriptActions INSTANCE;
@@ -266,13 +266,13 @@ public class ScriptActions
                 throws InterruptedException
         {
             // Actually run the script
-            logger.info("Running script file {0} ...", file);
+            logger.info("Running script file {} ...", file);
 
             try {
                 final Script script = ScriptManager.getInstance().load(
                         new FileInputStream(file));
 
-                if (logger.isFineEnabled()) {
+                if (logger.isDebugEnabled()) {
                     script.dump();
                 }
 
@@ -280,7 +280,7 @@ public class ScriptActions
                 constants.defaultScriptDirectory.setValue(file.getParent());
                 script.run();
             } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find script file {0}", file);
+                logger.warn("Cannot find script file {}", file);
             }
 
             return null;
@@ -318,20 +318,20 @@ public class ScriptActions
                 File folder = new File(file.getParent());
 
                 if (folder.mkdirs()) {
-                    logger.info("Creating folder {0}", folder);
+                    logger.info("Creating folder {}", folder);
                 }
 
                 fos = new FileOutputStream(file);
                 omr.script.ScriptManager.getInstance().store(script, fos);
-                logger.info("Script stored as {0}", file);
+                logger.info("Script stored as {}", file);
                 constants.defaultScriptDirectory.setValue(file.getParent());
                 script.getScore().setScriptFile(file);
             } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find script file " + file, ex);
+                logger.warn("Cannot find script file " + file, ex);
             } catch (JAXBException ex) {
-                logger.warning("Cannot marshal script", ex);
+                logger.warn("Cannot marshal script", ex);
             } catch (Throwable ex) {
-                logger.warning("Error storing script", ex);
+                logger.warn("Error storing script", ex);
             } finally {
                 if (fos != null) {
                     try {
@@ -363,7 +363,7 @@ public class ScriptActions
         {
             if (!getSpecific().equals(specific)) {
                 constants.closeConfirmation.setValue(specific);
-                logger.info("You will {0} be prompted to save script when"
+                logger.info("You will {} be prompted to save script when"
                             + " closing score", specific ? "now" : "no longer");
                 return true;
             } else {

@@ -15,7 +15,7 @@ import omr.glyph.Evaluation;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.entity.TimeRational;
 
@@ -34,7 +34,7 @@ class BasicRecognition
 {
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BasicRecognition.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicRecognition.class);
 
     /** Current evaluation (shape + grade), if any */
     private Evaluation evaluation;
@@ -269,7 +269,7 @@ class BasicRecognition
     {
 //        // Check status
 //        if (glyph.isTransient()) {
-//            logger.severe("Setting shape of a transient glyph");
+//            logger.error("Setting shape of a transient glyph");
 //        }
 
         // Blacklist the old shape if any
@@ -280,7 +280,7 @@ class BasicRecognition
             forbidShape(oldShape);
 
             if (glyph.isVip()) {
-                logger.info("Shape {0} forbidden for {1}",
+                logger.info("Shape {} forbidden for {}",
                         oldShape, glyph.idString());
             }
         }
@@ -294,7 +294,7 @@ class BasicRecognition
         evaluation = new Evaluation(shape, grade);
 
         if (glyph.isVip()) {
-            logger.info("{0} assigned {1}", glyph.idString(), evaluation);
+            logger.info("{} assigned {}", glyph.idString(), evaluation);
         }
     }
 

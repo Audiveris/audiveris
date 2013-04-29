@@ -15,7 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 
@@ -41,7 +41,7 @@ public class GlyphInspector
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(GlyphInspector.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphInspector.class);
 
     /** Shapes acceptable for a part candidate */
     private static final EnumSet<Shape> partShapes = EnumSet.of(
@@ -112,7 +112,7 @@ public class GlyphInspector
     public void inspectGlyphs (double minGrade,
                                boolean wide)
     {
-        logger.fine("S#{0} inspectGlyphs start", system.getId());
+        logger.debug("S#{} inspectGlyphs start", system.getId());
 
         // For Symbols & Leaves
         system.retrieveGlyphs();

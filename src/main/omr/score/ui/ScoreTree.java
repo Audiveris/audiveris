@@ -16,7 +16,7 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 import omr.score.entity.Container;
@@ -71,7 +71,7 @@ public class ScoreTree
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreTree.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreTree.class);
 
     /** The filter for relevant classes and fields */
     private static final Relevance filter = new PackageRelevance(
@@ -388,7 +388,7 @@ public class ScoreTree
         {
             // Determines whether the icon shows up to the left.
             // Return true for any node with no children
-            logger.fine("isLeaf. node={0} {1}", node, getChildCount(node) == 0);
+            logger.debug("isLeaf. node={} {}", node, getChildCount(node) == 0);
 
             return getChildCount(node) == 0;
         }
@@ -464,7 +464,7 @@ public class ScoreTree
             }
 
             // Not found, so let's build it
-            logger.fine("Retrieving relevants of {0} {1}",
+            logger.debug("Retrieving relevants of {} {}",
                     node, node.getClass());
 
             // Case of Named Collection
@@ -480,8 +480,8 @@ public class ScoreTree
                     }
                 }
 
-                if (logger.isFineEnabled()) {
-                    logger.fine("{0} nb={1}", node, relevants.size());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("{} nb={}", node, relevants.size());
                 }
 
                 return relevants;
@@ -493,8 +493,8 @@ public class ScoreTree
                 relevants = getRelevantChildren(((NamedData) node).data);
                 nodeMap.put(node, relevants);
 
-                if (logger.isFineEnabled()) {
-                    logger.fine("{0} nb={1}", node, relevants.size());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("{} nb={}", node, relevants.size());
                 }
 
                 return relevants;
@@ -512,8 +512,8 @@ public class ScoreTree
                     Navigable navigable = field.getAnnotation(Navigable.class);
 
                     if ((navigable != null) && (navigable.value() == false)) {
-                        if (logger.isFineEnabled()) {
-                            logger.fine("skipping {0}", field);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("skipping {}", field);
                         }
 
                         continue;
@@ -571,7 +571,7 @@ public class ScoreTree
                         ///System.out.println(" ...OK");
                         relevants.add(new NamedData(field.getName(), object));
                     } catch (Exception ex) {
-                        logger.warning("Error in accessing field", ex);
+                        logger.warn("Error in accessing field", ex);
                     }
                 }
 
@@ -579,8 +579,8 @@ public class ScoreTree
                 classe = classe.getSuperclass();
             } while (filter.isClassRelevant(classe));
 
-            if (logger.isFineEnabled()) {
-                logger.fine("{0} nb={1}", node, relevants.size());
+            if (logger.isDebugEnabled()) {
+                logger.debug("{} nb={}", node, relevants.size());
             }
 
             return relevants;

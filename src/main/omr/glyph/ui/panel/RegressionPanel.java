@@ -14,7 +14,7 @@ package omr.glyph.ui.panel;
 import omr.glyph.GlyphRegression;
 import omr.glyph.ui.panel.TrainingPanel.DumpAction;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import javax.swing.JButton;
 
@@ -31,7 +31,7 @@ class RegressionPanel
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
         RegressionPanel.class);
 
     //~ Constructors -----------------------------------------------------------

@@ -18,7 +18,7 @@ import omr.glyph.Shape;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 
@@ -41,7 +41,7 @@ class BasicComposition
 {
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BasicComposition.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicComposition.class);
 
     /**
      * Sections that compose this glyph.
@@ -84,7 +84,7 @@ class BasicComposition
         }
 
 //        if (!glyph.isTransient()) {
-//            logger.severe("Adding section to registered glyph");
+//            logger.error("Adding section to registered glyph");
 //        }
 
         // Nota: We must include the section in the glyph members before

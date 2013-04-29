@@ -14,7 +14,7 @@ package omr.glyph.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
@@ -34,7 +34,7 @@ public class ViewParameters
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ViewParameters.class);
+    private static final Logger logger = LoggerFactory.getLogger(ViewParameters.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();

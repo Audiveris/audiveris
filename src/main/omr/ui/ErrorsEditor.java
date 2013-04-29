@@ -13,7 +13,7 @@ package omr.ui;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -56,7 +56,7 @@ public class ErrorsEditor
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ErrorsEditor.class);
+    private static final Logger logger = LoggerFactory.getLogger(ErrorsEditor.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Related sheet */
@@ -186,7 +186,7 @@ public class ErrorsEditor
             @Override
             public void run ()
             {
-                logger.fine("Clearing errors for {0}", step);
+                logger.debug("Clearing errors for {}", step);
                 for (Iterator<Record> it = recordSet.iterator();
                         it.hasNext();) {
                     Record record = it.next();
@@ -227,7 +227,7 @@ public class ErrorsEditor
             @Override
             public void run ()
             {
-                logger.fine("Clearing errors for {0} system {1}",
+                logger.debug("Clearing errors for {} system {}",
                         step, systemId);
                 for (Iterator<Record> it = recordSet.iterator();
                         it.hasNext();) {
@@ -363,7 +363,7 @@ public class ErrorsEditor
                 Record record = list.getSelectedValue();
 
                 if (record != null) {
-                    logger.fine("value={0}", record);
+                    logger.debug("value={}", record);
 
                     // Use glyph location if available
                     if (record.glyph != null) {
@@ -401,7 +401,7 @@ public class ErrorsEditor
                                     null,
                                     new PixelRectangle(pixPt)));
                         } catch (Exception ex) {
-                            logger.warning(
+                            logger.warn(
                                     "Failed pointing to " + record.node,
                                     ex);
                         }

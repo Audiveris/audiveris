@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.util;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code Worker} is a simple way to delegate processing to a
@@ -43,7 +43,7 @@ public abstract class Worker<T>
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    protected static final Logger logger = Logger.getLogger(Worker.class);
+    protected static final Logger logger = LoggerFactory.getLogger(Worker.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The work result, accessed only via getValue() and setValue() */
@@ -75,7 +75,7 @@ public abstract class Worker<T>
                     setValue(construct());
                 } finally {
                     threadVar.clear();
-                    logger.fine("{0} finished after {1} ms",
+                    logger.debug("{} finished after {} ms",
                             Worker.this.getClass().getName(),
                             System.currentTimeMillis() - startTime);
                 }
@@ -85,7 +85,7 @@ public abstract class Worker<T>
         Thread t = new Thread(null, doConstruct, "Worker", stackSize);
         t.setPriority(Thread.MIN_PRIORITY);
         threadVar = new ThreadVar(t);
-        logger.fine("{0} created", getClass().getName());
+        logger.debug("{} created", getClass().getName());
     }
 
     //--------//
@@ -137,7 +137,7 @@ public abstract class Worker<T>
             } catch (InterruptedException e) {
                 Thread.currentThread().
                         interrupt(); // propagate
-                logger.fine("{0} interrupted", getClass().
+                logger.debug("{} interrupted", getClass().
                         getName());
 
                 return null;
@@ -154,7 +154,7 @@ public abstract class Worker<T>
      */
     public void interrupt ()
     {
-        logger.fine("{0} interrupt", getClass().
+        logger.debug("{} interrupt", getClass().
                 getName());
 
         Thread t = threadVar.get();
@@ -178,7 +178,7 @@ public abstract class Worker<T>
 
         if (t != null) {
             t.start();
-            logger.fine("{0} started", getClass().
+            logger.debug("{} started", getClass().
                     getName());
         }
     }

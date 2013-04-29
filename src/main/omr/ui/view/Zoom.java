@@ -14,7 +14,7 @@ package omr.ui.view;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -58,7 +58,7 @@ public class Zoom
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Zoom.class);
+    private static final Logger logger = LoggerFactory.getLogger(Zoom.class);
 
     // To assign a unique Id
     private static int globalId;
@@ -101,7 +101,7 @@ public class Zoom
      */
     public Zoom (double ratio)
     {
-        logger.fine("Zoom created with ratio {0}", ratio);
+        logger.debug("Zoom created with ratio {}", ratio);
         setRatio(ratio);
     }
 
@@ -118,7 +118,7 @@ public class Zoom
     public Zoom (LogSlider slider,
                  double ratio)
     {
-        logger.fine("Zoom created" + " slider={0} ratio={1}", slider, ratio);
+        logger.debug("Zoom created" + " slider={} ratio={}", slider, ratio);
         setSlider(slider);
         setRatio(ratio);
     }
@@ -136,7 +136,7 @@ public class Zoom
     public void addChangeListener (ChangeListener listener)
     {
         listeners.add(listener);
-        logger.fine("addChangeListener {0} -> {1}", listener, listeners.size());
+        logger.debug("addChangeListener {} -> {}", listener, listeners.size());
     }
 
     //------------------//
@@ -153,7 +153,7 @@ public class Zoom
                 changeEvent = new ChangeEvent(this);
             }
 
-            logger.fine("{0} Firing {1}", this, listener);
+            logger.debug("{} Firing {}", this, listener);
             listener.stateChanged(changeEvent);
         }
     }
@@ -292,7 +292,7 @@ public class Zoom
      */
     public void setRatio (double ratio)
     {
-        logger.fine("setRatio ratio={0}", ratio);
+        logger.debug("setRatio ratio={}", ratio);
 
         // Propagate to slider (useful to keep slider in sync when ratio is
         // set programmatically)
@@ -315,7 +315,7 @@ public class Zoom
     public void setSlider (final LogSlider slider)
     {
         this.slider = slider;
-        logger.fine("setSlider");
+        logger.debug("setSlider");
 
         if (slider != null) {
             slider.setDoubleValue(ratio);
@@ -330,7 +330,7 @@ public class Zoom
                             if (constants.continuousSliderReading.getValue()
                                 || !slider.getValueIsAdjusting()) {
                                 double newRatio = slider.getDoubleValue();
-                                logger.fine("Slider firing zoom newRatio={0}", newRatio);
+                                logger.debug("Slider firing zoom newRatio={}", newRatio);
 
                                 // Stop condition to avoid endless loop between
                                 // slider and zoom
@@ -426,7 +426,7 @@ public class Zoom
      */
     private void forceRatio (double ratio)
     {
-        logger.fine("forceRatio ratio={0}", ratio);
+        logger.debug("forceRatio ratio={}", ratio);
         this.ratio = ratio;
 
         // Propagate to listeners

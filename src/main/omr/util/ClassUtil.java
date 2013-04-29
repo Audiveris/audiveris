@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.util;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
@@ -25,7 +25,7 @@ public class ClassUtil
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ClassUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
 
     //~ Methods ----------------------------------------------------------------
     //-----------------//
@@ -136,15 +136,15 @@ public class ClassUtil
     {
         String path = file.getAbsolutePath();
 
-        logger.fine("Loading file {0} ...", path);
+        logger.debug("Loading file {} ...", path);
 
         try {
             System.load(path);
 
-            logger.fine("Loaded  file {0}", path);
+            logger.debug("Loaded  file {}", path);
         } catch (Throwable ex) {
-            if (logger.isFineEnabled()) {
-                logger.warning("Error while loading file " + path, ex);
+            if (logger.isDebugEnabled()) {
+                logger.warn("Error while loading file " + path, ex);
             }
 
             throw ex;
@@ -163,15 +163,15 @@ public class ClassUtil
     public static void loadLibrary (String library)
             throws Throwable
     {
-        logger.fine("Loading library {0} ...", library);
+        logger.debug("Loading library {} ...", library);
 
         try {
             System.loadLibrary(library);
 
-            logger.fine("Loaded  library {0}", library);
+            logger.debug("Loaded  library {}", library);
         } catch (Throwable ex) {
-            if (logger.isFineEnabled()) {
-                logger.warning("Error while loading library " + library, ex);
+            if (logger.isDebugEnabled()) {
+                logger.warn("Error while loading library " + library, ex);
             }
 
             throw ex;

@@ -32,7 +32,8 @@ import omr.grid.StaffManager;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 import static omr.run.Orientation.*;
@@ -70,7 +71,7 @@ public class BarsChecker
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BarsChecker.class);
+    private static final Logger logger = LoggerFactory.getLogger(BarsChecker.class);
 
     /** Successful bar that embraces a whole system or part */
     public static final SuccessResult BAR_PART_DEFINING = new SuccessResult(
@@ -200,8 +201,8 @@ public class BarsChecker
 
             double res = suite.pass(context);
 
-            if (logger.isFineEnabled() || stick.isVip()) {
-                logger.info("suite => {0}{1} for {2}",
+            if (logger.isDebugEnabled() || stick.isVip()) {
+                logger.info("suite => {}{} for {}",
                         (float) res,
                         (stick.getResult() != null)
                         ? (" " + stick.getResult()) : "",
@@ -225,13 +226,12 @@ public class BarsChecker
                     // (since glyphs are sorted by increasing abscissa)
                     stick.setResult(BAR_PART_DEFINING);
 
-                    logger.
-                            fine(
-                            "Part-defining Barline from staff {0} to staff {1} {2}",
+                    logger.debug(
+                            "Part-defining Barline from staff {} to staff {} {}",
                             context.topStaff, context.botStaff, stick);
                 } else {
-                    if (logger.isFineEnabled()) {
-                        logger.fine("Non-Part-defining Bar line {0}{1}",
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Non-Part-defining Bar line {}{}",
                                 (context.topStaff != -1)
                                 ? (" topIdx=" + context.topStaff) : "",
                                 (context.botStaff != -1)
@@ -242,8 +242,8 @@ public class BarsChecker
                 }
             } else {
                 if (stick.isBar()) {
-                    if (logger.isFineEnabled() || stick.isVip()) {
-                        logger.info("Purged {0} {1}",
+                    if (logger.isDebugEnabled() || stick.isVip()) {
+                        logger.info("Purged {} {}",
                                 stick.idString(), stick.getShape());
                     }
 
@@ -412,7 +412,7 @@ public class BarsChecker
                 add(1, new AnchorCheck()); // Reads topStaff & botStaff
             }
 
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
                 dump();
             }
 
@@ -428,8 +428,8 @@ public class BarsChecker
             //                                          .yAt(barAbscissa);
             //
             //            if ((bar.getStop() - systemBottom) > maxDy) {
-            //                if (logger.isFineEnabled()) {
-            //                    logger.fine("Bar stopping too low");
+            //                if (logger.isDebugEnabled()) {
+            //                    logger.debug("Bar stopping too low");
             //                }
             //
             //                bar.setResult(NOT_WITHIN_SYSTEM);
@@ -601,7 +601,7 @@ public class BarsChecker
                     tellObject(null);
                 }
             } catch (Exception ex) {
-                logger.warning(getClass().getName() + " onEvent error", ex);
+                logger.warn(getClass().getName() + " onEvent error", ex);
             }
         }
     }
@@ -871,7 +871,7 @@ public class BarsChecker
             double ratio = (1000 * aliens) / ((double) area * stick.getLength(
                     Orientation.VERTICAL));
 
-            logger.fine("{0} {1} aliens:{2} area:{3} ratio:{4}",
+            logger.debug("{} {} aliens:{} area:{} ratio:{}",
                     stick.idString(), getName(), aliens, area,
                     (float) ratio);
 

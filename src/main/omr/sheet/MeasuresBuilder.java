@@ -20,8 +20,6 @@ import omr.glyph.facets.Glyph;
 import omr.grid.BarAlignment;
 import omr.grid.StaffInfo;
 import omr.grid.StickIntersection;
-
-import omr.log.Logger;
 import static omr.run.Orientation.*;
 
 import omr.score.entity.Barline;
@@ -34,6 +32,9 @@ import omr.util.Navigable;
 import omr.util.TreeNode;
 
 import net.jcip.annotations.NotThreadSafe;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.List;
@@ -59,7 +60,7 @@ public class MeasuresBuilder
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             MeasuresBuilder.class);
 
     // Failures
@@ -136,16 +137,18 @@ public class MeasuresBuilder
         // Clear the collection of Measure instances
         for (TreeNode node : scoreSystem.getParts()) {
             SystemPart part = (SystemPart) node;
-            part.getMeasures().clear();
+            part.getMeasures()
+                    .clear();
         }
 
         // Create measures out of BarAlignment instances
         List<BarAlignment> alignments = system.getBarAlignments();
-        int firstId = system.getFirstStaff().getId();
+        int firstId = system.getFirstStaff()
+                .getId();
 
         for (BarAlignment align : alignments) {
-            if (logger.isFineEnabled()) {
-                logger.fine(align.toString());
+            if (logger.isDebugEnabled()) {
+                logger.debug(align.toString());
             }
 
             StickIntersection[] inters = align.getIntersections();
@@ -153,7 +156,8 @@ public class MeasuresBuilder
 
             for (TreeNode node : scoreSystem.getParts()) {
                 SystemPart part = (SystemPart) node;
-                PartInfo partInfo = system.getParts().get(ip++);
+                PartInfo partInfo = system.getParts()
+                        .get(ip++);
                 Measure measure = new Measure(part);
                 Barline barline = new Barline(measure);
 
@@ -166,13 +170,18 @@ public class MeasuresBuilder
                         barline.addGlyph(stick);
                     } else {
                         // TODO
-                        logger.warning("No intersection at index {0} in {1}",
-                                is, align);
+                        logger.warn(
+                                "No intersection at index {} in {}",
+                                is,
+                                align);
                     }
                 }
 
-                logger.fine("S#{0} {1}" + " - Created measure " + " with {2}",
-                        scoreSystem.getId(), part, barline);
+                logger.debug(
+                        "S#{} {}" + " - Created measure " + " with {}",
+                        scoreSystem.getId(),
+                        part,
+                        barline);
             }
         }
 
@@ -180,8 +189,9 @@ public class MeasuresBuilder
         for (TreeNode node : scoreSystem.getParts()) {
             SystemPart part = (SystemPart) node;
 
-            if (part.getMeasures().isEmpty()) {
-                logger.fine("{0} - Creating artificial measure", part);
+            if (part.getMeasures()
+                    .isEmpty()) {
+                logger.debug("{} - Creating artificial measure", part);
 
                 Measure measure = new Measure(part);
             }
@@ -209,8 +219,9 @@ public class MeasuresBuilder
             int lastX = barline.getRightX();
             int minWidth = scale.toPixels(constants.minMeasureWidth);
 
-            if (((scoreSystem.getTopLeft().x + part.getFirstStaff().getWidth()) - lastX) < minWidth) {
-                logger.fine("Adjusting EndingBar {0}", system);
+            if (((scoreSystem.getTopLeft().x + part.getFirstStaff()
+                    .getWidth()) - lastX) < minWidth) {
+                logger.debug("Adjusting EndingBar {}", system);
 
                 // Adjust end of system & staff(s) to this one
                 scoreSystem.setWidth(lastX - scoreSystem.getTopLeft().x);
@@ -218,7 +229,8 @@ public class MeasuresBuilder
                 for (TreeNode pnode : scoreSystem.getParts()) {
                     SystemPart prt = (SystemPart) pnode;
 
-                    for (Iterator<TreeNode> sit = prt.getStaves().iterator();
+                    for (Iterator<TreeNode> sit = prt.getStaves()
+                            .iterator();
                             sit.hasNext();) {
                         Staff stv = (Staff) sit.next();
                         stv.setWidth(scoreSystem.getDimension().width);
@@ -226,7 +238,7 @@ public class MeasuresBuilder
                 }
             }
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     scoreSystem.getContextString()
                     + " Error in checking ending bar",
                     ex);
@@ -273,34 +285,38 @@ public class MeasuresBuilder
             SystemPart part = (SystemPart) node;
             Measure prevMeasure = null;
 
-            for (Iterator<TreeNode> mit = part.getMeasures().iterator();
-                    mit.hasNext();) {
+            for (Iterator<TreeNode> mit = part.getMeasures()
+                    .iterator(); mit.hasNext();) {
                 Measure measure = (Measure) mit.next();
 
                 if (prevMeasure != null) {
-                    final int measureWidth = measure.getBarline().getCenter().x
-                                             - prevMeasure.getBarline().getCenter().x;
+                    final int measureWidth = measure.getBarline()
+                            .getCenter().x
+                                             - prevMeasure.getBarline()
+                            .getCenter().x;
 
                     if (measureWidth <= maxDoubleDx) {
                         // Lines are side by side or one above the other?
-                        Glyph stick = (Glyph) measure.getBarline().getGlyphs().
-                                toArray()[0];
-                        Glyph prevStick = (Glyph) prevMeasure.getBarline().
-                                getGlyphs().toArray()[0];
+                        Glyph stick = (Glyph) measure.getBarline()
+                                .getGlyphs()
+                                .toArray()[0];
+                        Glyph prevStick = (Glyph) prevMeasure.getBarline()
+                                .getGlyphs()
+                                .toArray()[0];
 
                         if (yOverlap(stick, prevStick)) {
                             // Overlap => side by side
                             // Merge the two bar lines into the first one
-                            prevMeasure.getBarline().mergeWith(measure.
-                                    getBarline());
+                            prevMeasure.getBarline()
+                                    .mergeWith(measure.getBarline());
 
-                            logger.fine("Merged two close barlines into {0}",
+                            logger.debug(
+                                    "Merged two close barlines into {}",
                                     prevMeasure.getBarline());
                         } else {
                             // No overlap => one above the other
-                            logger.
-                                    fine(
-                                    "Two barlines segments one above the other in  {0}",
+                            logger.debug(
+                                    "Two barlines segments one above the other in  {}",
                                     measure.getBarline());
                         }
 
@@ -327,8 +343,9 @@ public class MeasuresBuilder
     private void removeStartingMeasure ()
     {
         int minWidth = scale.toPixels(constants.minMeasureWidth);
-        Barline firstBarline = scoreSystem.getFirstRealPart().getFirstMeasure().
-                getBarline();
+        Barline firstBarline = scoreSystem.getFirstRealPart()
+                .getFirstMeasure()
+                .getBarline();
 
         if (firstBarline == null) {
             return;
@@ -340,9 +357,10 @@ public class MeasuresBuilder
         if (dx < minWidth) {
             // Adjust system parameters if needed : topLeft and dimension
             if (dx != 0) {
-                logger.fine("Adjusting firstX={0} {1}", dx, system);
+                logger.debug("Adjusting firstX={} {}", dx, system);
 
-                scoreSystem.getTopLeft().translate(dx, 0);
+                scoreSystem.getTopLeft()
+                        .translate(dx, 0);
                 scoreSystem.getDimension().width -= dx;
             }
 
@@ -363,7 +381,8 @@ public class MeasuresBuilder
                     // Update abscissa of top-left corner of every staff
                     for (TreeNode sNode : part.getStaves()) {
                         Staff staff = (Staff) sNode;
-                        staff.getTopLeft().translate(dx, 0);
+                        staff.getTopLeft()
+                                .translate(dx, 0);
                     }
 
                     // Update other bar lines abscissae accordingly

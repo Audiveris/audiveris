@@ -16,7 +16,7 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.selection.GlyphEvent;
 import omr.selection.SelectionHint;
@@ -59,7 +59,7 @@ public abstract class GlyphMenu
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(GlyphMenu.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphMenu.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Map action -> tag to update according to context */

@@ -16,7 +16,7 @@ import omr.glyph.Shape;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Circle;
 import omr.math.PointsCollector;
@@ -32,7 +32,8 @@ import omr.score.common.PixelRectangle;
 import omr.ui.symbol.ShapeSymbol;
 
 import java.awt.Rectangle;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code BasicGeometry} is the basic implementation of the
@@ -47,7 +48,7 @@ class BasicGeometry
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BasicGeometry.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicGeometry.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Interline of the containing staff (or sheet) */
@@ -458,8 +459,8 @@ class BasicGeometry
                     collector.getSize(),
                     getInterline());
         } catch (Exception ex) {
-            logger.warning(
-                    "Glyph #{0} Cannot compute moments with unit set to 0",
+            logger.warn(
+                    "Glyph #{} Cannot compute moments with unit set to 0",
                     glyph.getId());
         }
     }

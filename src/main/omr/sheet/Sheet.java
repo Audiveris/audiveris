@@ -33,7 +33,7 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.Sections;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.RunsTable;
 
@@ -95,7 +95,7 @@ public class Sheet
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Sheet.class);
+    private static final Logger logger = LoggerFactory.getLogger(Sheet.class);
 
     /** Events that can be published on a sheet service */
     public static final Class<?>[] allowedEvents = new Class<?>[]{
@@ -232,7 +232,7 @@ public class Sheet
 
         setImage(image);
 
-        logger.fine("Created {0}", this);
+        logger.debug("Created {}", this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -872,7 +872,7 @@ public class Sheet
         }
 
         if (!toRemove.isEmpty()) {
-            logger.warning("No system for {0}", Glyphs.toString(toRemove));
+            logger.warn("No system for {}", Glyphs.toString(toRemove));
             glyphs.removeAll(toRemove);
         }
 
@@ -922,7 +922,7 @@ public class Sheet
         }
 
         if (!toRemove.isEmpty()) {
-            logger.warning("No system for {0}", Sections.toString(toRemove));
+            logger.warn("No system for {}", Sections.toString(toRemove));
             sections.removeAll(toRemove);
         }
 
@@ -1069,7 +1069,7 @@ public class Sheet
      */
     public void remove (boolean closing)
     {
-        logger.fine("remove sheet {0} closing:{1}", this, closing);
+        logger.debug("remove sheet {} closing:{}", this, closing);
 
         // Close the related page
         getScore().remove(page);
@@ -1085,7 +1085,7 @@ public class Sheet
         // If no sheet is left, force score closing
         if (!closing) {
             if (!score.getPages().isEmpty()) {
-                logger.info("{0}Removed page #{1}",
+                logger.info("{}Removed page #{}",
                         page.getScore().getLogPrefix(), page.getIndex());
             } else {
                 score.close();
@@ -1190,7 +1190,7 @@ public class Sheet
             if (Main.getGui() != null) {
                 Main.getGui().displayWarning(msg);
             } else {
-                logger.warning(msg);
+                logger.warn(msg);
             }
 
             throw new StepException(ex);

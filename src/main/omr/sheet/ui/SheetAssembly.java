@@ -13,7 +13,7 @@ package omr.sheet.ui;
 
 import omr.Main;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 
@@ -71,7 +71,7 @@ public class SheetAssembly
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SheetAssembly.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetAssembly.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -119,7 +119,7 @@ public class SheetAssembly
      */
     public SheetAssembly (Sheet sheet)
     {
-        logger.fine("creating SheetAssembly on {0}", sheet);
+        logger.debug("creating SheetAssembly on {}", sheet);
 
         this.sheet = sheet;
 
@@ -132,7 +132,7 @@ public class SheetAssembly
         // To be notified of view selection (manually or programmatically)
         viewsPane.addChangeListener(this);
 
-        logger.fine("SheetAssembly created.");
+        logger.debug("SheetAssembly created.");
 
         defineLayout();
     }
@@ -154,10 +154,10 @@ public class SheetAssembly
         JScrollPane pane = getPane(title);
 
         if (pane == null) {
-            logger.warning("Unknown tab {0}", title);
+            logger.warn("Unknown tab {}", title);
         } else {
             ViewTab viewTab = tabs.get(pane);
-            ///logger.warning("Adding " + board + " to " + title);
+            ///logger.warn("Adding " + board + " to " + title);
             viewTab.boardsPane.addBoard(board);
         }
     }
@@ -183,7 +183,7 @@ public class SheetAssembly
             boardsPane.setName(label);
         }
 
-        logger.fine("addViewTab begin {0} boardsPane={1} comp=@{2}",
+        logger.debug("addViewTab begin {} boardsPane={} comp=@{}",
                 label, boardsPane, Integer.toHexString(scroll.hashCode()));
 
         // Remove any existing viewTab with the same label
@@ -204,7 +204,7 @@ public class SheetAssembly
         // Select this new tab
         viewsPane.setSelectedComponent(scroll);
 
-        logger.fine("addViewTab end {0} boardsPane={1}", label, boardsPane);
+        logger.debug("addViewTab end {} boardsPane={}", label, boardsPane);
     }
 
     //------------------//
@@ -218,7 +218,7 @@ public class SheetAssembly
      */
     public void assemblySelected ()
     {
-        logger.fine("{0} assemblySelected", sheet.getId());
+        logger.debug("{} assemblySelected", sheet.getId());
 
         // Display the related boards
         displayBoards();
@@ -315,7 +315,7 @@ public class SheetAssembly
                 viewsPane.setSelectedIndex(i);
                 viewsPane.repaint();
 
-                logger.fine("Selected view tab {0}", title);
+                logger.debug("Selected view tab {}", title);
 
                 return;
             }
@@ -350,7 +350,7 @@ public class SheetAssembly
     public void stateChanged (ChangeEvent e)
     {
         ViewTab currentTab = getCurrentViewTab();
-        logger.fine("SheetAssembly stateChanged previousTab:{0} currentTab:{1}",
+        logger.debug("SheetAssembly stateChanged previousTab:{} currentTab:{}",
                 previousTab, currentTab);
 
         if (currentTab != previousTab) {
@@ -503,7 +503,7 @@ public class SheetAssembly
          */
         public void deselected ()
         {
-            logger.fine("SheetAssembly: {0} viewTab.deselected for {1}",
+            logger.debug("SheetAssembly: {} viewTab.deselected for {}",
                     sheet.getId(), this);
 
             // Disconnection of events
@@ -532,7 +532,7 @@ public class SheetAssembly
             viewsPane.remove(scrollPane);
             tabs.remove(scrollPane);
 
-            logger.fine("Removed tab: {0}", this);
+            logger.debug("Removed tab: {}", this);
         }
 
         //----------//
@@ -543,7 +543,7 @@ public class SheetAssembly
          */
         public void selected ()
         {
-            logger.fine("SheetAssembly: {0} viewTabSelected for {1} dim:{2}",
+            logger.debug("SheetAssembly: {} viewTabSelected for {} dim:{}",
                     sheet.getId(), this, scrollView.getView().getPreferredSize());
 
             // Link rubber with proper view
@@ -555,7 +555,7 @@ public class SheetAssembly
             rubberPanel.subscribe();
 
             // Restore display of proper context
-            logger.fine("{0} showing:{1}", this, component.isShowing());
+            logger.debug("{} showing:{}", this, component.isShowing());
 
             if (component.isShowing()) {
                 displayBoards();

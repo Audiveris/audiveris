@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.run;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -42,7 +42,7 @@ public class RunsTableView
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(RunsTableView.class);
+    private static final Logger logger = LoggerFactory.getLogger(RunsTableView.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The underlying table of runs */
@@ -98,7 +98,7 @@ public class RunsTableView
                 handleEvent((LocationEvent) event);
             }
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 
@@ -198,7 +198,7 @@ public class RunsTableView
      */
     private void handleEvent (LocationEvent locationEvent)
     {
-        logger.fine("sheetLocation: {0}", locationEvent);
+        logger.debug("sheetLocation: {}", locationEvent);
 
         // Lookup for Run pointed by this pixel location
         // Search and forward run & section info

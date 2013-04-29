@@ -13,7 +13,7 @@ package omr.util;
 
 import omr.Main;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ public abstract class TreeNode
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(TreeNode.class);
+    private static final Logger logger = LoggerFactory.getLogger(TreeNode.class);
 
     //~ Instance fields --------------------------------------------------------
     /**
@@ -58,7 +58,7 @@ public abstract class TreeNode
      */
     public TreeNode (TreeNode parent)
     {
-        logger.fine("new TreeNode parent={0}", parent);
+        logger.debug("new TreeNode parent={}", parent);
 
         if (parent != null) {
             parent.addChild(this);
@@ -76,7 +76,7 @@ public abstract class TreeNode
      */
     public synchronized void addChild (TreeNode node)
     {
-        logger.fine("addChild {0} for {1}", node, this);
+        logger.debug("addChild {} for {}", node, this);
 
         children.add(node);
         node.setParent(this);
@@ -170,7 +170,7 @@ public abstract class TreeNode
      */
     public List<TreeNode> getChildren ()
     {
-        logger.fine("getChildren of {0}", this);
+        logger.debug("getChildren of {}", this);
 
         return children;
     }
@@ -186,7 +186,7 @@ public abstract class TreeNode
     @SuppressWarnings("unchecked")
     public synchronized List<TreeNode> getChildrenCopy ()
     {
-        logger.fine("getChildrenCopy of {0}", this);
+        logger.debug("getChildrenCopy of {}", this);
 
         return new ArrayList<TreeNode>(children);
     }
@@ -254,7 +254,7 @@ public abstract class TreeNode
      */
     public void setChildrenParent ()
     {
-        logger.fine("setChildrenParent of {0}", this);
+        logger.debug("setChildrenParent of {}", this);
 
         // Make all children point to this node as parent
         for (TreeNode node : children) {
@@ -273,7 +273,7 @@ public abstract class TreeNode
      */
     public void setParent (TreeNode parent)
     {
-        logger.fine("setParent parent={0} for {1}", parent, this);
+        logger.debug("setParent parent={} for {}", parent, this);
         this.parent = parent;
     }
 }

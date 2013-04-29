@@ -18,7 +18,7 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Rational;
 
@@ -63,7 +63,7 @@ public class Chord
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Chord.class);
+    private static final Logger logger = LoggerFactory.getLogger(Chord.class);
 
     /** Compare two chords by abscissa within a measure. */
     public static final Comparator<TreeNode> byNodeAbscissa = new Comparator<TreeNode>()
@@ -137,7 +137,7 @@ public class Chord
             Note n2 = (Note) tn2;
 
             if (n1.getChord() != n2.getChord()) {
-                logger.severe("Ordering notes from different chords");
+                logger.error("Ordering notes from different chords");
             }
 
             return n1.getChord().getStemDir() * (n2.getCenter().y - n1.
@@ -257,7 +257,7 @@ public class Chord
             return up ? FLAG_5_UP : FLAG_5;
         }
 
-        logger.severe("Illegal flag number: {0}", fn);
+        logger.error("Illegal flag number: {}", fn);
 
         return null;
     }
@@ -403,7 +403,7 @@ public class Chord
     public static void populateFlag (Glyph glyph,
                                      Measure measure)
     {
-        logger.fine("Chord Populating flag {0}", glyph);
+        logger.debug("Chord Populating flag {}", glyph);
 
         // Retrieve the related chord
         Glyph stem = null;
@@ -445,7 +445,7 @@ public class Chord
                                  Measure measure)
     {
         if (glyph.isVip()) {
-            logger.info("Chord. populate {0}", glyph.idString());
+            logger.info("Chord. populate {}", glyph.idString());
         }
 
         glyph.clearTranslations();
@@ -1228,7 +1228,7 @@ public class Chord
     {
         // Already done?
         if (this.startTime == null) {
-            logger.fine("setStartTime {0} for chord #{1}", startTime, getId());
+            logger.debug("setStartTime {} for chord #{}", startTime, getId());
 
             this.startTime = startTime;
 //
@@ -1284,7 +1284,7 @@ public class Chord
         // Already done?
         if (this.voice == null) {
             final String contextString = getContextString();
-            logger.fine("{0} Ch#{1} setVoice {2}",
+            logger.debug("{} Ch#{} setVoice {}",
                     contextString, id, voice.getId());
 
             this.voice = voice;
@@ -1301,8 +1301,8 @@ public class Chord
                 BeamGroup group = getBeamGroup();
 
                 if (group != null) {
-                    logger.fine(
-                            "{0} Ch#{1} extending voice#{2} to group#{3}",
+                    logger.debug(
+                            "{} Ch#{} extending voice#{} to group#{}",
                             contextString, id, voice.getId(), group.getId());
 
                     group.setVoice(voice);
@@ -1312,18 +1312,18 @@ public class Chord
                 List<Chord> tied = getFollowingTiedChords();
 
                 for (Chord chord : tied) {
-                    logger.fine("{0} tied to {1}", this, chord);
+                    logger.debug("{} tied to {}", this, chord);
 
                     // Check the tied chords belong to the same measure
                     if (this.getMeasure() == chord.getMeasure()) {
-                        logger.fine(
-                                "{0} Ch#{1} extending voice#{2} to tied chord#{3}",
+                        logger.debug(
+                                "{} Ch#{} extending voice#{} to tied chord#{}",
                                 contextString, id, voice.getId(), chord.getId());
 
                         chord.setVoice(voice);
                     } else {
                         // Chords tied across measure boundary
-                        logger.fine("{0} Cross tie {1} -> {2}",
+                        logger.debug("{} Cross tie {} -> {}",
                                 contextString,
                                 toShortString(), chord.toShortString());
                     }
@@ -1382,7 +1382,7 @@ public class Chord
 
                     sb.append("]");
                 } catch (Exception ex) {
-                    logger.warning("Exception in chord toLongString()");
+                    logger.warn("Exception in chord toLongString()");
                 }
             }
         } catch (NullPointerException e) {
@@ -1587,7 +1587,7 @@ public class Chord
                         if (distantNote == note
                             || distantNote.getChord() == this) {
                             // This slur is a loop on the same note or chord!
-                            logger.info("Looping slur detected {0}", slur);
+                            logger.info("Looping slur detected {}", slur);
                             slur.destroy();
                             continue;
                         }
@@ -1602,7 +1602,7 @@ public class Chord
         }
 
         if (distantChords.size() > 1) {
-            logger.fine("{0} Ch#{1} with multiple tied chords: {2}",
+            logger.debug("{} Ch#{} with multiple tied chords: {}",
                     getContextString(), getId(), distantChords);
 
             // Prepare the split of this chord, using the most distant note 
@@ -1619,7 +1619,7 @@ public class Chord
                 }
             }
 
-            logger.fine("Splitting from {0}", tiedNotes.last());
+            logger.debug("Splitting from {}", tiedNotes.last());
 
             return new SplitOrder(this, tiedNotes.last());
         } else {
@@ -1711,7 +1711,7 @@ public class Chord
             return 5;
         }
 
-        logger.severe("Illegal flag shape: {0}", shape);
+        logger.error("Illegal flag shape: {}", shape);
 
         return 0;
     }
@@ -1770,8 +1770,8 @@ public class Chord
      */
     private Chord split (SplitOrder order)
     {
-        logger.fine("{0}", order);
-        logger.fine("Initial notes={0}", getNotes());
+        logger.debug("{}", order);
+        logger.debug("Initial notes={}", getNotes());
 
         // Same measure & slot
         Chord alien = new Chord(getMeasure(), slot);
@@ -1828,11 +1828,11 @@ public class Chord
             this.tailLocation = alien.headLocation;
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Remaining notes={0}", getNotes());
-            logger.fine("Remaining {0}", this.toLongString());
-            logger.fine("Alien notes={0}", alien.getNotes());
-            logger.fine("Alien {0}", alien.toLongString());
+        if (logger.isDebugEnabled()) {
+            logger.debug("Remaining notes={}", getNotes());
+            logger.debug("Remaining {}", this.toLongString());
+            logger.debug("Alien notes={}", alien.getNotes());
+            logger.debug("Alien {}", alien.toLongString());
         }
 
         return alien;

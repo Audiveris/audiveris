@@ -15,7 +15,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -44,7 +44,7 @@ public class SystemPart
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SystemPart.class);
+    private static final Logger logger = LoggerFactory.getLogger(SystemPart.class);
 
     /** For comparing (TreeNode) SystemPart instances according to their id */
     public static final Comparator<TreeNode> idComparator = new Comparator<TreeNode>()
@@ -267,7 +267,7 @@ public class SystemPart
      */
     public SystemPart createDummyPart (int id)
     {
-        logger.fine("{0} createDummyPart for id={1}", getContextString(), id);
+        logger.debug("{} createDummyPart for id={}", getContextString(), id);
 
         // Find some concrete system part for the provided id
         SystemPart nextPart;
@@ -285,7 +285,7 @@ public class SystemPart
                     break;
                 }
             } else {
-                logger.warning("{0} Cannot find real system part with id {1}",
+                logger.warn("{} Cannot find real system part with id {}",
                         getContextString(), id);
 
                 return null;
@@ -371,7 +371,7 @@ public class SystemPart
             isFirstMeasure = false;
         }
 
-        if (logger.isFineEnabled()) {
+        if (logger.isDebugEnabled()) {
             if (dummyPart.dumpNode()) {
                 dummyPart.dumpChildren(1);
             }
@@ -860,7 +860,7 @@ public class SystemPart
 
 
             if (leftVoice.getId() != rightVoice.getId()) {
-                logger.fine("Tie to map {0} and {1}", leftChord, rightChord);
+                logger.debug("Tie to map {} and {}", leftChord, rightChord);
                 rightChord.getMeasure().swapVoiceId(rightVoice, leftVoice.getId());
             }
         }

@@ -15,7 +15,7 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolMenu;
 import omr.glyph.ui.SymbolsController;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.entity.Chord;
@@ -56,7 +56,7 @@ public class PageMenu
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(PageMenu.class);
+    private static final Logger logger = LoggerFactory.getLogger(PageMenu.class);
 
     //~ Instance fields --------------------------------------------------------
     //

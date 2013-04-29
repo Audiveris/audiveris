@@ -126,7 +126,7 @@ public class BarlineTask
                     sheet.getSystems(),
                     false);
         } catch (Exception ex) {
-            logger.warning("Error in BarlineTask", ex);
+            logger.warn("Error in BarlineTask", ex);
         }
     }
 

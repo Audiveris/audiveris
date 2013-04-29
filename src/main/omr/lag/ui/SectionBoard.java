@@ -17,7 +17,7 @@ import omr.constant.ConstantSet;
 import omr.lag.Lag;
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 
@@ -68,7 +68,7 @@ public class SectionBoard
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SectionBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(SectionBoard.class);
 
     /** Events this board is interested in */
     private static final Class<?>[] eventsRead = new Class<?>[]{
@@ -204,7 +204,7 @@ public class SectionBoard
                         // of section fields (which include this id).
                         if (!updating) {
                             Integer sectionId = (Integer) id.getValue();
-                            logger.fine("sectionId={0} for {1}", sectionId, lag);
+                            logger.debug("sectionId={} for {}", sectionId, lag);
 
                             idSelecting = true;
                             lag.getSectionService().publish(
@@ -254,7 +254,7 @@ public class SectionBoard
                 return;
             }
 
-            logger.fine("SectionBoard: {0}", event);
+            logger.debug("SectionBoard: {}", event);
 
             if (event instanceof SectionEvent) {
                 handleEvent((SectionEvent) event);
@@ -262,7 +262,7 @@ public class SectionBoard
                 handleEvent((SectionSetEvent) event);
             }
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 

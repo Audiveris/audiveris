@@ -22,7 +22,7 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.ui.GlyphsController;
 import omr.glyph.ui.NestView;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
@@ -52,7 +52,7 @@ public class VerticalsController
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             VerticalsController.class);
 
     /** Events this entity is interested in */
@@ -227,7 +227,7 @@ public class VerticalsController
                     tellObject(null);
                 }
             } catch (Exception ex) {
-                logger.warning(getClass().getName() + " onEvent error", ex);
+                logger.warn(getClass().getName() + " onEvent error", ex);
             }
         }
     }

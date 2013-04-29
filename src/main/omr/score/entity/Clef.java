@@ -11,12 +11,13 @@
 // </editor-fold>
 package omr.score.entity;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
@@ -40,7 +41,7 @@ public class Clef
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Clef.class);
+    private static final Logger logger = LoggerFactory.getLogger(Clef.class);
 
     /** A dummy default clef to be used when no current clef is defined */
     private static Clef defaultClef = new Clef(
@@ -316,7 +317,7 @@ public class Clef
             return null;
 
         default :
-            logger.severe("No note step defined for {0}", this);
+            logger.error("No note step defined for {}", this);
 
             return null; // To keep compiler happy
         }
@@ -364,7 +365,7 @@ public class Clef
             return 0;
 
         default :
-            logger.severe("No note octave defined for {0}", this);
+            logger.error("No note octave defined for {}", this);
 
             return 0; // To keep compiler happy
         }

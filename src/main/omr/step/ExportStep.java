@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.ScoresManager;
 
@@ -31,7 +31,7 @@ public class ExportStep
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ExportStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(ExportStep.class);
 
     //~ Constructors -----------------------------------------------------------
 

@@ -23,7 +23,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -46,7 +46,7 @@ public class BassPattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BassPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(BassPattern.class);
 
     //~ Constructors -----------------------------------------------------------
     //-------------//
@@ -106,7 +106,7 @@ public class BassPattern
                 }
 
                 // Here we have a couple
-                logger.fine("Got bass dots #{0} & #{1}", top.getId(), bot.getId());
+                logger.debug("Got bass dots #{} & #{}", top.getId(), bot.getId());
 
                 Glyph compound = system.buildCompound(
                         top,

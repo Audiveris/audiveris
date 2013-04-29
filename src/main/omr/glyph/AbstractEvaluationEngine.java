@@ -19,14 +19,22 @@ import omr.glyph.ShapeEvaluator.Condition;
 import static omr.glyph.ShapeEvaluator.Condition.*;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
+import omr.util.UriUtil;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -51,7 +59,7 @@ public abstract class AbstractEvaluationEngine
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             AbstractEvaluationEngine.class);
 
     /** Number of shapes to differentiate. */
@@ -158,13 +166,13 @@ public abstract class AbstractEvaluationEngine
         try {
             os = new FileOutputStream(file);
             marshal(os);
-            logger.info("Engine marshalled to {0}", file);
+            logger.info("Engine marshalled to {}", file);
         } catch (FileNotFoundException ex) {
-            logger.warning("Could not find file " + file, ex);
+            logger.warn("Could not find file " + file, ex);
         } catch (IOException ex) {
-            logger.warning("IO error on file " + file, ex);
+            logger.warn("IO error on file " + file, ex);
         } catch (JAXBException ex) {
-            logger.warning("Error marshalling engine to " + file, ex);
+            logger.warn("Error marshalling engine to " + file, ex);
         } finally {
             if (os != null) {
                 try {
@@ -318,44 +326,54 @@ public abstract class AbstractEvaluationEngine
     protected Object unmarshal ()
     {
         // First try user file, if any (in user EVAL folder)
-        File file = new File(WellKnowns.EVAL_FOLDER, getFileName());
-        if (file.exists()) {
-            Object obj = unmarshal(file);
+        {
+            File file = new File(WellKnowns.EVAL_FOLDER, getFileName());
+            if (file.exists()) {
+                Object obj = unmarshal(file);
 
-            if (obj == null) {
-                logger.warning("Could not load {0}", file);
-            } else {
-                if (!isCompatible(obj)) {
-                    final String msg = "Obsolete user data for " + getName()
-                                       + " in " + file
-                                       + ", trying default data";
-                    logger.warning(msg);
-                    JOptionPane.showMessageDialog(null, msg);
+                if (obj == null) {
+                    logger.warn("Could not load {}", file);
                 } else {
-                    // Tell the user we are not using the default
-                    logger.info("{0} unmarshalled from {1}", getName(), file);
-                    return obj;
+                    if (!isCompatible(obj)) {
+                        final String msg = "Obsolete user data for " + getName()
+                                           + " in " + file
+                                           + ", trying default data";
+                        logger.warn(msg);
+                        JOptionPane.showMessageDialog(null, msg);
+                    } else {
+                        // Tell the user we are not using the default
+                        logger.info("{} unmarshalled from {}", getName(), file);
+                        return obj;
+                    }
                 }
             }
         }
 
         // Use default file (in program RES folder)
-        file = new File(WellKnowns.RES_FOLDER, getFileName());
-        Object obj = unmarshal(file);
+        //file = new File(WellKnowns.RES_URI, getFileName());
+        URI uri = UriUtil.toURI(WellKnowns.RES_URI, getFileName());
+        InputStream input;
+        try {
+            input = uri.toURL().openStream();
+        } catch (Exception ex) {
+            logger.warn("Error in " + uri, ex);
+            return null;
+        }
+        Object obj = unmarshal(input, getFileName());
 
         if (obj == null) {
-            logger.warning("Could not load {0}", file);
+            logger.warn("Could not load {}", uri);
         } else {
             if (!isCompatible(obj)) {
                 final String msg = "Obsolete default data for " + getName()
-                                   + " in " + file
+                                   + " in " + uri
                                    + ", please retrain from scratch";
-                logger.warning(msg);
+                logger.warn(msg);
                 JOptionPane.showMessageDialog(null, msg);
 
                 obj = null;
             } else {
-                logger.fine("{0} unmarshalled from {1}", getName(), file);
+                logger.debug("{} unmarshalled from {}", getName(), uri);
             }
         }
 
@@ -389,11 +407,11 @@ public abstract class AbstractEvaluationEngine
 
             return unmarshal(input, getFileName());
         } catch (FileNotFoundException ex) {
-            logger.warning("File not found " + file, ex);
+            logger.warn("File not found " + file, ex);
 
             return null;
         } catch (Exception ex) {
-            logger.warning("Error unmarshalling from " + file, ex);
+            logger.warn("Error unmarshalling from " + file, ex);
 
             return null;
         }
@@ -406,7 +424,7 @@ public abstract class AbstractEvaluationEngine
                               String name)
     {
         if (is == null) {
-            logger.warning("No data stream for {0} engine as {1}",
+            logger.warn("No data stream for {} engine as {}",
                     getName(), name);
         } else {
             try {
@@ -415,11 +433,11 @@ public abstract class AbstractEvaluationEngine
 
                 return engine;
             } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find or read " + name, ex);
+                logger.warn("Cannot find or read " + name, ex);
             } catch (IOException ex) {
-                logger.warning("IO error on " + name, ex);
+                logger.warn("IO error on " + name, ex);
             } catch (JAXBException ex) {
-                logger.warning("Error unmarshalling evaluator from " + name, ex);
+                logger.warn("Error unmarshalling evaluator from " + name, ex);
             }
         }
 

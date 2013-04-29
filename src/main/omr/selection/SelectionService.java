@@ -14,7 +14,7 @@ package omr.selection;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import org.bushe.swing.event.EventSubscriber;
 import org.bushe.swing.event.ThreadSafeEventService;
@@ -36,7 +36,7 @@ public class SelectionService
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             SelectionService.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -73,20 +73,20 @@ public class SelectionService
     //-----------------//
     public void dumpSubscribers ()
     {
-        logger.info("{0} subscribers:", this);
+        logger.info("{} subscribers:", this);
 
         for (Class<?> eventClass : allowedEvents) {
             List<?> subscribers = getSubscribers(eventClass);
 
             if (!subscribers.isEmpty()) {
                 UserEvent last = (UserEvent) getLastEvent(eventClass);
-                logger.info("   {0}: {1}{2}",
+                logger.info("   {}: {}{}",
                         eventClass.getSimpleName(),
                         subscribers.size(),
                         (last != null) ? (" " + last) : "");
 
                 for (Object obj : subscribers) {
-                    logger.info("      @{0} {1}",
+                    logger.info("      @{} {}",
                             Integer.toHexString(obj.hashCode()), obj);
                 }
             }
@@ -133,14 +133,14 @@ public class SelectionService
     @Override
     public void publish (Object event)
     {
-        logger.fine("{0} published: {1}", this, event);
+        logger.debug("{} published: {}", this, event);
 
         // Check whether the event may be published on this service
         if (!constants.checkPublishedEvents.isSet()
             || contains(allowedEvents, event.getClass())) {
             super.publish(event);
         } else {
-            logger.severe("Unexpected event {0} published on {1}", event, name);
+            logger.error("Unexpected event {} published on {}", event, name);
         }
     }
 
@@ -162,7 +162,7 @@ public class SelectionService
         if (contains(allowedEvents, type)) {
             return super.subscribeStrongly(type, es);
         } else {
-            logger.severe("event class {0} not available on {1}", type, name);
+            logger.error("event class {} not available on {}", type, name);
 
             return false;
         }
@@ -173,7 +173,7 @@ public class SelectionService
                                 EventSubscriber eh)
     {
         boolean res = super.unsubscribe(cl, eh);
-        logger.fine("{0} unsubscribe {1} subscriber:{2}@{3} res:{4}",
+        logger.debug("{} unsubscribe {} subscriber:{}@{} res:{}",
                 this, cl.getName(), eh, Integer.toHexString(eh.hashCode()), res);
 
         return res;

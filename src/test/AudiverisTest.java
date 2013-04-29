@@ -9,13 +9,14 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Test for multiple calls of Audiveris
@@ -23,6 +24,11 @@ import org.junit.Test;
  */
 public class AudiverisTest
 {
+    //~ Static fields/initializers ---------------------------------------------
+
+    private static final Logger logger = LoggerFactory.getLogger(
+        AudiverisTest.class);
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -65,17 +71,18 @@ public class AudiverisTest
         System.out.println("testMultipleCalls");
 
         String[] args1 = new String[] {
-                             "-batch", "-step", "EXPORT", "-input", "examples/chula.png"
+                             "-batch", "-step", "EXPORT", "-input",
+                             "examples/chula.png"
                          };
         String[] args2 = new String[] {
-                             "-batch", "-step", "EXPORT", "-input", "examples/batuque.png",
-                             "examples/allegretto.png"
+                             "-batch", "-step", "EXPORT", "-input",
+                             "examples/batuque.png", "examples/allegretto.png"
                          };
         System.out.println("firstCall to Audiveris.main()");
-        Logger.getAnonymousLogger().log(Level.INFO, "firstCall to Audiveris.main()");
+        logger.info("firstCall to Audiveris.main()");
         Audiveris.main(args1);
         System.out.println("secondCall to Audiveris.main()");
-        Logger.getAnonymousLogger().log(Level.INFO, "secondCall to Audiveris.main()");
+        logger.info("secondCall to Audiveris.main()");
         Audiveris.main(args2);
         System.out.println("finished");
     }

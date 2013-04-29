@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.util;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,7 +30,7 @@ public class FileUtil
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(FileUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -95,7 +95,7 @@ public class FileUtil
             }
 
             if (!file.delete()) {
-                logger.warning("Could not delete file {0}", file);
+                logger.warn("Could not delete file {}", file);
             }
         }
     }

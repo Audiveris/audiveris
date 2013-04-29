@@ -14,7 +14,7 @@ package omr.score.entity;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -32,7 +32,7 @@ public class Wedge
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Wedge.class);
+    private static final Logger logger = LoggerFactory.getLogger(Wedge.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Vertical spread in units */
@@ -85,7 +85,7 @@ public class Wedge
                                  PixelPoint startingPoint)
     {
         if (glyph.isVip()) {
-            logger.info("Wedge. populate {0}", glyph.idString());
+            logger.info("Wedge. populate {}", glyph.idString());
         }
         
         SystemPart part = startingMeasure.getPart();

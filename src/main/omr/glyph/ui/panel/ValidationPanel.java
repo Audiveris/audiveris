@@ -18,7 +18,7 @@ import omr.glyph.Grades;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SampleVerifier;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerField;
@@ -36,7 +36,8 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -57,7 +58,7 @@ class ValidationPanel
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             ValidationPanel.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -239,7 +240,7 @@ class ValidationPanel
     //---------------//
     private void runValidation ()
     {
-        logger.info("Validating {0} evaluator on {1} base ...",
+        logger.info("Validating {} evaluator on {} base ...",
                 evaluator.getName(),
                 trainingPanel.useWhole() ? "whole" : "core");
 
@@ -296,7 +297,7 @@ class ValidationPanel
         int total = gNames.size();
         double pc = ((double) positives * 100) / (double) total;
         String pcStr = String.format(" %5.2f%%", pc);
-        logger.info("{0}Evaluator. Ratio={1} : {2}/{3}", 
+        logger.info("{}Evaluator. Ratio={} : {}/{}", 
                 evaluator.getName(), pcStr, positives, total);
         positiveValue.setValue(positives);
         pcValue.setValue(pc);

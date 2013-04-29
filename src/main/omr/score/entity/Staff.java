@@ -13,7 +13,7 @@ package omr.score.entity;
 
 import omr.grid.StaffInfo;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -39,7 +39,7 @@ public class Staff
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Staff.class);
+    private static final Logger logger = LoggerFactory.getLogger(Staff.class);
 
     //~ Instance fields --------------------------------------------------------
 

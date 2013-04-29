@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 
@@ -29,7 +29,7 @@ public abstract class ScoreNode
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreNode.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreNode.class);
 
     //~ Constructors -----------------------------------------------------------
 

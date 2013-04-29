@@ -13,7 +13,7 @@ package omr.ui.view;
 
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 
@@ -75,7 +75,7 @@ public class RubberPanel
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(RubberPanel.class);
+    private static final Logger logger = LoggerFactory.getLogger(RubberPanel.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Current display zoom, if any */
@@ -100,7 +100,7 @@ public class RubberPanel
      */
     public RubberPanel ()
     {
-        logger.fine("new RubberPanel");
+        logger.debug("new RubberPanel");
     }
 
     //-------------//
@@ -119,7 +119,7 @@ public class RubberPanel
         setZoom(zoom);
         setRubber(rubber);
 
-        logger.fine("new RubberPanel zoom={0} rubber={1}", zoom, rubber);
+        logger.debug("new RubberPanel zoom={} rubber={}", zoom, rubber);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -215,7 +215,7 @@ public class RubberPanel
                 zoom.unscaled(vr.x + (vr.width / 2)),
                 zoom.unscaled(vr.y + (vr.height / 2)));
 
-        logger.fine("getPanelCenter={0}", pt);
+        logger.debug("getPanelCenter={}", pt);
 
         return pt;
     }
@@ -231,7 +231,7 @@ public class RubberPanel
     public Rectangle getSelectedRectangle ()
     {
         if (locationService == null) {
-            logger.severe("No locationService for {0}", this);
+            logger.error("No locationService for {}", this);
 
             return null;
         }
@@ -273,7 +273,7 @@ public class RubberPanel
                 return;
             }
 
-            logger.fine("{0} onEvent {1}", getClass().getName(), event);
+            logger.debug("{} onEvent {}", getClass().getName(), event);
 
             if (event instanceof LocationEvent) {
                 // Location => move view focus on this location w/ markers
@@ -281,7 +281,7 @@ public class RubberPanel
                 showFocusLocation(locationEvent.getData(), false);
             }
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 
@@ -330,7 +330,7 @@ public class RubberPanel
     public void rectangleZoomed (final Rectangle rect,
                                  MouseMovement movement)
     {
-        logger.fine("{0} rectangleZoomed {1}", getClass().getName(), rect);
+        logger.debug("{} rectangleZoomed {}", getClass().getName(), rect);
 
         if (rect != null) {
             // First focus on center of the specified rectangle
@@ -486,7 +486,7 @@ public class RubberPanel
      */
     public void subscribe ()
     {
-        logger.fine("Subscribe {0} {1}", getClass().getSimpleName(), getName());
+        logger.debug("Subscribe {} {}", getClass().getSimpleName(), getName());
 
         // Subscribe to location events
         if (locationService != null) {
@@ -542,7 +542,7 @@ public class RubberPanel
      */
     public void unsubscribe ()
     {
-        logger.fine("Unsubscribe {0} {1}", getClass().getSimpleName(), getName());
+        logger.debug("Unsubscribe {} {}", getClass().getSimpleName(), getName());
 
         // Unsubscribe to location events
         if (locationService != null) {
@@ -576,10 +576,10 @@ public class RubberPanel
             } catch (ConcurrentModificationException ex) {
                 // It's hard to avoid concurrent modifs since the GUI may need to
                 // repaint a view, while some processing is taking place ...
-                ///logger.warning("RubberPanel paintComponent failed", ex);
+                ///logger.warn("RubberPanel paintComponent failed", ex);
                 repaint(); // To trigger another painting later ...
             } catch (Throwable ex) {
-                logger.warning("RubberPanel paintComponent ", ex);
+                logger.warn("RubberPanel paintComponent ", ex);
             } finally {
                 // Finally the rubber, now that everything else has been drawn
                 if (rubber != null) {
@@ -623,7 +623,7 @@ public class RubberPanel
                                      MouseMovement movement,
                                      SelectionHint hint)
     {
-        logger.fine("setFocusLocation rect={0} hint={1}", rect, hint);
+        logger.debug("setFocusLocation rect={} hint={}", rect, hint);
 
         // Publish the new user-selected location
         if (locationService != null) {

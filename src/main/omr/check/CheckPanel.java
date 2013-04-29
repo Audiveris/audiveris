@@ -13,7 +13,7 @@ package omr.check;
 
 import omr.constant.Constant;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.ui.util.Panel;
 
@@ -48,7 +48,7 @@ public class CheckPanel<C extends Checkable>
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(CheckPanel.class);
+    private static final Logger logger = LoggerFactory.getLogger(CheckPanel.class);
 
     // Colors
     private static final Color GREEN_COLOR = new Color(100, 150, 0);
@@ -195,7 +195,7 @@ public class CheckPanel<C extends Checkable>
 
                 field.setText(textOf(result.value));
             } catch (Throwable ex) {
-                logger.warning("Failure in check " + check.getName(), ex);
+                logger.warn("Failure in check " + check.getName(), ex);
                 failed = true;
             }
         }
@@ -390,8 +390,8 @@ public class CheckPanel<C extends Checkable>
             sbr.append("pref");
         }
 
-        logger.fine("sb cols={0}", sbc);
-        logger.fine("sb rows={0}", sbr);
+        logger.debug("sb cols={}", sbc);
+        logger.debug("sb rows={}", sbr);
 
         // Create proper form layout
         return new FormLayout(
@@ -530,8 +530,8 @@ public class CheckPanel<C extends Checkable>
                                     append(" to ").append(newString);
                             logger.info(sb.toString());
                         } catch (Exception ex) {
-                            logger.warning(
-                                    "Error in {0}, {1}",
+                            logger.warn(
+                                    "Error in {}, {}",
                                     context, ex.getLocalizedMessage());
                         }
                     }

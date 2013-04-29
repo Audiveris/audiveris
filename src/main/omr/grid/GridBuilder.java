@@ -20,7 +20,7 @@ import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolsEditor;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.RunsTable;
 
@@ -54,7 +54,7 @@ public class GridBuilder
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(GridBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(GridBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Related sheet. */
@@ -141,7 +141,7 @@ public class GridBuilder
                 targetBuilder.buildInfo();
             }
         } catch (Throwable ex) {
-            logger.warning(sheet.getLogPrefix() + "Error in GridBuilder", ex);
+            logger.warn(sheet.getLogPrefix() + "Error in GridBuilder", ex);
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -167,13 +167,13 @@ public class GridBuilder
                             Collection<Glyph> newSticks)
     {
         logger.info("updateBars");
-        logger.info("Old {0}", Glyphs.toString(oldSticks));
-        logger.info("New {0}", Glyphs.toString(newSticks));
+        logger.info("Old {}", Glyphs.toString(oldSticks));
+        logger.info("New {}", Glyphs.toString(newSticks));
 
         try {
             barsRetriever.retrieveSystemBars(oldSticks, newSticks);
         } catch (Exception ex) {
-            logger.warning("updateBars. retrieveSystemBars", ex);
+            logger.warn("updateBars. retrieveSystemBars", ex);
         }
 
         barsRetriever.retrieveMeasureBars();

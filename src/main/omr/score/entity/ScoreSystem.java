@@ -13,7 +13,7 @@ package omr.score.entity;
 
 import omr.text.TextRole;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelDimension;
 import omr.score.common.PixelPoint;
@@ -41,7 +41,7 @@ public class ScoreSystem
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreSystem.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreSystem.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Id for debug */
@@ -288,7 +288,7 @@ public class ScoreSystem
             }
         }
 
-        logger.fine("{0} No part {1} found", getContextString(), id);
+        logger.debug("{} No part {} found", getContextString(), id);
 
         return null;
     }

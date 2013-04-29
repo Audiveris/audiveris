@@ -14,7 +14,7 @@ package omr.ui.util;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.ui.PixelCount;
 
@@ -47,7 +47,7 @@ public class Panel
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Panel.class);
+    private static final Logger logger = LoggerFactory.getLogger(Panel.class);
 
     /** Default Insets */
     private static Insets DEFAULT_INSETS;
@@ -238,8 +238,8 @@ public class Panel
             }
         }
 
-        logger.fine("sbc={0}", colSpec);
-        logger.fine("sbr={0}", sbr);
+        logger.debug("sbc={}", colSpec);
+        logger.debug("sbr={}", sbr);
 
         return new FormLayout(colSpec, sbr.toString());
     }

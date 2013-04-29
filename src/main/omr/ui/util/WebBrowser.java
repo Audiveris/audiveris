@@ -13,7 +13,7 @@ package omr.ui.util;
 
 import omr.WellKnowns;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.awt.Desktop;
 import java.io.IOException;
@@ -40,7 +40,7 @@ public class WebBrowser
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(WebBrowser.class);
+    private static final Logger logger = LoggerFactory.getLogger(WebBrowser.class);
 
     /** Major browsers. */
     private static final String[] browsers = {
@@ -103,19 +103,19 @@ public class WebBrowser
     {
         String osName = System.getProperty("os.name");
 
-        if (false) {
-            logger.fine(
-                    "Desktop.browse {0} with {1} on {2}", uri, this, osName);
+        if (true) {
+            logger.info(
+                    "Desktop.browse {} with {} on {}", uri, this, osName);
 
             try {
                 Desktop desktop = Desktop.getDesktop();
                 desktop.browse(uri);
             } catch (IOException ex) {
-                logger.warning("Could not launch browser " + uri, ex);
+                logger.warn("Could not launch browser " + uri, ex);
             }
         } else {
             // Delegate to BareBonesBrowserLaunch-like code
-            logger.fine("openURL {0} with {1} on {2}", uri, this, osName);
+            logger.info("openURL {} with {} on {}", uri, this, osName);
             openURL(uri.toString());
         }
     }
@@ -162,13 +162,13 @@ public class WebBrowser
                     }
                 }
 
-                logger.warning("Could not find any suitable web browser");
+                logger.warn("Could not find any suitable web browser");
             }
         } catch (ClassNotFoundException | NoSuchMethodException |
                  SecurityException | IllegalAccessException |
                  IllegalArgumentException | InvocationTargetException |
                  IOException | InterruptedException ex) {
-            logger.warning("Could not launch browser", ex);
+            logger.warn("Could not launch browser", ex);
         }
     }
 
@@ -204,7 +204,7 @@ public class WebBrowser
                 }
             };
         } catch (Exception e) {
-            logger.fine("java.awt.Desktop unsupported or error initializing");
+            logger.debug("java.awt.Desktop unsupported or error initializing");
         }
 
         //If it's not supported, see if we have the Mac FileManager
@@ -228,7 +228,7 @@ public class WebBrowser
                     }
                 };
             } catch (Exception e) {
-                logger.fine("Apple EIO FileManager unsupported");
+                logger.debug("Apple EIO FileManager unsupported");
             }
         }
 

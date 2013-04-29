@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score.ui;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 import omr.score.ScoresManager;
@@ -43,7 +43,7 @@ public class SheetPdfOutput
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoresManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoresManager.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -109,7 +109,7 @@ public class SheetPdfOutput
                 g2.dispose();
             }
         } catch (Exception ex) {
-            logger.warning("Error printing " + score.getRadix(), ex);
+            logger.warn("Error printing " + score.getRadix(), ex);
             throw ex;
         } finally {
             if (document != null) {

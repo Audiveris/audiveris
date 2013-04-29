@@ -16,7 +16,7 @@ import omr.WellKnowns;
 import omr.glyph.GlyphRepository;
 import omr.glyph.Shape;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.ui.MainGui;
 
@@ -81,7 +81,7 @@ public class SampleVerifier
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SampleVerifier.class);
+    private static final Logger logger = LoggerFactory.getLogger(SampleVerifier.class);
 
     /** The unique instance */
     private static volatile SampleVerifier INSTANCE;
@@ -393,22 +393,22 @@ public class SampleVerifier
                     getSelectedValuesList();
 
             // Debug
-            if (logger.isFineEnabled()) {
-                logger.fine("Glyph Selector. Got Folders:");
+            if (logger.isDebugEnabled()) {
+                logger.debug("Glyph Selector. Got Folders:");
 
                 for (String fName : folders) {
-                    logger.fine(fName);
+                    logger.debug(fName);
                 }
 
-                logger.fine("Glyph Selector. Got Shapes:");
+                logger.debug("Glyph Selector. Got Shapes:");
 
                 for (Shape shape : shapes) {
-                    logger.fine(shape.toString());
+                    logger.debug(shape.toString());
                 }
             }
 
             if (shapes.isEmpty()) {
-                logger.warning("No shapes selected in Shape Selector");
+                logger.warn("No shapes selected in Shape Selector");
             } else {
                 model.removeAllElements();
 
@@ -693,7 +693,7 @@ public class SampleVerifier
             List<String> folders = folderSelector.list.getSelectedValuesList();
 
             if (folders.isEmpty()) {
-                logger.warning("No folders selected in Folder Selector");
+                logger.warn("No folders selected in Folder Selector");
             } else {
                 EnumSet<Shape> shapeSet = EnumSet.noneOf(Shape.class);
 

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 
@@ -34,7 +34,7 @@ public class SheetBench
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SheetBench.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetBench.class);
 
     /** Special key which indicates that an interruption has occurred */
     private static final String INTERRUPTION_KEY = "whole.interrupted";

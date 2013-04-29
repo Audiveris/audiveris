@@ -15,7 +15,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 import omr.score.entity.Measure;
@@ -56,7 +56,7 @@ public class SheetPainter
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SheetPainter.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetPainter.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Graphic context */
@@ -105,7 +105,7 @@ public class SheetPainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + measure,
                     ex);
         }
@@ -143,7 +143,7 @@ public class SheetPainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + page,
                     ex);
         } finally {
@@ -167,7 +167,7 @@ public class SheetPainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + part,
                     ex);
         }
@@ -190,7 +190,7 @@ public class SheetPainter
         } catch (ConcurrentModificationException ignored) {
             return false;
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + system,
                     ex);
 
@@ -238,7 +238,7 @@ public class SheetPainter
         } catch (ConcurrentModificationException ignored) {
             return false;
         } catch (Exception ex) {
-            logger.warning(getClass().getSimpleName()
+            logger.warn(getClass().getSimpleName()
                            + " Error visiting " + systemInfo.idString(), ex);
         }
 

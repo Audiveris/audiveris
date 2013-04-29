@@ -15,7 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Rational;
 
@@ -70,7 +70,7 @@ public class SlotBuilder
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SlotBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(SlotBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -249,7 +249,7 @@ public class SlotBuilder
             // Location-based relationships
             inspectLocations();
 
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
                 dumpRelationships();
             }
         }
@@ -378,7 +378,7 @@ public class SlotBuilder
 
             // Process detected adjacencies
             if (!adjacencies.isEmpty()) {
-                logger.fine("Adjacencies: {0}", adjacencies);
+                logger.debug("Adjacencies: {}", adjacencies);
                 for (ChordPair pair : adjacencies) {
                     // Since ch1 ~ ch2, all neighbors of ch1 ~ neighbors of ch2
                     Set<Chord> n1 = getClosure(pair.one);
@@ -460,7 +460,7 @@ public class SlotBuilder
 
             // List BeamGroups
             for (BeamGroup group : measure.getBeamGroups()) {
-                logger.info("  {0}", group);
+                logger.info("  {}", group);
             }
 
             // List chords relationships
@@ -487,7 +487,7 @@ public class SlotBuilder
                 sb.append("  ").append(getChord(iy + 1));
 
             }
-            logger.info("\n{0}", sb);
+            logger.info("\n{}", sb);
         }
 
         //------------//
@@ -676,7 +676,7 @@ public class SlotBuilder
         private void dump (String label,
                            Collection<Chord> chords)
         {
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
 
                 StringBuilder sb = new StringBuilder();
                 sb.append(label)
@@ -687,7 +687,7 @@ public class SlotBuilder
                 }
 
                 sb.append("]");
-                logger.fine(sb.toString());
+                logger.debug(sb.toString());
             }
         }
 
@@ -745,7 +745,7 @@ public class SlotBuilder
                 startTime = Rational.ZERO;
             }
 
-            logger.fine("startTime={0}", startTime);
+            logger.debug("startTime={}", startTime);
 
             return startTime;
         }
@@ -793,7 +793,7 @@ public class SlotBuilder
         {
             this.one = one;
             this.two = two;
-            logger.fine("Adjacent {0}@{1} & {2}@{3}",
+            logger.debug("Adjacent {}@{} & {}@{}",
                     one, one.getHeadLocation(), two, two.getHeadLocation());
         }
 

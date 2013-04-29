@@ -124,7 +124,7 @@ public class InsertTask
     {
         super.epilog(sheet);
 
-        logger.fine("{0}", this);
+        logger.debug("{}", this);
 
         // Take inserted glyph(s) as selected glyph(s)
         sheet.getNest().getGlyphService().publish(

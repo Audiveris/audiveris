@@ -13,7 +13,7 @@ package omr.lag.ui;
 
 import omr.lag.Lag;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.ui.field.SpinnerUtilities;
 
@@ -33,7 +33,7 @@ public class SpinnerSectionModel
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             SpinnerSectionModel.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -79,7 +79,7 @@ public class SpinnerSectionModel
     public Object getNextValue ()
     {
         final int cur = currentId.intValue();
-        logger.fine("getNextValue cur={0}", cur);
+        logger.debug("getNextValue cur={}", cur);
 
         if (cur == SpinnerUtilities.NO_VALUE) {
             return (lag.getLastVertexId() > 0) ? 1 : null;
@@ -102,7 +102,7 @@ public class SpinnerSectionModel
     public Object getPreviousValue ()
     {
         final int cur = currentId.intValue();
-        logger.fine("getPreviousValue cur={0}", cur);
+        logger.debug("getPreviousValue cur={}", cur);
 
         if (cur == SpinnerUtilities.NO_VALUE) {
             return null;
@@ -122,7 +122,7 @@ public class SpinnerSectionModel
     @Override
     public Object getValue ()
     {
-        logger.fine("getValue currentId={0}", currentId);
+        logger.debug("getValue currentId={}", currentId);
 
         return currentId;
     }
@@ -141,7 +141,7 @@ public class SpinnerSectionModel
     @Override
     public void setValue (Object value)
     {
-        logger.fine("setValue value={0}", value);
+        logger.debug("setValue value={}", value);
 
         Integer id = (Integer) value;
 
@@ -149,7 +149,7 @@ public class SpinnerSectionModel
             currentId = id;
             fireStateChanged();
         } else {
-            logger.warning("Invalid section id: {0}", id);
+            logger.warn("Invalid section id: {}", id);
         }
     }
 }

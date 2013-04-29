@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
@@ -35,7 +35,7 @@ public abstract class SheetDependent
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SheetDependent.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetDependent.class);
 
     /** Name of property linked to sheet availability */
     public static final String SHEET_AVAILABLE = "sheetAvailable";
@@ -92,7 +92,7 @@ public abstract class SheetDependent
             Sheet sheet = sheetEvent.getData();
             setSheetAvailable(sheet != null);
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 

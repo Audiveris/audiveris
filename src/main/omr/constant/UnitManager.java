@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr.constant;
 
-import omr.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -30,11 +31,11 @@ import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Class {@code UnitManager} manages all units (aka classes),
- * for which we have either a ConstantSet, or a Logger, or both.
+ * for which we have a ConstantSet.
  *
  * <p>To help {@link UnitTreeTable} display the whole tree of UnitNodes,
- * UnitManager can pre-load all the classes known to contain a ConstantSet or a
- * Logger. This list is kept up-to-date and stored as a property
+ * UnitManager can pre-load all the classes known to contain a ConstantSet.
+ * This list is kept up-to-date and stored as a property.
  *
  * @author Hervé Bitteur
  */
@@ -53,7 +54,7 @@ public class UnitManager
     private static final String SEPARATOR = ";";
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(UnitManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(UnitManager.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -97,22 +98,6 @@ public class UnitManager
     public static UnitManager getInstance ()
     {
         return INSTANCE;
-    }
-
-    //-----------//
-    // addLogger //
-    //-----------//
-    /**
-     * Add a Logger, which like addSet means perhaps adding a UnitNode
-     * if not already allocated and setting its Logger reference to the
-     * provided Logger.
-     *
-     * @param logger the Logger to add to the hierarchy
-     */
-    public void addLogger (Logger logger)
-    {
-        //log ("addLogger logger=" + logger.getName());
-        retrieveUnit(logger.getName()).setLogger(logger);
     }
 
     //--------//
@@ -230,7 +215,7 @@ public class UnitManager
                 }
             }
         }
-        
+
         logger.info(sb.toString());
     }
 
@@ -265,7 +250,7 @@ public class UnitManager
     // preLoadUnits //
     //--------------//
     /**
-     * Allows to preload the names of the various nodes in the
+     * Allows to pre-load the names of the various nodes in the
      * hierarchy, by simply extracting names stored at previous runs.
      * This will load the classes not already loaded.
      * This method is meant to be used by the UI which let the user browse and
@@ -288,7 +273,7 @@ public class UnitManager
                 UNIT,
                 unitName,
                 "",
-                "List of units known as containing a ConstantSet and/or a Logger");
+                "List of units known as containing a ConstantSet");
 
         // Initialize units using the constant 'units'
         final String[] tokens = units.getValue().split(SEPARATOR);
@@ -298,7 +283,7 @@ public class UnitManager
         for (String unit : tokens) {
             try {
                 ///System.out.println ("pre-loading '" + unit + "'...");
-                Class.forName(unit); // This loads its ConstantSet and Logger
+                Class.forName(unit); // This loads its ConstantSet
                 //log ("unit '" + unit + "' pre-loaded");
             } catch (ClassNotFoundException ex) {
                 System.err.println(
@@ -393,7 +378,7 @@ public class UnitManager
                               Collection<String> strings)
     {
         StringBuilder sb = new StringBuilder();
-        
+
         sb.append(String.format("%s:%n", title));
 
         for (String string : strings) {
@@ -403,17 +388,6 @@ public class UnitManager
         logger.info(sb.toString());
     }
 
-    //    //-----//
-    //    // log //
-    //    //-----//
-    //    /**
-    //     * Poor-man implementation of a log feature, since the normal Logger stuff
-    //     * is not yet available
-    //     */
-    //    private static void log (String msg)
-    //    {
-    //        System.out.println("UnitManager:: " + msg);
-    //    }
     //--------------//
     // retrieveUnit //
     //--------------//
@@ -437,7 +411,7 @@ public class UnitManager
         } else if (node instanceof UnitNode) {
             return (UnitNode) node;
         } else if (node instanceof PackageNode) {
-            logger.severe("Unit with same name as package {0}", name);
+            logger.error("Unit with same name as package {}", name);
         }
 
         return null;

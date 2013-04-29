@@ -20,7 +20,7 @@ import omr.glyph.facets.GlyphComposition.Linking;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.LineUtilities;
 import omr.math.NaturalSpline;
@@ -57,7 +57,7 @@ public class FilamentAlignment
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             FilamentAlignment.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -269,8 +269,8 @@ public class FilamentAlignment
             double rad = minRadius / glyph.getInterline();
 
             if (rad < constants.minRadius.getValue()) {
-                if (logger.isFineEnabled() || glyph.isVip()) {
-                    logger.info("Polishing F#{0} minRad: {1} seq:{2} {3}",
+                if (logger.isDebugEnabled() || glyph.isVip()) {
+                    logger.info("Polishing F#{} minRad: {} seq:{} {}",
                             glyph.getId(), (float) rad, idx, points.get(idx));
                 }
 
@@ -322,7 +322,7 @@ public class FilamentAlignment
                 Section section = found.isEmpty() ? null : found.get(0);
 
                 if (section != null) {
-                    logger.fine("Removed section#{0} from {1} F{2}",
+                    logger.debug("Removed section#{} from {} F{}",
                             section.getId(), orientation, glyph.getId());
                     glyph.removeSection(section, Linking.LINK_BACK);
                     modified = true;
@@ -463,7 +463,7 @@ public class FilamentAlignment
             // Cache global slope
             getSlope();
         } catch (Exception ex) {
-            logger.warning("Filament cannot computeData", ex);
+            logger.warn("Filament cannot computeData", ex);
         }
     }
 

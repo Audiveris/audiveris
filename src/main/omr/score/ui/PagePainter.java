@@ -18,7 +18,8 @@ import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 import omr.score.common.PixelDimension;
@@ -110,7 +111,7 @@ public abstract class PagePainter
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(PagePainter.class);
+    private static final Logger logger = LoggerFactory.getLogger(PagePainter.class);
 
     /** The alignment used by default */
     protected static final Alignment defaultAlignment = AREA_CENTER;
@@ -297,8 +298,7 @@ public abstract class PagePainter
             g.setClip(oldClip);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.
-                    warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + arpeggiate,
                     ex);
         }
@@ -381,7 +381,7 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + beam,
                     ex);
         }
@@ -415,7 +415,7 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + chord,
                     ex);
         }
@@ -433,7 +433,7 @@ public abstract class PagePainter
             paint(clef.getShape(), clef.getReferencePoint());
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + clef,
                     ex);
         }
@@ -485,7 +485,7 @@ public abstract class PagePainter
             final int unitDx = getKeySigItemDx();
 
             if (box == null) {
-                ///logger.warning("Null box for " + keySignature);
+                ///logger.warn("Null box for " + keySignature);
                 ///keySignature.addError("Null box for " + keySignature);
                 return false;
             }
@@ -512,8 +512,7 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.
-                    warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + keySignature,
                     ex);
         }
@@ -539,12 +538,12 @@ public abstract class PagePainter
                             measureElement.getReferencePoint());
                 } catch (ConcurrentModificationException ignored) {
                 } catch (Exception ex) {
-                    logger.warning("Cannot paint " + measureElement, ex);
+                    logger.warn("Cannot paint " + measureElement, ex);
                 }
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting "
                     + measureElement,
                     ex);
@@ -587,7 +586,7 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + note,
                     ex);
         }
@@ -667,7 +666,7 @@ public abstract class PagePainter
             g.setStroke(oldStroke);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + slur,
                     ex);
         }
@@ -736,7 +735,7 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + part,
                     ex);
         }
@@ -779,7 +778,7 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + text,
                     ex);
         }
@@ -870,7 +869,7 @@ public abstract class PagePainter
                         new PixelPoint(center.x, center.y + dy));
             }
         } catch (InvalidTimeSignature ex) {
-            logger.warning("Invalid time signature", ex);
+            logger.warn("Invalid time signature", ex);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             //            timeSignature.addError(
@@ -914,7 +913,7 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + wedge,
                     ex);
         }
@@ -1133,7 +1132,7 @@ public abstract class PagePainter
         if (layout != null) {
             paint(layout, location, defaultAlignment);
         } else {
-            logger.fine("null layout");
+            logger.debug("null layout");
         }
     }
 
@@ -1188,7 +1187,7 @@ public abstract class PagePainter
         if ((from != null) && (to != null)) {
             g.drawLine(from.x, from.y, to.x, to.y);
         } else {
-            logger.warning("line not painted due to null reference");
+            logger.warn("line not painted due to null reference");
         }
     }
 

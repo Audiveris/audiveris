@@ -13,7 +13,7 @@ package omr.run;
 
 import omr.lag.Lag;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
@@ -38,7 +38,7 @@ public class RunBoard
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(RunBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(RunBoard.class);
 
     /** Events this entity is interested in */
     private static final Class<?>[] eventClasses = new Class<?>[]{RunEvent.class};
@@ -154,7 +154,7 @@ public class RunBoard
                 return;
             }
 
-            logger.fine("RunBoard: {0}", event);
+            logger.debug("RunBoard: {}", event);
 
             if (event instanceof RunEvent) {
                 final RunEvent runEvent = (RunEvent) event;
@@ -169,7 +169,7 @@ public class RunBoard
                 }
             }
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 

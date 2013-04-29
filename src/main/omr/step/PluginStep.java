@@ -13,7 +13,7 @@ package omr.step;
 
 import omr.Main;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.plugin.Plugin;
 
@@ -35,7 +35,7 @@ public class PluginStep
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(PluginStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(PluginStep.class);
 
     //~ Instance fields --------------------------------------------------------
     //

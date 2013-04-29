@@ -15,7 +15,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -40,7 +40,7 @@ public class Arpeggiate
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Arpeggiate.class);
+    private static final Logger logger = LoggerFactory.getLogger(Arpeggiate.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -80,7 +80,7 @@ public class Arpeggiate
                                  PixelPoint point)
     {
         if (glyph.isVip()) {
-            logger.info("Arpeggiate. populate {0}", glyph.idString());
+            logger.info("Arpeggiate. populate {}", glyph.idString());
         }
         
         // A Arpeggiate relates to ALL the embraced note(s)

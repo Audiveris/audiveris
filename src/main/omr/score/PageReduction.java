@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.PartConnection.Candidate;
 import omr.score.PartConnection.Result;
@@ -34,7 +34,7 @@ public class PageReduction
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(PageReduction.class);
+    private static final Logger logger = LoggerFactory.getLogger(PageReduction.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Related page */
@@ -78,7 +78,7 @@ public class PageReduction
 
         // Make the connections: (system) SystemPart -> (page) ScorePart
         Map<Candidate, Result> candidateMap = connection.getCandidateMap();
-        logger.fine("Candidates:{0}", candidateMap.size());
+        logger.debug("Candidates:{}", candidateMap.size());
 
         for (Map.Entry<Candidate, Result> entry : candidateMap.entrySet()) {
             Candidate candidate = entry.getKey();

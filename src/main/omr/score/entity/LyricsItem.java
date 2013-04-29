@@ -16,7 +16,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphContent;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -50,7 +50,7 @@ public class LyricsItem
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(LyricsItem.class);
+    private static final Logger logger = LoggerFactory.getLogger(LyricsItem.class);
 
     /** Comparator based on line number */
     public static final Comparator<LyricsItem> numberComparator = new Comparator<LyricsItem>()

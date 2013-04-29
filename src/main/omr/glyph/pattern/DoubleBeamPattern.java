@@ -18,7 +18,7 @@ import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 
@@ -41,7 +41,7 @@ public class DoubleBeamPattern
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             DoubleBeamPattern.class);
 
     //~ Constructors -----------------------------------------------------------
@@ -74,8 +74,8 @@ public class DoubleBeamPattern
                 continue;
             }
 
-            if (beam.isVip() || logger.isFineEnabled()) {
-                logger.info("Checking single-stem beam #{0}", beam.getId());
+            if (beam.isVip() || logger.isDebugEnabled()) {
+                logger.info("Checking single-stem beam #{}", beam.getId());
             }
 
             final Glyph stem = beam.getFirstStem();
@@ -99,8 +99,8 @@ public class DoubleBeamPattern
 
             for (Glyph candidate : candidates) {
                 if (beam.isVip() || candidate.isVip()
-                    || logger.isFineEnabled()) {
-                    logger.info("Beam candidate #{0}", candidate);
+                    || logger.isDebugEnabled()) {
+                    logger.info("Beam candidate #{}", candidate);
                 }
 
                 Glyph compound = system.buildTransientCompound(
@@ -115,8 +115,8 @@ public class DoubleBeamPattern
                     compound = system.addGlyph(compound);
                     compound.setEvaluation(eval);
 
-                    if (compound.isVip() || logger.isFineEnabled()) {
-                        logger.info("Compound #{0} built as {1}",
+                    if (compound.isVip() || logger.isDebugEnabled()) {
+                        logger.info("Compound #{} built as {}",
                                 compound.getId(), compound.getEvaluation());
                     }
 

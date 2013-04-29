@@ -16,7 +16,7 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import javax.swing.UIManager;
 
@@ -34,7 +34,7 @@ public class UILookAndFeel
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(UILookAndFeel.class);
+    private static final Logger logger = LoggerFactory.getLogger(UILookAndFeel.class);
 
     static {
         if (WellKnowns.MAC_OS_X) {
@@ -114,7 +114,7 @@ public class UILookAndFeel
             }
         } catch (Exception ex) {
             //ex.printStackTrace();
-            logger.warning(ex.toString());
+            logger.warn(ex.toString());
         }
     }
 

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.run;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 
@@ -38,7 +38,7 @@ public class RunsRetriever
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(RunsRetriever.class);
+    private static final Logger logger = LoggerFactory.getLogger(RunsRetriever.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -207,12 +207,12 @@ public class RunsRetriever
                 OmrExecutors.getHighExecutor()
                         .invokeAll(tasks);
             } catch (InterruptedException ex) {
-                logger.warning("ParallelRuns got interrupted");
+                logger.warn("ParallelRuns got interrupted");
                 throw new ProcessingCancellationException(ex);
             } catch (ProcessingCancellationException pce) {
                 throw pce;
             } catch (Throwable ex) {
-                logger.warning("Exception raised in ParallelRuns", ex);
+                logger.warn("Exception raised in ParallelRuns", ex);
                 throw new RuntimeException(ex);
             }
         }

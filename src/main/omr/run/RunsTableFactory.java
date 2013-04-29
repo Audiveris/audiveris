@@ -11,12 +11,13 @@
 // </editor-fold>
 package omr.run;
 
-import omr.log.Logger;
-
 import omr.score.common.PixelRectangle;
 
 import net.jcip.annotations.NotThreadSafe;
 import net.jcip.annotations.ThreadSafe;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 
@@ -31,8 +32,8 @@ public class RunsTableFactory
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger
-            .getLogger(RunsTableFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            RunsTableFactory.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -90,14 +91,17 @@ public class RunsTableFactory
      */
     public RunsTable createTable (String name)
     {
-        table = new RunsTable(name, orientation, new Dimension(
-                source.getWidth(), source.getHeight()));
+        table = new RunsTable(
+                name,
+                orientation,
+                new Dimension(source.getWidth(), source.getHeight()));
 
-        RunsRetriever retriever = new RunsRetriever(orientation,
+        RunsRetriever retriever = new RunsRetriever(
+                orientation,
                 new MyAdapter());
 
-        retriever.retrieveRuns(new PixelRectangle(0, 0, source.getWidth(),
-                source.getHeight()));
+        retriever.retrieveRuns(
+                new PixelRectangle(0, 0, source.getWidth(), source.getHeight()));
 
         return table;
     }
@@ -110,6 +114,8 @@ public class RunsTableFactory
     private class MyAdapter
             implements RunsRetriever.Adapter
     {
+        //~ Methods ------------------------------------------------------------
+
         // --------//
         // backRun //
         // --------//
@@ -133,8 +139,8 @@ public class RunsTableFactory
             // We consider only runs that are longer than minLength
             if (length >= minLength) {
                 final int level = ((2 * cumul) + length) / (2 * length);
-                table.getSequence(pos).add(
-                        new Run(coord - length, length, level));
+                table.getSequence(pos)
+                        .add(new Run(coord - length, length, level));
             }
         }
 
@@ -166,42 +172,45 @@ public class RunsTableFactory
             }
         }
 
-        // ----------//
-        // terminate //
-        // ----------//
-        @Override
-        public final void terminate ()
-        {
-            logger.fine("{0} Retrieved runs: {1}", table, table.getRunCount());
-        }
-
         //--------------//
         // isThreadSafe //
         //--------------//
         /**
          * The concurrency aspects of the adapter depends on the
          * underlying PixelFilter.
+         *
          * @return true if safe, false otherwise
          */
         @Override
         public boolean isThreadSafe ()
         {
             Class<?> classe = source.getClass();
-            
+
             // Check for @ThreadSafe annotation
             ThreadSafe safe = classe.getAnnotation(ThreadSafe.class);
+
             if (safe != null) {
                 return true;
             }
-            
+
             // Check for @NonThreadSafe annotation
             NotThreadSafe notSafe = classe.getAnnotation(NotThreadSafe.class);
+
             if (notSafe != null) {
                 return false;
             }
-            
+
             // No annotation: it's safer to assume no thread safety
             return false;
+        }
+
+        // ----------//
+        // terminate //
+        // ----------//
+        @Override
+        public final void terminate ()
+        {
+            logger.debug("{} Retrieved runs: {}", table, table.getRunCount());
         }
     }
 }

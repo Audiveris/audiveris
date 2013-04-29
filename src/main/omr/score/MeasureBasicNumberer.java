@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.entity.Measure;
 import omr.score.entity.Page;
@@ -30,7 +30,7 @@ public class MeasureBasicNumberer
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
         MeasureBasicNumberer.class);
 
     //~ Constructors -----------------------------------------------------------
@@ -65,7 +65,7 @@ public class MeasureBasicNumberer
                 measure.setPageId(1, false);
             }
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                 getClass().getSimpleName() + " Error visiting " + measure,
                 ex);
         }

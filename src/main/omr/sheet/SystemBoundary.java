@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.util.BrokenLine;
 import omr.util.Navigable;
@@ -42,7 +42,7 @@ public class SystemBoundary
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SystemBoundary.class);
+    private static final Logger logger = LoggerFactory.getLogger(SystemBoundary.class);
 
     //~ Instance fields --------------------------------------------------------
     //

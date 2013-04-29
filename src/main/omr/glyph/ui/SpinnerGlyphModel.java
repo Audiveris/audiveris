@@ -14,7 +14,7 @@ package omr.glyph.ui;
 import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 import static omr.ui.field.SpinnerUtilities.*;
 
 import omr.util.Predicate;
@@ -37,7 +37,7 @@ public class SpinnerGlyphModel
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             SpinnerGlyphModel.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -102,7 +102,7 @@ public class SpinnerGlyphModel
     public Object getNextValue ()
     {
         final int cur = currentId.intValue();
-        logger.fine("getNextValue cur={0}", cur);
+        logger.debug("getNextValue cur={}", cur);
 
         if (cur == NO_VALUE) {
             // Return first suitable glyph in nest
@@ -146,7 +146,7 @@ public class SpinnerGlyphModel
     {
         Glyph prevGlyph = null;
         final int cur = currentId.intValue();
-        logger.fine("getPreviousValue cur={0}", cur);
+        logger.debug("getPreviousValue cur={}", cur);
 
         if (cur == NO_VALUE) {
             return NO_VALUE;
@@ -178,7 +178,7 @@ public class SpinnerGlyphModel
     @Override
     public Object getValue ()
     {
-        logger.fine("getValue currentId={0}", currentId);
+        logger.debug("getValue currentId={}", currentId);
 
         return currentId;
     }
@@ -196,7 +196,7 @@ public class SpinnerGlyphModel
     @Override
     public void setValue (Object value)
     {
-        logger.fine("setValue value={0}", value);
+        logger.debug("setValue value={}", value);
 
         Integer id = (Integer) value;
         boolean ok = false;
@@ -220,7 +220,7 @@ public class SpinnerGlyphModel
             currentId = id;
             fireStateChanged();
         } else {
-            logger.warning("Invalid glyph id: {0}", id);
+            logger.warn("Invalid glyph id: {}", id);
         }
     }
 }

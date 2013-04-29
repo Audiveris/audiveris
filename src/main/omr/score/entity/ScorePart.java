@@ -14,7 +14,7 @@ package omr.score.entity;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code ScorePart} defines a part at score level. It is
@@ -34,7 +34,7 @@ public class ScorePart
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScorePart.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScorePart.class);
 
     //~ Instance fields --------------------------------------------------------
     /**
@@ -126,7 +126,7 @@ public class ScorePart
     //-------------------//
     public Integer getDefaultProgram ()
     {
-        logger.fine("Part #{0} count={1}", getId(), staffCount);
+        logger.debug("Part #{} count={}", getId(), staffCount);
 
         switch (staffCount) {
         case 1:

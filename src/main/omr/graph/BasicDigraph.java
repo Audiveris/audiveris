@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.graph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -32,7 +32,7 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Digraph.class);
+    private static final Logger logger = LoggerFactory.getLogger(Digraph.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Name of this instance, meant to ease debugging */
@@ -177,7 +177,7 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
     @Override
     public void removeVertex (V vertex)
     {
-        logger.fine("remove {0}", vertex);
+        logger.debug("remove {}", vertex);
 
         if (vertex == null) {
             throw new IllegalArgumentException(

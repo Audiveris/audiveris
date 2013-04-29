@@ -16,7 +16,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.PointsCollector;
 
@@ -52,7 +52,7 @@ public class Glyphs
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Glyphs.class);
+    private static final Logger logger = LoggerFactory.getLogger(Glyphs.class);
 
     /** Predicate to check for a manual shape */
     public static final Predicate<Glyph> manualPredicate = new Predicate<Glyph>() {

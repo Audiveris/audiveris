@@ -16,7 +16,7 @@ import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 import omr.text.TextRole;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.entity.Text.CreatorText.CreatorType;
 import omr.score.entity.TimeRational;
@@ -69,7 +69,7 @@ public class SymbolGlyphBoard
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             SymbolGlyphBoard.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -313,7 +313,7 @@ public class SymbolGlyphBoard
                 selfUpdating = false;
             }
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 
@@ -430,7 +430,7 @@ public class SymbolGlyphBoard
 
                 // Text?
                 if (shape.isText()) {
-                    logger.fine("Text=''{0}'' Role={1}",
+                    logger.debug("Text=''{}'' Role={}",
                             textField.getText().trim(),
                             roleCombo.getSelectedItem());
 
@@ -456,7 +456,7 @@ public class SymbolGlyphBoard
                                 glyphs,
                                 new TimeRational(num, den));
                     } else {
-                        logger.warning("Invalid time signature parameters");
+                        logger.warn("Invalid time signature parameters");
                     }
                 }
             }

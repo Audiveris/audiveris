@@ -11,14 +11,15 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 
 import omr.util.TreeNode;
 
 import java.util.ListIterator;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code MeasureId} is a non-mutable class meant to handle the
@@ -39,7 +40,7 @@ public abstract class MeasureId
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(MeasureId.class);
+    private static final Logger logger = LoggerFactory.getLogger(MeasureId.class);
 
     /** Char prefix for a second half id */
     protected static final char SH_CHAR = 'X';
@@ -411,7 +412,7 @@ public abstract class MeasureId
             }
 
             // This should not happen
-            logger.severe("Cannot retrieve score index of page-based measure id {0}", this);
+            logger.error("Cannot retrieve score index of page-based measure id {}", this);
 
             return 0; // To keep the compiler happy
         }

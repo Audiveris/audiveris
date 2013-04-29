@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.MeasureBasicNumberer;
 
@@ -32,7 +32,7 @@ public class MeasuresStep
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(MeasuresStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(MeasuresStep.class);
 
     //~ Constructors -----------------------------------------------------------
 

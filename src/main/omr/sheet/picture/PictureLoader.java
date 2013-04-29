@@ -14,11 +14,11 @@ package omr.sheet.picture;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
+
+import omr.sheet.picture.jai.JaiLoader;
 
 import omr.util.FileUtil;
-
-import omr.WellKnowns;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
@@ -35,7 +35,6 @@ import java.util.TreeMap;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import javax.media.jai.JAI;
 
 /**
  * Class {@code PictureLoader} gathers helper functions for {@link
@@ -56,7 +55,7 @@ public class PictureLoader
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(PictureLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(PictureLoader.class);
 
     //~ Constructors -----------------------------------------------------------
     /**
@@ -93,9 +92,9 @@ public class PictureLoader
             throw new IllegalArgumentException(imgFile + " does not exist");
         }
 
-        logger.info("Loading {0} ...", imgFile);
+        logger.info("Loading {} ...", imgFile);
 
-        logger.fine("Trying ImageIO");
+        logger.debug("Trying ImageIO");
 
         SortedMap<Integer, RenderedImage> images = loadImageIO(imgFile, id, null);
 
@@ -105,13 +104,13 @@ public class PictureLoader
             if (extension.equalsIgnoreCase(".pdf")) {
                 images = loadPDF(imgFile, id);
             } else {
-                logger.fine("Using JAI");
-                images = loadJAI(imgFile);
+                logger.debug("Using JAI");
+                images = JaiLoader.loadJAI(imgFile);
             }
         }
 
         if (images == null) {
-            logger.warning("Unable to load any image from {0}", imgFile);
+            logger.warn("Unable to load any image from {}", imgFile);
         }
 
         return images;
@@ -133,7 +132,7 @@ public class PictureLoader
                                                                   Integer id,
                                                                   Integer idUser)
     {
-        logger.fine("loadImageIO {0} id:{1}", imgFile, id);
+        logger.debug("loadImageIO {} id:{}", imgFile, id);
 
         // Input stream
         ImageInputStream stream;
@@ -141,13 +140,13 @@ public class PictureLoader
         try {
             stream = ImageIO.createImageInputStream(imgFile);
         } catch (IOException ex) {
-            logger.warning("Unable to make ImageIO stream", ex);
+            logger.warn("Unable to make ImageIO stream", ex);
 
             return null;
         }
 
         if (stream == null) {
-            logger.fine("No ImageIO input stream provider");
+            logger.debug("No ImageIO input stream provider");
 
             return null;
         }
@@ -156,7 +155,7 @@ public class PictureLoader
             Iterator<ImageReader> readers = ImageIO.getImageReaders(stream);
 
             if (!readers.hasNext()) {
-                logger.fine("No ImageIO reader");
+                logger.debug("No ImageIO reader");
 
                 return null;
             }
@@ -169,7 +168,7 @@ public class PictureLoader
                 int imageCount = reader.getNumImages(true);
 
                 if (imageCount > 1) {
-                    logger.info("{0} contains {1} images",
+                    logger.info("{} contains {} images",
                             imgFile.getName(), imageCount);
                 }
 
@@ -180,14 +179,14 @@ public class PictureLoader
                         BufferedImage img = reader.read(i - 1);
                         int identity = idUser != null ? idUser : i;
                         images.put(identity, img);
-                        logger.info("Loaded image #{0} ({1} x {2})",
+                        logger.info("Loaded image #{} ({} x {})",
                                 identity, img.getWidth(), img.getHeight());
                     }
                 }
 
                 return images;
             } catch (Exception ex) {
-                logger.warning("ImageIO failed", ex);
+                logger.warn("ImageIO failed", ex);
 
                 return null;
             } finally {
@@ -199,35 +198,6 @@ public class PictureLoader
             } catch (IOException ignored) {
             }
         }
-    }
-
-    //---------//
-    // loadJAI //
-    //---------//
-    /**
-     * Try to load an image, using JAI.
-     * This seems limited to a single image, thus no id parameter is to be
-     * provided.
-     *
-     * @param imgFile the input file
-     * @return a map of one image, or null if failed to load
-     */
-    private static SortedMap<Integer, RenderedImage> loadJAI (File imgFile)
-    {
-        RenderedImage image = JAI.create("fileload", imgFile.getPath());
-
-        try {
-            if ((image.getWidth() > 0) && (image.getHeight() > 0)) {
-                SortedMap<Integer, RenderedImage> images = new TreeMap<>();
-                images.put(1, image);
-
-                return images;
-            }
-        } catch (Exception ex) {
-            logger.fine(ex.getMessage());
-        }
-
-        return null;
     }
 
     //---------//
@@ -246,20 +216,20 @@ public class PictureLoader
     private static SortedMap<Integer, RenderedImage> loadPDF (File imgFile,
                                                               Integer id)
     {
-        logger.fine("loadPDF {0} id:{1}", imgFile, id);
+        logger.debug("loadPDF {} id:{}", imgFile, id);
 
         // Create a temporary tiff file from the PDF input
         Path temp = null;
         try {
             temp = Files.createTempFile("pic-", ".tif");
         } catch (IOException ex) {
-            logger.warning("Cannot create temporary file " + temp, ex);
+            logger.warn("Cannot create temporary file " + temp, ex);
             return null;
         }
 
         // Arguments for Ghostscript
         List<String> gsArgs = new ArrayList<>();
-        gsArgs.add(getGhostscriptExec());
+        gsArgs.add(Ghostscript.getPath());
         gsArgs.add("-dQUIET");
         gsArgs.add("-dNOPAUSE");
         gsArgs.add("-dBATCH");
@@ -272,7 +242,7 @@ public class PictureLoader
             gsArgs.add("-dLastPage=" + id);
         }
         gsArgs.add(imgFile.toString());
-        logger.fine("gsArgs:{0}", gsArgs);
+        logger.debug("gsArgs:{}", gsArgs);
 
         try {
             // Spawn Ghostscript process and wait for its completion
@@ -285,43 +255,15 @@ public class PictureLoader
                 return loadImageIO(temp.toFile(), null, null);
             }
         } catch (IOException | InterruptedException ex) {
-            logger.warning("Error running Ghostscript " + gsArgs, ex);
+            logger.warn("Error running Ghostscript " + gsArgs, ex);
             return null;
         } finally {
             try {
                 Files.delete(temp);
             } catch (IOException ex) {
-                logger.warning("Error deleting file " + temp, ex);
+                logger.warn("Error deleting file " + temp, ex);
             }
         }
-    }
-
-    //--------------------//
-    // getGhostscriptExec //
-    //--------------------//
-    /**
-     * Report the path to proper Ghostscript executable
-     * on this machine / environment.
-     *
-     * @return the path to Ghostscript executable
-     */
-    private static String getGhostscriptExec ()
-    {
-        File f;
-
-        if (WellKnowns.LINUX || WellKnowns.MAC_OS_X) {
-            // TODO: certainly modify this line
-            return "gs";
-        } else if (WellKnowns.WINDOWS) {
-            if (WellKnowns.WINDOWS_64) {
-                f = new File(WellKnowns.GS_FOLDER, "windows/x64/gswin64c.exe");
-            } else {
-                f = new File(WellKnowns.GS_FOLDER, "windows/x86/gswin32c.exe");
-            }
-            return f.toString();
-        }
-
-        return null;
     }
 
     //~ Inner Classes ----------------------------------------------------------

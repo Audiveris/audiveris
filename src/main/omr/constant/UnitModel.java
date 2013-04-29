@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.constant;
 
-import omr.log.Logger;
+import omr.log.LogUtilities;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -19,6 +19,9 @@ import omr.sheet.ui.SheetsController;
 
 import omr.ui.treetable.AbstractTreeTableModel;
 import omr.ui.treetable.TreeTableModel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.JOptionPane;
 
@@ -32,8 +35,8 @@ import javax.swing.JOptionPane;
  * <li><b>PackageNode</b> to represent a package. Its children rows can be
  * either (sub) PackageNodes or UnitNodes.</li>
  *
- * <li><b>UnitNode</b> to represent a class that contains a ConstantSet or a
- * Logger or both. Its parent node is a PackageNode. Its children rows (if any)
+ * <li><b>UnitNode</b> to represent a class that contains a ConstantSet.
+ * Its parent node is a PackageNode. Its children rows (if any)
  * are the Constants of its ConstantSet.</li>
  *
  * <li><b>Constant</b> to represent a constant within a ConstantSet. In that
@@ -48,7 +51,8 @@ public class UnitModel
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(UnitModel.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            UnitModel.class);
 
     //~ Enumerations -----------------------------------------------------------
     /**
@@ -64,11 +68,10 @@ public class UnitModel
          */
         TREE("Unit", true, 280, TreeTableModel.class),
         /**
-         * Editable column shared by {@link omr.log.Logger} entity if
-         * node is a unit, and by modification flag if node is a constant.
+         * Editable column with modification flag if node is a constant.
          * Empty if node is a package.
          */
-        LOGMOD("Log/Mod", true, 50, String.class),
+        MODIF("Modif", true, 50, String.class),
         /**
          * Column that recalls the constant type, and thus the possible
          * range of values.
@@ -124,6 +127,7 @@ public class UnitModel
             this.type = type;
         }
 
+        //~ Methods ------------------------------------------------------------
         //----------//
         // getWidth //
         //----------//
@@ -203,11 +207,7 @@ public class UnitModel
             UnitNode unit = (UnitNode) parent;
             ConstantSet set = unit.getConstantSet();
 
-            if (set != null) {
-                return set.size();
-            } else {
-                return 0; // A unit with Logger, but w/o ConstantSet
-            }
+            return set.size();
         }
 
         if (parent instanceof Constant) {
@@ -282,21 +282,13 @@ public class UnitModel
         Column column = Column.values()[col];
 
         switch (column) {
-        case LOGMOD:
+        case MODIF:
 
-            if (node instanceof UnitNode) {
-                UnitNode unit = (UnitNode) node;
-                Logger theLogger = unit.getLogger();
-
-                if (theLogger != null) {
-                    return theLogger.getEffectiveLevel();
-                } else {
-                    return "";
-                }
-            } else if (node instanceof PackageNode) {
+            if (node instanceof PackageNode) {
                 return null;
             } else if (node instanceof Constant) {
                 Constant constant = (Constant) node;
+
                 return Boolean.valueOf(!constant.isSourceValue());
             }
 
@@ -358,8 +350,7 @@ public class UnitModel
                         if (scale != null) {
                             if (constant instanceof Scale.Fraction) {
                                 return Integer.valueOf(
-                                        scale.
-                                        toPixels((Scale.Fraction) constant));
+                                        scale.toPixels((Scale.Fraction) constant));
                             } else if (constant instanceof Scale.LineFraction) {
                                 return Integer.valueOf(
                                         scale.toPixels(
@@ -408,12 +399,13 @@ public class UnitModel
     {
         Column col = Column.values()[column];
 
-        if (col == Column.LOGMOD) {
+        if (col == Column.MODIF) {
             if (node instanceof Constant) {
                 Constant constant = (Constant) node;
+
                 return Boolean.valueOf(!constant.isSourceValue());
-            } else if (node instanceof UnitNode) {
-                return true;
+//            } else if (node instanceof UnitNode) {
+//                return true;
             } else {
                 return false;
             }
@@ -462,22 +454,7 @@ public class UnitModel
                             Object node,
                             int col)
     {
-        if (node instanceof UnitNode) {
-            UnitNode unit = (UnitNode) node;
-            Logger theLogger = unit.getLogger();
-
-            if (theLogger != null) {
-                String val = (String) value;
-                val = val.trim();
-                if (!val.isEmpty()) {
-                    try {
-                        theLogger.setLevel(val);
-                    } catch (IllegalArgumentException ex) {
-                        logger.warning("Illegal logger level {0}", val);
-                    }
-                }
-            }
-        } else if (node instanceof Constant) {
+       if (node instanceof Constant) {
             Constant constant = (Constant) node;
             Column column = Column.values()[col];
 
@@ -502,7 +479,7 @@ public class UnitModel
 
                 break;
 
-            case LOGMOD:
+            case MODIF:
 
                 if (!((Boolean) value).booleanValue()) {
                     constant.reset();
@@ -514,6 +491,7 @@ public class UnitModel
                 }
 
                 break;
+
             default:
             }
         }

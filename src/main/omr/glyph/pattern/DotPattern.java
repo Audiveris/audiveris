@@ -19,7 +19,7 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 
@@ -52,7 +52,7 @@ public class DotPattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(DotPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(DotPattern.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -116,7 +116,7 @@ public class DotPattern
             TextWord word = TextWord.createManualWord(glyph, "-");
             glyph.setTextWord(language, word);
             line.addWords(Collections.singleton(word));
-            logger.fine("Reassign dot#{0} to {1}", glyph.getId(), line);
+            logger.debug("Reassign dot#{} to {}", glyph.getId(), line);
 
             // Counters
             nb++;
@@ -200,9 +200,9 @@ public class DotPattern
             }
         });
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
-                    "{0} Questionable {1}",
+        if (logger.isDebugEnabled()) {
+            logger.debug(
+                    "{} Questionable {}",
                     system.getLogPrefix(),
                     Glyphs.toString("dots", dots));
         }

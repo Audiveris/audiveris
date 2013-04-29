@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.plugin;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 
@@ -60,7 +60,7 @@ public class Plugin
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Plugin.class);
+    private static final Logger logger = LoggerFactory.getLogger(Plugin.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -92,7 +92,7 @@ public class Plugin
 
         evaluateScript();
 
-        logger.fine("Created {0}", this);
+        logger.debug("Created {}", this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -168,7 +168,7 @@ public class Plugin
         final File exportFile = score.getExportFile();
 
         if (exportFile == null) {
-            logger.warning("Could not get export file");
+            logger.warn("Could not get export file");
 
             return null;
         }
@@ -177,7 +177,7 @@ public class Plugin
         List<String> args;
 
         try {
-            logger.fine("{0} doInBackground on {1}", Plugin.this, exportFile);
+            logger.debug("{} doInBackground on {}", Plugin.this, exportFile);
 
             Invocable inv = (Invocable) engine;
             Object obj = inv.invokeFunction(
@@ -186,18 +186,18 @@ public class Plugin
 
             if (obj instanceof List) {
                 args = (List<String>) obj; // Unchecked by compiler
-                logger.fine("{0} command args: {1}", this, args);
+                logger.debug("{} command args: {}", this, args);
             } else {
                 return null;
             }
         } catch (ScriptException | NoSuchMethodException ex) {
-            logger.warning(this + " error invoking javascript", ex);
+            logger.warn(this + " error invoking javascript", ex);
 
             return null;
         }
 
         // Spawn the command
-        logger.info("Launching {0} on {1}", getTitle(), score.getRadix());
+        logger.info("Launching {} on {}", getTitle(), score.getRadix());
 
         ProcessBuilder pb = new ProcessBuilder(args);
         pb = pb.redirectErrorStream(true);
@@ -213,7 +213,7 @@ public class Plugin
             String line;
 
             while ((line = br.readLine()) != null) {
-                logger.fine(line);
+                logger.debug(line);
             }
 
             // Wait to get exit value
@@ -221,17 +221,17 @@ public class Plugin
                 int exitValue = process.waitFor();
 
                 if (exitValue != 0) {
-                    logger.warning("{0} exited with value {1}",
+                    logger.warn("{} exited with value {}",
                             Plugin.this, exitValue);
                 } else {
-                    logger.fine("{0} exit value is {1}",
+                    logger.debug("{} exit value is {}",
                             Plugin.this, exitValue);
                 }
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
         } catch (IOException ex) {
-            logger.warning(Plugin.this + " error launching editor", ex);
+            logger.warn(Plugin.this + " error launching editor", ex);
         }
 
         return null;
@@ -276,7 +276,7 @@ public class Plugin
                 tip = (String) engine.get("pluginTip");
             } catch (FileNotFoundException | UnsupportedEncodingException |
                     ScriptException ex) {
-                logger.warning(this + " error", ex);
+                logger.warn(this + " error", ex);
             }
         } else {
             throw new JavascriptUnavailableException();

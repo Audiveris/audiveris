@@ -28,7 +28,7 @@ import omr.lag.BasicSection;
 import omr.lag.Section;
 import omr.lag.Sections;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 
@@ -72,7 +72,7 @@ public class SticksBuilder
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SticksBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(SticksBuilder.class);
 
     /** Unique identifier for debugging */
     private static int globalId = 0;
@@ -266,7 +266,7 @@ public class SticksBuilder
             thickenAlignmentCore(candidates, members);
         }
 
-        logger.fine("{0}{1}",
+        logger.debug("{}{}",
                 members.size(), Sections.toString(" Core sections", members));
 
         // Collect candidate sections around the core ones
@@ -289,7 +289,7 @@ public class SticksBuilder
             members.addAll(candidates);
         }
 
-        logger.fine("{0}{1}",
+        logger.debug("{}{}",
                 members.size(), Sections.toString(" total sections", members));
 
         // Aggregate member sections into as few sticks as possible.
@@ -306,7 +306,7 @@ public class SticksBuilder
                 stick.setResult(TOO_SMALL);
 
                 for (Section section : stick.getMembers()) {
-                    logger.fine("Discarding too small stick {0}", section);
+                    logger.debug("Discarding too small stick {}", section);
                     discard(section);
                 }
 
@@ -320,7 +320,7 @@ public class SticksBuilder
                     stick.setResult(NOT_STRAIGHT);
 
                     for (Section section : stick.getMembers()) {
-                        logger.fine("Discarding not straight stick {0}", section);
+                        logger.debug("Discarding not straight stick {}", section);
                         discard(section);
                     }
 
@@ -329,7 +329,7 @@ public class SticksBuilder
             }
         }
 
-        //        if (logger.isFineEnabled()) {
+        //        if (logger.isDebugEnabled()) {
         //            dump(true);
         //        }
     }
@@ -414,7 +414,7 @@ public class SticksBuilder
         // Sort sticks found
         Collections.sort(sticks, Glyph.byId);
 
-        logger.fine("End of scanning area, found {0} stick(s): {1}",
+        logger.debug("End of scanning area, found {} stick(s): {}",
                 sticks.size(), Glyphs.toString(sticks));
 
         return sticks;
@@ -564,9 +564,9 @@ public class SticksBuilder
                             stick.stealSections(other);
                             stick = nest.addGlyph(stick);
 
-                            if (logger.isFineEnabled()
+                            if (logger.isDebugEnabled()
                                 && (stick.getId() != oldId)) {
-                                logger.fine("Merged sticks #{0} & #{1} => #{2}",
+                                logger.debug("Merged sticks #{} & #{} => #{}",
                                         oldId, other.getId(), stick.getId());
                             }
 
@@ -582,7 +582,7 @@ public class SticksBuilder
 
         sticks.removeAll(removals);
 
-        logger.fine("merged {0} sticks in {1} ms",
+        logger.debug("merged {} sticks in {} ms",
                 removals.size(), System.currentTimeMillis() - startTime);
     }
 
@@ -801,7 +801,7 @@ public class SticksBuilder
                 }
 
                 if (thick > maxThickness) {
-                    logger.fine("Too thick real line ({0}) {1}", thick, section);
+                    logger.debug("Too thick real line ({}) {}", thick, section);
                     return false;
                 }
             }
@@ -952,7 +952,7 @@ public class SticksBuilder
             setMaxDeltaCoord(constants.maxDeltaCoord);
             setMaxDeltaPos(constants.maxDeltaPos);
 
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
                 dump();
             }
         }

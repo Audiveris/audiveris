@@ -13,7 +13,7 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
@@ -44,7 +44,7 @@ public class Ornament
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Ornament.class);
+    private static final Logger logger = LoggerFactory.getLogger(Ornament.class);
 
     //~ Constructors -----------------------------------------------------------
 
@@ -84,7 +84,7 @@ public class Ornament
                                  PixelPoint point)
     {
         if (glyph.isVip()) {
-            logger.info("Ornament. populate {0}", glyph.idString());
+            logger.info("Ornament. populate {}", glyph.idString());
         }
         
         // An Ornament relates to the note below on the same time slot

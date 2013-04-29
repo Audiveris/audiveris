@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.visitor.ScoreVisitor;
 import omr.score.visitor.Visitable;
@@ -35,7 +35,7 @@ public abstract class VisitableNode
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(VisitableNode.class);
+    private static final Logger logger = LoggerFactory.getLogger(VisitableNode.class);
 
     //~ Constructors -----------------------------------------------------------
 

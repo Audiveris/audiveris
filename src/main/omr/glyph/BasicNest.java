@@ -24,7 +24,7 @@ import omr.lag.Roi;
 import omr.lag.Section;
 import omr.lag.Sections;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Histogram;
 
@@ -76,7 +76,7 @@ public class BasicNest
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BasicNest.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicNest.class);
 
     /** Events read on location service */
     public static final Class<?>[] locEventsRead = new Class<?>[]{
@@ -173,7 +173,7 @@ public class BasicNest
         glyph.linkAllSections();
 
         if (glyph.isVip()) {
-            logger.info("{0} added", glyph.idString());
+            logger.info("{} added", glyph.idString());
         }
 
         return glyph;
@@ -307,7 +307,7 @@ public class BasicNest
         if (oldGlyph.getSignature().compareTo(signature) == 0) {
             return oldGlyph;
         } else {
-            logger.fine("Obsolete signature for {0}", oldGlyph);
+            logger.debug("Obsolete signature for {}", oldGlyph);
 
             return null;
         }
@@ -423,7 +423,7 @@ public class BasicNest
                 handleEvent((GlyphIdEvent) event);
             }
         } catch (Throwable ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 
@@ -439,8 +439,8 @@ public class BasicNest
         if (original != null) {
             if (original != glyph) {
                 // Reuse the existing glyph
-                if (logger.isFineEnabled()) {
-                    logger.fine("new avatar of #{0}{1}{2}",
+                if (logger.isDebugEnabled()) {
+                    logger.debug("new avatar of #{}{}{}",
                             original.getId(),
                             Sections.
                             toString(" members", glyph.getMembers()),
@@ -472,7 +472,7 @@ public class BasicNest
                     Glyph oldGlyph = originals.remove(oldSig);
 
                     if (oldGlyph != null) {
-                        logger.fine("Updating registration of {0} oldGlyph:{1}",
+                        logger.debug("Updating registration of {} oldGlyph:{}",
                                 glyph.idString(), oldGlyph.getId());
                     }
                 }
@@ -481,7 +481,7 @@ public class BasicNest
             originals.put(newSig, glyph);
             glyph.setRegisteredSignature(newSig);
 
-            logger.fine("Registered {0} as original {1}",
+            logger.debug("Registered {} as original {}",
                     glyph.idString(), glyph.getSignature());
         }
 
@@ -759,7 +759,7 @@ public class BasicNest
             } catch (IllegalArgumentException ex) {
                 // All glyphs do not belong to the same system
                 // No compound is allowed and displayed
-                logger.warning("Selecting glyphs from different systems");
+                logger.warn("Selecting glyphs from different systems");
             }
         }
     }
@@ -821,12 +821,12 @@ public class BasicNest
         {
             vipGlyphs = VipUtil.decodeIds(constants.vipGlyphs.getValue());
 
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);
             }
 
             if (!vipGlyphs.isEmpty()) {
-                logger.info("VIP glyphs: {0}", vipGlyphs);
+                logger.info("VIP glyphs: {}", vipGlyphs);
             }
         }
     }

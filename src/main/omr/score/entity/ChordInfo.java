@@ -11,11 +11,13 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.entity.ChordInfo.Degree.DegreeType;
 import static omr.score.entity.ChordInfo.Kind.Type.*;
 import omr.score.entity.Note.Step;
+
+import static omr.util.RegexUtil.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +43,7 @@ public class ChordInfo
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ChordInfo.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChordInfo.class);
 
     /** Unicode value for <b>flat</b> sign: {@value}. */
     public static final String FLAT = "\u266D";
@@ -316,7 +318,7 @@ public class ChordInfo
             }
         }
 
-        logger.fine("No pattern match for chord text {0}", text);
+        logger.debug("No pattern match for chord text {}", text);
 
         return null;
     }
@@ -355,34 +357,6 @@ public class ChordInfo
         return sb.toString();
     }
 
-    //----------//
-    // getGroup //
-    //----------//
-    /**
-     * Report the input sequence captured by the provided
-     * named-capturing group.
-     *
-     * @param matcher the matcher
-     * @param name    the provided name for desired group
-     * @return the input sequence, perhaps empty but not null
-     */
-    private static String getGroup (Matcher matcher,
-                                    String name)
-    {
-        String result = null;
-
-        try {
-            result = matcher.group(name);
-        } catch (Exception ignored) {
-        }
-
-        if (result != null) {
-            return result;
-        } else {
-            return "";
-        }
-    }
-
     //-------------//
     // getPatterns //
     //-------------//
@@ -402,32 +376,6 @@ public class ChordInfo
         }
 
         return patterns;
-    }
-
-    //-------//
-    // group //
-    //-------//
-    /**
-     * Convenient method to build a named-group like "(?<name>content)"
-     *
-     * @param name    name for the group
-     * @param content inner content of the group
-     * @return the ready to use group value
-     */
-    private static String group (String name,
-                                 String content)
-    {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("(?<");
-        sb.append(name);
-        sb.append(">");
-
-        sb.append(content);
-
-        sb.append(")");
-
-        return sb.toString();
     }
 
     //----------//
@@ -931,7 +879,7 @@ public class ChordInfo
 
             default:
                 // Nota: Thanks to regexp match, this should not happen
-                logger.warning("No kind type for {0}", str);
+                logger.warn("No kind type for {}", str);
 
                 return null;
             }
@@ -1027,7 +975,7 @@ public class ChordInfo
      * minor-13th : m13|min13........ : 1 - b3 - 5 - b7 - 9 - 11 - 13
      * suspended-second : sus2....... : 1 - 2 - 5
      * suspended-fourth : sus4....... : 1 - 4 - 5
-     * suspended-ninth : sus9........ : 1 - 4 - 5 - b7 - 9 
+     * suspended-ninth : sus9........ : 1 - 4 - 5 - b7 - 9
      * Neapolitan : ................. :
      * Italian : .................... :
      * French : ..................... :

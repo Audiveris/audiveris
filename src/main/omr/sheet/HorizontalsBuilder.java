@@ -33,7 +33,7 @@ import omr.grid.StaffInfo;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 import static omr.run.Orientation.*;
 
 import omr.selection.GlyphEvent;
@@ -70,7 +70,7 @@ public class HorizontalsBuilder
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             HorizontalsBuilder.class);
 
     /** Events this entity is interested in */
@@ -231,7 +231,7 @@ public class HorizontalsBuilder
             // Filter ledgers more accurately
             filterLedgers();
         } catch (Throwable ex) {
-            logger.warning("Error retrieving horizontals", ex);
+            logger.warn("Error retrieving horizontals", ex);
         } finally {
             // User feedback
             feedback();
@@ -268,7 +268,7 @@ public class HorizontalsBuilder
     private void filterLedgers ()
     {
         for (StaffInfo staff : system.getStaves()) {
-            logger.fine("Staff#{0}", staff.getId());
+            logger.debug("Staff#{}", staff.getId());
 
             // Above staff
             for (int i = -1;; i--) {
@@ -352,8 +352,8 @@ public class HorizontalsBuilder
                 //                ledgers.add(stick);
                 ledgerCandidates.add(context);
 
-                //                if (logger.isFineEnabled()) {
-                //                    logger.fine("Ledger candidate " + stick);
+                //                if (logger.isDebugEnabled()) {
+                //                    logger.debug("Ledger candidate " + stick);
                 //                }
 
                 //TODO Ending are disabled for the time being
@@ -364,7 +364,7 @@ public class HorizontalsBuilder
                 //                    stick.setShape(Shape.ENDING_HORIZONTAL);
                 //                    endings.add(stick);
                 //
-                //                    if (logger.isFineEnabled()) {
+                //                    if (logger.isDebugEnabled()) {
                 //                        logger.info("Ending " + stick);
                 //                    }
                 //                }
@@ -397,8 +397,8 @@ public class HorizontalsBuilder
     //    {
     //        //        if (shape != null) {
     //        //            // Assign
-    //        //            if (logger.isFineEnabled()) {
-    //        //                logger.fine(
+    //        //            if (logger.isDebugEnabled()) {
+    //        //                logger.debug(
     //        //                    "Assign horizontal glyph#" + glyph.getId() + " to " +
     //        //                    shape);
     //        //            }
@@ -429,8 +429,8 @@ public class HorizontalsBuilder
     //        //            dashSections.addAll(glyph.getMembers());
     //        //        } else {
     //        //            // Deassign
-    //        //            if (logger.isFineEnabled()) {
-    //        //                logger.fine("Deassign horizontal glyph#" + glyph.getId());
+    //        //            if (logger.isDebugEnabled()) {
+    //        //                logger.debug("Deassign horizontal glyph#" + glyph.getId());
     //        //            }
     //        //
     //        //            Dash dash = null;
@@ -522,7 +522,7 @@ public class HorizontalsBuilder
         endingList.add(commonSuite);
         endingList.add(endingSuite);
 
-        if (logger.isFineEnabled()) {
+        if (logger.isDebugEnabled()) {
             commonSuite.dump();
             ledgerSuite.dump();
             endingSuite.dump();
@@ -550,7 +550,7 @@ public class HorizontalsBuilder
 
         if (nl > 0) {
             sb.append(nl).append(" ledger").append((nl > 1) ? "s" : "");
-        } else if (logger.isFineEnabled()) {
+        } else if (logger.isDebugEnabled()) {
             sb.append("No ledger");
         }
 
@@ -560,7 +560,7 @@ public class HorizontalsBuilder
             }
 
             sb.append(nt).append(" tenuto").append((nt > 1) ? "s" : "");
-        } else if (logger.isFineEnabled()) {
+        } else if (logger.isDebugEnabled()) {
             sb.append("No tenuto");
         }
 
@@ -570,11 +570,11 @@ public class HorizontalsBuilder
             }
 
             sb.append(ne).append(" ending").append((ne > 1) ? "s" : "");
-        } else if (logger.isFineEnabled()) {
+        } else if (logger.isDebugEnabled()) {
             sb.append("No ending");
         }
 
-        logger.fine("{0}{1}", sheet.getLogPrefix(), sb.toString());
+        logger.debug("{}{}", sheet.getLogPrefix(), sb.toString());
     }
 
     //    //------------------//
@@ -701,7 +701,7 @@ public class HorizontalsBuilder
     private int lookupLine (int index,
                             LineInfo staffLine)
     {
-        logger.fine("Checking line {0}", index);
+        logger.debug("Checking line {}", index);
 
         int ledgerMarginX = scale.toPixels(constants.ledgerMarginX);
         int found = 0; // Number of ledgers found on this line
@@ -720,7 +720,7 @@ public class HorizontalsBuilder
 
             // Check precise distance
             double dist = Math.abs(index - context.dist);
-            logger.fine("{0} {1}", dist, context);
+            logger.debug("{} {}", dist, context);
 
             if (dist > constants.ledgerMarginY.getValue()) {
                 continue;
@@ -784,7 +784,7 @@ public class HorizontalsBuilder
             context.staff.addLedger(glyph, index);
             found++;
 
-            logger.fine("Ledger at {0}", context);
+            logger.debug("Ledger at {}", context);
         }
 
         return found;
@@ -829,8 +829,8 @@ public class HorizontalsBuilder
     //            nHeight = scale.toPixels(constants.chunkHeight);
     //            area = 2 * nWidth * nHeight;
     //
-    //            if (logger.isFineEnabled()) {
-    //                logger.fine(
+    //            if (logger.isDebugEnabled()) {
+    //                logger.debug(
     //                    "MaxPixLow=" + getLow() + ", MaxPixHigh=" + getHigh());
     //            }
     //        }
@@ -845,7 +845,7 @@ public class HorizontalsBuilder
     //                getAliensAtStop(stick, nHeight, nWidth));
     //            res /= area;
     //
-    //            if (logger.isFineEnabled()) {
+    //            if (logger.isDebugEnabled()) {
     //                logger.info("MinAliensRatio= " + res + " for " + stick);
     //            }
     //
@@ -1271,7 +1271,7 @@ public class HorizontalsBuilder
                     tellObject(null);
                 }
             } catch (Exception ex) {
-                logger.warning(getClass().getName() + " onEvent error", ex);
+                logger.warn(getClass().getName() + " onEvent error", ex);
             }
         }
     }

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.FilterDescriptor;
 
@@ -45,7 +45,7 @@ public class Page
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Page.class);
+    private static final Logger logger = LoggerFactory.getLogger(Page.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -192,7 +192,7 @@ public class Page
            .append(sb)
            .append("]");
 
-        logger.info("{0}{1}", sheet.getLogPrefix(), msg.toString());
+        logger.info("{}{}", sheet.getLogPrefix(), msg.toString());
     }
 
     //-------------------//

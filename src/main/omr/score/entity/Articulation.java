@@ -11,13 +11,14 @@
 // </editor-fold>
 package omr.score.entity;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
@@ -58,7 +59,7 @@ public class Articulation
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Articulation.class);
+    private static final Logger logger = LoggerFactory.getLogger(Articulation.class);
 
     //~ Constructors -----------------------------------------------------------
     //--------------//
@@ -96,7 +97,7 @@ public class Articulation
                                  PixelPoint point)
     {
         if (glyph.isVip()) {
-            logger.info("Articulation. populate {0}", glyph.idString());
+            logger.info("Articulation. populate {}", glyph.idString());
         }
         
         // An Articulation relates to the note below or above on the same time slot
@@ -115,8 +116,8 @@ public class Articulation
                 glyph.setTranslation(
                         new Articulation(measure, point, chord, glyph));
 
-                if (glyph.isVip() || logger.isFineEnabled()) {
-                    logger.info("Translated articulation {0}", glyph.idString());
+                if (glyph.isVip() || logger.isDebugEnabled()) {
+                    logger.info("Translated articulation {}", glyph.idString());
                 }
 
                 return;
@@ -124,8 +125,8 @@ public class Articulation
         }
 
         // Incorrect articulation
-        if (glyph.isVip() || logger.isFineEnabled()) {
-            logger.info("No chord close enough to articulation {0}", glyph.
+        if (glyph.isVip() || logger.isDebugEnabled()) {
+            logger.info("No chord close enough to articulation {}", glyph.
                     idString());
         }
 

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.jai;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.sheet.picture.PictureLoader;
 
@@ -40,7 +40,7 @@ public class TestWarp
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(TestWarp.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestWarp.class);
 
     /** Identity */
     private static final AffineTransform identity = new AffineTransform();

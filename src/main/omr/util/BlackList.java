@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.util;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -42,7 +42,7 @@ public class BlackList
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BlackList.class);
+    private static final Logger logger = LoggerFactory.getLogger(BlackList.class);
 
     /** Name of the specific file where blacklist is kept */
     protected static final String BLACK_LIST_NAME = ".glyphignore";
@@ -140,7 +140,7 @@ public class BlackList
      */
     public File[] listFiles (FileFilter filter)
     {
-        logger.fine("Retrieving legal slots in directory {0}", dir);
+        logger.debug("Retrieving legal slots in directory {}", dir);
 
         // Getting all legal files & dirs, w/ additional filter if any
         List<File> legals = new ArrayList<>();
@@ -153,7 +153,7 @@ public class BlackList
                 }
             }
         } else {
-            logger.info("No files in dir {0}", dir);
+            logger.info("No files in dir {}", dir);
         }
 
         // Return legals as an array
@@ -213,11 +213,11 @@ public class BlackList
 
                     in.close();
                 } catch (IOException ex) {
-                    logger.warning("IO error while reading file ''{0}''",
+                    logger.warn("IO error while reading file ''{}''",
                                    blackFile);
                 }
             } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find file ''{0}''", blackFile);
+                logger.warn("Cannot find file ''{}''", blackFile);
             } finally {
                 if (in != null) {
                     try {
@@ -228,7 +228,7 @@ public class BlackList
             }
         }
 
-        if (logger.isFineEnabled()) {
+        if (logger.isDebugEnabled()) {
             dump();
         }
     }
@@ -248,14 +248,14 @@ public class BlackList
                 out.println(name);
             }
         } catch (IOException ex) {
-            logger.warning("IO error while writing file ''{0}''", blackFile);
+            logger.warn("IO error while writing file ''{}''", blackFile);
         } finally {
             if (out != null) {
                 out.close();
             }
         }
 
-        if (logger.isFineEnabled()) {
+        if (logger.isDebugEnabled()) {
             dump();
         }
     }

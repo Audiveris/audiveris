@@ -14,7 +14,7 @@ package omr.glyph;
 import omr.constant.Constant;
 import static omr.glyph.Shape.*;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.event.ActionListener;
@@ -45,7 +45,7 @@ public class ShapeSet
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ShapeSet.class);
+    private static final Logger logger = LoggerFactory.getLogger(ShapeSet.class);
 
     /** Specific single symbol for part of time signature (such as 4) */
     public static final List<Shape> PartialTimes = Arrays.asList(

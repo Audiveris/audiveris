@@ -13,7 +13,7 @@ package omr.score;
 
 import omr.glyph.Shape;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Rational;
 
@@ -50,7 +50,7 @@ public class MeasureFixer
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(MeasureFixer.class);
+    private static final Logger logger = LoggerFactory.getLogger(MeasureFixer.class);
 
     //~ Instance fields --------------------------------------------------------
     private int im; // Current measure index in system
@@ -90,7 +90,7 @@ public class MeasureFixer
     @Override
     public boolean visit (Page page)
     {
-        logger.fine("{0} Visiting {1}", getClass().getSimpleName(), page);
+        logger.debug("{} Visiting {}", getClass().getSimpleName(), page);
         page.acceptChildren(this);
 
         // Remember the number of measures in this page
@@ -109,7 +109,7 @@ public class MeasureFixer
     @Override
     public boolean visit (Score score)
     {
-        logger.fine("{0} Visiting {1}", getClass().getSimpleName(), score);
+        logger.debug("{} Visiting {}", getClass().getSimpleName(), score);
         score.acceptChildren(this);
 
         return false;
@@ -129,7 +129,7 @@ public class MeasureFixer
     @Override
     public boolean visit (ScoreSystem system)
     {
-        logger.fine("{0} Visiting {1}", getClass().getSimpleName(), system);
+        logger.debug("{} Visiting {}", getClass().getSimpleName(), system);
 
         this.system = system;
 
@@ -143,20 +143,20 @@ public class MeasureFixer
         final int imMax = system.getFirstRealPart().getMeasures().size() - 1;
 
         for (im = 0; im <= imMax; im++) {
-            logger.fine("im:{0}", im);
+            logger.debug("im:{}", im);
             verticals = verticalsOf(system, im);
 
             // Check if all voices in all parts exhibit the same termination
             measureTermination = getMeasureTermination();
 
-            logger.fine("measureFinal:{0}{1}",
+            logger.debug("measureFinal:{}{}",
                     measureTermination,
                     (measureTermination != null)
                     ? ("=" + measureTermination)
                     : "");
 
             if (isEmpty()) {
-                logger.fine("empty");
+                logger.debug("empty");
 
                 // All this vertical measure is empty (no notes/rests)
                 // We will merge with the following measure, if any
@@ -167,14 +167,14 @@ public class MeasureFixer
                             false);
                 }
             } else if (isPickup()) {
-                logger.fine("pickup");
+                logger.debug("pickup");
                 setImplicit();
                 setId((lastId != null) ? (-lastId)
                         : ((prevSystemLastId != null)
                         ? (-prevSystemLastId) : 0),
                         false);
             } else if (isSecondRepeatHalf()) {
-                logger.fine("secondHalf");
+                logger.debug("secondHalf");
 
                 // Shorten actual duration for (non-implicit) previous measure
                 shortenFirstHalf();
@@ -182,11 +182,11 @@ public class MeasureFixer
                 setImplicit();
                 setId((lastId != null) ? lastId : prevSystemLastId, true);
             } else if (isRealStart()) {
-                logger.fine("realStart");
+                logger.debug("realStart");
                 merge(); // Merge with previous vertical measure
                 toRemove.add(im);
             } else {
-                logger.fine("normal");
+                logger.debug("normal");
 
                 // Normal measure
                 setId((lastId != null) ? (lastId + 1)
@@ -241,7 +241,7 @@ public class MeasureFixer
                     if (termination == null) {
                         termination = voiceTermination;
                     } else if (!voiceTermination.equals(termination)) {
-                        logger.fine("Non-consistent voices terminations");
+                        logger.debug("Non-consistent voices terminations");
                         return null;
                     }
                 }
@@ -395,7 +395,7 @@ public class MeasureFixer
     private void setId (int id,
                         boolean isSecondHalf)
     {
-        logger.fine("-> id={0}{1}", id, isSecondHalf ? " SH" : "");
+        logger.debug("-> id={}{}", id, isSecondHalf ? " SH" : "");
 
         for (Measure measure : verticals) {
             measure.setPageId(id, isSecondHalf);

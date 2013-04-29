@@ -17,7 +17,7 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.Sections;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 
@@ -45,7 +45,7 @@ public class SectionSets
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SectionSets.class);
+    private static final Logger logger = LoggerFactory.getLogger(SectionSets.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -142,7 +142,7 @@ public class SectionSets
                     Section section = lag.getVertexById(sectionId.id);
 
                     if (section == null) {
-                        logger.warning(sheet.getLogPrefix() +
+                        logger.warn(sheet.getLogPrefix() +
                             "Cannot find section for " + sectionId,
                             new Throwable());
                     } else {

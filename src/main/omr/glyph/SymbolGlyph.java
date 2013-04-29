@@ -20,7 +20,7 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 
@@ -43,7 +43,7 @@ public class SymbolGlyph
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SymbolGlyph.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolGlyph.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The underlying symbol, with generic size */
@@ -113,8 +113,8 @@ public class SymbolGlyph
             }
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine(dumpOf());
+        if (logger.isDebugEnabled()) {
+            logger.debug(dumpOf());
         }
     }
 }

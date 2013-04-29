@@ -19,7 +19,7 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.script.AssignTask;
 import omr.script.BarlineTask;
@@ -61,7 +61,7 @@ public class GlyphsController
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             GlyphsController.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -109,7 +109,7 @@ public class GlyphsController
         // Safety check: we cannot alter virtual glyphs
         for (Glyph glyph : glyphs) {
             if (glyph.isVirtual()) {
-                logger.warning("Cannot alter VirtualGlyph#{0}", glyph.getId());
+                logger.warn("Cannot alter VirtualGlyph#{}", glyph.getId());
 
                 return null;
             }
@@ -244,7 +244,7 @@ public class GlyphsController
     {
         final boolean compound = context.isCompound();
         final Shape shape = context.getAssignedShape();
-        logger.fine("syncAssign {0} compound:{1}", context, compound);
+        logger.debug("syncAssign {} compound:{}", context, compound);
 
         Set<Glyph> glyphs = context.getInitialGlyphs();
 
@@ -280,7 +280,7 @@ public class GlyphsController
      */
     public void syncDelete (DeleteTask context)
     {
-        logger.fine("syncDelete{0}", context);
+        logger.debug("syncDelete{}", context);
 
         model.deleteGlyphs(context.getInitialGlyphs());
 

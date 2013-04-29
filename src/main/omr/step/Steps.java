@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.plugin.Plugin;
 import omr.plugin.PluginsManager;
@@ -35,7 +35,7 @@ public class Steps
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Steps.class);
+    private static final Logger logger = LoggerFactory.getLogger(Steps.class);
 
     // Mandatory step names
     public static final String             LOAD = "LOAD";
@@ -146,7 +146,7 @@ public class Steps
 
         if (step == null) {
             String msg = "Step not found: " + str;
-            logger.warning(msg);
+            logger.warn(msg);
             throw new IllegalArgumentException(msg);
         }
 

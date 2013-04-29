@@ -19,7 +19,7 @@ import omr.glyph.facets.GlyphValue;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.sheet.Sheet;
 
@@ -78,7 +78,7 @@ public class GlyphRepository
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             GlyphRepository.class);
 
     /** The single instance of this class */
@@ -254,7 +254,7 @@ public class GlyphRepository
                 File file = new File(WellKnowns.TRAIN_FOLDER, gName);
 
                 if (!file.exists()) {
-                    logger.warning("Unable to find file for glyph {0}", gName);
+                    logger.warn("Unable to find file for glyph {}", gName);
 
                     return null;
                 }
@@ -300,7 +300,7 @@ public class GlyphRepository
         if (files != null) {
             return Arrays.asList(files);
         } else {
-            logger.warning("Cannot get files list from dir {0}", dir);
+            logger.warn("Cannot get files list from dir {}", dir);
 
             return new ArrayList<>();
         }
@@ -443,14 +443,14 @@ public class GlyphRepository
 
             // Make sure related directory chain exists
             if (sheetDir.mkdirs()) {
-                logger.info("Creating directory {0}", sheetDir);
+                logger.info("Creating directory {}", sheetDir);
             }
 
             if (recordGlyph(glyph, shape, sheetDir) > 0) {
-                logger.info("Stored {0} into {1}", glyph.idString(), sheetDir);
+                logger.info("Stored {} into {}", glyph.idString(), sheetDir);
             }
         } else {
-            logger.warning("Not recordable {0}", glyph);
+            logger.warn("Not recordable {}", glyph);
         }
     }
 
@@ -478,7 +478,7 @@ public class GlyphRepository
 
         // Make sure related directory chain exists
         if (sheetDir.mkdirs()) {
-            logger.info("Creating directory {0}", sheetDir);
+            logger.info("Creating directory {}", sheetDir);
         } else {
             deleteXmlFiles(sheetDir);
         }
@@ -497,7 +497,7 @@ public class GlyphRepository
         // Refresh glyph populations
         refreshBases();
 
-        logger.info("{0} glyphs stored from {1}", glyphNb, sheet.getId());
+        logger.info("{} glyphs stored from {}", glyphNb, sheet.getId());
     }
 
     //--------------//
@@ -561,7 +561,7 @@ public class GlyphRepository
     public synchronized void storeCoreBase ()
     {
         if (coreBase == null) {
-            logger.warning("Core base is null");
+            logger.warn("Core base is null");
 
             return;
         }
@@ -585,7 +585,7 @@ public class GlyphRepository
             final File target = new File(coreFolder, gName);
             target.getParentFile().mkdirs();
 
-            logger.fine("Storing {0} as core", target);
+            logger.debug("Storing {} as core", target);
 
             try {
                 if (isIcon) {
@@ -596,11 +596,11 @@ public class GlyphRepository
 
                 copyNb++;
             } catch (IOException ex) {
-                logger.warning("Cannot copy {0} to {1}", source, target);
+                logger.warn("Cannot copy {} to {}", source, target);
             }
         }
 
-        logger.info("{0} glyphs copied as core training material", copyNb);
+        logger.info("{} glyphs copied as core training material", copyNb);
     }
 
     //-----------------//
@@ -640,7 +640,7 @@ public class GlyphRepository
     private Glyph buildGlyph (String gName,
                               File file)
     {
-        logger.fine("Loading glyph {0}", file);
+        logger.debug("Loading glyph {}", file);
 
         Glyph glyph = null;
         InputStream is = null;
@@ -649,7 +649,7 @@ public class GlyphRepository
             is = new FileInputStream(file);
             glyph = jaxbUnmarshal(is);
         } catch (Exception ex) {
-            logger.warning("Could not unmarshal file {0}", file);
+            logger.warn("Could not unmarshal file {}", file);
             ex.printStackTrace();
         } finally {
             if (is != null) {
@@ -687,7 +687,7 @@ public class GlyphRepository
         }
 
         if (symbol != null) {
-            logger.fine("Building symbol glyph {0}", gName);
+            logger.debug("Building symbol glyph {}", gName);
 
             File file = new File(WellKnowns.TRAIN_FOLDER, gName);
 
@@ -699,7 +699,7 @@ public class GlyphRepository
                             is);
                     is.close();
 
-                    logger.fine("Descriptor {0}", desc);
+                    logger.debug("Descriptor {}", desc);
 
                     glyph = new SymbolGlyph(
                             shape,
@@ -707,12 +707,12 @@ public class GlyphRepository
                             MusicFont.DEFAULT_INTERLINE,
                             desc);
                 } catch (Exception ex) {
-                    logger.warning("Cannot process " + file, ex);
+                    logger.warn("Cannot process " + file, ex);
                 }
             }
         } else {
-            //if (logger.isFineEnabled()) {
-            logger.warning("No symbol for {0}", gName);
+            //if (logger.isDebugEnabled()) {
+            logger.warn("No symbol for {}", gName);
 
             //}
         }
@@ -730,7 +730,7 @@ public class GlyphRepository
         for (File file : files) {
             if (FileUtil.getExtension(file).equals(FILE_EXTENSION)) {
                 if (!file.delete()) {
-                    logger.warning("Could not delete {0}", file);
+                    logger.warn("Could not delete {}", file);
                 }
             }
         }
@@ -887,7 +887,7 @@ public class GlyphRepository
             base.add(glyphNameOf(file));
         }
 
-        logger.fine("{0} glyphs names collected", files.size());
+        logger.debug("{} glyphs names collected", files.size());
 
         return base;
     }
@@ -922,7 +922,7 @@ public class GlyphRepository
     {
         File[] files = listLegalFiles(dir);
 
-        logger.fine("Browsing directory {0} total:{1}", dir, files.length);
+        logger.debug("Browsing directory {} total:{}", dir, files.length);
 
         if (files != null) {
             for (File file : files) {
@@ -933,7 +933,7 @@ public class GlyphRepository
                 }
             }
         } else {
-            logger.warning("Directory {0} is empty", dir);
+            logger.warn("Directory {} is empty", dir);
         }
     }
 
@@ -973,7 +973,7 @@ public class GlyphRepository
         OutputStream os = null;
 
         try {
-            logger.fine("Storing {0}", glyph);
+            logger.debug("Storing {}", glyph);
 
             StringBuilder sb = new StringBuilder();
             sb.append(shape);
@@ -990,14 +990,14 @@ public class GlyphRepository
 
             return 1;
         } catch (Throwable ex) {
-            logger.warning("Error storing " + glyph, ex);
+            logger.warn("Error storing " + glyph, ex);
         } finally {
             try {
                 if (os != null) {
                     os.close();
                 }
             } catch (IOException ex) {
-                logger.warning(null, ex);
+                logger.warn(null, ex);
             }
         }
 

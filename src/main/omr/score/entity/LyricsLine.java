@@ -13,7 +13,7 @@ package omr.score.entity;
 
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Population;
 
@@ -43,7 +43,7 @@ public class LyricsLine
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(LyricsLine.class);
+    private static final Logger logger = LoggerFactory.getLogger(LyricsLine.class);
 
     /** For comparing (TreeNode) LyricsLine instances on their ordinate */
     public static final Comparator<TreeNode> yComparator = new Comparator<TreeNode>()
@@ -93,7 +93,7 @@ public class LyricsLine
     public static void populate (LyricsItem item,
                                  SystemPart part)
     {
-        logger.fine("LyricsLine. populate  with {0}", item);
+        logger.debug("LyricsLine. populate  with {}", item);
 
         // First look for a suitable lyrics line
         for (TreeNode node : part.getLyrics()) {
@@ -101,7 +101,7 @@ public class LyricsLine
 
             if (line.isAlignedWith(item.getReferencePoint())) {
                 line.addItem(item);
-                logger.fine("Added {0} into {1}", item, line);
+                logger.debug("Added {} into {}", item, line);
                 return;
             }
         }
@@ -109,7 +109,7 @@ public class LyricsLine
         // No compatible line, create a brand new one
         LyricsLine line = new LyricsLine(part);
         line.addItem(item);
-        logger.fine("Created new {0}", line);
+        logger.debug("Created new {}", line);
     }
 
     //------------------//

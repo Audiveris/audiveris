@@ -20,7 +20,7 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Rational;
 
@@ -62,7 +62,7 @@ public class Note
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Note.class);
+    private static final Logger logger = LoggerFactory.getLogger(Note.class);
 
     /** The quarter duration value */
     public static final Rational QUARTER_DURATION = new Rational(1, 4);
@@ -468,7 +468,7 @@ public class Note
                                            final PixelPoint accidCenter)
     {
         if (glyph.isVip()) {
-            logger.info("Note. populateAccidental {0}", glyph.idString());
+            logger.info("Note. populateAccidental {}", glyph.idString());
         }
 
         final Scale scale = measure.getScale();
@@ -513,13 +513,13 @@ public class Note
                     return Double.compare(ds1, ds2);
                 }
             });
-            logger.fine("{0} Candidates={1}", candidates.size(), candidates);
+            logger.debug("{} Candidates={}", candidates.size(), candidates);
 
             glyph.clearTranslations();
             Note bestNote = candidates.get(0);
             bestNote.accidental = glyph;
             glyph.addTranslation(bestNote);
-            logger.fine("{0} accidental {1} at {2}",
+            logger.debug("{} accidental {} at {}",
                     bestNote.getContextString(),
                     glyph.getShape(), bestNote.getCenter());
 
@@ -529,7 +529,7 @@ public class Note
             if (mirrored != null) {
                 mirrored.accidental = glyph;
                 glyph.addTranslation(mirrored);
-                logger.fine("{0} accidental {1} at {2} (mirrored)",
+                logger.debug("{} accidental {} at {} (mirrored)",
                         mirrored.getContextString(),
                         glyph.getShape(), mirrored.getCenter());
             }
@@ -682,7 +682,7 @@ public class Note
         case NATURAL:
             return 0;
         default:
-            logger.warning("Weird shape {0} for accidental {1}",
+            logger.warn("Weird shape {} for accidental {}",
                     accidental.getShape(), accidental.idString());
             return 0; // Should not happen
         }
@@ -810,7 +810,7 @@ public class Note
 
         default:
             // Error
-            logger.severe("Illegal note type {0}", shape);
+            logger.error("Illegal note type {}", shape);
 
             return Rational.ZERO;
         }

@@ -12,7 +12,7 @@
 package omr.lag;
 
 import omr.run.PixelFilter;
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Run;
 import omr.run.RunsTable;
@@ -33,7 +33,7 @@ public class SectionsBuilder
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             SectionsBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -113,14 +113,14 @@ public class SectionsBuilder
 
                 // Process all sections of previous column, then prevActives
                 // will contain only active sections (that may be continued)
-                logger.fine("Prev column");
+                logger.debug("Prev column");
 
                 for (Section section : prevActives) {
                     processPrevSide(section, runList);
                 }
 
                 // Process all runs of next column
-                logger.fine("Next column");
+                logger.debug("Next column");
 
                 for (Run run : runList) {
                     processNextSide(col, run);
@@ -184,7 +184,7 @@ public class SectionsBuilder
     private void continueSection (Section section,
                                   Run run)
     {
-        logger.fine("Continuing section {0} with {1}", section, run);
+        logger.debug("Continuing section {} with {}", section, run);
 
         section.append(run);
         nextActives.add(section);
@@ -228,7 +228,7 @@ public class SectionsBuilder
     private void processNextSide (int col,
                                   Run run)
     {
-        logger.fine("processNextSide for run {0}", run);
+        logger.debug("processNextSide for run {}", run);
 
         int nextStart = run.getStart();
         int nextStop = run.getStop();
@@ -245,13 +245,13 @@ public class SectionsBuilder
             }
 
             if (lastRun.getStop() >= nextStart) {
-                logger.fine("Overlap from {0} to {1}", lastRun, run);
+                logger.debug("Overlap from {} to {}", lastRun, run);
                 overlappingSections.add(section);
             }
         }
 
         // Processing now depends on nb of overlapping runs
-        logger.fine("overlap={0}", overlappingSections.size());
+        logger.debug("overlap={}", overlappingSections.size());
 
         switch (overlappingSections.size()) {
         case 0: // Begin a brand new section
@@ -276,7 +276,7 @@ public class SectionsBuilder
 
         default: // Converging sections, end them, start a new one
 
-            logger.fine("Converging at {0}", run);
+            logger.debug("Converging at {}", run);
             Section newSection = createSection(col, run);
             nextActives.add(newSection);
 
@@ -302,7 +302,7 @@ public class SectionsBuilder
         Run lastRun = section.getLastRun();
         int prevStart = lastRun.getStart();
         int prevStop = lastRun.getStop();
-        logger.fine("processPrevSide for section {0}", section);
+        logger.debug("processPrevSide for section {}", section);
 
         // Check if overlap with a run in next column
         int overlapNb = 0;
@@ -314,26 +314,26 @@ public class SectionsBuilder
             }
 
             if (run.getStop() >= prevStart) {
-                logger.fine("Overlap from {0} to {1}", lastRun, run);
+                logger.debug("Overlap from {} to {}", lastRun, run);
                 overlapNb++;
                 overlapRun = run;
             }
         }
 
         // Now consider how many overlapping runs we have in next column
-        logger.fine("overlap={0}", overlapNb);
+        logger.debug("overlap={}", overlapNb);
 
         switch (overlapNb) {
         case 0: // Nothing : end of the section
-            logger.fine("Ending section {0}", section);
+            logger.debug("Ending section {}", section);
             break;
 
         case 1: // Continue if consistent
             if (junctionPolicy.consistentRun(overlapRun, section)) {
-                logger.fine("Perhaps extending section {0} with run {1}",
+                logger.debug("Perhaps extending section {} with run {}",
                         section, overlapRun);
             } else {
-                logger.fine("Incompatible height between {0} and run {1}",
+                logger.debug("Incompatible height between {} and run {}",
                         section, overlapRun);
                 finish(section);
             }

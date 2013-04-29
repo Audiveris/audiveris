@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.Main;
 
@@ -32,7 +32,7 @@ public abstract class AbstractStep
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(AbstractStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractStep.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Step name */
@@ -94,7 +94,7 @@ public abstract class AbstractStep
             throws StepException
     {
         try {
-            logger.fine("{0}Starting {1}", sheet.getLogPrefix(), this);
+            logger.debug("{}Starting {}", sheet.getLogPrefix(), this);
             started(sheet);
             Stepping.notifyStep(sheet, this); // Start
 
@@ -103,7 +103,7 @@ public abstract class AbstractStep
             doit(systems, sheet);
 
             done(sheet); // Full completion
-            logger.fine("{0}Finished {1}", sheet.getLogPrefix(), this);
+            logger.debug("{}Finished {}", sheet.getLogPrefix(), this);
         } finally {
             // Make sure we reset the sheet "current" step, always.
             if (sheet != null) {

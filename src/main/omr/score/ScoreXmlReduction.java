@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.PartConnection.Candidate;
 import omr.score.PartConnection.Result;
@@ -102,7 +102,7 @@ public class ScoreXmlReduction
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             ScoreXmlReduction.class);
 
     /** Just for debug */
@@ -200,7 +200,7 @@ public class ScoreXmlReduction
         // Checking parameters
         if (args.length != 3) {
             for (int i = 0; i < args.length; i++) {
-                logger.info("args[{0}] = \"{1}\"", i, args[i]);
+                logger.info("args[{}] = \"{}\"", i, args[i]);
             }
 
             throw new IllegalArgumentException(
@@ -214,7 +214,7 @@ public class ScoreXmlReduction
         SortedMap<Integer, File> files = selectFiles(dir, prefix, suffix);
 
         if ((files == null) || files.isEmpty()) {
-            logger.warning("No file selected");
+            logger.warn("No file selected");
 
             return;
         }
@@ -226,10 +226,10 @@ public class ScoreXmlReduction
         ScoreXmlReduction reduction = new ScoreXmlReduction(fragments);
         String output = reduction.reduce();
 
-        logger.info("Output.length: {0}", output.length());
+        logger.info("Output.length: {}", output.length());
 
-        //        if (logger.isFineEnabled()) {
-        //            logger.fine("Output:\n" + output);
+        //        if (logger.isDebugEnabled()) {
+        //            logger.debug("Output:\n" + output);
         //        }
 
         // For debugging
@@ -239,7 +239,7 @@ public class ScoreXmlReduction
         FileOutputStream fos = new FileOutputStream(file);
         fos.write(output.getBytes());
         fos.close();
-        logger.info("Output written to {0}", file);
+        logger.info("Output written to {}", file);
 
         watch.print();
 
@@ -362,16 +362,16 @@ public class ScoreXmlReduction
         File[] files = dir.listFiles(filter);
 
         if (files == null) {
-            logger.warning("Cannot read folder {0}", dir);
+            logger.warn("Cannot read folder {}", dir);
 
             return null;
         }
 
         File template = new File(dir, prefix + "*" + suffix);
-        logger.info("Looking for {0}", template);
+        logger.info("Looking for {}", template);
 
         if (files.length == 0) {
-            logger.warning("No file matching {0}", template);
+            logger.warn("No file matching {}", template);
         } else {
             for (File file : files) {
                 map.put(filter.getFileNumber(file.getName()), file);
@@ -489,7 +489,7 @@ public class ScoreXmlReduction
                     ScoreInstrument si = old.getScoreInstrument().get(idx - 1);
 
                     if (idx > newInstruments.size()) {
-                        logger.fine("{0} #{1} Creating {2}",
+                        logger.debug("{} #{} Creating {}",
                                 result, idx, stringOf(si));
                         newInstruments.add(si);
                         si.setId("P" + result.getId() + "-I" + idx);
@@ -506,7 +506,7 @@ public class ScoreXmlReduction
                             }
                         }
                     } else {
-                        logger.fine("{0} #{1} Reusing {2}",
+                        logger.debug("{} #{} Reusing {}",
                                 result, idx, stringOf(si));
                     }
 
@@ -537,7 +537,7 @@ public class ScoreXmlReduction
             for (Part part : page.getPart()) {
                 ScorePart oldScorePart = (ScorePart) part.getId();
                 ScorePart newScorePart = newParts.get(oldScorePart);
-                logger.info("page:{0} old:{1} new:{2}",
+                logger.info("page:{} old:{} new:{}",
                         entry.getKey(), oldScorePart.getId(),
                         newScorePart.getId());
 
@@ -551,7 +551,7 @@ public class ScoreXmlReduction
 
                 // Update measure in situ and reference them from containing part
                 for (Measure measure : part.getMeasure()) {
-                    logger.fine("page#{0} part:{1} Measure#{2}",
+                    logger.debug("page#{} part:{} Measure#{}",
                             entry.getKey(),
                             oldScorePart.getId(),
                             measure.getNumber());
@@ -624,22 +624,22 @@ public class ScoreXmlReduction
     {
         for (Entry<Result, Set<Candidate>> entry : connection.getResultMap().
                 entrySet()) {
-            logger.fine("Result: {0}", entry.getKey());
+            logger.debug("Result: {}", entry.getKey());
 
             ScorePart spr = (ScorePart) entry.getKey().getUnderlyingObject();
 
             for (com.audiveris.proxymusic.ScoreInstrument si : spr.getScoreInstrument()) {
-                logger.fine("-- final inst: {0} {1}",
+                logger.debug("-- final inst: {} {}",
                         si.getId(), si.getInstrumentName());
             }
 
             for (Candidate candidate : entry.getValue()) {
-                logger.fine("* candidate: {0}", candidate);
+                logger.debug("* candidate: {}", candidate);
 
                 ScorePart sp = (ScorePart) candidate.getUnderlyingObject();
 
                 for (com.audiveris.proxymusic.ScoreInstrument si : sp.getScoreInstrument()) {
-                    logger.fine("-- instrument: {0} {1}",
+                    logger.debug("-- instrument: {} {}",
                             si.getId(), si.getInstrumentName());
                 }
             }
@@ -667,7 +667,7 @@ public class ScoreXmlReduction
                     ScoreInstrument si = old.getScoreInstrument().get(idx - 1);
 
                     if (idx > newInstruments.size()) {
-                        logger.fine("{0} #{1} Creating {2}",
+                        logger.debug("{} #{} Creating {}",
                                 result, idx, stringOf(si));
                         newInstruments.add(si);
                         si.setId("P" + result.getId() + "-I" + idx);
@@ -684,7 +684,7 @@ public class ScoreXmlReduction
                             }
                         }
                     } else {
-                        logger.fine("{0} #{1} Reusing {2}",
+                        logger.debug("{} #{} Reusing {}",
                                 result, idx, stringOf(si));
                     }
 
@@ -791,7 +791,7 @@ public class ScoreXmlReduction
         connection = PartConnection.connectProxyPages(pages);
 
         // Force the ids of all ScorePart's
-        if (logger.isFineEnabled()) {
+        if (logger.isDebugEnabled()) {
             numberResults();
         }
 
@@ -868,7 +868,7 @@ public class ScoreXmlReduction
         // Access the page fragments in the right order
         SortedSet<Integer> pageNumbers = new TreeSet<>(
                 pageFragments.keySet());
-        logger.info("About to read fragments {0}", pageNumbers);
+        logger.info("About to read fragments {}", pageNumbers);
 
         /** For user feedback */
         String range = " of [" + pageNumbers.first() + ".."
@@ -890,7 +890,7 @@ public class ScoreXmlReduction
                     stripped);
 
             if (stripped.isSet()) {
-                logger.warning("Illegal XML characters found in fragment #{0}",
+                logger.warn("Illegal XML characters found in fragment #{}",
                         pageNumber);
                 statuses.put(pageNumber, Status.CHARACTERS_SKIPPED);
             }
@@ -902,7 +902,7 @@ public class ScoreXmlReduction
                 ScorePartwise partwise = Marshalling.unmarshal(is);
                 pages.put(pageNumber, partwise);
             } catch (Exception ex) {
-                logger.warning("Could not unmarshall fragment #{0} {1}",
+                logger.warn("Could not unmarshall fragment #{} {}",
                         pageNumber, ex);
                 statuses.put(pageNumber, Status.FRAGMENT_FAILED);
             }
@@ -972,7 +972,7 @@ public class ScoreXmlReduction
             try {
                 return Integer.decode(numStr);
             } catch (Exception ex) {
-                logger.warning(
+                logger.warn(
                         "Cannot decode number \"" + numStr + "\" in file name \""
                         + name + "\"",
                         ex);

@@ -20,7 +20,7 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Histogram;
 import omr.math.Histogram.PeakEntry;
@@ -55,7 +55,7 @@ public class KeySignature
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(KeySignature.class);
+    private static final Logger logger = LoggerFactory.getLogger(KeySignature.class);
 
     /** Standard (in G clef) pitch position for the members of the sharp keys */
     private static final double[] sharpItemPositions = new double[]{
@@ -142,7 +142,7 @@ public class KeySignature
         super(measure);
         setStaff(staff);
 
-        logger.fine("{0} KeySignature created: {1}",
+        logger.debug("{} KeySignature created: {}",
                 getContextString(), this);
     }
 
@@ -171,7 +171,7 @@ public class KeySignature
         // Nota: Center.y is irrelevant
         setCenter(new PixelPoint(other.getCenter().x, 0));
 
-        logger.fine("{0} KeySignature cloned: {1}",
+        logger.debug("{} KeySignature cloned: {}",
                 getContextString(), this);
     }
 
@@ -321,7 +321,7 @@ public class KeySignature
                                     Staff staff,
                                     PixelPoint center)
     {
-        logger.fine("Populating keysig for {0}", glyph);
+        logger.debug("Populating keysig for {}", glyph);
 
         ScoreSystem system = measure.getSystem();
         SystemInfo systemInfo = system.getInfo();
@@ -330,7 +330,7 @@ public class KeySignature
         double pitchPosition = staff.pitchPositionOf(center);
 
         if ((pitchPosition < -5) || (pitchPosition > 5)) {
-            logger.fine("Glyph not within vertical bounds");
+            logger.debug("Glyph not within vertical bounds");
             return false;
         }
 
@@ -352,7 +352,7 @@ public class KeySignature
 
             if (ShapeSet.StemSymbols.contains(shape)
                 || ShapeSet.Notes.getShapes().contains(shape)) {
-                logger.fine("Cannot accept {0} as neighbor", shape);
+                logger.debug("Cannot accept {} as neighbor", shape);
                 return false;
             }
         }
@@ -370,7 +370,7 @@ public class KeySignature
 
             // Check distance
             if (!glyphFatBox.intersects(keysig.getBox())) {
-                logger.fine("Glyph {0} too far from {1}", glyph.getId(), keysig);
+                logger.debug("Glyph {} too far from {}", glyph.getId(), keysig);
 
                 continue;
             } else if (((glyph.getShape().isSharpBased())
@@ -378,14 +378,14 @@ public class KeySignature
                        || ((glyph.getShape().isFlatBased())
                            && (keysig.getKey() > 0))) {
                 // Check sharp or flat key sig, wrt current glyph
-                logger.fine(
-                        "Cannot extend opposite key signature with glyph {0}",
+                logger.debug(
+                        "Cannot extend opposite key signature with glyph {}",
                         glyph.getId());
                 return false;
             } else {
                 // Everything is OK
                 found = true;
-                logger.fine("Extending {0}", keysig);
+                logger.debug("Extending {}", keysig);
 
                 break;
             }
@@ -399,7 +399,7 @@ public class KeySignature
                     staff);
 
             if (!checkPitchPosition(glyph, center, staff, clef)) {
-                logger.fine("Cannot start a new key signature with glyph {0}",
+                logger.debug("Cannot start a new key signature with glyph {}",
                         glyph.getId());
                 return false;
             }
@@ -412,7 +412,7 @@ public class KeySignature
         keysig.getKey();
         glyph.setTranslation(keysig);
 
-        logger.fine("OK: {0}", keysig);
+        logger.debug("OK: {}", keysig);
 
         return true;
     }
@@ -499,7 +499,7 @@ public class KeySignature
                     Orientation.VERTICAL,
                     getGlyphs());
 
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
                 histo.print(System.out);
             }
 
@@ -509,9 +509,9 @@ public class KeySignature
                     true,
                     false);
 
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
                 for (PeakEntry<Integer> peak : peaks) {
-                    logger.fine(peak.toString());
+                    logger.debug(peak.toString());
                 }
             }
 
@@ -743,13 +743,13 @@ public class KeySignature
                          - delta;
 
             if (Math.abs(dif) <= (constants.keyYMargin.getValue() * 2)) {
-                logger.fine("Correct pitch position for glyph {0}",
+                logger.debug("Correct pitch position for glyph {}",
                         glyph.getId());
                 return true;
             }
         }
 
-        logger.fine("No valid pitch position for glyph {0}", glyph.getId());
+        logger.debug("No valid pitch position for glyph {}", glyph.getId());
 
         return false;
     }
@@ -870,7 +870,7 @@ public class KeySignature
             return PERCUSSION_CLEF;
 
         default:
-            logger.severe("No base kind defined for clef {0}", shape);
+            logger.error("No base kind defined for clef {}", shape);
             return null;
         }
     }
@@ -895,13 +895,13 @@ public class KeySignature
         }
 
         int delta = (int) Math.rint(realPos - theoPos);
-        logger.fine("theoPos={0} realPos={1} delta={2}",
+        logger.debug("theoPos={} realPos={} delta={}",
                 theoPos, realPos, delta);
 
         Shape kind = deltaToClef(delta);
 
         if (kind == null) {
-            logger.fine("Cannot guess Clef from Key signature");
+            logger.debug("Cannot guess Clef from Key signature");
         }
 
         return kind;
@@ -979,7 +979,7 @@ public class KeySignature
 
                 if (glyphShape.isFlatBased()) {
                     if (kind == SHARP) {
-                        logger.fine("Inconsistent key signature {0}", this);
+                        logger.debug("Inconsistent key signature {}", this);
                         return;
                     } else {
                         kind = FLAT;
@@ -988,7 +988,7 @@ public class KeySignature
 
                 if (glyphShape.isSharpBased()) {
                     if (kind == FLAT) {
-                        logger.fine("Inconsistent key signature {0}", this);
+                        logger.debug("Inconsistent key signature {}", this);
                         return;
                     } else {
                         kind = SHARP;

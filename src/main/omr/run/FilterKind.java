@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.run;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code FilterKind} handles the various kinds of
@@ -32,7 +32,7 @@ public enum FilterKind
     public final Class<?> classe;
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             FilterKind.class);
 
     //------------//

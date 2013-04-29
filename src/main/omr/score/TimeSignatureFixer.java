@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.entity.Measure;
 import omr.score.entity.Page;
@@ -45,7 +45,7 @@ public class TimeSignatureFixer
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             TimeSignatureFixer.class);
 
     /** Used to sort integers by decreasing value */
@@ -132,7 +132,7 @@ public class TimeSignatureFixer
                         page.getLastSystem().getFirstPart().getLastMeasure());
             }
         } catch (Exception ex) {
-            logger.warning("TimeSignatureFixer. Error visiting " + page, ex);
+            logger.warn("TimeSignatureFixer. Error visiting " + page, ex);
         }
 
         // Don't go the standard way (part per part)
@@ -166,14 +166,14 @@ public class TimeSignatureFixer
     private void checkTimeSigs (Measure startMeasure,
                                 Measure stopMeasure)
     {
-        logger.fine("checkTimeSigs on measure range {0}..{1}",
+        logger.debug("checkTimeSigs on measure range {}..{}",
                 startMeasure.getPageId(), stopMeasure.getPageId());
 
         // Retrieve the best possible time signature(s)
         SortedMap<Integer, TimeRational> bestSigs = retrieveBestSigs(
                 startMeasure,
                 stopMeasure);
-        logger.fine("{0}Best inferred time sigs in [M#{1},M#{2}]: {3}",
+        logger.debug("{}Best inferred time sigs in [M#{},M#{}]: {}",
                 startMeasure.getPage().getSheet().getLogPrefix(),
                 startMeasure.getIdValue(), stopMeasure.getIdValue(), bestSigs);
 
@@ -181,12 +181,12 @@ public class TimeSignatureFixer
             TimeRational bestRational = bestSigs.get(bestSigs.firstKey());
 
             if (!TimeSignature.isAcceptable(bestRational)) {
-                logger.fine("Time sig too uncommon: {0}", bestRational);
+                logger.debug("Time sig too uncommon: {}", bestRational);
 
                 return;
             }
 
-            logger.fine("Best sig: {0}", bestRational);
+            logger.debug("Best sig: {}", bestRational);
 
             // Loop on every staff in the vertical startMeasure
             for (Staff.SystemIterator sit = new Staff.SystemIterator(
@@ -200,7 +200,7 @@ public class TimeSignatureFixer
                         TimeRational timeRational = sig.getTimeRational();
                         if (timeRational == null
                             || !timeRational.equals(bestRational)) {
-                            logger.info("{0}Measure#{1} {2}T{3} {4}->{5}",
+                            logger.info("{}Measure#{} {}T{} {}->{}",
                                     measure.getPage().getSheet().getLogPrefix(),
                                     measure.getPageId(),
                                     staff.getContextString(),
@@ -214,7 +214,7 @@ public class TimeSignatureFixer
                 }
             }
         } else {
-            logger.fine("No best sig!");
+            logger.debug("No best sig!");
         }
     }
 
@@ -242,7 +242,7 @@ public class TimeSignatureFixer
             TimeSignature sig = sit.getMeasure().getTimeSignature(staff);
 
             if (sig != null) {
-                logger.fine("Measure#{0} {1}T{2} {3}",
+                logger.debug("Measure#{} {}T{} {}",
                         measure.getPageId(), staff.getContextString(),
                         staff.getId(), sig);
 
@@ -280,7 +280,7 @@ public class TimeSignatureFixer
         // Loop on measure range
         while (true) {
             // Retrieve info
-            logger.fine("Checking measure#{0} idx:{1}",
+            logger.debug("Checking measure#{} idx:{}",
                     m.getPageId(), m.getChildIndex());
 
             ScoreSystem system = m.getSystem();
@@ -289,13 +289,13 @@ public class TimeSignatureFixer
                 SystemPart part = (SystemPart) pNode;
                 Measure measure = (Measure) part.getMeasures().get(mIndex);
 
-                if (logger.isFineEnabled()) {
+                if (logger.isDebugEnabled()) {
                     measure.printVoices(null);
                 }
 
                 for (Voice voice : measure.getVoices()) {
                     TimeRational timeRational = voice.getInferredTimeSignature();
-                    logger.fine("Voice#{0} time inferred: {1}",
+                    logger.debug("Voice#{} time inferred: {}",
                             voice.getId(), timeRational);
 
                     if (timeRational != null) {

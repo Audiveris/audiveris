@@ -13,7 +13,7 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -60,7 +60,7 @@ public abstract class Text
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Text.class);
+    private static final Logger logger = LoggerFactory.getLogger(Text.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -100,7 +100,7 @@ public abstract class Text
 
         setBox(sentence.getBounds());
 
-        logger.fine("Created {0}", this);
+        logger.debug("Created {}", this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -163,7 +163,7 @@ public abstract class Text
                     "Sentence with no role defined");
         }
 
-        logger.fine("Populating {0} {1} \"{2}\"",
+        logger.debug("Populating {} {} \"{}\"",
                 sentence, role, sentence.getValue());
 
         if (role == null) {

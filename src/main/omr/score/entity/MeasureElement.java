@@ -17,7 +17,7 @@ import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 
@@ -44,7 +44,7 @@ public abstract class MeasureElement
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(MeasureElement.class);
+    private static final Logger logger = LoggerFactory.getLogger(MeasureElement.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();

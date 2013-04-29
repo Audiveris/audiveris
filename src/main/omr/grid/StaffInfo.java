@@ -15,7 +15,7 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.GeoPath;
 import omr.math.LineUtilities;
@@ -64,7 +64,7 @@ public class StaffInfo
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(StaffInfo.class);
+    private static final Logger logger = LoggerFactory.getLogger(StaffInfo.class);
 
     /** To sort by staff id. */
     public static final Comparator<StaffInfo> byId = new Comparator<StaffInfo>()
@@ -228,7 +228,7 @@ public class StaffInfo
         }
 
         // Not found
-        logger.fine("Could not find ledger {0}", ledger.idString());
+        logger.debug("Could not find ledger {}", ledger.idString());
         return false;
     }
 
@@ -759,7 +759,7 @@ public class StaffInfo
             return specificScale;
         } else {
             // Return the scale of the sheet
-            logger.warning("No specific scale available");
+            logger.warn("No specific scale available");
 
             return null;
         }
@@ -909,7 +909,7 @@ public class StaffInfo
     public void setLimit (VerticalSide side,
                           GeoPath limit)
     {
-        logger.fine("staff#{0} setLimit {1} {2}", id, side, limit);
+        logger.debug("staff#{} setLimit {} {}", id, side, limit);
 
         if (side == TOP) {
             topLimit = limit;

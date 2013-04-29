@@ -13,7 +13,7 @@ package omr.glyph;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 
@@ -39,7 +39,7 @@ public class CompoundBuilder
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             CompoundBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -106,8 +106,8 @@ public class CompoundBuilder
         }
 
         if (neighbors.size() >= minCount) {
-            if (logger.isFineEnabled()) {
-                logger.fine("neighbors={0} seed={1}",
+            if (logger.isDebugEnabled()) {
+                logger.debug("neighbors={} seed={}",
                         Glyphs.toString(neighbors), seed);
             }
 
@@ -118,7 +118,7 @@ public class CompoundBuilder
                 compound = system.addGlyph(compound);
                 compound.setEvaluation(adapter.getChosenEvaluation());
 
-                logger.fine("Compound #{0} built as {1}",
+                logger.debug("Compound #{} built as {}",
                         compound.getId(), compound.getShape());
 
                 return compound;

@@ -16,7 +16,7 @@ import omr.glyph.ShapeEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.ui.panel.TrainingPanel.DumpAction;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.NeuralNetwork;
 
@@ -30,7 +30,8 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -54,7 +55,7 @@ class NetworkPanel
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(NetworkPanel.class);
+    private static final Logger logger = LoggerFactory.getLogger(NetworkPanel.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -476,7 +477,7 @@ class NetworkPanel
             GlyphNetwork  glyphNetwork = (GlyphNetwork) engine;
             NeuralNetwork network = glyphNetwork.getNetwork();
             network.restore(bestSnap);
-            logger.info("Network remaining error : {0}", (float) bestMse);
+            logger.info("Network remaining error : {}", (float) bestMse);
             glyphNetwork.marshal();
 
             // Let the user choose the other possibility
@@ -517,7 +518,7 @@ class NetworkPanel
             GlyphNetwork  glyphNetwork = (GlyphNetwork) engine;
             NeuralNetwork network = glyphNetwork.getNetwork();
             network.restore(lastSnap);
-            logger.info("Network remaining error : {0}", (float) lastMse);
+            logger.info("Network remaining error : {}", (float) lastMse);
             glyphNetwork.marshal();
 
             // Let the user choose the other possibility

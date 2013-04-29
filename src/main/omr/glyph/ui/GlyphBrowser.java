@@ -27,7 +27,7 @@ import omr.lag.BasicLag;
 import omr.lag.Lag;
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 
@@ -66,7 +66,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -96,7 +97,7 @@ class GlyphBrowser
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(GlyphBrowser.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphBrowser.class);
 
     /** Events that can be published on internal service (TODO: Check this!) */
     private static final Class<?>[] locEvents = new Class<?>[]{
@@ -295,7 +296,7 @@ class GlyphBrowser
                 new BlackList(file.getParentFile()).add(new File(gName));
             }
 
-            logger.info("Removed {0}", gName);
+            logger.info("Removed {}", gName);
 
             // Set new index ?
             if (index < names.size()) {
@@ -304,7 +305,7 @@ class GlyphBrowser
                 navigator.setIndex(index - 1, GLYPH_INIT); // Prev/None
             }
         } else {
-            logger.warning("No selected glyph to remove!");
+            logger.warn("No selected glyph to remove!");
         }
     }
 
@@ -506,7 +507,7 @@ class GlyphBrowser
                 navigator.setIndex(0, GLYPH_INIT);
             } else {
                 if (e != null) {
-                    logger.warning("No glyphs selected in Glyph Selector");
+                    logger.warn("No glyphs selected in Glyph Selector");
                 }
 
                 navigator.all.setEnabled(false);
@@ -610,7 +611,7 @@ class GlyphBrowser
                     }
                 }
             } catch (Exception ex) {
-                logger.warning(getClass().getName() + " onEvent error", ex);
+                logger.warn(getClass().getName() + " onEvent error", ex);
             }
         }
 

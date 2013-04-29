@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.DurationRetriever;
 import omr.score.MeasureFixer;
@@ -37,7 +37,7 @@ public class ScoreStep
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreStep.class);
 
     //~ Constructors -----------------------------------------------------------
 

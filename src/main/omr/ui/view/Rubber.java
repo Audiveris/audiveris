@@ -14,7 +14,7 @@ package omr.ui.view;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 import static omr.selection.MouseMovement.*;
 
 import omr.ui.Colors;
@@ -99,7 +99,7 @@ public class Rubber
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Rubber.class);
+    private static final Logger logger = LoggerFactory.getLogger(Rubber.class);
     private static AtomicInteger globalId = new AtomicInteger(0);
 
     /** To handle zoom through mouse wheel */

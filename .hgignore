@@ -14,17 +14,17 @@ syntax: regexp
 \.orig\..*$
 \.rej$
 \.zip$
-^benches$
+^data/benches$
 ^build$
 dist$
-^eval$
+^data/eval$
 ^nbproject/configs$
-^print$
-^scores$
-^scripts$
+^data/print$
+^data/scores$
+^data/scripts$
 ^settings$
 ^target$
-^temp$
+^data/temp$
 tesseract\.log
 bin
 .DS_Store
@@ -45,8 +45,8 @@ dev/material/*.jpg
 
 audiveris.bat
 manifest.mf
-train/core/*
-www/docs/api
+data/scores/*
+data/train/core/*
+data/www/docs/api
 nbproject/configs
-ocr/tessdata/*
-ocr/tessdata
+resources/*

@@ -13,7 +13,7 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
@@ -29,7 +29,7 @@ public class Coda
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Coda.class);
+    private static final Logger logger = LoggerFactory.getLogger(Coda.class);
     
     //~ Constructors -----------------------------------------------------------
 
@@ -68,7 +68,7 @@ public class Coda
                                  PixelPoint point)
     {
         if (glyph.isVip()) {
-            logger.info("Coda. populate {0}", glyph.idString());
+            logger.info("Coda. populate {}", glyph.idString());
         }
 
         Slot slot = measure.getClosestSlot(point);

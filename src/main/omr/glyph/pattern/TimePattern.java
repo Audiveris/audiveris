@@ -22,7 +22,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -46,7 +46,7 @@ public class TimePattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(TimePattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(TimePattern.class);
     //~ Instance fields --------------------------------------------------------
 
     /** Specific compound adapter. */
@@ -171,7 +171,7 @@ public class TimePattern
                 PixelRectangle result = glyph.getBounds().union(box);
                 if (result.width > params.maxTimeWidth
                     || result.height > params.maxTimeHeight) {
-                    logger.fine("Excluding too large {0}", glyph);
+                    logger.debug("Excluding too large {}", glyph);
                     return false;
                 } else {
                     return true;

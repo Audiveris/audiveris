@@ -22,7 +22,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 import omr.score.entity.Barline;
@@ -55,7 +55,7 @@ public class KeySignatureVerifier
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             KeySignatureVerifier.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -91,19 +91,19 @@ public class KeySignatureVerifier
      */
     public void verifyKeys ()
     {
-        logger.fine("\n------------------------------------------------------");
-        logger.fine("verifySystemKeys for {0}", system);
+        logger.debug("\n------------------------------------------------------");
+        logger.debug("verifySystemKeys for {}", system);
 
         // Number of measures in the system
         final int measureNb = system.getFirstPart().getMeasures().size();
 
         // Verify each measure index on turn
         for (int im = 0; im < measureNb; im++) {
-            logger.fine("measure index ={0}", im);
+            logger.debug("measure index ={}", im);
             verifyVerticalMeasure(im);
         }
 
-        logger.fine("\n======================================================");
+        logger.debug("\n======================================================");
     }
 
     //-------------//
@@ -112,7 +112,7 @@ public class KeySignatureVerifier
     private Glyph checkKeySig (Collection<Glyph> glyphs,
                                final KeySignature bestKey)
     {
-        logger.fine("Merging {0} for shape {1}",
+        logger.debug("Merging {} for shape {}",
                 Glyphs.toString(glyphs), bestKey.getShape());
 
         SystemInfo systemInfo = system.getInfo();
@@ -139,14 +139,14 @@ public class KeySignatureVerifier
 
         if (vote != null) {
             // We now have a key sig!
-            logger.fine("{0} built from {1}",
+            logger.debug("{} built from {}",
                     vote.shape, Glyphs.toString(glyphs));
             compound = systemInfo.addGlyph(compound);
             compound.setShape(vote.shape, Evaluation.ALGORITHM);
 
             return compound;
         } else {
-            logger.fine("{0}Could not find {1} in {2}",
+            logger.debug("{}Could not find {} in {}",
                     systemInfo.getLogPrefix(),
                     bestKey.getShape(), Glyphs.toString(glyphs));
 
@@ -181,7 +181,7 @@ public class KeySignatureVerifier
             }
         }
 
-        logger.severe("Illegal systemStaffIndex: {0}", staffIndex);
+        logger.error("Illegal systemStaffIndex: {}", staffIndex);
 
         return null;
     }
@@ -206,7 +206,7 @@ public class KeySignatureVerifier
             Staff staff = staffOf(iStaff);
             StaffInfo staffInfo = staff.getInfo();
 
-            logger.fine("{0} Forcing key signature to {1}",
+            logger.debug("{} Forcing key signature to {}",
                     getContextString(iMeasure, iStaff), bestKey.getKey());
 
             try {
@@ -251,7 +251,7 @@ public class KeySignatureVerifier
                     ks.addGlyph(compound);
                 }
             } catch (Exception ex) {
-                logger.warning("Cannot copy key", ex);
+                logger.warn("Cannot copy key", ex);
                 ks.addError("Cannot copy key");
             }
 
@@ -277,7 +277,7 @@ public class KeySignatureVerifier
             }
         }
 
-        logger.severe("Illegal systemStaffIndex: {0}", systemStaffIndex);
+        logger.error("Illegal systemStaffIndex: {}", systemStaffIndex);
 
         return null;
     }
@@ -308,7 +308,7 @@ public class KeySignatureVerifier
 
         // Some keys found in this vertical measure?
         if (keyFound) {
-            logger.fine("{0} key(s) found in M{1}",
+            logger.debug("{} key(s) found in M{}",
                     system.getContextString(), im);
 
             // Browse all staves for sharp/flat compatibility
@@ -321,16 +321,16 @@ public class KeySignatureVerifier
                 KeySignature ks = keyVector[iStaff];
 
                 if (ks == null) {
-                    logger.fine("Key signatures will need to be created");
+                    logger.debug("Key signatures will need to be created");
                     adjustment = true;
                 } else if (bestKey == null) {
                     bestKey = ks;
                 } else if (!bestKey.getKey().equals(ks.getKey())) {
-                    logger.fine("Key signatures will need adjustment");
+                    logger.debug("Key signatures will need adjustment");
                     adjustment = true;
 
                     if ((ks.getKey() * bestKey.getKey()) < 0) {
-                        logger.fine("Non compatible key signatures");
+                        logger.debug("Non compatible key signatures");
 
                         compatible = false;
 

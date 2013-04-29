@@ -16,7 +16,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.ui.SymbolsEditor;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
@@ -47,7 +47,7 @@ public class SymbolsStep
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SymbolsStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolsStep.class);
 
     //~ Constructors -----------------------------------------------------------
     //-------------//
@@ -113,7 +113,7 @@ public class SymbolsStep
         // Iterate
         for (int iter = 1; iter <= constants.MaxPatternsIterations.getValue();
                 iter++) {
-            logger.fine("System#{0} patterns iter #{1}", system.getId(), iter);
+            logger.debug("System#{} patterns iter #{}", system.getId(), iter);
             clearSystemErrors(system);
 
             if (!system.runPatterns()) {

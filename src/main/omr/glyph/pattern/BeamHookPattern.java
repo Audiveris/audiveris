@@ -15,7 +15,7 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 
@@ -36,7 +36,7 @@ public class BeamHookPattern
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             BeamHookPattern.class);
 
     //~ Constructors -----------------------------------------------------------
@@ -68,16 +68,16 @@ public class BeamHookPattern
             }
 
             if (hook.getStemNumber() != 1) {
-                if (hook.isVip() || logger.isFineEnabled()) {
-                    logger.info("{0} stem(s) for beam hook #{1}",
+                if (hook.isVip() || logger.isDebugEnabled()) {
+                    logger.info("{} stem(s) for beam hook #{}",
                             hook.getStemNumber(), hook.getId());
                 }
 
                 hook.setShape(null);
                 nb++;
             } else {
-                if (hook.isVip() || logger.isFineEnabled()) {
-                    logger.info("Checking hook #{0}", hook.getId());
+                if (hook.isVip() || logger.isDebugEnabled()) {
+                    logger.info("Checking hook #{}", hook.getId());
                 }
 
                 Glyph stem = null;
@@ -109,8 +109,8 @@ public class BeamHookPattern
 
                         if (ShapeSet.Beams.contains(shape)
                             && (shape != Shape.BEAM_HOOK)) {
-                            if (hook.isVip() || logger.isFineEnabled()) {
-                                logger.info("Confirmed beam hook #{0}", hook.
+                            if (hook.isVip() || logger.isDebugEnabled()) {
+                                logger.info("Confirmed beam hook #{}", hook.
                                         getId());
                             }
 
@@ -123,8 +123,8 @@ public class BeamHookPattern
 
                 if (!beamFound) {
                     // Deassign this hook w/ no beam neighbor
-                    if (hook.isVip() || logger.isFineEnabled()) {
-                        logger.info("Cancelled beam hook #{0}", hook.getId());
+                    if (hook.isVip() || logger.isDebugEnabled()) {
+                        logger.info("Cancelled beam hook #{}", hook.getId());
                     }
 
                     hook.setShape(null);

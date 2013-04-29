@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.math;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 import static java.lang.Math.*;
 
 /**
@@ -27,7 +27,7 @@ public class BasicLine
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BasicLine.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicLine.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Flag to indicate that data needs to be recomputed */
@@ -240,7 +240,7 @@ public class BasicLine
     public void includePoint (double x,
                               double y)
     {
-        logger.fine("includePoint x={0} y={1}", x, y);
+        logger.debug("includePoint x={} y={}", x, y);
 
         n += 1;
         sx += x;
@@ -477,7 +477,7 @@ public class BasicLine
         // Make a choice between horizontal vs vertical
         double hDen = (n * sx2) - (sx * sx);
         double vDen = (n * sy2) - (sy * sy);
-        logger.fine("hDen={0} vDen={1}", hDen, vDen);
+        logger.debug("hDen={} vDen={}", hDen, vDen);
 
         if (abs(hDen) >= abs(vDen)) {
             // Use a rather horizontal orientation, y = mx +p

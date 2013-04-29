@@ -19,7 +19,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 
@@ -68,7 +68,7 @@ public class ShapeChecker
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ShapeChecker.class);
+    private static final Logger logger = LoggerFactory.getLogger(ShapeChecker.class);
 
     /** Singleton */
     private static ShapeChecker INSTANCE;
@@ -302,7 +302,7 @@ public class ShapeChecker
     {
         // For debugging only
         if (eval.grade >= 0.1) {
-            logger.info("{0}{1} {2} weight:{3} {4} corrected as {5}",
+            logger.info("{}{} {} weight:{} {} corrected as {}",
                     system.getLogPrefix(), glyph, eval, glyph.getWeight(),
                     glyph.getBounds(), newShape);
         }
@@ -562,7 +562,7 @@ public class ShapeChecker
                         return correctShape(system, glyph, eval, BEAM_3);
 
                     default:
-                        ///logger.warning("Bad beam #" + glyph.getId() + " nb:" + nb);
+                        ///logger.warn("Bad beam #" + glyph.getId() + " nb:" + nb);
                         eval.failure = new Evaluation.Failure("beamThickness");
 
                         return false;
@@ -659,8 +659,8 @@ public class ShapeChecker
             //
             //                        if (prev != null) {
             //                            if ((box.x - gapStart) > maxGap) {
-            //                                if (logger.isFineEnabled()) {
-            //                                    logger.fine(
+            //                                if (logger.isDebugEnabled()) {
+            //                                    logger.debug(
             //                                        "huge gap detected between glyphs #" +
             //                                        prev.getId() + " & " + glyph.getId());
             //                                }

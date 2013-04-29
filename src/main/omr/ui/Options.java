@@ -17,7 +17,7 @@ import omr.constant.UnitManager;
 import omr.constant.UnitModel;
 import omr.constant.UnitTreeTable;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
@@ -54,7 +54,7 @@ public class Options
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Options.class);
+    private static final Logger logger = LoggerFactory.getLogger(Options.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The interface window */

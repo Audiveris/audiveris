@@ -18,7 +18,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphRepository;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 import omr.score.ScoresManager;
@@ -61,7 +61,7 @@ public class SheetActions
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SheetActions.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetActions.class);
 
     /** Singleton */
     private static SheetActions INSTANCE;
@@ -139,7 +139,7 @@ public class SheetActions
             if (file.exists()) {
                 return new OpenTask(file);
             } else {
-                logger.warning("File not found {0}", file);
+                logger.warn("File not found {}", file);
             }
         }
 
@@ -165,7 +165,7 @@ public class SheetActions
             if (scaleBuilder != null) {
                 scaleBuilder.displayChart();
             } else {
-                logger.warning(
+                logger.warn(
                         "Cannot display scale plot, for lack of scale data");
             }
         }
@@ -379,7 +379,7 @@ public class SheetActions
                 Score score = new Score(file);
                 score.createPages();
             } else {
-                logger.warning("File {0} does not exist", file);
+                logger.warn("File {} does not exist", file);
             }
 
             return null;

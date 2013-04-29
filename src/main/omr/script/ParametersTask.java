@@ -155,7 +155,7 @@ public class ParametersTask
                 // Part midi program
                 scorePart.setMidiProgram(data.program);
             } catch (Exception ex) {
-                logger.warning(
+                logger.warn(
                         "Error in script Parameters part#" + (i + 1),
                         ex);
             }
@@ -187,7 +187,7 @@ public class ParametersTask
         }
 
         if (sb.length() > 0) {
-            logger.info("{0}parameters{1}", score.getLogPrefix(), sb);
+            logger.info("{}parameters{}", score.getLogPrefix(), sb);
         }
     }
 
@@ -218,7 +218,7 @@ public class ParametersTask
             if (Steps.compare(latestStep, textsStep) >= 0) {
                 LiveParam<String> param = page.getTextParam();
                 if (param.needsUpdate()) {
-                    logger.fine("Page {0} needs TEXT with {1}",
+                    logger.debug("Page {} needs TEXT with {}",
                             page.getId(), param.getTarget());
                     // Convert the text items as much as possible
                     final Sheet theSheet = page.getSheet();
@@ -235,7 +235,7 @@ public class ParametersTask
             if (Steps.compare(latestStep, scaleStep) >= 0) {
                 LiveParam<FilterDescriptor> param = page.getFilterParam();
                 if (param.needsUpdate()) {
-                    logger.fine("Page {0} needs SCALE with {1}",
+                    logger.debug("Page {} needs SCALE with {}",
                             page.getId(), param.getTarget());
                     //  Reprocess this page from SCALE step
                     from = scaleStep;

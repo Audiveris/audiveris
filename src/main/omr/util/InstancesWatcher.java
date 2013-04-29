@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.util;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
@@ -27,7 +27,7 @@ public class InstancesWatcher<E>
 {
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(InstancesWatcher.class);
+    private static final Logger logger = LoggerFactory.getLogger(InstancesWatcher.class);
 
     /** Weak references to instances. */
     private Set<WeakReference<E>> actives = new LinkedHashSet<>();
@@ -56,13 +56,13 @@ public class InstancesWatcher<E>
             WeakReference<E> weak = it.next();
             E ref = weak.get();
             if (ref != null) {
-                logger.info("  @{0} {1}", Integer.toHexString(ref.hashCode()), ref);
+                logger.info("  @{} {}", Integer.toHexString(ref.hashCode()), ref);
                 count++;
             } else {
                 it.remove();
             }
         }
 
-        logger.info("Actives count: {0}", count);
+        logger.info("Actives count: {}", count);
     }
 }

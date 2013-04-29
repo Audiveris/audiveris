@@ -13,7 +13,7 @@ package omr.glyph.ui;
 
 import omr.WellKnowns;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.util.BlackList;
 
@@ -29,7 +29,7 @@ public class SymbolsBlackList
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
         SymbolsBlackList.class);
 
     //~ Constructors -----------------------------------------------------------

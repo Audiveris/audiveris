@@ -22,7 +22,7 @@ import omr.glyph.facets.Glyph;
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.BasicLine;
 import omr.math.Line;
@@ -76,7 +76,7 @@ public class SystemsBuilder
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SystemsBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(SystemsBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -199,9 +199,9 @@ public class SystemsBuilder
         //            part = new PartInfo();
         //            system.addPart(part);
         //            part.addStaff(singleStaff);
-        //            logger.warning("Created one system, one part, one staff");
+        //            logger.warn("Created one system, one part, one staff");
         //        }
-        if (logger.isFineEnabled()) {
+        if (logger.isDebugEnabled()) {
             for (SystemInfo systemInfo : systems) {
                 Main.dumping.dump(systemInfo);
 
@@ -306,7 +306,7 @@ public class SystemsBuilder
             }
         }
 
-        logger.fine("S#{0}-{1} : {2}{3}", prevSystem.getId(),
+        logger.debug("S#{}-{} : {}{}", prevSystem.getId(),
                 system.getId(), polygon.getBounds(),
                 Glyphs.toString(" inter:", intersected));
 
@@ -357,7 +357,7 @@ public class SystemsBuilder
 
         sheet.getBench().recordSystemCount(sysNb);
 
-        logger.info("{0}{1}", sheet.getLogPrefix(), sb.toString());
+        logger.info("{}{}", sheet.getLogPrefix(), sb.toString());
     }
 
     //~ Inner Classes ----------------------------------------------------------

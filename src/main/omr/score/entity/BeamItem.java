@@ -17,7 +17,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.BasicLine;
 import omr.math.Line;
@@ -50,7 +50,7 @@ public class BeamItem
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BeamItem.class);
+    private static final Logger logger = LoggerFactory.getLogger(BeamItem.class);
 
     /** Compare two BeamItem instances by abscissa within a Beam. */
     public static final Comparator<TreeNode> byNodeAbscissa = new Comparator<TreeNode>()
@@ -128,8 +128,8 @@ public class BeamItem
             beam.setVip();
         }
 
-        if (isVip() || logger.isFineEnabled()) {
-            logger.info("{0} Created {1}", beam.getContextString(), this);
+        if (isVip() || logger.isDebugEnabled()) {
+            logger.info("{} Created {}", beam.getContextString(), this);
         }
     }
 
@@ -148,7 +148,7 @@ public class BeamItem
                                  Measure measure)
     {
         if (glyph.isVip()) {
-            logger.info("BeamItem. populate {0}", glyph.idString());
+            logger.info("BeamItem. populate {}", glyph.idString());
         }
         
         createPack(measure, glyph);
@@ -392,7 +392,7 @@ public class BeamItem
                 glyph.addTranslation(item);
             }
         } catch (Exception ex) {
-            logger.warning(measure.getContextString()
+            logger.warn(measure.getContextString()
                            + " Error creating BeamItem from "
                            + glyph.idString(),
                     ex);
@@ -422,7 +422,7 @@ public class BeamItem
             return 1;
 
         default:
-            logger.severe("Use of BeamItem.packCardOf with shape {0}", shape);
+            logger.error("Use of BeamItem.packCardOf with shape {}", shape);
 
             return 0;
         }

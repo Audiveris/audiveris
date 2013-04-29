@@ -21,7 +21,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.plugin.PluginsManager;
 
@@ -45,7 +45,6 @@ import omr.ui.util.Panel;
 import omr.ui.util.SeparableMenu;
 import omr.ui.util.UIUtilities;
 
-import omr.util.JaiLoader;
 import omr.util.OmrExecutors;
 import omr.util.WeakPropertyChangeListener;
 
@@ -73,6 +72,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
+import omr.sheet.picture.jai.JaiLoader;
 
 /**
  * Class {@code MainGui} is the Java User Interface, the main class for
@@ -91,7 +91,7 @@ public class MainGui
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(MainGui.class);
+    private static final Logger logger = LoggerFactory.getLogger(MainGui.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -375,7 +375,7 @@ public class MainGui
                 }
             });
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 
@@ -494,17 +494,15 @@ public class MainGui
     @Override
     protected void initialize (String[] args)
     {
-        logger.fine("MainGui. 1/initialize");
+        logger.debug("MainGui. 1/initialize");
         
         // Display software reference
-        logger.info("Reference: {0}", WellKnowns.TOOL_REF);
+        logger.info("Reference: {}", WellKnowns.TOOL_REF);
 
         // Launch background pre-loading tasks?
         if (constants.preloadCostlyPackages.getValue()) {
             JaiLoader.preload();
             ScoreExporter.preload();
-
-            ///MidiAgentFactory.preload();
         }
     }
 
@@ -515,7 +513,7 @@ public class MainGui
     @Override
     protected void ready ()
     {
-        logger.fine("MainGui. 3/ready");
+        logger.debug("MainGui. 3/ready");
 
         // Weakly listen to GUI Actions parameters
         PropertyChangeListener weak = new WeakPropertyChangeListener(this);
@@ -550,7 +548,7 @@ public class MainGui
     @Override
     protected void startup ()
     {
-        logger.fine("MainGui. 2/startup");
+        logger.debug("MainGui. 2/startup");
 
         frame = getMainFrame();
 
@@ -590,6 +588,7 @@ public class MainGui
             }
         });
 
+        // Here we go...
         show(frame);
     }
 

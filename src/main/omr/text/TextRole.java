@@ -14,7 +14,7 @@ package omr.text;
 import omr.constant.ConstantSet;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -63,7 +63,7 @@ public enum TextRole
     private static final Constants constants = new Constants();
 
     /** Usual logger utility. */
-    private static final Logger logger = Logger.getLogger(TextRole.class);
+    private static final Logger logger = LoggerFactory.getLogger(TextRole.class);
 
     //~ Methods ----------------------------------------------------------------
     //
@@ -80,7 +80,7 @@ public enum TextRole
     public String getStringHolder (int NbOfChars)
     {
         if (NbOfChars > 1000) {
-            logger.warning("Abnormal text length:{0}", NbOfChars);
+            logger.warn("Abnormal text length:{}", NbOfChars);
 
             return "<<" + Integer.toString(NbOfChars) + ">>";
         } else {
@@ -115,7 +115,7 @@ public enum TextRole
         }
         
         if (line.isVip()) {
-            logger.info("TextRoleInfo. guessRole for {0}", line.getValue());
+            logger.info("TextRoleInfo. guessRole for {}", line.getValue());
         }
 
         int chordCount = 0;
@@ -198,9 +198,9 @@ public enum TextRole
         int minTitleHeight = scale.toPixels(constants.minTitleHeight);
         boolean highText = box.height >= minTitleHeight;
 
-        logger.fine("{0} firstSystem={1} lastSystem={2} systemPosition={3}"
-                    + " partPosition={4} closeToStaff={5} leftOfStaves={6}"
-                    + " pageCentered={7} rightAligned={8} shortSentence={9}"
+        logger.debug("{} firstSystem={} lastSystem={} systemPosition={}"
+                    + " partPosition={} closeToStaff={} leftOfStaves={}"
+                    + " pageCentered={} rightAligned={} shortSentence={}"
                     + " highText={10}",
                 box, firstSystem, lastSystem, systemPosition,
                 partPosition, closeToStaff, leftOfStaves, pageCentered,

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.util.PointFacade;
 
@@ -55,7 +55,7 @@ public class SymbolGlyphDescriptor
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
         SymbolGlyphDescriptor.class);
 
     /** Un/marshalling context for use with JAXB */

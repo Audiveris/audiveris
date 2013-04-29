@@ -17,7 +17,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.graph.BasicVertex;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Barycenter;
 import omr.math.BasicLine;
@@ -80,7 +80,7 @@ public class BasicSection
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BasicSection.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicSection.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Position of first run */
@@ -213,7 +213,12 @@ public class BasicSection
                 "yMin=%d, yMax=%d%n", box.y, box.y + box.height - 1));
 
         for (int iy = 0; iy < table.length; iy++) {
-            sb.append(String.format("%d:%s%n", iy + box.y, table[iy]));
+            sb.append(String.format("%d:", iy + box.y));
+            char[] line = table[iy];
+            for (int ix = 0; ix < line.length; ix++) {
+                sb.append(line[ix]);
+            }
+            sb.append(String.format("%n"));
         }
 
         return sb.toString();
@@ -241,7 +246,7 @@ public class BasicSection
         runs.add(run);
         addRun(run);
 
-        logger.fine("Appended {0} to {1}", run, this);
+        logger.debug("Appended {} to {}", run, this);
     }
 
     //-----------//
@@ -302,8 +307,8 @@ public class BasicSection
         // Invalidate cached data
         invalidateCache();
 
-        logger.fine("Parameters of {0} maxRunLength={1} meanRunLength={2}"
-                    + " weight={3} foreWeight={4}",
+        logger.debug("Parameters of {} maxRunLength={} meanRunLength={}"
+                    + " weight={} foreWeight={}",
                 this, getMaxRunLength(), getMeanRunLength(),
                 weight, foreWeight);
     }
@@ -607,7 +612,7 @@ public class BasicSection
             orientedPoint.y /= (2 * getWeight());
 
             centroid = orientation.absolute(orientedPoint);
-            logger.fine("Centroid of {0} is {1}", this, centroid);
+            logger.debug("Centroid of {} is {}", this, centroid);
         }
 
         return centroid;
@@ -1010,7 +1015,7 @@ public class BasicSection
             }
         }
 
-        logger.severe("inNextSibling inconsistent graph");
+        logger.error("inNextSibling inconsistent graph");
 
         return null;
     }
@@ -1042,7 +1047,7 @@ public class BasicSection
             }
         }
 
-        logger.severe("inPreviousSibling inconsistent graph");
+        logger.error("inPreviousSibling inconsistent graph");
 
         return null;
     }
@@ -1139,12 +1144,12 @@ public class BasicSection
     @Override
     public void merge (Section other)
     {
-        logger.fine("Merging {0} with {1}", this, other);
+        logger.debug("Merging {} with {}", this, other);
 
         runs.addAll(other.getRuns());
         computeParameters();
 
-        logger.fine("Merged {0}", this);
+        logger.debug("Merged {}", this);
     }
 
     //----------------//
@@ -1173,7 +1178,7 @@ public class BasicSection
             }
         }
 
-        logger.severe("outNextSibling inconsistent graph");
+        logger.error("outNextSibling inconsistent graph");
 
         return null;
     }
@@ -1205,7 +1210,7 @@ public class BasicSection
             }
         }
 
-        logger.severe("outPreviousSibling inconsistent graph");
+        logger.error("outPreviousSibling inconsistent graph");
 
         return null;
     }
@@ -1216,13 +1221,13 @@ public class BasicSection
     @Override
     public void prepend (Run run)
     {
-        logger.fine("Prepending {0} to {1}", run, this);
+        logger.debug("Prepending {} to {}", run, this);
 
         firstPos--;
         runs.add(0, run);
         addRun(run);
 
-        logger.fine("Prepended {0}", this);
+        logger.debug("Prepended {}", this);
     }
 
     //--------//
@@ -1376,7 +1381,7 @@ public class BasicSection
         }
 
         if (isVip()) {
-            logger.info("{0} linkedTo {1}", this, glyph);
+            logger.info("{} linkedTo {}", this, glyph);
 
             if (glyph != null) {
                 glyph.setVip();

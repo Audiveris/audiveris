@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.score;
 
-import omr.Main;
 import omr.WellKnowns;
 
 import omr.constant.Constant;
@@ -20,7 +19,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Rational;
 import static omr.score.MusicXML.*;
@@ -190,7 +189,7 @@ public class ScoreExporter
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreExporter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreExporter.class);
 
     /** A future which reflects whether JAXB has been initialized * */
     private static final Future<Void> loading = OmrExecutors.
@@ -204,7 +203,7 @@ public class ScoreExporter
             try {
                 Marshalling.getContext();
             } catch (JAXBException ex) {
-                logger.warning("Error preloading JaxbContext", ex);
+                logger.warn("Error preloading JaxbContext", ex);
                 throw ex;
             }
 
@@ -378,7 +377,7 @@ public class ScoreExporter
     public boolean visit (Arpeggiate arpeggiate)
     {
         try {
-            logger.fine("Visiting {0}", arpeggiate);
+            logger.debug("Visiting {}", arpeggiate);
 
             com.audiveris.proxymusic.Arpeggiate pmArpeggiate = factory.createArpeggiate();
 
@@ -393,7 +392,7 @@ public class ScoreExporter
             //
             getNotations().getTiedOrSlurOrTuplet().add(pmArpeggiate);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + arpeggiate, ex);
+            logger.warn("Error visiting " + arpeggiate, ex);
         }
 
         return false;
@@ -406,7 +405,7 @@ public class ScoreExporter
     public boolean visit (Articulation articulation)
     {
         try {
-            logger.fine("Visiting {0}", articulation);
+            logger.debug("Visiting {}", articulation);
 
             JAXBElement<?> element = getArticulationObject(
                     articulation.getShape());
@@ -435,7 +434,7 @@ public class ScoreExporter
             // Include in Articulations
             getArticulations().getAccentOrStrongAccentOrStaccato().add(element);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + articulation, ex);
+            logger.warn("Error visiting " + articulation, ex);
         }
 
         return false;
@@ -451,7 +450,7 @@ public class ScoreExporter
             if (barline == null) {
                 return false;
             }
-            logger.fine("Visiting {0}", barline);
+            logger.debug("Visiting {}", barline);
 
             Shape shape = barline.getShape();
 
@@ -502,11 +501,11 @@ public class ScoreExporter
                     pmBarline.setBarStyle(barStyleColor);
                     current.pmMeasure.getNoteOrBackupOrForward().add(pmBarline);
                 } catch (Exception ex) {
-                    logger.warning("Cannot visit barline", ex);
+                    logger.warn("Cannot visit barline", ex);
                 }
             }
         } catch (Exception ex) {
-            logger.warning("Error visiting " + barline, ex);
+            logger.warn("Error visiting " + barline, ex);
         }
 
         return true;
@@ -518,7 +517,7 @@ public class ScoreExporter
     @Override
     public boolean visit (Chord chord)
     {
-        logger.severe("Chord objects should not be visited by ScoreExporter");
+        logger.error("Chord objects should not be visited by ScoreExporter");
 
         return false;
     }
@@ -530,13 +529,13 @@ public class ScoreExporter
     public boolean visit (Clef clef)
     {
         try {
-            logger.fine("Visiting {0}", clef);
+            logger.debug("Visiting {}", clef);
 
             if (isNewClef(clef)) {
                 getAttributes().getClef().add(buildClef(clef));
             }
         } catch (Exception ex) {
-            logger.warning("Error visiting " + clef, ex);
+            logger.warn("Error visiting " + clef, ex);
         }
 
         return true;
@@ -549,7 +548,7 @@ public class ScoreExporter
     public boolean visit (Coda coda)
     {
         try {
-            logger.fine("Visiting {0}", coda);
+            logger.debug("Visiting {}", coda);
 
             Direction direction = factory.createDirection();
 
@@ -582,7 +581,7 @@ public class ScoreExporter
             // Everything is now OK
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + coda, ex);
+            logger.warn("Error visiting " + coda, ex);
         }
 
         return true;
@@ -595,7 +594,7 @@ public class ScoreExporter
     public boolean visit (DirectionStatement words)
     {
         try {
-            logger.fine("Visiting {0}", words);
+            logger.debug("Visiting {}", words);
 
             String content = words.getText().getContent();
 
@@ -634,7 +633,7 @@ public class ScoreExporter
                 current.pmMeasure.getNoteOrBackupOrForward().add(direction);
             }
         } catch (Exception ex) {
-            logger.warning("Error visiting " + words, ex);
+            logger.warn("Error visiting " + words, ex);
         }
 
         return true;
@@ -647,7 +646,7 @@ public class ScoreExporter
     public boolean visit (ChordSymbol symbol)
     {
         try {
-            logger.fine("Visiting {0}", symbol);
+            logger.debug("Visiting {}", symbol);
 
             omr.score.entity.ChordInfo info = symbol.getInfo();
             Staff staff = current.note.getStaff();
@@ -735,7 +734,7 @@ public class ScoreExporter
             // Everything is now OK
             current.pmMeasure.getNoteOrBackupOrForward().add(harmony);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + symbol, ex);
+            logger.warn("Error visiting " + symbol, ex);
         }
 
         return true;
@@ -748,7 +747,7 @@ public class ScoreExporter
     public boolean visit (Dynamics dynamics)
     {
         try {
-            logger.fine("Visiting {0}", dynamics);
+            logger.debug("Visiting {}", dynamics);
 
             // No point to export incorrect dynamics
             if (dynamics.getShape() == null) {
@@ -797,7 +796,7 @@ public class ScoreExporter
             direction.getDirectionType().add(directionType);
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + dynamics, ex);
+            logger.warn("Error visiting " + dynamics, ex);
         }
 
         return false;
@@ -810,7 +809,7 @@ public class ScoreExporter
     public boolean visit (Fermata fermata)
     {
         try {
-            logger.fine("Visiting {0}", fermata);
+            logger.debug("Visiting {}", fermata);
 
             com.audiveris.proxymusic.Fermata pmFermata = factory.createFermata();
 
@@ -837,7 +836,7 @@ public class ScoreExporter
             // Everything is now OK
             getNotations().getTiedOrSlurOrTuplet().add(pmFermata);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + fermata, ex);
+            logger.warn("Error visiting " + fermata, ex);
         }
 
         return false;
@@ -850,7 +849,7 @@ public class ScoreExporter
     public boolean visit (KeySignature keySignature)
     {
         try {
-            logger.fine("Visiting {0}", keySignature);
+            logger.debug("Visiting {}", keySignature);
 
             if (isNewKeySignature(keySignature)) {
                 Key key = factory.createKey();
@@ -868,7 +867,7 @@ public class ScoreExporter
                 keys.add(key);
             }
         } catch (Exception ex) {
-            logger.warning("Error visiting " + keySignature, ex);
+            logger.warn("Error visiting " + keySignature, ex);
         }
 
         return true;
@@ -881,16 +880,16 @@ public class ScoreExporter
     public boolean visit (Measure measure)
     {
         try {
-            logger.fine("Visiting {0}", measure);
+            logger.debug("Visiting {}", measure);
 
             // Make sure this measure is within the range to be exported
             if (!isDesired(measure)) {
-                logger.fine("{0} skipped.", measure);
+                logger.debug("{} skipped.", measure);
                 return false;
             }
 
             ///logger.info("Visiting " + measure);
-            logger.fine("{0} : {1}", measure, isFirst);
+            logger.debug("{} : {}", measure, isFirst);
 
             current.measure = measure;
             tupletNumbers.clear();
@@ -941,11 +940,11 @@ public class ScoreExporter
                             omr.score.entity.Note.QUARTER_DURATION)));
                 } catch (Exception ex) {
                     if (score.getDurationDivisor() == null) {
-                        logger.warning(
-                                "Not able to infer division value for part {0}",
+                        logger.warn(
+                                "Not able to infer division value for part {}",
                                 current.scorePart.getPid());
                     } else {
-                        logger.warning("Error on divisions", ex);
+                        logger.warn("Error on divisions", ex);
                     }
                 }
             }
@@ -1061,7 +1060,7 @@ public class ScoreExporter
             // Everything is now OK
             current.pmPart.getMeasure().add(current.pmMeasure);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + measure + " in " + current.page, ex);
+            logger.warn("Error visiting " + measure + " in " + current.page, ex);
         }
 
         // Safer...
@@ -1079,7 +1078,7 @@ public class ScoreExporter
     public boolean visit (omr.score.entity.Note note)
     {
         try {
-            logger.fine("Visiting {0}", note);
+            logger.debug("Visiting {}", note);
 
             current.note = note;
 
@@ -1174,7 +1173,7 @@ public class ScoreExporter
                         new BigDecimal(score.simpleDurationOf(dur)));
             } catch (Exception ex) {
                 if (score.getDurationDivisor() != null) {
-                    logger.warning("Not able to get duration of note", ex);
+                    logger.warn("Not able to get duration of note", ex);
                 }
             }
 
@@ -1294,7 +1293,7 @@ public class ScoreExporter
             // Everything is OK
             current.pmMeasure.getNoteOrBackupOrForward().add(current.pmNote);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + note, ex);
+            logger.warn("Error visiting " + note, ex);
         }
 
         // Safer...
@@ -1311,7 +1310,7 @@ public class ScoreExporter
     public boolean visit (Ornament ornament)
     {
         try {
-            logger.fine("Visiting {0}", ornament);
+            logger.debug("Visiting {}", ornament);
 
             JAXBElement<?> element = getOrnamentObject(ornament.getShape());
 
@@ -1328,7 +1327,7 @@ public class ScoreExporter
             // Include in ornaments
             getOrnaments().getTrillMarkOrTurnOrDelayedTurn().add(element);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + ornament, ex);
+            logger.warn("Error visiting " + ornament, ex);
         }
 
         return false;
@@ -1341,7 +1340,7 @@ public class ScoreExporter
     public boolean visit (Page page)
     {
         try {
-            logger.fine("Visiting {0}", page);
+            logger.debug("Visiting {}", page);
 
             isFirst.page = (page == score.getFirstPage());
             isFirst.system = true;
@@ -1354,7 +1353,7 @@ public class ScoreExporter
                        + prevPage.getDeltaMeasureId());
             current.scale = page.getScale();
         } catch (Exception ex) {
-            logger.warning("Error visiting " + page, ex);
+            logger.warn("Error visiting " + page, ex);
         }
 
         return true;
@@ -1367,7 +1366,7 @@ public class ScoreExporter
     public boolean visit (Pedal pedal)
     {
         try {
-            logger.fine("Visiting {0}", pedal);
+            logger.debug("Visiting {}", pedal);
 
             Direction direction = new Direction();
             DirectionType directionType = new DirectionType();
@@ -1403,7 +1402,7 @@ public class ScoreExporter
             direction.getDirectionType().add(directionType);
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + pedal, ex);
+            logger.warn("Error visiting " + pedal, ex);
         }
 
         return true;
@@ -1425,7 +1424,7 @@ public class ScoreExporter
     public boolean visit (Score score)
     {
         try {
-            logger.fine("Visiting {0}", score);
+            logger.debug("Visiting {}", score);
 
             // Reset durations for the score
             score.setDurationDivisor(null);
@@ -1515,7 +1514,7 @@ public class ScoreExporter
                 }
             }
         } catch (Exception ex) {
-            logger.warning("Error visiting " + score, ex);
+            logger.warn("Error visiting " + score, ex);
         }
 
         return false; // We don't go this way
@@ -1536,7 +1535,7 @@ public class ScoreExporter
     public boolean visit (ScoreSystem system)
     {
         try {
-            logger.fine("Visiting {0}", system);
+            logger.debug("Visiting {}", system);
 
             current.system = system;
             isFirst.measure = true;
@@ -1559,7 +1558,7 @@ public class ScoreExporter
                 isFirst.system = false;
             }
         } catch (Exception ex) {
-            logger.warning("Error visiting " + system, ex);
+            logger.warn("Error visiting " + system, ex);
         }
 
         return false; // No default browsing this way
@@ -1572,7 +1571,7 @@ public class ScoreExporter
     public boolean visit (Segno segno)
     {
         try {
-            logger.fine("Visiting {0}", segno);
+            logger.debug("Visiting {}", segno);
 
             Direction direction = new Direction();
             DirectionType directionType = factory.createDirectionType();
@@ -1604,7 +1603,7 @@ public class ScoreExporter
             direction.getDirectionType().add(directionType);
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + segno, ex);
+            logger.warn("Error visiting " + segno, ex);
         }
 
         return true;
@@ -1617,7 +1616,7 @@ public class ScoreExporter
     public boolean visit (Slur slur)
     {
         try {
-            logger.fine("Visiting {0}", slur);
+            logger.debug("Visiting {}", slur);
 
             // Make sure we have notes (or extension) on both sides
             // TODO: Make an exception for slurs at beginning of page!
@@ -1688,7 +1687,7 @@ public class ScoreExporter
                     pmSlur.setNumber(num);
                     slurNumbers.remove(slur);
 
-                    logger.fine("{0} last use {1} -> {2}",
+                    logger.debug("{} last use {} -> {}",
                             current.note.getContextString(),
                             num, slurNumbers.toString());
                 } else {
@@ -1703,7 +1702,7 @@ public class ScoreExporter
 
                             pmSlur.setNumber(num);
 
-                            logger.fine("{0} first use {1} -> {2}",
+                            logger.debug("{} first use {} -> {}",
                                     current.note.getContextString(),
                                     num, slurNumbers.toString());
 
@@ -1744,7 +1743,7 @@ public class ScoreExporter
                 getNotations().getTiedOrSlurOrTuplet().add(pmSlur);
             }
         } catch (Exception ex) {
-            logger.warning("Error visiting " + slur, ex);
+            logger.warn("Error visiting " + slur, ex);
         }
 
         return true;
@@ -1757,7 +1756,7 @@ public class ScoreExporter
     public boolean visit (SystemPart systemPart)
     {
         try {
-            logger.fine("Visiting {0}", systemPart);
+            logger.debug("Visiting {}", systemPart);
 
             // Delegate to texts
             for (TreeNode node : systemPart.getTexts()) {
@@ -1769,7 +1768,7 @@ public class ScoreExporter
                 ((Measure) node).accept(this);
             }
         } catch (Exception ex) {
-            logger.warning("Error visiting " + systemPart, ex);
+            logger.warn("Error visiting " + systemPart, ex);
         }
 
         return false; // No default browsing this way
@@ -1782,7 +1781,7 @@ public class ScoreExporter
     public boolean visit (Text text)
     {
         try {
-            logger.fine("Visiting {0}", text);
+            logger.debug("Visiting {}", text);
 
             switch (text.getSentence().getRole().role) {
             case Title:
@@ -1848,7 +1847,7 @@ public class ScoreExporter
             pmCredit.getCreditTypeOrLinkOrBookmark().add(creditWords);
             scorePartwise.getCredit().add(pmCredit);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + text, ex);
+            logger.warn("Error visiting " + text, ex);
         }
 
         return true;
@@ -1861,7 +1860,7 @@ public class ScoreExporter
     public boolean visit (TimeSignature timeSignature)
     {
         try {
-            logger.fine("Visiting {0}", timeSignature);
+            logger.debug("Visiting {}", timeSignature);
 
             try {
                 Time time = factory.createTime();
@@ -1904,7 +1903,7 @@ public class ScoreExporter
             } catch (InvalidTimeSignature ex) {
             }
         } catch (Exception ex) {
-            logger.warning("Error visiting " + timeSignature, ex);
+            logger.warn("Error visiting " + timeSignature, ex);
         }
 
         return true;
@@ -1917,7 +1916,7 @@ public class ScoreExporter
     public boolean visit (Tuplet tuplet)
     {
         try {
-            logger.fine("Visiting {0}", tuplet);
+            logger.debug("Visiting {}", tuplet);
 
             com.audiveris.proxymusic.Tuplet pmTuplet = factory.createTuplet();
 
@@ -1958,7 +1957,7 @@ public class ScoreExporter
 
             getNotations().getTiedOrSlurOrTuplet().add(pmTuplet);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + tuplet, ex);
+            logger.warn("Error visiting " + tuplet, ex);
         }
 
         return false;
@@ -1971,7 +1970,7 @@ public class ScoreExporter
     public boolean visit (Wedge wedge)
     {
         try {
-            logger.fine("Visiting {0}", wedge);
+            logger.debug("Visiting {}", wedge);
 
             Direction direction = factory.createDirection();
             DirectionType directionType = factory.createDirectionType();
@@ -2017,7 +2016,7 @@ public class ScoreExporter
             direction.getDirectionType().add(directionType);
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
         } catch (Exception ex) {
-            logger.warning("Error visiting " + wedge, ex);
+            logger.warn("Error visiting " + wedge, ex);
         }
 
         return true;
@@ -2160,7 +2159,7 @@ public class ScoreExporter
             }
         }
 
-        logger.severe("No denominator found in {0}", time);
+        logger.error("No denominator found in {}", time);
 
         return "";
     }
@@ -2196,7 +2195,7 @@ public class ScoreExporter
             }
         }
 
-        logger.severe("No numerator found in {0}", time);
+        logger.error("No numerator found in {}", time);
 
         return "";
     }
@@ -2269,7 +2268,7 @@ public class ScoreExporter
             break;
 
         default:
-            logger.severe("Clef shape not exported {0}", shape);
+            logger.error("Clef shape not exported {}", shape);
         }
 
         return pmClef;
@@ -2387,7 +2386,7 @@ public class ScoreExporter
         current.pmPart.setId(pmScorePart);
 
         // Delegate to children the filling of measures
-        logger.fine("Populating {0}", current.scorePart);
+        logger.debug("Populating {}", current.scorePart);
         isFirst.system = true;
         slurNumbers.clear(); // Reset slur numbers
 
@@ -2421,7 +2420,7 @@ public class ScoreExporter
             current.pmMeasure.getNoteOrBackupOrForward().add(backup);
         } catch (Exception ex) {
             if (score.getDurationDivisor() != null) {
-                logger.warning("Not able to insert backup", ex);
+                logger.warn("Not able to insert backup", ex);
             }
         }
     }
@@ -2480,7 +2479,7 @@ public class ScoreExporter
             insertStaffId(forward, chord.getStaff());
         } catch (Exception ex) {
             if (score.getDurationDivisor() != null) {
-                logger.warning("Not able to insert forward", ex);
+                logger.warn("Not able to insert forward", ex);
             }
         }
     }
@@ -2507,7 +2506,7 @@ public class ScoreExporter
                 method.invoke(obj, new BigInteger("" + staff.getId()));
             } catch (Exception ex) {
                 ex.printStackTrace();
-                logger.severe("Could not setStaff for element {0}", classe);
+                logger.error("Could not setStaff for element {}", classe);
             }
         }
     }
@@ -2938,7 +2937,7 @@ public class ScoreExporter
                                 getPrint().getStaffLayout().add(staffLayout);
                             }
                         } catch (Exception ex) {
-                            logger.warning(
+                            logger.warn(
                                     "Error exporting staff layout system#"
                                     + current.system.getId() + " part#"
                                     + current.scorePart.getId() + " staff#"

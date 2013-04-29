@@ -30,7 +30,7 @@ import omr.grid.StaffManager;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.GeoPath;
 
@@ -83,7 +83,7 @@ public class SystemInfo
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SystemInfo.class);
+    private static final Logger logger = LoggerFactory.getLogger(SystemInfo.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Related sheet */
@@ -855,7 +855,7 @@ public class SystemInfo
         StaffInfo staff = getStaffAt(point);
         NotePosition pos = staff.getNotePosition(point);
 
-        logger.fine("{0} -> {1}", point, pos);
+        logger.debug("{} -> {}", point, pos);
 
         double pitch = pos.getPitchPosition();
 
@@ -884,7 +884,7 @@ public class SystemInfo
                             otherPos.getLedger().index));
 
                     if (otherDp < dp) {
-                        logger.fine("   otherPos: {0}", pos);
+                        logger.debug("   otherPos: {}", pos);
                         pos = otherPos;
                     }
                 }
@@ -1206,8 +1206,8 @@ public class SystemInfo
             }
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine("removeInactiveGlyphs: {0} {1}",
+        if (logger.isDebugEnabled()) {
+            logger.debug("removeInactiveGlyphs: {} {}",
                     toRemove.size(), Glyphs.toString(toRemove));
         }
 
@@ -1250,7 +1250,7 @@ public class SystemInfo
         try {
             horizontalsBuilder.buildInfo();
         } catch (Exception ex) {
-            logger.warning("Error in retrieveHorizontals", ex);
+            logger.warn("Error in retrieveHorizontals", ex);
         }
     }
 
@@ -1370,7 +1370,7 @@ public class SystemInfo
      */
     public void setBoundary (SystemBoundary boundary)
     {
-        logger.fine("{0} setBoundary {1}", idString(), boundary);
+        logger.debug("{} setBoundary {}", idString(), boundary);
         this.boundary = boundary;
 
         updateBoundary();

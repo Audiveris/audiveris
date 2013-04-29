@@ -21,7 +21,7 @@ import omr.text.TextChar;
 import omr.text.TextLine;
 import omr.text.TextWord;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import tesseract.TessBridge;
 
@@ -55,7 +55,7 @@ public class TesseractOrder
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(TesseractOrder.class);
+    private static final Logger logger = LoggerFactory.getLogger(TesseractOrder.class);
 
     /** To avoid repetitive warnings if OCR binding failed */
     private static boolean userWarned;
@@ -126,7 +126,7 @@ public class TesseractOrder
         ByteBuffer buf = toTiffBuffer(bufferedImage);
         image = PIX.readMemTiff(buf, buf.capacity(), 0);
         if (image == null) {
-            logger.warning("Invalid image {0}", label);
+            logger.warn("Invalid image {}", label);
             throw new RuntimeException("Invalid image");
         }
     }
@@ -148,8 +148,8 @@ public class TesseractOrder
 
             // Init API with proper language
             if (!api.Init(lang)) {
-                logger.warning(
-                        "Could not initialize Tesseract with lang {0}",
+                logger.warn(
+                        "Could not initialize Tesseract with lang {}",
                         lang);
 
                 return finish(null);
@@ -163,7 +163,7 @@ public class TesseractOrder
 
             // Perform image recognition
             if (api.Recognize() != 0) {
-                logger.warning("Error in Tesseract recognize");
+                logger.warn("Error in Tesseract recognize");
 
                 return finish(null);
             }
@@ -172,8 +172,8 @@ public class TesseractOrder
             return finish(getLines());
         } catch (UnsatisfiedLinkError ex) {
             if (!userWarned) {
-                logger.warning("Could not link Tesseract bridge", ex);
-                logger.warning(
+                logger.warn("Could not link Tesseract bridge", ex);
+                logger.warn(
                         "java.library.path="
                         + System.getProperty("java.library.path"));
                 userWarned = true;
@@ -261,7 +261,7 @@ public class TesseractOrder
                 // Start of line?
                 if (it.IsAtBeginningOf(Level.TEXTLINE)) {
                     line = new TextLine(system);
-                    logger.fine("{0} {1}", label, line);
+                    logger.debug("{} {}", label, line);
                     lines.add(line);
                 }
 
@@ -269,7 +269,7 @@ public class TesseractOrder
                 if (it.IsAtBeginningOf(Level.WORD)) {
                     FontInfo fontInfo = getFont(it.WordFontAttributes());
                     if (fontInfo == null) {
-                        logger.fine("No font info on {0}", label);
+                        logger.debug("No font info on {}", label);
                         return null;
                     }
                     word = new TextWord(
@@ -279,7 +279,7 @@ public class TesseractOrder
                             (int) Math.rint(it.Confidence(Level.WORD)),
                             fontInfo,
                             line);
-                    logger.fine("    {0}", word);
+                    logger.debug("    {}", word);
                     line.appendWord(word);
 
                     // // Heuristic... (just to test)
@@ -308,7 +308,7 @@ public class TesseractOrder
 
             return lines;
         } catch (Exception ex) {
-            logger.warning("Error decoding tesseract output", ex);
+            logger.warn("Error decoding tesseract output", ex);
 
             return null;
         } finally {

@@ -27,7 +27,7 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.Sections;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 import static omr.run.Orientation.*;
@@ -65,7 +65,7 @@ public class VerticalsBuilder
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             VerticalsBuilder.class);
 
     /** Events this entity is interested in */
@@ -189,7 +189,7 @@ public class VerticalsBuilder
         Collection<Section> sections = new ArrayList<>(
                 glyph.getMembers());
 
-        logger.fine("Sections browsed: {0}", Sections.toString(sections));
+        logger.debug("Sections browsed: {}", Sections.toString(sections));
 
         // Retrieve vertical sticks as stem candidates
         try {
@@ -205,12 +205,12 @@ public class VerticalsBuilder
             int nb = retrieveVerticals(verticalsArea.retrieveSticks(), isShort);
 
             if (nb > 0) {
-                logger.fine("{0} stem{1}", nb, (nb > 1) ? "s" : "");
+                logger.debug("{} stem{}", nb, (nb > 1) ? "s" : "");
             } else {
-                logger.fine("No stem found");
+                logger.debug("No stem found");
             }
         } catch (StepException ex) {
-            logger.warning("stemSegment. Error in retrieving verticals");
+            logger.warn("stemSegment. Error in retrieving verticals");
         }
     }
 
@@ -235,7 +235,7 @@ public class VerticalsBuilder
         double minResult = constants.minCheckResult.getValue();
         int stemNb = 0;
 
-        logger.fine("Searching verticals among {0} sticks from {1}",
+        logger.debug("Searching verticals among {} sticks from {}",
                 sticks.size(), Glyphs.toString(sticks));
 
         for (Glyph stick : sticks) {
@@ -247,7 +247,7 @@ public class VerticalsBuilder
 
             // Check stem is not too far from nearest staff
             if (!ShapeChecker.getInstance().checkStem(system, stick)) {
-                logger.fine("Too distant stem {0}", stick.idString());
+                logger.debug("Too distant stem {}", stick.idString());
                 continue;
             }
 
@@ -255,7 +255,7 @@ public class VerticalsBuilder
             if (!stick.isShapeForbidden(Shape.STEM)) {
                 // Run the various Checks
                 double res = suite.pass(stick);
-                logger.fine("suite=> {0} for {1}", res, stick);
+                logger.debug("suite=> {} for {}", res, stick);
 
                 if (res >= minResult) {
                     stick.setResult(STEM);
@@ -267,7 +267,7 @@ public class VerticalsBuilder
             }
         }
 
-        logger.fine("Found {0} stems", stemNb);
+        logger.debug("Found {} stems", stemNb);
 
         return stemNb;
     }
@@ -300,7 +300,7 @@ public class VerticalsBuilder
             add(0, new RightCheck(system));
             add(2, new MinDensityCheck());
 
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
                 dump();
             }
         }

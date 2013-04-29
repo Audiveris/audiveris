@@ -14,7 +14,7 @@ package omr.run;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Population;
 
@@ -80,7 +80,7 @@ public class AdaptiveFilter
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             AdaptiveFilter.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -256,7 +256,7 @@ public class AdaptiveFilter
         try {
             return Class.forName(name);
         } catch (ClassNotFoundException ex) {
-            logger.severe("Cannot find adaptive filter class " + name);
+            logger.error("Cannot find adaptive filter class " + name);
 
             return null;
         }

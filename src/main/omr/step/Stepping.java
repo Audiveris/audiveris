@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 import omr.score.entity.Page;
@@ -52,7 +52,7 @@ public class Stepping
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Stepping.class);
+    private static final Logger logger = LoggerFactory.getLogger(Stepping.class);
 
     /** Related progress monitor when used in interactive mode. */
     private static volatile StepMonitor monitor;
@@ -97,14 +97,14 @@ public class Stepping
             throws StepException
     {
         long startTime = System.currentTimeMillis();
-        logger.fine("{0}{1} starting", sheet.getLogPrefix(), step);
+        logger.debug("{}{} starting", sheet.getLogPrefix(), step);
 
         // Standard processing on an existing sheet
         step.doStep(systems, sheet);
 
         final long stopTime = System.currentTimeMillis();
         final long duration = stopTime - startTime;
-        logger.fine("{0}{1} completed in {2} ms",
+        logger.debug("{}{} completed in {} ms",
                 sheet.getLogPrefix(), step, duration);
 
         // Record this in sheet->score bench
@@ -227,7 +227,7 @@ public class Stepping
     public static void processScore (Set<Step> desiredSteps,
                                      Score score)
     {
-        logger.fine("processScore {0} on {1}", desiredSteps, score);
+        logger.debug("processScore {} on {}", desiredSteps, score);
 
         // Sanity checks
         if (score == null) {
@@ -285,7 +285,7 @@ public class Stepping
         } catch (ProcessingCancellationException pce) {
             throw pce;
         } catch (Exception ex) {
-            logger.warning("Error in performing " + orderedSteps, ex);
+            logger.warn("Error in performing " + orderedSteps, ex);
         }
     }
 
@@ -349,11 +349,11 @@ public class Stepping
                                        boolean imposed,
                                        boolean merge)
     {
-        logger.fine("reprocessSheet {0} on {1}", step, sheet);
+        logger.debug("reprocessSheet {} on {}", step, sheet);
 
         // Sanity checks
         if (SwingUtilities.isEventDispatchThread()) {
-            logger.severe("Method reprocessSheet should not run on EDT!");
+            logger.error("Method reprocessSheet should not run on EDT!");
         }
 
         if (step == null) {
@@ -370,7 +370,7 @@ public class Stepping
             impactedSystems = sheet.getSystems();
         }
 
-        logger.fine("{0}Rebuild launched from {1} on {2}",
+        logger.debug("{}Rebuild launched from {} on {}",
                 sheet.getLogPrefix(),
                 step,
                 SystemInfo.toString(impactedSystems));
@@ -395,7 +395,7 @@ public class Stepping
             } catch (ProcessingCancellationException pce) {
                 throw pce;
             } catch (Exception ex) {
-                logger.warning("Error in re-processing from " + step, ex);
+                logger.warn("Error in re-processing from " + step, ex);
             } finally {
                 notifyStop();
             }
@@ -418,7 +418,7 @@ public class Stepping
             throws StepException
     {
         long startTime = System.currentTimeMillis();
-        logger.fine("{0} Starting", step);
+        logger.debug("{} Starting", step);
 
         // Standard processing (using first sheet)
         Sheet sheet = score.getFirstPage().getSheet();
@@ -426,7 +426,7 @@ public class Stepping
 
         final long stopTime = System.currentTimeMillis();
         final long duration = stopTime - startTime;
-        logger.fine("{0} completed in {1} ms", step, duration);
+        logger.debug("{} completed in {} ms", step, duration);
 
         // Record this in score bench
         score.getBench().recordStep(step, duration);
@@ -478,7 +478,7 @@ public class Stepping
                     List<Future<Void>> futures = OmrExecutors.
                             getCachedLowExecutor().invokeAll(tasks);
                 } catch (InterruptedException ex) {
-                    logger.warning("Error in parallel doScoreStepSet", ex);
+                    logger.warn("Error in parallel doScoreStepSet", ex);
                 }
             } else {
                 // Process one sheet after the other
@@ -517,7 +517,7 @@ public class Stepping
                 doOneSheetStep(step, sheet, systems);
             }
         } catch (StepException se) {
-            logger.info("{0}Processing stopped. {1}",
+            logger.info("{}Processing stopped. {}",
                     sheet.getLogPrefix(), se.getMessage());
         }
     }
@@ -589,7 +589,7 @@ public class Stepping
             return;
         }
 
-        logger.info("{0}scheduling {1}", score.getLogPrefix(), stepSet);
+        logger.info("{}scheduling {}", score.getLogPrefix(), stepSet);
 
         long startTime = System.currentTimeMillis();
         notifyStart();
@@ -642,12 +642,12 @@ public class Stepping
                 }
             }
         } catch (StepException se) {
-            logger.info("Processing stopped. {0}", se.getMessage());
+            logger.info("Processing stopped. {}", se.getMessage());
         } finally {
             notifyStop();
         }
 
         long stopTime = System.currentTimeMillis();
-        logger.fine("End of step set in {0} ms.", (stopTime - startTime));
+        logger.debug("End of step set in {} ms.", (stopTime - startTime));
     }
 }

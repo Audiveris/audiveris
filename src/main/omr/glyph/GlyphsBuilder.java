@@ -18,7 +18,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -72,7 +72,7 @@ public class GlyphsBuilder
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(GlyphsBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphsBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The dedicated system */
@@ -279,7 +279,7 @@ public class GlyphsBuilder
     public void computeGlyphFeatures (Glyph glyph)
     {
         if (glyph.isVip()) {
-            logger.fine("computeGlyphFeatures for {0}", glyph.idString());
+            logger.debug("computeGlyphFeatures for {}", glyph.idString());
         }
         // Mass center (which makes sure moments are available)
         glyph.getCentroid();

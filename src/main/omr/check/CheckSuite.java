@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.check;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,7 +34,7 @@ public class CheckSuite<C extends Checkable>
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(CheckSuite.class);
+    private static final Logger logger = LoggerFactory.getLogger(CheckSuite.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Name of this suite */
@@ -225,7 +225,7 @@ public class CheckSuite<C extends Checkable>
      */
     public double pass (C object)
     {
-        boolean debug = logger.isFineEnabled() || object.isVip();
+        boolean debug = logger.isDebugEnabled() || object.isVip();
         double grade = 0.0d;
         CheckResult result = new CheckResult();
         StringBuilder sb = null;

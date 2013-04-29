@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.text;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public abstract class WordScanner
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(WordScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(WordScanner.class);
 
     //~ Instance fields --------------------------------------------------------
     private final boolean bySyllable;
@@ -235,7 +235,7 @@ public abstract class WordScanner
             ratio = chars.size() / (double) content.length();
 
             lookAhead();
-            logger.fine("ManualScanner on ''{0}''", content);
+            logger.debug("ManualScanner on ''{}''", content);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -276,7 +276,7 @@ public abstract class WordScanner
             super(content, bySyllable, chars);
 
             lookAhead();
-            logger.fine("OcrScanner on ''{0}''", content);
+            logger.debug("OcrScanner on ''{}''", content);
         }
 
         //~ Methods ------------------------------------------------------------

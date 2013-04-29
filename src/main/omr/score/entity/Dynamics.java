@@ -16,7 +16,7 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
@@ -40,7 +40,7 @@ public class Dynamics
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Dynamics.class);
+    private static final Logger logger = LoggerFactory.getLogger(Dynamics.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
@@ -179,7 +179,7 @@ public class Dynamics
                                  PixelPoint point)
     {
         if (glyph.isVip()) {
-            logger.info("Dynamics. populate {0}", glyph.idString());
+            logger.info("Dynamics. populate {}", glyph.idString());
         }
 
         // Can we gather with another dynamics letter? (e.g. m + p -> mp)

@@ -11,8 +11,7 @@
 // </editor-fold>
 package omr.constant;
 
-import omr.log.Logger;
-
+import org.slf4j.Logger;
 /**
  * Class {@code UnitNode} represents a unit (class) in the hierarchy of
  * nodes.

@@ -14,7 +14,7 @@ package omr.ui.view;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -45,7 +45,7 @@ public class ScrollView
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScrollView.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScrollView.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Current view inside the scrolled pane */
@@ -98,7 +98,7 @@ public class ScrollView
     {
         Rectangle vr = view.getVisibleRect();
         Dimension dim = view.getModelSize();
-        logger.fine("fitHeight vr={0} dim={1}", vr, dim);
+        logger.debug("fitHeight vr={} dim={}", vr, dim);
 
         setZoomRatio((double) (vr.height) / (double) dim.height);
     }
@@ -114,7 +114,7 @@ public class ScrollView
     {
         Rectangle vr = view.getVisibleRect();
         Dimension dim = view.getModelSize();
-        logger.fine("fitWhole vr={0} dim={1}", vr, dim);
+        logger.debug("fitWhole vr={} dim={}", vr, dim);
 
         setZoomRatio(
                 Math.min(
@@ -137,7 +137,7 @@ public class ScrollView
     {
         Rectangle vr = view.getVisibleRect();
         Dimension dim = view.getModelSize();
-        logger.fine("fitWidth vr={0} dim={1}", vr, dim);
+        logger.debug("fitWidth vr={} dim={}", vr, dim);
 
         if ((vr.width > 0) && (dim.width > 0)) {
             setZoomRatio((double) (vr.width) / (double) dim.width);
@@ -177,15 +177,15 @@ public class ScrollView
             Point center = view.rubber.getCenter();
 
             if (center != null) {
-                logger.fine("getRubberFocus rubber center={0}", center);
+                logger.debug("getRubberFocus rubber center={}", center);
                 return center; // Of rubber band
             } else {
-                logger.fine("getRubberFocus panelcenter={0}",
+                logger.debug("getRubberFocus panelcenter={}",
                         view.getPanelCenter());
                 return view.getPanelCenter(); // Of visible rectangle
             }
         } else {
-            logger.warning("getRubberFocus : no rubber, no view ???");
+            logger.warn("getRubberFocus : no rubber, no view ???");
 
             return null;
         }
@@ -259,12 +259,12 @@ public class ScrollView
      */
     public void setZoomRatio (double zoomRatio)
     {
-        logger.fine("setZoomRatio zoomRatio={0}", zoomRatio);
+        logger.debug("setZoomRatio zoomRatio={}", zoomRatio);
 
         if (view.getZoom() != null) {
             view.getZoom().setRatio(zoomRatio);
         } else {
-            logger.warning("setZoomRatio. No zoom assigned");
+            logger.warn("setZoomRatio. No zoom assigned");
         }
     }
 

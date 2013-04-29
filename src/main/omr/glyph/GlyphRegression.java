@@ -18,7 +18,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.LinearEvaluator;
 import omr.math.LinearEvaluator.Sample;
@@ -53,7 +53,7 @@ public class GlyphRegression
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             GlyphRegression.class);
 
     /** LinearEvaluator backup file name */
@@ -84,7 +84,7 @@ public class GlyphRegression
 
         if (engine == null) {
             // Get a brand new one (not trained)
-            logger.info("Creating a brand new {0}", getName());
+            logger.info("Creating a brand new {}", getName());
             engine = new LinearEvaluator(ShapeDescription.getParameterLabels());
         } else {
             defineConstraints();
@@ -154,10 +154,10 @@ public class GlyphRegression
             if (!Arrays.equals(
                     anEngine.getParameterNames(),
                     ShapeDescription.getParameterLabels())) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Engine parameters: {0}",
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Engine parameters: {}",
                             Arrays.toString(anEngine.getParameterNames()));
-                    logger.fine("Shape  parameters: {0}",
+                    logger.debug("Shape  parameters: {}",
                             Arrays.toString(ShapeDescription.getParameterLabels()));
                 }
                 return false;
@@ -174,14 +174,14 @@ public class GlyphRegression
             extraNames.removeAll(Arrays.asList(sortedShapes));
 
             if (!extraNames.isEmpty()) {
-                if (logger.isFineEnabled()) {
+                if (logger.isDebugEnabled()) {
                     Arrays.sort(categories);
-                    logger.fine("Engine categories: {0}",
+                    logger.debug("Engine categories: {}",
                             Arrays.toString(categories));
                     Arrays.sort(sortedShapes);
-                    logger.fine("Physical   shapes: {0}",
+                    logger.debug("Physical   shapes: {}",
                             Arrays.toString(sortedShapes));
-                    logger.fine("Extra names found in {0}: {1}",
+                    logger.debug("Extra names found in {}: {}",
                             getName(), extraNames);
                 }
                 return false;
@@ -500,7 +500,7 @@ public class GlyphRegression
                        StartingMode mode)
     {
         if (base.isEmpty()) {
-            logger.warning("No glyph to retrain Regression Evaluator");
+            logger.warn("No glyph to retrain Regression Evaluator");
 
             return;
         }
@@ -516,7 +516,7 @@ public class GlyphRegression
                         ShapeDescription.features(glyph));
                 samples.add(sample);
             } catch (Exception ex) {
-                logger.warning(
+                logger.warn(
                         "Weird glyph shape: " + glyph.getShape() + " file="
                         + GlyphRepository.getInstance().getGlyphName(glyph),
                         ex);
@@ -818,7 +818,7 @@ public class GlyphRegression
             Double min = range.min;
 
             if ((min != null) && (val < min)) {
-                logger.fine("{0} failed on minimum for {1} {2} < {3}",
+                logger.debug("{} failed on minimum for {} {} < {}",
                         shape, label, val, min);
                 return label + ".min";
             }
@@ -826,7 +826,7 @@ public class GlyphRegression
             Double max = range.max;
 
             if ((max != null) && (val > max)) {
-                logger.fine("{0} failed on maximum for {1} {2} > {3}",
+                logger.debug("{} failed on maximum for {} {} > {}",
                         shape, label, val, max);
                 return label + ".max";
             }

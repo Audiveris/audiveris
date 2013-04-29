@@ -18,7 +18,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.ui.ScoreActions;
 
@@ -46,7 +46,7 @@ public class GlyphsModel
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(GlyphsModel.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphsModel.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Underlying glyph nest */
@@ -300,7 +300,7 @@ public class GlyphsModel
             }
 
             boolean isTransient = glyph.isTransient();
-            logger.fine("Assign {0}{1} to {2}",
+            logger.debug("Assign {}{} to {}",
                     isTransient ? "compound " : "", glyph.idString(), shape);
 
             // Remember the latest shape assigned
@@ -346,7 +346,7 @@ public class GlyphsModel
         }
 
         if (!glyph.isVirtual()) {
-            logger.warning("Attempt to delete non-virtual {0}", glyph.idString());
+            logger.warn("Attempt to delete non-virtual {}", glyph.idString());
 
             return;
         }

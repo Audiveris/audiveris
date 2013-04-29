@@ -17,7 +17,7 @@ import static omr.WellKnowns.LINE_SEPARATOR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Histogram;
 import omr.math.Histogram.MaxEntry;
@@ -94,7 +94,7 @@ public class ScaleBuilder
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScaleBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScaleBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -160,7 +160,7 @@ public class ScaleBuilder
         if (histoKeeper != null) {
             histoKeeper.writePlot();
         } else {
-            logger.warning("No scale data available");
+            logger.warn("No scale data available");
         }
     }
 
@@ -183,7 +183,7 @@ public class ScaleBuilder
         // Binarization: Retrieve the whole table of foreground runs
         histoKeeper = new HistoKeeper(picture.getHeight() - 1);
         FilterDescriptor desc = sheet.getPage().getFilterParam().getTarget();
-        logger.info("{0}{1} {2}", sheet.getLogPrefix(), "Binarization", desc);
+        logger.info("{}{} {}", sheet.getLogPrefix(), "Binarization", desc);
         sheet.getPage().getFilterParam().setActual(desc);
 
         StopWatch watch = new StopWatch("Binarization "
@@ -224,7 +224,7 @@ public class ScaleBuilder
                 computeBeam(),
                 computeSecondInterline());
 
-        logger.info("{0}{1}", sheet.getLogPrefix(), scale);
+        logger.info("{}{}", sheet.getLogPrefix(), scale);
 
         sheet.getBench().recordScale(scale);
 
@@ -299,7 +299,7 @@ public class ScaleBuilder
             return beamEntry.getKey();
         } else {
             if (backPeak != null) {
-                logger.info("{0}{1}", sheet.getLogPrefix(),
+                logger.info("{}{}", sheet.getLogPrefix(),
                         "No beam peak found, computing a default value");
 
                 return (int) Math.rint(0.7 * backPeak.getKey().best);
@@ -411,7 +411,7 @@ public class ScaleBuilder
     private void makeDecision (String msg)
             throws StepException
     {
-        logger.warning(msg.replaceAll(LINE_SEPARATOR, " "));
+        logger.warn(msg.replaceAll(LINE_SEPARATOR, " "));
 
         Score score = sheet.getScore();
 
@@ -445,7 +445,7 @@ public class ScaleBuilder
         if (forePeak.getValue() == 1d) {
             String msg = "All image pixels are foreground."
                          + " Check binarization parameters";
-            logger.warning(msg);
+            logger.warn(msg);
             throw new StepException(msg);
         }
 
@@ -454,7 +454,7 @@ public class ScaleBuilder
         if (backPeak.getValue() == 1d) {
             String msg = "All image pixels are background."
                          + " Check binarization parameters";
-            logger.warning(msg);
+            logger.warn(msg);
             throw new StepException(msg);
         }
 
@@ -504,7 +504,7 @@ public class ScaleBuilder
             }
         }
 
-        logger.fine(sb.toString());
+        logger.debug(sb.toString());
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -625,9 +625,9 @@ public class ScaleBuilder
                 }
             }
 
-            if (logger.isFineEnabled()) {
-                logger.fine("fore values: {0}", Arrays.toString(fore));
-                logger.fine("back values: {0}", Arrays.toString(back));
+            if (logger.isDebugEnabled()) {
+                logger.debug("fore values: {}", Arrays.toString(fore));
+                logger.debug("back values: {}", Arrays.toString(back));
             }
 
             // Create foreground & background histograms

@@ -13,7 +13,7 @@ package omr.text;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 import omr.score.entity.ChordInfo;
@@ -39,7 +39,7 @@ public class TextWord
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(TextWord.class);
+    private static final Logger logger = LoggerFactory.getLogger(TextWord.class);
 
     /** Comparator based on word size. */
     public static final Comparator<TextWord> bySize = new Comparator<TextWord>()
@@ -482,8 +482,8 @@ public class TextWord
 
         if (!getInternalValue()
                 .equals(sbValue)) {
-            logger.fine(
-                    "Word at {0} updated from ''{1}'' to ''{2}''",
+            logger.debug(
+                    "Word at {} updated from ''{}'' to ''{}''",
                     getBounds(),
                     getInternalValue(),
                     sbValue);

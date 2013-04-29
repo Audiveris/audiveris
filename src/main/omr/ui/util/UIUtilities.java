@@ -13,7 +13,7 @@ package omr.ui.util;
 
 import omr.WellKnowns;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
 import java.awt.Component;
@@ -50,7 +50,7 @@ public class UIUtilities
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(UIUtilities.class);
+    private static final Logger logger = LoggerFactory.getLogger(UIUtilities.class);
 
     /**
      * Customized border for tool buttons, to use consistently in all UI
@@ -128,7 +128,7 @@ public class UIUtilities
             } else if (next instanceof AbstractButton) {
                 ((AbstractButton) next).setEnabled(bool);
             } else {
-                logger.warning("Neither Button nor Action : {0}", next);
+                logger.warn("Neither Button nor Action : {}", next);
             }
         }
     }
@@ -193,7 +193,7 @@ public class UIUtilities
                     file = new File(fullName);
                 }
             } catch (ClassCastException e) {
-                logger.warning("no ancestor is Frame");
+                logger.warn("no ancestor is Frame");
             }
         } else {
             ///final JFileChooser fc = new JFileChooser();
@@ -213,7 +213,8 @@ public class UIUtilities
                 if (startFile.isDirectory()) {
                     fc.setCurrentDirectory(startFile);
                 } else {
-                    fc.setCurrentDirectory(startFile.getParentFile());
+                    File parentFile = startFile.getParentFile();
+                    fc.setCurrentDirectory(parentFile);
                     fc.setSelectedFile(startFile);
                 }
             }

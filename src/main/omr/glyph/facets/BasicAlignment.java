@@ -17,7 +17,7 @@ import omr.glyph.Glyphs;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Barycenter;
 import omr.math.BasicLine;
@@ -49,7 +49,7 @@ public class BasicAlignment
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BasicAlignment.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicAlignment.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Best (curved or straight) line equation */

@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Rational;
 
@@ -45,7 +45,7 @@ public class Tuplet
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Tuplet.class);
+    private static final Logger logger = LoggerFactory.getLogger(Tuplet.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -104,7 +104,7 @@ public class Tuplet
                                  PixelPoint point)
     {
         if (glyph.isVip()) {
-            logger.info("Tuplet. populate {0}", glyph);
+            logger.info("Tuplet. populate {}", glyph);
         }
 
         // Let's gather the set of possible chords, ordered by their distance
@@ -197,7 +197,7 @@ public class Tuplet
             return 6;
 
         default:
-            logger.severe("Incorrect tuplet shape");
+            logger.error("Incorrect tuplet shape");
 
             return 0;
         }
@@ -224,7 +224,7 @@ public class Tuplet
                                                        List<Chord> candidates,
                                                        Staff requiredStaff)
     {
-        logger.fine("{0} {1}{2}",
+        logger.debug("{} {}{}",
                 glyph.getShape(),
                 glyph.idString(),
                 (requiredStaff != null)
@@ -285,7 +285,7 @@ public class Tuplet
 
                 return null;
             } else if (collector.isOk()) {
-                if (logger.isFineEnabled()) {
+                if (logger.isDebugEnabled()) {
                     collector.dump();
                 }
 
@@ -320,7 +320,7 @@ public class Tuplet
             return new DurationFactor(4, 6);
 
         default:
-            logger.severe("Incorrect tuplet glyph shape");
+            logger.error("Incorrect tuplet glyph shape");
 
             return null;
         }
@@ -475,7 +475,7 @@ public class Tuplet
                 sb.append("\n").append(chord);
             }
 
-            logger.fine(sb.toString());
+            logger.debug(sb.toString());
         }
 
         public SortedSet<Chord> getChords ()
@@ -485,7 +485,7 @@ public class Tuplet
 
         public String getStatusMessage ()
         {
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
                 dump();
             }
 

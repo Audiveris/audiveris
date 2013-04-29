@@ -15,7 +15,7 @@ import omr.glyph.Glyphs;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 
@@ -48,7 +48,7 @@ public class LineCluster
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(LineCluster.class);
+    private static final Logger logger = LoggerFactory.getLogger(LineCluster.class);
 
     /** For comparing LineCluster instances on their true length */
     public static final Comparator<LineCluster> reverseLengthComparator = new Comparator<LineCluster>()
@@ -96,8 +96,8 @@ public class LineCluster
     public LineCluster (int interline,
                         LineFilament seed)
     {
-        if (logger.isFineEnabled() || seed.isVip()) {
-            logger.info("Creating cluster with F{0}", seed.getId());
+        if (logger.isDebugEnabled() || seed.isVip()) {
+            logger.info("Creating cluster with F{}", seed.getId());
 
             if (seed.isVip()) {
                 setVip();
@@ -399,7 +399,7 @@ public class LineCluster
             }
 
             meanTrueLength /= lines.size();
-            logger.fine("TrueLength: {0} for {1}", meanTrueLength, this);
+            logger.debug("TrueLength: {} for {}", meanTrueLength, this);
 
             trueLength = meanTrueLength;
         }
@@ -444,8 +444,8 @@ public class LineCluster
                                 line.fil);
 
                         if (thickness > line.fil.getScale().getMaxFore()) {
-                            if (filament.isVip() || logger.isFineEnabled()) {
-                                logger.info("No room for {0} in {1}",
+                            if (filament.isVip() || logger.isDebugEnabled()) {
+                                logger.info("No room for {} in {}",
                                         filament, this);
                             }
 
@@ -576,7 +576,7 @@ public class LineCluster
      */
     public void trim (int count)
     {
-        logger.fine("Trim {0}", this);
+        logger.debug("Trim {}", this);
 
         //        // Determine max true line length in this cluster
         //        int maxTrueLength = 0;
@@ -656,8 +656,8 @@ public class LineCluster
     private void include (LineFilament pivot,
                           int pivotPos)
     {
-        if (logger.isFineEnabled() || pivot.isVip()) {
-            logger.info("{0} include pivot:{1} at pos:{2}",
+        if (logger.isDebugEnabled() || pivot.isVip()) {
+            logger.info("{} include pivot:{} at pos:{}",
                     this, pivot.getId(), pivotPos);
 
             if (pivot.isVip()) {
@@ -676,7 +676,7 @@ public class LineCluster
             comb.setProcessed(true);
 
             int deltaPos = pivotPos - comb.getIndex(pivot);
-            logger.fine("{0} deltaPos:{1}", comb, deltaPos);
+            logger.debug("{} deltaPos:{}", comb, deltaPos);
 
             // Dispatch content of comb to proper lines
             for (int i = 0; i < comb.getCount(); i++) {
@@ -690,7 +690,7 @@ public class LineCluster
                     line.add(fil);
 
                     if (fil.isVip()) {
-                        logger.info("Adding {0} to {1} at pos {2}",
+                        logger.info("Adding {} to {} at pos {}",
                                 fil, this, pos);
                         setVip();
                     }
@@ -720,8 +720,8 @@ public class LineCluster
     private void include (LineCluster that,
                           int deltaPos)
     {
-        if (logger.isFineEnabled() || isVip() || that.isVip()) {
-            logger.info("Inclusion of {0} into {1} deltaPos:{2}",
+        if (logger.isDebugEnabled() || isVip() || that.isVip()) {
+            logger.info("Inclusion of {} into {} deltaPos:{}",
                     that, this, deltaPos);
 
             if (that.isVip()) {
@@ -737,9 +737,9 @@ public class LineCluster
 
         that.parent = this;
 
-        if (logger.isFineEnabled()) {
-            logger.fine("Merged:{0}", that);
-            logger.fine("Merger:{0}", this);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Merged:{}", that);
+            logger.debug("Merger:{}", this);
         }
 
         invalidateCache();

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.ui.dnd;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.event.MouseEvent;
@@ -29,7 +29,7 @@ public class GhostMotionAdapter
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
         GhostMotionAdapter.class);
 
     //~ Instance fields --------------------------------------------------------

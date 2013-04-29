@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.run;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 
@@ -33,7 +33,7 @@ public class AdaptiveDescriptor
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             AdaptiveDescriptor.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -108,7 +108,7 @@ public class AdaptiveDescriptor
 
             return (PixelFilter) cons.newInstance(source, meanCoeff, stdDevCoeff);
         } catch (Exception ex) {
-            logger.severe("Error on getFilter {0}", ex);
+            logger.error("Error on getFilter {}", ex);
 
             return null;
         }

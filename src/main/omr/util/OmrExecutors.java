@@ -14,7 +14,7 @@ package omr.util;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.step.ProcessingCancellationException;
 
@@ -41,7 +41,7 @@ public class OmrExecutors
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(OmrExecutors.class);
+    private static final Logger logger = LoggerFactory.getLogger(OmrExecutors.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
@@ -55,7 +55,7 @@ public class OmrExecutors
 
     static {
         if (constants.printEnvironment.isSet()) {
-            logger.info("Environment. CPU count: {0}, Use of parallelism: {1}",
+            logger.info("Environment. CPU count: {}, Use of parallelism: {}",
                     cpuCount, defaultParallelism.getTarget());
         }
     }
@@ -146,7 +146,7 @@ public class OmrExecutors
     public static void restart ()
     {
         creationAllowed = true;
-        logger.fine("OmrExecutors open");
+        logger.debug("OmrExecutors open");
     }
 
     //----------//
@@ -159,7 +159,7 @@ public class OmrExecutors
      */
     public static void shutdown (boolean immediately)
     {
-        logger.fine("Closing all pools ...");
+        logger.debug("Closing all pools ...");
 
         // No creation of pools from now on!
         creationAllowed = false;
@@ -168,10 +168,10 @@ public class OmrExecutors
             if (pool.isActive()) {
                 pool.close(immediately);
             } else {
-                logger.fine("Pool {0} not active", pool.getName());
+                logger.debug("Pool {} not active", pool.getName());
             }
         }
-        logger.fine("OmrExecutors closed");
+        logger.debug("OmrExecutors closed");
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -348,7 +348,7 @@ public class OmrExecutors
                 return;
             }
 
-            logger.fine("Closing pool {0}{1}",
+            logger.debug("Closing pool {}{}",
                     getName(), immediately ? " immediately" : "");
 
             if (!immediately) {
@@ -361,7 +361,7 @@ public class OmrExecutors
                             TimeUnit.SECONDS)) {
                         // Cancel currently executing tasks
                         pool.shutdownNow();
-                        logger.warning("Pool {0} did not terminate", getName());
+                        logger.warn("Pool {} did not terminate", getName());
                     }
                 } catch (InterruptedException ie) {
                     // (Re-)Cancel if current thread also got interrupted
@@ -374,7 +374,7 @@ public class OmrExecutors
                 pool.shutdownNow();
             }
 
-            logger.fine("Pool {0} closed.", getName());
+            logger.debug("Pool {} closed.", getName());
 
             // Let garbage collector work
             pool = null;
@@ -391,13 +391,13 @@ public class OmrExecutors
         public synchronized ExecutorService getPool ()
         {
             if (!creationAllowed) {
-                logger.info("No longer allowed to create pool: {0}", getName());
+                logger.info("No longer allowed to create pool: {}", getName());
 
                 throw new ProcessingCancellationException("Executor closed");
             }
 
             if (!isActive()) {
-                logger.fine("Creating pool: {0}", getName());
+                logger.debug("Creating pool: {}", getName());
                 pool = createPool();
             }
 
@@ -435,7 +435,7 @@ public class OmrExecutors
         {
             if (!getSpecific().equals(specific)) {
                 constants.useParallelism.setValue(specific);
-                logger.info("Parallelism is {0} allowed",
+                logger.info("Parallelism is {} allowed",
                         specific ? "now" : "no longer");
                 return true;
             } else {

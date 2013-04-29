@@ -13,7 +13,7 @@ package omr.sheet;
 
 import omr.constant.Constant;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.util.DoubleValue;
 
@@ -52,7 +52,7 @@ public class Scale
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Scale.class);
+    private static final Logger logger = LoggerFactory.getLogger(Scale.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Line thickness range */

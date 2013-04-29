@@ -14,7 +14,7 @@ package omr.step;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.ScoreChecker;
 import omr.score.ScoreCleaner;
@@ -45,7 +45,7 @@ public class PagesStep
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(PagesStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(PagesStep.class);
 
     //~ Constructors -----------------------------------------------------------
     //-----------//
@@ -93,7 +93,7 @@ public class PagesStep
 
         for (int iter = 1; modified.isSet() && (iter <= iterMax); iter++) {
             modified.set(false);
-            logger.fine("System#{0} translation iter #{1}",
+            logger.debug("System#{} translation iter #{}",
                     system.getId(), iter);
 
             // Clear errors for this system only (and this step)
@@ -131,7 +131,7 @@ public class PagesStep
                         systems,
                         true);
             } catch (Exception ex) {
-                logger.warning("Error in re-processing from " + this, ex);
+                logger.warn("Error in re-processing from " + this, ex);
             }
         } else {
             // Final cross-system translation tasks

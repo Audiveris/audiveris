@@ -19,7 +19,7 @@ import omr.glyph.Grades;
 import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
@@ -41,7 +41,7 @@ public class LeftOverPattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             LeftOverPattern.class);
 
     //~ Constructors -----------------------------------------------------------
@@ -85,8 +85,8 @@ public class LeftOverPattern
                 glyph = system.addGlyph(glyph);
                 glyph.setEvaluation(vote);
 
-                if (logger.isFineEnabled() || glyph.isVip()) {
-                    logger.info("LeftOver {0} vote: {1}", 
+                if (logger.isDebugEnabled() || glyph.isVip()) {
+                    logger.info("LeftOver {} vote: {}", 
                             glyph.idString(), vote);
                 }
 

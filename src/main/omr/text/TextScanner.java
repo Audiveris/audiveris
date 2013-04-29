@@ -21,7 +21,7 @@ import omr.grid.StaffInfo;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.GeoPath;
 import omr.math.ReversePathIterator;
@@ -59,7 +59,7 @@ public class TextScanner
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(TextScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(TextScanner.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -110,7 +110,7 @@ public class TextScanner
         final Page page = system.getSheet().getPage();
         final LiveParam<String> textParam = page.getTextParam();
         final String language = textParam.getTarget();
-        logger.fine("scanSystem lan:{0} on {1}", language, system.idString());
+        logger.debug("scanSystem lan:{} on {}", language, system.idString());
         textParam.setActual(language);
 
         // Retrieve glyphs
@@ -147,7 +147,7 @@ public class TextScanner
                     allSections,
                     language);
         } else {
-            logger.info("{0} No line", system.idString());
+            logger.info("{} No line", system.idString());
         }
     }
 
@@ -288,7 +288,7 @@ public class TextScanner
 
         // For visual check
         ///staff.addAttachment("core", contour);
-        ///logger.info("Staff#{0} contour:{1}", staff.getId(), contour.toString());
+        ///logger.info("Staff#{} contour:{}", staff.getId(), contour.toString());
 
         return contour;
     }

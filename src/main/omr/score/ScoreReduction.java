@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.PartConnection.Candidate;
 import omr.score.PartConnection.Result;
@@ -64,7 +64,7 @@ public class ScoreReduction
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreReduction.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreReduction.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Related score. */
@@ -115,7 +115,7 @@ public class ScoreReduction
         addPartList();
 
         // Debug: List all candidates per result
-        if (logger.isFineEnabled()) {
+        if (logger.isDebugEnabled()) {
             dumpResultMapping();
         }
     }
@@ -193,10 +193,10 @@ public class ScoreReduction
     {
         for (Entry<Result, Set<Candidate>> entry : connection.getResultMap().
                 entrySet()) {
-            logger.fine("Result: {0}", entry.getKey());
+            logger.debug("Result: {}", entry.getKey());
 
             for (Candidate candidate : entry.getValue()) {
-                logger.fine("* candidate: {0}", candidate);
+                logger.debug("* candidate: {}", candidate);
             }
         }
     }

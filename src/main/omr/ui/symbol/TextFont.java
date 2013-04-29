@@ -14,7 +14,7 @@ package omr.ui.symbol;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -37,7 +37,7 @@ public class TextFont
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(TextFont.class);
+    private static final Logger logger = LoggerFactory.getLogger(TextFont.class);
 
     /** Name of the chosen underlying text font */
     private static final String fontName = constants.defaultTextFontName.

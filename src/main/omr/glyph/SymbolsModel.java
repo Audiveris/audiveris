@@ -13,7 +13,7 @@ package omr.glyph;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.entity.TimeRational;
 
@@ -47,7 +47,7 @@ public class SymbolsModel
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SymbolsModel.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolsModel.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Standard evaluator */
@@ -213,13 +213,13 @@ public class SymbolsModel
         // Processing depends on shape at hand
         switch (glyph.getShape()) {
         case STEM:
-            logger.fine("Deassigning a Stem as glyph {0}", glyph.getId());
+            logger.debug("Deassigning a Stem as glyph {}", glyph.getId());
             cancelStems(Collections.singletonList(glyph));
 
             break;
 
         case NOISE:
-            logger.info("Skipping Noise as glyph {0}", glyph.getId());
+            logger.info("Skipping Noise as glyph {}", glyph.getId());
 
             break;
 

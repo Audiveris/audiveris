@@ -13,7 +13,7 @@ package omr.grid;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 import java.util.Iterator;
@@ -32,7 +32,7 @@ class IntersectionSequence
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             IntersectionSequence.class);
 
     //~ Constructors -----------------------------------------------------------
@@ -74,10 +74,10 @@ class IntersectionSequence
                 }
 
                 if ((tail.x - head.x) <= maxDeltaPos) {
-                    if (logger.isFineEnabled()
+                    if (logger.isDebugEnabled()
                             || head.getStickAncestor().isVip()
                             || tail.getStickAncestor().isVip()) {
-                        logger.info("Merging verticals {0} & {1}", head, tail);
+                        logger.info("Merging verticals {} & {}", head, tail);
                     }
 
                     Glyph tailAncestor =  tail.getStickAncestor();

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.ui;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.ui.util.Panel;
 import omr.ui.util.SeparablePopupMenu;
@@ -53,7 +53,7 @@ public class BoardsPane
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BoardsPane.class);
+    private static final Logger logger = LoggerFactory.getLogger(BoardsPane.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The concrete UI component */
@@ -138,7 +138,7 @@ public class BoardsPane
      */
     public void connect ()
     {
-        ///logger.warning("Connect " + this);
+        ///logger.warn("Connect " + this);
         for (Board board : boards) {
             if (board.isSelected()) {
                 board.connect();

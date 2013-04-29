@@ -24,7 +24,7 @@ import omr.grid.StaffInfo;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 
@@ -60,7 +60,7 @@ public class LedgerPattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(LedgerPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(LedgerPattern.class);
 
     /** Shapes acceptable for a ledger neighbor */
     public static final EnumSet<Shape> ledgerNeighbors = EnumSet.noneOf(
@@ -142,7 +142,7 @@ public class LedgerPattern
                         if (compound == null) {
                             // Here, we have not found any convincing neighbor
                             // Let's invalid this pseudo ledger
-                            logger.fine("Invalid ledger {0}", ledger);
+                            logger.debug("Invalid ledger {}", ledger);
                             ledger.setShape(null);
                             it.remove();
                             nb++;

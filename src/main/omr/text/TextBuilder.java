@@ -19,7 +19,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.LineUtilities;
 
@@ -66,7 +66,7 @@ public class TextBuilder
     private static final Constants constants = new Constants();
 
     /** Usual logger utility. */
-    private static final Logger logger = Logger.getLogger(TextBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(TextBuilder.class);
 
     /** The related OCR. */
     private static final OCR ocr = TesseractOCR.getInstance();
@@ -164,7 +164,7 @@ public class TextBuilder
         Integer conf = textLine.getConfidence();
         int minConf = constants.minConfidence.getValue();
         if (conf == null || conf < minConf) {
-            logger.fine("      Too low confidence {0} vs {1} for {2}",
+            logger.debug("      Too low confidence {} vs {} for {}",
                     conf, minConf, textLine);
             return false;
         }
@@ -194,7 +194,7 @@ public class TextBuilder
         // Check for abnormal characters
         for (char ch : ABNORMAL_CHARS) {
             if (value.indexOf(ch) != -1) {
-                logger.fine("Abnormal char {0} in {1}", ch, word);
+                logger.debug("Abnormal char {} in {}", ch, word);
                 return false;
             }
         }
@@ -204,7 +204,7 @@ public class TextBuilder
         XmlUtilities.stripNonValidXMLCharacters(value, stripped);
 
         if (stripped.isSet()) {
-            logger.warning("Invalid XML chars in {0}", word);
+            logger.warn("Invalid XML chars in {}", word);
             return false;
         }
 
@@ -212,7 +212,7 @@ public class TextBuilder
         if (ABNORMAL_WORDS != null) {
             Matcher matcher = ABNORMAL_WORDS.matcher(value);
             if (matcher.matches()) {
-                logger.fine("Abnormal word value {0}", word);
+                logger.debug("Abnormal word value {}", word);
                 return false;
             }
         }
@@ -225,13 +225,13 @@ public class TextBuilder
 //        double xRatio = box.width / rect.getWidth();
 //        double yRatio = box.height / rect.getHeight();
 //        double aRatio = yRatio / xRatio;
-////        logger.fine("{0} xRatio:{1} yRatio:{2} aRatio:{3}", textLine,
+////        logger.debug("{} xRatio:{} yRatio:{} aRatio:{}", textLine,
 ////                    (float) xRatio, (float) yRatio, aRatio);
 //
 //        // Sign of something wrong
 //        if ((aRatio < constants.minAspectRatio.getValue())
 //                || (aRatio > constants.maxAspectRatio.getValue())) {
-//            logger.fine("      Invalid ratio {0} vs [{1}-{2}] for {3}",
+//            logger.debug("      Invalid ratio {} vs [{}-{}] for {}",
 //                        aRatio,
 //                        constants.minAspectRatio.getValue(),
 //                        constants.maxAspectRatio.getValue(), word);
@@ -250,7 +250,7 @@ public class TextBuilder
             FontInfo fontInfo = word.getFontInfo();
 
             if (fontInfo.pointsize > params.maxFontSize) {
-                logger.fine("Too big font {0} vs {1} on {2}",
+                logger.debug("Too big font {} vs {} on {}",
                         fontInfo.pointsize, params.maxFontSize, textLine);
                 return false;
             }
@@ -274,8 +274,8 @@ public class TextBuilder
                            Collection<Section> allSections,
                            String language)
     {
-        if (logger.isFineEnabled()) {
-            logger.info("{0} mapGlyphs", system.idString());
+        if (logger.isDebugEnabled()) {
+            logger.info("{} mapGlyphs", system.idString());
         }
 
         // To make sure that the same section is not assigned to several words
@@ -284,7 +284,7 @@ public class TextBuilder
         }
 
         for (TextLine line : lines) {
-            logger.fine("   mapping {0}", line);
+            logger.debug("   mapping {}", line);
             // Browse all words, starting by shorter ones
             List<TextWord> sortedWords = new ArrayList<>(line.getWords());
             Collections.sort(sortedWords, TextWord.bySize);
@@ -306,14 +306,14 @@ public class TextBuilder
                         line.setVip();
                     }
 
-                    if (word.isVip() || logger.isFineEnabled()) {
-                        logger.info("      mapped {0}", word);
+                    if (word.isVip() || logger.isDebugEnabled()) {
+                        logger.info("      mapped {}", word);
                     }
 
                     // Link Glyph -> TextWord
                     wordGlyph.setTextWord(language, word);
                 } else {
-                    logger.fine("No section found for {0}", word);
+                    logger.debug("No section found for {}", word);
                     toRemove.add(word);
                 }
             }
@@ -331,7 +331,7 @@ public class TextBuilder
                 }
             }
 
-            logger.fine("  mapGlyphs adding {0}", line);
+            logger.debug("  mapGlyphs adding {}", line);
             system.getSentences().add(line);
         }
 
@@ -357,7 +357,7 @@ public class TextBuilder
                 Glyph glyph = word.getGlyph();
 
                 if (glyph == null || glyph.getTextWord() != word) {
-                    logger.fine("{0} purging old {1}", system.idString(), word);
+                    logger.debug("{} purging old {}", system.idString(), word);
                     toRemove.add(word);
                 }
             }
@@ -367,7 +367,7 @@ public class TextBuilder
             }
 
             if (line.getWords().isEmpty()) {
-                logger.fine("{0} purging empty {1}", system.idString(), line);
+                logger.debug("{} purging empty {}", system.idString(), line);
                 itLine.remove();
             }
         }
@@ -382,11 +382,11 @@ public class TextBuilder
     public void dumpSentences (String title)
     {
         Set<TextLine> sentences = system.getSentences();
-        logger.info("{0} {1} sentences: {2}",
+        logger.info("{} {} sentences: {}",
                 title, system.idString(), sentences.size());
 
         for (TextLine sentence : sentences) {
-            logger.info("   {0}", sentence);
+            logger.info("   {}", sentence);
         }
     }
 
@@ -435,8 +435,8 @@ public class TextBuilder
      */
     public List<TextLine> recomposeLines (Collection<TextLine> oldLines)
     {
-        if (logger.isFineEnabled()) {
-            logger.info("{0} recomposeLines", system.idString());
+        if (logger.isDebugEnabled()) {
+            logger.info("{} recomposeLines", system.idString());
         }
         
         // Separate lyrics and standard populations
@@ -447,8 +447,8 @@ public class TextBuilder
         lyrics = purgeInvalidLines(lyrics);
         lyrics = mergeLyricsLines(lyrics);
 
-        if (logger.isFineEnabled()) {
-            logger.info("{0} splitWords for lyrics", system.idString());
+        if (logger.isDebugEnabled()) {
+            logger.info("{} splitWords for lyrics", system.idString());
         }
         for (TextLine line : lyrics) {
             splitWords(line.getWords(), line);
@@ -493,7 +493,7 @@ public class TextBuilder
     {
         for (TextLine line : lines) {
             if (line.getValue().trim().isEmpty()) {
-                logger.fine("Empty line {0}", line);
+                logger.debug("Empty line {}", line);
                 line.setProcessed(true);
             } else {
                 line.setProcessed(false);
@@ -504,10 +504,10 @@ public class TextBuilder
                     standards.add(line);
                 }
 
-                if (logger.isFineEnabled()) {
-                    logger.info("   Initial {0}", line);
+                if (logger.isDebugEnabled()) {
+                    logger.info("   Initial {}", line);
                     for (TextWord word : line.getWords()) {
-                        logger.fine("      {0}", word);
+                        logger.debug("      {}", word);
                     }
                 }
             }
@@ -590,14 +590,14 @@ public class TextBuilder
         if (chunks.size() == 1) {
             line = chunks.get(0);
         } else {
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
                 for (TextLine chunk : chunks) {
-                    logger.fine("   chunk {0}", chunk);
+                    logger.debug("   chunk {}", chunk);
                 }
             }
             line = mergeLines(chunks);
-            if (line.isVip() || logger.isFineEnabled()) {
-                logger.info("      merge result {0}", line);
+            if (line.isVip() || logger.isDebugEnabled()) {
+                logger.info("      merge result {}", line);
             }
         }
 
@@ -616,8 +616,8 @@ public class TextBuilder
      */
     private List<TextLine> mergeLyricsLines (List<TextLine> oldLyrics)
     {
-        if (logger.isFineEnabled()) {
-            logger.info("{0} mergeLyricsLines", system.idString());
+        if (logger.isDebugEnabled()) {
+            logger.info("{} mergeLyricsLines", system.idString());
         }
         List<TextLine> newLyrics = new ArrayList<>();
         Collections.sort(oldLyrics, TextLine.byOrdinate);
@@ -670,8 +670,8 @@ public class TextBuilder
      */
     private List<TextLine> mergeStandardLines (List<TextLine> oldStandards)
     {
-        if (logger.isFineEnabled()) {
-            logger.info("{0} mergeStandardLines", system.idString());
+        if (logger.isDebugEnabled()) {
+            logger.info("{} mergeStandardLines", system.idString());
         }
         Collections.sort(oldStandards, TextLine.byOrdinate);
 
@@ -702,8 +702,8 @@ public class TextBuilder
                             }
 
                             if (candidate.isVip() || head.isVip()
-                                || logger.isFineEnabled()) {
-                                logger.info("   merging {0} into {1}",
+                                || logger.isDebugEnabled()) {
+                                logger.info("   merging {} into {}",
                                         candidate, head);
                             }
 
@@ -773,7 +773,7 @@ public class TextBuilder
     //--------------------//
     private void mergeStandardWords (TextLine line)
     {
-        logger.fine("   mergeLineWords for {0}", line);
+        logger.debug("   mergeLineWords for {}", line);
 
         List<TextWord> toAdd = new ArrayList<>();
         List<TextWord> toRemove = new ArrayList<>();
@@ -785,14 +785,14 @@ public class TextBuilder
                 Rectangle prevBounds = prevWord.getBounds();
                 int prevStop = prevBounds.x + prevBounds.width;
                 int gap = word.getBounds().x - prevStop;
-                logger.fine("      gap {0} vs {1} to {2}",
+                logger.debug("      gap {} vs {} to {}",
                         gap, params.minWordDx, word);
 
                 if (gap < params.minWordDx) {
                     toRemove.add(prevWord);
                     toRemove.add(word);
                     TextWord bigWord = TextWord.mergeOf(prevWord, word);
-                    logger.fine("         merged into {0}", bigWord);
+                    logger.debug("         merged into {}", bigWord);
                     toAdd.add(bigWord);
                     word = bigWord;
                 }
@@ -843,7 +843,7 @@ public class TextBuilder
                     // A manual text modification has occurred
                     // Check for a separator in the new manual value
                     if (!word.getChars().isEmpty()) {
-                        logger.fine("Manual modif for {0}",
+                        logger.debug("Manual modif for {}",
                                 wordGlyph.idString());
                         subWords = getSubWords(word,
                                 line,
@@ -903,16 +903,16 @@ public class TextBuilder
      */
     private List<TextLine> splitStandardLines (List<TextLine> oldStandards)
     {
-        if (logger.isFineEnabled()) {
-            logger.info("{0} splitStandardLines", system.idString());
+        if (logger.isDebugEnabled()) {
+            logger.info("{} splitStandardLines", system.idString());
         }
         Collections.sort(oldStandards, TextLine.byOrdinate);
 
         List<TextLine> newStandards = new ArrayList<>();
 
         for (TextLine line : oldStandards) {
-            if (line.isVip() || logger.isFineEnabled()) {
-                logger.info("split checking {0}", line);
+            if (line.isVip() || logger.isDebugEnabled()) {
+                logger.info("split checking {}", line);
             }
 
             final int maxAbscissaGap = getWordGap(line);
@@ -937,8 +937,8 @@ public class TextBuilder
                                     splitPos);
                             TextLine newLine = new TextLine(system, lineWords);
                             newLine.setRole(line.getRole());
-                            if (line.isVip() || logger.isFineEnabled()) {
-                                logger.info("      subLine {0}", newLine);
+                            if (line.isVip() || logger.isDebugEnabled()) {
+                                logger.info("      subLine {}", newLine);
                             }
                             newStandards.add(newLine);
 
@@ -957,8 +957,8 @@ public class TextBuilder
             if (words.size() < line.getWords().size()) {
                 TextLine newLine = new TextLine(system, words);
                 newLine.setRole(line.getRole());
-                if (line.isVip() || logger.isFineEnabled()) {
-                    logger.info("      subLine {0}", newLine);
+                if (line.isVip() || logger.isDebugEnabled()) {
+                    logger.info("      subLine {}", newLine);
                 }
                 newStandards.add(newLine);
             } else {
@@ -1018,7 +1018,7 @@ public class TextBuilder
                         wordChars,
                         line);
 
-                logger.fine("      subWord ''{0}'' from ''{1}''",
+                logger.debug("      subWord ''{}'' from ''{}''",
                         newWord.getValue(), word.getValue());
                 subWords.add(newWord);
             }
@@ -1038,20 +1038,20 @@ public class TextBuilder
      */
     private List<TextLine> purgeInvalidLines (List<TextLine> lines)
     {
-        if (logger.isFineEnabled()) {
-            logger.info("{0} purgeInvalidLines", system.idString());
+        if (logger.isDebugEnabled()) {
+            logger.info("{} purgeInvalidLines", system.idString());
         }
         List<TextLine> newLines = new ArrayList<>();
 
         for (TextLine line : lines) {
-            logger.fine("   checking {0}", line);
+            logger.debug("   checking {}", line);
             if (isValid(line)) {
                 newLines.add(line);
             } else {
                 line.setProcessed(true);
-                if (logger.isFineEnabled()) {
+                if (logger.isDebugEnabled()) {
                     for (TextWord word : line.getWords()) {
-                        logger.fine("      {0}", word);
+                        logger.debug("      {}", word);
                     }
                 }
             }
@@ -1072,8 +1072,8 @@ public class TextBuilder
         final Page page = system.getSheet().getPage();
         final LiveParam<String> textParam = page.getTextParam();
         final String language = textParam.getTarget();
-        if (logger.isFineEnabled()) {
-            logger.info("{0} switchLanguageTexts lan:{1}",
+        if (logger.isDebugEnabled()) {
+            logger.info("{} switchLanguageTexts lan:{}",
                     system.idString(), language);
         }
         textParam.setActual(language);
@@ -1088,14 +1088,14 @@ public class TextBuilder
 
             List<TextLine> lines = retrieveOcrLine(compound, language);
             if (lines == null || lines.size() != 1) {
-                logger.fine("{0} No valid replacement for {1}",
+                logger.debug("{} No valid replacement for {}",
                         system.idString(), oldLine);
             } else {
                 TextLine newLine = lines.get(0);
                 recutStandardWords(newLine);
 
-                if (logger.isFineEnabled()) {
-                    logger.info("{0} refreshing {1} by {2}",
+                if (logger.isDebugEnabled()) {
+                    logger.info("{} refreshing {} by {}",
                             system.idString(), oldLine, newLine);
                     oldLine.dump();
                     newLine.dump();
@@ -1112,7 +1112,7 @@ public class TextBuilder
                             toAdd.add(newWord);
                         }
                     } else {
-                        logger.fine("{0} no word for {1} in {2}",
+                        logger.debug("{} no word for {} in {}",
                                 system.idString(), oldWord, newLine);
                     }
                 }
@@ -1164,7 +1164,7 @@ public class TextBuilder
         try {
             return Pattern.compile(constants.abnormalWordRegexp.getValue());
         } catch (PatternSyntaxException pse) {
-            logger.warning("Error in regexp for abnormal words", pse);
+            logger.warn("Error in regexp for abnormal words", pse);
             return null;
         }
     }

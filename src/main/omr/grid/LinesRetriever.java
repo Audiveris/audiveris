@@ -26,7 +26,7 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 import static omr.run.Orientation.*;
@@ -73,7 +73,7 @@ public class LinesRetriever
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(LinesRetriever.class);
+    private static final Logger logger = LoggerFactory.getLogger(LinesRetriever.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -167,7 +167,7 @@ public class LinesRetriever
                     Orientation.HORIZONTAL,
                     LineFilament.class);
         } catch (Exception ex) {
-            logger.warning("Cannot create lines filament factory", ex);
+            logger.warn("Cannot create lines filament factory", ex);
         }
 
         // To record the purged vertical runs
@@ -408,7 +408,7 @@ public class LinesRetriever
             watch.start("retrieveGlobalSlope");
             globalSlope = retrieveGlobalSlope();
             sheet.setSkew(new Skew(globalSlope, sheet));
-            logger.info("{0}Global slope: {1}",
+            logger.info("{}Global slope: {}",
                         sheet.getLogPrefix(), (float) globalSlope);
 
             // Retrieve regular patterns of filaments and pack them into clusters
@@ -427,7 +427,7 @@ public class LinesRetriever
             if (secondInterline != null && !discardedFilaments.isEmpty()) {
                 secondFilaments = discardedFilaments;
                 Collections.sort(secondFilaments, Glyph.byId);
-                logger.info("{0}Searching clusters with secondInterline: {1}",
+                logger.info("{}Searching clusters with secondInterline: {}",
                             sheet.getLogPrefix(), secondInterline);
                 secondClustersRetriever = new ClustersRetriever(
                         sheet,
@@ -438,7 +438,7 @@ public class LinesRetriever
                 discardedFilaments = secondClustersRetriever.buildInfo();
             }
 
-            logger.fine("Discarded filaments: {0}", Glyphs.toString(
+            logger.debug("Discarded filaments: {}", Glyphs.toString(
                     discardedFilaments));
 
             // Convert clusters into staves
@@ -475,7 +475,7 @@ public class LinesRetriever
         staffManager.reset();
 
         for (LineCluster cluster : allClusters) {
-            logger.fine(cluster.toString());
+            logger.debug(cluster.toString());
             List<LineInfo> lines = new ArrayList<LineInfo>(cluster.getLines());
             double left = Integer.MAX_VALUE;
             double right = Integer.MIN_VALUE;
@@ -540,8 +540,8 @@ public class LinesRetriever
         int height = box.height;
 
         if (height > params.maxStickerThickness) {
-            if (logger.isFineEnabled() || isVip) {
-                logger.info("{0}SSS height:{1} vs {2}",
+            if (logger.isDebugEnabled() || isVip) {
+                logger.info("{}SSS height:{} vs {}",
                             vips, height, params.maxStickerThickness);
             }
 
@@ -554,8 +554,8 @@ public class LinesRetriever
         double gap = dy - (scale.getMainFore() / 2.0);
 
         if (gap > params.maxStickerGap) {
-            if (logger.isFineEnabled() || isVip) {
-                logger.info("{0}GGG gap:{1} vs {2}",
+            if (logger.isDebugEnabled() || isVip) {
+                logger.info("{}GGG gap:{} vs {}",
                             vips, (float) gap, (float) params.maxStickerGap);
             }
 
@@ -568,8 +568,8 @@ public class LinesRetriever
                 Math.abs((box.y + height) - yFil));
 
         if (extension > params.maxStickerExtension) {
-            if (logger.isFineEnabled() || isVip) {
-                logger.info("{0}XXX ext:{1} vs {2}",
+            if (logger.isDebugEnabled() || isVip) {
+                logger.info("{}XXX ext:{} vs {}",
                             vips, (float) extension, params.maxStickerExtension);
             }
 
@@ -594,16 +594,16 @@ public class LinesRetriever
         }
 
         if (thickness > params.maxStickerThickness) {
-            if (logger.isFineEnabled() || isVip) {
-                logger.info("{0}RRR thickness:{1} vs {2}",
+            if (logger.isDebugEnabled() || isVip) {
+                logger.info("{}RRR thickness:{} vs {}",
                             vips, (float) thickness, params.maxStickerExtension);
             }
 
             return false;
         }
 
-        if (logger.isFineEnabled() || isVip) {
-            logger.info("{0}---", vips);
+        if (logger.isDebugEnabled() || isVip) {
+            logger.info("{}---", vips);
         }
 
         return true;
@@ -856,7 +856,7 @@ public class LinesRetriever
 
             if (sect != null) {
                 sect.setVip();
-                logger.info("Horizontal vip section: {0}", sect);
+                logger.info("Horizontal vip section: {}", sect);
             }
         }
     }
@@ -1023,12 +1023,12 @@ public class LinesRetriever
             vipSections = VipUtil.decodeIds(
                     constants.horizontalVipSections.getValue());
 
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);
             }
 
             if (!vipSections.isEmpty()) {
-                logger.info("Horizontal VIP sections: {0}", vipSections);
+                logger.info("Horizontal VIP sections: {}", vipSections);
             }
         }
     }

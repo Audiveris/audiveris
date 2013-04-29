@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.ScoreBench;
 
@@ -29,7 +29,7 @@ public abstract class Bench
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Bench.class);
+    private static final Logger logger = LoggerFactory.getLogger(Bench.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The internal set of properties */
@@ -78,7 +78,7 @@ public abstract class Bench
 
         props.setProperty(key, value);
 
-        logger.fine("addProp key:{0} value:{1}", key, value);
+        logger.debug("addProp key:{} value:{}", key, value);
     }
 
     //-------//

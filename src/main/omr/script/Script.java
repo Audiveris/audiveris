@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.script;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 import omr.score.entity.Page;
@@ -48,7 +48,7 @@ public class Script
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Script.class);
+    private static final Logger logger = LoggerFactory.getLogger(Script.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Score to which the script is applied */
@@ -131,7 +131,7 @@ public class Script
     {
         tasks.add(task);
         setModified(true);
-        logger.fine("Script: added {0}", task);
+        logger.debug("Script: added {}", task);
     }
 
     //------//
@@ -186,13 +186,13 @@ public class Script
      */
     public void run ()
     {
-        logger.fine("Running {0}{1}",
+        logger.debug("Running {}{}",
                 this, (score != null) ? (" on score " + score.getRadix()) : "");
 
         // Make score concrete (with its pages/sheets)
         if (score == null) {
             if (scorePath == null) {
-                logger.warning("No score defined in script");
+                logger.warn("No score defined in script");
 
                 return;
             }
@@ -211,7 +211,7 @@ public class Script
                     page = score.getPage(pageIndex);
 
                     if (page == null) {
-                        logger.warning("Script error. No page for index {0}",
+                        logger.warn("Script error. No page for index {}",
                                 pageIndex);
 
                         continue;
@@ -221,7 +221,7 @@ public class Script
                 }
 
                 Sheet sheet = page.getSheet();
-                logger.fine("Running {0} on {1}", task, sheet);
+                logger.debug("Running {} on {}", task, sheet);
 
                 try {
                     // Run the task synchronously (prolog/core/epilog)
@@ -229,16 +229,16 @@ public class Script
                 } catch (ProcessingCancellationException pce) {
                     throw pce;
                 } catch (Exception ex) {
-                    logger.warning("Error running " + task, ex);
+                    logger.warn("Error running " + task, ex);
                     throw new RuntimeException(task.toString());
                 }
             }
 
-            logger.fine("All tasks run on {0}", score);
+            logger.debug("All tasks run on {}", score);
         } catch (ProcessingCancellationException pce) {
             throw pce;
         } catch (Exception ex) {
-            logger.warning("Script aborted", ex);
+            logger.warn("Script aborted", ex);
         } finally {
             // Flag the (active) script as up-to-date
             score.getScript().setModified(false);

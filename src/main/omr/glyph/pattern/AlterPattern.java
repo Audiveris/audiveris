@@ -23,7 +23,7 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 
@@ -57,7 +57,7 @@ public class AlterPattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(AlterPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(AlterPattern.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -159,7 +159,7 @@ public class AlterPattern
                 }
                 
                 if (pair.isVip()) {
-                    logger.info("{0} Alter pair: {1}", glyph.idString(), pair);
+                    logger.info("{} Alter pair: {}", glyph.idString(), pair);
                 }
 
                 // "hide" the stems to not perturb evaluation
@@ -169,10 +169,10 @@ public class AlterPattern
                 PairAdapter adapter;
 
                 if (pair.overlap <= maxNaturalOverlap) {
-                    logger.fine("NATURAL sign?");
+                    logger.debug("NATURAL sign?");
                     adapter = naturalAdapter;
                 } else {
-                    logger.fine("SHARP sign?");
+                    logger.debug("SHARP sign?");
                     adapter = sharpAdapter;
                 }
 
@@ -188,7 +188,7 @@ public class AlterPattern
 
                 if (compound != null) {
                     nb++;
-                    logger.fine("{0}Compound #{1} rebuilt as {2}",
+                    logger.debug("{}Compound #{} rebuilt as {}",
                             system.getLogPrefix(),
                             compound.getId(), compound.getShape());
                 } else {
@@ -228,8 +228,8 @@ public class AlterPattern
             }
         }
 
-        if (logger.isFineEnabled()) {
-            logger.fine(
+        if (logger.isDebugEnabled()) {
+            logger.debug(
                     Glyphs.toString("Impacted alteration neighbors", impacted));
         }
 
@@ -272,7 +272,7 @@ public class AlterPattern
             glyph.getSymbolsBefore(StemPattern.reliableStemSymbols, goods, bads);
             glyph.getSymbolsAfter(StemPattern.reliableStemSymbols, goods, bads);
             if (!goods.isEmpty()) {
-                logger.fine("Skipping good stem {0}", glyph);
+                logger.debug("Skipping good stem {}", glyph);
                 continue;
             }
 
@@ -288,7 +288,7 @@ public class AlterPattern
             if (compound != null) {
                 nb++;
 
-                logger.fine("{0}Compound #{1} rebuilt as {2}",
+                logger.debug("{}Compound #{} rebuilt as {}",
                         system.getLogPrefix(),
                         compound.getId(), compound.getShape());
             } else {

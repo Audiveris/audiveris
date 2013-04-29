@@ -26,7 +26,7 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Barycenter;
 import omr.math.BasicLine;
@@ -86,7 +86,7 @@ public class BarsRetriever
     private static final Constants constants = new Constants();
 
     /** Usual logger utility. */
-    private static final Logger logger = Logger.getLogger(BarsRetriever.class);
+    private static final Logger logger = LoggerFactory.getLogger(BarsRetriever.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -265,7 +265,7 @@ public class BarsRetriever
         // let's try to define partTop for each staff
         partTops = retrievePartTops();
 
-        logger.info("{0}Parts   top staff ids: {1}",
+        logger.info("{}Parts   top staff ids: {}",
                 sheet.getLogPrefix(), Arrays.toString(partTops));
 
         // Refine ending points for each bar line
@@ -311,7 +311,7 @@ public class BarsRetriever
             // Retrieve major barSticks (for system & staves limits)
             retrieveMajorBars(oldGlyphs, newGlyphs);
         } catch (Exception ex) {
-            logger.warning(sheet.getLogPrefix()
+            logger.warn(sheet.getLogPrefix()
                            + "BarsRetriever cannot retrieveBars", ex);
         }
 
@@ -319,7 +319,7 @@ public class BarsRetriever
             // Detect systems of staves aggregated via barlines
             buildSystems();
         } catch (Exception ex) {
-            logger.warning(sheet.getLogPrefix()
+            logger.warn(sheet.getLogPrefix()
                            + "BarsRetriever cannot retrieveSystems", ex);
         }
 
@@ -340,7 +340,7 @@ public class BarsRetriever
     void adjustStaffLines (SystemInfo system)
     {
         for (StaffInfo staff : system.getStaves()) {
-            logger.fine("{0}", staff);
+            logger.debug("{}", staff);
 
             // Adjust left and right endings of each line in the staff
             for (LineInfo l : staff.getLines()) {
@@ -395,7 +395,7 @@ public class BarsRetriever
                     }
                 }
             } catch (Exception ex) {
-                logger.warning("BarsRetriever can't adjust side bars of "
+                logger.warn("BarsRetriever can't adjust side bars of "
                                + system.idString(), ex);
             }
         }
@@ -467,8 +467,8 @@ public class BarsRetriever
                     adjustSystemLimit(system, side);
                 }
 
-                if (logger.isFineEnabled()) {
-                    logger.fine("System#{0} left:{1} right:{2}", system.getId(),
+                if (logger.isDebugEnabled()) {
+                    logger.debug("System#{} left:{} right:{}", system.getId(),
                             system.getLimit(LEFT).getClass()
                             .getSimpleName(),
                             system.getLimit(RIGHT).getClass()
@@ -478,7 +478,7 @@ public class BarsRetriever
                 // Use system limits to adjust staff lines
                 adjustStaffLines(system);
             } catch (Exception ex) {
-                logger.warning("BarsRetriever cannot adjust system#"
+                logger.warn("BarsRetriever cannot adjust system#"
                                + system.getId(), ex);
             }
         }
@@ -524,7 +524,7 @@ public class BarsRetriever
             if (!allSticks.isEmpty()) {
                 drivingStick = allSticks.first();
 
-                logger.fine("System#{0} {1} drivingStick: {2}",
+                logger.debug("System#{} {} drivingStick: {}",
                         system.getId(), side, drivingStick);
 
                 // Polish long driving stick, if needed
@@ -553,7 +553,7 @@ public class BarsRetriever
                 bary.include(x, y);
             }
 
-            logger.fine("System#{0} {1} barycenter: {2}",
+            logger.debug("System#{} {} barycenter: {}",
                     system.getId(), side, bary);
 
             double slope = sheet.getSkew().getSlope();
@@ -578,7 +578,7 @@ public class BarsRetriever
                 systemTops = retrieveSystemTops();
             }
 
-            logger.info("{0}Systems top staff ids: {1}", sheet.getLogPrefix(),
+            logger.info("{}Systems top staff ids: {}", sheet.getLogPrefix(),
                     Arrays.toString(systemTops));
 
             // Create system frames using staves tops
@@ -639,8 +639,8 @@ public class BarsRetriever
         List<SystemInfo> systems = sheet.getSystems();
         Skew skew = sheet.getSkew();
 
-        if (logger.isFineEnabled()) {
-            logger.info("Checking S#{0}({1}) - S#{2}({3})", prevSystem.getId(),
+        if (logger.isDebugEnabled()) {
+            logger.info("Checking S#{}({}) - S#{}({})", prevSystem.getId(),
                     prevSystem.getStaves().size(), nextSystem.getId(),
                     nextSystem.getStaves().size());
         }
@@ -675,14 +675,14 @@ public class BarsRetriever
                     double dy = Math.abs(Math.min(nextY, nextPoint.getY())
                                          - Math.max(prevY, prevPoint.getY()));
 
-                    logger.fine("F{0}-F{1} dx:{2} vs {3}, dy:{4} vs {5}",
+                    logger.debug("F{}-F{} dx:{} vs {}, dy:{} vs {}",
                             prevStick.getId(), nextStick.getId(),
                             (float) dx, params.maxBarPosGap, (float) dy,
                             params.maxBarCoordGap);
 
                     if ((dx <= params.maxBarPosGap)
                         && (dy <= params.maxBarCoordGap)) {
-                        logger.info("Merging systems S#{0}({1}) - S#{2}({3})",
+                        logger.info("Merging systems S#{}({}) - S#{}({})",
                                 prevSystem.getId(),
                                 prevSystem.getStaves().size(),
                                 nextSystem.getId(),
@@ -851,7 +851,7 @@ public class BarsRetriever
             //            double ratio = (double) filled / staffCount;
             ////            if (ratio < constants.minAlignmentRatio.getValue()) {
             //                // We remove this alignment and deassign its sticks
-            //                logger.fine("{0}Removing {1}", sheet.getLogPrefix(), align);
+            //                logger.debug("{}Removing {}", sheet.getLogPrefix(), align);
             //                it.remove();
             //
             //                for (StickIntersection inter : align.getIntersections()) {
@@ -861,13 +861,13 @@ public class BarsRetriever
             //                }
             //            } else if (filled != staffCount) {
             //                // TODO: Should implement driven recognition here...
-            //                logger.info("{0}Should fill {1}", sheet.getLogPrefix(), align);
+            //                logger.info("{}Should fill {}", sheet.getLogPrefix(), align);
             //            }
 
             // Strict: we require all staves to have a barline in this alignment
             if (filled < staffCount) {
                 // We remove this alignment and deassign its sticks
-                logger.fine("{0}Removing {1}", sheet.getLogPrefix(), align);
+                logger.debug("{}Removing {}", sheet.getLogPrefix(), align);
                 it.remove();
 
                 for (StickIntersection inter : align.getIntersections()) {
@@ -965,7 +965,7 @@ public class BarsRetriever
                 if ((dir * (barX - linesX)) > params.maxLineExtension) {
                     staff.setBar(side, null);
                     staff.setAbscissa(side, linesX);
-                    logger.fine("{0} extended {1}", side, staff);
+                    logger.debug("{} extended {}", side, staff);
                 }
             }
         }
@@ -1065,8 +1065,8 @@ public class BarsRetriever
             StaffInfo botStaff = staffManager.getStaffAt(stop);
             int bot = botStaff.getId();
 
-            if (logger.isFineEnabled() || stick.isVip()) {
-                logger.info("Bar#{0} top:{1} bot:{2}", stick.getId(), top, bot);
+            if (logger.isDebugEnabled() || stick.isVip()) {
+                logger.info("Bar#{} top:{} bot:{}", stick.getId(), top, bot);
             }
 
             for (int id = top; id <= bot; id++) {
@@ -1269,7 +1269,7 @@ public class BarsRetriever
             for (Iterator<Glyph> it = filaments.iterator(); it.hasNext();) {
                 Glyph glyph = it.next();
                 if (!glyph.isActive()) {
-                    logger.fine("Purging non-active {0}", glyph);
+                    logger.debug("Purging non-active {}", glyph);
                     it.remove();
                 }
             }
@@ -1410,21 +1410,21 @@ public class BarsRetriever
                 staff.setBar(side, bar);
                 staff.setAbscissa(side, barX);
             } else {
-                if (logger.isFineEnabled()) {
-                    logger.info("Staff#{0} {1} discarded stick#{2}",
+                if (logger.isDebugEnabled()) {
+                    logger.info("Staff#{} {} discarded stick#{}",
                             staff.getId(), side,
                             seq.last().getStickAncestor().getId());
                 }
             }
         } else {
-            if (logger.isFineEnabled()) {
-                logger.fine("Staff#{0} no {1} bar {2}", staff.getId(), side,
+            if (logger.isDebugEnabled()) {
+                logger.debug("Staff#{} no {} bar {}", staff.getId(), side,
                         Glyphs.toString(StickIntersection.sticksOf(
                         staffCrossings)));
             }
         }
 
-        logger.fine("Staff#{0} {1} bar: {2}", staff.getId(), side, bar);
+        logger.debug("Staff#{} {} bar: {}", staff.getId(), side, bar);
     }
 
     //-----------------------//
@@ -1512,7 +1512,7 @@ public class BarsRetriever
                             seqStick = seqStick.getAncestor();
 
                             if (seqStick != barStick) {
-                                logger.fine("Including F{0} to F{1}",
+                                logger.debug("Including F{} to F{}",
                                         barStick.getId(), seqStick.getId());
                                 seqStick.stealSections(barStick);
                             }
@@ -1597,7 +1597,7 @@ public class BarsRetriever
             }
         }
 
-        logger.info("Staves connection from {0} to {1}", topId,
+        logger.info("Staves connection from {} to {}", topId,
                 range.get(range.size() - 1).getLastStaff().getId());
 
         return true;
@@ -1781,7 +1781,7 @@ public class BarsRetriever
         //~ Static fields/initializers -----------------------------------------
 
         /** Usual logger utility. */
-        private static final Logger logger = Logger.getLogger(Parameters.class);
+        private static final Logger logger = LoggerFactory.getLogger(Parameters.class);
 
         //~ Instance fields ----------------------------------------------------
         /** Maximum delta abscissa for a gap between filaments. */
@@ -1855,12 +1855,12 @@ public class BarsRetriever
             vipSections = VipUtil.decodeIds(
                     constants.verticalVipSections.getValue());
 
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);
             }
 
             if (!vipSections.isEmpty()) {
-                logger.info("Vertical VIP sections: {0}", vipSections);
+                logger.info("Vertical VIP sections: {}", vipSections);
             }
         }
     }

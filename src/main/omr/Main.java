@@ -15,7 +15,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 
@@ -67,7 +68,7 @@ public class Main
     private static MainGui gui;
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Main.class);
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
@@ -104,18 +105,18 @@ public class Main
         // Process CLI arguments
         process(args);
 
-        // Locale to be used in the whole application ?
+        // Locale to be used in the whole application?
         checkLocale();
 
         if (!parameters.batchMode) {
             // For interactive mode
-            logger.fine("Main. Launching MainGui");
+            logger.debug("Main. Launching MainGui");
             Application.launch(MainGui.class, args);
         } else {
             // For batch mode
 
             // Version information
-            logger.info("Reference: {0}", WellKnowns.TOOL_REF);
+            logger.info("Reference: {}", WellKnowns.TOOL_REF);
 
             // Remember if at least one task has failed
             boolean failure = false;
@@ -130,26 +131,26 @@ public class Main
 
             if (!tasks.isEmpty()) {
                 try {
-                    logger.info("Submitting {0} task(s)", tasks.size());
+                    logger.info("Submitting {} task(s)", tasks.size());
 
                     List<Future<Void>> futures = OmrExecutors.
                             getCachedLowExecutor().invokeAll(
                             tasks,
                             constants.processTimeOut.getValue(),
                             TimeUnit.SECONDS);
-                    logger.info("Checking {0} task(s)", tasks.size());
+                    logger.info("Checking {} task(s)", tasks.size());
 
                     // Check for time-out
                     for (Future<Void> future : futures) {
                         try {
                             future.get();
                         } catch (InterruptedException | ExecutionException ex) {
-                            logger.warning("Future exception", ex);
+                            logger.warn("Future exception", ex);
                             failure = true;
                         }
                     }
                 } catch (Exception ex) {
-                    logger.warning("Error in processing tasks", ex);
+                    logger.warn("Error in processing tasks", ex);
                     failure = true;
                 }
             }
@@ -165,7 +166,7 @@ public class Main
 
             // Stop the JVM with failure status?
             if (failure) {
-                logger.warning("Exit with failure status");
+                logger.warn("Exit with failure status");
                 System.exit(-1);
             }
         }
@@ -238,7 +239,7 @@ public class Main
                         throws Exception
                 {
                     if (!parameters.desiredSteps.isEmpty()) {
-                        logger.info("Launching {0} on {1}",
+                        logger.info("Launching {} on {}",
                                 parameters.desiredSteps, name);
                     }
 
@@ -250,11 +251,11 @@ public class Main
                                     parameters.desiredSteps,
                                     score);
                         } catch (ProcessingCancellationException pce) {
-                            logger.warning("Cancelled " + score, pce);
+                            logger.warn("Cancelled " + score, pce);
                             score.getBench().recordCancellation();
                             throw pce;
                         } catch (Exception ex) {
-                            logger.warning("Exception occurred", ex);
+                            logger.warn("Exception occurred", ex);
                             throw ex;
                         } finally {
                             // Close (when in batch mode only)
@@ -267,7 +268,7 @@ public class Main
                     } else {
                         String msg = "Could not find file "
                                      + file.getCanonicalPath();
-                        logger.warning(msg);
+                        logger.warn(msg);
                         throw new RuntimeException(msg);
                     }
                 }
@@ -374,12 +375,12 @@ public class Main
             for (Locale locale : Locale.getAvailableLocales()) {
                 if (locale.toString().equalsIgnoreCase(localeStr)) {
                     Locale.setDefault(locale);
-                    logger.fine("Locale set to {0}", locale);
+                    logger.debug("Locale set to {}", locale);
                     return;
                 }
             }
 
-            logger.warning("Cannot set locale to {0}", localeStr);
+            logger.warn("Cannot set locale to {}", localeStr);
         }
     }
 
@@ -401,7 +402,7 @@ public class Main
         parameters = new CLI(WellKnowns.TOOL_NAME, args).getParameters();
 
         if (parameters == null) {
-            logger.warning("Exiting ...");
+            logger.warn("Exiting ...");
 
             // Stop the JVM, with failure status (1)
             Runtime.getRuntime().exit(1);
@@ -418,13 +419,13 @@ public class Main
             //
             //            if ((midiStep != null) &&
             //                parameters.desiredSteps.contains(midiStep)) {
-            //                logger.warning(
+            //                logger.warn(
             //                    "MIDI output is not compatible with -batch mode." +
             //                    " MIDI output is ignored.");
             //                parameters.desiredSteps.remove(midiStep);
             //            }
         } else {
-            logger.fine("Running in interactive mode");
+            logger.debug("Running in interactive mode");
 
             // Make sure we have nice window decorations.
             JFrame.setDefaultLookAndFeelDecorated(true);

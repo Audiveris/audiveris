@@ -13,7 +13,7 @@ package omr.check;
 
 import omr.constant.Constant;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code Check} encapsulates the <b>definition</b> of a check,
@@ -33,7 +33,7 @@ public abstract class Check<C extends Checkable>
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Check.class);
+    private static final Logger logger = LoggerFactory.getLogger(Check.class);
 
     /**
      * Indicates a negative result
@@ -319,8 +319,8 @@ public abstract class Check<C extends Checkable>
     private void verifyRange ()
     {
         if (low.getValue() > high.getValue()) {
-            logger.severe(
-                    "Illegal low {0} high {1} range for {2}",
+            logger.error(
+                    "Illegal low {} high {} range for {}",
                     low.getValue(), high.getValue(), this);
         }
     }

@@ -12,7 +12,6 @@
 package omr.ui.util;
 
 import java.io.File;
-import java.io.FilenameFilter;
 
 /**
  * Class {@code OmrFileFilter} is a special file filter, based on file

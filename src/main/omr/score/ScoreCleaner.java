@@ -14,7 +14,7 @@ package omr.score;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
@@ -33,7 +33,7 @@ public class ScoreCleaner
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreCleaner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreCleaner.class);
 
     //~ Constructors -----------------------------------------------------------
     //--------------//
@@ -54,7 +54,7 @@ public class ScoreCleaner
     public boolean visit (ScoreSystem system)
     {
         try {
-            logger.fine("Cleaning up {0}", system);
+            logger.debug("Cleaning up {}", system);
 
             // Remove recorded translations for all system glyphs
             for (Glyph glyph : system.getInfo().getGlyphs()) {
@@ -65,7 +65,7 @@ public class ScoreCleaner
 
             system.acceptChildren(this);
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + system,
                     ex);
         }
@@ -91,7 +91,7 @@ public class ScoreCleaner
                 return true;
             }
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + systemPart,
                     ex);
         }
@@ -108,7 +108,7 @@ public class ScoreCleaner
         try {
             measure.cleanupNode();
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + measure,
                     ex);
         }

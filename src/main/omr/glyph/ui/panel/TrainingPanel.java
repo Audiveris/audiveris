@@ -19,7 +19,7 @@ import static omr.glyph.Shape.*;
 import omr.glyph.facets.Glyph;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.ui.util.Panel;
 
@@ -61,7 +61,7 @@ class TrainingPanel
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(TrainingPanel.class);
+    private static final Logger logger = LoggerFactory.getLogger(TrainingPanel.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -287,18 +287,18 @@ class TrainingPanel
                 if (physicalShape.isTrainable()) {
                     present[physicalShape.ordinal()] = true;
                 } else {
-                    logger.warning("Removing non trainable shape:{0}", physicalShape);
+                    logger.warn("Removing non trainable shape:{}", physicalShape);
                     it.remove();
                 }
             } catch (Exception ex) {
-                logger.warning("Removing weird shape: " + shape, ex);
+                logger.warn("Removing weird shape: " + shape, ex);
                 it.remove();
             }
         }
 
         for (int i = 0; i < present.length; i++) {
             if (!present[i]) {
-                logger.warning("Missing shape: {0}", Shape.values()[i]);
+                logger.warn("Missing shape: {}", Shape.values()[i]);
             }
         }
     }
@@ -398,10 +398,10 @@ class TrainingPanel
                     if (glyph.getShape() != null) {
                         glyphs.add(glyph);
                     } else {
-                        logger.warning("Cannot infer shape from {0}", gName);
+                        logger.warn("Cannot infer shape from {}", gName);
                     }
                 } else {
-                    logger.warning("Cannot get glyph {0}", gName);
+                    logger.warn("Cannot get glyph {}", gName);
                 }
             }
 
@@ -430,7 +430,7 @@ class TrainingPanel
                 try {
                     coreNumber.setText("" + get());
                 } catch (Exception ex) {
-                    logger.warning("Error while loading core base", ex);
+                    logger.warn("Error while loading core base", ex);
                 }
             }
 
@@ -475,7 +475,7 @@ class TrainingPanel
                 try {
                     wholeNumber.setText("" + get());
                 } catch (Exception ex) {
-                    logger.warning("Error while loading whole base", ex);
+                    logger.warn("Error while loading whole base", ex);
                 }
             }
 

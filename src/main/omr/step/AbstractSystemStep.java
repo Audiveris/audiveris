@@ -13,7 +13,7 @@ package omr.step;
 
 import omr.Main;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -36,7 +36,7 @@ public abstract class AbstractSystemStep
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             AbstractSystemStep.class);
 
     //~ Constructors -----------------------------------------------------------
@@ -188,13 +188,13 @@ public abstract class AbstractSystemStep
                             throws Exception
                     {
                         try {
-                            logger.fine("{0} doSystem #{1}",
+                            logger.debug("{} doSystem #{}",
                                     AbstractSystemStep.this,
                                     system.idString());
 
                             doSystem(system);
                         } catch (Exception ex) {
-                            logger.warning(sheet.getLogPrefix()
+                            logger.warn(sheet.getLogPrefix()
                                            + "Interrupt on "
                                            + system.idString(),
                                     ex);
@@ -208,7 +208,7 @@ public abstract class AbstractSystemStep
             // Launch all system tasks in parallel and wait for their completion
             OmrExecutors.getLowExecutor().invokeAll(tasks);
         } catch (InterruptedException ex) {
-            logger.warning("doitPerSystem got interrupted");
+            logger.warn("doitPerSystem got interrupted");
             throw new ProcessingCancellationException(ex);
         }
     }

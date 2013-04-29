@@ -15,7 +15,7 @@ import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 import omr.math.BasicLine;
 import omr.math.Line;
 import omr.score.entity.SystemPart;
@@ -36,7 +36,7 @@ public class BarPainter
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BarPainter.class);
+    private static final Logger logger = LoggerFactory.getLogger(BarPainter.class);
 
     /** Thin barline item. */
     private static final BarItem thin = new BarItem(0.2);
@@ -131,7 +131,7 @@ public class BarPainter
             return B2B_REPEAT_BP;
 
         default:
-            logger.severe("Illegal barline shape " + shape);
+            logger.error("Illegal barline shape " + shape);
             return null;
         }
     }

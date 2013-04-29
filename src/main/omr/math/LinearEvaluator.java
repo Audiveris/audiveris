@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.math;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -62,7 +62,7 @@ public class LinearEvaluator
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             LinearEvaluator.class);
 
     /** Un/marshalling context for use with JAXB */
@@ -334,7 +334,7 @@ public class LinearEvaluator
         Marshaller m = getJaxbContext().createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.marshal(this, os);
-        logger.fine("LinearEvaluator marshalled");
+        logger.debug("LinearEvaluator marshalled");
     }
 
     //-----------------//
@@ -404,7 +404,7 @@ public class LinearEvaluator
             }
 
             category.include(sample.pattern);
-            logger.fine("Accu {0} count:{1}",
+            logger.debug("Accu {} count:{}",
                     category.getId(), category.getCardinality());
         }
 
@@ -428,7 +428,7 @@ public class LinearEvaluator
     {
         Unmarshaller um = getJaxbContext().createUnmarshaller();
         LinearEvaluator evaluator = (LinearEvaluator) um.unmarshal(in);
-        logger.fine("LinearEvaluator unmarshalled");
+        logger.debug("LinearEvaluator unmarshalled");
 
         return evaluator;
     }
@@ -477,7 +477,7 @@ public class LinearEvaluator
     {
         // Compute parameters means & weights for each category
         for (Category category : categories.values()) {
-            logger.fine("Computing {0} count:{1}",
+            logger.debug("Computing {} count:{}",
                     category.getId(), category.getCardinality());
             category.compute();
         }
@@ -700,13 +700,13 @@ public class LinearEvaluator
                     try {
                         param.compute();
                     } catch (Exception ex) {
-                        logger.warning(
-                                "Category {0} cannot compute parameters ex:{1}",
+                        logger.warn(
+                                "Category {} cannot compute parameters ex:{}",
                                 id, ex);
                     }
                 }
             } else {
-                logger.warning("Category {0} has no sample", id);
+                logger.warn("Category {} has no sample", id);
             }
         }
 

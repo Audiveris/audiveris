@@ -20,7 +20,7 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
@@ -51,7 +51,7 @@ public class TimeSignature
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(TimeSignature.class);
+    private static final Logger logger = LoggerFactory.getLogger(TimeSignature.class);
 
     /** Rational value of each (full) time sig shape */
     private static final Map<Shape, TimeRational> rationals = new EnumMap<>(
@@ -63,7 +63,7 @@ public class TimeSignature
                 TimeRational nd = rationalOf(s);
 
                 if (nd == null) {
-                    logger.severe("Rational for ''{0}'' is not defined", s);
+                    logger.error("Rational for ''{}'' is not defined", s);
                 } else {
                     rationals.put(s, nd);
                 }
@@ -128,7 +128,7 @@ public class TimeSignature
         isDummy = false;
         setStaff(staff);
 
-        logger.fine("Created TS");
+        logger.debug("Created TS");
     }
 
     //---------------//
@@ -162,10 +162,10 @@ public class TimeSignature
                         + staff.getTopLeft().y));
             }
         } catch (InvalidTimeSignature ex) {
-            logger.severe("Cannot duplicate TimeSignature", ex);
+            logger.error("Cannot duplicate TimeSignature", ex);
         }
 
-        logger.fine("Created TS copy");
+        logger.debug("Created TS copy");
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -212,7 +212,7 @@ public class TimeSignature
         try {
             modify(newSig.getShape(), newSig.timeRational);
         } catch (InvalidTimeSignature ex) {
-            logger.warning("Invalid time signature", ex);
+            logger.warn("Invalid time signature", ex);
         }
     }
 
@@ -416,7 +416,7 @@ public class TimeSignature
                 compound.setTimeRational(timeRational);
             }
 
-            logger.fine("{0} assigned to {1}", shape, compound.idString());
+            logger.debug("{} assigned to {}", shape, compound.idString());
         }
 
         setRational(timeRational, shape);
@@ -444,7 +444,7 @@ public class TimeSignature
         int unitDx = center.x - measure.getLeftX();
 
         if (unitDx < measure.getScale().toPixels(constants.minTimeOffset)) {
-            logger.fine("Too small offset for time signature" + " (glyph #{0})",
+            logger.debug("Too small offset for time signature" + " (glyph #{})",
                     glyph.getId());
 
             return false;
@@ -478,7 +478,7 @@ public class TimeSignature
                                             Measure measure,
                                             Staff staff)
     {
-        logger.fine("populateFullTime with {0}", glyph);
+        logger.debug("populateFullTime with {}", glyph);
 
         TimeSignature ts = measure.getTimeSignature(staff);
 
@@ -489,7 +489,7 @@ public class TimeSignature
 
             return true;
         } else {
-            logger.fine("Second whole time signature ({0}" + ")"
+            logger.debug("Second whole time signature ({}" + ")"
                         + " in the same measure", glyph.idString());
 
             return false;
@@ -746,7 +746,7 @@ public class TimeSignature
                                                 Measure measure,
                                                 Staff staff)
     {
-        logger.fine("populatePartialTime with {0}", glyph);
+        logger.debug("populatePartialTime with {}", glyph);
 
         TimeSignature ts = measure.getTimeSignature(staff);
 
@@ -758,7 +758,7 @@ public class TimeSignature
                     constants.maxTimeDistance);
 
             if (dist > max) {
-                logger.fine("Time signature part ({0}" + ")"
+                logger.debug("Time signature part ({}" + ")"
                             + " too far from previous one", glyph.idString());
 
                 return false;
@@ -825,7 +825,7 @@ public class TimeSignature
                     int pitch = (int) Math.rint(
                             getStaff().pitchPositionOf(computeGlyphCenter(glyph)));
                     Integer value = getNumericValue(glyph);
-                    logger.fine("pitch={0} value={1} glyph={2}",
+                    logger.debug("pitch={} value={} glyph={}",
                             pitch, value, glyph);
 
                     if (value != null) {
@@ -854,7 +854,7 @@ public class TimeSignature
                 shape = predefinedShape();
             }
 
-            logger.fine("time rational: {0}", timeRational);
+            logger.debug("time rational: {}", timeRational);
         }
     }
 

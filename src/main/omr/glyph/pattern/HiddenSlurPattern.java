@@ -11,12 +11,13 @@
 // </editor-fold>
 package omr.glyph.pattern;
 
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
@@ -36,7 +37,7 @@ public class HiddenSlurPattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
         HiddenSlurPattern.class);
 
     //~ Constructors -----------------------------------------------------------
@@ -73,7 +74,7 @@ public class HiddenSlurPattern
             }
 
             if (glyph.isVip()) {
-                logger.info("Running HiddenSlur on {0}", glyph.idString());
+                logger.info("Running HiddenSlur on {}", glyph.idString());
             }
 
             // Pickup a long thin section as seed

@@ -12,7 +12,7 @@
 package omr.step;
 
 import java.awt.image.RenderedImage;
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 
@@ -38,7 +38,7 @@ public class LoadStep
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(LoadStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(LoadStep.class);
 
     //~ Constructors -----------------------------------------------------------
 

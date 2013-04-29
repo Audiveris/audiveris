@@ -25,7 +25,7 @@ import omr.lag.Section;
 import omr.lag.Sections;
 import omr.lag.ui.SectionBoard;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.run.RunBoard;
 
@@ -93,7 +93,7 @@ public class SymbolsEditor
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SymbolsEditor.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolsEditor.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Related instance of symbols builder */
@@ -449,7 +449,7 @@ public class SymbolsEditor
                     handleEvent((SectionSetEvent) event);
                 }
             } catch (Exception ex) {
-                logger.warning(getClass().getName() + " onEvent error", ex);
+                logger.warn(getClass().getName() + " onEvent error", ex);
             }
         }
 
@@ -605,7 +605,7 @@ public class SymbolsEditor
                         }
                     }
 
-                    logger.fine("Editor. Publish glyph {0}", compound);
+                    logger.debug("Editor. Publish glyph {}", compound);
                     publish(
                             new GlyphEvent(
                             this,
@@ -631,8 +631,8 @@ public class SymbolsEditor
                 } catch (IllegalArgumentException ex) {
                     // All sections do not belong to the same system
                     // No compound is allowed and displayed
-                    logger.warning(
-                            "Sections from different systems {0}",
+                    logger.warn(
+                            "Sections from different systems {}",
                             Sections.toString(allSections));
                 }
             }

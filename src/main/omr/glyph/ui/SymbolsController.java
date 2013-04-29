@@ -14,7 +14,7 @@ package omr.glyph.ui;
 import omr.glyph.SymbolsModel;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.entity.Note;
 import omr.score.entity.TimeRational;
@@ -55,7 +55,7 @@ public class SymbolsController
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             SymbolsController.class);
 
     /** Color for hiding unknown glyphs when filter is ON */
@@ -200,7 +200,7 @@ public class SymbolsController
             for (Object entity : glyph.getTranslations()) {
                 if (entity instanceof Note) {
                     Note note = (Note) entity;
-                    logger.info("{0}->{1}", note, note.getChord());
+                    logger.info("{}->{}", note, note.getChord());
                 } else {
                     logger.info(entity.toString());
                 }

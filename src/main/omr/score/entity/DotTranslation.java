@@ -17,7 +17,7 @@ import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 
@@ -47,7 +47,7 @@ public class DotTranslation
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(DotTranslation.class);
+    private static final Logger logger = LoggerFactory.getLogger(DotTranslation.class);
 
     /** Sequence of dot trials */
     private static final List<? extends Trial> trials = Arrays.asList(
@@ -80,7 +80,7 @@ public class DotTranslation
                                     Measure measure,
                                     PixelPoint dotCenter)
     {
-        logger.fine("{0} populateDot {1}",
+        logger.debug("{} populateDot {}",
                 measure.getContextString(), glyph);
 
         // Keep specific shape only if manually assigned
@@ -105,9 +105,9 @@ public class DotTranslation
         }
 
         // Debug
-        if (logger.isFineEnabled()) {
+        if (logger.isDebugEnabled()) {
             for (Trial.Result info : results) {
-                logger.fine(info.toString());
+                logger.debug(info.toString());
             }
         }
 
@@ -174,7 +174,7 @@ public class DotTranslation
                                 dotCenter.x - noteRef.x,
                                 dotCenter.y - noteRef.y);
 
-                        logger.fine("Augmentation {0} {1}", toDot, note);
+                        logger.debug("Augmentation {} {}", toDot, note);
 
                         if (((glyph.getShape() == getTargetShape())
                              && glyph.isManualShape())
@@ -236,7 +236,7 @@ public class DotTranslation
                 glyph.setTranslation(note);
                 note.getChord().setDotsNumber((second != null) ? 2 : 1);
 
-                logger.fine("{0} dot#{1} Augmented {2}",
+                logger.debug("{} dot#{} Augmented {}",
                         note.getContextString(), glyph.getId(), note);
             }
 
@@ -283,7 +283,7 @@ public class DotTranslation
                         }
 
                         if ((dx > 0) && (Math.abs(dy) <= maxDy)) {
-                            logger.fine("Double dot with {0}", g);
+                            logger.debug("Double dot with {}", g);
 
                             g.setTranslation(note);
 
@@ -325,7 +325,7 @@ public class DotTranslation
                               PixelPoint dotCenter)
         {
             if (glyph.isVip()) {
-                logger.info("RepeatTrial. process {0}", glyph.idString());
+                logger.info("RepeatTrial. process {}", glyph.idString());
             }
 
             SortedMap<Double, Barline> distances = new TreeMap<>();
@@ -357,7 +357,7 @@ public class DotTranslation
                             ? (dotCenter.x - bar.getRightX())
                             : (bar.getLeftX() - dotCenter.x);
 
-                    logger.fine("Repeat dx:{0} {1}", dx, bar);
+                    logger.debug("Repeat dx:{} {}", dx, bar);
 
                     if (((glyph.getShape() == getTargetShape())
                          && glyph.isManualShape())
@@ -401,7 +401,7 @@ public class DotTranslation
             {
                 barline.addGlyph(glyph);
 
-                logger.fine("{0} dot#{1} Repeat dot for {2}",
+                logger.debug("{} dot#{} Repeat dot for {}",
                         barline.getContextString(), glyph.getId(), barline);
             }
 
@@ -458,7 +458,7 @@ public class DotTranslation
                                     dotCenter.x - noteRef.x,
                                     dotCenter.y - noteRef.y);
 
-                            logger.fine("Staccato {0} {1}", toDot, note);
+                            logger.debug("Staccato {} {}", toDot, note);
 
                             if (((glyph.getShape() == getTargetShape())
                                  && glyph.isManualShape())
@@ -507,7 +507,7 @@ public class DotTranslation
                 glyph.setTranslation(
                         new Articulation(measure, dotCenter, chord, glyph));
 
-                logger.fine("{0} dot#{1} Staccato {2}",
+                logger.debug("{} dot#{} Staccato {}",
                         chord.getContextString(), glyph.getId(), chord);
             }
 

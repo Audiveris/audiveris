@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.ui.util;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -42,7 +42,7 @@ public class ModelessOptionPane
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
         ModelessOptionPane.class);
 
     //~ Methods ----------------------------------------------------------------
@@ -108,7 +108,7 @@ public class ModelessOptionPane
                 try {
                     exchanger.exchange(optionOf(pane));
                 } catch (InterruptedException ex) {
-                    logger.warning("Exchange got interrupted", ex);
+                    logger.warn("Exchange got interrupted", ex);
                 }
             }
         };
@@ -144,7 +144,7 @@ public class ModelessOptionPane
                             try {
                                 exchanger.exchange(optionOf(pane));
                             } catch (InterruptedException ex) {
-                                logger.warning("Exchange got interrupted", ex);
+                                logger.warn("Exchange got interrupted", ex);
                             }
                         }
                     }
@@ -160,7 +160,7 @@ public class ModelessOptionPane
         try {
             return exchanger.exchange(null);
         } catch (InterruptedException ex) {
-            logger.warning("Exchange got interrupted", ex);
+            logger.warn("Exchange got interrupted", ex);
 
             return JOptionPane.CANCEL_OPTION;
         }

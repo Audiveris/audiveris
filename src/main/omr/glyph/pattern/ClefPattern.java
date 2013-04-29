@@ -24,7 +24,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelRectangle;
 
@@ -52,7 +52,7 @@ public class ClefPattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ClefPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClefPattern.class);
 
     /** Specific predicate to filter clef shapes */
     private static final Predicate<Shape> clefShapePredicate = new Predicate<Shape>()
@@ -143,7 +143,7 @@ public class ClefPattern
 
             // We must find a clef out of these glyphs
             Collection<Glyph> glyphs = system.lookupIntersectedGlyphs(inner);
-            logger.fine("{0}{1}", staffId, Glyphs.toString(" int", glyphs));
+            logger.debug("{}{}", staffId, Glyphs.toString(" int", glyphs));
 
             // We assume than there can't be any alien among them, so we should 
             // rebuild the larger glyph which the alien had wrongly segmented
@@ -151,7 +151,7 @@ public class ClefPattern
 
             for (Glyph glyph : glyphs) {
                 if (glyph.getShape() == Shape.STEM) {
-                    logger.fine("Clef: Removed stem#{0}", glyph.getId());
+                    logger.debug("Clef: Removed stem#{}", glyph.getId());
 
                     impacted.addAll(glyph.getConnectedNeighbors());
                     impacted.add(glyph);
@@ -162,7 +162,7 @@ public class ClefPattern
                 // Rebuild the larger glyph
                 Glyph larger = system.buildCompound(impacted);
                 if (larger != null) {
-                    logger.fine("Rebuilt stem-segmented {0}", larger.idString());
+                    logger.debug("Rebuilt stem-segmented {}", larger.idString());
                 }
 
                 // Recompute the set of intersected glyphs
@@ -228,7 +228,7 @@ public class ClefPattern
             && ((orgClef == null) || (vote.grade > orgClef.getGrade()))) {
             // We now have a clef!
             // Look around for an even better result...
-            logger.fine("{0} built from {1}",
+            logger.debug("{} built from {}",
                     vote.shape, Glyphs.toString(glyphs));
 
             // Look for larger stuff
@@ -250,7 +250,7 @@ public class ClefPattern
                     break;
                 }
 
-                logger.fine("Considering {0}", g);
+                logger.debug("Considering {}", g);
 
                 Glyph newCompound = system.buildTransientCompound(
                         Arrays.asList(compound, g));
@@ -261,7 +261,7 @@ public class ClefPattern
                         clefShapePredicate);
 
                 if ((newVote != null) && (newVote.grade > vote.grade)) {
-                    logger.fine("{0} better built with {1}", vote, g.idString());
+                    logger.debug("{} better built with {}", vote, g.idString());
 
                     compound = newCompound;
                     vote = newVote;
@@ -272,7 +272,7 @@ public class ClefPattern
             compound = system.addGlyph(compound);
             compound.setShape(vote.shape, Evaluation.ALGORITHM);
 
-            logger.fine("{0} rebuilt as {1}", vote.shape, compound.idString());
+            logger.debug("{} rebuilt as {}", vote.shape, compound.idString());
 
             return true;
         } else {

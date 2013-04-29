@@ -14,7 +14,7 @@ package omr.sheet.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 import omr.score.entity.Page;
@@ -61,7 +61,7 @@ public class SheetsController
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             SheetsController.class);
 
     /** Events that can be published on sheet service */
@@ -128,7 +128,7 @@ public class SheetsController
      */
     public synchronized SheetAssembly createAssembly (Sheet sheet)
     {
-        logger.fine("createAssembly {0}", sheet.getId());
+        logger.debug("createAssembly {}", sheet.getId());
 
         // Create the assembly on this sheet
         SheetAssembly assembly = new SheetAssembly(sheet);
@@ -140,7 +140,7 @@ public class SheetsController
         int sheetIndex = tabbedPane.indexOfComponent(assembly.getComponent());
 
         if (sheetIndex == -1) {
-            logger.fine("Adding assembly for sheet {0}", sheet.getId());
+            logger.debug("Adding assembly for sheet {}", sheet.getId());
 
             // Insert in tabbed pane
             assemblies.add(assembly);
@@ -163,7 +163,7 @@ public class SheetsController
     public synchronized void dumpAllAssemblies ()
     {
         for (SheetAssembly assembly : assemblies) {
-            logger.info("Assembly of {0} {1}", assembly.getSheet(), assembly);
+            logger.info("Assembly of {} {}", assembly.getSheet(), assembly);
         }
     }
 
@@ -177,7 +177,7 @@ public class SheetsController
     public void dumpCurrentSheetServices ()
     {
         Sheet sheet = getSelectedSheet();
-        logger.info("Sheet:{0}", sheet);
+        logger.info("Sheet:{}", sheet);
 
         if (sheet == null) {
             return;
@@ -274,7 +274,7 @@ public class SheetsController
                 assembly.getComponent());
 
         if (sheetIndex != -1) {
-            logger.fine("Removing assembly {0}", sheet);
+            logger.debug("Removing assembly {}", sheet);
 
             // Let others know (if this closing sheet was the current one)
             if (sheet == getSelectedSheet()) {
@@ -316,7 +316,7 @@ public class SheetsController
      */
     public synchronized void showAssembly (Sheet sheet)
     {
-        logger.fine("showAssembly {0}", sheet.getId());
+        logger.debug("showAssembly {}", sheet.getId());
 
         if (sheet != null) {
             SheetAssembly assembly = sheet.getAssembly();
@@ -328,7 +328,7 @@ public class SheetsController
             if (sheetIndex != -1) {
                 tabbedPane.setSelectedIndex(sheetIndex);
             } else {
-                logger.warning("No tab found for {0}", sheet);
+                logger.warn("No tab found for {}", sheet);
             }
         }
     }

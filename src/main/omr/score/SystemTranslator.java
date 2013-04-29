@@ -15,7 +15,7 @@ import omr.glyph.Shape;
 import static omr.glyph.ShapeSet.*;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -66,7 +66,7 @@ public class SystemTranslator
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             SystemTranslator.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -115,7 +115,7 @@ public class SystemTranslator
     public void translateFinal ()
     {
         system = systemInfo.getScoreSystem();
-        logger.fine("buildFinal starting from {0}", system);
+        logger.debug("buildFinal starting from {}", system);
 
         final Page page = system.getPage();
         final Sheet sheet = page.getSheet();
@@ -592,20 +592,20 @@ public class SystemTranslator
         @Override
         public void browse (Measure measure)
         {
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
                 // Print flag/beam value of each chord
-                logger.fine("Flag/Beams for {0}", measure.getContextString());
+                logger.debug("Flag/Beams for {}", measure.getContextString());
 
                 for (TreeNode node : measure.getChords()) {
                     Chord chord = (Chord) node;
-                    logger.fine(chord.toString());
+                    logger.debug(chord.toString());
 
                     if (!chord.getBeams().isEmpty()) {
-                        logger.fine("   Beams:{0}", chord.getBeams().size());
+                        logger.debug("   Beams:{}", chord.getBeams().size());
                     }
 
                     if (chord.getFlagsNumber() > 0) {
-                        logger.fine("   Flags:{0}", chord.getFlagsNumber());
+                        logger.debug("   Flags:{}", chord.getFlagsNumber());
                     }
 
                     // Just to be sure
@@ -668,7 +668,7 @@ public class SystemTranslator
             try {
                 new KeySignatureVerifier(system).verifyKeys();
             } catch (Exception ex) {
-                logger.warning("Error verifying keys for " + system, ex);
+                logger.warn("Error verifying keys for " + system, ex);
             }
         }
 
@@ -975,7 +975,7 @@ public class SystemTranslator
             super();
             this.name = name;
 
-            logger.fine("Creating {0}", this);
+            logger.debug("Creating {}", this);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -1009,7 +1009,7 @@ public class SystemTranslator
                     try {
                         browse(measure);
                     } catch (Exception ex) {
-                        logger.warning(
+                        logger.warn(
                                 measure.getContextString()
                                 + " Exception in measure browsing",
                                 ex);
@@ -1066,7 +1066,7 @@ public class SystemTranslator
                             // Perform the translation on this glyph
                             translate(glyph);
                         } catch (Exception ex) {
-                            logger.warning(
+                            logger.warn(
                                     "Error translating glyph #" + glyph.getId()
                                     + " by " + this,
                                     ex);

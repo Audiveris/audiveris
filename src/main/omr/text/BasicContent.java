@@ -15,7 +15,7 @@ import omr.glyph.facets.BasicFacet;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphContent;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 
@@ -40,7 +40,7 @@ public class BasicContent
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility. */
-    private static final Logger logger = Logger.getLogger(BasicContent.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicContent.class);
 
     //~ Instance fields --------------------------------------------------------
     //

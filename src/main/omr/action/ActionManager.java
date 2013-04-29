@@ -13,22 +13,25 @@ package omr.action;
 
 import omr.WellKnowns;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.ui.MainGui;
 import omr.ui.util.SeparableMenu;
 import omr.ui.util.UIUtilities;
 
+import omr.util.UriUtil;
+
 import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ResourceMap;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -56,7 +59,7 @@ public class ActionManager
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ActionManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(ActionManager.class);
 
     /** Class loader */
     private static final ClassLoader classLoader = ActionManager.class.
@@ -209,21 +212,24 @@ public class ActionManager
     public void loadAllDescriptors ()
     {
         // Load classes first for system actions, then for user actions
-        File[] files = new File[]{
-            new File(WellKnowns.RES_FOLDER, "system-actions.xml"),
-            new File(WellKnowns.SETTINGS_FOLDER, "user-actions.xml")};
+        URI[] uris = new URI[]{
+            UriUtil.toURI(WellKnowns.RES_URI, "system-actions.xml"),
+            new File(WellKnowns.CONFIG_FOLDER, "user-actions.xml").toURI().normalize()};
 
-        for (int i = 0; i < files.length; i++) {
-            File file = files[i];
-            if (file.exists()) {
-                try (InputStream input = new FileInputStream(file)) {
-                    Actions.loadActionsFrom(input);
-                } catch (IOException | JAXBException ex) {
-                    logger.warning("Error loading actions from " + file, ex);
+        for (int i = 0; i < uris.length; i++) {
+            URI uri = uris[i];
+            try {
+                URL url = uri.toURL();
+                InputStream input = url.openStream();
+                Actions.loadActionsFrom(input);
+            } catch (IOException ex) {
+                // Item does not exist
+                if (i == 0) {
+                    // Only the first item (system) is mandatory
+                    logger.error("Mandatory file not found {}", uri);
                 }
-            } else if (i == 0) {
-                // Only the first file is mandatory
-                logger.severe("Mandatory file not found {0}", file);
+            } catch (JAXBException ex) {
+                logger.warn("Error loading actions from " + uri, ex);
             }
         }
     }
@@ -240,17 +246,17 @@ public class ActionManager
     {
         // Insert an initial separator, to let user easily grab the toolBar
         toolBar.addSeparator();
-        
+
         for (String domain : Actions.getDomainNames()) {
             // Create dedicated menu for this range, if not already existing
             JMenu menu = menuMap.get(domain);
 
             if (menu == null) {
-                logger.fine("Creating menu:{0}", domain);
+                logger.debug("Creating menu:{}", domain);
                 menu = new SeparableMenu(domain);
                 menuMap.put(domain, menu);
             } else {
-                logger.fine("Augmenting menu:{0}", domain);
+                logger.debug("Augmenting menu:{}", domain);
             }
 
             // Proper menu decoration
@@ -313,7 +319,7 @@ public class ActionManager
 
             if (instance == null) {
                 // Fall back to allocate a new class instance
-                ///logger.warning("instantiating instance of " + classe);
+                ///logger.warn("instantiating instance of " + classe);
                 instance = classe.newInstance();
             }
 
@@ -333,13 +339,13 @@ public class ActionManager
                     button.setText("");
                 }
             } else {
-                logger.severe("Unknown action {0} in class {1}",
+                logger.error("Unknown action {} in class {}",
                         desc.methodName, desc.className);
             }
         } catch (ClassNotFoundException | SecurityException |
                 IllegalAccessException | IllegalArgumentException |
                 InvocationTargetException | InstantiationException ex) {
-            logger.warning("Error while registering " + desc, ex);
+            logger.warn("Error while registering " + desc, ex);
         }
 
         return action;
@@ -354,7 +360,7 @@ public class ActionManager
     {
         // Create all type sections for this menu
         for (int section : Actions.getSections()) {
-            logger.fine("Starting section: {0}", section);
+            logger.debug("Starting section: {}", section);
 
             // Use a separator between sections
             menu.addSeparator();
@@ -362,7 +368,7 @@ public class ActionManager
             for (ActionDescriptor desc : Actions.getAllDescriptors()) {
                 if (desc.domain.equalsIgnoreCase(domain)
                     && (desc.section == section)) {
-                    logger.fine("Registering {0}", desc);
+                    logger.debug("Registering {}", desc);
 
                     try {
                         Class<? extends JMenuItem> itemClass;
@@ -385,11 +391,11 @@ public class ActionManager
                             item.setAction(action);
                             menu.add(item);
                         } else {
-                            logger.warning("Could not register {0}", desc);
+                            logger.warn("Could not register {}", desc);
                         }
                     } catch (ClassNotFoundException | InstantiationException |
                             IllegalAccessException ex) {
-                        logger.warning("Error with " + desc.itemClassName, ex);
+                        logger.warn("Error with " + desc.itemClassName, ex);
                     }
                 }
             }

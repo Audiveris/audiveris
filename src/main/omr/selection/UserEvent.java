@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.selection;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 /**
  * Interface {@code UserEvent} defines the common behavior of user
@@ -45,7 +45,7 @@ public abstract class UserEvent
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(UserEvent.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserEvent.class);
 
     //~ Instance fields --------------------------------------------------------
 
@@ -81,7 +81,7 @@ public abstract class UserEvent
         this.hint = hint;
         this.movement = movement;
 
-        //        logger.warning(
+        //        logger.warn(
         //            ClassUtil.nameOf(this) + " created by:" + source);
     }
 

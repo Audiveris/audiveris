@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Rational;
 
@@ -41,7 +41,7 @@ public class DurationRetriever
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             DurationRetriever.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -73,7 +73,7 @@ public class DurationRetriever
     public boolean visit (Measure measure)
     {
         try {
-            logger.fine("Visiting Part#{0} {1}",
+            logger.debug("Visiting Part#{} {}",
                     measure.getPart().getId(), measure);
 
             Rational measureDur = Rational.ZERO;
@@ -101,7 +101,7 @@ public class DurationRetriever
                 }
 
                 measureDurations.put(measure.getPageId(), measureDur);
-                logger.fine("{0}: {1}", measure.getPageId(), measureDur);
+                logger.debug("{}: {}", measure.getPageId(), measureDur);
             } else if (!measure.getWholeChords().isEmpty()) {
                 if (pass > 1) {
                     Rational dur = measureDurations.get(measure.getPageId());
@@ -116,7 +116,7 @@ public class DurationRetriever
             }
         } catch (InvalidTimeSignature ex) {
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + measure,
                     ex);
         }
@@ -175,17 +175,17 @@ public class DurationRetriever
     @Override
     public boolean visit (ScoreSystem system)
     {
-        logger.fine("Visiting {0}", system);
+        logger.debug("Visiting {}", system);
 
         // 2 passes are needed, to get the actual duration of whole notes
         // Since the measure duration may be specified in another system part
         for (pass = 1; pass <= 2; pass++) {
-            logger.fine("Pass #{0}", pass);
+            logger.debug("Pass #{}", pass);
 
             // Browse the (SystemParts and the) Measures
             system.acceptChildren(this);
 
-            logger.fine("Durations:{0}", measureDurations);
+            logger.debug("Durations:{}", measureDurations);
         }
 
         return false; // No default browsing this way

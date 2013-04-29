@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.ui.symbol;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.ui.MainGui;
 import omr.ui.field.IntegerListSpinner;
@@ -64,7 +64,7 @@ public class SymbolRipper
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SymbolRipper.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolRipper.class);
 
     static {
         // UI Look and Feel
@@ -481,7 +481,7 @@ public class SymbolRipper
 
                 // Debug
                 TextLayout layout = new TextLayout(string, musicFont, frc);
-                logger.fine("getAdvance(): {0} getVisibleAdvance(): {1}",
+                logger.debug("getAdvance(): {} getVisibleAdvance(): {}",
                             layout.getAdvance(), layout.getVisibleAdvance());
             }
         }

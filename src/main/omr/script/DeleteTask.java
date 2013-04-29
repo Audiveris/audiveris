@@ -104,7 +104,7 @@ public class DeleteTask
     public void epilog (Sheet sheet)
     {
         super.epilog(sheet);
-        logger.info("Deletion of virtual {0}", Glyphs.toString(glyphs));
+        logger.info("Deletion of virtual {}", Glyphs.toString(glyphs));
     }
 
     //-----------------//
@@ -171,7 +171,7 @@ public class DeleteTask
         for (PixelPoint location : locations) {
             Glyph glyph = sheet.getNest().lookupVirtualGlyph(location);
             glyphs.add(glyph);
-            logger.fine("To be deleted: {0}", glyph);
+            logger.debug("To be deleted: {}", glyph);
         }
     }
 

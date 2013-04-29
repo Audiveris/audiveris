@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Rational;
 
@@ -35,7 +35,7 @@ public class ScoreReductor
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScoreReductor.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreReductor.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Set of all different duration values */
@@ -75,7 +75,7 @@ public class ScoreReductor
         } catch (InvalidTimeSignature ex) {
             // Ignored here (TBC)
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + chord,
                     ex);
         }
@@ -96,7 +96,7 @@ public class ScoreReductor
             // Compute and remember greatest duration divisor for the score
             score.setDurationDivisor(computeDurationDivisor());
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + score,
                     ex);
         }
@@ -112,7 +112,7 @@ public class ScoreReductor
         Rational[] durationArray = durations.toArray(
                 new Rational[durations.size()]);
         Rational divisor = Rational.gcd(durationArray);
-        logger.fine("durations={0} divisor={1}",
+        logger.debug("durations={} divisor={}",
                 Arrays.deepToString(durationArray), divisor);
 
         return divisor.den;

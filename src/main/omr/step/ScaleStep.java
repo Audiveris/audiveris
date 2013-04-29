@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -30,7 +30,7 @@ public class ScaleStep
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ScaleStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScaleStep.class);
 
     //~ Constructors -----------------------------------------------------------
 

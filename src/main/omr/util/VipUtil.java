@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.util;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class VipUtil
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(VipUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(VipUtil.class);
 
     //~ Methods ----------------------------------------------------------------
     //-----------//
@@ -53,7 +53,7 @@ public class VipUtil
                     ids.add(Integer.decode(trimmedToken));
                 }
             } catch (Exception ex) {
-                logger.warning("Illegal glyph id", ex);
+                logger.warn("Illegal glyph id", ex);
             }
         }
 

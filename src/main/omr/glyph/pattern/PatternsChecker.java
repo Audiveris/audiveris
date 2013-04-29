@@ -13,7 +13,7 @@ package omr.glyph.pattern;
 
 import omr.glyph.Grades;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.sheet.SystemInfo;
 
@@ -31,7 +31,7 @@ public class PatternsChecker
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             PatternsChecker.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -120,21 +120,21 @@ public class PatternsChecker
 //                });
 
         for (GlyphPattern pattern : patterns) {
-            logger.fine("Starting {0}", pattern);
+            logger.debug("Starting {}", pattern);
 
             system.removeInactiveGlyphs();
 
             try {
                 int modifs = pattern.runPattern();
 
-                if (logger.isFineEnabled()) {
+                if (logger.isDebugEnabled()) {
                     sb.append(" ").append(pattern.name).append(":").append(
                             modifs);
                 }
 
                 totalModifs += modifs;
             } catch (Throwable ex) {
-                logger.warning(system.getLogPrefix()
+                logger.warn(system.getLogPrefix()
                                + " error running pattern " + pattern.name, ex);
             }
         }
@@ -142,7 +142,7 @@ public class PatternsChecker
         system.inspectGlyphs(Grades.symbolMinGrade, false);
 
         if (totalModifs > 0) {
-            logger.fine("S#{0} Patterns{1}", system.getId(), sb);
+            logger.debug("S#{} Patterns{}", system.getId(), sb);
         }
 
         return totalModifs != 0;

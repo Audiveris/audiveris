@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score.ui;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 
@@ -30,7 +30,7 @@ public class ScoreController
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
         ScoreController.class);
 
     //~ Constructors -----------------------------------------------------------

@@ -21,7 +21,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -50,7 +50,7 @@ public class ArticulationPattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             ArticulationPattern.class);
 
     //~ Constructors -----------------------------------------------------------
@@ -113,7 +113,7 @@ public class ArticulationPattern
                     });
 
             if (!hasNote) {
-                logger.fine("Deassign articulation {0}", glyph.idString());
+                logger.debug("Deassign articulation {}", glyph.idString());
 
                 glyph.setShape(null, Evaluation.ALGORITHM);
                 nb++;

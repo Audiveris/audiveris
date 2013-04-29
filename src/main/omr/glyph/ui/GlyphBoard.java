@@ -17,7 +17,7 @@ import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphIdEvent;
@@ -82,7 +82,7 @@ public class GlyphBoard
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(GlyphBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphBoard.class);
 
     /** Events this board is interested in */
     private static final Class<?>[] eventClasses = new Class<?>[]{
@@ -259,7 +259,7 @@ public class GlyphBoard
     @Override
     public void onEvent (UserEvent event)
     {
-        logger.fine("GlyphBoard event:{0}", event);
+        logger.debug("GlyphBoard event:{}", event);
         
         try {
             // Ignore RELEASING
@@ -267,7 +267,7 @@ public class GlyphBoard
                 return;
             }
             
-            logger.fine("GlyphBoard selfUpdating={0} : {1}",
+            logger.debug("GlyphBoard selfUpdating={} : {}",
                     selfUpdating, event);
             
             if (event instanceof GlyphEvent) {
@@ -280,7 +280,7 @@ public class GlyphBoard
                 handleEvent((GlyphSetEvent) event);
             }
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 

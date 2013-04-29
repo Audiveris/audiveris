@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.run;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -65,7 +65,7 @@ public class VerticalFilter
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(VerticalFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(VerticalFilter.class);
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -122,7 +122,7 @@ public class VerticalFilter
         {
             // Make sure we don't violate the tile principle
             if (x2 < xRight) {
-                logger.severe("SlidingPixelSource can only move forward");
+                logger.error("SlidingPixelSource can only move forward");
                 throw new IllegalStateException();
             }
 

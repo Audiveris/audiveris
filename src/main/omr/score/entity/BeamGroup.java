@@ -14,7 +14,7 @@ package omr.score.entity;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Line;
 import omr.math.Rational;
@@ -53,7 +53,7 @@ public class BeamGroup
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BeamGroup.class);
+    private static final Logger logger = LoggerFactory.getLogger(BeamGroup.class);
 
 //    /** A Beam comparator based on level. (within the same group only) */
 //    private static final Comparator<Beam> byLevel = new Comparator<Beam>()
@@ -79,10 +79,10 @@ public class BeamGroup
 //
 //                    if (result == 0) {
 //                        // This should not happen
-//                        //                    logger.warning(
+//                        //                    logger.warn(
 //                        //                        other.getContextString() + " equality between " +
 //                        //                        this.toLongString() + " and " + other.toLongString());
-//                        //                    logger.warning(
+//                        //                    logger.warn(
 //                        //                        "Beam comparison data " + "x=" + x + " y=" + y +
 //                        //                        " yOther=" + yOther + " yHead=" + yHead);
 //                        b1.addError(chord.getStem(), "Weird beam configuration");
@@ -128,7 +128,7 @@ public class BeamGroup
         measure.addGroup(this);
         id = measure.getBeamGroups().indexOf(this) + 1;
 
-        logger.fine("{0} Created {1}", measure.getContextString(), this);
+        logger.debug("{} Created {}", measure.getContextString(), this);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -177,11 +177,11 @@ public class BeamGroup
         }
 
         // Dump results
-        if (logger.isFineEnabled()) {
-            logger.fine(measure.getContextString());
+        if (logger.isDebugEnabled()) {
+            logger.debug(measure.getContextString());
 
             for (BeamGroup group : measure.getBeamGroups()) {
-                logger.fine("   {0}", group);
+                logger.debug("   {}", group);
             }
         }
 
@@ -209,8 +209,8 @@ public class BeamGroup
             setVip();
         }
 
-        if (isVip() || logger.isFineEnabled()) {
-            logger.info("{0} Added {1} to {2}",
+        if (isVip() || logger.isDebugEnabled()) {
+            logger.info("{} Added {} to {}",
                     measure.getContextString(), beam, this);
         }
     }
@@ -591,7 +591,7 @@ public class BeamGroup
                 double normedDy = chord.getScale().pixelsToFrac(tailDy);
                 double maxChordDy = constants.maxChordDy.getValue();
                 if (normedDy > maxChordDy) {
-                    logger.fine("Vertical gap between {0} and {1}, {2} vs {3}",
+                    logger.debug("Vertical gap between {} and {}, {} vs {}",
                             chord, beam, normedDy, maxChordDy);
                     // Split the beam group here
                     return new SplitOrder(this, chord);
@@ -618,7 +618,7 @@ public class BeamGroup
     private void splitChord (Chord pivotChord,
                              BeamGroup alienGroup)
     {
-        logger.fine("Shared : {0}", pivotChord);
+        logger.debug("Shared : {}", pivotChord);
 
         // Create a clone of pivotChord (w/o any beam initially)
         Chord cloneChord = pivotChord.duplicate();
@@ -639,8 +639,8 @@ public class BeamGroup
             }
         }
 
-        logger.fine("Remaining : {0}", pivotChord);
-        logger.fine("Alien : {0}", cloneChord);
+        logger.debug("Remaining : {}", pivotChord);
+        logger.debug("Alien : {}", cloneChord);
     }
 
     //------------//
@@ -653,7 +653,7 @@ public class BeamGroup
      */
     private void splitGroup (SplitOrder split)
     {
-        logger.fine("processing {0}", split);
+        logger.debug("processing {}", split);
 
         // The group on alienChord side
         BeamGroup chordGroup = new BeamGroup(measure);

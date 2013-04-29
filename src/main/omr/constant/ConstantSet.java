@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.constant;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -19,7 +19,8 @@ import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.logging.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This abstract class handles a set of Constants as a whole. In particular,
@@ -37,7 +38,7 @@ public abstract class ConstantSet
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(ConstantSet.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConstantSet.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Name of the containing unit/class */
@@ -263,7 +264,7 @@ public abstract class ConstantSet
 
                 // Not yet allocated, no big deal, we'll get back to it later
                 if (obj == null) {
-                    ///logger.warning("ConstantSet not fully allocated yet");
+                    ///logger.warn("ConstantSet not fully allocated yet");
                     return;
                 }
 
@@ -272,9 +273,9 @@ public abstract class ConstantSet
                     constant.setUnitAndName(unit, name);
                     tempMap.put(name, constant);
                 } else {
-                    logger.severe(
-                            "ConstantSet in unit ''{0}'' contains a non"
-                            + " Constant field ''{1}'' obj= {2}",
+                    logger.error(
+                            "ConstantSet in unit ''{}'' contains a non"
+                            + " Constant field ''{}'' obj= {}",
                             unit, name, obj);
                 }
             }
@@ -283,7 +284,7 @@ public abstract class ConstantSet
             map = tempMap;
         } catch (SecurityException | IllegalArgumentException |
                 IllegalAccessException ex) {
-            logger.warning("Error initializing map of ConstantSet " + this, ex);
+            logger.warn("Error initializing map of ConstantSet " + this, ex);
         }
     }
 }

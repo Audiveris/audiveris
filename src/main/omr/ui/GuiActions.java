@@ -21,17 +21,17 @@ import omr.glyph.ui.SampleVerifier;
 import omr.glyph.ui.ShapeColorChooser;
 import omr.glyph.ui.panel.GlyphTrainer;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.ui.ScoreDependent;
 
 import omr.sheet.ui.SheetsController;
 
 import omr.ui.symbol.SymbolRipper;
-
 import omr.ui.util.WebBrowser;
 
 import omr.util.Memory;
+import omr.util.UriUtil;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -48,9 +48,12 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
@@ -69,7 +72,7 @@ import javax.swing.text.JTextComponent;
  * @author Hervé Bitteur
  */
 public class GuiActions
-        extends ScoreDependent
+    extends ScoreDependent
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -77,16 +80,16 @@ public class GuiActions
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(GuiActions.class);
+    private static final Logger logger = LoggerFactory.getLogger(GuiActions.class);
 
     /** Options UI */
     private static Options options;
 
     // Resource injection
-    private static ResourceMap resource = Application.getInstance()
-            .getContext()
-            .getResourceMap(
-            GuiActions.class);
+    private static ResourceMap          resource = Application.getInstance()
+                                                              .getContext()
+                                                              .getResourceMap(
+        GuiActions.class);
 
     /** Singleton */
     private static GuiActions INSTANCE;
@@ -104,6 +107,24 @@ public class GuiActions
     public static final String BOARDS_DISPLAYED = "boardsDisplayed";
 
     //~ Methods ----------------------------------------------------------------
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized GuiActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new GuiActions();
+        }
+
+        return INSTANCE;
+    }
+
     //----------//
     // clearLog //
     //----------//
@@ -116,7 +137,7 @@ public class GuiActions
     public void clearLog (ActionEvent e)
     {
         Main.getGui()
-                .clearLog();
+            .clearLog();
     }
 
     //---------------//
@@ -161,19 +182,7 @@ public class GuiActions
     public void dumpEventServices (ActionEvent e)
     {
         SheetsController.getInstance()
-                .dumpCurrentSheetServices();
-    }
-
-    //--------------------//
-    // launchSymbolRipper //
-    //--------------------//
-    /**
-     * Launch the utility to rip a symbol
-     */
-    @Action
-    public void launchSymbolRipper ()
-    {
-        SymbolRipper.main();
+                        .dumpCurrentSheetServices();
     }
 
     //------//
@@ -188,24 +197,7 @@ public class GuiActions
     public void exit (ActionEvent e)
     {
         MainGui.getInstance()
-                .exit();
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized GuiActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new GuiActions();
-        }
-
-        return INSTANCE;
+               .exit();
     }
 
     //-------------------//
@@ -227,7 +219,7 @@ public class GuiActions
     public boolean isBrowserSupported ()
     {
         return WebBrowser.getBrowser()
-                .isSupported();
+                         .isSupported();
     }
 
     //-------------------//
@@ -244,6 +236,18 @@ public class GuiActions
     public boolean isLogDisplayed ()
     {
         return constants.logDisplayed.getValue();
+    }
+
+    //--------------------//
+    // launchSymbolRipper //
+    //--------------------//
+    /**
+     * Launch the utility to rip a symbol
+     */
+    @Action
+    public void launchSymbolRipper ()
+    {
+        SymbolRipper.main();
     }
 
     //---------------//
@@ -313,18 +317,24 @@ public class GuiActions
     // showManual //
     //------------//
     /**
-     * Action to launch a browser on Audiveris handbook
+     * Action to launch a browser on (local) Audiveris handbook
      *
      * @param e the event which triggered this action
      */
     @Action(enabledProperty = "browserSupported")
     public void showManual (ActionEvent e)
     {
-        File file = new File(WellKnowns.DOC_FOLDER,
-                             constants.manualUrl.getValue());
-        URI uri = file.toURI();
-        WebBrowser.getBrowser()
-                .launch(uri);
+        File file = new File(
+            WellKnowns.DOC_FOLDER,
+            constants.manualUrl.getValue());
+
+        if (!file.exists()) {
+            logger.warn("Cannot find file {}", file);
+        } else {
+            URI uri = file.toURI();
+            WebBrowser.getBrowser()
+                      .launch(uri);
+        }
     }
 
     //------------//
@@ -338,7 +348,7 @@ public class GuiActions
     @Action
     public void showMemory (ActionEvent e)
     {
-        logger.info("Occupied memory is {0} bytes", Memory.getValue());
+        logger.info("Occupied memory is {} bytes", Memory.getValue());
     }
 
     //--------------//
@@ -393,7 +403,7 @@ public class GuiActions
     public void verifyTrainingMaterial (ActionEvent e)
     {
         SampleVerifier.getInstance()
-                .setVisible(true);
+                      .setVisible(true);
     }
 
     //--------------//
@@ -408,16 +418,18 @@ public class GuiActions
     public void visitWebSite (ActionEvent e)
     {
         String str = constants.webSiteUrl.getValue();
+
         try {
             URI uri = new URI(str);
             WebBrowser.getBrowser()
-                    .launch(uri);
+                      .launch(uri);
         } catch (URISyntaxException ex) {
-            logger.warning("Illegal site uri " + str, ex);
+            logger.warn("Illegal site uri " + str, ex);
         }
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
     //-------------//
     // AboutAction //
     //-------------//
@@ -430,20 +442,22 @@ public class GuiActions
     {
         //~ Enumerations -------------------------------------------------------
 
-        private static enum Topic
-        {
+        private static enum Topic {
             //~ Enumeration constant initializers ------------------------------
+
 
             /** Longer application description */
             description(new JTextField()),
             /** Current version */
-            version(new JTextField()),
+            version(new JTextField()), 
             /** Precise classes */
-            classes(new JTextField()),
+            classes(new JTextField()), 
             /** Link to web site */
-            home(new JEditorPane("text/html", "")),
+            home(new JEditorPane("text/html", "")), 
+
             /** Link to project site */
-            project(new JEditorPane("text/html", "")),
+            project(new JEditorPane("text/html", "")), 
+
             /** License */
             license(new JTextField());
             //~ Instance fields ------------------------------------------------
@@ -451,6 +465,7 @@ public class GuiActions
             public final JTextComponent comp;
 
             //~ Constructors ---------------------------------------------------
+
             Topic (JTextComponent comp)
             {
                 this.comp = comp;
@@ -458,12 +473,13 @@ public class GuiActions
         }
 
         //~ Instance fields ----------------------------------------------------
-        // Dialog
-        private JDialog aboutBox = null;
 
+        // Dialog
+        private JDialog           aboutBox = null;
         private HyperlinkListener linkListener = new LinkListener();
 
         //~ Methods ------------------------------------------------------------
+
         public void actionPerformed (ActionEvent e)
         {
             if (aboutBox == null) {
@@ -471,7 +487,7 @@ public class GuiActions
             }
 
             MainGui.getInstance()
-                    .show(aboutBox);
+                   .show(aboutBox);
         }
 
         private JDialog createAboutBox ()
@@ -483,19 +499,25 @@ public class GuiActions
             }
 
             // Layout
-            final FormLayout layout = new FormLayout(
-                    "right:pref, 5dlu, pref, 200dlu",
-                    rows.toString());
-            final PanelBuilder builder = new PanelBuilder(layout);
+            final FormLayout      layout = new FormLayout(
+                "right:pref, 5dlu, pref, 200dlu",
+                rows.toString());
+            final PanelBuilder    builder = new PanelBuilder(layout);
             final CellConstraints cst = new CellConstraints();
 
             builder.setDefaultDialogBorder();
 
             int iRow = 1;
 
-            JPanel logoPanel = new ImagePanel(
-                    new File(WellKnowns.RES_FOLDER, "splash.png").toString());
-            builder.add(logoPanel, cst.xyw(1, iRow, 4));
+            URI uri = UriUtil.toURI(WellKnowns.RES_URI, "splash.png");
+
+            try {
+                JPanel logoPanel = new ImagePanel(uri);
+                builder.add(logoPanel, cst.xyw(1, iRow, 4));
+            } catch (MalformedURLException ex) {
+                logger.warn("Error on " + uri, ex);
+            }
+
             iRow += 2;
 
             JLabel titleLabel = new JLabel();
@@ -515,7 +537,7 @@ public class GuiActions
 
                 if (topic.comp instanceof JEditorPane) {
                     ((JEditorPane) topic.comp).addHyperlinkListener(
-                            linkListener);
+                        linkListener);
                 }
 
                 builder.add(topic.comp, cst.xy(3, iRow));
@@ -538,29 +560,26 @@ public class GuiActions
         }
 
         //~ Inner Classes ------------------------------------------------------
+
         //------------//
         // ImagePanel //
         //------------//
         private static class ImagePanel
-                extends JPanel
+            extends JPanel
         {
             //~ Instance fields ------------------------------------------------
 
             private Image img;
 
             //~ Constructors ---------------------------------------------------
-            public ImagePanel (String img)
-            {
-                this(new ImageIcon(img).getImage());
-            }
 
             public ImagePanel (Image img)
             {
                 this.img = img;
 
                 Dimension size = new Dimension(
-                        img.getWidth(null),
-                        img.getHeight(null));
+                    img.getWidth(null),
+                    img.getHeight(null));
                 setPreferredSize(size);
                 setMinimumSize(size);
                 setMaximumSize(size);
@@ -568,7 +587,14 @@ public class GuiActions
                 setLayout(null);
             }
 
+            public ImagePanel (URI uri)
+                throws MalformedURLException
+            {
+                this(new ImageIcon(uri.toURL()).getImage());
+            }
+
             //~ Methods --------------------------------------------------------
+
             @Override
             public void paintComponent (Graphics g)
             {
@@ -577,7 +603,7 @@ public class GuiActions
         }
 
         private static class LinkListener
-                implements HyperlinkListener
+            implements HyperlinkListener
         {
             //~ Methods --------------------------------------------------------
 
@@ -585,16 +611,16 @@ public class GuiActions
             public void hyperlinkUpdate (HyperlinkEvent event)
             {
                 HyperlinkEvent.EventType type = event.getEventType();
-                final URL url = event.getURL();
+                final URL                url = event.getURL();
 
                 if (type == HyperlinkEvent.EventType.ACTIVATED) {
                     try {
                         //System.out.println("Activated URL " + url);
                         URI uri = new URI(url.toString());
                         WebBrowser.getBrowser()
-                                .launch(uri);
+                                  .launch(uri);
                     } catch (URISyntaxException ex) {
-                        logger.warning("Illegal URI " + url, ex);
+                        logger.warn("Illegal URI " + url, ex);
                     }
                 }
             }
@@ -605,40 +631,40 @@ public class GuiActions
     // Constants //
     //-----------//
     private static final class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.String webSiteUrl = new Constant.String(
-                "http://www.audiveris.org",
-                "URL of Audiveris home page");
+        Constant.String        webSiteUrl = new Constant.String(
+            "http://www.audiveris.org",
+            "URL of Audiveris home page");
 
         //
-        Constant.String manualUrl = new Constant.String(
-                "docs/manual/handbook.html",
-                "URL of local Audiveris manual");
+        Constant.String        manualUrl = new Constant.String(
+            "docs/manual/handbook.html",
+            "URL of local Audiveris manual");
 
         //
         final Constant.Boolean boardsDisplayed = new Constant.Boolean(
-                true,
-                "Should the boards window be displayed");
+            true,
+            "Should the boards window be displayed");
 
         //
         final Constant.Boolean logDisplayed = new Constant.Boolean(
-                true,
-                "Should the log window be displayed");
+            true,
+            "Should the log window be displayed");
 
         //
         final Constant.Boolean errorsDisplayed = new Constant.Boolean(
-                true,
-                "Should the errors window be displayed");
+            true,
+            "Should the errors window be displayed");
     }
 
     //-------------//
     // OptionsTask //
     //-------------//
     private static class OptionsTask
-            extends Task<Options, Void>
+        extends Task<Options, Void>
     {
         //~ Constructors -------------------------------------------------------
 
@@ -648,9 +674,10 @@ public class GuiActions
         }
 
         //~ Methods ------------------------------------------------------------
+
         @Override
         protected Options doInBackground ()
-                throws Exception
+            throws Exception
         {
             if (options == null) {
                 options = new Options();
@@ -664,7 +691,7 @@ public class GuiActions
         {
             if (options != null) {
                 MainGui.getInstance()
-                        .show(options.getComponent());
+                       .show(options.getComponent());
             }
         }
     }

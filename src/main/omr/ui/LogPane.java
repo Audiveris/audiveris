@@ -14,14 +14,16 @@ package omr.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.FormattedRecord;
-import omr.log.Logger;
+import omr.log.LogGuiAppender;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Insets;
-import java.util.concurrent.BlockingQueue;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
@@ -49,7 +51,7 @@ public class LogPane
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(LogPane.class);
+    private static final Logger logger = LoggerFactory.getLogger(LogPane.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The scrolling text area */
@@ -61,9 +63,6 @@ public class LogPane
     private final AbstractDocument document;
 
     private final SimpleAttributeSet attributes = new SimpleAttributeSet();
-
-    /** The mailbox where log records are retrieved for display */
-    private final BlockingQueue<FormattedRecord> logMbx = Logger.getMailbox();
 
     //~ Constructors -----------------------------------------------------------
     //---------//
@@ -125,48 +124,41 @@ public class LogPane
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-                {
+        {
+            @Override
+            public void run ()
+            {
+                while (LogGuiAppender.getEventCount() > 0) {
+                    ILoggingEvent event = LogGuiAppender.pollEvent();
 
-                    @Override
-                    public void run ()
-                    {
-                        while (logMbx.size() != 0) {
-                            FormattedRecord record = logMbx.poll();
+                    if (event != null) {
+                        // Color
+                        StyleConstants.setForeground(
+                                attributes,
+                                getLevelColor(event.getLevel()));
 
-                            if (record != null) {
-                                // Message text
-                                StringBuilder sb = new StringBuilder(256);
-                                sb.append(record.level.toString()).append(
-                                        " - ").append(record.formattedMessage).
-                                        append("\n");
+                        // Font name
+                        StyleConstants.setFontFamily(
+                                attributes,
+                                constants.fontName.getValue());
 
-                                // Color
-                                StyleConstants.setForeground(
-                                        attributes,
-                                        getLevelColor(record.level));
+                        // Font size
+                        StyleConstants.setFontSize(
+                                attributes,
+                                constants.fontSize.getValue());
 
-                                // Font name
-                                StyleConstants.setFontFamily(
-                                        attributes,
-                                        constants.fontName.getValue());
-
-                                // Font size
-                                StyleConstants.setFontSize(
-                                        attributes,
-                                        constants.fontSize.getValue());
-
-                                try {
-                                    document.insertString(
-                                            document.getLength(),
-                                            sb.toString(),
-                                            attributes);
-                                } catch (BadLocationException ex) {
-                                    ex.printStackTrace();
-                                }
-                            }
+                        try {
+                            document.insertString(
+                                    document.getLength(),
+                                    event.getFormattedMessage() + "\n",
+                                    attributes);
+                        } catch (BadLocationException ex) {
+                            ex.printStackTrace();
                         }
                     }
-                });
+                }
+            }
+        });
     }
 
     //---------------//
@@ -174,13 +166,11 @@ public class LogPane
     //---------------//
     private Color getLevelColor (Level level)
     {
-        int val = level.intValue();
-
-        if (val >= Level.SEVERE.intValue()) {
+        if (level.isGreaterOrEqual(Level.ERROR)) {
             return Color.RED;
-        } else if (val >= Level.WARNING.intValue()) {
+        } else if (level.isGreaterOrEqual(Level.WARN)) {
             return Color.BLUE;
-        } else if (val >= Level.INFO.intValue()) {
+        } else if (level.isGreaterOrEqual(Level.INFO)) {
             return Color.BLACK;
         } else {
             return Color.GRAY;
@@ -204,5 +194,6 @@ public class LogPane
         Constant.String fontName = new Constant.String(
                 "Lucida Console",
                 "Font name for log pane");
+
     }
 }

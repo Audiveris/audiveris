@@ -13,7 +13,7 @@ package omr.ui;
 
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.Score;
 
@@ -51,7 +51,7 @@ public class FileDropHandler
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             FileDropHandler.class);
 
     /** Default parameter. */
@@ -121,11 +121,11 @@ public class FileDropHandler
                 }
             }
         } catch (UnsupportedFlavorException ex) {
-            logger.warning("Unsupported flavor in drag & drop", ex);
+            logger.warn("Unsupported flavor in drag & drop", ex);
 
             return false;
         } catch (IOException ex) {
-            logger.warning("IO Exception in drag & drop", ex);
+            logger.warn("IO Exception in drag & drop", ex);
 
             return false;
         }
@@ -173,7 +173,7 @@ public class FileDropHandler
         protected Void doInBackground ()
                 throws Exception
         {
-            logger.info("Dropping image file {0}", file);
+            logger.info("Dropping image file {}", file);
 
             Score score = new Score(file);
             final Step loadStep = Steps.valueOf(Steps.LOAD);
@@ -233,7 +233,7 @@ public class FileDropHandler
         {
             if (!getSpecific().equals(specific)) {
                 constants.defaultStep.setValue(specific);
-                logger.info("Default drop step is now ''{0}''", specific);
+                logger.info("Default drop step is now ''{}''", specific);
 
                 return true;
             }

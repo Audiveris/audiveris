@@ -27,7 +27,7 @@ import omr.grid.StaffInfo;
 import omr.lag.Section;
 import omr.lag.Sections;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Barycenter;
 import omr.math.Circle;
@@ -75,7 +75,7 @@ public class SlurInspector
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SlurInspector.class);
+    private static final Logger logger = LoggerFactory.getLogger(SlurInspector.class);
 
     /** Shapes suitable for extensions. */
     private static final EnumSet<Shape> extShapes = EnumSet.copyOf(
@@ -171,7 +171,7 @@ public class SlurInspector
 
         // Switch to points fitting, if needed
         if ((circle.getDistance() > params.maxCircleDistance)) {
-            logger.fine("Using total fit for slur {0}", box);
+            logger.debug("Using total fit for slur {}", box);
             circle = new Circle(xx, yy);
         }
 
@@ -259,8 +259,8 @@ public class SlurInspector
                     modifs++;
                 }
             } catch (NoSlurCurveException ex) {
-                if (logger.isFineEnabled()) {
-                    logger.info("{0}Abnormal curve slur#{1}",
+                if (logger.isDebugEnabled()) {
+                    logger.info("{}Abnormal curve slur#{}",
                             system.getSheet().getLogPrefix(), slur.getId());
                 }
 
@@ -268,7 +268,7 @@ public class SlurInspector
                 it.remove();
                 modifs++;
             } catch (Exception ex) {
-                logger.warning("Error in extending slur#" + slur.getId(), ex);
+                logger.warn("Error in extending slur#" + slur.getId(), ex);
             }
         }
 
@@ -290,14 +290,14 @@ public class SlurInspector
                         slur.setShape(null);
                     }
                 } catch (Exception ex) {
-                    logger.warning(
+                    logger.warn(
                             "Error in trimming slur#" + slur.getId(),
                             ex);
                 }
 
                 modifs++;
-            } else if (logger.isFineEnabled()) {
-                logger.fine("Valid slur {0}", slur.getId());
+            } else if (logger.isDebugEnabled()) {
+                logger.debug("Valid slur {}", slur.getId());
                 slur.addAttachment("^", getCircle(slur).getCurve());
             }
         }
@@ -329,8 +329,8 @@ public class SlurInspector
          * Sections left over are put into the "left" collection in order to be
          * used to rebuild the stuck object(s).
          */
-        if (oldSlur.isVip() || logger.isFineEnabled()) {
-            logger.info("Trimming slur {0}", oldSlur.idString());
+        if (oldSlur.isVip() || logger.isDebugEnabled()) {
+            logger.info("Trimming slur {}", oldSlur.idString());
         }
 
         // Get a COPY of the member list, sorted by decreasing weight */
@@ -373,13 +373,13 @@ public class SlurInspector
                 newSlur = buildFinalSlur(collected);
 
                 if (newSlur != null) {
-                    if (oldSlur.isVip() || logger.isFineEnabled()) {
-                        logger.info("Trimmed slur #{0} as smaller #{1}",
+                    if (oldSlur.isVip() || logger.isDebugEnabled()) {
+                        logger.info("Trimmed slur #{} as smaller #{}",
                                 oldSlur.getId(), newSlur.getId());
                     }
                 } else {
-                    if (oldSlur.isVip() || logger.isFineEnabled()) {
-                        logger.info("Giving up slur #{0} w/ {1}",
+                    if (oldSlur.isVip() || logger.isDebugEnabled()) {
+                        logger.info("Giving up slur #{} w/ {}",
                                 oldSlur.getId(), collected);
                     }
 
@@ -403,7 +403,7 @@ public class SlurInspector
                 }
             }
         } else {
-            logger.warning("{0} No section left when trimming slur #{1}",
+            logger.warn("{} No section left when trimming slur #{}",
                     system.getScoreSystem().getContextString(), oldSlur.getId());
 
             return null;
@@ -499,7 +499,7 @@ public class SlurInspector
                     continue;
                 }
 
-                logger.fine("Trying {0}", section);
+                logger.debug("Trying {}", section);
 
                 // Try a circle
                 List<Section> config = new ArrayList<>(collected);
@@ -508,7 +508,7 @@ public class SlurInspector
                 try {
                     Circle circle = computeCircle(config);
                     double distance = circle.getDistance();
-                    logger.fine("dist={0}", distance);
+                    logger.debug("dist={}", distance);
 
                     if (distance <= extendedDistance(lastDistance)) {
                         collected.add(section);
@@ -516,12 +516,12 @@ public class SlurInspector
                         section.setProcessed(true);
                         slurBox.add(section.getBounds());
                         growing = true;
-                        logger.fine("Keep {0}", section);
+                        logger.debug("Keep {}", section);
                     } else {
-                        logger.fine("Discard {0}", section);
+                        logger.debug("Discard {}", section);
                     }
                 } catch (Exception ex) {
-                    logger.fine("{0} w/ {1}", ex.getMessage(), section);
+                    logger.debug("{} w/ {}", ex.getMessage(), section);
                 }
             }
         }
@@ -589,8 +589,8 @@ public class SlurInspector
 
             SideLoop:
             while (true) {
-                if (root.isVip() || logger.isFineEnabled()) {
-                    logger.info("Trying to {0} extend slur #{1}",
+                if (root.isVip() || logger.isDebugEnabled()) {
+                    logger.info("Trying to {} extend slur #{}",
                             side, root.getId());
                 }
 
@@ -602,8 +602,8 @@ public class SlurInspector
                         adapter);
 
                 if (compound != null) {
-                    if (root.isVip() || logger.isFineEnabled()) {
-                        logger.info("Slur #{0} {1} extended as #{2}",
+                    if (root.isVip() || logger.isDebugEnabled()) {
+                        logger.info("Slur #{} {} extended as #{}",
                                 root.getId(), side, compound.getId());
 
                         if (root.isVip()) {
@@ -618,8 +618,8 @@ public class SlurInspector
                     Glyph sectSlur = extendSlurSections(root, side);
 
                     if (sectSlur != null) {
-                        if (root.isVip() || logger.isFineEnabled()) {
-                            logger.info("sectSlur: {0}", sectSlur);
+                        if (root.isVip() || logger.isDebugEnabled()) {
+                            logger.info("sectSlur: {}", sectSlur);
                         }
 
                         bestSlur = sectSlur;
@@ -682,13 +682,13 @@ public class SlurInspector
         while (growing) {
             growing = false;
 
-            if (root.isVip() || logger.isFineEnabled()) {
-                logger.info("Trying to section-extend slur #{0}", root.getId());
+            if (root.isVip() || logger.isDebugEnabled()) {
+                logger.info("Trying to section-extend slur #{}", root.getId());
             }
 
             // Process that slur, looking at neighboring sections
             if (adapter.setSeed(root) == null) {
-                logger.warning("Null reference box");
+                logger.warn("Null reference box");
             }
 
             // Retrieve good neighbors among the suitable sections
@@ -696,7 +696,7 @@ public class SlurInspector
 
             for (Section section : sections) {
                 if (section.isVip()) {
-                    logger.fine("Section {0}", section);
+                    logger.debug("Section {}", section);
                 }
 
                 if (!section.isProcessed()) {
@@ -725,7 +725,7 @@ public class SlurInspector
 
                     boolean sectionOk = false;
                     double distance = computeCircle(config).getDistance();
-                    logger.fine("dist={0}", distance);
+                    logger.debug("dist={}", distance);
 
                     if (distance <= adapter.extendedDistance()) {
                         Glyph compound = system.buildTransientGlyph(config);
@@ -736,9 +736,9 @@ public class SlurInspector
                             compound.setEvaluation(
                                     adapter.getChosenEvaluation());
 
-                            if (root.isVip() || logger.isFineEnabled()) {
+                            if (root.isVip() || logger.isDebugEnabled()) {
                                 logger.info(
-                                        "Slur #{0} extended as #{1} with {2}",
+                                        "Slur #{} extended as #{} with {}",
                                         root.getId(), compound.getId(),
                                         Sections.toString(added));
 
@@ -756,8 +756,8 @@ public class SlurInspector
                     }
 
                     if (!sectionOk) {
-                        if (root.isVip() || logger.isFineEnabled()) {
-                            logger.info("Slur #{0} excluding section#{1}",
+                        if (root.isVip() || logger.isDebugEnabled()) {
+                            logger.info("Slur #{} excluding section#{}",
                                     root.getId(), section);
                         }
 
@@ -815,11 +815,11 @@ public class SlurInspector
             }
         }
 
-        if (logger.isFineEnabled()) {
+        if (logger.isDebugEnabled()) {
             if (seedSection == null) {
-                logger.fine("No suitable seed section found");
+                logger.debug("No suitable seed section found");
             } else {
-                logger.fine("Seed section is {0} dist:{1}",
+                logger.debug("Seed section is {} dist:{}",
                         seedSection, seedDist.value);
             }
         }
@@ -874,7 +874,7 @@ public class SlurInspector
         //        double    heightRatio = (double) curveBox.height / contourBox.height;
         //
         //        if (heightRatio > constants.maxHeightRatio.getValue()) {
-        //            if (logger.isFineEnabled()) {
+        //            if (logger.isDebugEnabled()) {
         //                logger.info(
         //                    "Too high ratio: " + (float) heightRatio +
         //                    " for curve box " + curveBox);
@@ -935,9 +935,9 @@ public class SlurInspector
 
         if (slur.isVip()) {
             if (cause != null) {
-                logger.info("Invalid slur #{0} : {1}", slur.getId(), cause);
+                logger.info("Invalid slur #{} : {}", slur.getId(), cause);
             } else {
-                logger.info("Valid slur #{0}", slur.getId());
+                logger.info("Valid slur #{}", slur.getId());
             }
         }
 
@@ -1162,7 +1162,7 @@ public class SlurInspector
 
                     return true;
                 } else {
-                    logger.fine("{0} Degrading distance {1} vs {2}",
+                    logger.debug("{} Degrading distance {} vs {}",
                             seed, compoundDistance, extendedDistance());
                 }
             }

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.math;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
@@ -37,7 +37,7 @@ public class Ellipse
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Ellipse.class);
+    private static final Logger logger = LoggerFactory.getLogger(Ellipse.class);
 
     /** Contraint such that 4*A*C - B**2 = 1 */
     private static final Matrix C1 = new Matrix(

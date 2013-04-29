@@ -21,7 +21,7 @@ import omr.grid.Filament;
 import omr.grid.FilamentLine;
 import omr.grid.LineInfo;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.NaturalSpline;
 import static omr.run.Orientation.*;
@@ -74,7 +74,7 @@ public class BorderBuilder
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BorderBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(BorderBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -184,8 +184,8 @@ public class BorderBuilder
         topLimit = buildLimit(topLine, glyphs, -1);
         botLimit = buildLimit(botLine, glyphs, +1);
 
-        logger.fine("topLimit: {0}", topLimit);
-        logger.fine("botLimit: {0}", botLimit);
+        logger.debug("topLimit: {}", topLimit);
+        logger.debug("botLimit: {}", botLimit);
 
         // Aggregate free glyphs into fewer blobs
         buildFreeBlobs(glyphs);
@@ -228,7 +228,7 @@ public class BorderBuilder
         int delta = system.getTop() - prevSystem.getBottom();
 
         for (int i = 1; i < delta; i++) {
-            logger.fine("i:{0}", i);
+            logger.debug("i:{}", i);
 
             // Thicken free blobs and revaluate position WRT limits
             int index = -1;
@@ -242,12 +242,12 @@ public class BorderBuilder
 
                 if (topLimit.intersects(rect)) {
                     topLimit.add(blob);
-                    logger.fine("topLimit <- {0}", blob);
+                    logger.debug("topLimit <- {}", blob);
 
                     it.remove();
                 } else if (botLimit.intersects(rect)) {
                     botLimit.add(blob);
-                    logger.fine("botLimit <- {0}", blob);
+                    logger.debug("botLimit <- {}", blob);
 
                     it.remove();
                 } else {
@@ -257,7 +257,7 @@ public class BorderBuilder
                                 index + 1,
                                 blobs.size())) {
                             if (b.intersects(rect)) {
-                                logger.fine("{0} + {1}", b, blob);
+                                logger.debug("{} + {}", b, blob);
 
                                 b.add(blob);
                                 it.remove();
@@ -308,9 +308,9 @@ public class BorderBuilder
             }
         }
 
-        if (logger.isFineEnabled()) {
+        if (logger.isDebugEnabled()) {
             for (Rectangle blob : blobs) {
-                logger.fine("free: {0}", blob);
+                logger.debug("free: {}", blob);
             }
         }
     }
@@ -408,7 +408,7 @@ public class BorderBuilder
             int y = (top + bot) / 2;
 
             if (top > bot && !userWarned) {
-                logger.warning("{0}{1} got closed at x:{2} y:{3}",
+                logger.warn("{}{} got closed at x:{} y:{}",
                         sheet.getLogPrefix(), idString(), x, y);
                 userWarned = true;
             }
@@ -427,7 +427,7 @@ public class BorderBuilder
             }
         }
 
-        logger.fine("Raw border: {0}", line);
+        logger.debug("Raw border: {}", line);
 
         return line;
     }
@@ -464,7 +464,7 @@ public class BorderBuilder
                             i++) {
                         Point p = line.getPoint(lastIndex + 1);
                         line.removePoint(p);
-                        logger.fine("Removed {0}", p);
+                        logger.debug("Removed {}", p);
                     }
 
                     lastIndex++;
@@ -482,7 +482,7 @@ public class BorderBuilder
             line.removePoint(p);
         }
 
-        logger.fine("{0}Smart S{1}-S{2} system border: {3}",
+        logger.debug("{}Smart S{}-S{} system border: {}",
                 sheet.getLogPrefix(), prevSystem.getId(), system.getId(), line);
 
         return line;
@@ -663,7 +663,7 @@ public class BorderBuilder
         {
             for (Rectangle rect : boxes) {
                 if (rect.intersectsLine(p1.x, p1.y, p2.x, p2.y)) {
-                    logger.fine("{0} intersects from {1} to {2}",
+                    logger.debug("{} intersects from {} to {}",
                             rect, p1, p2);
                     return true;
                 }

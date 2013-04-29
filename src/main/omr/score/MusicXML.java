@@ -14,7 +14,7 @@ package omr.score;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.entity.LyricsItem;
 import omr.score.entity.Note;
@@ -46,7 +46,7 @@ public class MusicXML
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(MusicXML.class);
+    private static final Logger logger = LoggerFactory.getLogger(MusicXML.class);
 
     /** Names of the various note types used in MusicXML */
     private static final String[] noteTypeNames = new String[] {
@@ -178,7 +178,7 @@ public class MusicXML
              */
         }
 
-        logger.severe("Unsupported ornament shape:{0}", shape);
+        logger.error("Unsupported ornament shape:{}", shape);
 
         return null;
     }
@@ -260,7 +260,7 @@ public class MusicXML
             return factory.createDynamicsSfz(empty);
         }
 
-        logger.severe("Unsupported dynamics shape:{0}", shape);
+        logger.error("Unsupported dynamics shape:{}", shape);
 
         return null;
     }
@@ -313,7 +313,7 @@ public class MusicXML
             return factory.createOrnamentsTurn(factory.createHorizontalTurn());
         }
 
-        logger.severe("Unsupported ornament shape:{0}", shape);
+        logger.error("Unsupported ornament shape:{}", shape);
 
         return null;
     }

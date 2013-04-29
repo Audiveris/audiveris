@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.step;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.sheet.SystemInfo;
 
@@ -29,7 +29,7 @@ public abstract class SheetTask
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(SheetTask.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetTask.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The related step for this task */
@@ -104,7 +104,7 @@ public abstract class SheetTask
      */
     public void done ()
     {
-        logger.fine("{0} done", step);
+        logger.debug("{} done", step);
 
         stepDone = true;
     }
@@ -143,7 +143,7 @@ public abstract class SheetTask
      */
     public void started ()
     {
-        logger.fine("{0} started ....................................", step);
+        logger.debug("{} started ....................................", step);
 
         stepStarted = true;
     }

@@ -16,7 +16,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.NeuralNetwork;
 
@@ -64,7 +64,7 @@ public class GlyphNetwork
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(GlyphNetwork.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphNetwork.class);
 
     /** The singleton. */
     private static volatile GlyphNetwork INSTANCE;
@@ -92,7 +92,7 @@ public class GlyphNetwork
 
         if (engine == null) {
             // Get a brand new one (not trained)
-            logger.info("Creating a brand new {0}", getName());
+            logger.info("Creating a brand new {}", getName());
             engine = createNetwork();
         }
     }
@@ -131,20 +131,20 @@ public class GlyphNetwork
 
             if (!Arrays.equals(anEngine.getInputLabels(),
                     ShapeDescription.getParameterLabels())) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Engine inputs: {0}",
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Engine inputs: {}",
                             Arrays.toString(anEngine.getInputLabels()));
-                    logger.fine("Shape  inputs: {0}",
+                    logger.debug("Shape  inputs: {}",
                             Arrays.toString(ShapeDescription.getParameterLabels()));
                 }
                 return false;
             }
             if (!Arrays.equals(anEngine.getOutputLabels(),
                     ShapeSet.getPhysicalShapeNames())) {
-                if (logger.isFineEnabled()) {
-                    logger.fine("Engine  outputs: {0}",
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Engine  outputs: {}",
                             Arrays.toString(anEngine.getOutputLabels()));
-                    logger.fine("Physical shapes: {0}",
+                    logger.debug("Physical shapes: {}",
                             Arrays.toString(ShapeSet.getPhysicalShapeNames()));
                 }
                 return false;
@@ -362,7 +362,7 @@ public class GlyphNetwork
                        StartingMode mode)
     {
         if (glyphs.isEmpty()) {
-            logger.warning("No glyph to retrain Neural Network evaluator");
+            logger.warn("No glyph to retrain Neural Network evaluator");
 
             return;
         }

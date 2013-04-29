@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.math;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import Jama.Matrix;
 
@@ -34,7 +34,7 @@ public class Circle
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Circle.class);
+    private static final Logger logger = LoggerFactory.getLogger(Circle.class);
 
     /** Size for matrices used to compute the circle */
     private static final int dim = 4;
@@ -262,7 +262,7 @@ public class Circle
         }
 
         if (emptyIdx >= BUCKET_NB) {
-            logger.fine("No empty sector in circle, this is not a slur");
+            logger.debug("No empty sector in circle, this is not a slur");
         } else {
             final double bottom = emptyIdx * bucketSize;
             double start = 2 * PI;

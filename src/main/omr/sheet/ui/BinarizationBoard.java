@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
@@ -45,7 +45,7 @@ public class BinarizationBoard
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(BinarizationBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(BinarizationBoard.class);
 
     /** Events this entity is interested in */
     private static final Class<?>[] eventClasses = new Class<?>[]{
@@ -114,7 +114,7 @@ public class BinarizationBoard
                 return;
             }
 
-            logger.fine("BinarizationBoard: {0}", event);
+            logger.debug("BinarizationBoard: {}", event);
 
             if (event instanceof LocationEvent) {
                 // Display rectangle attributes
@@ -155,7 +155,7 @@ public class BinarizationBoard
                 threshold.setText("");
             }
         } catch (Exception ex) {
-            logger.warning(getClass().getName() + " onEvent error", ex);
+            logger.warn(getClass().getName() + " onEvent error", ex);
         }
     }
 

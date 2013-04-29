@@ -23,7 +23,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.score.common.PixelPoint;
 import omr.score.common.PixelRectangle;
@@ -62,7 +62,7 @@ public class TimeSignatureRetriever
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(
+    private static final Logger logger = LoggerFactory.getLogger(
             TimeSignatureRetriever.class);
 
     //~ Instance fields --------------------------------------------------------
@@ -114,7 +114,7 @@ public class TimeSignatureRetriever
             PixelRectangle roi = getRoi(firstMeasure);
 
             if (roi.width < timeSigWidth) {
-                logger.fine("No room for time sig: {0}", roi.width);
+                logger.debug("No room for time sig: {}", roi.width);
 
                 return false;
             }
@@ -149,7 +149,7 @@ public class TimeSignatureRetriever
                 }
             }
         } catch (Exception ex) {
-            logger.warning(
+            logger.warn(
                     getClass().getSimpleName() + " Error visiting " + page,
                     ex);
         }
@@ -221,7 +221,7 @@ public class TimeSignatureRetriever
                 right = Math.min(right, measure.getRightX());
             }
 
-            logger.fine("Staff:{0} left:{1} right:{2}", staffId, left, right);
+            logger.debug("Staff:{} left:{} right:{}", staffId, left, right);
         }
 
         return new PixelRectangle(left, 0, right - left, 0);

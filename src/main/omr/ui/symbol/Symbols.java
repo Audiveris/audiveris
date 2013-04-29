@@ -14,7 +14,7 @@ package omr.ui.symbol;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import java.util.EnumMap;
 
@@ -29,7 +29,7 @@ public class Symbols
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Symbols.class);
+    private static final Logger logger = LoggerFactory.getLogger(Symbols.class);
 
     /** Map of (simple) symbols */
     private static final EnumMap<Shape, ShapeSymbol> sym = new EnumMap<>(

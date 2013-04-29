@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr;
 
-import omr.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import omr.step.Step;
 import omr.step.Steps;
@@ -95,7 +96,7 @@ public class CLI
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(CLI.class);
+    private static final Logger logger = LoggerFactory.getLogger(CLI.class);
 
     //~ Enumerations -----------------------------------------------------------
     /** For handling cardinality of command parameters */
@@ -213,7 +214,7 @@ public class CLI
     {
         this.toolName = toolName;
         this.args = Arrays.copyOf(args, args.length);
-        logger.fine("CLI args: {0}", Arrays.toString(args));
+        logger.debug("CLI args: {}", Arrays.toString(args));
 
         parameters = parse();
 
@@ -287,10 +288,10 @@ public class CLI
 
                     br.close();
                 } catch (IOException ex) {
-                    logger.warning("IO error while reading file ''{0}''", pack);
+                    logger.warn("IO error while reading file ''{}''", pack);
                 }
             } catch (FileNotFoundException ex) {
-                logger.warning("Cannot find file ''{0}''", pack);
+                logger.warn("Cannot find file ''{}''", pack);
             } finally {
                 if (br != null) {
                     try {
@@ -475,7 +476,7 @@ public class CLI
         try {
             params.options = decodeConstants(optionPairs);
         } catch (Exception ex) {
-            logger.warning("Error decoding -option ", ex);
+            logger.warn("Error decoding -option ", ex);
         }
 
         // Check step names
@@ -494,7 +495,7 @@ public class CLI
         }
 
         // Results
-        logger.fine(Main.dumping.dumpOf(params));
+        logger.debug(Main.dumping.dumpOf(params));
 
         return params;
     }
@@ -530,7 +531,7 @@ public class CLI
     {
         // Print message if any
         if (msg != null) {
-            logger.warning(msg);
+            logger.warn(msg);
         }
 
         StringBuilder buf = new StringBuilder();

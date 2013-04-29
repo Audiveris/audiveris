@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.GCD;
 import omr.math.Rational;
@@ -39,7 +39,7 @@ public class Voice
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Voice.class);
+    private static final Logger logger = LoggerFactory.getLogger(Voice.class);
 
     //~ Enumerations -----------------------------------------------------------
     public static enum Status
@@ -106,7 +106,7 @@ public class Voice
         id = measure.getVoicesNumber() + 1;
         measure.addVoice(this);
         chord.setVoice(this);
-        logger.fine("Created voice#{0}", id);
+        logger.debug("Created voice#{}", id);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -216,7 +216,7 @@ public class Voice
      */
     public void setId (int id)
     {
-        logger.fine("measure#{0} {1} renamed as {2}", 
+        logger.debug("measure#{} {} renamed as {}", 
                 measure.getIdValue(), this, id);
         this.id = id;
     }
@@ -275,7 +275,7 @@ public class Voice
             }
 
             // Debug
-            if (logger.isFineEnabled()) {
+            if (logger.isDebugEnabled()) {
                 StringBuilder sb = new StringBuilder("[");
                 boolean started = false;
                 Rational total = null;
@@ -308,7 +308,7 @@ public class Voice
                     sb.append("null");
                 }
 
-                logger.fine("{0}: {1}", this, sb);
+                logger.debug("{}: {}", this, sb);
             }
 
             // Do we have a regular pattern?
@@ -467,14 +467,14 @@ public class Voice
                              VoiceChord chordInfo)
     {
         if (isWhole()) {
-            logger.severe("You cannot insert a slot in a whole-only voice");
+            logger.error("You cannot insert a slot in a whole-only voice");
 
             return;
         }
 
         slotTable.put(slot.getId(), chordInfo);
         updateSlotTable();
-        logger.fine("setSlotInfo slot#{0} {1}", slot.getId(), this);
+        logger.debug("setSlotInfo slot#{} {}", slot.getId(), this);
     }
 
     //----------//

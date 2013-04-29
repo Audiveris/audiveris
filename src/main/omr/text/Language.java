@@ -16,13 +16,13 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.util.Param;
+import omr.util.UriUtil;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -54,7 +54,7 @@ public class Language
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Language.class);
+    private static final Logger logger = LoggerFactory.getLogger(Language.class);
 
     /** Languages file name. */
     private static final String LANG_FILE_NAME = "ISO639-3.xml";
@@ -129,7 +129,7 @@ public class Language
         {
             if (!getSpecific().equals(specific)) {
                 constants.defaultSpecification.setValue(specific);
-                logger.info("Default language specification is now ''{0}''",
+                logger.info("Default language specification is now ''{}''",
                         specific);
 
                 return true;
@@ -158,16 +158,16 @@ public class Language
         public LanguageModel ()
         {
             // Build the map of all possible codes
-            File inputFile = new File(WellKnowns.RES_FOLDER, LANG_FILE_NAME);
-
             Properties langNames = new Properties();
-            try (InputStream input = new FileInputStream(inputFile)) {
+            URI uri = UriUtil.toURI(WellKnowns.RES_URI,LANG_FILE_NAME);
+
+            try (InputStream input = uri.toURL().openStream()) {
                 langNames.loadFromXML(input);
                 for (String code : langNames.stringPropertyNames()) {
                     codes.put(code, langNames.getProperty(code, code));
                 }
             } catch (Throwable ex) {
-                logger.severe("Error loading " + inputFile, ex);
+                logger.error("Error loading " + uri, ex);
             }
 
             // Now, keep only the supported codes

@@ -22,7 +22,8 @@ import omr.text.BasicContent;
 import omr.text.OCR;
 import omr.text.TextLine;
 
-import omr.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import omr.util.ClassUtil;
 
@@ -60,7 +61,21 @@ public class TesseractOCR
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(TesseractOCR.class);
+    private static final Logger logger = LoggerFactory.getLogger(TesseractOCR.class);
+
+    static {
+        if (WellKnowns.RUNNING_FROM_JAR) {
+            // Explicitly load all binary libs and in proper order
+            logger.info("Loading binary libraries...");
+            logger.info("Loading liblept168...");
+            System.loadLibrary("liblept168");
+            logger.info("Loading libtesseract302...");
+            System.loadLibrary("libtesseract302");
+            logger.info("Loading jniTessBridge...");
+            System.loadLibrary("jniTessBridge");
+            logger.info("All binaries loaded.");
+        }
+    }
 
     /** Singleton. */
     private static final OCR INSTANCE = new TesseractOCR();
@@ -117,7 +132,7 @@ public class TesseractOCR
                         WellKnowns.OCR_FOLDER.getPath());
                 return new TreeSet<>(Arrays.asList(langs));
             } catch (Throwable ex) {
-                logger.warning("Error in loading Tesseract languages", ex);
+                logger.warn("Error in loading Tesseract languages", ex);
                 throw new UnavailableOcrException();
             }
         }
@@ -168,12 +183,12 @@ public class TesseractOCR
             }
 
             order = new TesseractOrder(system,
-                                       label + name,
-                                       serial.incrementAndGet(),
-                                       constants.keepImages.isSet(),
-                                       languageCode,
-                                       getMode(layoutMode),
-                                       bufferedImage);
+                    label + name,
+                    serial.incrementAndGet(),
+                    constants.keepImages.isSet(),
+                    languageCode,
+                    getMode(layoutMode),
+                    bufferedImage);
 
             // Process the order
             List<TextLine> lines = order.process();
@@ -188,10 +203,10 @@ public class TesseractOCR
             return lines;
 
         } catch (IOException ex) {
-            logger.warning("Could not create OCR order", ex);
+            logger.warn("Could not create OCR order", ex);
             return null;
         } catch (UnsatisfiedLinkError ex) {
-            logger.warning("OCR link error", ex);
+            logger.warn("OCR link error", ex);
             throw new UnavailableOcrException();
         }
     }
@@ -231,5 +246,6 @@ public class TesseractOCR
         Constant.Boolean keepImages = new Constant.Boolean(
                 false,
                 "Should we keep the images sent to Tesseract?");
+
     }
 }

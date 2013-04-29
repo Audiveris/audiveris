@@ -16,7 +16,7 @@ import omr.glyph.pattern.GlyphPattern;
 
 import omr.lag.Section;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.sheet.SystemInfo;
 
@@ -39,7 +39,7 @@ public class TextPattern
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(TextPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(TextPattern.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -79,7 +79,7 @@ public class TextPattern
             purgeWords(line);
 
             if (line.getWords().isEmpty()) {
-                logger.fine("Removing empty line");
+                logger.debug("Removing empty line");
                 toRemove.add(line);
             }
         }
@@ -131,7 +131,7 @@ public class TextPattern
                 textBuilder.purgeSentences();
             } else {
                 // Use OCR on this glyph
-                logger.fine("Orphan text {0}", glyph.idString());
+                logger.debug("Orphan text {}", glyph.idString());
                 List<TextLine> lines = textBuilder.retrieveOcrLine(glyph,
                         language);
                 if (lines != null && !lines.isEmpty()) {
@@ -143,7 +143,7 @@ public class TextPattern
                     }
                 }
                 if (lines == null || lines.isEmpty()) {
-                    logger.fine("{0} No valid text in {1}",
+                    logger.debug("{} No valid text in {}",
                             system.idString(), glyph.idString());
                     if (!glyph.isManualShape()) {
                         glyph.setShape(null);
@@ -245,7 +245,7 @@ public class TextPattern
             Glyph glyph = word.getGlyph();
 
             if (glyph == null || !glyph.isActive() || !glyph.isText()) {
-                logger.fine("Purging word {0}", word);
+                logger.debug("Purging word {}", word);
                 toRemove.add(word);
             }
         }
@@ -268,7 +268,7 @@ public class TextPattern
         for (Iterator<TextLine> it = lines.iterator(); it.hasNext();) {
             TextLine line = it.next();
             if (line.isProcessed()) {
-                logger.fine("Purging line {0}", line);
+                logger.debug("Purging line {}", line);
                 it.remove();
             }
         }

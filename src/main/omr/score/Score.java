@@ -18,7 +18,7 @@ import omr.constant.ConstantSet;
 
 import omr.text.Language;
 
-import omr.log.Logger;
+import org.slf4j.Logger; import org.slf4j.LoggerFactory;
 
 import omr.math.Rational;
 
@@ -71,7 +71,7 @@ public class Score
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = Logger.getLogger(Score.class);
+    private static final Logger logger = LoggerFactory.getLogger(Score.class);
 
     /** Number of lines in a staff */
     public static final int LINE_NB = 5;
@@ -178,7 +178,7 @@ public class Score
      */
     public void close ()
     {
-        logger.info("Closing {0}", this);
+        logger.info("Closing {}", this);
 
         // Check whether the score script has been saved (or user has declined)
         if ((Main.getGui() != null) && !ScriptActions.checkStored(getScript())) {
@@ -241,7 +241,7 @@ public class Score
                 } catch (StepException ex) {
                     // Remove page from score, if already included
                     if ((page != null) && getPages().remove(page)) {
-                        logger.info("Page #{0} removed", index);
+                        logger.info("Page #{} removed", index);
                     }
                 }
             }
@@ -984,7 +984,7 @@ public class Score
 
                 return true;
             } catch (Exception ex) {
-                logger.warning("Error updating score parts", ex);
+                logger.warn("Error updating score parts", ex);
             }
 
             return false;
