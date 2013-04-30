@@ -5,7 +5,6 @@
 <!-- |                                                                     | -->
 <!-- | abstract: Netbeans/ant build for Audiveris application              | -->
 <!-- | location: ${basedir}/build.xml                                      | -->
-<!-- | author:   herve.bitteur@audiveris.org                               | -->
 <!-- |                                                                     | -->
 <!-- +=====================================================================+ -->
 <!-- Initial NetBeans comments: -->
@@ -18,7 +17,7 @@
 <!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
 <!-- in the project's Project Properties dialog box.-->
 
-<project basedir="." default="default" name="audiveris">
+<project name="audiveris" basedir="." default="default">
     
     <description>
         Build, test, and run the Audiveris project
@@ -123,57 +122,27 @@
     
     <!-- ===  Public Targets  ============================================== -->
     
+    <!-- 
+        There is no more redefined public targets
+        To build Audiveris on Java Web Start, simply use: 
+            CLI:      ant clean jar
+            NetBeans: "Clean and Build" action
+    -->
+    
     <!-- ========== -->
     <!-- installers -->
     <!-- ========== -->
-    <target depends="jar, -installers-mac, -installers-unix, -installers-windows" description="Build installers" name="installers"/>
-    
-    <!-- === -->
-    <!-- src -->
-    <!-- === -->
-    <target depends="clean" description="Pack the source distribution" name="src">
-        <!-- Generate the global zip archive -->
-        <zip destfile="${basedir}/${name.version.revision}-src.zip">
-            <!-- Build -->
-            <zipfileset dir="${basedir}" includes="build.xml" prefix="${name}"/>
-            <!-- NetBeans project -->
-            <zipfileset dir="${basedir}/nbproject" excludes="${dist.excludes},configs,private" includes="*" prefix="${name}/nbproject"/>
-            <!-- dev files -->
-            <zipfileset dir="${dev.dir}" excludes="${dist.excludes}" includes="**" prefix="${name}/dev"/>
-            <!-- res files -->
-            <zipfileset dir="${res.dir}" excludes="${dist.excludes}" includes="**" prefix="${name}/res"/>
-            <!-- eval files -->
-            <zipfileset dir="${eval.dir}" excludes="${dist.excludes}" includes="**" prefix="${name}/eval"/>
-            <!-- plugins files -->
-            <zipfileset dir="${plugins.dir}" excludes="${dist.excludes}" includes="**" prefix="${name}/plugins"/>
-            <!-- Source main and test files -->
-            <zipfileset dir="${basedir}/src" excludes="${dist.excludes}" includes="**" prefix="${name}/src"/>
-            <!-- Examples files -->
-            <zipfileset dir="${examples.dir}" excludes="${dist.excludes}" includes="**" prefix="${name}/examples"/>
-            <!-- Www (without API javadoc) files -->
-            <zipfileset dir="${www.dir}" excludes="${dist.excludes}, docs/api/**" includes="**" prefix="${name}/www"/>
-        </zip>
-    </target>
-    
-    <!-- ======== -->
-    <!-- training -->
-    <!-- ======== -->
-    <target depends="init" description="Pack the whole training material" name="training">
-        <zip destfile="${basedir}/${name.version}-training.zip">
-            <zipfileset dir="${train.dir}" excludes="${dist.excludes}" includes="**/*.xml,**/.glyphignore" prefix="train"/>
-        </zip>
-    </target>
+    <target name="installers"
+            depends="jar, -installers-mac, -installers-unix, -installers-windows" 
+            description="Build installers (obsolete)"/>
     
     <!-- ===  Internal Targets  ============================================ -->
     
     <!-- =============== -->
     <!-- -copy-resources -->
     <!-- =============== -->
-    <target description="Populate dist/resources" name="-copy-resources">
-        <!-- Copy resources/*.jar to dist/resources -->
-        <copy todir="${dist.dir}/resources">
-            <fileset dir="resources"/>
-        </copy>
+    <target name="-copy-resources"
+            description="Populate dist/resources">
         <!-- Copy logo and splash to dist/resources -->
         <copy todir="${dist.dir}/resources">
             <fileset dir="res">
@@ -181,16 +150,16 @@
                 <include name="splash.png"/>
             </fileset>
         </copy>
-    </target>
-    
-    <!-- =============== -->
-    <!-- build-resources -->
-    <!-- =============== -->
-    <target description="Generation of resources/*.jar (lengthy)" name="build-resources">
-        <mkdir dir="resources"/>
-        <jar basedir="data" destfile="resources/examples.jar" includes="examples/**/*"/>
-        <jar basedir="data" destfile="resources/train.jar" includes="train/**/*"/>
-        <jar basedir="data" destfile="resources/documentation.jar" includes="www/**/*"/>
+        
+        <!-- Populate examples + docs + train to dist/resources -->
+        <echo message="-- Building ${dist.dir}/resources/examples.jar" />
+        <jar basedir="data" destfile="${dist.dir}/resources/examples.jar" includes="examples/**/*"/>
+        
+        <echo message="-- Building ${dist.dir}/resources/documentation.jar" />
+        <jar basedir="data" destfile="${dist.dir}/resources/documentation.jar" includes="www/**/*"/>
+        
+        <echo message="-- Building ${dist.dir}/resources/train.jar" />
+        <jar basedir="data" destfile="${dist.dir}/resources/train.jar" includes="train/**/*"/>
     </target>
     
     <!-- =================== -->
@@ -205,54 +174,42 @@
         - Web Application deployment          [do not use this one]
         - User defined (e.g. HTTP deployment) http://audiveris.kenai.com/jnlp
     -->
-    <target depends="-check-codebase, -get-codebase-user, -get-codebase-local" description="Generate installer.jnlp from master-installer.jnlp" name="-gen-installer-jnlp">
-        <echo level="verbose" message="my.codebase=${my.codebase}"/>
+    <target name="-gen-installer-jnlp"
+            depends="-check-codebase" 
+            description="Generate installer.jnlp from master-installer.jnlp">
         <copy file="${basedir}/master-installer.jnlp" overwrite="yes" tofile="${dist.dir}/installer.jnlp"/>
         <replace file="${dist.dir}/installer.jnlp" token="%codebase%" value="${my.codebase}"/>
     </target>
-    <!-- This whole target is copied verbatim from jnlp-impl.xml -->
+    
+    <!-- =============== -->
+    <!-- -check-codebase -->
+    <!-- =============== -->
     <target name="-check-codebase">
-        <condition property="local.codebase">
+        <!-- Target implementation inspired from jnlp-impl.xml -->
+        <makeurl file="${dist.dir}" property="my.codebase.url"/>
+        <condition property="my.codebase" value="${my.codebase.url}">
             <or>
                 <not>
                     <isset property="jnlp.codebase.type"/>
                 </not>
                 <equals arg1="${jnlp.codebase.type}" arg2="local" trim="true"/>
+                <equals arg1="${jnlp.codebase.type}" arg2="no.codebase" trim="true"/>
             </or>
         </condition>
-        <condition property="non.user.codebase">
-            <or>
-                <not>
-                    <isset property="jnlp.codebase.type"/>
-                </not>
-                <equals arg1="${jnlp.codebase.type}" arg2="local" trim="true"/>
-                <equals arg1="${jnlp.codebase.type}" arg2="web" trim="true"/>
-            </or>
-        </condition>
-        <condition property="user.codebase">
+        
+        <condition property="my.codebase" value="${jnlp.codebase.user}">
             <equals arg1="${jnlp.codebase.type}" arg2="user" trim="true"/>
         </condition>
-        <condition property="no.codebase">
-            <equals arg1="${jnlp.codebase.type}" arg2="no.codebase" trim="true"/>
-        </condition>
-        <condition property="local.codebase+no.codebase">
-            <or>
-                <istrue value="${local.codebase}"/>
-                <istrue value="${no.codebase}"/>
-            </or>
-        </condition>
+        
+        <echo level="verbose" message="my.codebase=${my.codebase}"/>
     </target>
-    <target if="user.codebase" name="-get-codebase-user">
-        <property name="my.codebase" value="${jnlp.codebase.user}"/>
-    </target>
-    <target if="local.codebase+no.codebase" name="-get-codebase-local">
-        <makeurl file="${dist.dir}" property="my.codebase"/>
-    </target>
+    
     
     <!-- =============== -->
     <!-- -gen-program-id -->
     <!-- =============== -->
-    <target description="Write a Java class to gather program identification" name="-gen-program-id">
+    <target name="-gen-program-id"
+            description="Write a Java class to gather program identification">
         <property location="${generated.src.dir}/omr" name="program.id.dir"/>
         <mkdir dir="${program.id.dir}"/>
         <property location="${program.id.dir}/ProgramId.java" name="program.id.java"/>
@@ -289,7 +246,9 @@ public class ProgramId
     <!-- ======= -->
     <!-- -hg-tip -->
     <!-- ======= -->
-    <target description="Retrieve Hg information" if="${hg.present}" name="-hg-tip">
+    <target name="-hg-tip"
+            if="${hg.present}" 
+            description="Retrieve Hg information">
         <exec executable="hg" outputproperty="program.revision">
             <arg line="log -r tip --template &quot;{rev}&quot;"/>
         </exec>
@@ -304,46 +263,57 @@ public class ProgramId
     <!-- =============== -->
     <!-- -installers-mac -->
     <!-- =============== -->
-    <target if="${is.mac}" name="-installers-mac">
+    <target name="-installers-mac"
+            if="${is.mac}">
         <antcall target="mac.-installers"/>
     </target>
     
     <!-- ================ -->
     <!-- -installers-unix -->
     <!-- ================ -->
-    <target if="${is.unix}" name="-installers-unix">
+    <target name="-installers-unix"
+            if="${is.unix}">
         <antcall target="unix.-installers"/>
     </target>
     <!-- =================== -->
     <!-- -installers-windows -->
     <!-- =================== -->
-    <target if="${is.windows}" name="-installers-windows">
+    <target name="-installers-windows"
+            if="${is.windows}">
         <antcall target="windows.-installers"/>
     </target>
     
     <!-- ============== -->
     <!-- -javadoc-build -->
     <!-- ============== -->
-    <target depends="-uml, audiveris-impl.-javadoc-build, -publish-api" description="Generate project documentation" name="-javadoc-build"/>
+    <target name="-javadoc-build"
+            depends="-uml, audiveris-impl.-javadoc-build"/>
 
     <!-- ========== -->
     <!-- -no-hg-tip -->
     <!-- ========== -->
-    <target description="Cope with no Hg information" name="-no-hg-tip" unless="${hg.present}">
+    <target name="-no-hg-tip"
+            unless="${hg.present}" 
+            description="Cope with no Hg information">
         <property name="version.revision" value="${version}"/>
     </target>
     
     <!-- ========== -->
     <!-- -pack-libs -->
     <!-- ========== -->
-    <target description="Pack native libraries into jar" depends="-pack-libs-mac, -pack-libs-unix, -pack-libs-windows" name="-pack-libs" />
-    <target if="${is.mac}" name="-pack-libs-mac">
+    <target name="-pack-libs" 
+            depends="-pack-libs-mac, -pack-libs-unix, -pack-libs-windows"
+            description="Pack native libraries into jar"/>
+    <target name="-pack-libs-mac"
+            if="${is.mac}">
         <antcall target="mac.-pack-libs"/>
     </target>
-    <target if="${is.unix}" name="-pack-libs-unix">
+    <target name="-pack-libs-unix" 
+            if="${is.unix}">
         <antcall target="unix.-pack-libs"/>
     </target>
-    <target if="${is.windows}" name="-pack-libs-windows">
+    <target name="-pack-libs-windows" 
+            if="${is.windows}">
         <antcall target="windows.-pack-libs"/>
     </target>
     
@@ -351,7 +321,8 @@ public class ProgramId
     <!-- -post-clean  -->
     <!-- ============ -->
     <!-- Perform cleanup depending on the OS -->
-    <target depends="-clean-mac, -clean-unix, -clean-windows" name="-post-clean">
+    <target name="-post-clean"
+            depends="-clean-mac, -clean-unix, -clean-windows">
         <!-- Non OS dependent part -->
         <delete verbose="${verbose}">
             <fileset dir="${basedir}" includes="*.zip"/>
@@ -372,7 +343,8 @@ public class ProgramId
     <!-- ========= -->
     <!-- -post-jar -->
     <!-- ========= -->
-    <target depends="-pack-libs, -copy-resources, -gen-installer-jnlp" name="-post-jar">
+    <target name="-post-jar"
+            depends="-pack-libs, -copy-resources, -gen-installer-jnlp">
         <!-- Some house keeping -->
         <delete verbose="${verbose}">
             <!-- The generated README.TXT is irrelevant -->
@@ -385,14 +357,16 @@ public class ProgramId
     <!-- ========== -->
     <!-- -post-init -->
     <!-- ========== -->
-    <target depends="-hg-tip, -no-hg-tip" name="-post-init">
+    <target name="-post-init"
+            depends="-hg-tip, -no-hg-tip">
         <property name="name.version.revision" value="${name}-${version.revision}"/>
     </target>
     
     <!-- ============ -->
     <!-- -pre-compile -->
     <!-- ============ -->
-    <target depends="-gen-program-id" name="-pre-compile"/>
+    <target name="-pre-compile"
+            depends="-gen-program-id"/>
     
     <!-- ======== -->
     <!-- -pre-jar -->
@@ -411,44 +385,14 @@ Implementation-Version: ${version.revision}
         <delete includeEmptyDirs="true" verbose="${verbose}">
             <fileset dir="${build.classes.dir}" includes="**/*.html,**/doc-files/*,**/doc-files"/>
         </delete>
+        
         <!-- Copy all resources to classes dir -->
         <echo message="-- Copying resources to ${build.classes.dir}"/>
         <copy todir="${build.classes.dir}" verbose="$verbose">
             <fileset dir="${src.dir}" includes="**/*.properties"/>
             <fileset dir="${src.dir}" includes="**/icon*.png"/>
             <fileset dir="${basedir}" includes="res/**/*"/>
-            <fileset dir="${basedir}" includes="examples/**/*"/>
-            <fileset dir="${basedir}" includes="www/**/*"/>
         </copy>
-        <!-- Copy icon and splash to dist -->
-        <!--        <echo message="== Copying icon and splash to ${dist.dir}" />
-        <copy todir="${dist.dir}" verbose="$verbose">
-            <fileset dir="${basedir}" includes="res/icon-50.gif"/>
-            <fileset dir="${basedir}" includes="res/splash.png"/>
-        </copy>-->
-    </target>
-    
-    <!-- ============ -->
-    <!-- -publish-api -->
-    <!-- ============ -->
-    <target name="-publish-api">
-        <!-- Copy JavaDoc from dist folder to the www folder -->
-        <mkdir dir="${www.dir}/docs/api"/>
-        <copy todir="${www.dir}/docs/api/" verbose="$verbose">
-            <fileset dir="${dist.javadoc.dir}" includes="**/*"/>
-        </copy>
-    </target>
-    
-    <!-- =========== -->
-    <!-- -remove-api -->
-    <!-- =========== -->
-    <target name="-remove-api">
-        <!-- Remove the JavaDoc from the www folder -->
-        <echo message="Removing API folder"/>
-        <delete failonerror="false" includeEmptyDirs="true" verbose="${verbose}">
-            <fileset dir="${www.dir}/docs/api/" includes="**/*"/>
-            <fileset dir="${www.dir}/docs/" includes="api"/>
-        </delete>
     </target>
     
     <!-- ==== -->

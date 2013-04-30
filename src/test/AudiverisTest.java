@@ -72,11 +72,11 @@ public class AudiverisTest
 
         String[] args1 = new String[] {
                              "-batch", "-step", "EXPORT", "-input",
-                             "examples/chula.png"
+                             "data/examples/chula.png"
                          };
         String[] args2 = new String[] {
                              "-batch", "-step", "EXPORT", "-input",
-                             "examples/batuque.png", "examples/allegretto.png"
+                             "data/examples/batuque.png", "data/examples/allegretto.png"
                          };
         System.out.println("firstCall to Audiveris.main()");
         logger.info("firstCall to Audiveris.main()");

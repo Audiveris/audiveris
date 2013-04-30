@@ -148,7 +148,7 @@ public class NeuralNetworkTest
 
         nn.dump();
 
-        File dir = new File("temp");
+        File dir = new File("data/temp");
         dir.mkdirs();
 
         File file = new File(dir, "nn.xml");

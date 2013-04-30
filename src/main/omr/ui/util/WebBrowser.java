@@ -13,7 +13,8 @@ package omr.ui.util;
 
 import omr.WellKnowns;
 
-import org.slf4j.Logger; import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Desktop;
 import java.io.IOException;

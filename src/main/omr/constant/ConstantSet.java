@@ -4,23 +4,22 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
+//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr.constant;
 
-import org.slf4j.Logger; import org.slf4j.LoggerFactory;
-
 import net.jcip.annotations.ThreadSafe;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This abstract class handles a set of Constants as a whole. In particular,

@@ -43,7 +43,7 @@ public class SectionBindingTest
 {
     //~ Instance fields --------------------------------------------------------
 
-    private static final File dir = new File("temp");
+    private static final File dir = new File("data/temp");
 
     private final File fileNameVertical = new File(dir, "section.vertical.xml");
 

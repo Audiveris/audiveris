@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
+//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -21,7 +21,8 @@ import omr.text.TextChar;
 import omr.text.TextLine;
 import omr.text.TextWord;
 
-import org.slf4j.Logger; import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import tesseract.TessBridge;
 

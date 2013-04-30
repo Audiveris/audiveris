@@ -61,28 +61,28 @@
     <!-- ============================= -->
     <!--  - D O - I N S T A L L E R S  -->
     <!-- ============================= -->
-    <target name="-do-installers">
+<!--    <target name="-do-installers">
     
-        <!-- Installer for x86 -->
+         Installer for x86 
         <antcall target="-do-installer">
             <param name="arch" value="x86" />
             <param name="bits" value="32bit" />
         </antcall>
     
-        <!-- Installer for x64 -->
+         Installer for x64 
         <antcall target="-do-installer">
             <param name="arch" value="x64" />
             <param name="bits" value="64bit" />
         </antcall>
     
     </target>
-   
+   -->
     <!-- ======================= -->
     <!--  - I N S T A L L E R S  -->
     <!-- ======================= -->
     <!-- Build Windows installers for x86 and x64 architectures-->
     <target name="-installers"
-            depends="-bat, -copy-eval, -do-installers"/>
+            depends="-bat, -copy-eval"/>
 
     <!-- =========================== -->
     <!--  - D O - P A C K - L I B S  -->

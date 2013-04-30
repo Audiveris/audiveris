@@ -55,23 +55,31 @@
     <target name="global-replace"
             description="Modify token of every source file">
 	
-        <!--        <replace encoding="utf8" dir="${src.dir}">
-            <replacetoken>Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.</replacetoken>
-            <replacevalue>Copyright © Hervé Bitteur 2000-2012. All rights reserved.  </replacevalue>
-            <include name="**/*.properties"/>
+        <replace encoding="utf8" dir="${basedir}/src">
+            <replacetoken>; import</replacetoken>
+            <replacevalue>;
+import</replacevalue>
+            <include name="**/*.java"/>
+        </replace>
+	
+        <!--        <replace encoding="utf8" dir="${basedir}/src">
+            <replacetoken>Copyright © Hervé Bitteur 2000-2012. All rights reserved.  </replacetoken>
+            <replacevalue>Copyright © Hervé Bitteur 2000-2013. All rights reserved.  </replacevalue>
+            <include name="**/*.java"/>
         </replace>-->
 	     
 
-        <replaceregexp
+<!--        <replaceregexp
             encoding="utf8"
-            match="logger.log\(\s*Level.WARNING,\s*"
-            replace="logger.warning("
+            match="; import"
+            replace=";
+import"
             flags="g"
             byline="true">
-            <fileset dir="${src.dir}">
-                <include name="**/BasicNest.java"/>
+            <fileset dir="${basedir}/src">
+                <include name="**/Check.java"/>
             </fileset>
-        </replaceregexp>
+        </replaceregexp>-->
 	
     </target>
     
@@ -88,12 +96,11 @@
             update="yes"
             destfile="${backup.dir}/${name}/${DSTAMP}-${machine.name}-src.zip" >
             <fileset dir="${basedir}"  
-                     includes="build.xml, dev/**, src/**, settings/**, eval/**, symbols/**, www/**, train/*.def, nb/jp/**"
-                     excludes="${dist.excludes},www/docs/api/**,dev/externals/**,dev/tools/**"/>
+                     includes="build.xml, dev/**, src/**, config/**, eval/**, symbols/**, data/www/**, nbproject/**, res/**, *.jnlp, installer/build.xml, installer/config/**, installer/dev/**, installer/nbproject/**"
+                     excludes="${dist.excludes},data/www/docs/api/**,dev/externals/**,dev/tools/**, nbproject/private/**, installer/nbproject/private/**"/>
         </zip>
 
     </target>
-
     
     <!-- ============= -->
     <!--  U P L O A D  -->

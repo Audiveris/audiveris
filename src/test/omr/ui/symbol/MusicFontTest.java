@@ -60,7 +60,7 @@ public class MusicFontTest
     public void textPrintout ()
             throws Exception
     {
-        File file = new File("MusicalSymbols.pdf");
+        File file = new File("data/temp/MusicalSymbols.pdf");
         try (FileOutputStream fos = new FileOutputStream(file)) {
             Rectangle rect = new Rectangle(pageWidth, pageHeight);
             int x = xMargin; // Cell left side

@@ -4,14 +4,12 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
+//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr.constant;
-
-import omr.log.LogUtilities;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -404,8 +402,9 @@ public class UnitModel
                 Constant constant = (Constant) node;
 
                 return Boolean.valueOf(!constant.isSourceValue());
-//            } else if (node instanceof UnitNode) {
-//                return true;
+
+                //            } else if (node instanceof UnitNode) {
+                //                return true;
             } else {
                 return false;
             }
@@ -454,7 +453,7 @@ public class UnitModel
                             Object node,
                             int col)
     {
-       if (node instanceof Constant) {
+        if (node instanceof Constant) {
             Constant constant = (Constant) node;
             Column column = Column.values()[col];
 

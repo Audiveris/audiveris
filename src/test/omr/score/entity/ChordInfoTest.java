@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
+//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -37,7 +37,7 @@ public class ChordInfoTest
 
     /** Store output in dedicated file. */
     private static final PrintWriter out = getPrintWriter(
-        new File("tests.log"));
+        new File("data/temp/tests.log"));
 
     //~ Methods ----------------------------------------------------------------
 

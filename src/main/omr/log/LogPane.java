@@ -4,17 +4,15 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
+//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.ui;
+package omr.log;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-
-import omr.log.LogGuiAppender;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -37,9 +35,6 @@ import javax.swing.text.StyleConstants;
 /**
  * Class {@code LogPane} defines the pane dedicated to application-level
  * messages, those that are logged using the {@code Logger} class.
- *
- * @see omr.log.Logger
- * @see omr.log.LogGuiHandler
  *
  * @author Hervé Bitteur
  */

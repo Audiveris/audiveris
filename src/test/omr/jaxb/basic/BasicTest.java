@@ -109,7 +109,7 @@ public class BasicTest
     public void testMarshall ()
         throws JAXBException, FileNotFoundException
     {
-        File dir = new File("temp");
+        File dir = new File("data/temp");
         dir.mkdirs();
         play(new File(dir, "basic-data.xml").toString());
     }

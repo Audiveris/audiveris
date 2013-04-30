@@ -4,14 +4,15 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur 2000-2012. All rights reserved.                 //
+//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr.check;
 
-import org.slf4j.Logger; import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -123,7 +124,7 @@ public class CheckSuite<C extends Checkable>
             sb.append(name);
         }
 
-        sb.append(String.format(" Check Suite: threshold=%d%n", threshold));
+        sb.append(String.format(" Check Suite: threshold=%f%n", threshold));
 
         dumpSpecific(sb);
 
@@ -342,7 +343,7 @@ public class CheckSuite<C extends Checkable>
     /**
      * Just an empty placeholder, meant to be overridden.
      *
-     * @param the StringBuilder to populate
+     * @param sb StringBuilder to populate
      */
     protected void dumpSpecific (StringBuilder sb)
     {

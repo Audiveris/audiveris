@@ -38,7 +38,7 @@ public class MomentsExtractorTest <D extends OrthogonalMoments<D>>
 
     Map<Shape, D> descriptors = new EnumMap<>(Shape.class);
 
-    File temp = new File("temp");
+    File temp = new File("data/temp");
 
     //~ Constructors -----------------------------------------------------------
     /**

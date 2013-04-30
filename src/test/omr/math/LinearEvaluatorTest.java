@@ -39,7 +39,7 @@ public class LinearEvaluatorTest
     //~ Static fields/initializers ---------------------------------------------
 
     private static final String[]     inNames = new String[] { "first", "second" };
-    private static final String       dirName = "temp";
+    private static final String       dirName = "data/temp";
     private static final String       fileName = "linear.xml";
     private static final List<Sample> samples = Arrays.asList(
         new Sample("A", new double[] { 10, 20 }),
@@ -142,7 +142,7 @@ public class LinearEvaluatorTest
      * Test of marshal method, of class LinearEvaluator.
      * @throws Exception
      */
-    @Test
+    /////////@Test
     public void testMarshal ()
         throws Exception
     {
@@ -210,7 +210,7 @@ public class LinearEvaluatorTest
      * Test of unmarshal method, of class LinearEvaluator.
      * @throws Exception
      */
-    @Test
+    ////////@Test
     public void testUnmarshal ()
         throws Exception
     {
@@ -222,6 +222,18 @@ public class LinearEvaluatorTest
 
         LinearEvaluator result = LinearEvaluator.unmarshal(in);
         result.dump();
+    }
+
+    /**
+     * Test of marchal THEN unmarshal methods.
+     * @throws Exception
+     */
+    @Test
+    public void testMarshalThenUnmarshal ()
+        throws Exception
+    {
+        testMarshal();
+        testUnmarshal();
     }
 
     private LinearEvaluator createRawInstance ()

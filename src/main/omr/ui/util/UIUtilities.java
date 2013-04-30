@@ -4,7 +4,7 @@
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur and Brenton Partridge 2000-2012.              //
+//  Copyright (C) Hervé Bitteur and Brenton Partridge 2000-2013.              //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -13,7 +13,8 @@ package omr.ui.util;
 
 import omr.WellKnowns;
 
-import org.slf4j.Logger; import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
 import java.awt.Component;
