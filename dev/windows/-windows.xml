@@ -20,9 +20,9 @@
 
     <!-- ===  Internal Targets  ============================================ --> 
   
-    <!-- ========= -->
-    <!--  - B A T  -->
-    <!-- ========= -->
+    <!-- ==== -->
+    <!-- -bat -->
+    <!-- ==== -->
     <target name="-bat">
         <echo message="-- Building ${name}.bat" />
         <!-- TODO add -splash:path/to/splash.png -->
@@ -30,9 +30,9 @@
         </echo>    
     </target>
 
-    <!-- ============= -->
-    <!--  - C L E A N  -->
-    <!-- ============= -->
+    <!-- ====== -->
+    <!-- -clean -->
+    <!-- ====== -->
     <target name="-clean">
         <!-- Remove all the generated outputs for Windows -->
         <delete verbose="${verbose}" quiet="true">
@@ -50,33 +50,6 @@
             <fileset dir="${eval.dir}" includes="linear-evaluator.xml"/>
         </copy> 
     </target>
-  
-    <!-- =========================== -->
-    <!--  - D O - I N S T A L L E R  -->
-    <!-- =========================== -->
-<!--    <target name="-do-installer"
-            depends="-candle, -bundle, -wix-cleanup"/>   -->
-<!--            depends="-candle, -audiveris-msi, -bundle, -wix-cleanup"/>   -->
-  
-    <!-- ============================= -->
-    <!--  - D O - I N S T A L L E R S  -->
-    <!-- ============================= -->
-<!--    <target name="-do-installers">
-    
-         Installer for x86 
-        <antcall target="-do-installer">
-            <param name="arch" value="x86" />
-            <param name="bits" value="32bit" />
-        </antcall>
-    
-         Installer for x64 
-        <antcall target="-do-installer">
-            <param name="arch" value="x64" />
-            <param name="bits" value="64bit" />
-        </antcall>
-    
-    </target>
-   -->
     <!-- ======================= -->
     <!--  - I N S T A L L E R S  -->
     <!-- ======================= -->
@@ -84,9 +57,9 @@
     <target name="-installers"
             depends="-bat, -copy-eval"/>
 
-    <!-- =========================== -->
-    <!--  - D O - P A C K - L I B S  -->
-    <!-- =========================== -->
+    <!-- ============= -->
+    <!-- -do-pack-libs -->
+    <!-- ============= -->
     <!-- Pack all native libs of an arch into a .jar file -->
     <target name="-do-pack-libs">
         <echo message="-- Packing up DLLs for ${bits}" />
@@ -94,20 +67,5 @@
             <fileset dir="dev/windows/dll/${bits}" />
         </jar>
     </target>
-    
-    <!-- ===================== -->
-    <!--  - P A C K - L I B S  -->
-    <!-- ===================== -->
-    <target name="-pack-libs">
-        <!-- Libs for x86 -->
-        <antcall target="-do-pack-libs">
-            <param name="bits" value="32bit" />
-        </antcall>
-    
-        <!-- Libs for x64 -->
-        <antcall target="-do-pack-libs">
-            <param name="bits" value="64bit" />
-        </antcall>
-    </target>        
 
 </project>

@@ -25,9 +25,9 @@
     <!-- ===  Internal Targets  ============================================ --> 
   
   
-    <!-- ============= -->
-    <!--  - C L E A N  -->
-    <!-- ============= -->
+    <!-- ====== -->
+    <!-- -clean -->
+    <!-- ====== -->
     <target name="-clean"
             if="${is.unix}">
         <!-- Remove all the generated packages for Unix -->
@@ -177,5 +177,46 @@
     <target name="-rpm-build" if="${is.rpm}">
         <echo message="Building RPM packages is not implemented yet!" />
     </target>
+
+    <!-- ============= -->
+    <!-- -do-pack-libs -->
+    <!-- ============= -->
+    <!-- Pack all native libs of an arch into a .jar file -->
+    <target name="-do-pack-libs">
+        <echo message="-- Packing up SOs for ${bits}" />
+        <jar destfile="dist/lib/tess-unix-${bits}.jar">
+            <fileset dir="dev/unix/TessBridgeJNI/${bits}" />
+        </jar>
+    </target>
   
 </project>
+
+<!--    
+        copy the wrapper script 
+        dist/deb/data/usr/bin/audiveris (a sh file actually)
+        
+        copy TessBridge JNI library according to target architecture 
+        dist/deb/data/usr/lib/jni/libjniTessBridge.so
+        
+        copy desktop file and resources 
+        dist/deb/data/usr/share/applications/Audiveris.desktop
+        
+        dist/deb/data/usr/share/fonts/MusicalSymbols.ttf
+        
+        dist/deb/data/usr/share/icons/audiveris/audiveris.png (icon-256.png actually)
+
+        dist/deb/data/usr/share/doc/audiveris/copyright
+        
+        add plugins generator 
+        dist/deb/data/usr/share/audiveris/AddPlugins.sh
+        
+        copy over the application jar and associated libraries 
+        dist/deb/data/usr/share/audiveris/dist/*.jar
+        
+        dist/deb/data/usr/share/audiveris/dist/lib/*
+
+        copy over resources, examples and documentation 
+        dist/deb/data/usr/share/audiveris/res/*
+        dist/deb/data/usr/share/audiveris/examples/*
+        dist/deb/data/usr/share/audiveris/www/*
+-->

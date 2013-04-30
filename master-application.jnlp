@@ -89,13 +89,15 @@
     <resources os="Windows" arch="x86">
         <nativelib href="lib/tess-windows-32bit.jar" download="lazy" part="ocr"/>
     </resources>
-<!--
+
     <resources os="Linux" arch="amd64">
+        <nativelib href="lib/tess-unix-64bit.jar" download="lazy" part="ocr"/>
     </resources>
 
     <resources os="Linux" arch="i386 x86">
+        <nativelib href="lib/tess-unix-32bit.jar" download="lazy" part="ocr"/>
     </resources>
--->    
+    
 <!--    
     <resources os="Mac\ OS\ X" arch="x86_64">  
     </resources>  
