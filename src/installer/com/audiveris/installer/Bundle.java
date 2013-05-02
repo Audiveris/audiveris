@@ -295,42 +295,42 @@ public class Bundle
         }
     }
 
-    //------------------//
-    // getInstallFolder //
-    //------------------//
-    /**
-     * Report the install folder (as currently defined).
-     *
-     * @return the installFolder
-     */
-    public File getInstallFolder ()
-    {
-        if (installFolder == null) {
-            // No user selection done, so let's use default folder
-            installFolder = descriptor.getInstallFolder();
-            if (!installFolder.exists()) {
-                if (installFolder.mkdirs()) {
-                    logger.info("Created folder {}", installFolder.getAbsolutePath());
-                }
-            }
-        }
-
-        return installFolder;
-    }
-
-    //------------------//
-    // setInstallFolder //
-    //------------------//
-    /**
-     * Assign the install folder.
-     *
-     * @param installFolder the installFolder to set
-     */
-    public void setInstallFolder (File installFolder)
-    {
-        this.installFolder = installFolder;
-
-        // Update installation checks WRT this new folder
-        checkInstallations();
-    }
+//    //------------------//
+//    // getInstallFolder //
+//    //------------------//
+//    /**
+//     * Report the install folder (as currently defined).
+//     *
+//     * @return the installFolder
+//     */
+//    public File getInstallFolder ()
+//    {
+//        if (installFolder == null) {
+//            // No user selection done, so let's use default folder
+//            installFolder = descriptor.getInstallFolder();
+//            if (!installFolder.exists()) {
+//                if (installFolder.mkdirs()) {
+//                    logger.info("Created folder {}", installFolder.getAbsolutePath());
+//                }
+//            }
+//        }
+//
+//        return installFolder;
+//    }
+//
+//    //------------------//
+//    // setInstallFolder //
+//    //------------------//
+//    /**
+//     * Assign the install folder.
+//     *
+//     * @param installFolder the installFolder to set
+//     */
+//    public void setInstallFolder (File installFolder)
+//    {
+//        this.installFolder = installFolder;
+//
+//        // Update installation checks WRT this new folder
+//        checkInstallations();
+//    }
 }

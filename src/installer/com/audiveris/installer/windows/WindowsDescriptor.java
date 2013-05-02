@@ -13,7 +13,6 @@ package com.audiveris.installer.windows;
 
 import com.audiveris.installer.Descriptor;
 import com.audiveris.installer.DescriptorFactory;
-import com.audiveris.installer.Installer;
 import com.audiveris.installer.Utilities;
 import static com.audiveris.installer.RegexUtil.*;
 
@@ -102,7 +101,12 @@ public class WindowsDescriptor
     @Override
     public File getConfigFolder ()
     {
-        return new File(Installer.getBundle().getInstallFolder(), "config");
+        final String appdata = System.getenv("APPDATA");
+        final File root = new File(appdata + TOOL_PREFIX);
+        final File file = new File(root, "config");
+        logger.debug("getConfigFolder: {}", file.getAbsolutePath());
+
+        return file;
     }
 
     //---------------//
@@ -111,7 +115,12 @@ public class WindowsDescriptor
     @Override
     public File getDataFolder ()
     {
-        return new File(Installer.getBundle().getInstallFolder(), "data");
+        final String appdata = System.getenv("APPDATA");
+        final File root = new File(appdata + TOOL_PREFIX);
+        final File file = new File(root, "data");
+        logger.debug("getDataFolder: {}", file.getAbsolutePath());
+
+        return file;
     }
 
     //--------------------------//
@@ -130,27 +139,13 @@ public class WindowsDescriptor
         return file;
     }
 
-    //------------------//
-    // getInstallFolder //
-    //------------------//
-    @Override
-    public File getInstallFolder ()
-    {
-        final String appdata = System.getenv("APPDATA");
-        final File file = new File(appdata + TOOL_PREFIX);
-        logger.debug("getInstallFolder: {}", file.getAbsolutePath());
-
-        return file;
-    }
-
     //---------------//
     // getTempFolder //
     //---------------//
     @Override
     public File getTempFolder ()
     {
-        File userDir = new File(System.getProperty("user.home"));
-        final File folder = new File(userDir, "audiveris-installation-temp");
+        final File folder = new File(getDataFolder(), "temp/installation");
         logger.debug("getTempFolder: {}", folder.getAbsolutePath());
 
         return folder;

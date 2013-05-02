@@ -63,14 +63,6 @@ public interface Descriptor
     File getDataFolder ();
 
     /**
-     * Report the folder where Audiveris stuff is to be installed.
-     * [For the time being, the user cannot choose a different folder]
-     *
-     * @return the install folder
-     */
-    File getInstallFolder ();
-
-    /**
      * Report the folder to be used for Tesseract-OCR if not yet set.
      * If Tesseract application is installed, this folder is pointed by the
      * environment variable TESSDATA_PREFIX, and this method is not called.

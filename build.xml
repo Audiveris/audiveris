@@ -121,7 +121,7 @@
         <jar basedir="data" destfile="${dist.dir}/resources/train.jar" includes="train/**/*"/>
     </target>
     <!-- =================== -->
-    <!-- -gen-installer-jnlp -->
+    <!-- -gen-installer-file -->
     <!-- =================== -->
     <!-- 
         We copy master-installer.jnlp to dist/installer.jnlp and update the
@@ -132,7 +132,7 @@
         - Web Application deployment          [do not use this one]
         - User defined (e.g. HTTP deployment) http://audiveris.kenai.com/jnlp
     -->
-    <target depends="-check-codebase" description="Generate installer.jnlp from master-installer.jnlp" name="-gen-installer-jnlp">
+    <target depends="-check-codebase" description="Generate installer.jnlp from master-installer.jnlp" name="-gen-installer-file">
         <copy file="${basedir}/master-installer.jnlp" overwrite="yes" tofile="${dist.dir}/installer.jnlp"/>
         <replace file="${dist.dir}/installer.jnlp" token="%codebase%" value="${my.codebase}"/>
     </target>
@@ -269,7 +269,7 @@ public class ProgramId
     <!-- ========= -->
     <!-- -post-jar -->
     <!-- ========= -->
-    <target depends="-pack-libs, -copy-resources, -gen-installer-jnlp" name="-post-jar">
+    <target depends="-pack-libs, -copy-resources, -gen-installer-file" name="-post-jar">
         <!-- Some house keeping -->
         <delete verbose="${verbose}">
             <!-- The generated README.TXT is irrelevant -->

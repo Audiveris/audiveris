@@ -11,7 +11,11 @@
 // </editor-fold>
 package com.audiveris.installer;
 
+import com.audiveris.installer.unix.UnixDescriptor;
 import com.audiveris.installer.windows.WindowsDescriptor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 
@@ -24,6 +28,10 @@ import java.util.Locale;
 public class DescriptorFactory
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /** Usual logger utility */
+    private static final Logger logger = LoggerFactory.getLogger(
+            DescriptorFactory.class);
 
     /** Precise OS name. */
     private static final String OS_NAME = System.getProperty("os.name")
@@ -75,7 +83,15 @@ public class DescriptorFactory
     private static Descriptor createDescriptor ()
     {
         if (WINDOWS) {
+            logger.debug("Creating a Windows descriptor");
+
             return new WindowsDescriptor();
+        }
+
+        if (LINUX) {
+            logger.debug("Creating a Unix descriptor");
+
+            return new UnixDescriptor();
         }
 
         // For all others...
