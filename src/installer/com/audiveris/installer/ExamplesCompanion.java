@@ -51,7 +51,7 @@ public class ExamplesCompanion
         need = Need.SELECTED;
 
         if (hasUI) {
-            view = new BasicCompanionView(this, 90);
+            view = new BasicCompanionView(this, 110);
         }
     }
 

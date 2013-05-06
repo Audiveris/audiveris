@@ -33,7 +33,6 @@ import java.util.TreeSet;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -124,7 +123,7 @@ public class LangSelector
     {
         final JPanel          comp = new JPanel();
         final FormLayout      layout = new FormLayout(
-            "right:36dlu, $lcgap, fill:0:grow, $lcgap, 31dlu",
+            "right:40dlu, $lcgap, fill:0:grow, $lcgap, 33dlu",
             "pref");
         final CellConstraints cst = new CellConstraints();
         final PanelBuilder    builder = new PanelBuilder(layout, comp);

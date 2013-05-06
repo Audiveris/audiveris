@@ -36,6 +36,7 @@ import javax.swing.JTextField;
  *
  * @author Hervé Bitteur
  */
+@Deprecated
 public class FolderSelector
         implements ActionListener
 {
@@ -71,7 +72,7 @@ public class FolderSelector
 
         component = defineLayout();
 
-        path.setText(descriptor.getInstallFolder().getAbsolutePath());
+        ///////path.setText(descriptor.getInstallFolder().getAbsolutePath());
         path.addActionListener(this);
     }
 
@@ -126,7 +127,7 @@ public class FolderSelector
 
             // All tests are OK
             path.setText(candidate.getAbsolutePath());
-            bundle.setInstallFolder(candidate);
+            ////////bundle.setInstallFolder(candidate);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(
                     Installer.getFrame(),
@@ -180,18 +181,18 @@ public class FolderSelector
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            // We always launch browsing from default installation folder
-            JFileChooser chooser = new JFileChooser(
-                    descriptor.getInstallFolder());
-            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-            int opt = chooser.showDialog(
-                    Installer.getFrame(),
-                    "Select install folder");
-
-            if (opt == JFileChooser.APPROVE_OPTION) {
-                checkFolder(chooser.getSelectedFile());
-            }
+//            // We always launch browsing from default installation folder
+//            JFileChooser chooser = new JFileChooser(
+//                    descriptor.getInstallFolder());
+//            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+//
+//            int opt = chooser.showDialog(
+//                    Installer.getFrame(),
+//                    "Select install folder");
+//
+//            if (opt == JFileChooser.APPROVE_OPTION) {
+//                checkFolder(chooser.getSelectedFile());
+//            }
         }
     }
 }

@@ -27,3 +27,8 @@ nbproject/configs/*
 private/*
 resources/*
 target/*
+\.orig\..*$
+\.orig$
+\.chg\..*$
+\.rej$
+\.conflict\~$

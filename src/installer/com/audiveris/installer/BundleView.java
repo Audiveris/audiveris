@@ -42,6 +42,7 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 
 /**
  * Class {@code BundleView} is a View on a Bundle.
@@ -49,17 +50,18 @@ import javax.swing.UIManager;
  * @author Hervé Bitteur
  */
 public class BundleView
-    extends JFrame
+        extends JFrame
 {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(
-        Installer.class);
-    private static final Color  INFO_BACKGROUND = new Color(250, 250, 255);
-    private static final Color  BUTTON_BACKGROUND = new Color(250, 250, 200);
+            Installer.class);
+
+    private static final Color INFO_BACKGROUND = new Color(250, 250, 255);
+
+    private static final Color BUTTON_BACKGROUND = new Color(250, 250, 200);
 
     //~ Instance fields --------------------------------------------------------
-
     //
     /** Related bundle. */
     private final Bundle bundle;
@@ -74,7 +76,6 @@ public class BundleView
     private CancelAction cancelAction;
 
     //~ Constructors -----------------------------------------------------------
-
     //
     //------------//
     // BundleView //
@@ -89,7 +90,7 @@ public class BundleView
         super("Audiveris bundle installer");
         this.bundle = bundle;
 
-        // Set panels opaque by default
+        // Set panels opaque by default (TODO: useful?)
         PanelBuilder.setOpaqueDefault(true);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -104,12 +105,18 @@ public class BundleView
         pane.add(buildInfoPanel(), BorderLayout.CENTER);
         pane.add(buildButtonPanel(), BorderLayout.SOUTH);
 
+        // Set Nimbus Look & Feel if possible
         try {
-            String lnfName = "com.jgoodies.looks.windows.WindowsLookAndFeel";
-            UIManager.setLookAndFeel(lnfName);
-            SwingUtilities.updateComponentTreeUI(this);
+            for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    SwingUtilities.updateComponentTreeUI(this);
+
+                    break;
+                }
+            }
         } catch (Exception ex) {
-            logger.warn("Cannot change L&F", ex);
+            logger.warn("Cannot set Nimbus L&F, using default.", ex);
         }
 
         // Adjust size and location of this window
@@ -117,11 +124,10 @@ public class BundleView
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // publishMessage //
     //----------------//
-    public void publishMessage (Level  level,
+    public void publishMessage (Level level,
                                 String message)
     {
         messagePanel.display(level, message);
@@ -160,19 +166,19 @@ public class BundleView
     private JPanel buildCompPanel ()
     {
         // Prepare layout elements
-        final String        hGap = "$lcgap";
+        final String hGap = "$lcgap";
         final StringBuilder sbcol = new StringBuilder();
 
         for (Companion companion : bundle.getCompanions()) {
             sbcol.append("pref,")
-                 .append(hGap)
-                 .append(",");
+                    .append(hGap)
+                    .append(",");
         }
 
         final CellConstraints cst = new CellConstraints();
-        final FormLayout      layout = new FormLayout(sbcol.toString(), "pref");
-        final JPanel          panel = new JPanel();
-        final PanelBuilder    builder = new PanelBuilder(layout, panel);
+        final FormLayout layout = new FormLayout(sbcol.toString(), "pref");
+        final JPanel panel = new JPanel();
+        final PanelBuilder builder = new PanelBuilder(layout, panel);
 
         // Now add the desired components, using provided order
         int col = 1;
@@ -193,7 +199,7 @@ public class BundleView
     {
         messagePanel = new MessagePanel();
         messagePanel.getComponent()
-                    .setBackground(INFO_BACKGROUND);
+                .setBackground(INFO_BACKGROUND);
 
         return messagePanel.getComponent();
     }
@@ -210,25 +216,31 @@ public class BundleView
     private JPanel buildNorthPanel ()
     {
         // Prepare layout elements
-        final FormLayout      layout = new FormLayout(
-            "$lcgap, fill:0:grow, $lcgap",
-            "$rgap, pref, $rgap, pref, $rgap, pref, $rgap");
-        final JPanel          panel = new JPanel();
-        final PanelBuilder    builder = new PanelBuilder(layout, panel);
+        final FormLayout layout = new FormLayout(
+                "$lcgap, fill:0:grow, $lcgap",
+                "$rgap, pref, $rgap, pref, $rgap");
+        final JPanel panel = new JPanel();
+        final PanelBuilder builder = new PanelBuilder(layout, panel);
         final CellConstraints cst = new CellConstraints();
 
+        int iRow = 0;
+        
         // FolderSelector is currently disabled
-//        // Add the folder selector
-//        FolderSelector dirSelector = new FolderSelector(bundle);
-//        builder.add(dirSelector.getComponent(), cst.xy(2, 2));
+        //        iRow +=2;
+        //        // Add the folder selector
+        //        FolderSelector dirSelector = new FolderSelector(bundle);
+        //        builder.add(dirSelector.getComponent(), cst.xy(2, iRow));
 
         // Add the languages component
+        iRow += 2;
+
         LangSelector langSelector = bundle.getLangCompanion()
-                                          .getSelector();
-        builder.add(langSelector.getComponent(), cst.xy(2, 4));
+                .getSelector();
+        builder.add(langSelector.getComponent(), cst.xy(2, iRow));
 
         // Add the companions component
-        builder.add(buildCompPanel(), cst.xy(2, 6));
+        iRow += 2;
+        builder.add(buildCompPanel(), cst.xy(2, iRow));
 
         return panel;
     }
@@ -247,39 +259,37 @@ public class BundleView
         pack();
 
         // Window size
-        final int width = 546;
+        final int width = 625;
         final int height = 400;
         final int gapFromBorder = 20;
         setSize(width, height);
 
         // Window location
-        GraphicsDevice        device = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                                                          .getScreenDevices()[0];
+        GraphicsDevice device = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                .getScreenDevices()[0];
         GraphicsConfiguration config = device.getConfigurations()[0];
-        Rectangle             bounds = config.getBounds();
+        Rectangle bounds = config.getBounds();
         logger.debug("Primary screen bounds: {}", bounds);
 
         Point topLeft = new Point(
-            (bounds.x + bounds.width) - width - gapFromBorder,
-            bounds.y + gapFromBorder);
+                (bounds.x + bounds.width) - width - gapFromBorder,
+                bounds.y + gapFromBorder);
         logger.debug("Window topLeft: {}", topLeft);
         setLocation(topLeft);
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-------------//
     // ButtonPanel //
     //-------------//
     private static class ButtonPanel
-        extends JPanel
+            extends JPanel
     {
         //~ Static fields/initializers -----------------------------------------
 
         private static final Insets insets = new Insets(8, 5, 8, 5);
 
         //~ Constructors -------------------------------------------------------
-
         public ButtonPanel (Action action)
         {
             setPreferredSize(new Dimension(200, 0));
@@ -291,7 +301,6 @@ public class BundleView
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public Insets getInsets ()
         {
@@ -303,7 +312,7 @@ public class BundleView
     // CancelAction //
     //--------------//
     private class CancelAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -314,7 +323,6 @@ public class BundleView
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -327,7 +335,7 @@ public class BundleView
     // StartAction //
     //-------------//
     private class StartAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -338,12 +346,11 @@ public class BundleView
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
             logger.debug("StartAction performed");
-            
+
             setEnabled(false);
             cancelAction.setEnabled(false);
             new Worker().execute();
@@ -354,31 +361,31 @@ public class BundleView
     // Worker //
     //--------//
     private class Worker
-        extends SwingWorker<Void, Void>
+            extends SwingWorker<Void, Void>
     {
         //~ Methods ------------------------------------------------------------
 
         @Override
         protected Void doInBackground ()
-            throws Exception
+                throws Exception
         {
             try {
                 bundle.installBundle();
                 JOptionPane.showMessageDialog(
-                    Installer.getFrame(),
-                    "Installation completed successfully",
-                    "Installation completion",
-                    JOptionPane.INFORMATION_MESSAGE);
+                        Installer.getFrame(),
+                        "Installation completed successfully",
+                        "Installation completion",
+                        JOptionPane.INFORMATION_MESSAGE);
 
                 Jnlp.extensionInstallerService.installSucceeded(false);
 
                 logger.info("\nYou can now safely exit.\n");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(
-                    Installer.getFrame(),
-                    "Installation has failed: \n" + ex.getMessage(),
-                    "Installation completion",
-                    JOptionPane.WARNING_MESSAGE);
+                        Installer.getFrame(),
+                        "Installation has failed: \n" + ex.getMessage(),
+                        "Installation completion",
+                        JOptionPane.WARNING_MESSAGE);
 
                 Jnlp.extensionInstallerService.installFailed();
             }
@@ -391,11 +398,11 @@ public class BundleView
         {
             startAction.setEnabled(true);
             cancelAction.setEnabled(true);
-            
+
             cancelAction.putValue(AbstractAction.NAME, "Exit");
             cancelAction.putValue(
-                AbstractAction.SHORT_DESCRIPTION,
-                "Close the installer");
+                    AbstractAction.SHORT_DESCRIPTION,
+                    "Close the installer");
         }
     }
 }

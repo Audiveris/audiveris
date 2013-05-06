@@ -67,12 +67,19 @@ public class TesseractOCR
         if (WellKnowns.RUNNING_FROM_JAR) {
             // Explicitly load all binary libs and in proper order
             logger.info("Loading binary libraries...");
-            logger.info("Loading liblept168...");
-            System.loadLibrary("liblept168");
-            logger.info("Loading libtesseract302...");
-            System.loadLibrary("libtesseract302");
-            logger.info("Loading jniTessBridge...");
-            System.loadLibrary("jniTessBridge");
+            if (WellKnowns.WINDOWS) {
+                logger.info("Loading liblept168...");
+                System.loadLibrary("liblept168");
+                logger.info("Loading libtesseract302...");
+                System.loadLibrary("libtesseract302");
+                logger.info("Loading jniTessBridge...");
+                System.loadLibrary("jniTessBridge");
+            } else if (WellKnowns.LINUX) {
+                logger.info("Loading libtesseract3...");
+                System.loadLibrary("libtesseract3");
+                logger.info("Loading libjniTessBridge...");
+                System.loadLibrary("libjniTessBridge");
+            }
             logger.info("All binaries loaded.");
         }
     }

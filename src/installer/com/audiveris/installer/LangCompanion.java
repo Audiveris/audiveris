@@ -30,24 +30,24 @@ import java.util.TreeSet;
 import javax.swing.JOptionPane;
 
 /**
- * Class {@code LangCompanion} handles the installation of Tesseract
- * support for a selected set of languages.
+ * Class {@code LangCompanion} handles the installation of Tesseract library
+ * and the support for a selected set of languages.
  *
  * @author Hervé Bitteur
  */
 public class LangCompanion
-    extends AbstractCompanion
+        extends AbstractCompanion
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        LangCompanion.class);
+            LangCompanion.class);
 
     /** Companion description. */
-    private static final String DESC = "<html>You can select which precise languages" +
-                                       "<br/>the <b>OCR</b> should support." +
-                                       "<br/>For this, please use the language selector below.</html>";
+    private static final String DESC = "<html>You can select which precise languages"
+                                       + "<br/>the <b>OCR</b> should support."
+                                       + "<br/>For this, please use the language selector below.</html>";
 
     /** Environment descriptor. */
     private static final Descriptor descriptor = DescriptorFactory.getDescriptor();
@@ -63,39 +63,38 @@ public class LangCompanion
      * Update this list according to Tesseract web site on
      * http://code.google.com/p/tesseract-ocr/downloads/list
      */
-    public static final String[] ALL_LANGUAGES = new String[] {
-                                                     "afr", "ara", "aze", "bel",
-                                                     "ben", "bul", "cat", "ces",
-                                                     "chi_sim", "chi_tra", "chr",
-                                                     "dan", "deu", "ell", "eng",
-                                                     "enm", "epo", "epo_alt",
-                                                     "equ", "est", "eus", "fin",
-                                                     "fra", "frk", "frm", "glg",
-                                                     "grc", "heb", "hin", "hrv",
-                                                     "hun", "ind", "isl", "ita",
-                                                     "ita_old", "jpn", "kan",
-                                                     "kor", "lav", "lit", "mal",
-                                                     "mkd", "mlt", "msa", "nld",
-                                                     "nor", "pol", "por", "ron",
-                                                     "rus", "slk", "slv", "spa",
-                                                     "spa_old", "sqi", "srp",
-                                                     "swa", "swe", "tam", "tel",
-                                                     "tgl", "tha", "tur", "ukr",
-                                                     "vie"
-                                                 };
+    public static final String[] ALL_LANGUAGES = new String[]{
+        "afr", "ara", "aze", "bel",
+        "ben", "bul", "cat", "ces",
+        "chi_sim", "chi_tra", "chr",
+        "dan", "deu", "ell", "eng",
+        "enm", "epo", "epo_alt",
+        "equ", "est", "eus", "fin",
+        "fra", "frk", "frm", "glg",
+        "grc", "heb", "hin", "hrv",
+        "hun", "ind", "isl", "ita",
+        "ita_old", "jpn", "kan",
+        "kor", "lav", "lit", "mal",
+        "mkd", "mlt", "msa", "nld",
+        "nor", "pol", "por", "ron",
+        "rus", "slk", "slv", "spa",
+        "spa_old", "sqi", "srp",
+        "swa", "swe", "tam", "tel",
+        "tgl", "tha", "tur", "ukr",
+        "vie"
+    };
 
     /**
      * Collection of pre-desired languages.
      */
-    public static final String[] PREDESIRED_LANGUAGES = new String[] {
-                                                            "deu", "eng", "fra",
-                                                            "ita"
-                                                        //            //  "mkd", "mlt", "msa", "nld",
+    public static final String[] PREDESIRED_LANGUAGES = new String[]{
+        "deu", "eng", "fra",
+        "ita"
+    //            //  "mkd", "mlt", "msa", "nld",
     //        , "tgl", "tha", "tur", "ukr", "vie"
     };
 
     //~ Instance fields --------------------------------------------------------
-
     /**
      * The languages to be added (if not present).
      */
@@ -110,12 +109,12 @@ public class LangCompanion
     private LangSelector selector;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------//
     // LangCompanion //
     //---------------//
     /**
-     * Creates a new LangCompanion object for a list of languages.
+     * Creates a new LangCompanion object for OCR library and a list of
+     * supported languages.
      *
      * @param hasUI true for a related view
      */
@@ -130,7 +129,6 @@ public class LangCompanion
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // checkInstalled //
     //----------------//
@@ -138,29 +136,36 @@ public class LangCompanion
     public boolean checkInstalled ()
     {
         try {
-            // We check if each of the desired language actually exists
             boolean installed = true;
 
-            for (String language : desired) {
-                if (!isLangInstalled(language)) {
-                    installed = false;
+            // Check for Tesseract library
+            if (!descriptor.isTesseractInstalled()) {
+                installed = false;
+            } else {
+                // We check if each of the desired language actually exists
+                for (String language : desired) {
+                    if (!isLangInstalled(language)) {
+                        installed = false;
 
-                    break;
+                        break;
+                    }
                 }
-            }
 
-            // We check if each of the non-desired language still exists
-            for (String language : nonDesired) {
-                if (isLangInstalled(language)) {
-                    installed = false;
+                if (installed) {
+                    // We check if each of the non-desired language still exists
+                    for (String language : nonDesired) {
+                        if (isLangInstalled(language)) {
+                            installed = false;
 
-                    break;
+                            break;
+                        }
+                    }
                 }
             }
 
             status = installed ? Status.INSTALLED : Status.NOT_INSTALLED;
         } catch (Throwable ex) {
-            logger.warn("No tessdata found", ex);
+            logger.warn("Tesseract could not be checked", ex);
             status = Status.NOT_INSTALLED;
         }
 
@@ -239,9 +244,14 @@ public class LangCompanion
     //-----------//
     @Override
     protected void doInstall ()
-        throws Exception
+            throws Exception
     {
-        // We process languages in alphabetical order
+        // First, install library if so needed
+        if (!descriptor.isTesseractInstalled()) {
+            descriptor.installTesseract();
+        }
+
+        // Then, we process languages in alphabetical order
         // To keep in sync with selector display
         final Set<String> relevant = new TreeSet<String>();
         relevant.addAll(desired);
@@ -300,23 +310,23 @@ public class LangCompanion
      * @return the tessdata file or null
      */
     private File getTessdata (final boolean create)
-        throws Exception
+            throws Exception
     {
         final String prefix = System.getenv(Descriptor.TESSDATA_PREFIX);
-        final File   dir;
+        final File dir;
 
         if (prefix == null) {
-            if (create) {
-                dir = descriptor.getDefaultTessdataPrefix();
-                // Set environment variable for future processes
-                descriptor.setenv(
+//            if (create) {
+            dir = descriptor.getDefaultTessdataPrefix();
+            // Set environment variable for future processes
+            descriptor.setenv(
                     true,
                     Descriptor.TESSDATA_PREFIX,
-                    dir.getAbsolutePath() +
-                    System.getProperty("file.separator"));
-            } else {
-                return null;
-            }
+                    dir.getAbsolutePath()
+                    + System.getProperty("file.separator"));
+//            } else {
+//                return null;
+//            }
         } else {
             dir = new File(prefix);
         }
@@ -337,7 +347,7 @@ public class LangCompanion
     // installLanguage //
     //-----------------//
     private void installLanguage (final String lang)
-        throws Exception
+            throws Exception
     {
         try {
             final String tarName = TESS_VERSION + "." + lang + ".tar";
@@ -360,13 +370,13 @@ public class LangCompanion
             logger.debug("tessdata: {}", tessdata.getAbsolutePath());
 
             final File tessParent = tessdata.getParentFile()
-                                            .getParentFile();
+                    .getParentFile();
             logger.debug("tessParent: {}", tessParent.getAbsolutePath());
             Expander.unTar(tar, tessParent);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(
-                Installer.getFrame(),
-                ex.getMessage());
+                    Installer.getFrame(),
+                    ex.getMessage());
             throw ex;
         }
     }
@@ -375,7 +385,7 @@ public class LangCompanion
     // uninstallLanguage //
     //-------------------//
     private void uninstallLanguage (final String lang)
-        throws Exception
+            throws Exception
     {
         File tessdata = getTessdata(false);
 
@@ -385,22 +395,23 @@ public class LangCompanion
 
         // Clean up relevant files in the folder
         Files.walkFileTree(
-            tessdata.toPath(),
-            EnumSet.noneOf(FileVisitOption.class),
-            1,
-            new FileVisitor<Path>() {
+                tessdata.toPath(),
+                EnumSet.noneOf(FileVisitOption.class),
+                1,
+                new FileVisitor<Path>()
+                {
                     @Override
-                    public FileVisitResult preVisitDirectory (Path                dir,
+                    public FileVisitResult preVisitDirectory (Path dir,
                                                               BasicFileAttributes attrs)
-                        throws IOException
+                            throws IOException
                     {
                         return FileVisitResult.CONTINUE;
                     }
 
                     @Override
-                    public FileVisitResult visitFile (Path                file,
+                    public FileVisitResult visitFile (Path file,
                                                       BasicFileAttributes attrs)
-                        throws IOException
+                            throws IOException
                     {
                         Path name = file.getName(file.getNameCount() - 1);
                         logger.debug("Visiting {}, name {}", file, name);
@@ -415,9 +426,9 @@ public class LangCompanion
                     }
 
                     @Override
-                    public FileVisitResult visitFileFailed (Path        file,
+                    public FileVisitResult visitFileFailed (Path file,
                                                             IOException ex)
-                        throws IOException
+                            throws IOException
                     {
                         if (ex == null) {
                             return FileVisitResult.CONTINUE;
@@ -428,9 +439,9 @@ public class LangCompanion
                     }
 
                     @Override
-                    public FileVisitResult postVisitDirectory (Path        dir,
+                    public FileVisitResult postVisitDirectory (Path dir,
                                                                IOException ex)
-                        throws IOException
+                            throws IOException
                     {
                         if (ex == null) {
                             return FileVisitResult.CONTINUE;

@@ -12,48 +12,64 @@
 package com.audiveris.installer.unix;
 
 import com.audiveris.installer.Descriptor;
+import com.audiveris.installer.Utilities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Class {@code UnixDescriptor} implements Installer descriptor
- * for Linux Ubuntu (32 and 64 bits)
+ * Class {@code UnixDescriptor} implements Installer descriptor for Linux Ubuntu
+ * (32 and 64 bits)
  *
  * @author Hervé Bitteur
  */
 public class UnixDescriptor
-        implements Descriptor
-{
+        implements Descriptor {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    /**
+     * Usual logger utility
+     */
     private static final Logger logger = LoggerFactory.getLogger(
             UnixDescriptor.class);
-
-    /** Specific prefix for application folders. {@value} */
+    /**
+     * Specific prefix for application folders. {@value}
+     */
     private static final String TOOL_PREFIX = "/" + COMPANY_ID + "/"
-                                              + TOOL_NAME;
-
-    /** Set of requirements for c/c++. */
+            + TOOL_NAME;
+    /**
+     * Set of requirements for c/c++.
+     */
     private static final Package[] cReqs = new Package[]{
         new Package("libc6", "2.15"),
         new Package("libgcc1", "4.6.3"),
         new Package("libstdc++6", "4.6.3")
     };
-
-    /** Requirement for ghostscript. */
-    private static final Package gsReq = new Package("ghostscript", "9.06");
+    
+    /**
+     * Requirement for ghostscript.
+     */
+    private static final Package gsReq = new Package("ghostscript", "9.06~dfsg");
+    
+    /**
+     * Requirement for tesseract.
+     */
+    private static final Package tessReq = new Package("libtesseract3", "3.02");
 
     //~ Methods ----------------------------------------------------------------
     //-----------------//
     // getConfigFolder //
     //-----------------//
     @Override
-    public File getConfigFolder ()
-    {
+    public File getConfigFolder() {
         String config = System.getenv("XDG_CONFIG_HOME");
 
         if (config != null) {
@@ -73,8 +89,7 @@ public class UnixDescriptor
     // getDataFolder //
     //---------------//
     @Override
-    public File getDataFolder ()
-    {
+    public File getDataFolder() {
         String data = System.getenv("XDG_DATA_HOME");
 
         if (data != null) {
@@ -94,8 +109,7 @@ public class UnixDescriptor
     // getDefaultTessdataPrefix //
     //--------------------------//
     @Override
-    public File getDefaultTessdataPrefix ()
-    {
+    public File getDefaultTessdataPrefix() {
         return new File("/usr/share/tesseract-ocr/");
     }
 
@@ -103,8 +117,7 @@ public class UnixDescriptor
     // getTempFolder //
     //---------------//
     @Override
-    public File getTempFolder ()
-    {
+    public File getTempFolder() {
         final File folder = new File(getDataFolder(), "temp/installation");
         logger.debug("getTempFolder: {}", folder.getAbsolutePath());
 
@@ -115,9 +128,8 @@ public class UnixDescriptor
     // installCpp //
     //------------//
     @Override
-    public void installCpp ()
-            throws Exception
-    {
+    public void installCpp()
+            throws Exception {
         for (Package pkg : cReqs) {
             if (!pkg.isInstalled()) {
                 pkg.install();
@@ -129,27 +141,47 @@ public class UnixDescriptor
     // installGhostscript //
     //--------------------//
     @Override
-    public void installGhostscript ()
-            throws Exception
-    {
+    public void installGhostscript()
+            throws Exception {
         gsReq.install();
+    }
+
+    //------------------//
+    // installTesseract //
+    //------------------//
+    @Override
+    public void installTesseract()
+            throws Exception {
+        tessReq.install();
     }
 
     //---------//
     // isAdmin //
     //---------//
     @Override
-    public boolean isAdmin ()
-    {
-        return true; // TODO: implement this!
+    public boolean isAdmin() {
+        //      whoami -> herve
+        // sudo whoami -> root
+        try {
+            List<String> output = new ArrayList<String>();
+            int res = Utilities.runProcess("bash", output, "-c", "whoami");
+            if (res != 0) {
+                logger.warn(Utilities.dumpOfLines(output));
+                throw new RuntimeException("Error checking admin, exit: " + res);
+            } else {
+                return !output.isEmpty() && output.get(0).equals("root");
+            }
+        } catch (Exception ex) {
+            logger.warn("Error checking admin", ex);
+            return true; // Safer
+        }
     }
 
     //----------------//
     // isCppInstalled //
     //----------------//
     @Override
-    public boolean isCppInstalled ()
-    {
+    public boolean isCppInstalled() {
         for (Package pkg : cReqs) {
             if (!pkg.isInstalled()) {
                 return false;
@@ -163,29 +195,58 @@ public class UnixDescriptor
     // isGhostscriptInstalled //
     //------------------------//
     @Override
-    public boolean isGhostscriptInstalled ()
-    {
+    public boolean isGhostscriptInstalled() {
         return gsReq.isInstalled();
+    }
+
+    //----------------------//
+    // isTesseractInstalled //
+    //----------------------//
+    @Override
+    public boolean isTesseractInstalled() {
+        return tessReq.isInstalled();
     }
 
     //-----------------//
     // relaunchAsAdmin //
     //-----------------//
     @Override
-    public void relaunchAsAdmin ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void relaunchAsAdmin() {
+        try {
+            String pid = new File("/proc/self").getCanonicalFile().getName();
+            logger.info("My pid: {}", pid);
+            ///File cmd = new File("/proc/" + pid + "/cmdline");
+            Path cmd = Paths.get("/proc/" + pid + "/cmdline");
+            if (Files.exists(cmd)) {
+                List<String> lines = Files.readAllLines(cmd, StandardCharsets.US_ASCII);
+                if (!lines.isEmpty()) {
+                    // BEWARE: spaces between arguments have been converted to 0
+                    String cmdLine = lines.get(0).replace((char) 0, ' ');
+                    logger.info("cmdline: {}", cmdLine);
+                    List<String> output = new ArrayList<String>();
+                    ///int res = Utilities.runProcess("bash", output, "-c", "sudo " + cmdLine);
+                    int res = Utilities.runProcess("bash", output, "-c", "gnome-terminal -x sudo " + cmdLine);
+                    if (res != 0) {
+                        logger.warn(Utilities.dumpOfLines(output));
+                        throw new RuntimeException("Could not relaunch as admin, exit: " + res);
+                    } else {
+                        return;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            logger.warn("Error in relaunchAsAdmin()", ex);
+        }
     }
 
     //--------//
     // setenv //
     //--------//
     @Override
-    public void setenv (boolean system,
-                        String var,
-                        String value)
-            throws Exception
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void setenv(boolean system,
+            String var,
+            String value)
+            throws Exception {
+        logger.trace("setenv() not really needed on Unix");
     }
 }

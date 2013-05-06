@@ -54,6 +54,9 @@ public class DescriptorFactory
     public static final boolean WINDOWS_64 = WINDOWS
                                              && (System.getenv(
             "ProgramFiles(x86)") != null);
+    
+    /** Are we running wow (appli-32/windows-64) or pure (32/32 - 64/64)?. */
+    public static final boolean WOW = OS_ARCH.equals("x86") && WINDOWS_64;
 
     /** THE descriptor instance. */
     private static Descriptor descriptor;

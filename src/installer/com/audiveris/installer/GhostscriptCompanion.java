@@ -48,7 +48,7 @@ class GhostscriptCompanion
         super("Ghostscript", DESC);
 
         if (hasUI) {
-            view = new BasicCompanionView(this, 80);
+            view = new BasicCompanionView(this, 100);
         }
     }
 

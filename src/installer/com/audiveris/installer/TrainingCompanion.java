@@ -55,7 +55,7 @@ public class TrainingCompanion
         need = Need.NOT_SELECTED;
 
         if (hasUI) {
-            view = new BasicCompanionView(this, 80);
+            view = new BasicCompanionView(this, 100);
         }
     }
 

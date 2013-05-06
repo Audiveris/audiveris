@@ -23,47 +23,47 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Class {@code Package} handles a Linux package requirement and
- * installation, using the underlying "apt" utility.
+ * Class {@code Package} handles a Linux package requirement and installation,
+ * using the underlying "apt" utility.
  *
  * @author Hervé Bitteur
  */
-public class Package
-{
+public class Package {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    /**
+     * Usual logger utility
+     */
     private static final Logger logger = LoggerFactory.getLogger(Package.class);
-
     //~ Instance fields --------------------------------------------------------
-
-    /** Name of the package. */
+    /**
+     * Name of the package.
+     */
     public final String name;
-
-    /** Minimum version required. */
+    /**
+     * Minimum version required.
+     */
     public final VersionNumber minVersion;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------//
     // Package //
     //---------//
     /**
      * Create a Package instance.
      *
-     * @param name       the package name
+     * @param name the package name
      * @param minVersion the minimum required version
      */
-    public Package (String name,
-                    String minVersion)
-    {
+    public Package(String name,
+            String minVersion) {
         if ((name == null) || name.isEmpty()) {
             throw new IllegalArgumentException("Null or empty package name");
         }
 
         if ((minVersion == null) || minVersion.isEmpty()) {
             throw new IllegalArgumentException(
-                "Null or empty package minimum version");
+                    "Null or empty package minimum version");
         }
 
         this.name = name;
@@ -71,7 +71,6 @@ public class Package
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------------//
     // getInstalledVersion //
     //---------------------//
@@ -80,23 +79,26 @@ public class Package
      *
      * @return the version number, or null if not found
      */
-    public VersionNumber getInstalledVersion ()
-    {
-        final String  VERSION = "version";
+    public VersionNumber getInstalledVersion() {
+        final String VERSION = "version";
         final Pattern versionPattern = Pattern.compile(
-            "^Version: " + RegexUtil.group(VERSION, ".*") + "$");
+                "^Version: " + RegexUtil.group(VERSION, ".*") + "$");
 
         try {
             List<String> output = new ArrayList<String>();
-            Utilities.runProcess("ps", output, "apt-cache", "show", name);
+            int res = Utilities.runProcess("bash", output, "-c", "apt-cache show " + name);
+            if (res != 0) {
+                logger.warn(Utilities.dumpOfLines(output));
+                throw new RuntimeException("Error checking package " + name + " exit: " + res);
+            } else {
+                for (String line : output) {
+                    Matcher matcher = versionPattern.matcher(line);
 
-            for (String line : output) {
-                Matcher matcher = versionPattern.matcher(line);
+                    if (matcher.matches()) {
+                        String versionStr = RegexUtil.getGroup(matcher, VERSION);
 
-                if (matcher.matches()) {
-                    String versionStr = RegexUtil.getGroup(matcher, VERSION);
-
-                    return new VersionNumber(versionStr);
+                        return new VersionNumber(versionStr);
+                    }
                 }
             }
         } catch (Exception ex) {
@@ -114,18 +116,19 @@ public class Package
      *
      * @throws Exception
      */
-    public void install ()
-        throws Exception
-    {
+    public void install()
+            throws Exception {
         try {
             List<String> output = new ArrayList<String>();
-            Utilities.runProcess(
-                "ps",
-                output,
-                "apt-get",
-                "install",
-                "-y",
-                name);
+            int res = Utilities.runProcess(
+                    "bash",
+                    output,
+                    "-c",
+                    "apt-get install -y " + name);
+            if (res != 0) {
+                logger.warn(Utilities.dumpOfLines(output));
+                throw new RuntimeException("Error installing package " + name + " exit: " + res);
+            }
         } catch (Exception ex) {
             logger.warn("Error in running apt-get", ex);
             throw ex;
@@ -135,8 +138,7 @@ public class Package
     //-------------//
     // isInstalled //
     //-------------//
-    public boolean isInstalled ()
-    {
+    public boolean isInstalled() {
         VersionNumber installedVersion = getInstalledVersion();
 
         if (installedVersion == null) {

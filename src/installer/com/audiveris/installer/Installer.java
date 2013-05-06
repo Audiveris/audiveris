@@ -21,13 +21,13 @@ import javax.jnlp.UnavailableServiceException;
 import javax.swing.JOptionPane;
 
 /**
- * Class {@code Installer} is the main class for installation of
- * Audiveris complete bundle using Java Web Start technology.
- * <p>
- * We can assume that, thanks to Java Web Start, a proper JRE version is made
+ * Class {@code Installer} is the main class for installation of Audiveris
+ * complete bundle using Java Web Start technology.
+ * <p> 
+ * We can assume that, thanks to Java Web Start, a proper JRE version is made 
  * available for this installer before it is launched.
- * Since subsequent Audiveris application needs java 1.7 as of this writing, we
- * can base this Installer on Java 1.7 as well.
+ * Since subsequent Audiveris application needs java 1.7 as of this writing,
+ * we can base this Installer on Java 1.7 as well.
  *
  * @author Hervé Bitteur
  */
@@ -185,6 +185,12 @@ public class Installer
                 // Relaunch with administrator priviledges
                 logger.info(
                         "Launching a new installer at Administrator level.");
+                JOptionPane.showMessageDialog(
+                        Installer.getFrame(),
+                        "Relaunching as Administrator",
+                        "Elevation needed",
+                        JOptionPane.INFORMATION_MESSAGE);
+
                 descriptor.relaunchAsAdmin();
                 logger.info("Back from Administrator installer.");
             }

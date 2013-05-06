@@ -64,7 +64,8 @@
     <target name="-do-pack-libs">
         <echo message="-- Packing up DLLs for ${bits}" />
         <jar destfile="dist/lib/tess-windows-${bits}.jar">
-            <fileset dir="dev/windows/dll/${bits}" />
+            <fileset dir="dev/windows/dll/${bits}" 
+                     includes="jniTessBridge.dll, jniTessBridge.dll.manifest"/>
         </jar>
     </target>
 

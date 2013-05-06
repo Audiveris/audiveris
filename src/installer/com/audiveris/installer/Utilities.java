@@ -104,8 +104,8 @@ public class Utilities
     // downloadExecAndInstall //
     //------------------------//
     /**
-     * Download an executable from provided url and launch the
-     * executable with the installOption.
+     * Download an executable from provided url and launch the executable with
+     * the installOption.
      *
      * @param title         A title for the software to process
      * @param url           url to download from
@@ -128,11 +128,11 @@ public class Utilities
 
             // Install
             final List<String> output = new ArrayList<>();
-            final int result = Utilities.runProcess(
+            final int res = Utilities.runProcess(
                     exec.getAbsolutePath(), output, installOption);
-            if (result != 0) {
-                // TODO: Show errors in a dialog
-                throw new RuntimeException(title + " failed to install");
+            if (res != 0) {
+                logger.warn(Utilities.dumpOfLines(output));
+                throw new RuntimeException("Could not run " + exec + ", exit: " + res);
             }
         } catch (IOException | InterruptedException | RuntimeException ex) {
             logger.warn("Could not install " + title, ex);
@@ -215,7 +215,7 @@ public class Utilities
             String line;
 
             while ((line = br.readLine()) != null) {
-                logger.debug("line: {}", line);
+                logger.trace("line: {}", line);
                 output.add(line);
             }
 
@@ -227,15 +227,6 @@ public class Utilities
         } catch (Exception ex) {
             logger.warn("Error running " + cmdArgs, ex);
             throw ex;
-
-            //            if (ex.getMessage()
-            //                    .contains("CreateProcess")
-            //                && ex.getMessage()
-            //                    .contains("=740")) {
-            //                // fall through
-            //            } else {
-            //                throw ex;
-            //            }
         }
     }
 
@@ -278,5 +269,25 @@ public class Utilities
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(ex.getMessage(), ex);
         }
+    }
+
+    //-------------//
+    // dumpOfLines //
+    //-------------//
+    /**
+     * Meant for dumping a bunch of lines
+     *
+     * @param lines the lines to dump
+     * @return one string for all lines
+     */
+    public static String dumpOfLines (List<String> lines)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (String line : lines) {
+            sb.append("\n>>> ").append(line);
+        }
+
+        return sb.toString();
     }
 }

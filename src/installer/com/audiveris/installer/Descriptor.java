@@ -97,6 +97,12 @@ public interface Descriptor
         throws Exception;
 
     /**
+     * Install a suitable Tesseract.
+     */
+    void installTesseract ()
+        throws Exception;
+
+    /**
      * Report whether the current process is run with administrator
      * privileges.
      *
@@ -117,6 +123,13 @@ public interface Descriptor
      * @return true if installed
      */
     boolean isGhostscriptInstalled ();
+
+    /**
+     * Check whether a suitable Tesseract is installed.
+     *
+     * @return true if installed
+     */
+    boolean isTesseractInstalled ();
 
     /**
      * Re-launch the current process, with identical commands, but with
