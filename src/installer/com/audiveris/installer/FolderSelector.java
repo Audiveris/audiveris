@@ -33,6 +33,11 @@ import javax.swing.JTextField;
 /**
  * Class {@code FolderSelector} displays the default install folder,
  * and let the user choose another one, if any.
+ * 
+ * NOTA: THIS CLASS IS NOT USED FOR THE TIME BEING
+ * Since the notion of installation folder is not clear!
+ * - With Java Web Start, appli "program data" is located in Java cache
+ * - On Linux, appli "user config" and appli "user data" do not have the same parent
  *
  * @author Hervé Bitteur
  */

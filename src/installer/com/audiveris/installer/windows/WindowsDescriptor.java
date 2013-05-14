@@ -121,11 +121,11 @@ public class WindowsDescriptor
         /**
          * Jar name for 32-bit.
          */
-        static final String JAR_32 = "tesseract-windows-32bit.jar";
+        static final String JAR_32 = "resources/tesseract-windows-32bit.jar";
         /**
          * Jar name for 64-bit.
          */
-        static final String JAR_64 = "tesseract-windows-64bit.jar";
+        static final String JAR_64 = "resources/tesseract-windows-64bit.jar";
         /**
          * Dll for leptonica.
          */
@@ -226,7 +226,7 @@ public class WindowsDescriptor
                 "Tesseract",
                 url.toString(),
                 getTempFolder(),
-                "System32",
+                "",
                 new File(sysDir));
     }
 

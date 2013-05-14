@@ -49,6 +49,7 @@ public class VersionNumberTest
         test("3~", "3", -1);
         test("4", "4a", -1);
         test("9.06~dfsg-0ubuntu4", "9.06", -1);
+        test("7u9-2.3.4-0ubuntu1.12.10.1", "9.06", -1);
     }
 
     //------//

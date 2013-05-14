@@ -18,6 +18,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.BasicGlyph;
 
+import omr.sheet.SystemInfo;
+
 import omr.text.BasicContent;
 import omr.text.OCR;
 import omr.text.TextLine;
@@ -41,7 +43,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
-import omr.sheet.SystemInfo;
 
 /**
  * Class {@code TesseractOCR} is an OCR service built on the Google
@@ -64,24 +65,24 @@ public class TesseractOCR
     private static final Logger logger = LoggerFactory.getLogger(TesseractOCR.class);
 
     static {
-        if (WellKnowns.RUNNING_FROM_JAR) {
-            // Explicitly load all binary libs and in proper order
-            logger.info("Loading binary libraries...");
-            if (WellKnowns.WINDOWS) {
-                logger.info("Loading liblept168...");
-                System.loadLibrary("liblept168");
-                logger.info("Loading libtesseract302...");
-                System.loadLibrary("libtesseract302");
-                logger.info("Loading jniTessBridge...");
-                System.loadLibrary("jniTessBridge");
-            } else if (WellKnowns.LINUX) {
-                logger.info("Loading libtesseract3...");
-                System.loadLibrary("libtesseract3");
-                logger.info("Loading libjniTessBridge...");
-                System.loadLibrary("libjniTessBridge");
-            }
-            logger.info("All binaries loaded.");
+        //if (WellKnowns.RUNNING_FROM_JAR) {
+        // Explicitly load all native libs resources and in proper order
+        logger.info("Loading native libraries resources ...");
+        boolean success = true;
+        if (WellKnowns.WINDOWS) {
+            // For Windows, drop the ".dll" suffix
+            success &= ClassUtil.loadLibrary("liblept168");
+            success &= ClassUtil.loadLibrary("libtesseract302");
+            success &= ClassUtil.loadLibrary("jniTessBridge");
+        } else if (WellKnowns.LINUX) {
+            // For Linux, drop the "lib" prefix and the ".so" suffix
+            success &= ClassUtil.loadLibrary("jniTessBridge");
         }
+        if (success) {
+            logger.info("All libraries loaded for {}",
+                    System.getProperty("os.name"));
+        }
+        //}
     }
 
     /** Singleton. */

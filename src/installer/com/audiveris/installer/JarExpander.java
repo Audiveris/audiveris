@@ -103,7 +103,7 @@ public class JarExpander
         }
 
         if (copied != 0) {
-            logger.info("Installation of {} folder. {} entries copied to {}",
+            logger.info("Installation of '{}' folder. {} entries copied to {}",
                     sourceFolder, copied, targetFolder);
         }
 
@@ -121,15 +121,26 @@ public class JarExpander
      */
     private List<String> getSourceEntries ()
     {
-        List<String> found = new ArrayList<>();
-        Enumeration<JarEntry> entries = jar.entries();
-        String prefix = sourceFolder.endsWith("/")
-                ? sourceFolder : sourceFolder + "/";
-        logger.debug("Prefix is {}", prefix);
+        final List<String> found = new ArrayList<>();
+        final Enumeration<JarEntry> entries = jar.entries();
+        final String prefix = sourceFolder.isEmpty() ? ""
+                : sourceFolder.endsWith("/") ? sourceFolder : sourceFolder + "/";
+        logger.debug("Prefix is '{}'", prefix);
+
+        // If sourceFolder == "" we take all rooted files, 
+        // excluding the manifest stuff: META-INF/...
 
         while (entries.hasMoreElements()) {
-            String entry = entries.nextElement().getName();
-            if (entry.startsWith(prefix)) {
+            final String entry = entries.nextElement().getName();
+            if (prefix.isEmpty()) {
+                // Just skip the meta inf stuff
+                if (entry.startsWith("META-INF")) {
+                    logger.trace("Skipping meta-inf {}", entry);
+                } else {
+                    logger.trace("Found {}", entry);
+                    found.add(entry);
+                }
+            } else if (entry.startsWith(prefix)) {
                 logger.trace("Found {}", entry);
                 found.add(entry);
             } else {
@@ -152,8 +163,9 @@ public class JarExpander
     private int process (String source)
     {
         ///logger.debug("Processing source {}", source);
-        String sourcePath = source.substring(sourceFolder.length() + 1);
-        Path target = Paths.get(targetFolder.toString(), sourcePath);
+        final String sourcePath = sourceFolder.isEmpty() ? source
+                : source.substring(sourceFolder.length() + 1);
+        final Path target = Paths.get(targetFolder.toString(), sourcePath);
 
         try {
             if (source.endsWith("/")) {
@@ -172,7 +184,7 @@ public class JarExpander
                 }
             } else {
                 ZipEntry entry = jar.getEntry(source);
-                
+
                 // Target exists?
                 if (Files.exists(target)) {
                     // Compare date

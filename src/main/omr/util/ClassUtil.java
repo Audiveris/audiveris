@@ -38,7 +38,7 @@ public class ClassUtil
      *
      * @param skippedClasses the classes to skip
      * @return the frame found, just before the skipped classes (or just before
-     * the caller of this method)
+     *         the caller of this method)
      */
     public static StackTraceElement getCallingFrame (Class... skippedClasses)
     {
@@ -95,7 +95,7 @@ public class ClassUtil
      *
      * @param skipped predicate to skip class(es)
      * @return the frame found, just before the skipped classes (or just before
-     * the caller of this method)
+     *         the caller of this method)
      */
     public static StackTraceElement getCallingFrame (Predicate<String> skipped)
     {
@@ -158,24 +158,23 @@ public class ClassUtil
     /**
      * Try to load a library.
      *
-     * @param library the library to load
-     * @throws Exception
+     * @param library the library to load (without ".dll" suffix for Windows,
+     *                without "lib" prefix and ".so" suffix for Linux
+     * @return true if succeeded, false otherwise (no exception is thrown)
      */
-    public static void loadLibrary (String library)
-            throws Throwable
+    public static boolean loadLibrary (String library)
     {
-        logger.debug("Loading library {} ...", library);
+        logger.debug("loadLibrary for {} ...", library);
 
         try {
             System.loadLibrary(library);
 
             logger.debug("Loaded  library {}", library);
+            return true;
         } catch (Throwable ex) {
-            if (logger.isDebugEnabled()) {
-                logger.warn("Error while loading library " + library, ex);
-            }
+            logger.warn("Error while loading library " + library, ex);
 
-            throw ex;
+            return false;
         }
     }
 

@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 /**
  * Class {@code LogUtilities} handles default logging configuration
