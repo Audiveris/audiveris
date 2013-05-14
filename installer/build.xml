@@ -63,7 +63,8 @@
     <!-- =============== -->
     <!-- build-resources -->
     <!-- =============== -->
-    <target name="build-resources">
+    <target name="build-resources"
+            description="Build resources for stand-alone Installer">
         <!-- Populate examples + docs + train to resources/ -->
         <mkdir dir="resources" />
         
