@@ -26,6 +26,7 @@ import ch.qos.logback.core.util.StatusPrinter;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -43,7 +44,6 @@ public class LogUtilities
     private static final String LOGBACK_LOGGING_KEY = "logback.configurationFile";
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // initialize //
     //------------//
@@ -68,21 +68,21 @@ public class LogUtilities
                 return;
             } else {
                 System.out.println(
-                    "File " + loggingFile.getAbsolutePath() +
-                    " does not exist.");
+                        "File " + loggingFile.getAbsolutePath()
+                        + " does not exist.");
             }
         } else {
             System.out.println(
-                "Property " + LOGBACK_LOGGING_KEY + " not defined.");
+                    "Property " + LOGBACK_LOGGING_KEY + " not defined.");
         }
 
         // Define a minimal logging configuration, programmatically
-        LoggerContext        loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        Logger               root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
-            Logger.ROOT_LOGGER_NAME);
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
+                Logger.ROOT_LOGGER_NAME);
 
         // CONSOLE
-        ConsoleAppender      consoleAppender = new ConsoleAppender();
+        ConsoleAppender consoleAppender = new ConsoleAppender();
         PatternLayoutEncoder consoleEncoder = new PatternLayoutEncoder();
         consoleAppender.setName("CONSOLE");
         consoleAppender.setContext(loggerContext);
@@ -93,20 +93,21 @@ public class LogUtilities
         consoleAppender.start();
         root.addAppender(consoleAppender);
 
-        // FILE
-        FileAppender         fileAppender = new FileAppender();
+        // FILE (located in default temp directory)
+        File logFile;
+        FileAppender fileAppender = new FileAppender();
         PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
         fileAppender.setName("FILE");
         fileAppender.setContext(loggerContext);
         fileAppender.setAppend(false);
 
-        Date today = new Date();
-        File home = new File(System.getProperty("user.home"));
-        File file = new File(
-            home,
-            "audiveris-installer-" +
-            new SimpleDateFormat("yyyyMMdd'T'HHmmss").format(today) + ".log");
-        fileAppender.setFile(file.getAbsolutePath());
+        String now = new SimpleDateFormat("yyyyMMdd'T'HHmmss").format(
+                new Date());
+        logFile = Paths.get(
+                System.getProperty("java.io.tmpdir"),
+                "audiveris-installer-" + now + ".log")
+                .toFile();
+        fileAppender.setFile(logFile.getAbsolutePath());
         fileEncoder.setContext(loggerContext);
         fileEncoder.setPattern("%date %level \\(%file:%line\\) - %msg%ex%n");
         fileEncoder.start();
@@ -119,7 +120,8 @@ public class LogUtilities
         guiAppender.setName("VIEW");
         guiAppender.setContext(loggerContext);
 
-        Filter filter = new Filter() {
+        Filter filter = new Filter()
+        {
             @Override
             public FilterReply decide (Object obj)
             {
@@ -130,13 +132,14 @@ public class LogUtilities
                 LoggingEvent event = (LoggingEvent) obj;
 
                 if (event.getLevel()
-                         .toInt() >= Level.INFO_INT) {
+                        .toInt() >= Level.INFO_INT) {
                     return FilterReply.NEUTRAL;
                 } else {
                     return FilterReply.DENY;
                 }
             }
         };
+
         filter.start();
 
         guiAppender.addFilter(filter);
@@ -147,12 +150,12 @@ public class LogUtilities
         root.setLevel(Level.DEBUG);
 
         Logger jarExpander = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
-            JarExpander.class);
+                JarExpander.class);
         jarExpander.setLevel(Level.INFO);
 
         // OPTIONAL: print logback internal status messages
         StatusPrinter.print(loggerContext);
 
-        root.info("Logging to file {}", file.getAbsolutePath());
+        root.info("Logging to file {}", logFile.getAbsolutePath());
     }
 }

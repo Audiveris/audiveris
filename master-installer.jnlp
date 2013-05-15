@@ -22,7 +22,6 @@
         <jar href="lib/logback-core-1.0.11.jar"/>
         <jar href="lib/jgoodies-common-1.6.0.jar"/>
         <jar href="lib/jgoodies-forms-1.7.1.jar"/>
-        <jar href="lib/jgoodies-looks-2.5.3.jar"/>
         <jar href="lib/jna-3.5.1.jar"/>
         <jar href="lib/platform-3.5.1.jar"/>
 <!--        <property name="logback.configurationFile" value="audiveris-installer-logback.xml" />-->

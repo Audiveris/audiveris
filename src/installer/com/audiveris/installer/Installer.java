@@ -23,8 +23,8 @@ import javax.swing.JOptionPane;
 /**
  * Class {@code Installer} is the main class for installation of Audiveris
  * complete bundle using Java Web Start technology.
- * <p> 
- * We can assume that, thanks to Java Web Start, a proper JRE version is made 
+ * <p>
+ * We can assume that, thanks to Java Web Start, a proper JRE version is made
  * available for this installer before it is launched.
  * Since subsequent Audiveris application needs java 1.7 as of this writing,
  * we can base this Installer on Java 1.7 as well.
@@ -142,6 +142,60 @@ public class Installer
         return hasUI;
     }
 
+    //---------//
+    // install //
+    //---------//
+    /**
+     * Launch installation.
+     */
+    public void install ()
+    {
+        logger.debug("install");
+
+        try {
+            // Use a fresh install folder
+            bundle.deleteTempFolder();
+            bundle.createTempFolder();
+
+            // Get all initial installation statuses
+            bundle.checkInstallations();
+
+            ///installerService.hideProgressBar();
+            if (hasUI) {
+                logger.info(
+                        "\n   Please:\n" + //                    "- Select Audiveris installation folder,\n" +
+                        "- Add or remove OCR-supported languages,\n"
+                        + "- Check or uncheck optional components,\n"
+                        + "- Launch installation.\n");
+
+                // Wait until UI has finished...
+                latch.await();
+
+                // To avoid immediate closing...
+                JOptionPane.showMessageDialog(
+                        Installer.getFrame(),
+                        "Closing time!",
+                        "This is the end",
+                        JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                bundle.installBundle();
+
+                Jnlp.extensionInstallerService.installSucceeded(false);
+            }
+        } catch (Throwable ex) {
+            logger.error("Error encountered", ex);
+            JOptionPane.showMessageDialog(
+                    Installer.getFrame(),
+                    "Installation has failed",
+                    "Installation completion",
+                    JOptionPane.WARNING_MESSAGE);
+
+            Jnlp.extensionInstallerService.installFailed();
+        } finally {
+            bundle.close();
+        }
+    }
+
     //------//
     // main //
     //------//
@@ -202,61 +256,6 @@ public class Installer
             logger.error(
                     "Illegal Installer arguments: {}",
                     Arrays.deepToString(args));
-        }
-    }
-
-    //---------//
-    // install //
-    //---------//
-    /**
-     * Launch installation.
-     */
-    public void install ()
-    {
-        logger.debug("install");
-
-        try {
-            // Use a fresh install folder
-            bundle.deleteTempFolder();
-            bundle.createTempFolder();
-
-            // Get all initial installation statuses
-            bundle.checkInstallations();
-
-            ///installerService.hideProgressBar();
-            if (hasUI) {
-                logger.info(
-                        "\n   Please:\n"
-                        + //                    "- Select Audiveris installation folder,\n" +
-                        "- Add or remove OCR-supported languages,\n"
-                        + "- Check or uncheck optional components,\n"
-                        + "- Launch installation.\n");
-
-                // Wait until UI has finished...
-                latch.await();
-
-                // To avoid immediate closing...
-                //                JOptionPane.showMessageDialog(
-                //                    Installer.getFrame(),
-                //                    "Closing time!",
-                //                    "This is the end",
-                //                    JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                bundle.installBundle();
-
-                Jnlp.extensionInstallerService.installSucceeded(false);
-            }
-        } catch (Throwable ex) {
-            logger.error("Error encountered", ex);
-            JOptionPane.showMessageDialog(
-                    Installer.getFrame(),
-                    "Installation has failed",
-                    "Installation completion",
-                    JOptionPane.WARNING_MESSAGE);
-
-            Jnlp.extensionInstallerService.installFailed();
-        } finally {
-            bundle.close();
         }
     }
 

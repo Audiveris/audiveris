@@ -23,6 +23,7 @@ import ch.qos.logback.core.util.StatusPrinter;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -43,7 +44,6 @@ public class LogUtilities
     private static final String LOGBACK_FILE_NAME = "logback.xml";
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // initialize //
     //------------//
@@ -72,12 +72,12 @@ public class LogUtilities
                 return;
             } else {
                 System.out.println(
-                    "File " + configFile.getAbsolutePath() +
-                    " does not exist.");
+                        "File " + configFile.getAbsolutePath()
+                        + " does not exist.");
             }
         } else {
             System.out.println(
-                "Property " + LOGBACK_LOGGING_KEY + " not defined.");
+                    "Property " + LOGBACK_LOGGING_KEY + " not defined.");
         }
 
         // 2/ Look for well-known location
@@ -95,12 +95,12 @@ public class LogUtilities
         }
 
         // 3/ We need a default configuration
-        LoggerContext        loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        Logger               root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
-            Logger.ROOT_LOGGER_NAME);
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(
+                Logger.ROOT_LOGGER_NAME);
 
         // CONSOLE
-        ConsoleAppender      consoleAppender = new ConsoleAppender();
+        ConsoleAppender consoleAppender = new ConsoleAppender();
         PatternLayoutEncoder consoleEncoder = new PatternLayoutEncoder();
         consoleAppender.setName("CONSOLE");
         consoleAppender.setContext(loggerContext);
@@ -111,19 +111,21 @@ public class LogUtilities
         consoleAppender.start();
         root.addAppender(consoleAppender);
 
-        // FILE
-        FileAppender         fileAppender = new FileAppender();
+        // FILE (located in default temp directory)
+        File logFile;
+        FileAppender fileAppender = new FileAppender();
         PatternLayoutEncoder fileEncoder = new PatternLayoutEncoder();
         fileAppender.setName("FILE");
         fileAppender.setContext(loggerContext);
         fileAppender.setAppend(false);
 
-        Date today = new Date();
-        File file = new File(
-            TEMP_FOLDER,
-            "audiveris-" +
-            new SimpleDateFormat("yyyyMMdd'T'HHmmss").format(today) + ".log");
-        fileAppender.setFile(file.getAbsolutePath());
+        String now = new SimpleDateFormat("yyyyMMdd'T'HHmmss").format(
+                new Date());
+        logFile = Paths.get(
+                System.getProperty("java.io.tmpdir"),
+                "audiveris-" + now + ".log")
+                .toFile();
+        fileAppender.setFile(logFile.getAbsolutePath());
         fileEncoder.setContext(loggerContext);
         fileEncoder.setPattern("%date %level \\(%file:%line\\) - %msg%ex%n");
         fileEncoder.start();
@@ -151,7 +153,7 @@ public class LogUtilities
         // OPTIONAL: print logback internal status messages
         StatusPrinter.print(loggerContext);
 
-        root.info("Logging to file {}", file.getAbsolutePath());
+        root.info("Logging to file {}", logFile.getAbsolutePath());
     }
 
     //---------//
@@ -160,26 +162,26 @@ public class LogUtilities
     public static Level toLevel (final String str)
     {
         switch (str.toUpperCase()) {
-        case "ALL" :
+        case "ALL":
             return Level.ALL;
 
-        case "TRACE" :
+        case "TRACE":
             return Level.TRACE;
 
-        case "DEBUG" :
+        case "DEBUG":
             return Level.DEBUG;
 
-        case "INFO" :
+        case "INFO":
             return Level.INFO;
 
-        case "WARN" :
+        case "WARN":
             return Level.WARN;
 
-        case "ERROR" :
+        case "ERROR":
             return Level.ERROR;
 
-        default :
-        case "OFF" :
+        default:
+        case "OFF":
             return Level.OFF;
         }
     }

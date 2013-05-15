@@ -12,27 +12,28 @@
 package com.audiveris.installer.unix;
 
 import com.audiveris.installer.Descriptor;
+import com.audiveris.installer.Installer;
 import com.audiveris.installer.Utilities;
+import static com.audiveris.installer.unix.UnixUtilities.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 /**
- * Class {@code UnixDescriptor} implements Installer descriptor for Linux Ubuntu
- * (32 and 64 bits)
+ * Class {@code UnixDescriptor} implements Installer descriptor for
+ * Linux Ubuntu (32 and 64 bits)
  *
  * @author Hervé Bitteur
  */
 public class UnixDescriptor
-        implements Descriptor {
+        implements Descriptor
+{
     //~ Static fields/initializers ---------------------------------------------
 
     /**
@@ -40,11 +41,13 @@ public class UnixDescriptor
      */
     private static final Logger logger = LoggerFactory.getLogger(
             UnixDescriptor.class);
+
     /**
      * Specific prefix for application folders. {@value}
      */
     private static final String TOOL_PREFIX = "/" + COMPANY_ID + "/"
-            + TOOL_NAME;
+                                              + TOOL_NAME;
+
     /**
      * Set of requirements for c/c++.
      */
@@ -53,12 +56,14 @@ public class UnixDescriptor
         new Package("libgcc1", "4.6.3"),
         new Package("libstdc++6", "4.6.3")
     };
-    
+
     /**
      * Requirement for ghostscript.
      */
-    private static final Package gsReq = new Package("ghostscript", "9.06~dfsg");
-    
+    private static final Package gsReq = new Package(
+            "ghostscript",
+            "9.06~dfsg");
+
     /**
      * Requirement for tesseract.
      */
@@ -69,7 +74,8 @@ public class UnixDescriptor
     // getConfigFolder //
     //-----------------//
     @Override
-    public File getConfigFolder() {
+    public File getConfigFolder ()
+    {
         String config = System.getenv("XDG_CONFIG_HOME");
 
         if (config != null) {
@@ -89,7 +95,8 @@ public class UnixDescriptor
     // getDataFolder //
     //---------------//
     @Override
-    public File getDataFolder() {
+    public File getDataFolder ()
+    {
         String data = System.getenv("XDG_DATA_HOME");
 
         if (data != null) {
@@ -109,7 +116,8 @@ public class UnixDescriptor
     // getDefaultTessdataPrefix //
     //--------------------------//
     @Override
-    public File getDefaultTessdataPrefix() {
+    public File getDefaultTessdataPrefix ()
+    {
         return new File("/usr/share/tesseract-ocr/");
     }
 
@@ -117,7 +125,8 @@ public class UnixDescriptor
     // getTempFolder //
     //---------------//
     @Override
-    public File getTempFolder() {
+    public File getTempFolder ()
+    {
         final File folder = new File(getDataFolder(), "temp/installation");
         logger.debug("getTempFolder: {}", folder.getAbsolutePath());
 
@@ -128,8 +137,9 @@ public class UnixDescriptor
     // installCpp //
     //------------//
     @Override
-    public void installCpp()
-            throws Exception {
+    public void installCpp ()
+            throws Exception
+    {
         for (Package pkg : cReqs) {
             if (!pkg.isInstalled()) {
                 pkg.install();
@@ -141,8 +151,9 @@ public class UnixDescriptor
     // installGhostscript //
     //--------------------//
     @Override
-    public void installGhostscript()
-            throws Exception {
+    public void installGhostscript ()
+            throws Exception
+    {
         gsReq.install();
     }
 
@@ -150,8 +161,9 @@ public class UnixDescriptor
     // installTesseract //
     //------------------//
     @Override
-    public void installTesseract()
-            throws Exception {
+    public void installTesseract ()
+            throws Exception
+    {
         tessReq.install();
     }
 
@@ -159,20 +171,25 @@ public class UnixDescriptor
     // isAdmin //
     //---------//
     @Override
-    public boolean isAdmin() {
+    public boolean isAdmin ()
+    {
         //      whoami -> herve
         // sudo whoami -> root
         try {
             List<String> output = new ArrayList<String>();
             int res = Utilities.runProcess("bash", output, "-c", "whoami");
+
             if (res != 0) {
                 logger.warn(Utilities.dumpOfLines(output));
-                throw new RuntimeException("Error checking admin, exit: " + res);
+                throw new RuntimeException(
+                        "Error checking admin, exit: " + res);
             } else {
-                return !output.isEmpty() && output.get(0).equals("root");
+                return !output.isEmpty() && output.get(0)
+                        .equals("root");
             }
         } catch (Exception ex) {
             logger.warn("Error checking admin", ex);
+
             return true; // Safer
         }
     }
@@ -181,7 +198,8 @@ public class UnixDescriptor
     // isCppInstalled //
     //----------------//
     @Override
-    public boolean isCppInstalled() {
+    public boolean isCppInstalled ()
+    {
         for (Package pkg : cReqs) {
             if (!pkg.isInstalled()) {
                 return false;
@@ -195,7 +213,8 @@ public class UnixDescriptor
     // isGhostscriptInstalled //
     //------------------------//
     @Override
-    public boolean isGhostscriptInstalled() {
+    public boolean isGhostscriptInstalled ()
+    {
         return gsReq.isInstalled();
     }
 
@@ -203,7 +222,8 @@ public class UnixDescriptor
     // isTesseractInstalled //
     //----------------------//
     @Override
-    public boolean isTesseractInstalled() {
+    public boolean isTesseractInstalled ()
+    {
         return tessReq.isInstalled();
     }
 
@@ -211,31 +231,35 @@ public class UnixDescriptor
     // relaunchAsAdmin //
     //-----------------//
     @Override
-    public void relaunchAsAdmin() {
+    public void relaunchAsAdmin ()
+    {
         try {
-            String pid = new File("/proc/self").getCanonicalFile().getName();
-            logger.info("My pid: {}", pid);
-            ///File cmd = new File("/proc/" + pid + "/cmdline");
-            Path cmd = Paths.get("/proc/" + pid + "/cmdline");
-            if (Files.exists(cmd)) {
-                List<String> lines = Files.readAllLines(cmd, StandardCharsets.US_ASCII);
-                if (!lines.isEmpty()) {
-                    // BEWARE: spaces between arguments have been converted to 0
-                    String cmdLine = lines.get(0).replace((char) 0, ' ');
-                    logger.info("cmdline: {}", cmdLine);
-                    List<String> output = new ArrayList<String>();
-                    ///int res = Utilities.runProcess("bash", output, "-c", "sudo " + cmdLine);
-                    int res = Utilities.runProcess("bash", output, "-c", "gnome-terminal -x sudo " + cmdLine);
-                    if (res != 0) {
-                        logger.warn(Utilities.dumpOfLines(output));
-                        throw new RuntimeException("Could not relaunch as admin, exit: " + res);
-                    } else {
-                        return;
-                    }
-                }
+            // My command line
+            String cmdLine = getCommandLine();
+
+            // Relaunch as root
+            List<String> output = new ArrayList<String>();
+            int res = Utilities.runProcess(
+                    "bash",
+                    output,
+                    "-c",
+                    "gksudo \"" + cmdLine.replace('"', '\'') + "\"");
+
+            if (res != 0) {
+                logger.warn(Utilities.dumpOfLines(output));
+                throw new RuntimeException(
+                        "Could not relaunch as admin, exit: " + res);
             }
         } catch (Exception ex) {
             logger.warn("Error in relaunchAsAdmin()", ex);
+
+            // Purpose of this dialog box is to let user read the java console
+            // before the program (and console) disappear.
+            JOptionPane.showMessageDialog(
+                    Installer.getFrame(),
+                    "relaunchAsAdmin has failed",
+                    "Relaunch error",
+                    JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -243,10 +267,11 @@ public class UnixDescriptor
     // setenv //
     //--------//
     @Override
-    public void setenv(boolean system,
-            String var,
-            String value)
-            throws Exception {
+    public void setenv (boolean system,
+                        String var,
+                        String value)
+            throws Exception
+    {
         logger.trace("setenv() not really needed on Unix");
     }
 }
