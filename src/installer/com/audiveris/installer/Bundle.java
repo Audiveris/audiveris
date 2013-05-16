@@ -45,7 +45,7 @@ public class Bundle
     /** Sequence of companions. */
     private final List<Companion> companions = new ArrayList<>();
 
-    /** The install target folder, initialized to null. */
+    /** The install target folder, initialized to null. (not used) */
     private File installFolder;
 
     /** The specific companion in charge of OCR languages. */
@@ -53,6 +53,9 @@ public class Bundle
 
     /** Related view on this bundle, if any. */
     private BundleView view;
+
+    /** Flag for cancellation. */
+    private boolean cancelled = false;
 
     //~ Constructors -----------------------------------------------------------
     //--------//
@@ -333,4 +336,29 @@ public class Bundle
 //        // Update installation checks WRT this new folder
 //        checkInstallations();
 //    }
+    //-------------//
+    // isCancelled //
+    //-------------//
+    /**
+     * Check for cancellation.
+     *
+     * @return the cancelled flag value
+     */
+    public boolean isCancelled ()
+    {
+        return cancelled;
+    }
+
+    //--------------//
+    // setCancelled //
+    //--------------//
+    /**
+     * Set cancellation flag.
+     *
+     * @param cancelled the cancelled value to set
+     */
+    public void setCancelled (boolean cancelled)
+    {
+        this.cancelled = cancelled;
+    }
 }

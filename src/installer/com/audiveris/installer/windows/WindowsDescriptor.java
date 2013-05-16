@@ -41,7 +41,8 @@ import java.util.regex.Pattern;
  * @author Hervé Bitteur
  */
 public class WindowsDescriptor
-        implements Descriptor {
+        implements Descriptor
+{
     //~ Static fields/initializers ---------------------------------------------
 
     /**
@@ -49,6 +50,7 @@ public class WindowsDescriptor
      */
     private static final Logger logger = LoggerFactory.getLogger(
             WindowsDescriptor.class);
+
     /**
      * Specific prefix for application folders. {@value}
      */
@@ -58,82 +60,100 @@ public class WindowsDescriptor
     /**
      * Data for Microsoft Visual C++ 2008 Redistributable.
      */
-    private static interface CPP {
+    private static interface CPP
+    {
 
         /**
          * Registry value name.
          */
         static final String VALUE = "DisplayName";
+
         /**
          * Registry key for 32-bit.
          */
         static final String KEY_32 = "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{9BE518E6-ECC6-35A9-88E4-87755C07200F}";
+
         /**
          * Download URL for 32-bit.
          */
         static final String URL_32 = "http://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe";
+
         /**
          * Registry key for 64-bit.
          */
         static final String KEY_64 = "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{5FCE6D76-F5DC-37AB-B2B8-22AB8CEDB1D4}";
+
         /**
          * Download URL for 64-bit.
          */
         static final String URL_64 = "http://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x64.exe";
+
     }
 
     /**
      * Data for Ghostscript.
      */
-    private static interface GS {
+    private static interface GS
+    {
 
         /**
          * Registry radix for pure 32/32 or 64/64.
          */
         static final String RADIX_PURE = "HKLM\\SOFTWARE\\GPL Ghostscript";
+
         /**
          * Registry radix for Wow (32/64).
          */
         static final String RADIX_WOW = "HKLM\\SOFTWARE\\Wow6432Node\\GPL Ghostscript";
+
         /**
          * Download URL for 32-bit.
          */
         static final String URL_32 = "http://downloads.ghostscript.com/public/gs907w32.exe";
+
         /**
          * Download URL for 64-bit.
          */
         static final String URL_64 = "http://downloads.ghostscript.com/public/gs907w64.exe";
+
     }
 
     /**
      * Data for Tesseract.
      */
-    private static interface TESS {
+    private static interface TESS
+    {
 
         /**
          * System location for pure 32/32 or 64/64.
          */
         static final String SYSTEM_PURE = System.getenv("SystemRoot") + "\\System32";
+
         /**
          * System location for Wow (32/64).
          */
         static final String SYSTEM_WOW = System.getenv("SystemRoot") + "\\SysWow64";
+
         /**
          * Jar name for 32-bit.
          */
         static final String JAR_32 = "resources/tesseract-windows-32bit.jar";
+
         /**
          * Jar name for 64-bit.
          */
         static final String JAR_64 = "resources/tesseract-windows-64bit.jar";
+
         /**
          * Dll for leptonica.
          */
         static final String DLL_LEPTONICA = "liblept168.dll";
+
         /**
          * Dll for tesseract.
          */
         static final String DLL_TESSERACT = "libtesseract302.dll";
+
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -142,7 +162,8 @@ public class WindowsDescriptor
     // getConfigFolder //
     //-----------------//
     @Override
-    public File getConfigFolder() {
+    public File getConfigFolder ()
+    {
         final String appdata = System.getenv("APPDATA");
         final File root = new File(appdata + TOOL_PREFIX);
         final File file = new File(root, "config");
@@ -155,7 +176,8 @@ public class WindowsDescriptor
     // getDataFolder //
     //---------------//
     @Override
-    public File getDataFolder() {
+    public File getDataFolder ()
+    {
         final String appdata = System.getenv("APPDATA");
         final File root = new File(appdata + TOOL_PREFIX);
         final File file = new File(root, "data");
@@ -168,7 +190,8 @@ public class WindowsDescriptor
     // getDefaultTessdataPrefix //
     //--------------------------//
     @Override
-    public File getDefaultTessdataPrefix() {
+    public File getDefaultTessdataPrefix ()
+    {
         final String pf32 = DescriptorFactory.OS_ARCH.equals("x86")
                 ? "ProgramFiles"
                 : "ProgramFiles(x86)";
@@ -183,7 +206,8 @@ public class WindowsDescriptor
     // getTempFolder //
     //---------------//
     @Override
-    public File getTempFolder() {
+    public File getTempFolder ()
+    {
         final File folder = new File(getDataFolder(), "temp/installation");
         logger.debug("getTempFolder: {}", folder.getAbsolutePath());
 
@@ -194,8 +218,9 @@ public class WindowsDescriptor
     // installCpp //
     //------------//
     @Override
-    public void installCpp()
-            throws Exception {
+    public void installCpp ()
+            throws Exception
+    {
         final String url = DescriptorFactory.OS_ARCH.equals("x86") ? CPP.URL_32 : CPP.URL_64;
         Utilities.downloadExecAndInstall(
                 "C++ runtime", url, getTempFolder(), "/q");
@@ -205,8 +230,9 @@ public class WindowsDescriptor
     // installGhostscript //
     //--------------------//
     @Override
-    public void installGhostscript()
-            throws Exception {
+    public void installGhostscript ()
+            throws Exception
+    {
         final String url = DescriptorFactory.OS_ARCH.equals("x86") ? GS.URL_32 : GS.URL_64;
         Utilities.downloadExecAndInstall(
                 "Ghostscript", url, getTempFolder(), "/S");
@@ -216,8 +242,9 @@ public class WindowsDescriptor
     // installTesseract //
     //------------------//
     @Override
-    public void installTesseract()
-            throws Exception {
+    public void installTesseract ()
+            throws Exception
+    {
         final URI codeBase = Jnlp.basicService.getCodeBase().toURI();
         final String jarName = DescriptorFactory.OS_ARCH.equals("x86") ? TESS.JAR_32 : TESS.JAR_64;
         final URL url = Utilities.toURI(codeBase, jarName).toURL();
@@ -234,7 +261,8 @@ public class WindowsDescriptor
     // isAdmin //
     //---------//
     @Override
-    public boolean isAdmin() {
+    public boolean isAdmin ()
+    {
         // The UAC (User Access Control) appeared with Windows Vista
         // Before that, user was granted admin privileges by default
         try {
@@ -251,7 +279,8 @@ public class WindowsDescriptor
     // isCppInstalled //
     //----------------//
     @Override
-    public boolean isCppInstalled() {
+    public boolean isCppInstalled ()
+    {
         try {
             // Check Windows registry
             final String key = DescriptorFactory.OS_ARCH.equals("x86") ? CPP.KEY_32 : CPP.KEY_64;
@@ -269,7 +298,8 @@ public class WindowsDescriptor
     // isGhostscriptInstalled //
     //------------------------//
     @Override
-    public boolean isGhostscriptInstalled() {
+    public boolean isGhostscriptInstalled ()
+    {
         return getGhostscriptPath() != null;
     }
 
@@ -277,48 +307,48 @@ public class WindowsDescriptor
     // isTesseractInstalled //
     //----------------------//
     @Override
-    public boolean isTesseractInstalled() {
+    public boolean isTesseractInstalled ()
+    {
         final String sysDir = DescriptorFactory.WOW ? TESS.SYSTEM_WOW : TESS.SYSTEM_PURE;
         return Files.exists(Paths.get(sysDir, TESS.DLL_LEPTONICA))
-                && Files.exists(Paths.get(sysDir, TESS.DLL_TESSERACT));
+               && Files.exists(Paths.get(sysDir, TESS.DLL_TESSERACT));
     }
 
     //-----------------//
     // relaunchAsAdmin //
     //-----------------//
     @Override
-    public void relaunchAsAdmin() {
-        try {
-            String cmdLine = WindowsUtilities.getCommandLine();
-            logger.debug("cmdLine: {}", cmdLine);
+    public void relaunchAsAdmin ()
+            throws Exception
+    {
+        String cmdLine = WindowsUtilities.getCommandLine();
+        logger.debug("cmdLine: {}", cmdLine);
 
-            String execName = WindowsUtilities.getModuleFilename();
-            logger.debug("execName: {}", execName);
+        String execName = WindowsUtilities.getModuleFilename();
+        logger.debug("execName: {}", execName);
 
-            // Skip fileName with its enclosing quotes
-            int start = cmdLine.indexOf(execName);
-            String params = cmdLine.substring(start + execName.length() + 1);
-            logger.debug("params: {}", params);
+        // Skip fileName with its enclosing quotes
+        int start = cmdLine.indexOf(execName);
+        String params = cmdLine.substring(start + execName.length() + 1);
+        logger.debug("params: {}", params);
 
-            logger.debug("Relaunch as administrator...");
-            WindowsUtilities.runElevated(
-                    new File(execName),
-                    new File("."),
-                    params);
-            logger.debug("End of relaunch.");
-        } catch (HeadlessException | IOException | InterruptedException ex) {
-            logger.warn("Could not relaunch process", ex);
-        }
+        logger.debug("Relaunch as administrator...");
+        WindowsUtilities.runElevated(
+                new File(execName),
+                new File("."),
+                params);
+        logger.debug("End of relaunch.");
     }
 
     //--------//
     // setenv //
     //--------//
     @Override
-    public void setenv(boolean system,
-            String var,
-            String value)
-            throws IOException, InterruptedException {
+    public void setenv (boolean system,
+                        String var,
+                        String value)
+            throws IOException, InterruptedException
+    {
         List<String> args = new ArrayList<>();
         args.add("/C");
         args.add("setx");
@@ -344,7 +374,8 @@ public class WindowsDescriptor
      *
      * @return the best suitable path, or null if nothing found
      */
-    private String getGhostscriptPath() {
+    private String getGhostscriptPath ()
+    {
         // Group names
         final String VERSION = "version";
         final String PATH = "path";
@@ -444,7 +475,8 @@ public class WindowsDescriptor
      *
      * @return the output lines
      */
-    private List<String> getRegistryGhostscriptOutputs() {
+    private List<String> getRegistryGhostscriptOutputs ()
+    {
         /**
          * Radices used in registry search (32, 64 or Wow).
          */

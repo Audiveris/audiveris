@@ -54,7 +54,9 @@ public class UnixDescriptor
     private static final Package[] cReqs = new Package[]{
         new Package("libc6", "2.15"),
         new Package("libgcc1", "4.6.3"),
-        new Package("libstdc++6", "4.6.3")
+        new Package(
+        "libstdc++6",
+        "4.6.3")
     };
 
     /**
@@ -177,7 +179,11 @@ public class UnixDescriptor
         // sudo whoami -> root
         try {
             List<String> output = new ArrayList<String>();
-            int res = Utilities.runProcess("bash", output, "-c", "whoami");
+            int res = Utilities.runProcess(
+                    "bash",
+                    output,
+                    "-c",
+                    "whoami");
 
             if (res != 0) {
                 logger.warn(Utilities.dumpOfLines(output));
@@ -232,34 +238,22 @@ public class UnixDescriptor
     //-----------------//
     @Override
     public void relaunchAsAdmin ()
+            throws Exception
     {
-        try {
-            // My command line
-            String cmdLine = getCommandLine();
+        // My command line
+        String cmdLine = getCommandLine();
 
-            // Relaunch as root
-            List<String> output = new ArrayList<String>();
-            int res = Utilities.runProcess(
-                    "bash",
-                    output,
-                    "-c",
-                    "gksudo \"" + cmdLine.replace('"', '\'') + "\"");
+        // Relaunch as root
+        List<String> output = new ArrayList<String>();
+        int res = Utilities.runProcess(
+                "bash",
+                output,
+                "-c",
+                "gksudo \"" + cmdLine.replace('"', '\'') + "\"");
 
-            if (res != 0) {
-                logger.warn(Utilities.dumpOfLines(output));
-                throw new RuntimeException(
-                        "Could not relaunch as admin, exit: " + res);
-            }
-        } catch (Exception ex) {
-            logger.warn("Error in relaunchAsAdmin()", ex);
-
-            // Purpose of this dialog box is to let user read the java console
-            // before the program (and console) disappear.
-            JOptionPane.showMessageDialog(
-                    Installer.getFrame(),
-                    "relaunchAsAdmin has failed",
-                    "Relaunch error",
-                    JOptionPane.WARNING_MESSAGE);
+        if (res != 0) {
+            logger.warn(Utilities.dumpOfLines(output));
+            throw new RuntimeException("Failure, exit: " + res);
         }
     }
 

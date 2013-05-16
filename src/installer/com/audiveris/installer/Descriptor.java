@@ -16,7 +16,7 @@ import java.io.File;
 /**
  * Interface {@code Descriptor} defines the features to be provided
  * to the Installer by any target environment (os + arch).
- * 
+ *
  * <p>This interface has been defined with generality in mind, but may have
  * suffered from the bias of the initial Windows-based implementation.
  * Hence, it still may evolve when we hit the development of implementations for
@@ -47,7 +47,6 @@ public interface Descriptor
     static final String GHOSTSCRIPT_MIN_VERSION = "9.06";
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * Report the folder to be used for read-write configuration.
      *
@@ -88,19 +87,19 @@ public interface Descriptor
      * Install the proper C++ runtime.
      */
     void installCpp ()
-        throws Exception;
+            throws Exception;
 
     /**
      * Install a suitable Ghostscript.
      */
     void installGhostscript ()
-        throws Exception;
+            throws Exception;
 
     /**
      * Install a suitable Tesseract.
      */
     void installTesseract ()
-        throws Exception;
+            throws Exception;
 
     /**
      * Report whether the current process is run with administrator
@@ -135,7 +134,8 @@ public interface Descriptor
      * Re-launch the current process, with identical commands, but with
      * administrator rights this time.
      */
-    void relaunchAsAdmin ();
+    void relaunchAsAdmin ()
+            throws Exception;
 
     /**
      * Set an environment variable, permanently.
@@ -145,7 +145,7 @@ public interface Descriptor
      * @param value  assigned value
      */
     void setenv (boolean system,
-                 String  var,
-                 String  value)
-        throws Exception;
+                 String var,
+                 String value)
+            throws Exception;
 }

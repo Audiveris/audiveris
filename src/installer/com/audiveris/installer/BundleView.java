@@ -61,6 +61,12 @@ public class BundleView
 
     private static final Color BUTTON_BACKGROUND = new Color(250, 250, 200);
 
+    /** Cancel label for the stop action. */
+    private static final String CANCEL = "Cancel";
+
+    /** Close label for the stop action. */
+    private static final String CLOSE = "Close";
+
     //~ Instance fields --------------------------------------------------------
     //
     /** Related bundle. */
@@ -72,8 +78,8 @@ public class BundleView
     /** To start the installation. */
     private StartAction startAction;
 
-    /** To cancel or exit the installation. */
-    private CancelAction cancelAction;
+    /** To stop (cancel or exit) the installation. */
+    private StopAction stopAction;
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -96,7 +102,7 @@ public class BundleView
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         startAction = new StartAction();
-        cancelAction = new CancelAction();
+        stopAction = new StopAction();
 
         Container pane = getContentPane();
         pane.setLayout(new BorderLayout());
@@ -150,7 +156,7 @@ public class BundleView
         panel.setBackground(BUTTON_BACKGROUND);
 
         panel.add(new ButtonPanel(startAction), BorderLayout.WEST);
-        panel.add(new ButtonPanel(cancelAction), BorderLayout.EAST);
+        panel.add(new ButtonPanel(stopAction), BorderLayout.EAST);
 
         return panel;
     }
@@ -224,7 +230,7 @@ public class BundleView
         final CellConstraints cst = new CellConstraints();
 
         int iRow = 0;
-        
+
         // FolderSelector is currently disabled
         //        iRow +=2;
         //        // Add the folder selector
@@ -308,29 +314,6 @@ public class BundleView
         }
     }
 
-    //--------------//
-    // CancelAction //
-    //--------------//
-    private class CancelAction
-            extends AbstractAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public CancelAction ()
-        {
-            super("Cancel");
-            putValue(SHORT_DESCRIPTION, "Cancel the installation");
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            logger.debug("CancelAction performed");
-            bundle.close();
-        }
-    }
-
     //-------------//
     // StartAction //
     //-------------//
@@ -341,7 +324,7 @@ public class BundleView
 
         public StartAction ()
         {
-            super("Launch");
+            super("Install");
             putValue(SHORT_DESCRIPTION, "Launch the installation");
         }
 
@@ -352,8 +335,38 @@ public class BundleView
             logger.debug("StartAction performed");
 
             setEnabled(false);
-            cancelAction.setEnabled(false);
+            stopAction.setEnabled(false);
             new Worker().execute();
+        }
+    }
+
+    //------------//
+    // StopAction //
+    //------------//
+    private class StopAction
+            extends AbstractAction
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public StopAction ()
+        {
+            super(CANCEL);
+            putValue(SHORT_DESCRIPTION, "Cancel the installation");
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            if (getValue(NAME)
+                    .equals(CANCEL)) {
+                logger.debug("Cancel Action performed");
+                bundle.setCancelled(true);
+            } else {
+                logger.debug("Close Action performed");
+            }
+
+            bundle.close();
         }
     }
 
@@ -371,6 +384,7 @@ public class BundleView
         {
             try {
                 bundle.installBundle();
+                logger.info("\nYou can now safely exit.\n");
                 JOptionPane.showMessageDialog(
                         Installer.getFrame(),
                         "Installation completed successfully",
@@ -378,8 +392,6 @@ public class BundleView
                         JOptionPane.INFORMATION_MESSAGE);
 
                 Jnlp.extensionInstallerService.installSucceeded(false);
-
-                logger.info("\nYou can now safely exit.\n");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(
                         Installer.getFrame(),
@@ -397,10 +409,10 @@ public class BundleView
         protected void done ()
         {
             startAction.setEnabled(true);
-            cancelAction.setEnabled(true);
+            stopAction.setEnabled(true);
 
-            cancelAction.putValue(AbstractAction.NAME, "Exit");
-            cancelAction.putValue(
+            stopAction.putValue(AbstractAction.NAME, CLOSE);
+            stopAction.putValue(
                     AbstractAction.SHORT_DESCRIPTION,
                     "Close the installer");
         }

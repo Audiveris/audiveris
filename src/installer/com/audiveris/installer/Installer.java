@@ -21,8 +21,8 @@ import javax.jnlp.UnavailableServiceException;
 import javax.swing.JOptionPane;
 
 /**
- * Class {@code Installer} is the main class for installation of Audiveris
- * complete bundle using Java Web Start technology.
+ * Class {@code Installer} is the main class for installation of
+ * Audiveris complete bundle using Java Web Start technology.
  * <p>
  * We can assume that, thanks to Java Web Start, a proper JRE version is made
  * available for this installer before it is launched.
@@ -172,11 +172,16 @@ public class Installer
                 latch.await();
 
                 // To avoid immediate closing...
-                JOptionPane.showMessageDialog(
-                        Installer.getFrame(),
-                        "Closing time!",
-                        "This is the end",
-                        JOptionPane.INFORMATION_MESSAGE);
+                //                JOptionPane.showMessageDialog(
+                //                        Installer.getFrame(),
+                //                        "Closing time!",
+                //                        "This is the end",
+                //                        JOptionPane.INFORMATION_MESSAGE);
+
+                // What if the user has simply not launched the install?
+                if (bundle.isCancelled()) {
+                    Jnlp.extensionInstallerService.installFailed();
+                }
             } else {
                 bundle.installBundle();
 
@@ -205,9 +210,7 @@ public class Installer
      * (with single argument {@code install}) and at de-installation
      * time (with single argument {@code uninstall}).
      *
-     * @param args order and case of arguments are not relevant.
-     *             We expect "install" for installation and "uninstall" for
-     *             de-installation.
+     * @param args either "install" or "uninstall"
      * @throws UnavailableServiceException
      */
     public static void main (String[] args)
@@ -231,6 +234,8 @@ public class Installer
         }
 
         if (isInstall) {
+            logger.info("Performing install.");
+
             if (isAdmin) {
                 // We have the needed priviledges, let's go
                 INSTANCE = new Installer();
@@ -241,14 +246,34 @@ public class Installer
                         "Launching a new installer at Administrator level.");
                 JOptionPane.showMessageDialog(
                         Installer.getFrame(),
-                        "Relaunching as Administrator",
-                        "Elevation needed",
+                        "Installation requires Administrator privileges. \n"
+                        + "An elevated installer will be launched",
+                        "About to launch an elevated installer",
                         JOptionPane.INFORMATION_MESSAGE);
 
-                descriptor.relaunchAsAdmin();
-                logger.info("Back from Administrator installer.");
+                try {
+                    descriptor.relaunchAsAdmin();
+                    logger.info("Back from launching Administrator installer.");
+
+                    // Notify success (needed for Ubuntu)
+                    Jnlp.extensionInstallerService.installSucceeded(false);
+                } catch (Exception ex) {
+                    logger.warn("Error in relaunchAsAdmin()", ex);
+
+                    // Let user read the java console
+                    // before the program (and console) disappear.
+                    JOptionPane.showMessageDialog(
+                            Installer.getFrame(),
+                            "Installer has failed: " + ex.getMessage(),
+                            "Elevated installer failure",
+                            JOptionPane.WARNING_MESSAGE);
+
+                    // Notify failure
+                    Jnlp.extensionInstallerService.installFailed();
+                }
             }
         } else if (isUninstall) {
+            logger.info("Performing uninstall.");
             INSTANCE = new Installer();
             INSTANCE.uninstall();
         } else {

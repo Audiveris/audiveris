@@ -43,6 +43,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
+import javax.imageio.spi.IIORegistry;
 import javax.imageio.stream.ImageOutputStream;
 
 /**
@@ -60,6 +61,13 @@ public class TesseractOrder
 
     /** To avoid repetitive warnings if OCR binding failed */
     private static boolean userWarned;
+
+    /** Needed (for OpenJDK) to register TIFF support. */
+    static {
+        IIORegistry registry = IIORegistry.getDefaultInstance();
+        registry.registerServiceProvider(new com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriterSpi());
+        registry.registerServiceProvider(new com.sun.media.imageioimpl.plugins.tiff.TIFFImageReaderSpi());
+    }
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -300,7 +308,7 @@ public class TesseractOrder
                 String charValue = it.GetUTF8Text(Level.SYMBOL);
                 Rectangle charBox = it.BoundingBox(Level.SYMBOL);
                 if (charValue.equals("—") && charBox.width <= maxDashWidth) {
-                    charValue = "-";                    
+                    charValue = "-";
                     // Containing word value will be updated later
                 }
 
@@ -354,7 +362,7 @@ public class TesseractOrder
                 WellKnowns.TEMP_FOLDER.mkdir();
             }
             try (final FileOutputStream fos = new FileOutputStream(
-                            file.getAbsolutePath())) {
+                    file.getAbsolutePath())) {
                 fos.write(bytes);
             }
         }

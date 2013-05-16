@@ -47,6 +47,12 @@
         <jar href="lib/jgoodies-looks-2.5.3.jar"/>
         <jar href="lib/slf4j-api-1.7.5.jar"/>
         
+        <jar href="lib/jai_imageio.jar"/>
+        <jar href="lib/clibwrapper_jiio.jar"/>
+        <jar href="lib/jai_core.jar"/>
+        <jar href="lib/jai_codec.jar"/>
+        <jar href="lib/mlibwrapper_jai.jar"/>        
+        
         <!-- lazy download after this line -->
         
         <!-- Used for printing score -->
@@ -66,17 +72,6 @@
         <!-- Used for score marshalling -->
         <jar href="lib/proxymusic-3.0.jar"          download="lazy" part="marshalling"/>
         <package name="com.audiveris.proxymusic.*" recursive="true" part="marshalling" />
-        
-        <!-- Used for image IO -->
-        <jar href="lib/jai_imageio.jar"      download="lazy" part="iio" />
-        <jar href="lib/clibwrapper_jiio.jar" download="lazy" part="iio" />
-        <package name="javax.imageio.*"     recursive="true" part="iio" />
-        
-        <!-- Used for specific JAI features -->
-        <jar href="lib/jai_core.jar"         download="lazy" part="jai" />
-        <jar href="lib/jai_codec.jar"        download="lazy" part="jai" />
-        <jar href="lib/mlibwrapper_jai.jar"  download="lazy" part="jai" />        
-        <package name="javax.media.jai.*"   recursive="true" part="jai" />
         
         <!-- Link to Audiveris bundle installer -->
         <extension href="installer.jnlp" />
