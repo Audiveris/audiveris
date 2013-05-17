@@ -67,19 +67,19 @@
                 <p>
                     You can now launch Audiveris through JNLP technology.
                     <br/>
-                    [Caveat: This is a beta version, limited to Windows OS for the time being]
+                    [Caveat: This is a beta version, limited for the time being
+                    to <b>Windows</b> (with Oracle Java) and 
+                    to <b>Ubuntu</b> (with Oracle Java, and not IcedTea Java yet)]
                 </p>
                 <ul>
                     <li>
-                        Simply click on the Launch button:
-                        <script>
-            deployJava.createWebStartLaunchButton("http://herve.bitteur.free.fr/jnlp-audiveris/launch.jnlp");
-                        </script>
+                        Simply click on this Launch button:
+                        <script>deployJava.createWebStartLaunchButton("https://audiveris.kenai.com/jnlp/launch.jnlp");</script>
                     </li>
                     <li>
-                        Or type this command in a terminal window:
-<!--                        <code>javaws http://audiveris.kenai.com/jnlp/launch.jnlp</code>-->
-                        <code>javaws http://herve.bitteur.free.fr/jnlp-audiveris/launch.jnlp</code>
+                        Or type this command from a terminal
+                        (mind the 's' in https):
+                        <code>javaws https://audiveris.kenai.com/jnlp/launch.jnlp</code>
                     </li>
                 </ul>
 
@@ -139,8 +139,9 @@
             <article id="news">
                 <h2>News</h2>
                 <ul>
-                    <li>Audiveris through Java Web Start (Beta)
-                        <div class="creation-date">April 23, 2013</div>
+                    <li>Audiveris through <a href="docs/manual/handbook.html#jws">
+                            Java Web Start</a> (Beta) for Windows and Ubuntu
+                        <div class="creation-date">May 16, 2013</div>
                     </li>
                     <li><a href="docs/manual/AudiverisMusicHackDayVienna2013.pdf">
                             Presentation</a> made at

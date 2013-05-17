@@ -153,6 +153,10 @@
                         Java Web Start
                     </h3>
                     <p>
+                        The goal is to drive all installations and runs of 
+                        Audiveris through Java Web Start.
+                    </p>
+                    <p>
                         Paraphrased from 
                         <a href="http://docs.oracle.com/javase/tutorial/deployment/webstart/">Sun/Oracle documentation</a>,
                         the purpose of Java Web Start is to let users launch a 
@@ -169,8 +173,9 @@
                         to deploy the application on different OS'es such as
                         <b>Windows</b>, <b>Linux</b> or <b>Mac</b>, using either
                         <b>32-bit</b> or <b>64-bit</b> architectures.
-                        <i>[As of this writing, only Windows launch is available
-                            in beta, Linux and Mac are still to go]</i>
+                        <i>[As of this writing, only Windows and Ubuntu launches
+                            are available and only through Oracle JDK. 
+                            Mac is still to go]</i>
                     </p>
                     <p>
                         Applications launched with Java Web Start are cached 
@@ -194,29 +199,49 @@
                         <li>An extension component, named the <i>"installer"</i>,
                             is in charge of installing a bundle of companion 
                             softwares (C++ runtime, Ghostscript, Tesseract
-                            languages, docs, examples, training samples, ...).
+                            library and languages, docs, examples, training 
+                            samples, ...).
                             This installer is automatically run behind the scene
                             only the first time Audiveris is launched.
                             It is run again if and when Audiveris is explicitly 
                             uninstalled.
                     </ol>
 
+                    <div class="indent warning">
+                        <p>
+                            NOTA: For the time being, this Java Web Start 
+                            approach works for the <b>Oracle Java</b> 
+                            environment only, whether on Windows or Ubuntu.
+                            In particular, the Ubuntu <b>IcedTea</b> Java 
+                            environment is still being debugged.
+                        </p>
+                        <p>
+                            To check or modify which Java Web Start tool is 
+                            used by default on Ubuntu, use the command:
+                        </p>
+                        <p class="indent">
+                            <code>sudo update-alternatives --config javaws</code>
+                        <p>
+                    </div>
+
                     <h4 id="first-launch">First launch</h4>
 
                     <p>To launch Audiveris the very first time, you have two 
-                        possibilities:</p>
+                        possibilities, regardless of your operating system:</p>
                     <ul>
                         <li>Either click on this 
                             <script>
-            deployJava.createWebStartLaunchButton("http://audiveris.kenai.com/jnlp/launch.jnlp");
+            deployJava.createWebStartLaunchButton("https://audiveris.kenai.com/jnlp/launch.jnlp");
                             </script>
-                            button.
-                            You can also find a similar button on 
+                            button or the same button found on 
                             <a href="http://audiveris.kenai.com/">
                                 Audiveris home page</a>.
                         </li>
-                        <li>Or open a terminal window and there type the command:
-                            <code>javaws http://audiveris.kenai.com/jnlp/launch.jnlp</code>
+                        <li>Or from a terminal use the command:
+                            <code>javaws https://audiveris.kenai.com/jnlp/launch.jnlp</code>
+                            <br/>
+                            (Nota: mind the 's' in https. Otherwise you may get 
+                            errors like "illegal URL redirect")
                         </li>
                     </ul>
 
@@ -228,16 +253,22 @@
                         Such JNLP file describes the whole download and launch
                         process.
                         The main visible steps are described here after in 
-                        sequence:
+                        sequence (most pictures are taken from the Windows
+                        environment, their Ubuntu equivalent are very similar):
                     </p>
                     <br class="clear"/>
 
                     <img class="side" title="Java launcher" 
                          src="../images/installer-java.png" />
                     <p>
-                        This is the local Java runtime downloading the 
-                        JNLP file and perhaps a more recent Java runtime
-                        if so needed.
+                        The local Java runtime downloads the 
+                        JNLP file and related resources. 
+                    </p>
+                    <p>
+                        The JNLP file describes a set or requirements, including
+                        the Java environment.
+                        If needed, a more recent Java runtime may get downloaded
+                        automatically.
                     </p>
 
                     <br class="clear"/>
@@ -245,7 +276,7 @@
                          src="../images/installer-downloading.png" />
                     <p>
                         The initial components for Audiveris application are
-                        downloaded as needed.
+                        downloaded as needed and cached locally.
                     </p>
                     <p>
                         The download applies for the first launch only, after
@@ -281,32 +312,59 @@
                     </p>
                     <p>
                         This elevation will not be asked if you are 
-                        already running at administrator level:
+                        already running at administrator level.
                     </p>
                     <ul>
-                        <li>This is the default when using Windows XP,</li>
-                        <li>Later Windows versions (Vista, 7, 8) will ask for 
-                            elevation, unless for example the terminal window
-                            itself was launched with administrator privileges
-                            [To do so, use a right-click on the terminal desktop 
-                            icon and select <code>Run as Administrator</code> 
-                            from the pull-down menu].</li>
-                        <li>You can also lower the Windows default setting from 
-                            Windows control panel although this is not 
-                            recommended as a permanent setting.
+                        <li>For Windows:
+                            <ul>
+                                <li>This is the default when using Windows XP,</li>
+                                <li>Later Windows versions (Vista, 7, 8) will ask for 
+                                    elevation, unless for example the terminal window
+                                    itself was launched with administrator privileges
+                                    [To do so, use a right-click on the terminal desktop 
+                                    icon and select <code>Run as Administrator</code> 
+                                    from the pull-down menu].</li>
+                                <li>You can also lower the Windows default setting from 
+                                    Windows control panel although this is not 
+                                    recommended as a permanent setting.
+                                </li>
+                            </ul>
+                        </li>
+                        <li>For Ubuntu:
+                            <ul>
+                                <li>By default you don't run with admin 
+                                    privileges,</li>
+                                <li>But you can use for example <code>sudo</code>
+                                    to run as root temporarily.</li>
+                            </ul>
+                        </li>
                     </ul>
+                    <p>
+                        Assuming you are not running with administrative
+                        privileges, the elevation will be asked by the Installer.
+                    </p>
                     <img class="right" title="User Account Control" 
                          src="../images/installer-uac.png" />
-                    <p>
-                        If elevation is needed, you will see this typical UAC 
+                    <p>On Windows you will see this typical UAC 
                         (User Account Control) dialog that recent Windows 
                         versions use to prompt for user agreement.
                     </p>
                     <p>
-                        Click <code>Yes</code> to proceed and let the installer 
-                        run.
+                        Click <code class='button'>Yes</code> to proceed and 
+                        let the installer run.
                     </p>
 
+                    <br class="clear"/>
+                    <img class="right" title="gksudo prompt" 
+                         src="../images/installer-gksudo.png" />
+                    <p>
+                        On Ubuntu, you will see a <code>gksudo</code>
+                        prompt for your password in order to perform this ugly 
+                        administrative task.
+                    </p>
+                    <p>
+                        Enter your password and proceed.
+                    </p>
                     <br class="clear"/>
                     <img class="side" title="Running installer" 
                          src="../images/installer-running.png" />
@@ -333,7 +391,7 @@
                         <li>The footer provides buttons to launch or cancel the
                             installation.</li>
                     </ul>
-                    
+
                     <p>
                         Note that you cannot change the folder where Audiveris
                         application data is installed.
@@ -426,9 +484,11 @@
                     </p>
 
                     <br class="clear"/>
-                    <img class="side" title="Audiveris Application" 
-                         src="../images/installer-audiveris.png" 
-                         width="570"/>
+                    <a href="../images/installer-audiveris.png">
+                        <img class="side" title="Audiveris Application" 
+                             src="../images/installer-audiveris.png" 
+                             width="570"/>
+                    </a>
                     <p>
                         This is the end. If installation succeeded you can now
                         see the main Audiveris application window.
@@ -472,17 +532,43 @@
                     <p>
                         So, where has Audiveris application gone? 
                         In the global Java cache.
+                        And you can monitor this Java cache, from the Java 
+                        Control Panel.
+                    </p>
+                    <img class="side" title="Java cache" 
+                         src="../images/installer-jcp.png" />
+                    <p>To display the Java Control Panel:</p>
+                    <ul>
+                        <li>
+                            On Windows, use the Control Panel and select Java.
+                        </li>
+                        <li>
+                            On Ubuntu, use the terminal command:
+                            <code>ControlPanel</code>.
+                        </li>
+                    </ul>
+                    <p>
+                        From this panel:
                     </p>
                     <p>
-                        You can monitor this Java cache:
+                        <code class='button'>Settings...</code> allows to
+                        manage the cache globally and especially through
+                        <code class='button'>Delete Files...</code> to clear 
+                        everything and restart from a fresh cache.
                     </p>
-                    <ul>
-                        <li>On Windows, use the Control Panel and select Java.
-                            This displays the <code>Java Control Panel</code>.
-                            Click on <code class="button">View...</code></li>
-                        <li>Or, in a terminal window, use the command line:
-                            <code>javaws -viewer</code></li>
-                    </ul>
+                    <p>
+                        <code class='button'>View...</code> allows to manage 
+                        each cached application individually.
+                    </p>
+                    <p>                        
+                        More directly, from a terminal in Windows or Ubuntu,
+                        the command line:
+                        <br/>
+                        <code>javaws -viewer</code> 
+                        <br/>
+                        opens both the Java Control Panel and its applications 
+                        viewer.
+                    </p>
 
                     <br class="clear"/>
                     <img class="side" title="Java cache" 
@@ -516,7 +602,7 @@
                         <li>Either use the cache view as shown above, and 
                             select the uninstallation action,</li>
                         <li>Or, in a terminal window, use the command line:
-                            <code>javaws -uninstall http://audiveris.kenai.com/jnlp/launch.jnlp</code>
+                            <code>javaws -uninstall https://audiveris.kenai.com/jnlp/launch.jnlp</code>
                             <br>[note the <code>-uninstall</code> option]
                         </li>
                     </ul>
@@ -531,7 +617,8 @@
                     <p>
                         You then get the Audiveris bundle Installer window,
                         this time running for uninstallation.
-                        For the time being, the software companions are not 
+                        For the time being, the "uninstaller" is just a stub, 
+                        meaning the software companions are not actually 
                         uninstalled and you get the following message almost 
                         immediately:
                     </p>
@@ -566,131 +653,18 @@
                 </article>
 
                 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-                <article id="windows">
-                    <h3>
-                        Windows environment
-                    </h3>
-                    <p>
-                        <em>
-                            Please note that this section is obsolete since,
-                            starting with Windows, users are now encouraged to 
-                            use the new Java Web Start approach.
-                        </em>
-                    </p>
-                    <p>
-                        For Windows users, a pair of Microsoft Installer files 
-                        is available in the 
-                        <a href="http://kenai.com/projects/audiveris/downloads?field=title&order=desc">
-                            download area</a> of Audiveris project.
-                        The files are named respectively
-                        <code>audiveris-<i>V.v.r</i>-x86.msi</code> (for 32-bit)
-                        and
-                        <code>audiveris-<i>V.v.r</i>-x64.msi</code> (for 64-bit)
-                        where <q>V.v.r</q> stands for Audiveris version+revision.
-                    </p>
-                    <p>The Windows installer will take care of all needed 
-                        components:
-                        Application code and data, Java runtime, C++ runtime,
-                        Tesseract OCR and language files, Ghostscript software,
-                        musical font, etc.
-                    </p>
-                    <p>                    
-                        <b>Important:</b> Download the installer that fits
-                        your architecture. 
-                        In the specific case of a 64-bit machine with a 64-bit
-                        Java environment, make sure to use the 64-bit 
-                        Audiveris release otherwise the C++ library will
-                        fail to load when invoked from Java.
-                    </p>
-                    <img class="side" width="305" height="239" title="Welcome screen" 
-                         alt="msi-welcome" src="../images/msi-welcome.png" />
-                    <p>                    
-                        Launch the installation by a double-click on the 
-                        downloaded installer file.
-                        The installer presents a welcome screen.
-                    </p>
-                    <p>
-                        <b>Note:</b> If an older Audiveris version is already
-                        installed, you'll get a warning dialog asking you to
-                        uninstall it via Windows configuration panel prior to 
-                        installing the new version.
-                    </p>
-
-                    <br class="clear"/>
-                    <img class="side" width="305" height="239" title="License screen" 
-                         alt="msi-license" src="../images/msi-license.png" />
-                    <p>
-                        The next screen allows to  browse the Audiveris license:
-                        <a href="http://www.gnu.org/licenses/gpl-2.0.html#SEC1">
-                            GNU GPL V2</a>.
-                        If you agree with the license, check the dedicated check
-                        box and proceed to the next installation screen.
-                    </p>
-
-                    <br class="clear"/>
-                    <img class="side" width="305" height="239" title="Setup selection" 
-                         alt="msi-choose-setup" src="../images/msi-choose-setup.png" />
-                    <p>
-                        The next screen allows to select the proper setup (typical,
-                        custom or complete)
-                    </p>
-
-                    <br class="clear"/>
-                    <img class="side" width="305" height="239" title="Optional components" 
-                         alt="msi-custom-setup" 
-                         src="../images/msi-custom-setup.png" />
-                    <p>
-                        If you select the custom setup, you have the ability to choose
-                        the installation location and decide on the installation of
-                        optional components.
-                    </p>
-                    <p>
-                        Note that you can always change your mind later and add or
-                        remove some or all of these optional components. To do so,
-                        simply relaunch the installer program, it will prompt you for
-                        your new decisions.
-                    </p>
-
-                    <div id="java-snippet" class="snippet clear">
-                        <img class="right"
-                             title="Java runtime" alt="java-requirement" 
-                             src="../images/java-requirement.png" />
-                        <strong>Java check:</strong>
-                        <p>
-                            Audiveris installation will complete with the Java 
-                            Runtime Environment (JRE) check performed at launch 
-                            time.
-                        </p>
-                        <p>
-                            Java 7 is the required JRE as of this writing. 
-                            If the check fails, you will be prompted by a 
-                            Launch4j dialog.
-                        </p>
-                        <p>
-                            By a click on the <code class="button">OK</code>
-                            button, you will be connected to the
-                            Java download page. 
-                        </p>
-                        <ol>
-                            <li>Make sure to select the Java 7 link
-                                (and not Java 6) and choose either the JRE or JDK.</li>
-                            <li>Download the proper file, Windows x86 (32-bit) or 
-                                Windows x64 (64-bit), according to your computer 
-                                hardware architecture.</li>
-                            <li>A double click on the downloaded file will install the
-                                Java environment.</li>
-                            <li>When the Java installation completes, relaunch 
-                                Audiveris.</li>
-                        </ol>
-                    </div>
-                </article>
-
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="linux">
                     <h3>
                         Linux environment
                     </h3>
+                    <p class='warning indent'>
+                        Please note that this section is obsolete since
+                        users are now encouraged to use the single Java Web 
+                        Start approach available for Windows and for Ubuntu.
+                        It can still be useful for other Linux versions or for
+                        people that prefer building Audiveris on their own.
+                    </p>
                     <p> 
                         Due to impossibility to support the sheer number of Linux
                         distributions and different binary formats used, we 
@@ -1033,57 +1007,6 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                     <pre class="code">gs --version</pre>
                 </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-
-                <article id="adding-languages">
-                    <h3>
-                        Adding OCR languages
-                    </h3>
-                    <p> 
-                        Audiveris uses Tesseract as the <abbr 
-                            title="Optical Character Recognition">OCR</abbr>
-                        engine to retrieve and transcribe all score text items.
-                    </p>
-                    <p> 
-                        Since OCR language files can exhibit huge sizes, only
-                        selected languages are contained in Audiveris 
-                        installation packages for Windows and Ubuntu Linux.
-                        The default languages are: German (deu),
-                        English (eng), French (fra) and Italian (ita). 
-                    </p>
-                    <p> 
-                        <b>On Windows</b>, you can simply download additional
-                        languages and put them into the <code>ocr/tessdata</code>
-                        folder.
-                        All languages files are available for download on the 
-                        <a href="http://code.google.com/p/tesseract-ocr/downloads/list">
-                            Tesseract site</a>.
-                    </p>
-                    <p>
-                        <b>On Linux</b>, you need to install additional
-                        language files manually as described in the beginning 
-                        of the <a href="#manual-ocr-files">Installing
-                            language files</a> section. 
-                        Please be aware of different locations of the 
-                        <code>tessdata</code> folder where language files go 
-                        into.
-                        These are:
-                    </p>
-                    <ul>
-                        <li>
-                            <code>/usr/share/tesseract-ocr/tessdata</code> 
-                            on Ubuntu 12.04,
-                        </li>
-                        <li>
-                            <code>/usr/share/tessdata</code> on OpenSUSE 12.2,
-                        </li>
-                        <li>
-                            <code>/usr/local/share/tessdata</code> when compiled
-                            from sources.
-                        </li>
-                    </ul>
-                </article>
-
                 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
                 <article id="loading-an-image">
@@ -1164,7 +1087,7 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                             the mandatory steps. 
                             In fact they will be processed as needed in sequence when 
                             some output is asked for.
-                            See the <a href="cli">Command Line Interface</a> section for
+                            See the <a href="#cli">Command Line Interface</a> section for
                             a quick presentation of the steps sequence and the 
                             <a href="#internals">Internals</a> chapter for further 
                             details.</li>
@@ -1177,9 +1100,16 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                     <h4 id="main-window-layout">
                         Main window layout
                     </h4>
-                    <img class="right" width="629" height="467" 
-                         src="../images/chula-score.png"
-                         alt="score" title="Application main window"/>
+                    <figure class="right">
+                        <a href="../images/chula-score.png">
+                            <img width="629" height="467" 
+                                 src="../images/chula-score.png"
+                                 alt="score" title="Application main window"/>
+                        </a>
+                        <figcaption>
+                            [Click on image for full-size display]
+                        </figcaption>
+                    </figure>
                     <p>
                         Within a few seconds after selecting the <code>SCORE</code> step
                         (or any other subsequent step) you should get a screen similar 
@@ -1215,6 +1145,9 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                         <dd>
                             The lower left panel is a log of the main events that
                             occurred so far.
+                            More details are available in the Audiveris log 
+                            file (the precise path to this log file is displayed
+                            at the top of the event panel)
                         </dd>
                         <dt>Errors</dt>
                         <dd>
@@ -3864,9 +3797,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                                         <li><a href="#uninstallation">Uninstallation</a></li>                                        
                                     </ul>
                                 </li>
-                                <li><a href="#windows">On Windows</a>
-                                </li>
-                                <li><a href="#linux">On Linux</a>
+                                <li><a href="#linux">Linux specials</a>
                                     <ul>
                                         <li><a href="#linux-debian">Ubuntu</a></li>
                                         <li><a href="#linux-generic">Generic RPMs</a></li>
@@ -3881,11 +3812,10 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                                         </li>
                                     </ul>                                
                                 </li>
-                                <li><a href="#adding-languages">Adding languages</a></li>
                                 <li><a href="#loading-an-image">Loading an image</a></li>
                                 <li><a href="#transcription">Transcription</a>
                                     <ul>
-                                        <li><a href="#main-window-layout">Window layout</a></li>
+                                        <li><a href="#main-window-layout">Main layout</a></li>
                                         <li><a href="#sheet-display-modes">Display modes</a></li>
                                     </ul>
                                 </li>
