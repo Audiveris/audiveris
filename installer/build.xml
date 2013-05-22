@@ -68,6 +68,9 @@
         <!-- Populate examples + docs + train to resources/ -->
         <mkdir dir="resources" />
         
+        <echo message="-- Building resources/plugins.jar"/>
+        <jar basedir="../config" destfile="resources/plugins.jar" includes="plugins/**"/>
+        
         <echo message="-- Building resources/examples.jar"/>
         <jar basedir="../data" destfile="resources/examples.jar" includes="examples/**"/>
         
