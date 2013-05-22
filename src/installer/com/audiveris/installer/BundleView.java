@@ -240,7 +240,7 @@ public class BundleView
         // Add the languages component
         iRow += 2;
 
-        LangSelector langSelector = bundle.getLangCompanion()
+        LangSelector langSelector = bundle.getOcrCompanion()
                 .getSelector();
         builder.add(langSelector.getComponent(), cst.xy(2, iRow));
 
@@ -265,7 +265,7 @@ public class BundleView
         pack();
 
         // Window size
-        final int width = 625;
+        final int width = 672;
         final int height = 400;
         final int gapFromBorder = 20;
         setSize(width, height);

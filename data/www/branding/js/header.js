@@ -19,12 +19,10 @@ document.write("<a id='logo' href='" + context.root + "index.html'>");
 document.write("   <div id='logo-subtitle'>Open Music Scanner</div>");
 document.write("</a>");
 
-// Download button
-document.write("<a id='download-button' href='http://kenai.com/projects/audiveris/downloads?field=title&order=desc'>");
-document.write("    <div id='download-version'>");
-document.write("        <b>V4.2</b>");
-document.write("    </div>");
-document.write("</a>");
+// Download/Launch button
+document.write("<div id='download-button' >");
+deployJava.createWebStartLaunchButton('https://audiveris.kenai.com/jnlp/launch.jnlp', 1.7);
+document.write("</div>");
 
 document.write("</header>");
 

@@ -1,10 +1,10 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                        E x a m p l e s C o m p a n i o n                   //
+//                        P l u g i n s C o m p a n i o n                     //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
+//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
 //  This software is released under the GNU General Public License.           //
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
@@ -19,39 +19,44 @@ import java.net.URI;
 import java.net.URL;
 
 /**
- * Class {@code ExamplesCompanion} handles the installation of a few
- * image examples for Audiveris.
+ * Class {@code PluginsCompanion} handles the local installation of
+ * JavaScript plugins.
  *
  * @author Hervé Bitteur
  */
-public class ExamplesCompanion
+public class PluginsCompanion
         extends AbstractCompanion
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-            ExamplesCompanion.class);
+            PluginsCompanion.class);
 
+    /** Tooltip. */
     private static final String DESC = "<html>[This component is <i>optional</i>]"
-                                       + "<br/>It installs a few image examples.</html>";
+                                       + "<br/>It installs <b>JavaScript</b> plugins"
+                                       + "<br/>which can be customized manually.</html>";
 
     /** Environment descriptor. */
     private static final Descriptor descriptor = DescriptorFactory.getDescriptor();
 
     //~ Constructors -----------------------------------------------------------
+    //------------------//
+    // PluginsCompanion //
+    //------------------//
     /**
-     * Creates a new ExamplesCompanion object.
+     * Creates a new PluginsCompanion object.
      *
      * @param hasUI true for a related view
      */
-    public ExamplesCompanion (boolean hasUI)
+    public PluginsCompanion (boolean hasUI)
     {
-        super("Examples", DESC);
+        super("Plugins", DESC);
         need = Need.SELECTED;
 
         if (hasUI) {
-            view = new BasicCompanionView(this, 100);
+            view = new BasicCompanionView(this, 90);
         }
     }
 
@@ -65,14 +70,15 @@ public class ExamplesCompanion
     {
         final URI codeBase = Jnlp.basicService.getCodeBase()
                 .toURI();
-        final URL url = Utilities.toURI(codeBase, "resources/examples.jar")
+
+        final URL url = Utilities.toURI(codeBase, "resources/plugins.jar")
                 .toURL();
 
         Utilities.downloadJarAndExpand(
-                "Examples",
+                "Plugins",
                 url.toString(),
                 descriptor.getTempFolder(),
-                "examples",
+                "plugins",
                 makeTargetFolder());
     }
 
@@ -82,6 +88,6 @@ public class ExamplesCompanion
     @Override
     protected File getTargetFolder ()
     {
-        return new File(descriptor.getDataFolder(), "examples");
+        return new File(descriptor.getConfigFolder(), "plugins");
     }
 }

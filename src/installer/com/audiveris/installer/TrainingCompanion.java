@@ -33,6 +33,7 @@ public class TrainingCompanion
     private static final Logger logger = LoggerFactory.getLogger(
             TrainingCompanion.class);
 
+    /** Tooltip. */
     private static final String DESC = "<html>[This component is <i>optional</i>]"
                                        + "<br/>It installs samples that allow"
                                        + "<br/>to retrain the shape classifier.</html>";
@@ -55,7 +56,7 @@ public class TrainingCompanion
         need = Need.NOT_SELECTED;
 
         if (hasUI) {
-            view = new BasicCompanionView(this, 100);
+            view = new BasicCompanionView(this, 90);
         }
     }
 

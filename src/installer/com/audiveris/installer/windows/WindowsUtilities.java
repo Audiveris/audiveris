@@ -137,7 +137,7 @@ public class WindowsUtilities
     }
 
     //-------------//
-    // setRegistry // (not used actually)
+    // setRegistry //
     //-------------//
     public static int setRegistry (List<String> output,
                                    String... args)

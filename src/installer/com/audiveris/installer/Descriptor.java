@@ -38,7 +38,7 @@ public interface Descriptor
     static final String TESSDATA_PREFIX = "TESSDATA_PREFIX";
 
     /** Name of Tesseract folder. */
-    static final String TESSERACT_OCR = "Tesseract-OCR";
+    static final String TESSERACT_OCR = "tesseract-ocr";
 
     /** Name of tessdata folder. */
     static final String TESSDATA = "tessdata";
@@ -135,17 +135,5 @@ public interface Descriptor
      * administrator rights this time.
      */
     void relaunchAsAdmin ()
-            throws Exception;
-
-    /**
-     * Set an environment variable, permanently.
-     *
-     * @param system true for system wide assignment, false for user wide
-     * @param var    variable name
-     * @param value  assigned value
-     */
-    void setenv (boolean system,
-                 String var,
-                 String value)
             throws Exception;
 }

@@ -222,6 +222,9 @@ public class BasicCompanionView
 
     //~ Inner Classes ----------------------------------------------------------
 
+    //---------//
+    // MyPanel //
+    //---------//
     private static class MyPanel
         extends JPanel
     {

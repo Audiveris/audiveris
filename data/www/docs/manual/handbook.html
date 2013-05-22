@@ -14,7 +14,7 @@
             //]]>
         </script>
 
-        <script src="http://java.com/js/deployJava.js"></script>
+        <script src="https://java.com/js/deployJava.js"></script>
 
         <meta charset="utf-8" />
         <meta name="description" content="How to operate Audiveris" />
@@ -153,7 +153,7 @@
                         Java Web Start
                     </h3>
                     <p>
-                        The goal is to drive all installations and runs of 
+                        The goal is to now drive all installations and runs of 
                         Audiveris through Java Web Start.
                     </p>
                     <p>
@@ -226,18 +226,29 @@
 
                     <h4 id="first-launch">First launch</h4>
 
-                    <p>To launch Audiveris the very first time, you have two 
+                    <p>To launch Audiveris the very first time, you have several 
                         possibilities, regardless of your operating system:</p>
                     <ul>
-                        <li>Either click on this 
-                            <script>
-            deployJava.createWebStartLaunchButton("https://audiveris.kenai.com/jnlp/launch.jnlp");
-                            </script>
-                            button or the same button found on 
+                        <li>Either click on the 
+                            <script>deployJava.createWebStartLaunchButton('https://audiveris.kenai.com/jnlp/launch.jnlp', 1.7);</script>
+                            button located in the upper right corner of this page,
+                            or the same button found on 
                             <a href="http://audiveris.kenai.com/">
                                 Audiveris home page</a>.
+                            To be actually visible, this button requires 
+                            that JavaScript be enabled in your browser.
+                            When clicked, it will ensure that an 
+                            appropriate Java Runtime Environment is 
+                            installed and then launch the JNLP application.
                         </li>
-                        <li>Or from a terminal use the command:
+                        <li>Or click on the following hypertext link to 
+                            <a href="">Launch the application</a>.
+                            This link appears even if JavaScript is not enabled.
+                            However, it assumes that your browser and Java 
+                            environments are properly configured to handle the
+                            linked JNLP file.
+                        </li>
+                        <li>Or finally from a terminal directly use the command:
                             <code>javaws https://audiveris.kenai.com/jnlp/launch.jnlp</code>
                             <br/>
                             (Nota: mind the 's' in https. Otherwise you may get 
@@ -246,7 +257,7 @@
                     </ul>
 
                     <p>
-                        Both will trigger the download and processing by  
+                        All methods will trigger the download and processing by  
                         <code>javaws</code> (the Java Web Start launcher which 
                         is part of Java runtime) of a 
                         small XML file named <code>launch.jnlp</code>.
@@ -295,6 +306,19 @@
                         Compare with the previous window, and notice the name 
                         (Audiveris bundle Installer) as well as
                         the JNLP file (<code>installer.jnlp</code>).
+                    </p>
+
+                    <br class="clear"/>
+                    <img class="right" title="Security warning" 
+                         src="../images/installer-security.png" />
+                    <p>
+                        You may get a security warning like this one (Ubuntu)
+                        because Audiveris will need to escape the default 
+                        sandbox and access local disk.
+                    </p>
+                    <p>
+                        You can safely accept this and even check the option
+                        for not showing this warning again.
                     </p>
 
                     <br class="clear"/>
@@ -384,8 +408,8 @@
                             be supported by the embedded OCR.</li>
                         <li>The second row presents the sequence of companions
                             to install. 
-                            Some are optional (Examples, Training data) and 
-                            can be selected through a check box.
+                            Some are optional (Examples, Plugins, Training data)
+                            and can be selected through a check box.
                         </li>
                         <li>The middle area is meant for display of main messages.</li>
                         <li>The footer provides buttons to launch or cancel the
@@ -399,18 +423,20 @@
                     </p>
                     <p>
                         An item color depends on item current status:
-                        <span style="background:#fdd">pink</span> for an item
-                        that is needed (mandatory or selected optional) but not
-                        yet installed, 
-                        <span style="background:#afa">green</span>  for an 
-                        installed needed companion,
-                        <span style="background:#ddd">gray</span>  for an 
-                        optional item not selected,
-                        <span style="background:orange">orange</span>  for an 
-                        item being processed, and
-                        <span style="background:red">red</span>  for an item 
-                        which failed to install.
                     </p>
+                    <ul>
+                        <li><span style="background:#fdd">pink</span> for an item
+                            that is needed (mandatory or selected optional) but not
+                            yet installed,</li>
+                        <li><span style="background:#afa">green</span>  for an 
+                            installed needed companion,</li>
+                        <li><span style="background:#ddd">gray</span>  for an 
+                            optional item not selected,</li>
+                        <li><span style="background:orange">orange</span>  for an 
+                            item being processed,</li>
+                        <li><span style="background:red">red</span>  for an item 
+                            which failed to install.</li>
+                    </ul>
 
                     <br class="clear"/>
                     <img class="side" title="Add OCR languages" 
@@ -426,13 +452,15 @@
                         You can remove a language as well, even from the 
                         predefined ones, via a right-click on the proper item 
                         in the language row.
+                        But make sure you don't install OCR with no language at 
+                        all otherwise it will fail at runtime.
                     </p>
 
                     <br class="clear"/>
                     <img class="side" title="Software license" 
                          src="../images/installer-license.png" />
                     <p>
-                        Right after clicking <code class="button">Launch</code>,
+                        Right after clicking <code class="button">Install</code>,
                         you are prompted for agreement with Audiveris license.
                     </p>
                     <p>
@@ -460,7 +488,7 @@
                         Note the progress bar indicates the global progress
                         (in terms of companions) rather than the current 
                         download progress (in terms of bytes downloaded).
-                        So be patient.
+                        So be patient, let the download proceed.
                     </p>
 
                     <br class="clear"/>
@@ -480,7 +508,7 @@
                         Note that all details of installation, whether 
                         successful or not, are kept in a dedicated log file named
                         <code>audiveris-installation-&lt;TIMESTAMP&gt;.log</code>
-                        and located in your user home directory.
+                        and located in your temporary directory.
                     </p>
 
                     <br class="clear"/>
@@ -498,8 +526,8 @@
 
                     <p>
                         For the next launches, you can still use either the
-                        button on Audiveris home page, or the command line in 
-                        a terminal window.
+                        Launch button or the plain link on Audiveris home page,
+                        or the command line in a terminal window.
                     </p>
                     <p>
                         Since the application is now "installed", you can  
@@ -2079,6 +2107,10 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                     <h3>
                         Building from Source
                     </h3>
+
+                    <p class='warning indent'>
+                        Warning: This section is obsolete.
+                    </p>
                     <p>
                         If you want to modify Audiveris and rebuild it from 
                         source, read the instructions gathered in this section.
@@ -3343,6 +3375,8 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
 
                     <p>Libraries that can be shared at system level.
                         This applies for Tesseract libraries.
+                        These shareable libraries are installed by Audiveris
+                        bundle installer.
                     </p>
 
                     <table class="location">
@@ -3408,13 +3442,8 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         a PDF input file into a temporary TIFF file which is 
                         then read by Audiveris.</p>
 
-                    <p>On Windows, Audiveris uses a  dedicated Ghostscript 
-                        which is embedded with Audiveris application. 
-                        See <a href="#application-folder" >application
-                            folder</a> below.</p>
-
-                    <p>On Linux, Audiveris uses the pre-installed Ghostscript 
-                        program.</p>
+                    <p>A suitable Ghostscript version is checked and installed
+                        as needed by Audiveris bundle installer.</p>
 
                     <h4>Tesseract</h4>
 
@@ -3426,31 +3455,24 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                             just a few languages are provided by default through
                             Audiveris installation.
                             <ul>
-                                <li>On Windows, they are located in the 
-                                    audiveris <code>./ocr</code> folder as 
-                                    described below.</li>
+                                <li>On Windows, they are located by default in
+                                    the folder for 32-bit applications: 
+                                    <code>c:\Program Files (x86)\tesseract-ocr\</code>.
+                                    <br/>
+                                    However, if Tesseract application itself has
+                                    been installed from Tesseract web site,
+                                    the <code>TESSDATA_PREFIX</code> environment
+                                    variable points to the target folder.
+                                    But note that Tesseract application is not 
+                                    needed by Audiveris, which uses a DLL
+                                    library.</li>
                                 <li>On Linux, they are located in the shareable
                                     tesseract folder
                                     <code>/usr/share/tesseract-ocr/</code>
                                 </li>
                             </ul>
-                        <li>Additional languages can be downloaded from 
-                            Tesseract <a href="http://code.google.com/p/tesseract-ocr/">web site</a>.
-                            <ul>
-                                <li>On Windows, languages can be installed in
-                                    the audiveris ocr folder.
-                                    If Tesseract application is itself installed
-                                    (by means of
-                                    <code>tesseract-ocr-setup-3.02.02.exe</code>
-                                    for example) it will use a specific location
-                                    and define the environment variable 
-                                    <code>TESSDATA_PREFIX</code>. 
-                                    All languages pointed by TESSDATA_PREFIX
-                                    get visible to Audiveris ocr engine.
-                                </li>
-                                <li>On Linux, they are installed in the standard
-                                    shareable location.</li>
-                            </ul>
+                        <li>Additional languages can be downloaded and installed
+                            through the Audiveris bundle installer.
                         </li>
                     </ol>
 
@@ -3462,7 +3484,20 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         Application
                     </h3>
 
-                    <p>Audiveris application program and (read-only) data.</p>
+                    <p>
+                        Audiveris application program and (read-only) data
+                        are no longer directly visible.
+                        They are handled by the global Java cache, and "visible"
+                        only through the cache viewer.
+                    </p>
+
+                    <p>
+                        For your information, this concerns the Audiveris main 
+                        jar file, plus all the needed Java libraries as well as
+                        the needed resources including the OS- and ARCH-dependent
+                        JNI bridges ("jniTessBridge.dll" or "libjniTessbridge.so")
+                        to shareable native libraries.
+                    </p>
 
                     <p>Specific notes for <b>Ubuntu</b>:</p>
                     <ul>
@@ -3475,22 +3510,32 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         <li>Folder <code>/usr/share/icons/audiveris</code> 
                             contains audiveris icon as an "audiveris.png" file.</li>
                     </ul>
+                </article>
+
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+                <article id="gui-persistency">
+                    <h3>
+                        GUI persistency
+                    </h3>
+
+                    <p>User persistency of graphic interface
+                        across applications runs.</p>
 
                     <table class="location">
                         <tr><th>OS</th><th>Root</th></tr>
                         <tr>
                             <td>Windows</td>
-                            <td>C:/Program Files/AudiverisLtd/audiveris/</td>
+                            <td>%APPDATA%/AudiverisLtd/audiveris/</td>
                         </tr>
                         <tr>
                             <td>Ubuntu</td>
-                            <td>/usr/share/audiveris/AudiverisApp/</td>
+                            <td>~/.audiveris/</td>
                         </tr>
                         <tr>
                             <td>Generic</td>
                             <td>???</td>
                         </tr>
-                    </table>      
+                    </table>
 
                     <table class="content">
                         <thead>
@@ -3503,116 +3548,21 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         <tbody>
                             <tr>
                                 <td>.</td>
-                                <td>(Windows) Executables</td>
-                                <td>
-                                    audiveris-console.exe<br/>
-                                    audiveris-console.l4j.ini<br/>
-                                    audiveris.exe<br/>
-                                    audiveris.l4j.ini<br/>
-                                    audiveris.bat
+                                <td>User interface persistency</td>
+                                <td>One file per frame:<br/>
+                                    aboutDialog.session.xml<br/>
+                                    mainFrame.session.xml<br/>
+                                    optionsFrame.session.xml<br/>
+                                    SampleVerifierFrame.session.xml<br/>
+                                    scoreParams.session.xml<br/>
+                                    trainerFrame.session.xml<br/>
+                                    etc...
                                 </td>
-                            </tr>
-                            <tr>
-                                <td>./dist</td>
-                                <td>Application archive</td>
-                                <td>audiveris.jar</td>
-                            </tr>
-                            <tr>
-                                <td>./dist/lib</td>
-                                <td>Companion archives</td>
-                                <td>Jama-1.0.2.jar<br/>
-                                    bsaf-1.9.1.jar<br/>
-                                    clibwrapper_jiio.jar<br/>
-                                    crystal-icons.jar<br/>
-                                    eventbus-1.4.jar<br/>
-                                    iText-5.0.4.jar<br/>
-                                    jai_codec.jar<br/>
-                                    jai_core.jar<br/>
-                                    jai_imageio.jar<br/>
-                                    javacpp.jar<br/>
-                                    jcip-annotations.jar<br/>
-                                    jcommon-1.0.16.jar<br/>
-                                    jfreechart-1.0.13.jar<br/>
-                                    jgoodies-common-1.4.0.jar<br/>
-                                    jgoodies-forms-1.6.0.jar<br/>
-                                    jgoodies-looks-2.5.2.jar<br/>
-                                    mlibwrapper_jai.jar<br/>
-                                    proxymusic-2.0.jar<br/>
-                                    tesseract-3.jar</td>
-                            </tr>
-                            <tr>
-                                <td>./examples<br/>
-                                    <code>EXAMPLES_FOLDER</code></td>
-                                <td>Examples of input images</td>
-                                <td>allegretto.png<br/>
-                                    autothreshold_test.JPG<br/>
-                                    batuque.png<br/>
-                                    carmen-1.png<br/>
-                                    chula.1bit.bmp<br/>
-                                    chula.png<br/>
-                                    cucaracha.png<br/>
-                                    Dichterliebe01.pdf<br/>
-                                    SchbAvMaSample.pdf<br/>
-                                    zizi.png
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>./gs<br/>
-                                    <code>GS_FOLDER</code></td>
-                                <td>(Windows) Embedded ghostscript</td>
-                            </tr>
-                            <tr>
-                                <td>./gs/windows</td>
-                                <td></td>
-                            </tr>
-                            <tr>
-                                <td>./gs/windows/x64</td>
-                                <td>(Windows) Ghostscript for 64 bit</td>
-                                <td>gsdll64.dll<br/>
-                                    gswin64c.exe</td>
-                            </tr>
-                            <tr>
-                                <td>./gs/windows/x86</td>
-                                <td>(Windows) Ghostscript for 32 bit</td>
-                                <td>gsdll32.dll<br/>
-                                    gswin32c.exe</td>
-                            </tr>
-                            <tr>
-                                <td>./ocr<br/>
-                                    <code>OCR_FOLDER</code></td>
-                                <td>(Windows) Data for Tesseract</td>
-                            </tr>
-                            <tr>
-                                <td>./ocr/tessdata</td>
-                                <td>(Windows) Language trained data</td>
-                                <td>LAN.traineddata<br/>
-                                    LAN.cube.word-freq<br/>
-                                    LAN.cube.size</td>
-                            </tr>
-                            <tr>
-                                <td>./res<br/>
-                                    <code>RES_FOLDER</code>
-                                </td>
-                                <td>Resources</td>
-                                <td>all-icons-256.ico<br/>
-                                    GPLv2.rtf<br/>
-                                    icon-256.ico<br/>
-                                    icon-256.png<br/>
-                                    ISO639-3.xml<br/>
-                                    linear-evaluator.xml<br/>
-                                    neural-network.xml<br/>
-                                    splash.bmp<br/>
-                                    splash.png<br/>
-                                    system-actions.xml</td>
-                            </tr>
-                            <tr>
-                                <td>./www<br/>
-                                    <code>DOC_FOLDER</code></td>
-                                <td>Application documentation</td>
                             </tr>
                         </tbody>
                     </table>
                 </article>
+
 
                 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
                 <article id="user-config">
@@ -3620,18 +3570,19 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         User config 
                     </h3>
 
-                    <p>User-specific read-write configuration data. 
-                        (On Windows, user config is merged with user data)</p>
+                    <p>User-specific read-write configuration data
+                        (<b><code>CONFIG_FOLDER</code></b>),
+                        installed by Audiveris bundle installer.</p>
 
                     <table class="location">
                         <tr><th>OS</th><th>Root</th></tr>
                         <tr>
                             <td>Windows</td>
-                            <td>%APPDATA%/AudiverisLtd/audiveris/</td>
+                            <td>%APPDATA%/AudiverisLtd/audiveris/config/</td>
                         </tr>
                         <tr>
                             <td>Ubuntu</td>
-                            <td>~/.config/share/AudiverisLtd/audiveris/</td>
+                            <td>~/.config/AudiverisLtd/audiveris/</td>
                         </tr>
                         <tr>
                             <td>Generic</td>
@@ -3649,21 +3600,18 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         </thead>
                         <tbody>
                             <tr>
+                                <td>.</td>
+                                <td>Configuration files</td>
+                                <td>run.properties<br/>
+                                    user-actions.xml</td>
+                            </tr>
+                            <tr>
                                 <td>./plugins<br/>
                                     <code>PLUGINS_FOLDER</code></td>
                                 <td>Javascript plugins</td>
                                 <td>finale-notepad.js<br/>
                                     finale.js<br/>
                                     musescore.js</td>
-                            </tr>
-                            <tr>
-                                <td>./settings<br/>
-                                    <code>SETTINGS_FOLDER</code></td>
-                                <td>Configuration files</td>
-                                <td>build.properties<br/>
-                                    logging.properties<br/>
-                                    run.properties<br/>
-                                    user-actions.xml</td>
                             </tr>
                         </tbody>
                     </table>
@@ -3675,14 +3623,20 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         User data 
                     </h3>
 
-                    <p>User-specific read-write data. 
-                        (On Windows, user data is merged with user config)</p>
+                    <p>User-specific read-write data (<b><code>DATA_FOLDER</code></b>),
+                        installed by Audiveris bundle installer.</p>
+                    <p>
+                        This also includes the folders <code>examples</code> and
+                        <code>www</code> which, stricly speaking, should be 
+                        read-only application data but need to be browsable and
+                        thus could not be left packaged in the Java cache.
+                    </p>
 
                     <table class="location">
                         <tr><th>OS</th><th>Root</th></tr>
                         <tr>
                             <td>Windows</td>
-                            <td>%APPDATA%/AudiverisLtd/audiveris/</td>
+                            <td>%APPDATA%/AudiverisLtd/audiveris/data/</td>
                         </tr>
                         <tr>
                             <td>Ubuntu</td>
@@ -3704,11 +3658,6 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         </thead>
                         <tbody>
                             <tr>
-                                <td>.</td>
-                                <td>User interface persistency</td>
-                                <td>One file FRAME.session.xml per frame</td>
-                            </tr>
-                            <tr>
                                 <td>./benches<br/>
                                     <code>DEFAULT_BENCHES_FOLDER</code></td>
                                 <td>Default location for results of program bench</td>
@@ -3720,6 +3669,22 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                                 <td>User-trained data</td>
                                 <td>neural-network.xml<br/>
                                     linear-evaluator.xml</td>
+                            </tr>
+                            <tr>
+                                <td>./examples<br/>
+                                    <code>EXAMPLES_FOLDER</code></td>
+                                <td>Examples of input images</td>
+                                <td>allegretto.png<br/>
+                                    autothreshold_test.JPG<br/>
+                                    batuque.png<br/>
+                                    carmen-1.png<br/>
+                                    chula.1bit.bmp<br/>
+                                    chula.png<br/>
+                                    cucaracha.png<br/>
+                                    Dichterliebe01.pdf<br/>
+                                    SchbAvMaSample.pdf<br/>
+                                    zizi.png
+                                </td>
                             </tr>
                             <tr>
                                 <td>./print<br/>
@@ -3768,6 +3733,13 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                                 <td>Predefined symbols based on MusicalSymbols
                                     font</td>
                                 <td>One file SHAPE.xml per shape</td>
+                            </tr>
+                            <tr>
+                                <td>./www<br/>
+                                    <code>DOC_FOLDER</code></td>
+                                <td>Application documentation</td>
+                                <td>The whole set of Audiveris documentation,
+                                    including home page and handbook.
                             </tr>
                         </tbody>
                     </table>
@@ -3896,6 +3868,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                                 <li><a href="#system-folder">System</a></li>
                                 <li><a href="#companion-folders">Companions</a></li>
                                 <li><a href="#application-folder">Application</a></li>
+                                <li><a href="#gui-persistency">GUI persistency</a></li>
                                 <li><a href="#user-config">User config</a></li>
                                 <li><a href="#user-data">User data</a></li>
                             </ul>

@@ -60,7 +60,7 @@ public class LangSelector
     //~ Instance fields --------------------------------------------------------
 
     /** Related companion. */
-    private final LangCompanion companion;
+    private final OcrCompanion companion;
 
     /** Component. */
     private JPanel component;
@@ -84,7 +84,7 @@ public class LangSelector
      *
      * @param companion the language companion
      */
-    public LangSelector (LangCompanion companion)
+    public LangSelector (OcrCompanion companion)
     {
         this.companion = companion;
 
@@ -169,7 +169,7 @@ public class LangSelector
             // Create a dialog with a JList of possible additions
             // That is all languages, minus those already desired
             List<String> additionals = new ArrayList<String>(
-                Arrays.asList(LangCompanion.ALL_LANGUAGES));
+                Arrays.asList(OcrCompanion.ALL_LANGUAGES));
             additionals.removeAll(desired);
 
             JList<String> list = new JList(

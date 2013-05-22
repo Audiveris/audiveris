@@ -12,7 +12,6 @@
 package com.audiveris.installer.unix;
 
 import com.audiveris.installer.Descriptor;
-import com.audiveris.installer.Installer;
 import com.audiveris.installer.Utilities;
 import static com.audiveris.installer.unix.UnixUtilities.*;
 
@@ -22,8 +21,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.JOptionPane;
 
 /**
  * Class {@code UnixDescriptor} implements Installer descriptor for
@@ -120,7 +117,7 @@ public class UnixDescriptor
     @Override
     public File getDefaultTessdataPrefix ()
     {
-        return new File("/usr/share/tesseract-ocr/");
+        return new File("/usr/share/" + Descriptor.TESSERACT_OCR + "/");
     }
 
     //---------------//
@@ -255,17 +252,5 @@ public class UnixDescriptor
             logger.warn(Utilities.dumpOfLines(output));
             throw new RuntimeException("Failure, exit: " + res);
         }
-    }
-
-    //--------//
-    // setenv //
-    //--------//
-    @Override
-    public void setenv (boolean system,
-                        String var,
-                        String value)
-            throws Exception
-    {
-        logger.trace("setenv() not really needed on Unix");
     }
 }

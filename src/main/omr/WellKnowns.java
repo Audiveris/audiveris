@@ -55,12 +55,12 @@ public class WellKnowns
     public static final String TOOL_NAME = ProgramId.NAME;
 
     /** Application reference: {@value}. */
-    public static final String TOOL_REF = ProgramId.VERSION + "." +
-                                          ProgramId.REVISION;
+    public static final String TOOL_REF = ProgramId.VERSION + "."
+                                          + ProgramId.REVISION;
 
     /** Specific prefix for application folders: {@value} */
-    private static final String TOOL_PREFIX = "/" + COMPANY_ID + "/" +
-                                              TOOL_NAME;
+    private static final String TOOL_PREFIX = "/" + COMPANY_ID + "/"
+                                              + TOOL_NAME;
 
     //----------//
     // PLATFORM //
@@ -68,7 +68,7 @@ public class WellKnowns
     //
     /** Name of operating system */
     private static final String OS_NAME = System.getProperty("os.name")
-                                                .toLowerCase(Locale.ENGLISH);
+            .toLowerCase(Locale.ENGLISH);
 
     /** Are we using a Linux OS?. */
     public static final boolean LINUX = OS_NAME.startsWith("linux");
@@ -83,20 +83,20 @@ public class WellKnowns
     public static final String OS_ARCH = System.getProperty("os.arch");
 
     /** Are we using Windows on 64 bit architecture?. */
-    public static final boolean WINDOWS_64 = WINDOWS &&
-                                             (System.getenv(
-        "ProgramFiles(x86)") != null);
+    public static final boolean WINDOWS_64 = WINDOWS
+                                             && (System.getenv(
+            "ProgramFiles(x86)") != null);
 
     /** File character encoding. */
     public static final String FILE_ENCODING = getFileEncoding();
 
     /** File separator for the current platform. */
     public static final String FILE_SEPARATOR = System.getProperty(
-        "file.separator");
+            "file.separator");
 
     /** Line separator for the current platform. */
     public static final String LINE_SEPARATOR = System.getProperty(
-        "line.separator");
+            "line.separator");
 
     /** Redirection, if any, of standard out and err streams. */
     public static final String STD_OUT_ERR = System.getProperty("stdouterr");
@@ -125,10 +125,10 @@ public class WellKnowns
 
     /** The uri where resource data is stored. */
     public static final URI RES_URI = RUNNING_FROM_JAR
-                                      ? toURI(
-        WellKnowns.class.getClassLoader().getResource("res"))
-                                      : Paths.get("res")
-                                             .toUri();
+            ? toURI(
+            WellKnowns.class.getClassLoader().getResource("res"))
+            : Paths.get("res")
+            .toUri();
 
     /** The folder where Tesseract OCR material is stored. */
     public static final File OCR_FOLDER = getOcrFolder();
@@ -139,13 +139,13 @@ public class WellKnowns
     //
     /** The config folder where global configuration data is stored. */
     public static final File CONFIG_FOLDER = RUNNING_FROM_JAR
-                                             ? getConfigFolder()
-                                             : new File("config");
+            ? getConfigFolder()
+            : new File("config");
 
     /** The folder where plugin scripts are found. */
     public static final File PLUGINS_FOLDER = new File(
-        CONFIG_FOLDER,
-        "plugins");
+            CONFIG_FOLDER,
+            "plugins");
 
     //-----------// read-write area
     // USER DATA // User-specific data, except configuration stuff
@@ -153,7 +153,7 @@ public class WellKnowns
     //
     /** Base folder for data */
     public static final File DATA_FOLDER = RUNNING_FROM_JAR ? getDataFolder()
-                                           : new File("data");
+            : new File("data");
 
     /**
      * The folder where documentations files are installed.
@@ -166,8 +166,8 @@ public class WellKnowns
      * Installation takes place when .jar is run for the first time
      */
     public static final File EXAMPLES_FOLDER = new File(
-        DATA_FOLDER,
-        "examples");
+            DATA_FOLDER,
+            "examples");
 
     /** The folder where temporary data can be stored. */
     public static final File TEMP_FOLDER = new File(DATA_FOLDER, "temp");
@@ -183,23 +183,23 @@ public class WellKnowns
 
     /** The default folder where benches data is stored. */
     public static final File DEFAULT_BENCHES_FOLDER = new File(
-        DATA_FOLDER,
-        "benches");
+            DATA_FOLDER,
+            "benches");
 
     /** The default folder where PDF data is stored. */
     public static final File DEFAULT_PRINT_FOLDER = new File(
-        DATA_FOLDER,
-        "print");
+            DATA_FOLDER,
+            "print");
 
     /** The default folder where scripts data is stored. */
     public static final File DEFAULT_SCRIPTS_FOLDER = new File(
-        DATA_FOLDER,
-        "scripts");
+            DATA_FOLDER,
+            "scripts");
 
     /** The default folder where scores data is stored. */
     public static final File DEFAULT_SCORES_FOLDER = new File(
-        DATA_FOLDER,
-        "scores");
+            DATA_FOLDER,
+            "scores");
 
     static {
         /** Logging configuration. */
@@ -214,7 +214,6 @@ public class WellKnowns
     }
 
     //~ Constructors -----------------------------------------------------------
-
     //
     //------------//
     // WellKnowns // Not meant to be instantiated
@@ -224,7 +223,6 @@ public class WellKnowns
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------//
     // ensureLoaded //
     //--------------//
@@ -259,7 +257,7 @@ public class WellKnowns
     private static URI getClassContainer ()
     {
         return toURI(
-            WellKnowns.class.getProtectionDomain().getCodeSource().getLocation());
+                WellKnowns.class.getProtectionDomain().getCodeSource().getLocation());
     }
 
     //-----------------//
@@ -275,7 +273,7 @@ public class WellKnowns
             }
 
             throw new RuntimeException(
-                "APPDATA environment variable is not set");
+                    "APPDATA environment variable is not set");
         } else if (MAC_OS_X) {
             String config = System.getenv("XDG_CONFIG_HOME");
 
@@ -322,7 +320,7 @@ public class WellKnowns
             }
 
             throw new RuntimeException(
-                "APPDATA environment variable is not set");
+                    "APPDATA environment variable is not set");
         } else if (MAC_OS_X) {
             String data = System.getenv("XDG_DATA_HOME");
 
@@ -375,18 +373,18 @@ public class WellKnowns
     private static JarFile getJarFile ()
     {
         try {
-            String           rn = WellKnowns.class.getName()
-                                                  .replace('.', '/') +
-                                  ".class";
+            String rn = WellKnowns.class.getName()
+                    .replace('.', '/')
+                        + ".class";
             Enumeration<URL> en = WellKnowns.class.getClassLoader()
-                                                  .getResources(rn);
+                    .getResources(rn);
 
             if (en.hasMoreElements()) {
-                URL              url = en.nextElement();
+                URL url = en.nextElement();
 
                 // url = jar:http://audiveris.kenai.com/jnlp/audiveris.jar!/omr/WellKnowns.class
                 JarURLConnection urlcon = (JarURLConnection) (url.openConnection());
-                JarFile          jarFile = urlcon.getJarFile();
+                JarFile jarFile = urlcon.getJarFile();
 
                 return jarFile;
             }
@@ -403,7 +401,7 @@ public class WellKnowns
     private static FileTime getJarTime ()
     {
         long millis = JAR_FILE.getEntry("META-INF/MANIFEST.MF")
-                              .getTime();
+                .getTime();
 
         return FileTime.fromMillis(millis);
     }
@@ -414,7 +412,7 @@ public class WellKnowns
     private static File getOcrFolder ()
     {
         // First, try to use TESSDATA_PREFIX environment variable
-        // which would denote a Tesseract installation
+        // which might denote a Tesseract installation
         final String TESSDATA_PREFIX = "TESSDATA_PREFIX";
         final String tessPrefix = System.getenv(TESSDATA_PREFIX);
 
@@ -429,6 +427,11 @@ public class WellKnowns
         // Fallback to default directory
         if (LINUX) {
             return new File("/usr/share/tesseract-ocr");
+        } else if (WINDOWS) {
+            final String pf32 = OS_ARCH.equals("x86") ? "ProgramFiles"
+                    : "ProgramFiles(x86)";
+
+            return new File(new File(System.getenv(pf32)), "tesseract-ocr");
         } else {
             throw new InstallationException("Tesseract-OCR is not installed");
         }
@@ -443,16 +446,15 @@ public class WellKnowns
 
         // To check updates
         ///logger.info("Token #{}", 2);
-
         if (!RUNNING_FROM_JAR) {
             // Just to remind the developer we are NOT running in normal mode
             logger.info("[Not running from jar]");
         } else {
             // Debug, to identify this jar
             logger.debug(
-                "JarTime: {} JarFile: {}",
-                JAR_TIME,
-                JAR_FILE.getName());
+                    "JarTime: {} JarFile: {}",
+                    JAR_TIME,
+                    JAR_FILE.getName());
         }
 
         if (logger.isDebugEnabled()) {
@@ -472,12 +474,11 @@ public class WellKnowns
     private static boolean runningFromJar ()
     {
         return CLASS_CONTAINER.toString()
-                              .toLowerCase()
-                              .endsWith(".jar");
+                .toLowerCase()
+                .endsWith(".jar");
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------------------//
     // InstallationException //
     //-----------------------//
@@ -485,7 +486,7 @@ public class WellKnowns
      * Exception used to signal an installation error.
      */
     public static class InstallationException
-        extends RuntimeException
+            extends RuntimeException
     {
         //~ Constructors -------------------------------------------------------
 

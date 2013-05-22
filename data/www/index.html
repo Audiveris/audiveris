@@ -16,7 +16,7 @@
         <link rel="stylesheet" href="branding/css/global.css"/>
         <link rel="stylesheet" href="branding/css/top-nav.css"/>
 
-        <script src="http://java.com/js/deployJava.js"></script>
+        <script src="https://java.com/js/deployJava.js"></script>
 
         <style type="text/css">
             /*<![CDATA[*/
@@ -74,7 +74,12 @@
                 <ul>
                     <li>
                         Simply click on this Launch button:
-                        <script>deployJava.createWebStartLaunchButton("https://audiveris.kenai.com/jnlp/launch.jnlp");</script>
+                        <script>deployJava.createWebStartLaunchButton("https://audiveris.kenai.com/jnlp/launch.jnlp", 1.7);</script>
+                        (this assumes JavaScript is enabled in the browser)
+                    </li>
+                    <li>
+                        Or try to
+                        <a href="jnlp/launch.jnlp">Launch the application</a>
                     </li>
                     <li>
                         Or type this command from a terminal

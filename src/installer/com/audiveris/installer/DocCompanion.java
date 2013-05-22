@@ -38,7 +38,7 @@ public class DocCompanion
 
     /** Tooltip. */
     private static final String DESC = "<html>The whole Audiveris documentation is made"
-                                       + "<br/>available as one local browsable <b>Jar</b> file.</html>";
+                                       + "<br/>available in one local browsable folder.</html>";
 
     //~ Constructors -----------------------------------------------------------
     //--------------//

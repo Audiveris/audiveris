@@ -54,7 +54,7 @@ public class LicenseCompanion
         super("License", DESC);
 
         if (hasUI) {
-            view = new BasicCompanionView(this, 80);
+            view = new BasicCompanionView(this, 70);
         }
     }
 

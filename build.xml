@@ -113,7 +113,9 @@
             </fileset>
         </copy>
         
-        <!-- Populate examples + docs + train to dist/resources -->
+        <!-- Populate plugins + examples + docs + train to dist/resources -->
+        <echo message="-- Building ${dist.dir}/resources/plugins.jar"/>
+        <jar basedir="config" destfile="${dist.dir}/resources/plugins.jar" includes="plugins/**"/>
         <echo message="-- Building ${dist.dir}/resources/examples.jar"/>
         <jar basedir="data" destfile="${dist.dir}/resources/examples.jar" includes="examples/**/*"/>
         <echo message="-- Building ${dist.dir}/resources/documentation.jar"/>

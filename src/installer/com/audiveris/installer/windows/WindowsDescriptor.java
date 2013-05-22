@@ -22,7 +22,6 @@ import hudson.util.jna.Shell32;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.HeadlessException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -153,6 +152,24 @@ public class WindowsDescriptor
          * Dll for tesseract.
          */
         static final String DLL_TESSERACT = "libtesseract302.dll";
+
+    }
+
+    /**
+     * For environment variables.
+     */
+    private static interface ENV
+    {
+
+        /**
+         * Registry key for machine environment variable.
+         */
+        static final String SYSTEM_KEY = "\"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\"";
+
+        /**
+         * Registry key for user environment variable.
+         */
+        static final String USER_KEY = "HKCU\\Environment";
 
     }
 
@@ -340,27 +357,31 @@ public class WindowsDescriptor
         logger.debug("End of relaunch.");
     }
 
-    //--------//
-    // setenv //
-    //--------//
-    @Override
-    public void setenv (boolean system,
-                        String var,
-                        String value)
-            throws IOException, InterruptedException
-    {
-        List<String> args = new ArrayList<>();
-        args.add("/C");
-        args.add("setx");
-        args.add(var);
-        args.add(value);
-        if (system) {
-            args.add("/M");
-        }
-        List<String> output = new ArrayList<>();
-        Utilities.runProcess("cmd.exe", output, args.toArray(new String[args.size()]));
-        logger.debug("setenv output: {}", output);
-    }
+//    //--------//
+//    // setenv //
+//    //--------//
+//    @Override
+//    public void setenv (boolean system,
+//                        String var,
+//                        String value)
+//            throws IOException, InterruptedException
+//    {
+////        List<String> args = new ArrayList<>();
+////        args.add("/C");
+////        args.add("setx");
+////        args.add(var);
+////        args.add(value);
+////        if (system) {
+////            args.add("/M");
+////        }
+////        List<String> output = new ArrayList<>();
+////        Utilities.runProcess("cmd.exe", output, args.toArray(new String[args.size()]));
+////        logger.debug("setenv output: {}", output);
+//        final List<String> output = new ArrayList<>();
+//        final String key = system ? ENV.SYSTEM_KEY : ENV.USER_KEY;
+//        WindowsUtilities.setRegistry(output, key, "/v", var, "/d", value);
+//        logger.debug("setenv output: {}", output);
+//    }
 
     //--------------------//
     // getGhostscriptPath //

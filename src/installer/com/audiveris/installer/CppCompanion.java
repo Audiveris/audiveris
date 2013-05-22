@@ -49,7 +49,7 @@ public class CppCompanion
         super("C++", DESC);
 
         if (hasUI) {
-            view = new BasicCompanionView(this, 60);
+            view = new BasicCompanionView(this, 50);
         }
     }
 

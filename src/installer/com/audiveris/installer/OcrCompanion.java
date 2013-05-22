@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                          L a n g C o m p a n i o n                         //
+//                           O c r C o m p a n i o n                          //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -30,19 +30,19 @@ import java.util.TreeSet;
 import javax.swing.JOptionPane;
 
 /**
- * Class {@code LangCompanion} handles the installation of Tesseract library
- * and the support for a selected set of languages.
+ * Class {@code OcrCompanion} handles the installation of Tesseract
+ * library and the support for a selected set of languages.
  *
  * @author Hervé Bitteur
  */
-public class LangCompanion
+public class OcrCompanion
         extends AbstractCompanion
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-            LangCompanion.class);
+            OcrCompanion.class);
 
     /** Companion description. */
     private static final String DESC = "<html>You can select which precise languages"
@@ -90,11 +90,12 @@ public class LangCompanion
     public static final String[] PREDESIRED_LANGUAGES = new String[]{
         "deu", "eng", "fra",
         "ita"
-    //            //  "mkd", "mlt", "msa", "nld",
-    //        , "tgl", "tha", "tur", "ukr", "vie"
     };
 
     //~ Instance fields --------------------------------------------------------
+    /** Handling of tessdata directory. */
+    private final Tessdata tessdata = new Tessdata();
+
     /**
      * The languages to be added (if not present).
      */
@@ -109,16 +110,16 @@ public class LangCompanion
     private LangSelector selector;
 
     //~ Constructors -----------------------------------------------------------
-    //---------------//
-    // LangCompanion //
-    //---------------//
+    //--------------//
+    // OcrCompanion //
+    //--------------//
     /**
-     * Creates a new LangCompanion object for OCR library and a list of
+     * Creates a new OcrCompanion object for OCR library and a list of
      * supported languages.
      *
      * @param hasUI true for a related view
      */
-    public LangCompanion (boolean hasUI)
+    public OcrCompanion (boolean hasUI)
     {
         super("OCR", DESC);
 
@@ -221,15 +222,10 @@ public class LangCompanion
     public boolean isLangInstalled (String language)
     {
         try {
-            // Retrieve Tesseract folder 
-            final File tessdata = getTessdata(false);
-
-            if (tessdata == null) {
-                return false;
-            }
-
             // We check if the main language file actually exists
-            final File lanFile = new File(tessdata, language + ".traineddata");
+            final File lanFile = new File(
+                    tessdata.get(),
+                    language + ".traineddata");
 
             return lanFile.exists();
         } catch (Exception ex) {
@@ -299,50 +295,6 @@ public class LangCompanion
         return set;
     }
 
-    //-------------//
-    // getTessdata //
-    //-------------//
-    /**
-     * Report tessdata directory, after creating it if is does not
-     * exist yet.
-     *
-     * @param create true to create the folder if it does not exist
-     * @return the tessdata file or null
-     */
-    private File getTessdata (final boolean create)
-            throws Exception
-    {
-        final String prefix = System.getenv(Descriptor.TESSDATA_PREFIX);
-        final File dir;
-
-        if (prefix == null) {
-//            if (create) {
-            dir = descriptor.getDefaultTessdataPrefix();
-            // Set environment variable for future processes
-            descriptor.setenv(
-                    true,
-                    Descriptor.TESSDATA_PREFIX,
-                    dir.getAbsolutePath()
-                    + System.getProperty("file.separator"));
-//            } else {
-//                return null;
-//            }
-        } else {
-            dir = new File(prefix);
-        }
-
-        File tessdata = new File(dir, Descriptor.TESSDATA);
-
-        // Make sure all directories exist
-        if (!tessdata.exists() && create) {
-            if (tessdata.mkdirs()) {
-                logger.info("Created folder {}", tessdata.getAbsolutePath());
-            }
-        }
-
-        return tessdata;
-    }
-
     //-----------------//
     // installLanguage //
     //-----------------//
@@ -366,10 +318,21 @@ public class LangCompanion
             final File tar = new File(temp, tarName);
             logger.debug("tar: {}", tar);
 
-            final File tessdata = getTessdata(true);
-            logger.debug("tessdata: {}", tessdata.getAbsolutePath());
+            // Make sure all directories exist
+            if (!tessdata.get()
+                    .exists()) {
+                if (tessdata.get()
+                        .mkdirs()) {
+                    logger.info(
+                            "Created folder {}",
+                            tessdata.get().getAbsolutePath());
+                }
+            }
 
-            final File tessParent = tessdata.getParentFile()
+            logger.debug("tessdata: {}", tessdata.get().getAbsolutePath());
+
+            final File tessParent = tessdata.get()
+                    .getParentFile()
                     .getParentFile();
             logger.debug("tessParent: {}", tessParent.getAbsolutePath());
             Expander.unTar(tar, tessParent);
@@ -387,69 +350,110 @@ public class LangCompanion
     private void uninstallLanguage (final String lang)
             throws Exception
     {
-        File tessdata = getTessdata(false);
-
-        if ((tessdata == null) || !tessdata.exists()) {
+        if (!tessdata.get()
+                .exists()) {
             return;
         }
 
         // Clean up relevant files in the folder
         Files.walkFileTree(
-                tessdata.toPath(),
+                tessdata.get().toPath(),
                 EnumSet.noneOf(FileVisitOption.class),
                 1,
                 new FileVisitor<Path>()
-                {
-                    @Override
-                    public FileVisitResult preVisitDirectory (Path dir,
-                                                              BasicFileAttributes attrs)
-                            throws IOException
-                    {
-                        return FileVisitResult.CONTINUE;
-                    }
-
-                    @Override
-                    public FileVisitResult visitFile (Path file,
+        {
+            @Override
+            public FileVisitResult preVisitDirectory (Path dir,
                                                       BasicFileAttributes attrs)
-                            throws IOException
-                    {
-                        Path name = file.getName(file.getNameCount() - 1);
-                        logger.debug("Visiting {}, name {}", file, name);
+                    throws IOException
+            {
+                return FileVisitResult.CONTINUE;
+            }
 
-                        if (name.toString()
-                                .startsWith(lang + ".")) {
-                            logger.info("Removing file {}", file);
-                            Files.delete(file);
-                        }
+            @Override
+            public FileVisitResult visitFile (Path file,
+                                              BasicFileAttributes attrs)
+                    throws IOException
+            {
+                Path name = file.getName(file.getNameCount() - 1);
+                logger.debug("Visiting {}, name {}", file, name);
 
-                        return FileVisitResult.CONTINUE;
-                    }
+                if (name.toString()
+                        .startsWith(lang + ".")) {
+                    logger.info("Removing file {}", file);
+                    Files.delete(file);
+                }
 
-                    @Override
-                    public FileVisitResult visitFileFailed (Path file,
-                                                            IOException ex)
-                            throws IOException
-                    {
-                        if (ex == null) {
-                            return FileVisitResult.CONTINUE;
-                        } else {
-                            // file visit failed
-                            throw ex;
-                        }
-                    }
+                return FileVisitResult.CONTINUE;
+            }
 
-                    @Override
-                    public FileVisitResult postVisitDirectory (Path dir,
-                                                               IOException ex)
-                            throws IOException
-                    {
-                        if (ex == null) {
-                            return FileVisitResult.CONTINUE;
-                        } else {
-                            // directory iteration failed
-                            throw ex;
-                        }
-                    }
-                });
+            @Override
+            public FileVisitResult visitFileFailed (Path file,
+                                                    IOException ex)
+                    throws IOException
+            {
+                if (ex == null) {
+                    return FileVisitResult.CONTINUE;
+                } else {
+                    // file visit failed
+                    throw ex;
+                }
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory (Path dir,
+                                                       IOException ex)
+                    throws IOException
+            {
+                if (ex == null) {
+                    return FileVisitResult.CONTINUE;
+                } else {
+                    // directory iteration failed
+                    throw ex;
+                }
+            }
+        });
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //----------//
+    // Tessdata //
+    //----------//
+    /**
+     * Handles the precise location of tessdata.
+     */
+    private static class Tessdata
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private File tessdataDir;
+
+        //~ Methods ------------------------------------------------------------
+        /**
+         * Report tessdata directory specification (there is no
+         * guarantee that the directory actually exists).
+         * If environment variable TESSDATA_PREFIX exists, it is used as the
+         * path to tessdata parent directory.
+         * Otherwise, we use the OS-dependent default prefix.
+         *
+         * @return the tessdata directory
+         */
+        public File get ()
+        {
+            if (tessdataDir == null) {
+                final String prefix = System.getenv(Descriptor.TESSDATA_PREFIX);
+                final File prefixDir;
+
+                if (prefix == null) {
+                    prefixDir = descriptor.getDefaultTessdataPrefix();
+                } else {
+                    prefixDir = new File(prefix);
+                }
+
+                tessdataDir = new File(prefixDir, Descriptor.TESSDATA);
+            }
+
+            return tessdataDir;
+        }
     }
 }

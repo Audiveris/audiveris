@@ -49,7 +49,7 @@ public class Bundle
     private File installFolder;
 
     /** The specific companion in charge of OCR languages. */
-    private LangCompanion langCompanion;
+    private OcrCompanion ocrCompanion;
 
     /** Related view on this bundle, if any. */
     private BundleView view;
@@ -93,12 +93,12 @@ public class Bundle
         return view;
     }
 
-    //------------------//
-    // getLangCompanion //
-    //------------------//
-    public LangCompanion getLangCompanion ()
+    //-----------------//
+    // getOcrCompanion //
+    //-----------------//
+    public OcrCompanion getOcrCompanion ()
     {
-        return langCompanion;
+        return ocrCompanion;
     }
 
     //--------------------//
@@ -211,9 +211,10 @@ public class Bundle
         companions.add(new LicenseCompanion(hasUI));
         companions.add(new CppCompanion(hasUI));
         companions.add(new GhostscriptCompanion(hasUI));
-        companions.add(langCompanion = new LangCompanion(hasUI));
+        companions.add(ocrCompanion = new OcrCompanion(hasUI));
         companions.add(new DocCompanion(hasUI));
         companions.add(new ExamplesCompanion(hasUI));
+        companions.add(new PluginsCompanion(hasUI));
         companions.add(new TrainingCompanion(hasUI));
     }
 
