@@ -112,7 +112,6 @@
                 <include name="splash.png"/>
             </fileset>
         </copy>
-        
         <!-- Populate plugins + examples + docs + train to dist/resources -->
         <echo message="-- Building ${dist.dir}/resources/plugins.jar"/>
         <jar basedir="config" destfile="${dist.dir}/resources/plugins.jar" includes="plugins/**"/>
@@ -121,19 +120,12 @@
         <echo message="-- Building ${dist.dir}/resources/documentation.jar"/>
         <jar basedir="data" destfile="${dist.dir}/resources/documentation.jar" includes="www/**/*"/>
         <echo message="-- Building ${dist.dir}/resources/train.jar"/>
-        <jar basedir="data" destfile="${dist.dir}/resources/train.jar" includes="train/**/*"/>        
-
+        <jar basedir="data" destfile="${dist.dir}/resources/train.jar" includes="train/**/*"/>
         <!-- Populate Windows Tesseract lib to ${dist.dir}/resources/ (for lack of a public URL) -->
         <echo message="-- Building ${dist.dir}/resources/tesseract-windows-32bit.jar"/>
-        <jar basedir="dev/windows/dll/32bit" 
-             destfile="${dist.dir}/resources/tesseract-windows-32bit.jar"
-             includes="liblept168.dll, libtesseract302.dll"/>
-        
+        <jar basedir="dev/windows/dll/32bit" destfile="${dist.dir}/resources/tesseract-windows-32bit.jar" includes="liblept168.dll, libtesseract302.dll"/>
         <echo message="-- Building ${dist.dir}/resources/tesseract-windows-64bit.jar"/>
-        <jar basedir="dev/windows/dll/64bit" 
-             destfile="${dist.dir}/resources/tesseract-windows-64bit.jar"
-             includes="liblept168.dll, libtesseract302.dll"/>
-        
+        <jar basedir="dev/windows/dll/64bit" destfile="${dist.dir}/resources/tesseract-windows-64bit.jar" includes="liblept168.dll, libtesseract302.dll"/>
     </target>
     <!-- =================== -->
     <!-- -gen-installer-file -->

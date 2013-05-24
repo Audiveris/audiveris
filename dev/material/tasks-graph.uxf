@@ -1,88 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<diagram program="umlet" version="11.5.1">
+<diagram program="umlet" version="12.0">
   <zoom_level>8</zoom_level>
   <element>
     <type>com.umlet.element.Relation</type>
     <coordinates>
-      <x>136</x>
-      <y>128</y>
-      <w>40</w>
-      <h>56</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>24;40;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>424</x>
-      <y>352</y>
-      <w>48</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>*clean*
-bg=yellow</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>424</x>
-      <y>312</y>
-      <w>40</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>*jar*
-bg=yellow</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>136</x>
-      <y>168</y>
-      <w>48</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-hg-tip
-bg=#ffaaff
-
-
-
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>136</x>
-      <y>216</y>
-      <w>80</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>/-javadoc-build/
-bg=white
-
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>424</x>
-      <y>176</y>
-      <w>64</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>*javadoc*
-bg=yellow</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>176</x>
-      <y>168</y>
+      <x>152</x>
+      <y>104</y>
       <w>264</w>
       <h>64</h>
     </coordinates>
@@ -90,310 +13,46 @@ bg=yellow</panel_attributes>
     <additional_attributes>24;48;24;24;248;24</additional_attributes>
   </element>
   <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>528</x>
-      <y>488</y>
-      <w>48</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-execs
-bg=#ff8888
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
     <type>com.umlet.element.Relation</type>
     <coordinates>
-      <x>464</x>
-      <y>472</y>
-      <w>80</w>
-      <h>136</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>64;24;24;120</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>432</x>
-      <y>584</y>
-      <w>56</w>
-      <h>48</h>
-    </coordinates>
-    <panel_attributes>-installers
-bg=#ff8888
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>624</x>
-      <y>456</y>
-      <w>40</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-bat
-bg=#ff8888
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>624</x>
-      <y>488</y>
-      <w>40</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-exe
-bg=#ff8888</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>624</x>
-      <y>520</y>
-      <w>72</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-exe-console
-bg=#ff8888</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>552</x>
-      <y>440</y>
-      <w>88</w>
-      <h>64</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>72;24;24;48</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>552</x>
-      <y>472</y>
-      <w>88</w>
+      <x>80</x>
+      <y>224</y>
+      <w>336</w>
       <h>40</h>
     </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>72;24;24;24</additional_attributes>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>320;24;24;24</additional_attributes>
   </element>
   <element>
     <type>com.umlet.element.Relation</type>
     <coordinates>
-      <x>552</x>
-      <y>480</y>
-      <w>88</w>
-      <h>64</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>72;48;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>528</x>
-      <y>552</y>
-      <w>88</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-wxs-generation
-bg=#ff8888</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>528</x>
-      <y>584</y>
-      <w>88</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-do-installers
-bg=#ff8888</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>528</x>
-      <y>616</y>
-      <w>88</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-wix-cleanup
-bg=#ff8888</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>464</x>
-      <y>536</y>
-      <w>80</w>
-      <h>80</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>64;24;24;64</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>464</x>
-      <y>568</y>
-      <w>80</w>
+      <x>112</x>
+      <y>64</y>
+      <w>40</w>
       <h>56</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>64;24;24;40</additional_attributes>
+    <additional_attributes>24;40;24;24</additional_attributes>
   </element>
   <element>
-    <type>com.umlet.element.Class</type>
+    <type>com.umlet.element.custom.Component</type>
     <coordinates>
-      <x>232</x>
-      <y>216</y>
-      <w>40</w>
-      <h>24</h>
+      <x>376</x>
+      <y>656</y>
+      <w>184</w>
+      <h>128</h>
     </coordinates>
-    <panel_attributes>-uml
-bg=#ffaaff
-
-
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>192</x>
-      <y>200</y>
-      <w>56</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>40;24;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>192</x>
-      <y>296</y>
-      <w>48</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>/-pre-jar/
-bg=white
+    <panel_attributes>'*mac*
+'[dev/mac/-mac.xml]
+bg=#ffdddd
 </panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <type>com.umlet.element.Class</type>
     <coordinates>
-      <x>136</x>
-      <y>128</y>
-      <w>48</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>/-post-init/
-bg=white
-
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>216</x>
-      <y>288</y>
-      <w>224</w>
-      <h>48</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;</panel_attributes>
-    <additional_attributes>208;32;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>160</x>
-      <y>112</y>
-      <w>280</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;</panel_attributes>
-    <additional_attributes>264;24;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>88</x>
-      <y>1016</y>
-      <w>40</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>format
-bg=#44ffff</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>88</x>
-      <y>1048</y>
-      <w>56</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>properties
-bg=#44ffff</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>88</x>
-      <y>1080</y>
-      <w>80</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>global-replace
-bg=#44ffff</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>88</x>
-      <y>1112</y>
-      <w>40</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>save
-bg=#44ffff</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>88</x>
-      <y>1144</y>
-      <w>40</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>upload
-bg=#44ffff</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>424</x>
-      <y>488</y>
+      <x>400</x>
+      <y>592</y>
       <w>56</w>
       <h>24</h>
     </coordinates>
@@ -403,111 +62,50 @@ bg=#ff8888
     <additional_attributes/>
   </element>
   <element>
-    <type>com.umlet.element.Class</type>
+    <type>com.umlet.element.Relation</type>
     <coordinates>
-      <x>96</x>
-      <y>680</y>
-      <w>64</w>
-      <h>24</h>
+      <x>248</x>
+      <y>0</y>
+      <w>144</w>
+      <h>40</h>
     </coordinates>
-    <panel_attributes>/-post-clean/
-bg=white
+    <panel_attributes>lt=&lt;[][&gt;]&gt;
+m1=import</panel_attributes>
+    <additional_attributes>24;24;128;24</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>248</x>
+      <y>496</y>
+      <w>144</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;[][&gt;]&gt;
+m1=import</panel_attributes>
+    <additional_attributes>24;24;128;24</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.custom.Component</type>
+    <coordinates>
+      <x>8</x>
+      <y>8</y>
+      <w>264</w>
+      <h>776</h>
+    </coordinates>
+    <panel_attributes>'*audiveris*
+'[build.xml]
+bg=#ffddff
 </panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>104</x>
-      <y>352</y>
-      <w>352</w>
-      <h>344</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;</panel_attributes>
-    <additional_attributes>336;24;336;32;24;32;24;328</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>240</x>
-      <y>472</y>
-      <w>200</w>
-      <h>208</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.
-r2=if.windows</panel_attributes>
-    <additional_attributes>184;24;24;192</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>488</x>
-      <y>248</y>
-      <w>80</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-javadoc-build
-bg=#ffffaa
-
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>176</x>
-      <y>216</y>
-      <w>328</w>
-      <h>56</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>312;40;24;40;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>424</x>
-      <y>120</y>
-      <w>40</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>init
-bg=yellow</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <type>com.umlet.element.custom.Component</type>
     <coordinates>
-      <x>72</x>
-      <y>968</y>
-      <w>136</w>
-      <h>216</h>
-    </coordinates>
-    <panel_attributes>'*utils*
-'[dev/utils.xml]
-bg=#ddffff
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>72</x>
-      <y>904</y>
-      <w>40</w>
-      <h>80</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;[^][]&gt;
-r2=import</panel_attributes>
-    <additional_attributes>24;24;24;64</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.custom.Component</type>
-    <coordinates>
-      <x>400</x>
-      <y>72</y>
+      <x>376</x>
+      <y>8</y>
       <w>184</w>
-      <h>344</h>
+      <h>320</h>
     </coordinates>
     <panel_attributes>'*audiveris-impl*
 '[nbproject/build-impl.xml]
@@ -519,408 +117,129 @@ bg=#ffffdd
   <element>
     <type>com.umlet.element.Relation</type>
     <coordinates>
-      <x>272</x>
-      <y>432</y>
-      <w>144</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;[].[&gt;]&gt;
-m1=import if.windows</panel_attributes>
-    <additional_attributes>24;24;128;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>272</x>
-      <y>64</y>
-      <w>144</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;[][&gt;]&gt;
-m1=import</panel_attributes>
-    <additional_attributes>24;24;128;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>696</x>
-      <y>584</y>
+      <x>168</x>
+      <y>136</y>
       <w>56</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-build-msi
-bg=#ff8888</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>592</x>
-      <y>568</y>
-      <w>120</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>104;24;24;24</additional_attributes>
+    <additional_attributes>40;24;24;24</additional_attributes>
   </element>
   <element>
     <type>com.umlet.element.Class</type>
     <coordinates>
-      <x>528</x>
-      <y>648</y>
+      <x>144</x>
+      <y>520</y>
       <w>88</w>
       <h>24</h>
     </coordinates>
-    <panel_attributes>-wxs-cleanup
-bg=#ff8888</panel_attributes>
+    <panel_attributes>-check-codebase
+bg=#ffaaff</panel_attributes>
     <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>464</x>
-      <y>600</y>
-      <w>80</w>
-      <h>72</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>64;56;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>464</x>
-      <y>592</y>
-      <w>80</w>
-      <h>56</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>64;40;24;24</additional_attributes>
   </element>
   <element>
     <type>com.umlet.element.Class</type>
     <coordinates>
-      <x>696</x>
-      <y>488</y>
-      <w>56</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-launch4j
-bg=#ff8888</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>640</x>
-      <y>472</y>
+      <x>400</x>
+      <y>400</y>
       <w>72</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>56;24;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>672</x>
-      <y>488</y>
-      <w>64</w>
-      <h>64</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>48;24;48;48;24;48</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>48</x>
-      <y>856</y>
-      <w>64</w>
       <h>24</h>
     </coordinates>
-    <panel_attributes>*installers*
-bg=#ff00ff</panel_attributes>
+    <panel_attributes>-do-pack-libs
+bg=#ff8888
+</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>64</x>
-      <y>256</y>
-      <w>392</w>
-      <h>616</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>376;56;376;24;24;24;24;600</additional_attributes>
-  </element>
-  <element>
     <type>com.umlet.element.Class</type>
     <coordinates>
-      <x>160</x>
-      <y>824</y>
-      <w>104</w>
+      <x>128</x>
+      <y>408</y>
+      <w>88</w>
       <h>24</h>
     </coordinates>
-    <panel_attributes>-installers-windows
+    <panel_attributes>-pack-libs
 bg=#ffaaff</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <type>com.umlet.element.Class</type>
     <coordinates>
-      <x>160</x>
-      <y>856</y>
-      <w>104</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-installers-unix
-bg=#ffaaff</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>160</x>
-      <y>888</y>
-      <w>104</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-installers-mac
-bg=#ffaaff</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>88</x>
-      <y>808</y>
-      <w>88</w>
-      <h>64</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>72;24;24;48</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>88</x>
-      <y>840</y>
-      <w>88</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>72;24;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>88</x>
-      <y>848</y>
-      <w>88</w>
-      <h>64</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>72;48;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>104</x>
-      <y>344</y>
+      <x>56</x>
+      <y>232</y>
       <w>48</w>
       <h>24</h>
     </coordinates>
-    <panel_attributes>*src*
-bg=#ff00ff</panel_attributes>
+    <panel_attributes>/-pre-jar/
+bg=white
+</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>152</x>
+      <y>152</y>
+      <w>328</w>
+      <h>56</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>312;40;24;40;24;24</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>400</x>
+      <y>240</y>
+      <w>40</w>
+      <h>32</h>
+    </coordinates>
+    <panel_attributes>*jar*
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>400</x>
+      <y>552</y>
+      <w>72</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>-do-pack-libs
+bg=#ff8888
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>16</x>
+      <y>200</y>
+      <w>400</w>
+      <h>544</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>384;24;24;24;24;528</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
     <coordinates>
       <x>128</x>
-      <y>336</y>
-      <w>312</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>296;24;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>232</x>
-      <y>576</y>
-      <w>216</w>
-      <h>272</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.
-r2=if.windows</panel_attributes>
-    <additional_attributes>200;24;32;256</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>424</x>
-      <y>760</y>
-      <w>56</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-clean
-bg=#ff8888
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>424</x>
-      <y>800</y>
-      <w>56</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-installers
-bg=#ff8888
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>424</x>
-      <y>912</y>
-      <w>56</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-clean
-bg=#ff8888
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>424</x>
-      <y>952</y>
-      <w>56</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-installers
-bg=#ff8888
-</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>184</x>
-      <y>656</y>
+      <y>296</y>
       <w>80</w>
       <h>24</h>
     </coordinates>
-    <panel_attributes>-clean-windows
-bg=#ffaaff</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>184</x>
-      <y>688</y>
-      <w>80</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-clean-unix
-bg=#ffaaff</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <type>com.umlet.element.Class</type>
-    <coordinates>
-      <x>184</x>
-      <y>720</y>
-      <w>80</w>
-      <h>24</h>
-    </coordinates>
-    <panel_attributes>-clean-mac
-bg=#ffaaff</panel_attributes>
+    <panel_attributes>/-pre-compile/
+bg=white
+</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <type>com.umlet.element.Relation</type>
     <coordinates>
-      <x>240</x>
-      <y>672</y>
-      <w>200</w>
-      <h>112</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.
-r2=if.unix</panel_attributes>
-    <additional_attributes>184;96;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>240</x>
-      <y>704</y>
-      <w>200</w>
-      <h>232</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.
-r2=if.mac</panel_attributes>
-    <additional_attributes>184;216;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>240</x>
-      <y>784</y>
-      <w>200</w>
-      <h>96</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.
-r2=if.unix</panel_attributes>
-    <additional_attributes>184;24;24;80</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>240</x>
-      <y>872</y>
-      <w>200</w>
-      <h>104</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;.
-r2=if.mac</panel_attributes>
-    <additional_attributes>184;88;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>136</x>
-      <y>640</y>
-      <w>64</w>
-      <h>64</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>48;24;24;48</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>136</x>
-      <y>672</y>
-      <w>64</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>48;24;24;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>136</x>
-      <y>680</y>
+      <x>80</x>
+      <y>432</y>
       <w>64</w>
       <h>64</h>
     </coordinates>
@@ -930,45 +249,120 @@ r2=if.mac</panel_attributes>
   <element>
     <type>com.umlet.element.Relation</type>
     <coordinates>
-      <x>592</x>
-      <y>584</y>
-      <w>136</w>
-      <h>88</h>
+      <x>48</x>
+      <y>240</y>
+      <w>368</w>
+      <h>216</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>352;24;24;24;24;200</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>112</x>
+      <y>152</y>
+      <w>80</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>/-javadoc-build/
+bg=white
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>192</x>
+      <y>392</y>
+      <w>224</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;</panel_attributes>
+    <additional_attributes>208;24;24;24</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>112</x>
+      <y>64</y>
+      <w>48</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>/-post-init/
+bg=white
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>152</x>
+      <y>344</y>
+      <w>88</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>-gen-program-id
+bg=#ffaaff</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>464</x>
+      <y>184</y>
+      <w>80</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>-javadoc-build
+bg=#ffffaa
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>400</x>
+      <y>288</y>
+      <w>48</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>*compile*
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>192</x>
+      <y>392</y>
+      <w>224</w>
+      <h>184</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;</panel_attributes>
+    <additional_attributes>208;168;24;24</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>144</x>
+      <y>472</y>
+      <w>40</w>
+      <h>64</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>24;72;120;72;120;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>272</x>
-      <y>856</y>
-      <w>144</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;[].[&gt;]&gt;
-m1=import if.mac</panel_attributes>
-    <additional_attributes>24;24;128;24</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>272</x>
-      <y>704</y>
-      <w>144</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;[].[&gt;]&gt;
-m1=import if.unix</panel_attributes>
-    <additional_attributes>24;24;128;24</additional_attributes>
+    <additional_attributes>24;48;24;24</additional_attributes>
   </element>
   <element>
     <type>com.umlet.element.custom.Component</type>
     <coordinates>
-      <x>400</x>
-      <y>440</y>
-      <w>376</w>
-      <h>248</h>
+      <x>376</x>
+      <y>352</y>
+      <w>184</w>
+      <h>128</h>
     </coordinates>
     <panel_attributes>'*windows*
 '[dev/windows/-windows.xml]
@@ -982,11 +376,35 @@ bg=#ffdddd
     <additional_attributes/>
   </element>
   <element>
-    <type>com.umlet.element.custom.Component</type>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>64</x>
+      <y>576</y>
+      <w>352</w>
+      <h>184</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>336;24;24;168</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
     <coordinates>
       <x>400</x>
-      <y>712</y>
-      <w>376</w>
+      <y>440</y>
+      <w>56</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>-clean
+bg=#ff8888
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.custom.Component</type>
+    <coordinates>
+      <x>376</x>
+      <y>504</y>
+      <w>184</w>
       <h>128</h>
     </coordinates>
     <panel_attributes>'*unix*
@@ -996,24 +414,179 @@ bg=#ffdddd
     <additional_attributes/>
   </element>
   <element>
-    <type>com.umlet.element.custom.Component</type>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>80</x>
+      <y>392</y>
+      <w>64</w>
+      <h>64</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>48;24;24;48</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>248</x>
+      <y>344</y>
+      <w>144</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;[][&gt;]&gt;
+m1=import</panel_attributes>
+    <additional_attributes>24;24;128;24</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>80</x>
+      <y>424</y>
+      <w>64</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>48;24;24;24</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
     <coordinates>
       <x>400</x>
-      <y>864</y>
-      <w>376</w>
-      <h>128</h>
+      <y>112</y>
+      <w>64</w>
+      <h>24</h>
     </coordinates>
-    <panel_attributes>'*mac*
-'[dev/mac/-mac.xml]
-bg=#ffdddd
+    <panel_attributes>*javadoc*
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>64</x>
+      <y>424</y>
+      <w>352</w>
+      <h>328</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>336;24;24;312</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>408</x>
+      <y>744</y>
+      <w>56</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>-clean
+bg=#ff8888
 </panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <type>com.umlet.element.Class</type>
     <coordinates>
+      <x>24</x>
+      <y>728</y>
+      <w>64</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>/-post-clean/
+bg=white
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>208</x>
+      <y>152</y>
+      <w>40</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>-uml
+bg=#ffaaff
+
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>400</x>
+      <y>208</y>
+      <w>48</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>*clean*
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>128</x>
+      <y>472</y>
+      <w>88</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>-gen-installer-file
+bg=#ffaaff</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
       <x>192</x>
-      <y>328</y>
+      <y>392</y>
+      <w>232</w>
+      <h>336</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;</panel_attributes>
+    <additional_attributes>216;320;24;24</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>64</x>
+      <y>728</y>
+      <w>360</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>344;24;24;24</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>408</x>
+      <y>704</y>
+      <w>72</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>-do-pack-libs
+bg=#ff8888
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>400</x>
+      <y>56</y>
+      <w>40</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>init
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>56</x>
+      <y>440</y>
       <w>48</w>
       <h>24</h>
     </coordinates>
@@ -1025,26 +598,74 @@ bg=white
   <element>
     <type>com.umlet.element.Relation</type>
     <coordinates>
-      <x>216</x>
-      <y>304</y>
-      <w>224</w>
-      <h>48</h>
+      <x>248</x>
+      <y>648</y>
+      <w>144</w>
+      <h>40</h>
     </coordinates>
-    <panel_attributes>lt=-&gt;</panel_attributes>
-    <additional_attributes>208;24;24;32</additional_attributes>
+    <panel_attributes>lt=&lt;[][&gt;]&gt;
+m1=import</panel_attributes>
+    <additional_attributes>24;24;128;24</additional_attributes>
   </element>
   <element>
-    <type>com.umlet.element.custom.Component</type>
+    <type>com.umlet.element.Relation</type>
     <coordinates>
-      <x>32</x>
-      <y>72</y>
-      <w>264</w>
-      <h>856</h>
+      <x>144</x>
+      <y>296</y>
+      <w>40</w>
+      <h>64</h>
     </coordinates>
-    <panel_attributes>'*audiveris*
-'[build.xml]
-bg=#ffddff
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>24;48;24;24</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>136</x>
+      <y>48</y>
+      <w>280</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>264;24;24;24</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>112</x>
+      <y>104</y>
+      <w>48</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>-hg-tip
+bg=#ffaaff
+
+
+
 </panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>184</x>
+      <y>280</y>
+      <w>232</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>216;24;24;24</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>128</x>
+      <y>440</y>
+      <w>88</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>-copy-resources
+bg=#ffaaff</panel_attributes>
     <additional_attributes/>
   </element>
 </diagram>

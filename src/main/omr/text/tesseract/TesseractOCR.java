@@ -65,14 +65,11 @@ public class TesseractOCR
     private static final Logger logger = LoggerFactory.getLogger(TesseractOCR.class);
 
     static {
-        //if (WellKnowns.RUNNING_FROM_JAR) {
         // Explicitly load all native libs resources and in proper order
         logger.info("Loading native libraries resources ...");
         boolean success = true;
         if (WellKnowns.WINDOWS) {
             // For Windows, drop the ".dll" suffix
-            success &= ClassUtil.loadLibrary("liblept168");
-            success &= ClassUtil.loadLibrary("libtesseract302");
             success &= ClassUtil.loadLibrary("jniTessBridge");
         } else if (WellKnowns.LINUX) {
             // For Linux, drop the "lib" prefix and the ".so" suffix
@@ -82,7 +79,6 @@ public class TesseractOCR
             logger.info("All libraries loaded for {}",
                     System.getProperty("os.name"));
         }
-        //}
     }
 
     /** Singleton. */

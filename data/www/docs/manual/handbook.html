@@ -121,6 +121,32 @@
                 padding-right: 5px;
                 box-shadow: 1px 1px 1px 0px rgba(45,20,6,0.2);
             }
+
+            /* -- Table of modes -- */
+            table#modes,
+            table#modes th,
+            table#modes td {
+                border: 1px solid black;
+            }
+            table#modes {
+                border-collapse: collapse;
+            }
+
+            table#modes td {
+                padding: 10px;
+            }
+            table#modes td.checkbox {
+                text-align: center;
+            }
+            table#modes td.codebase {
+                width: 130px;
+                text-align: center;
+            }
+            table#modes td.mode {
+                width: 90px;
+                text-align: center;
+            }
+
             /*]]>*/
         </style>
     </head>
@@ -155,27 +181,16 @@
                     <p>
                         The goal is to now drive all installations and runs of 
                         Audiveris through Java Web Start.
+                        <i>[Some information on former approaches is still 
+                            available in the 
+                            <a href="#development">Development</a> section]</i>                            
                     </p>
                     <p>
-                        Paraphrased from 
-                        <a href="http://docs.oracle.com/javase/tutorial/deployment/webstart/">Sun/Oracle documentation</a>,
-                        the purpose of Java Web Start is to let users launch a 
-                        Java application by clicking a link in a web page.
-                        The link points to a <abbr 
-                            title="Java Network Launch Protocol">JNLP</abbr>
-                        file (Java Network Launch Protocol), which instructs
-                        Java Web Start software to download, cache, and run the 
-                        application.
-                    </p>
-                    <p>
-                        Instead of multiple installation files, there will just 
-                        be a single JNLP file available on Audiveris home page
-                        to deploy the application on different OS'es such as
-                        <b>Windows</b>, <b>Linux</b> or <b>Mac</b>, using either
-                        <b>32-bit</b> or <b>64-bit</b> architectures.
-                        <i>[As of this writing, only Windows and Ubuntu launches
-                            are available and only through Oracle JDK. 
-                            Mac is still to go]</i>
+                        Instead of multiple installation files, there is now
+                        just a single JNLP file available on Audiveris home page
+                        to deploy and run the application on different OS'es 
+                        such as <b>Windows</b>, <b>Linux</b> or <b>Mac</b>, 
+                        using either <b>32-bit</b> or <b>64-bit</b> architectures.                       
                     </p>
                     <p>
                         Applications launched with Java Web Start are cached 
@@ -187,33 +202,15 @@
                         especially as Audiveris shortcuts are installed 
                         (through a desktop icon and through a program menu item).
                     </p>
-                    <p>
-                        The global task of Audiveris download / installation / 
-                        launch is carried out by two components:
-                    </p>
-                    <ol>
-                        <li>The main component is the Audiveris Java application
-                            itself (<i>"application"</i> for short).
-                            It is governed by the visible 
-                            <code>launch.jnlp</code> link on Audiveris web site.</li>
-                        <li>An extension component, named the <i>"installer"</i>,
-                            is in charge of installing a bundle of companion 
-                            softwares (C++ runtime, Ghostscript, Tesseract
-                            library and languages, docs, examples, training 
-                            samples, ...).
-                            This installer is automatically run behind the scene
-                            only the first time Audiveris is launched.
-                            It is run again if and when Audiveris is explicitly 
-                            uninstalled.
-                    </ol>
 
                     <div class="indent warning">
                         <p>
-                            NOTA: For the time being, this Java Web Start 
+                            NOTA: As of this writing, this Java Web Start 
                             approach works for the <b>Oracle Java</b> 
-                            environment only, whether on Windows or Ubuntu.
-                            In particular, the Ubuntu <b>IcedTea</b> Java 
-                            environment is still being debugged.
+                            environment only, whether on <b>Windows</b> or 
+                            <b>Ubuntu</b>.
+                            <b>Mac</b> is still to go and on Ubuntu,
+                            <b>IcedTea</b> Java needs further debugging.
                         </p>
                         <p>
                             To check or modify which Java Web Start tool is 
@@ -298,9 +295,9 @@
                     <img class="side" title="Launching installer" 
                          src="../images/installer-launching.png" />
                     <p>
-                        Since this is the first launch, the Audiveris 
-                        installer is activated to install the whole bundle of
-                        needed software companions.
+                        Since this is the first launch, an extension component
+                        named the "Audiveris bundle Installer" is called to 
+                        install the whole bundle of needed software companions.
                     </p>
                     <p>
                         Compare with the previous window, and notice the name 
@@ -312,7 +309,7 @@
                     <img class="right" title="Security warning" 
                          src="../images/installer-security.png" />
                     <p>
-                        You may get a security warning like this one (Ubuntu)
+                        You may get a security warning like this one 
                         because Audiveris will need to escape the default 
                         sandbox and access local disk.
                     </p>
@@ -429,7 +426,7 @@
                             that is needed (mandatory or selected optional) but not
                             yet installed,</li>
                         <li><span style="background:#afa">green</span>  for an 
-                            installed needed companion,</li>
+                            installed needed item,</li>
                         <li><span style="background:#ddd">gray</span>  for an 
                             optional item not selected,</li>
                         <li><span style="background:orange">orange</span>  for an 
@@ -555,6 +552,24 @@
                             immediately.</li>
                     </ol>
 
+                    <img class="right" title="Application update" 
+                         src="../images/installer-update.png" />
+                    <p>
+                        <b>Application updates:</b>
+                        New versions of Audiveris resources may become 
+                        available on the server. 
+                        Every time you launch Audiveris, a quick network access
+                        is performed to check if there are new versions of
+                        resources. If so, you will be prompted for updating the
+                        application if you wish.
+                    </p>
+                    <p>
+                        Note that due to time-zone differences between server
+                        and client, this might result in a delay of up to 24 
+                        hours between when a new Jar is uploaded, and when it
+                        is recognized as new content to be updated.
+                    </p>
+
                     <h4 id="java-cache">Java cache</h4>
 
                     <p>
@@ -678,361 +693,6 @@
                             download.</li>
                     </ul>
 
-                </article>
-
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-
-                <article id="linux">
-                    <h3>
-                        Linux environment
-                    </h3>
-                    <p class='warning indent'>
-                        Please note that this section is obsolete since
-                        users are now encouraged to use the single Java Web 
-                        Start approach available for Windows and for Ubuntu.
-                        It can still be useful for other Linux versions or for
-                        people that prefer building Audiveris on their own.
-                    </p>
-                    <p> 
-                        Due to impossibility to support the sheer number of Linux
-                        distributions and different binary formats used, we 
-                        provide fully automated installation packages only for 
-                        <b>Ubuntu</b>.
-                    </p>
-                    <p>
-                        For all other distributions we provide generic 
-                        application packages coupled with detailed installation
-                        instructions.
-                        On non-Ubuntu Linux you would need to install various
-                        required components manually. 
-                        For further information, please refer to the 
-                        <a href="#generic-linux">Manual installation</a>
-                        section
-                    </p>
-                    <h4 id="linux-debian">
-                        Full installation on Ubuntu 12.04 and above
-                    </h4>
-                    <p>
-                        <b>Note:</b> Our Ubuntu packages won't work on 
-                        versions prior to 12.04 or architectures other than 
-                        Intel i386/amd64.
-                    </p>                    
-                    <p> The <b>Ubuntu 12.04</b> packages are available on the 
-                        <a href="http://kenai.com/projects/audiveris/downloads">
-                            download area</a> of Audiveris project and match the
-                        <code>audiveris-<i>V.v.r</i>-ubuntu-<i>arch</i>.deb</code>
-                        naming schema, where <q>V.v.r</q> denotes Audiveris
-                        version+revision and <q>arch</q> the hardware 
-                        architecture (<code>i386</code> for Intel 32bit or 
-                        <code>amd64</code> for 64bit).
-                    </p>
-
-                    <h4 id="linux-generic">Generic Audiveris package</h4>
-                    <p><b>Note:</b>
-                        This <q>generic</q> Audiveris application package is 
-                        intended to install on any Linux the Audiveris 
-                        application, music font and desktop integration.
-                        However, this package requires that <b>Tesseract</b>
-                        shared libraries are already present or the installation
-                        will fail.
-                        So, refer to section <a href="#manual-ocr">Installing 
-                            Tesseract OCR</a> to install Tesseract beforehand.
-                    </p>
-                    <p>
-                        Generic RPM packages suitable for installation on
-                        <b>OpenSUSE</b>, <b>Fedora</b>, <b>Madriva</b> and 
-                        others are available on the 
-                        <a href="http://kenai.com/projects/audiveris/downloads">
-                            download area</a> of Audiveris project.
-                        The packages match the 
-                        <code>audiveris-<i>V.v.r</i>-generic-<i>arch</i>.rpm</code>
-                        naming schema, where <q>V.v.r</q> denotes Audiveris
-                        version+revision and <q>arch</q> the hardware 
-                        architecture (<code>i386</code> for Intel 32bit or
-                        <code>x86_64</code> for 64bit).
-                    </p>
-
-                    <h4 id="linux-others">
-                        Other targets than Ubuntu, OpenSUSE or Fedora</h4>
-                    <p>
-                        The basic steps will be the same as given in the
-                        <a href="#linux-manual">Manual installation</a> section,
-                        though the real commands will vary heavily depending on your
-                        distribution and hardware architecture.
-                        You can post requests on 
-                        <a href="http://www.leptonica.com/download.html">Audiveris
-                            forum</a> if you need additional instructions.
-                    </p>                    
-
-                    <h4 id="linux-manual">Manual Installation</h4>
-                    <p> 
-                        This section provides step-by-step guide on how to install
-                        Audiveris on different, mainly non-Ubuntu, Linux distributions,
-                        because those don't provide pre-built binary libraries for Tesseract
-                        3.02. 
-                        You are assumed to be familiar with the process of compiling
-                        and installing software from source. 
-                        Moreover, this guide assumes
-                        some basic level of familiarity with command line operation. 
-                    </p>
-                    <p> 
-                        Basically, the installation of Audiveris on a particular
-                        Linux distribution consists of the following steps 
-                        (most of them require the user to type commands in a 
-                        terminal):
-                    </p>
-                    <ul>
-                        <li>(compiling and) installing Google's Tesseract
-                            optical character recognition engine</li>
-                        <li>installing language files for Tesseract</li>
-                        <li>installing Java Runtime Environment</li>
-                        <li>installing Ghostscript - an open-source tool for
-                            manipulating PDF documents</li>
-                    </ul>
-
-                    <h5 id="manual-ocr">Installing Tesseract OCR</h5>
-                    <p>
-                        At the time of this writing, Tesseract project doesn't 
-                        officially provide binary packages for Linux. 
-                        Therefore, you need to compile and install Tesseract 
-                        libraries manually.
-                    </p>
-                    <dl>
-                        <dt>Installing Tesseract on OpenSUSE 12.2</dt>
-
-                        <dd>
-                            <p>
-                                OpenSUSE 12.2 offers unofficial binary packages
-                                for Tesseract' shared libraries. 
-                                This simplifies the installation greatly. 
-                                Please proceed as follows:
-                            </p>
-                            <ol>
-                                <li>in your browser, go to <a href="http://software.opensuse.org/package/liblept3">
-                                        Leptonica download page</a> , select <q>OpenSUSE 12.2</q> then <q>Show
-                                        unstable packages</q>. Click on the proper package from <q>Lazy_Kent</q>
-                                    according to your hardware architecture (32 or 64 bit) and follow
-                                    the instructions to install Leptonica.
-                                </li>
-                                <li>in your browser, go to <a href="http://software.opensuse.org/package/libtesseract3">
-                                        Tesseract download page</a> , select <q>OpenSUSE 12.2</q> then <q>Show
-                                        unstable packages</q>. Click on the proper package from <q>Lazy_Kent</q>
-                                    (version 3.02.02!) according to your hardware architecture (32 or
-                                    64 bit) and follow the instructions to install Tesseract' shared
-                                    libraries.
-                                </li>
-                            </ol>
-                        </dd>
-
-                        <dt>Installing Tesseract on Fedora 17</dt>
-                        <dd>
-                            <p>
-                                Due to the lack of any binary packages for 
-                                Tesseract in the Fedora distribution, you need 
-                                to compile this software manually.
-                            </p>
-
-                            <dl>
-
-                                <dt>Installing development tools</dt>
-                                <dd>
-                                    <p>In order to be able to compile software from sources, you need to
-                                        install development tools first because those are likely not present
-                                        on your system by default. Please run the following commands in your
-                                        terminal:
-                                    </p>
-                                    <p class="code">
-                                        sudo yum groupinstall "Development Tools"
-                                    </p>
-                                </dd>
-
-                                <dt>Installing Tesseract dependencies</dt>
-                                <dd>
-                                    <p>
-                                        Tesseract OCR depends on the image processing library called
-                                        <b>Leptonica</b>, which, in turn, depends on several image formats like
-                                        JPEG, PNG, TIFF and GIF. These formats are usually supported by
-                                        external libraries. You need to install the development versions for
-                                        each of those libraries:
-                                    </p>
-                                    <p class="code">sudo yum
-                                        install zlib-devel libpng-devel libjpeg-devel libtiff-devel
-                                        giflib-devel</p>
-                                    <p>Now check out Leptonica's source code and unpack it:</p>
-                                    <pre class="code">
-sudo yum install wget
-wget http://www.leptonica.com/source/leptonica-1.69.tar.gz
-gunzip leptonica-1.69.tar.gz
-tar -xvf leptonica-1.69.tar</pre>
-                                    <p>Alternatively, you can download the source using your browser here:
-                                        <a href="http://www.leptonica.com/download.html">http://www.leptonica.com/download.html</a></p>
-                                    <p>Let us configure, build and install Leptonica now:</p>
-                                    <pre class="code">
-cd [path to leptonica-1.69 folder]
-./configure --disable-programs
-make
-sudo make install</pre>
-                                    <p>This will install Leptonica libraries to
-                                        /usr/local/lib.</p>
-                                </dd>
-                                <dt>Compiling and installing Tesseract</dt>
-                                <dd>
-                                    <ul>
-                                        <li>Download Tesseract source using your browser or <code>wget</code>
-                                            from here:
-                                            http://tesseract-ocr.googlecode.com/files/tesseract-ocr-3.02.02.tar.gz</li>
-                                        <li>Unpack it to an easily accessible directory, for example
-                                            <code>/home/user/Documents/</code>. 
-                                            You should see <code>tesseract-ocr</code> folder in
-                                            your working directory.
-                                        </li>
-                                        <li>Start up the terminal and change to that source directory: 
-                                            <pre class="code">cd /home/user/Documents/tesseract-ocr</pre></li>
-                                        <li>Now run the following commands in order to compile und install
-                                            Tesseract to /usr/local/lib:
-                                            <pre class="code">
-./autogen.sh
-./configure
-make
-sudo make install</pre>
-                                        </li>
-                                    </ul>
-                                    <p style="margin-top: -4px;" role="link"><u>The following instructions
-                                    in this section are only valid for the Fedora 17 distribution!</u>
-                                </p>
-                                <p style="margin-top: -4px;" role="link">Fedora, as a Red-Hat<code></code>-derived
-                                    distribution, doesn't include <code>/usr/local/lib</code> in its library search
-                                    path. Therefore, it's necessary to add that path so that Tesseract
-                                    shared libraries can be be found by Audiveris application. Please
-                                    proceed as follows:</p>
-                                <pre class="code">su - -c 'gedit /etc/ld.so.conf'</pre>
-                                <p>Append the following path to
-                                    the end of the file if it's not already there:
-                                </p>
-                                <pre class="code">/usr/local/lib</pre>
-                                <p>Save the file and reconfigure
-                                    the dynamic linker by issuing the following command:
-                                </p>
-                                <pre class="code">sudo ldconfig</pre>
-                        </dd>
-                    </dl>
-                    </dd>
-                    </dl>
-
-                    <h5 id="manual-ocr-files">
-                        Installing language files for Tesseract
-                    </h5>
-                    <p>
-                        Tesseract requires several language data files to be present on
-                        your machine. The following commands will install data for English<code></code>,
-                        German, French and Italian languages:
-                    </p>
-                    <ul>
-                        <li>Create the working directory named <code>tesseract-ocr</code> somewhere,
-                            for example: <code>/home/user/Documents/tesseract-ocr</code>.
-                            If you have compiled Tesseract from sources, this 
-                            will be the source code directory.
-                        </li>
-                        <li>Download required language files from here:
-                            <a href="http://code.google.com/p/tesseract-ocr/downloads/">
-                                http://code.google.com/p/tesseract-ocr/downloads/</a>.
-                            These files
-                            follow the naming schema <code>tesseract-ocr-3.02.XXX.tar.gz</code>
-                            where <q>XXX</q> denotes language code, i.e. eng = English,
-                            deu = German, ita = Italian and fra = French.</li>
-                        <li>Place the obtained language files into parent directory of
-                            <code>tesseract-ocr</code>, i.e. <code>/home/user/Documents/</code>.</li>
-                        <li>Double-click them to unpack.
-                            The data will be automatically extracted into 
-                            <code>tessdata</code> directory inside of the 
-                            <code>tesseract-ocr</code> directory.</li>
-                        <li>Start up the terminal and run the following command: 
-                            <pre class="code">sudo cp -r <i>path_to_tessdata_folder</i> <i>destination</i></pre> 
-                            where <q>path_to_tessdata_folder</q> denotes
-                            <code>/home/user/Documents/tesseract-ocr/tessdata </code>
-                            in this example and <q>destination</q> - either
-                            <code>/usr/local/share</code> when compiled from 
-                            source or <code>/usr/share</code> when
-                            installed using OpenSUSE binary packages.</li>
-                    </ul>
-                    <p>
-                        You need to set <code>TESSDATA_PREFIX</code> environment
-                        variable to point to the parent directory of the 
-                        <code>tessdata</code> in order to tell Audiveris
-                        where language data are located.
-                    </p>
-                    <p>
-                        To edit the global profile, run the following command 
-                        in the terminal:
-                    </p>
-                    <ul>
-                        <li>
-                            <code>su - -c 'gedit /etc/profile.local'</code>
-                            on OpenSUSE,
-                        </li>
-                        <li>
-                            <code>su - -c 'gedit /etc/profile.d/local.sh'</code>
-                            on Fedora.
-                        </li>
-                    </ul>
-
-                    <p>
-                        Append the following line:
-                    </p>
-                    <ul>
-                        <li>
-                            <code>export TESSDATA_PREFIX=/usr/local/share</code>
-                            on Fedora 17,
-                        </li>
-                        <li>
-                            <code>export TESSDATA_PREFIX=/usr/share</code>
-                            on OpenSUSE.
-                        </li>
-                    </ul>
-                    <p>
-                        Save the file, then log out and log in again in order
-                        to activate the changes.
-                    </p>
-
-                    <h5 id="manual-jre">
-                        Installing Java Runtime Environment (JRE)
-                    </h5>
-                    <p>Audiveris requires Java 7. Please install it as follows:</p>
-                    <ul>
-                        <li>
-                            <code>sudo zypper install java-1_7_0-openjdk</code>
-                            on OpenSUSE,
-                        </li>
-                        <li>
-                            <code>sudo yum install java-1.7.0-openjdk</code>
-                            on Fedora.
-                        </li>
-                    </ul>
-                    <p>
-                        To test your JRE installation, run the following command:
-                    </p>
-                    <pre class="code">java -version</pre>
-
-                    <p>
-                        You should see something similar to:
-                    </p>
-                    <pre class="code">
-java version "1.7.0_09-icedtea"
-OpenJDK Runtime Environment (fedora-2.3.3.fc17-x86_64)
-OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
-
-                    <h5 id="manual-ghostscript">
-                        Installing Ghostscript
-                    </h5>
-                    <p>
-                        Audiveris requires Ghostscript (an interpreter for the PostScript
-                        language and for PDF) in order to deal with PDF files.
-                        Ghostscript is already installed by default on both
-                        OpenSUSE and Fedora.
-                        Audiveris requires Ghostscript 9.05 or higher.
-                        To verify that, run the following command in the terminal:
-                    </p>
-                    <pre class="code">gs --version</pre>
                 </article>
 
                 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - -->
@@ -2103,147 +1763,6 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
 
                 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
-                <article id="building">
-                    <h3>
-                        Building from Source
-                    </h3>
-
-                    <p class='warning indent'>
-                        Warning: This section is obsolete.
-                    </p>
-                    <p>
-                        If you want to modify Audiveris and rebuild it from 
-                        source, read the instructions gathered in this section.
-                    </p>
-                    <dl>
-                        <dt>
-                        Use of <b>NetBeans</b>
-                        </dt>
-                        <dd>
-                            <p>
-                                This is by far the easiest way, whatever your 
-                                operating system, to download all the source 
-                                pieces from Kenai Mercurial (Hg) repository
-                                and build Audiveris from them.
-                            </p>
-                            <p>
-                                Assuming you have NetBeans installed, from
-                                the IDE top menu, select <code>Team</code> |
-                                <code>Mercurial</code> | 
-                                <code>Clone Other...</code> which will take
-                                you through 3 steps:
-                            </p>
-                            <ol>
-                                <li>In the <q>Mercurial Repository</q> step, set the
-                                    Repository URL to the Kenai address 
-                                    <code>https://hg.kenai.com/hg/audiveris~hg</code></li>
-                                <li>In the <q>Mercurial Paths</q> step, you can keep the proposed paths</li>
-                                <li>In the <q>Destination Directory</q> step, select
-                                    the Parent Directory and the Clone Name of
-                                    your choice, for example "audiveris~hg"</li>
-                            </ol>
-                            <p>
-                                This will clone the remote Kenai repository to 
-                                the chosen local "audiveris~hg" directory and 
-                                open the project automatically.
-                            </p>
-                            <p>
-                                This is all you need to Clean, Build and Run 
-                                Audiveris from NetBeans.
-                                [Note: If you wish, you can as well launch Ant 
-                                commands like <code>ant clean jar run</code>
-                                from the local directory].
-                            </p>
-                            <p>
-                                To go further, the <code>build.xml</code> file, 
-                                which is used by NetBeans and Ant, provides the
-                                <code>installers</code> target to build the pair
-                                of installers (32-bit and 64-bit) for the OS 
-                                you are running.
-                            </p>
-                        </dd>
-
-                        <dt>Building Windows installers</dt>
-                        <dd>
-                            <p>
-                                Windows installers are built in the form of 
-                                <code>.msi</code> files.
-                                Their building requires the downloading and 
-                                installation of 2 external utilities:
-                            </p>
-                            <ul>
-                                <li>
-                                    <b>Launch4j</b>, available on
-                                    <a href="http://launch4j.sourceforge.net/">
-                                        http://launch4j.sourceforge.net/</a>,
-                                    is needed to wrap the Java application into
-                                    <code>.exe</code> files.
-                                    The variable <code>launch4j.dir</code> must
-                                    point to launch4j installation directory.
-                                </li>
-                                <li>
-                                    <abbr title="Windows installer XML"><b>WiX</b></abbr>,
-                                    available on
-                                    <a href="http://wix.codeplex.com/">
-                                        http://wix.codeplex.com/</a>,
-                                    is needed to build the <code>.msi</code>
-                                    files.
-                                    As of this writing, we use version 3.5 of 
-                                    the WiX toolset, which must be available on
-                                    the path.
-                                </li>
-                            </ul>                            
-                        </dd>
-
-                        <dt>Building Linux installers</dt>
-                        <dd>
-                            <ul>
-                                <li>
-                                    The outputs of the Ant installers task are
-                                    processed with <b>debhelper</b> to provide
-                                    the <code>.deb</code> packages.
-                                </li>
-                                <li>
-                                    Then <b>alien</b> is used to convert them to 
-                                    <code>.rpm</code> packages.
-                                </li>
-                            </ul>                            
-                        </dd>
-
-                        <dt> 
-                        Customization
-                        </dt>
-                        <dd>
-                            <p>
-                                The build process uses global variables
-                                gathered in <code>dev/build.default.properties
-                                </code> file.
-                            </p>
-                            <p>
-                                To adapt the build process to your environment,
-                                you can override some of these variables
-                                (like the <code>launch4j.dir</code> above)
-                                in a potential <code>build.properties</code> file.
-                                This file can be located in the <code>dev</code>
-                                directory or in the user directory.
-                                For Windows, the user directory is 
-                                <code>%APPDATA%/AudiverisLtd/audiveris</code>.
-                            </p>
-                        </dd>
-
-                        <dt>Organization</dt>
-                        <dd>
-                            For your information, the general organization of
-                            the Audiveris directories is listed in file 
-                            <a href="../../../dev/material/global-tree.txt">
-                                dev/material/global-tree.text</a> and detailed
-                            in the <a href="#folders">Folders</a> section.                            
-                        </dd>
-                    </dl>
-                </article>
-
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-
                 <article id="cli">
                     <h3>
                         Command line interface
@@ -2797,7 +2316,6 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         The top panels are dedicated to selectors, in that order:
                     </p>
                     <dl>
-
                         <dt>Folders<dt> 
                         <dd>This selector allows to select one or several folders to 
                             search for training material within:
@@ -2938,6 +2456,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         </dd>
                     </dl>
                 </article>
+
             </section>
 
             <!-- =========================================================== -->
@@ -3358,20 +2877,603 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
 
             <!-- =========================================================== -->
             <section>
-                <h2 id="folders">
-                    Folders
+                <h2 id="development">
+                    Development
                 </h2>
 
-                <p>This section describes the organization of folders on the
-                    target machine, depending on the operating system.</p>
-                <p>Some folders are annotated with a <code>CONSTANT_NAME</code>
-                    which represents a direct link from Java code.</p>
+                <p>This section is meant for developers rather than "plain" 
+                    users of Audiveris.</p>
 
                 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-                <article id="system-folder">
+
+                <article id="building">
                     <h3>
-                        System
+                        Building from Source
                     </h3>
+
+                    <dl>
+                        <dt>
+                        Use of <b>NetBeans</b>
+                        </dt>
+                        <dd>
+                            <p>
+                                This is by far the easiest way, whatever your 
+                                operating system, to download all the source 
+                                pieces from Kenai Mercurial (Hg) repository
+                                and build Audiveris from them.
+                            </p>
+                            <p>
+                                Assuming you have NetBeans installed, from
+                                the IDE top menu, select <code>Team</code> |
+                                <code>Mercurial</code> | 
+                                <code>Clone Other...</code> which will take
+                                you through 3 steps:
+                            </p>
+                            <ol>
+                                <li>In the <q>Mercurial Repository</q> step, set the
+                                    Repository URL to the Kenai address 
+                                    <code>https://hg.kenai.com/hg/audiveris~hg</code></li>
+                                <li>In the <q>Mercurial Paths</q> step, you can keep the proposed paths</li>
+                                <li>In the <q>Destination Directory</q> step, select
+                                    the Parent Directory and the Clone Name of
+                                    your choice, for example "audiveris~hg"</li>
+                            </ol>
+                            <p>
+                                This will clone the remote Kenai repository to 
+                                the chosen local "audiveris~hg" directory in a 
+                                couple of minutes and then open the project
+                                automatically.
+                                Actually, you'll be notified that 2 projects 
+                                were cloned.
+                                This is so because, inside the main project 
+                                (<b>audiveris</b>), there is a subproject
+                                (<b>installer</b>) 
+                                to handle the installation of Audiveris bundle.
+                                Audiveris project depends on Installer project.
+                                You can open one or both projects.
+                            </p>
+                        </dd>
+
+                        <dt>
+                        Audiveris project
+                        </dt>
+                        <dd>
+                            <p>
+                                NetBeans signals a minor problem:
+                                The Java class <code>omr.WellKnowns</code>
+                                depends on a <code>ProgramId</code> class 
+                                which cannot be found.
+                                This ProgramId class provides Hg-based 
+                                information and, by design, is always 
+                                dynamically generated before any compile is
+                                performed, so this initial problem can safely be 
+                                ignored and will disappear at first build.
+                            </p>
+
+                            <img class="side" title="Web Start dialog" 
+                                 src="../images/web-start-dialog.png" />
+                            <p>
+                                Audiveris application can be built and run in
+                                different modes.
+                                To switch modes, open the project properties and 
+                                select the "Web Start" category dialog:
+                            </p>
+                            <table id="modes">
+                                <tr>
+                                    <th>Enable Web Start<br/>checkbox</th>
+                                    <th>Codebase<br/>selection</th>
+                                    <th>Mode</th>                                    
+                                    <th>Comments</th>                                    
+                                </tr>
+                                <tr>
+                                    <td class="checkbox">Unchecked</td>
+                                    <td class="codebase">N/A</td>
+                                    <td class="mode">Stand-alone</td>
+                                    <td>This mode allows to test Audiveris
+                                        application locally, with no Installer,
+                                        and with no need to sign the resources.
+                                        <br/>
+                                        Nota: It requires that the needed 
+                                        bridging libraries be found in system 
+                                        location (since they are not provided 
+                                        as Java Web Start resources).
+                                        <br/>For Windows: 
+                                        <code>jniTessBridge.dll</code> in
+                                        <code>c:\windows\system32</code>
+
+                                        <br/>For Ubuntu: 
+                                        <code>libjniTessBridge.so</code> in
+                                        <code>/usr/lib/jni</code></td>
+                                </tr>
+                                <tr>
+                                    <td class="checkbox" rowspan="2">Checked</td>
+                                    <td class="codebase"><i>"Local execution"</i>
+                                    </td>
+                                    <td class="mode">Local<br/>
+                                        Java Web Start</td>
+                                    <td>This mode allows to test the Java Web 
+                                        Start mechanisms with all resources kept
+                                        locally.</td>
+                                </tr>
+                                <tr>                                    
+                                    <td class="codebase"><i>"User defined"</i></td>
+                                    <td class="mode">Remote<br/>
+                                        Java Web Start</td>
+                                    <td>This mode uses Java Web Start with all
+                                        resources downloaded from a remote
+                                        location.<br/>
+                                        Define Codebase Preview as the remote
+                                        URL, typically 
+                                        <code>https://audiveris.kenai.com/jnlp</code>.
+                                        <br/>Use a WebDAV, such as BitKinex, to
+                                        upload the content of the local 
+                                        <code>dist</code> folder to the remote 
+                                        web location before any actual use.
+                                    </td>
+                                </tr>
+                            </table>
+                            <br class="clear" />
+
+                            <img class="side" title="Signing dialogr" 
+                                 src="../images/signing.png" />
+                            <p>
+                                When using Java Web Start (either local or 
+                                remote) all the resources listed in the JNLP
+                                file must be signed, because of the use of
+                                native libraries.
+                            </p>
+                            <p>
+                                This signing is handled automatically by the 
+                                build mechanism, based on the informations
+                                provided in the Signing dialog box through the
+                                <code class="button">Customize</code> button.
+                            </p>
+                            <p>
+                                Here we use a local keystore ("AudiverisLtd.keystore")
+                                located in project parent folder and
+                                where the alias "signFiles" has been defined
+                                using the <code>keytool</code> utility.
+                                This alias is then  used by the build task to
+                                sign the resources.
+                                Note that all resources must be signed by the
+                                same certificate.
+                            </p>
+                        </dd>
+
+                        <dt class="clear">
+                        Installer project
+                        </dt>
+                        <dd>
+                            <p>
+                                One works on the Installer project only to
+                                modify the installer features, otherwise it gets
+                                automatically built from Audiveris project which
+                                depends on it.
+                            </p>
+                            <p>
+                                In fact, the Installer does not know it is part
+                                of a Java Web Start installation. 
+                                It is a plain Java program called by javaws
+                                as an extension of Audiveris installation,
+                                with a single argument: "install" for 
+                                installation and "uninstall" for uninstallation.
+                            </p>
+                            <p>
+                                It can be modified, tested and debugged in a
+                                stand-alone manner, with proper argument 
+                                ("install" or "uninstall").
+                                To ease compilation and test without a real
+                                javaws underneath, the <code>javax.jnlp</code>
+                                package, which provides the JNLP services, is 
+                                simply described through a facade.
+                            </p>
+                            <p>
+                                A final advice: since the Installer has to write
+                                in protected locations, debugging is more 
+                                convenient when the whole NetBeans session has 
+                                been launched at administrator level.
+                            </p>
+                        </dd>
+
+                        <dt> 
+                        Customization
+                        </dt>
+                        <dd>
+                            <p>
+                                The build process uses global variables
+                                gathered in <code>dev/build.default.properties
+                                </code> file.
+                            </p>
+                            <p>
+                                To adapt the build process to your environment,
+                                you can override some of these variables
+                                in a potential <code>build.properties</code> file.
+                                This file can be located in the <code>dev</code>
+                                directory or in the user directory.
+                                For Windows, the user directory is 
+                                <code>%APPDATA%/AudiverisLtd/audiveris</code>.
+                            </p>
+                        </dd>
+
+                        <dt>Organization</dt>
+                        <dd>
+                            For your information, the general organization of
+                            the target Audiveris folders is detailed
+                            in the <a href="#folders">Folders</a> section.                            
+                        </dd>
+                    </dl>
+                </article>
+
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+                <article id="linux">
+                    <h3>
+                        Linux specials
+                    </h3>
+                    <p class='warning indent'>
+                        Please note that this section is obsolete since
+                        users are now encouraged to use the single Java Web 
+                        Start approach available for Windows and for Ubuntu.
+                        It can still be useful for other Linux versions or for
+                        people that prefer building Audiveris on their own.
+                    </p>
+                    <p> 
+                        Due to impossibility to support the sheer number of Linux
+                        distributions and different binary formats used, we 
+                        provide fully automated installation packages only for 
+                        <b>Ubuntu</b>.
+                    </p>
+                    <p>
+                        For all other distributions we provide generic 
+                        application packages coupled with detailed installation
+                        instructions.
+                        On non-Ubuntu Linux you would need to install various
+                        required components manually. 
+                        For further information, please refer to the 
+                        <a href="#generic-linux">Manual installation</a>
+                        section
+                    </p>
+                    <h4 id="linux-debian">
+                        Full installation on Ubuntu 12.04 and above
+                    </h4>
+                    <p>
+                        <b>Note:</b> Our Ubuntu packages won't work on 
+                        versions prior to 12.04 or architectures other than 
+                        Intel i386/amd64.
+                    </p>                    
+                    <p> The <b>Ubuntu 12.04</b> packages are available on the 
+                        <a href="http://kenai.com/projects/audiveris/downloads">
+                            download area</a> of Audiveris project and match the
+                        <code>audiveris-<i>V.v.r</i>-ubuntu-<i>arch</i>.deb</code>
+                        naming schema, where <q>V.v.r</q> denotes Audiveris
+                        version+revision and <q>arch</q> the hardware 
+                        architecture (<code>i386</code> for Intel 32bit or 
+                        <code>amd64</code> for 64bit).
+                    </p>
+
+                    <h4 id="linux-generic">Generic Audiveris package</h4>
+                    <p><b>Note:</b>
+                        This <q>generic</q> Audiveris application package is 
+                        intended to install on any Linux the Audiveris 
+                        application, music font and desktop integration.
+                        However, this package requires that <b>Tesseract</b>
+                        shared libraries are already present or the installation
+                        will fail.
+                        So, refer to section <a href="#manual-ocr">Installing 
+                            Tesseract OCR</a> to install Tesseract beforehand.
+                    </p>
+                    <p>
+                        Generic RPM packages suitable for installation on
+                        <b>OpenSUSE</b>, <b>Fedora</b>, <b>Madriva</b> and 
+                        others are available on the 
+                        <a href="http://kenai.com/projects/audiveris/downloads">
+                            download area</a> of Audiveris project.
+                        The packages match the 
+                        <code>audiveris-<i>V.v.r</i>-generic-<i>arch</i>.rpm</code>
+                        naming schema, where <q>V.v.r</q> denotes Audiveris
+                        version+revision and <q>arch</q> the hardware 
+                        architecture (<code>i386</code> for Intel 32bit or
+                        <code>x86_64</code> for 64bit).
+                    </p>
+
+                    <h4 id="linux-others">
+                        Other targets than Ubuntu, OpenSUSE or Fedora</h4>
+                    <p>
+                        The basic steps will be the same as given in the
+                        <a href="#linux-manual">Manual installation</a> section,
+                        though the real commands will vary heavily depending on your
+                        distribution and hardware architecture.
+                        You can post requests on 
+                        <a href="http://www.leptonica.com/download.html">Audiveris
+                            forum</a> if you need additional instructions.
+                    </p>                    
+
+                    <h4 id="linux-manual">Manual Installation</h4>
+                    <p> 
+                        This section provides step-by-step guide on how to install
+                        Audiveris on different, mainly non-Ubuntu, Linux distributions,
+                        because those don't provide pre-built binary libraries for Tesseract
+                        3.02. 
+                        You are assumed to be familiar with the process of compiling
+                        and installing software from source. 
+                        Moreover, this guide assumes
+                        some basic level of familiarity with command line operation. 
+                    </p>
+                    <p> 
+                        Basically, the installation of Audiveris on a particular
+                        Linux distribution consists of the following steps 
+                        (most of them require the user to type commands in a 
+                        terminal):
+                    </p>
+                    <ul>
+                        <li>(compiling and) installing Google's Tesseract
+                            optical character recognition engine</li>
+                        <li>installing language files for Tesseract</li>
+                        <li>installing Java Runtime Environment</li>
+                        <li>installing Ghostscript - an open-source tool for
+                            manipulating PDF documents</li>
+                    </ul>
+
+                    <h5 id="manual-ocr">Installing Tesseract OCR</h5>
+                    <p>
+                        At the time of this writing, Tesseract project doesn't 
+                        officially provide binary packages for Linux. 
+                        Therefore, you need to compile and install Tesseract 
+                        libraries manually.
+                    </p>
+                    <dl>
+                        <dt>Installing Tesseract on OpenSUSE 12.2</dt>
+
+                        <dd>
+                            <p>
+                                OpenSUSE 12.2 offers unofficial binary packages
+                                for Tesseract' shared libraries. 
+                                This simplifies the installation greatly. 
+                                Please proceed as follows:
+                            </p>
+                            <ol>
+                                <li>in your browser, go to <a href="http://software.opensuse.org/package/liblept3">
+                                        Leptonica download page</a> , select <q>OpenSUSE 12.2</q> then <q>Show
+                                        unstable packages</q>. Click on the proper package from <q>Lazy_Kent</q>
+                                    according to your hardware architecture (32 or 64 bit) and follow
+                                    the instructions to install Leptonica.
+                                </li>
+                                <li>in your browser, go to <a href="http://software.opensuse.org/package/libtesseract3">
+                                        Tesseract download page</a> , select <q>OpenSUSE 12.2</q> then <q>Show
+                                        unstable packages</q>. Click on the proper package from <q>Lazy_Kent</q>
+                                    (version 3.02.02!) according to your hardware architecture (32 or
+                                    64 bit) and follow the instructions to install Tesseract' shared
+                                    libraries.
+                                </li>
+                            </ol>
+                        </dd>
+
+                        <dt>Installing Tesseract on Fedora 17</dt>
+                        <dd>
+                            <p>
+                                Due to the lack of any binary packages for 
+                                Tesseract in the Fedora distribution, you need 
+                                to compile this software manually.
+                            </p>
+
+                            <dl>
+
+                                <dt>Installing development tools</dt>
+                                <dd>
+                                    <p>In order to be able to compile software from sources, you need to
+                                        install development tools first because those are likely not present
+                                        on your system by default. Please run the following commands in your
+                                        terminal:
+                                    </p>
+                                    <p class="code">
+                                        sudo yum groupinstall "Development Tools"
+                                    </p>
+                                </dd>
+
+                                <dt>Installing Tesseract dependencies</dt>
+                                <dd>
+                                    <p>
+                                        Tesseract OCR depends on the image processing library called
+                                        <b>Leptonica</b>, which, in turn, depends on several image formats like
+                                        JPEG, PNG, TIFF and GIF. These formats are usually supported by
+                                        external libraries. You need to install the development versions for
+                                        each of those libraries:
+                                    </p>
+                                    <p class="code">sudo yum
+                                        install zlib-devel libpng-devel libjpeg-devel libtiff-devel
+                                        giflib-devel</p>
+                                    <p>Now check out Leptonica's source code and unpack it:</p>
+                                    <pre class="code">
+sudo yum install wget
+wget http://www.leptonica.com/source/leptonica-1.69.tar.gz
+gunzip leptonica-1.69.tar.gz
+tar -xvf leptonica-1.69.tar</pre>
+                                    <p>Alternatively, you can download the source using your browser here:
+                                        <a href="http://www.leptonica.com/download.html">http://www.leptonica.com/download.html</a></p>
+                                    <p>Let us configure, build and install Leptonica now:</p>
+                                    <pre class="code">
+cd [path to leptonica-1.69 folder]
+./configure --disable-programs
+make
+sudo make install</pre>
+                                    <p>This will install Leptonica libraries to
+                                        /usr/local/lib.</p>
+                                </dd>
+                                <dt>Compiling and installing Tesseract</dt>
+                                <dd>
+                                    <ul>
+                                        <li>Download Tesseract source using your browser or <code>wget</code>
+                                            from here:
+                                            http://tesseract-ocr.googlecode.com/files/tesseract-ocr-3.02.02.tar.gz</li>
+                                        <li>Unpack it to an easily accessible directory, for example
+                                            <code>/home/user/Documents/</code>. 
+                                            You should see <code>tesseract-ocr</code> folder in
+                                            your working directory.
+                                        </li>
+                                        <li>Start up the terminal and change to that source directory: 
+                                            <pre class="code">cd /home/user/Documents/tesseract-ocr</pre></li>
+                                        <li>Now run the following commands in order to compile und install
+                                            Tesseract to /usr/local/lib:
+                                            <pre class="code">
+./autogen.sh
+./configure
+make
+sudo make install</pre>
+                                        </li>
+                                    </ul>
+                                    <p style="margin-top: -4px;" role="link"><u>The following instructions
+                                    in this section are only valid for the Fedora 17 distribution!</u>
+                                </p>
+                                <p style="margin-top: -4px;" role="link">Fedora, as a Red-Hat<code></code>-derived
+                                    distribution, doesn't include <code>/usr/local/lib</code> in its library search
+                                    path. Therefore, it's necessary to add that path so that Tesseract
+                                    shared libraries can be be found by Audiveris application. Please
+                                    proceed as follows:</p>
+                                <pre class="code">su - -c 'gedit /etc/ld.so.conf'</pre>
+                                <p>Append the following path to
+                                    the end of the file if it's not already there:
+                                </p>
+                                <pre class="code">/usr/local/lib</pre>
+                                <p>Save the file and reconfigure
+                                    the dynamic linker by issuing the following command:
+                                </p>
+                                <pre class="code">sudo ldconfig</pre>
+                        </dd>
+                    </dl>
+                    </dd>
+                    </dl>
+
+                    <h5 id="manual-ocr-files">
+                        Installing language files for Tesseract
+                    </h5>
+                    <p>
+                        Tesseract requires several language data files to be present on
+                        your machine. The following commands will install data for English<code></code>,
+                        German, French and Italian languages:
+                    </p>
+                    <ul>
+                        <li>Create the working directory named <code>tesseract-ocr</code> somewhere,
+                            for example: <code>/home/user/Documents/tesseract-ocr</code>.
+                            If you have compiled Tesseract from sources, this 
+                            will be the source code directory.
+                        </li>
+                        <li>Download required language files from here:
+                            <a href="http://code.google.com/p/tesseract-ocr/downloads/">
+                                http://code.google.com/p/tesseract-ocr/downloads/</a>.
+                            These files
+                            follow the naming schema <code>tesseract-ocr-3.02.XXX.tar.gz</code>
+                            where <q>XXX</q> denotes language code, i.e. eng = English,
+                            deu = German, ita = Italian and fra = French.</li>
+                        <li>Place the obtained language files into parent directory of
+                            <code>tesseract-ocr</code>, i.e. <code>/home/user/Documents/</code>.</li>
+                        <li>Double-click them to unpack.
+                            The data will be automatically extracted into 
+                            <code>tessdata</code> directory inside of the 
+                            <code>tesseract-ocr</code> directory.</li>
+                        <li>Start up the terminal and run the following command: 
+                            <pre class="code">sudo cp -r <i>path_to_tessdata_folder</i> <i>destination</i></pre> 
+                            where <q>path_to_tessdata_folder</q> denotes
+                            <code>/home/user/Documents/tesseract-ocr/tessdata </code>
+                            in this example and <q>destination</q> - either
+                            <code>/usr/local/share</code> when compiled from 
+                            source or <code>/usr/share</code> when
+                            installed using OpenSUSE binary packages.</li>
+                    </ul>
+                    <p>
+                        You need to set <code>TESSDATA_PREFIX</code> environment
+                        variable to point to the parent directory of the 
+                        <code>tessdata</code> in order to tell Audiveris
+                        where language data are located.
+                    </p>
+                    <p>
+                        To edit the global profile, run the following command 
+                        in the terminal:
+                    </p>
+                    <ul>
+                        <li>
+                            <code>su - -c 'gedit /etc/profile.local'</code>
+                            on OpenSUSE,
+                        </li>
+                        <li>
+                            <code>su - -c 'gedit /etc/profile.d/local.sh'</code>
+                            on Fedora.
+                        </li>
+                    </ul>
+
+                    <p>
+                        Append the following line:
+                    </p>
+                    <ul>
+                        <li>
+                            <code>export TESSDATA_PREFIX=/usr/local/share</code>
+                            on Fedora 17,
+                        </li>
+                        <li>
+                            <code>export TESSDATA_PREFIX=/usr/share</code>
+                            on OpenSUSE.
+                        </li>
+                    </ul>
+                    <p>
+                        Save the file, then log out and log in again in order
+                        to activate the changes.
+                    </p>
+
+                    <h5 id="manual-jre">
+                        Installing Java Runtime Environment (JRE)
+                    </h5>
+                    <p>Audiveris requires Java 7. Please install it as follows:</p>
+                    <ul>
+                        <li>
+                            <code>sudo zypper install java-1_7_0-openjdk</code>
+                            on OpenSUSE,
+                        </li>
+                        <li>
+                            <code>sudo yum install java-1.7.0-openjdk</code>
+                            on Fedora.
+                        </li>
+                    </ul>
+                    <p>
+                        To test your JRE installation, run the following command:
+                    </p>
+                    <pre class="code">java -version</pre>
+
+                    <p>
+                        You should see something similar to:
+                    </p>
+                    <pre class="code">
+java version "1.7.0_09-icedtea"
+OpenJDK Runtime Environment (fedora-2.3.3.fc17-x86_64)
+OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
+
+                    <h5 id="manual-ghostscript">
+                        Installing Ghostscript
+                    </h5>
+                    <p>
+                        Audiveris requires Ghostscript (an interpreter for the PostScript
+                        language and for PDF) in order to deal with PDF files.
+                        Ghostscript is already installed by default on both
+                        OpenSUSE and Fedora.
+                        Audiveris requires Ghostscript 9.05 or higher.
+                        To verify that, run the following command in the terminal:
+                    </p>
+                    <pre class="code">gs --version</pre>
+                </article>
+
+                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+                <article id="folders">
+                    <h3>
+                        Folders
+                    </h3>
+
+                    <p>This article describes the organization of folders on the
+                        target machine, depending on the operating system.</p>
+                    <p>Some folders are annotated with a <code>CONSTANT_NAME</code>
+                        which represents a direct link from Java code.</p>
+
+                    <h4 id="system-folder">
+                        System
+                    </h4>
 
                     <p>Libraries that can be shared at system level.
                         This applies for Tesseract libraries.
@@ -3421,13 +3523,10 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                             </tr>
                         </tbody>
                     </table>
-                </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-                <article id="companion-folders">
-                    <h3>
+                    <h4 id="companion-folders">
                         Companions
-                    </h3>
+                    </h4>
 
                     <p>This concerns only the two <b>native</b> companion 
                         programs used by Audiveris application, namely 
@@ -3436,7 +3535,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         and are simply located next to Audiveris Java archive).
                     </p>
 
-                    <h4>Ghostscript</h4>
+                    <h5>Ghostscript</h5>
 
                     <p>A Ghostscript sub-process is used to convert on-the-fly 
                         a PDF input file into a temporary TIFF file which is 
@@ -3445,7 +3544,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     <p>A suitable Ghostscript version is checked and installed
                         as needed by Audiveris bundle installer.</p>
 
-                    <h4>Tesseract</h4>
+                    <h5>Tesseract</h5>
 
                     <p>Tesseract is used as the OCR engine, called repeatedly
                         by Audiveris via a JNI interface.</p>
@@ -3476,13 +3575,9 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         </li>
                     </ol>
 
-                </article>
-
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-                <article id="application-folder">
-                    <h3>
+                    <h4 id="application-folder">
                         Application
-                    </h3>
+                    </h4>
 
                     <p>
                         Audiveris application program and (read-only) data
@@ -3510,13 +3605,10 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         <li>Folder <code>/usr/share/icons/audiveris</code> 
                             contains audiveris icon as an "audiveris.png" file.</li>
                     </ul>
-                </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-                <article id="gui-persistency">
-                    <h3>
+                    <h4 id="gui-persistency">
                         GUI persistency
-                    </h3>
+                    </h4>
 
                     <p>User persistency of graphic interface
                         across applications runs.</p>
@@ -3561,14 +3653,10 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                             </tr>
                         </tbody>
                     </table>
-                </article>
 
-
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-                <article id="user-config">
-                    <h3>
+                    <h4 id="user-config">
                         User config 
-                    </h3>
+                    </h4>
 
                     <p>User-specific read-write configuration data
                         (<b><code>CONFIG_FOLDER</code></b>),
@@ -3615,13 +3703,10 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                             </tr>
                         </tbody>
                     </table>
-                </article>
 
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-                <article id="user-data">
-                    <h3>
+                    <h4 id="user-data">
                         User data 
-                    </h3>
+                    </h4>
 
                     <p>User-specific read-write data (<b><code>DATA_FOLDER</code></b>),
                         installed by Audiveris bundle installer.</p>
@@ -3743,6 +3828,7 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                             </tr>
                         </tbody>
                     </table>
+
                 </article>
 
             </section>
@@ -3768,21 +3854,6 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                                         <li><a href="#java-cache">Java cache</a></li>                                        
                                         <li><a href="#uninstallation">Uninstallation</a></li>                                        
                                     </ul>
-                                </li>
-                                <li><a href="#linux">Linux specials</a>
-                                    <ul>
-                                        <li><a href="#linux-debian">Ubuntu</a></li>
-                                        <li><a href="#linux-generic">Generic RPMs</a></li>
-                                        <li><a href="#linux-others">Others</a></li>
-                                        <li><a href="#linux-manual">Manual install</a>
-                                            <ul>
-                                                <li><a href="#manual-ocr">OCR</a></li>
-                                                <li><a href="#manual-ocr-files">Languages</a></li>
-                                                <li><a href="#manual-jre">Java runtime</a></li>
-                                                <li><a href="#manual-ghostscript">Ghostscript</a></li>
-                                            </ul>
-                                        </li>
-                                    </ul>                                
                                 </li>
                                 <li><a href="#loading-an-image">Loading an image</a></li>
                                 <li><a href="#transcription">Transcription</a>
@@ -3824,7 +3895,6 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                         <a class="inline" href="#advanced">Advanced</a>
                         <div class="expandable">                            
                             <ul>                  
-                                <li><a href="#building">Building from source</a></li>
                                 <li><a href="#cli">Command line</a></li>
                                 <li><a href="#memory">Memory</a></li>
                                 <li><a href="#log">Log</a></li>
@@ -3862,15 +3932,35 @@ function <code title="Function to implement"><b>pluginCli</b></code>(exportFileP
                     </li>
                     <li>
                         <input type="button"  value="+" class="expander" onclick="toggleInput(this)">
-                        <a class="inline" href="#folders">Folders</a>
+                        <a class="inline" href="#development">Development</a>
                         <div class="expandable">                            
                             <ul>                  
-                                <li><a href="#system-folder">System</a></li>
-                                <li><a href="#companion-folders">Companions</a></li>
-                                <li><a href="#application-folder">Application</a></li>
-                                <li><a href="#gui-persistency">GUI persistency</a></li>
-                                <li><a href="#user-config">User config</a></li>
-                                <li><a href="#user-data">User data</a></li>
+                                <li><a href="#building">Building from source</a></li>
+                                <li><a href="#linux">Linux specials</a>
+                                    <ul>
+                                        <li><a href="#linux-debian">Ubuntu</a></li>
+                                        <li><a href="#linux-generic">Generic RPMs</a></li>
+                                        <li><a href="#linux-others">Others</a></li>
+                                        <li><a href="#linux-manual">Manual install</a>
+                                            <ul>
+                                                <li><a href="#manual-ocr">OCR</a></li>
+                                                <li><a href="#manual-ocr-files">Languages</a></li>
+                                                <li><a href="#manual-jre">Java runtime</a></li>
+                                                <li><a href="#manual-ghostscript">Ghostscript</a></li>
+                                            </ul>
+                                        </li>
+                                    </ul>                                
+                                </li>
+                                <li><a href="#folders">Folders</a>
+                                    <ul>
+                                        <li><a href="#system-folder">System</a></li>
+                                        <li><a href="#companion-folders">Companions</a></li>
+                                        <li><a href="#application-folder">Application</a></li>
+                                        <li><a href="#gui-persistency">GUI persistency</a></li>
+                                        <li><a href="#user-config">User config</a></li>
+                                        <li><a href="#user-data">User data</a></li>
+                                    </ul>
+                                </li>
                             </ul>
                         </div>
                     </li>
