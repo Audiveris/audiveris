@@ -208,48 +208,6 @@ public abstract class AbstractCompanion
         }
     }
 
-    //-------------------//
-    // abortInstallation //
-    //-------------------//
-    protected void abortInstallation (Throwable ex)
-    {
-        status = Status.FAILED_TO_INSTALL;
-
-        if (ex instanceof LicenseCompanion.LicenseDeclinedException) {
-            logger.warn(getTitle() + " declined.");
-        } else {
-            logger.warn(getTitle() + " failed to install.", ex);
-        }
-    }
-
-    //---------------------//
-    // abortUninstallation //
-    //---------------------//
-    protected void abortUninstallation (Throwable ex)
-    {
-        status = Status.FAILED_TO_UNINSTALL;
-        logger.warn(getTitle() + " failed to uninstall.", ex);
-    }
-
-    //----------------------//
-    // completeInstallation //
-    //----------------------//
-    protected void completeInstallation ()
-    {
-        status = Status.INSTALLED;
-        logger.info("{} completed successfully.", getTitle());
-    }
-
-    //------------------------//
-    // completeUninstallation //
-    //------------------------//
-    protected void completeUninstallation ()
-    {
-        status = Status.NOT_INSTALLED;
-        logger.info("{} completed successfully.", getTitle());
-        updateView();
-    }
-
     //-----------//
     // doInstall //
     //-----------//
@@ -311,10 +269,62 @@ public abstract class AbstractCompanion
         return folder;
     }
 
+    //------------//
+    // updateView //
+    //------------//
+    protected void updateView ()
+    {
+        if (view != null) {
+            view.update();
+        }
+    }
+
+    //-------------------//
+    // abortInstallation //
+    //-------------------//
+    private void abortInstallation (Throwable ex)
+    {
+        status = Status.FAILED_TO_INSTALL;
+
+        if (ex instanceof LicenseCompanion.LicenseDeclinedException) {
+            logger.warn(getTitle() + " declined.");
+        } else {
+            logger.warn(getTitle() + " failed to install.", ex);
+        }
+    }
+
+    //---------------------//
+    // abortUninstallation //
+    //---------------------//
+    private void abortUninstallation (Throwable ex)
+    {
+        status = Status.FAILED_TO_UNINSTALL;
+        logger.warn(getTitle() + " failed to uninstall.", ex);
+    }
+
+    //----------------------//
+    // completeInstallation //
+    //----------------------//
+    private void completeInstallation ()
+    {
+        status = Status.INSTALLED;
+        logger.info("{} completed successfully.", getTitle());
+    }
+
+    //------------------------//
+    // completeUninstallation //
+    //------------------------//
+    private void completeUninstallation ()
+    {
+        status = Status.NOT_INSTALLED;
+        logger.info("{} completed successfully.", getTitle());
+        updateView();
+    }
+
     //-------------------//
     // startInstallation //
     //-------------------//
-    protected void startInstallation ()
+    private void startInstallation ()
     {
         status = Status.BEING_INSTALLED;
         logger.info("\n{} is being processed...", getTitle());
@@ -324,20 +334,10 @@ public abstract class AbstractCompanion
     //---------------------//
     // startUninstallation //
     //---------------------//
-    protected void startUninstallation ()
+    private void startUninstallation ()
     {
         status = Status.BEING_UNINSTALLED;
         logger.info("\n{} is being processed...", getTitle());
         updateView();
-    }
-
-    //------------//
-    // updateView //
-    //------------//
-    protected void updateView ()
-    {
-        if (view != null) {
-            view.update();
-        }
     }
 }

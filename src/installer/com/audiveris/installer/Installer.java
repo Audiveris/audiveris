@@ -116,32 +116,6 @@ public class Installer
         return (bundle != null) ? bundle.getView() : null;
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance.
-     *
-     * @return the Installer single instance
-     */
-    public static Installer getInstance ()
-    {
-        return INSTANCE;
-    }
-
-    //-------//
-    // hasUI //
-    //-------//
-    /**
-     * Report whether the Installer is run in interactive mode.
-     *
-     * @return true if interactive
-     */
-    public static boolean hasUI ()
-    {
-        return hasUI;
-    }
-
     //---------//
     // install //
     //---------//
@@ -217,7 +191,8 @@ public class Installer
             throws UnavailableServiceException
     {
         if (args.length == 0) {
-            throw new IllegalArgumentException("No argument for Installer");
+            throw new IllegalArgumentException("No argument for Installer."
+                    + " Expecting install or uninstall.");
         }
 
         // Do we want a bundle view?

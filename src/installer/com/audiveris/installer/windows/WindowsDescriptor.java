@@ -68,19 +68,29 @@ public class WindowsDescriptor
         static final String VALUE = "DisplayName";
 
         /**
+         * Registry radix for Wow (32/64).
+         */
+        static final String RADIX_WOW = "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\";
+
+        /**
+         * Registry radix for pure 32/32 or 64/64.
+         */
+        static final String RADIX_PURE = "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\";
+
+        /**
          * Registry key for 32-bit.
          */
-        static final String KEY_32 = "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{9BE518E6-ECC6-35A9-88E4-87755C07200F}";
+        static final String KEY_32 = "{9BE518E6-ECC6-35A9-88E4-87755C07200F}";
+
+        /**
+         * Registry key for 64-bit.
+         */
+        static final String KEY_64 = "{5FCE6D76-F5DC-37AB-B2B8-22AB8CEDB1D4}";
 
         /**
          * Download URL for 32-bit.
          */
         static final String URL_32 = "http://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe";
-
-        /**
-         * Registry key for 64-bit.
-         */
-        static final String KEY_64 = "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{5FCE6D76-F5DC-37AB-B2B8-22AB8CEDB1D4}";
 
         /**
          * Download URL for 64-bit.
@@ -298,15 +308,16 @@ public class WindowsDescriptor
     @Override
     public boolean isCppInstalled ()
     {
+        List<String> output = new ArrayList<>();
         try {
             // Check Windows registry
-            final String key = DescriptorFactory.OS_ARCH.equals("x86") ? CPP.KEY_32 : CPP.KEY_64;
-            List<String> output = new ArrayList<>();
+            final String radix = DescriptorFactory.WOW ? CPP.RADIX_WOW : CPP.RADIX_PURE;
+            final String key = radix + (DescriptorFactory.OS_ARCH.equals("x86") ? CPP.KEY_32 : CPP.KEY_64);
             int result = WindowsUtilities.queryRegistry(output, key, "/v", CPP.VALUE);
             logger.debug("C++ query exit:{} output: {}", result, output);
             return result == 0;
         } catch (IOException | InterruptedException ex) {
-            //TODO: Dialog w/ error messages
+            logger.warn(Utilities.dumpOfLines(output));
             return false;
         }
     }
@@ -382,7 +393,6 @@ public class WindowsDescriptor
 //        WindowsUtilities.setRegistry(output, key, "/v", var, "/d", value);
 //        logger.debug("setenv output: {}", output);
 //    }
-
     //--------------------//
     // getGhostscriptPath //
     //--------------------//
