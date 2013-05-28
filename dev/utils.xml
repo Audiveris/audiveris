@@ -58,7 +58,7 @@
         <replace encoding="utf8" dir="${basedir}/src">
             <replacetoken>; import</replacetoken>
             <replacevalue>;
-import</replacevalue>
+                import</replacevalue>
             <include name="**/*.java"/>
         </replace>
 	
@@ -69,7 +69,7 @@ import</replacevalue>
         </replace>-->
 	     
 
-<!--        <replaceregexp
+        <!--        <replaceregexp
             encoding="utf8"
             match="; import"
             replace=";
@@ -126,10 +126,10 @@ import"
             description="Pack all icons into one jar">
         
         <!-- Remove any existing icon archive -->
-<!--        <delete
-            verbose="${verbose}"
-            failonerror="false"
-            file="${externals.dir}/crystal-icons.jar" />-->
+        <!--        <delete
+        verbose="${verbose}"
+        failonerror="false"
+        file="${externals.dir}/crystal-icons.jar" />-->
         
         <!-- Pack whole crystal directory -->
         <jar destfile="${externals.dir}/crystal-icons.jar"

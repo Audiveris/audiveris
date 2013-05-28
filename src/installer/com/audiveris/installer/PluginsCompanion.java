@@ -47,15 +47,13 @@ public class PluginsCompanion
     //------------------//
     /**
      * Creates a new PluginsCompanion object.
-     *
-     * @param hasUI true for a related view
      */
-    public PluginsCompanion (boolean hasUI)
+    public PluginsCompanion ()
     {
         super("Plugins", DESC);
         need = Need.SELECTED;
 
-        if (hasUI) {
+        if (Installer.hasUI()) {
             view = new BasicCompanionView(this, 90);
         }
     }

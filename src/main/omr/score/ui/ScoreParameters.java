@@ -11,8 +11,7 @@
 // </editor-fold>
 package omr.score.ui;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import omr.plugin.PluginsManager;
 
 import omr.run.AdaptiveDescriptor;
 import omr.run.FilterDescriptor;
@@ -47,6 +46,9 @@ import omr.util.OmrExecutors;
 import omr.util.Param;
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -72,8 +74,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import omr.plugin.Plugin;
-import omr.plugin.PluginsManager;
 
 /**
  * Class {@code ScoreParameters} is a dialog that allows the user to

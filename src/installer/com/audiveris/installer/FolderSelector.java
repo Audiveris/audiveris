@@ -33,11 +33,12 @@ import javax.swing.JTextField;
 /**
  * Class {@code FolderSelector} displays the default install folder,
  * and let the user choose another one, if any.
- * 
+ *
  * NOTA: THIS CLASS IS NOT USED FOR THE TIME BEING
  * Since the notion of installation folder is not clear!
  * - With Java Web Start, appli "program data" is located in Java cache
- * - On Linux, appli "user config" and appli "user data" do not have the same parent
+ * - On Linux, appli "user config" and appli "user data" do not have the same
+ * parent
  *
  * @author Hervé Bitteur
  */
@@ -134,11 +135,13 @@ public class FolderSelector
             path.setText(candidate.getAbsolutePath());
             ////////bundle.setInstallFolder(candidate);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(
-                    Installer.getFrame(),
-                    "Invalid folder: " + ex,
-                    "Folder selection",
-                    JOptionPane.WARNING_MESSAGE);
+            if (Installer.hasUI()) {
+                JOptionPane.showMessageDialog(
+                        Installer.getFrame(),
+                        "Invalid folder: " + ex,
+                        "Folder selection",
+                        JOptionPane.WARNING_MESSAGE);
+            }
         }
     }
 

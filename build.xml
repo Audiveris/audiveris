@@ -79,11 +79,9 @@
             <include name="**/*.jar"/>
         </fileset>
     </path>
-    <!-- Import for Mac -->
+    <!-- Import for Mac, Unix & Windows -->
     <import file="dev/mac/-mac.xml"/>
-    <!-- Import for Unix -->
     <import file="dev/unix/-unix.xml"/>
-    <!-- Import for Windows -->
     <import file="dev/windows/-windows.xml"/>
     <!-- Import NetBeans implementation targets -->
     <import file="nbproject/build-impl.xml"/>
@@ -97,9 +95,68 @@
             NetBeans: "Clean and Build" action
     -->
     <!-- ========== -->
-    <!-- installers -->
+    <!-- installers (obsolete) -->
     <!-- ========== -->
     <target depends="jar, -installers-mac, -installers-unix, -installers-windows" description="Build installers (obsolete)" name="installers"/>
+    
+    <!-- =============== -->
+    <!-- test-regression -->
+    <!-- =============== -->
+    <target name="test-regression"
+            description="Test of non regression on reference data">
+        
+        <!-- Key properties, if not set yet -->
+        <property name="ref.scripts" value="dev/validation/ref-scripts" />
+        <property name="ref.scores"  value="dev/validation/ref-scores" />
+        <property name="new.scores"  value="data/scores/new" />
+        
+        <!-- Drive processing through the collection of reference scripts -->
+        <path id="scripts.path">
+            <fileset dir="${ref.scripts}" 
+                         includes="**/z*.script.xml">
+            </fileset>
+        </path>
+        <pathconvert property="names.path" refid="scripts.path" pathsep=",">
+            <chainedmapper>
+                <flattenmapper />
+                <filtermapper>
+                    <replacestring from=".script.xml" to="" />
+                </filtermapper>
+            </chainedmapper>
+        </pathconvert>
+        
+        <for list="${names.path}" param="name" keepgoing="true">
+            <sequential>
+                <echo><![CDATA[Transcribing @{name} to ${new.scores}]]></echo>
+                <java jar="${dist.jar}" fork="true">
+                    <jvmarg value="-Dlogback.configurationFile=dev/validation/logback.xml" />
+                    <arg value="-batch"/>
+                    <arg value="-option"/>
+                    <arg value="omr.score.ScoresManager.defaultExportDirectory=${new.scores}"/>
+                    <arg value="-script"/>
+                    <arg value="${ref.scripts}/@{name}.script.xml"/>
+                </java>
+                                
+                <delete file="${new.scores}/@{name}.diff" quiet="true" verbose="true"/>
+
+                <echo><![CDATA[Comparing @{name}]]></echo>
+                <java jar="musicxmldiff/dist/musicxmldiff.jar" fork="true">
+                    <jvmarg value="-Dlogback.configurationFile=dev/validation/logback.xml" />
+                    <arg value="-filter"/>
+                    <arg value="musicxmldiff/config/music-filter.xml"/>
+                    <arg value="-control"/>
+                    <arg value="${ref.scores}/@{name}.xml"/>
+                    <arg value="-test"/>
+                    <arg value="${new.scores}/@{name}.xml"/>
+                    <arg value="-output"/>
+                    <arg value="${new.scores}/@{name}.diff"/>
+                </java>
+                <concat>
+                    <fileset dir="${new.scores}" includes="@{name}.diff"/>
+                </concat>
+            </sequential>
+        </for>
+    </target>
     <!-- ===  Internal Targets  ============================================ -->
     <!-- =============== -->
     <!-- -copy-resources -->

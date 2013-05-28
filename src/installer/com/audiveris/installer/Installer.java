@@ -36,6 +36,7 @@ public class Installer
     //~ Static fields/initializers ---------------------------------------------
 
     static {
+        /** Configure logging. */
         LogUtilities.initialize();
     }
 
@@ -78,7 +79,7 @@ public class Installer
         Jnlp.extensionInstallerService.setHeading(
                 "Running Audiveris installer.");
 
-        // Handling the bundle of all companions, with potential UI
+        // Handling the bundle of all companions
         bundle = new Bundle(hasUI);
     }
 
@@ -114,6 +115,19 @@ public class Installer
         Bundle bundle = getBundle();
 
         return (bundle != null) ? bundle.getView() : null;
+    }
+
+    //-------//
+    // hasUI //
+    //-------//
+    /**
+     * Report whether the Installer is run in interactive mode.
+     *
+     * @return true if interactive
+     */
+    public static boolean hasUI ()
+    {
+        return hasUI;
     }
 
     //---------//
@@ -163,11 +177,13 @@ public class Installer
             }
         } catch (Throwable ex) {
             logger.error("Error encountered", ex);
-            JOptionPane.showMessageDialog(
-                    Installer.getFrame(),
-                    "Installation has failed",
-                    "Installation completion",
-                    JOptionPane.WARNING_MESSAGE);
+            if (hasUI) {
+                JOptionPane.showMessageDialog(
+                        Installer.getFrame(),
+                        "Installation has failed",
+                        "Installation completion",
+                        JOptionPane.WARNING_MESSAGE);
+            }
 
             Jnlp.extensionInstallerService.installFailed();
         } finally {
@@ -191,12 +207,15 @@ public class Installer
             throws UnavailableServiceException
     {
         if (args.length == 0) {
-            throw new IllegalArgumentException("No argument for Installer."
+            throw new IllegalArgumentException(
+                    "No argument for Installer."
                     + " Expecting install or uninstall.");
         }
 
-        // Do we want a bundle view?
-        hasUI = true;
+        // Interactive or batch mode?
+        String mode = System.getProperty("installer-mode", "interactive");
+        hasUI = !mode.trim().equalsIgnoreCase("batch");
+        logger.info("Mode {}.", hasUI ? "interactive" : "batch");
 
         Descriptor descriptor = DescriptorFactory.getDescriptor();
 
@@ -219,12 +238,14 @@ public class Installer
                 // Relaunch with administrator priviledges
                 logger.info(
                         "Launching a new installer at Administrator level.");
-                JOptionPane.showMessageDialog(
-                        Installer.getFrame(),
-                        "Installation requires Administrator privileges. \n"
-                        + "An elevated installer will be launched",
-                        "About to launch an elevated installer",
-                        JOptionPane.INFORMATION_MESSAGE);
+                if (hasUI) {
+                    JOptionPane.showMessageDialog(
+                            Installer.getFrame(),
+                            "Installation requires Administrator privileges. \n"
+                            + "An elevated installer will be launched",
+                            "About to launch an elevated installer",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
 
                 try {
                     descriptor.relaunchAsAdmin();
@@ -237,11 +258,13 @@ public class Installer
 
                     // Let user read the java console
                     // before the program (and console) disappear.
-                    JOptionPane.showMessageDialog(
-                            Installer.getFrame(),
-                            "Installer has failed: " + ex.getMessage(),
-                            "Elevated installer failure",
-                            JOptionPane.WARNING_MESSAGE);
+                    if (hasUI) {
+                        JOptionPane.showMessageDialog(
+                                Installer.getFrame(),
+                                "Installer has failed: " + ex.getMessage(),
+                                "Elevated installer failure",
+                                JOptionPane.WARNING_MESSAGE);
+                    }
 
                     // Notify failure
                     Jnlp.extensionInstallerService.installFailed();
@@ -271,17 +294,21 @@ public class Installer
 
         try {
             bundle.uninstallBundle();
-            JOptionPane.showMessageDialog(
-                    Installer.getFrame(),
-                    "Bundle successfully uninstalled",
-                    "Uninstallation completion",
-                    JOptionPane.INFORMATION_MESSAGE);
+            if (hasUI) {
+                JOptionPane.showMessageDialog(
+                        Installer.getFrame(),
+                        "Bundle successfully uninstalled",
+                        "Uninstallation completion",
+                        JOptionPane.INFORMATION_MESSAGE);
+            }
         } catch (Throwable ex) {
-            JOptionPane.showMessageDialog(
-                    Installer.getFrame(),
-                    "Uninstallation has failed: " + ex,
-                    "Uninstallation completion",
-                    JOptionPane.WARNING_MESSAGE);
+            if (hasUI) {
+                JOptionPane.showMessageDialog(
+                        Installer.getFrame(),
+                        "Uninstallation has failed: " + ex,
+                        "Uninstallation completion",
+                        JOptionPane.WARNING_MESSAGE);
+            }
         } finally {
             //bundle.close();
         }

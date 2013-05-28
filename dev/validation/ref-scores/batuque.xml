@@ -8,11 +8,11 @@
         <rights>2413 4</rights>
         <rights>3 1</rights>
         <encoding>
-            <software>audiveris 4.2.3341</software>
+            <software>audiveris 4.2.3363</software>
             <software>ProxyMusic 3.0.110</software>
-            <encoding-date>2013-02-20</encoding-date>
+            <encoding-date>2013-05-28</encoding-date>
         </encoding>
-        <source>D:\soft\audiveris\examples\batuque.png</source>
+        <source>data\examples\batuque.png</source>
     </identification>
     <defaults>
         <scaling>
@@ -105,7 +105,7 @@
                 <direction-type>
                     <words></words>
                 </direction-type>
-                <sound tempo="60"/>
+                <sound tempo="120"/>
             </direction>
             <direction placement="above">
                 <direction-type>

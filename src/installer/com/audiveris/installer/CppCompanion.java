@@ -41,14 +41,12 @@ public class CppCompanion
     //--------------//
     /**
      * Creates a new CppCompanion object.
-     *
-     * @param hasUI true for a related view
      */
-    public CppCompanion (boolean hasUI)
+    public CppCompanion ()
     {
         super("C++", DESC);
 
-        if (hasUI) {
+        if (Installer.hasUI()) {
             view = new BasicCompanionView(this, 50);
         }
     }

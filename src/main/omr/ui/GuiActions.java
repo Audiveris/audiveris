@@ -61,6 +61,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.JTextComponent;
@@ -562,7 +563,8 @@ public class GuiActions
 
             // Manual injection
             resource.injectComponents(dialog);
-            Topic.version.comp.setText(WellKnowns.TOOL_REF);
+            Topic.version.comp.setText(
+                    WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD);
             Topic.classes.comp.setText(WellKnowns.CLASS_CONTAINER.toString());
             Topic.license.comp.setText("GNU GPL V2");
 

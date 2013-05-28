@@ -63,14 +63,12 @@ public class Bundle
     //--------//
     /**
      * Creates a new Bundle object.
-     *
-     * @param hasUI true for user interface displayed
      */
     public Bundle (boolean hasUI)
     {
-        createCompanions(hasUI);
+        createCompanions();
 
-        if (hasUI) {
+        if (Installer.hasUI()) {
             view = new BundleView(this);
 
             SwingUtilities.invokeLater(new Runnable()
@@ -206,16 +204,16 @@ public class Bundle
     //------------------//
     // createCompanions //
     //------------------//
-    private void createCompanions (boolean hasUI)
+    private void createCompanions ()
     {
-        companions.add(new LicenseCompanion(hasUI));
-        companions.add(new CppCompanion(hasUI));
-        companions.add(new GhostscriptCompanion(hasUI));
-        companions.add(ocrCompanion = new OcrCompanion(hasUI));
-        companions.add(new DocCompanion(hasUI));
-        companions.add(new ExamplesCompanion(hasUI));
-        companions.add(new PluginsCompanion(hasUI));
-        companions.add(new TrainingCompanion(hasUI));
+        companions.add(new LicenseCompanion());
+        companions.add(new CppCompanion());
+        companions.add(new GhostscriptCompanion());
+        companions.add(ocrCompanion = new OcrCompanion());
+        companions.add(new DocCompanion());
+        companions.add(new ExamplesCompanion());
+        companions.add(new PluginsCompanion());
+        companions.add(new TrainingCompanion());
     }
 
     //------------------//

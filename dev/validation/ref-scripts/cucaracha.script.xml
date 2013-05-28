@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<script file="D:\soft\audiveris\examples\cucaracha.png">
+<script file="data/examples/cucaracha.png">
     <parameters>
         <language>fra</language>
+        <tempo>120</tempo>
     </parameters>
-    <step name="SCORE"/>
     <step name="EXPORT"/>
 </script>

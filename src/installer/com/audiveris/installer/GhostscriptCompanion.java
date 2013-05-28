@@ -40,14 +40,12 @@ class GhostscriptCompanion
     //----------------------//
     /**
      * Creates a new GhostscriptCompanion object.
-     *
-     * @param hasUI true for a related view
      */
-    public GhostscriptCompanion (boolean hasUI)
+    public GhostscriptCompanion ()
     {
         super("Ghostscript", DESC);
 
-        if (hasUI) {
+        if (Installer.hasUI()) {
             view = new BasicCompanionView(this, 90);
         }
     }

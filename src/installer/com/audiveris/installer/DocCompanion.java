@@ -46,14 +46,12 @@ public class DocCompanion
     //--------------//
     /**
      * Creates a new DocCompanion object.
-     *
-     * @param hasUI true for a related view
      */
-    public DocCompanion (boolean hasUI)
+    public DocCompanion ()
     {
         super("Docs", DESC);
 
-        if (hasUI) {
+        if (Installer.hasUI()) {
             view = new BasicCompanionView(this, 60);
         }
     }

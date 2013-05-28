@@ -42,15 +42,13 @@ public class ExamplesCompanion
     //~ Constructors -----------------------------------------------------------
     /**
      * Creates a new ExamplesCompanion object.
-     *
-     * @param hasUI true for a related view
      */
-    public ExamplesCompanion (boolean hasUI)
+    public ExamplesCompanion ()
     {
         super("Examples", DESC);
         need = Need.SELECTED;
 
-        if (hasUI) {
+        if (Installer.hasUI()) {
             view = new BasicCompanionView(this, 100);
         }
     }

@@ -116,7 +116,8 @@ public class Main
             // For batch mode
 
             // Version information
-            logger.info("Reference: {}", WellKnowns.TOOL_REF);
+            logger.info("Reference: {}:{}",
+                    WellKnowns.TOOL_REF, WellKnowns.TOOL_BUILD);
 
             // Remember if at least one task has failed
             boolean failure = false;

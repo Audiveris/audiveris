@@ -600,7 +600,7 @@ public class ScoresManager
 
             return canon;
         } catch (IOException ex) {
-            logger.warn("Cannot getCanonicalPath", ex);
+            logger.warn("Cannot getCanonicalPath for " + targetFile, ex);
 
             return null;
         }

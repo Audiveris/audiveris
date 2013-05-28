@@ -46,14 +46,17 @@ public class LicenseCompanion
     private static final String LICENSE_URL = "http://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html";
 
     //~ Constructors -----------------------------------------------------------
+    //------------------//
+    // LicenseCompanion //
+    //------------------//
     /**
      * Creates a new LicenseCompanion object.
      */
-    public LicenseCompanion (boolean hasUI)
+    public LicenseCompanion ()
     {
         super("License", DESC);
 
-        if (hasUI) {
+        if (Installer.hasUI()) {
             view = new BasicCompanionView(this, 70);
         }
     }
@@ -75,6 +78,11 @@ public class LicenseCompanion
     protected void doInstall ()
             throws Exception
     {
+        // When running without UI, we assume license is accepted
+        if (!Installer.hasUI()) {
+            return;
+        }
+
         // User choice (must be an output, yet final)
         final boolean[] isOk = new boolean[1];
 

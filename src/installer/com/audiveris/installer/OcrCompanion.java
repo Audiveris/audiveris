@@ -116,14 +116,12 @@ public class OcrCompanion
     /**
      * Creates a new OcrCompanion object for OCR library and a list of
      * supported languages.
-     *
-     * @param hasUI true for a related view
      */
-    public OcrCompanion (boolean hasUI)
+    public OcrCompanion ()
     {
         super("OCR", DESC);
 
-        if (hasUI) {
+        if (Installer.hasUI()) {
             view = new BasicCompanionView(this, 60);
             selector = new LangSelector(this);
         }

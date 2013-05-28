@@ -47,15 +47,13 @@ public class TrainingCompanion
     //-------------------//
     /**
      * Creates a new TrainingCompanion object.
-     *
-     * @param hasUI true for a related view
      */
-    public TrainingCompanion (boolean hasUI)
+    public TrainingCompanion ()
     {
         super("Training", DESC);
         need = Need.NOT_SELECTED;
 
-        if (hasUI) {
+        if (Installer.hasUI()) {
             view = new BasicCompanionView(this, 90);
         }
     }

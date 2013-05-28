@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.ui;
 
-import omr.log.LogPane;
 import omr.Main;
 import omr.WellKnowns;
 
@@ -22,8 +21,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import omr.log.LogPane;
 
 import omr.plugin.PluginsManager;
 
@@ -34,6 +32,7 @@ import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
+import omr.sheet.picture.jai.JaiLoader;
 import omr.sheet.ui.SheetActions;
 import omr.sheet.ui.SheetsController;
 
@@ -55,6 +54,9 @@ import org.bushe.swing.event.EventSubscriber;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.SingleFrameApplication;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -74,7 +76,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
-import omr.sheet.picture.jai.JaiLoader;
 
 /**
  * Class {@code MainGui} is the Java User Interface, the main class for
@@ -140,6 +141,19 @@ public class MainGui
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this application.
+     *
+     * @return the SingleFrameApplication instance
+     */
+    public static SingleFrameApplication getInstance ()
+    {
+        return (SingleFrameApplication) Application.getInstance();
+    }
+
     //
     //----------//
     // clearLog //
@@ -267,19 +281,6 @@ public class MainGui
     public GhostGlassPane getGlassPane ()
     {
         return glassPane;
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this application.
-     *
-     * @return the SingleFrameApplication instance
-     */
-    public static SingleFrameApplication getInstance ()
-    {
-        return (SingleFrameApplication) Application.getInstance();
     }
 
     //---------//
@@ -497,9 +498,12 @@ public class MainGui
     protected void initialize (String[] args)
     {
         logger.debug("MainGui. 1/initialize");
-        
+
         // Display software reference
-        logger.info("Reference: {}", WellKnowns.TOOL_REF);
+        logger.info(
+                "Reference: {}:{}",
+                WellKnowns.TOOL_REF,
+                WellKnowns.TOOL_BUILD);
 
         // Launch background pre-loading tasks?
         if (constants.preloadCostlyPackages.getValue()) {
@@ -519,7 +523,8 @@ public class MainGui
 
         // Weakly listen to GUI Actions parameters
         PropertyChangeListener weak = new WeakPropertyChangeListener(this);
-        GuiActions.getInstance().addPropertyChangeListener(weak);
+        GuiActions.getInstance()
+                .addPropertyChangeListener(weak);
 
         // Make the GUI instance available for the other classes
         Main.setGui(this);
@@ -662,7 +667,9 @@ public class MainGui
         ///toolBar.add(toolKeyPanel);
         Container content = frame.getContentPane();
         content.setLayout(new BorderLayout());
-        content.add(ActionManager.getInstance().getToolBar(), BorderLayout.NORTH);
+        content.add(
+                ActionManager.getInstance().getToolBar(),
+                BorderLayout.NORTH);
         content.add(appPane, BorderLayout.CENTER);
 
         // Suppress all internal borders, recursively
@@ -707,7 +714,8 @@ public class MainGui
         stepMenu = new StepMenu(new SeparableMenu());
 
         // Specific plugin menu
-        JMenu pluginMenu = PluginsManager.getInstance().getMenu(null);
+        JMenu pluginMenu = PluginsManager.getInstance()
+                .getMenu(null);
 
         // For some specific top-level menus
         ActionManager mgr = ActionManager.getInstance();
@@ -725,15 +733,17 @@ public class MainGui
         // Gauges = progress + memory
         JPanel gauges = new JPanel();
         gauges.setLayout(new BorderLayout());
-        gauges.add(Stepping.createMonitor().getComponent(), BorderLayout.CENTER);
-        gauges.add(new MemoryMeter().getComponent(), BorderLayout.EAST);        
+        gauges.add(
+                Stepping.createMonitor().getComponent(),
+                BorderLayout.CENTER);
+        gauges.add(new MemoryMeter().getComponent(), BorderLayout.EAST);
 
         // Outer bar = menu + gauges
         JMenuBar outerBar = new JMenuBar();
         outerBar.setLayout(new GridLayout(1, 0));
         outerBar.add(innerBar);
         outerBar.add(gauges);
-        
+
         // Remove useless borders
         UIUtilities.suppressBorders(gauges);
         innerBar.setBorder(null);
@@ -757,11 +767,27 @@ public class MainGui
      */
     private boolean needBottomPane ()
     {
-        return GuiActions.getInstance().isLogDisplayed()
-               || GuiActions.getInstance().isErrorsDisplayed();
+        return GuiActions.getInstance()
+                .isLogDisplayed()
+               || GuiActions.getInstance()
+                .isErrorsDisplayed();
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
+                true,
+                "Should we preload costly packages in the background?");
+
+    }
+
     //
     //------------------//
     // BoardsScrollPane //
@@ -780,19 +806,5 @@ public class MainGui
             setViewportView(boards);
             revalidate();
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
-                true,
-                "Should we preload costly packages in the background?");
-
     }
 }

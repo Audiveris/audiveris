@@ -9,11 +9,11 @@
         <creator type="composer">BWV 776</creator>
         <rights>Public Domain</rights>
         <encoding>
-            <software>audiveris 4.2.3341</software>
+            <software>audiveris 4.2.3363</software>
             <software>ProxyMusic 3.0.110</software>
-            <encoding-date>2013-02-20</encoding-date>
+            <encoding-date>2013-05-28</encoding-date>
         </encoding>
-        <source>D:\soft\audiveris\examples\autothreshold_test.JPG</source>
+        <source>data\examples\autothreshold_test.JPG</source>
     </identification>
     <defaults>
         <scaling>
@@ -42,10 +42,10 @@
         <credit-words font-family="serif" font-size="9" font-weight="bold" default-x="1033" default-y="1354">BWV 776</credit-words>
     </credit>
     <credit page="1">
-        <credit-words font-family="serif" font-size="10" default-x="9" default-y="461">l2</credit-words>
+        <credit-words font-family="serif" font-size="8" font-weight="bold" default-x="9" default-y="461">12</credit-words>
     </credit>
     <credit page="1">
-        <credit-words font-family="serif" font-size="9" font-weight="bold" default-x="10" default-y="258">l5</credit-words>
+        <credit-words font-family="serif" font-size="8" default-x="10" default-y="258">15</credit-words>
     </credit>
     <credit page="1">
         <credit-words font-family="serif" font-size="10" default-x="498" default-y="29">Public Domain</credit-words>
@@ -102,7 +102,7 @@
                 <direction-type>
                     <words></words>
                 </direction-type>
-                <sound tempo="60"/>
+                <sound tempo="120"/>
             </direction>
             <note default-x="122">
                 <pitch>

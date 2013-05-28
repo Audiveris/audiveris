@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<script file="D:\soft\audiveris\examples\chula.png">
+<script file="data/examples/chula.png">
     <parameters>
         <language>fra</language>
+        <tempo>120</tempo>
     </parameters>
-    <step name="SCORE"/>
-    <step name="EXPORT"/>
+    <step name="EXPORT" />
 </script>

@@ -385,19 +385,23 @@ public class BundleView
             try {
                 bundle.installBundle();
                 logger.info("\nYou can now safely exit.\n");
-                JOptionPane.showMessageDialog(
-                        Installer.getFrame(),
-                        "Installation completed successfully",
-                        "Installation completion",
-                        JOptionPane.INFORMATION_MESSAGE);
+                if (Installer.hasUI()) {
+                    JOptionPane.showMessageDialog(
+                            Installer.getFrame(),
+                            "Installation completed successfully",
+                            "Installation completion",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
 
                 Jnlp.extensionInstallerService.installSucceeded(false);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(
-                        Installer.getFrame(),
-                        "Installation has failed: \n" + ex.getMessage(),
-                        "Installation completion",
-                        JOptionPane.WARNING_MESSAGE);
+                if (Installer.hasUI()) {
+                    JOptionPane.showMessageDialog(
+                            Installer.getFrame(),
+                            "Installation has failed: \n" + ex.getMessage(),
+                            "Installation completion",
+                            JOptionPane.WARNING_MESSAGE);
+                }
 
                 Jnlp.extensionInstallerService.installFailed();
             }

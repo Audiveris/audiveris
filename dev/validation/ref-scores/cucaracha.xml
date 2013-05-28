@@ -7,11 +7,11 @@
     <identification>
         <creator type="composer">Amérique du Sud</creator>
         <encoding>
-            <software>audiveris 4.2.3341</software>
+            <software>audiveris 4.2.3363</software>
             <software>ProxyMusic 3.0.110</software>
-            <encoding-date>2013-02-20</encoding-date>
+            <encoding-date>2013-05-28</encoding-date>
         </encoding>
-        <source>D:\soft\audiveris\examples\cucaracha.png</source>
+        <source>data\examples\cucaracha.png</source>
     </identification>
     <defaults>
         <scaling>
@@ -88,7 +88,7 @@
                 <direction-type>
                     <words></words>
                 </direction-type>
-                <sound tempo="60"/>
+                <sound tempo="120"/>
             </direction>
             <direction placement="below">
                 <direction-type>
@@ -1623,8 +1623,8 @@
                 <staff>1</staff>
                 <beam number="1">begin</beam>
                 <notations>
-                    <slur type="stop" number="1" default-x="11" default-y="37" bezier-x="-10" bezier-y="52"/>
                     <tied type="stop" bezier-x="-11" bezier-y="15" default-x="4" default-y="5"/>
+                    <slur type="stop" number="1" default-x="11" default-y="37" bezier-x="-10" bezier-y="52"/>
                 </notations>
             </note>
             <note default-x="144">

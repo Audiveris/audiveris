@@ -7,11 +7,11 @@
     <identification>
         <creator type="composer">Traditionnel Cajun</creator>
         <encoding>
-            <software>audiveris 4.2.3341</software>
+            <software>audiveris 4.2.3363</software>
             <software>ProxyMusic 3.0.110</software>
-            <encoding-date>2013-02-20</encoding-date>
+            <encoding-date>2013-05-28</encoding-date>
         </encoding>
-        <source>D:\soft\audiveris\examples\zizi.png</source>
+        <source>data\examples\zizi.png</source>
     </identification>
     <defaults>
         <scaling>
@@ -85,7 +85,7 @@
                 <direction-type>
                     <words></words>
                 </direction-type>
-                <sound tempo="60"/>
+                <sound tempo="120"/>
             </direction>
             <direction placement="above">
                 <direction-type>

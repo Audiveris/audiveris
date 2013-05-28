@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<script file="D:\soft\audiveris\examples\chula.1bit.bmp">
+<script file="data/examples/chula.1bit.bmp">
     <parameters>
-        <language>fra</language>
         <adaptive-filter mean-coeff="0.7" std-dev-coeff="0.9"/>
+        <language>fra</language>
+        <tempo>120</tempo>
     </parameters>
-    <step name="SCORE"/>
     <step name="EXPORT"/>
 </script>
