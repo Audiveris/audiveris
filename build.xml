@@ -110,10 +110,13 @@
         <property name="ref.scores"  value="dev/validation/ref-scores" />
         <property name="new.scores"  value="data/scores/new" />
         
+        <!-- Make sure the target directory exists -->
+        <mkdir dir="${new.scores}"/>
+
         <!-- Drive processing through the collection of reference scripts -->
         <path id="scripts.path">
             <fileset dir="${ref.scripts}" 
-                         includes="**/z*.script.xml">
+                         includes="**/*.script.xml">
             </fileset>
         </path>
         <pathconvert property="names.path" refid="scripts.path" pathsep=",">
@@ -125,7 +128,7 @@
             </chainedmapper>
         </pathconvert>
         
-        <for list="${names.path}" param="name" keepgoing="true">
+        <for list="${names.path}" param="name">
             <sequential>
                 <echo><![CDATA[Transcribing @{name} to ${new.scores}]]></echo>
                 <java jar="${dist.jar}" fork="true">
@@ -137,6 +140,7 @@
                     <arg value="${ref.scripts}/@{name}.script.xml"/>
                 </java>
                                 
+                <!-- Clean up existing diff file, if any -->
                 <delete file="${new.scores}/@{name}.diff" quiet="true" verbose="true"/>
 
                 <echo><![CDATA[Comparing @{name}]]></echo>
