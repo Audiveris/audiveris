@@ -97,7 +97,7 @@ public class SlantedSymbol
             // Abscissa reduction because of slanted characters
             // It's value depends on whether we have a 'f' or not
             float dx;
-            int   c = code - 0xf000;
+            int   c = code - MusicFont.CODE_OFFSET;
 
             if ((c == 102) || // F
                 (c == 196) || // FF

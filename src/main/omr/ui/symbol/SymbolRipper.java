@@ -200,7 +200,7 @@ public class SymbolRipper
         // Actors
         drawing = new Drawing();
 
-        fontBase.setModel(new SpinnerListModel(new Integer[]{0, 0xf000}));
+        fontBase.setModel(new SpinnerListModel(new Integer[]{0, 0xf000, 0x1d100}));
         SpinnerUtilities.setRightAlignment(fontBase);
         SpinnerUtilities.fixIntegerList(fontBase);
 

@@ -462,7 +462,7 @@ public class BasicSymbol
     // shiftedCodesOf //
     //----------------//
     /**
-     * Make sure the codes are above the '0xf000' value.
+     * Make sure the codes are above the CODE_OFFSET value.
      * @param codes raw codes
      * @return codes suitable for font display
      */
@@ -471,8 +471,8 @@ public class BasicSymbol
         int[] values = new int[codes.length];
 
         for (int i = 0; i < codes.length; i++) {
-            if (codes[i] < 0xf000) {
-                values[i] = codes[i] + 0xf000;
+            if (codes[i] < MusicFont.CODE_OFFSET) {
+                values[i] = codes[i] + MusicFont.CODE_OFFSET;
             } else {
                 values[i] = codes[i];
             }

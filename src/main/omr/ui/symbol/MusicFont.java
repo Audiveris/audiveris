@@ -60,8 +60,18 @@ public class MusicFont
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(MusicFont.class);
 
-    /** The music font name: {@value} (no other one is used) */
+    /** 
+     * The music font name: {@value} (no other one is used).
+     * Possibilities: MusicalSymbols, Symbola, Bravura
+     */
     public static final String FONT_NAME = "MusicalSymbols";
+    
+    /** 
+     * Offset for code range. 
+     *  0xf000 for MusicalSymbols
+     * 0x1d100 for Symbola or Bravura
+     */
+    public static final int CODE_OFFSET = 0xf000;
 
     /** Cache of font according to desired interline value */
     private static final Map<Integer, MusicFont> sizeMap = new HashMap<>();

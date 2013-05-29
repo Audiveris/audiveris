@@ -2,4 +2,5 @@
 <actions>
 <!--    <action domain="DEBUG" section="50" class="omr.Debug" method="injectChordNames"/>-->
     <action domain="DEBUG" section="50" class="omr.Debug" method="saveTrainingData"/>
+    <action domain="DEBUG" section="60" class="omr.ui.GuiActions"  method="launchSymbolRipper"/>
 </actions>
