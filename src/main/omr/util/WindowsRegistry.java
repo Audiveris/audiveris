@@ -51,11 +51,11 @@ public class WindowsRegistry
     {
         // Output lines
         List<String> output = new ArrayList<>();
-        
+
         // Command arguments
         List<String> cmdArgs = new ArrayList<>();
         cmdArgs.addAll(Arrays.asList(
-            "cmd.exe", "/c", "reg", "query"));
+                "cmd.exe", "/c", "reg", "query"));
         cmdArgs.addAll(Arrays.asList(args));
         logger.debug("cmdArgs: {}", cmdArgs);
 
@@ -78,11 +78,7 @@ public class WindowsRegistry
 
             // Wait for process completion
             int exitValue = process.waitFor();
-            if (exitValue != 0) {
-                logger.warn("Exit value is: {}", exitValue);
-            } else {
-                logger.debug("Exit value is: {}", exitValue);
-            }
+            logger.debug("Exit value is: {}", exitValue);
         } catch (IOException | InterruptedException ex) {
             logger.warn("Error running " + cmdArgs, ex);
         }
