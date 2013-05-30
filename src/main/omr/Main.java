@@ -44,8 +44,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import javax.swing.JFrame;
-
 /**
  * Class {@code Main} is the main class for OMR application.
  * It deals with the main routine and its command line parameters.
@@ -427,9 +425,6 @@ public class Main
             //            }
         } else {
             logger.debug("Running in interactive mode");
-
-            // Make sure we have nice window decorations.
-            JFrame.setDefaultLookAndFeelDecorated(true);
         }
     }
 

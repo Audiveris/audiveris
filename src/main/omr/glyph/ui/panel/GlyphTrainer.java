@@ -119,7 +119,6 @@ public class GlyphTrainer
         if (standAlone) {
             // UI Look and Feel
             UILookAndFeel.setUI(null);
-            JFrame.setDefaultLookAndFeelDecorated(true);
         }
 
         frame = new JFrame();
