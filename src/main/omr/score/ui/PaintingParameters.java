@@ -11,25 +11,36 @@
 // </editor-fold>
 package omr.score.ui;
 
+import omr.Main;
+
+import omr.action.ActionManager;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
+import org.jdesktop.application.AbstractBean;
+import org.jdesktop.application.Action;
+import org.jdesktop.application.ApplicationAction;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.jdesktop.application.AbstractBean;
-import org.jdesktop.application.Action;
-
 import java.awt.event.ActionEvent;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.swing.AbstractAction;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 
 /**
- * Class {@code PaintingParameters} handles the dynamic parameters related
- * to the painting of any score (slots, voices and marks)
+ * Class {@code PaintingParameters} handles the dynamic parameters
+ * related to the painting of any score (layers, slots, voices, ...)
  *
  * @author Hervé Bitteur
  */
 public class PaintingParameters
-    extends AbstractBean
+        extends AbstractBean
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -38,7 +49,7 @@ public class PaintingParameters
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        PaintingParameters.class);
+            PaintingParameters.class);
 
     /** Should the annotations be painted */
     public static final String ANNOTATION_PAINTING = "annotationPainting";
@@ -56,15 +67,20 @@ public class PaintingParameters
     public static final String VOICE_PAINTING = "voicePainting";
 
     //~ Instance fields --------------------------------------------------------
+    //
+    /** Icons for layers combinations. (Must be lazily computed) */
+    private Map<PaintingLayer, Icon> layerIcons;
 
-    /** Voice painting is chosen to be not persistent */
+    /** Action for switching layers. (Must be lazily computed) */
+    private ApplicationAction layerAction;
+
+    /** Voice painting is chosen to be not persistent. */
     private boolean voicePainting = false;
 
-    /** Layer painting is chosen to be not persistent */
+    /** Layer painting is chosen to be not persistent. */
     private PaintingLayer paintingLayer = PaintingLayer.INPUT;
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // getInstance //
     //-------------//
@@ -94,8 +110,8 @@ public class PaintingParameters
     //-----------------//
     public boolean isInputPainting ()
     {
-        return (getPaintingLayer() == PaintingLayer.INPUT) ||
-               (getPaintingLayer() == PaintingLayer.INPUT_OUTPUT);
+        return (getPaintingLayer() == PaintingLayer.INPUT)
+               || (getPaintingLayer() == PaintingLayer.INPUT_OUTPUT);
     }
 
     //----------------//
@@ -111,8 +127,8 @@ public class PaintingParameters
     //------------------//
     public boolean isOutputPainting ()
     {
-        return (getPaintingLayer() == PaintingLayer.OUTPUT) ||
-               (getPaintingLayer() == PaintingLayer.INPUT_OUTPUT);
+        return (getPaintingLayer() == PaintingLayer.OUTPUT)
+               || (getPaintingLayer() == PaintingLayer.INPUT_OUTPUT);
     }
 
     //----------------//
@@ -140,9 +156,9 @@ public class PaintingParameters
         boolean oldValue = constants.annotationPainting.getValue();
         constants.annotationPainting.setValue(value);
         firePropertyChange(
-            ANNOTATION_PAINTING,
-            oldValue,
-            constants.annotationPainting.getValue());
+                ANNOTATION_PAINTING,
+                oldValue,
+                constants.annotationPainting.getValue());
     }
 
     //-----------------//
@@ -153,9 +169,9 @@ public class PaintingParameters
         boolean oldValue = constants.markPainting.getValue();
         constants.markPainting.setValue(value);
         firePropertyChange(
-            MARK_PAINTING,
-            oldValue,
-            constants.markPainting.getValue());
+                MARK_PAINTING,
+                oldValue,
+                constants.markPainting.getValue());
     }
 
     //------------------//
@@ -177,9 +193,9 @@ public class PaintingParameters
         boolean oldValue = constants.slotPainting.getValue();
         constants.slotPainting.setValue(value);
         firePropertyChange(
-            SLOT_PAINTING,
-            oldValue,
-            constants.slotPainting.getValue());
+                SLOT_PAINTING,
+                oldValue,
+                constants.slotPainting.getValue());
     }
 
     //------------------//
@@ -202,16 +218,27 @@ public class PaintingParameters
     // switchLayers //
     //--------------//
     /**
-     * Action that swiches among layer combinations
+     * Action that switches among layer combinations
+     *
      * @param e the event that triggered this action
      */
     @Action
     public void switchLayers (ActionEvent e)
     {
+        // Compute new layer
         int oldOrd = getPaintingLayer()
-                         .ordinal();
+                .ordinal();
         int ord = (oldOrd + 1) % PaintingLayer.values().length;
-        setPaintingLayer(PaintingLayer.values()[ord]);
+        PaintingLayer layer = PaintingLayer.values()[ord];
+
+        // Update toolbar/menu icon
+        Icon icon = getLayerIcons().get(layer);
+        ApplicationAction action = getLayerAction();
+        action.putValue(AbstractAction.LARGE_ICON_KEY, icon); // toolbar
+        action.putValue(AbstractAction.SMALL_ICON, icon); // menu
+
+        // Notify new layer
+        setPaintingLayer(layer);
     }
 
     //-------------------//
@@ -219,6 +246,7 @@ public class PaintingParameters
     //-------------------//
     /**
      * Action that toggles the display of annotations in the score
+     *
      * @param e the event that triggered this action
      */
     @Action(selectedProperty = ANNOTATION_PAINTING)
@@ -231,6 +259,7 @@ public class PaintingParameters
     //-------------//
     /**
      * Action that toggles the display of computed marks in the score
+     *
      * @param e the event that triggered this action
      */
     @Action(selectedProperty = MARK_PAINTING)
@@ -243,6 +272,7 @@ public class PaintingParameters
     //-------------//
     /**
      * Action that toggles the display of vertical time slots
+     *
      * @param e the event that triggered this action
      */
     @Action(selectedProperty = SLOT_PAINTING)
@@ -255,6 +285,7 @@ public class PaintingParameters
     //--------------//
     /**
      * Action that toggles the display of voices with specific colors
+     *
      * @param e the event that triggered this action
      */
     @Action(selectedProperty = VOICE_PAINTING)
@@ -262,8 +293,54 @@ public class PaintingParameters
     {
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
+    //----------------//
+    // getLayerAction //
+    //----------------//
+    /**
+     * Lazily retrieve which action is mapped to the "switchLayers"
+     * method.
+     *
+     * @return the mapped action
+     */
+    private ApplicationAction getLayerAction ()
+    {
+        if (layerAction == null) {
+            layerAction = ActionManager.getInstance()
+                    .getActionInstance(this, "switchLayers");
+        }
 
+        return layerAction;
+    }
+
+    //---------------//
+    // getLayerIcons //
+    //---------------//
+    /**
+     * Build the map of icons, based on painting layer.
+     *
+     * @return the map (layer -> icon)
+     */
+    private Map<PaintingLayer, Icon> getLayerIcons ()
+    {
+        if (layerIcons == null) {
+            layerIcons = new HashMap<PaintingLayer, Icon>();
+
+            final String root = Main.getGui()
+                    .getIconsRoot();
+
+            for (PaintingLayer layer : PaintingLayer.values()) {
+                layerIcons.put(
+                        layer,
+                        new ImageIcon(
+                        getClass().getResource(
+                        root + "/apps/" + layer.getImageName())));
+            }
+        }
+
+        return layerIcons;
+    }
+
+    //~ Inner Interfaces -------------------------------------------------------
     //--------//
     // Holder //
     //--------//
@@ -272,38 +349,37 @@ public class PaintingParameters
         //~ Static fields/initializers -----------------------------------------
 
         public static final PaintingParameters INSTANCE = new PaintingParameters();
+
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         /** Should the annotations be painted */
         final Constant.Boolean annotationPainting = new Constant.Boolean(
-            true,
-            "Should the annotations be painted");
+                true,
+                "Should the annotations be painted");
 
         /** Should the slots be painted */
         final Constant.Boolean slotPainting = new Constant.Boolean(
-            true,
-            "Should the slots be painted");
+                true,
+                "Should the slots be painted");
 
         /** Should the marks be painted */
         final Constant.Boolean markPainting = new Constant.Boolean(
-            true,
-            "Should the marks be painted");
+                true,
+                "Should the marks be painted");
 
         //        /** Which layers should be painted */
         //        final PaintingLayer.Constant paintingLayer = new PaintingLayer.Constant(
         //            PaintingLayer.INPUT_OUTPUT,
         //            "Which layers should be painted");
-
         //        /** Should the voices be painted */
         //        final Constant.Boolean voicePainting = new Constant.Boolean(
         //            false,

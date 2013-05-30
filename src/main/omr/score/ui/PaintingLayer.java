@@ -11,15 +11,33 @@
 // </editor-fold>
 package omr.score.ui;
 
-
 /**
  * Enum {@code PaintingLayer} defines layers to be painted
  */
-public enum PaintingLayer {
+public enum PaintingLayer
+{
+
     /** Input data: image or glyphs */
-    INPUT,
+    INPUT("layer-input.png"),
     /** Both input and output */
-    INPUT_OUTPUT, 
+    INPUT_OUTPUT("layer-input-output.png"),
     /** Output data: score entities */
-    OUTPUT;
+    OUTPUT("layer-output.png");
+
+    /**
+     * Creates a new PaintingLayer object.
+     *
+     * @param imageName name of the related image
+     */
+    PaintingLayer (String imageName)
+    {
+        this.imageName = imageName;
+    }
+
+    private final String imageName;
+
+    public String getImageName ()
+    {
+        return imageName;
+    }
 }

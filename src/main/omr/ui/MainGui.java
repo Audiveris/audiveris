@@ -52,6 +52,7 @@ import omr.util.WeakPropertyChangeListener;
 import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.Application;
+import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
 
 import org.slf4j.Logger;
@@ -141,19 +142,6 @@ public class MainGui
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this application.
-     *
-     * @return the SingleFrameApplication instance
-     */
-    public static SingleFrameApplication getInstance ()
-    {
-        return (SingleFrameApplication) Application.getInstance();
-    }
-
     //
     //----------//
     // clearLog //
@@ -283,6 +271,31 @@ public class MainGui
         return glassPane;
     }
 
+    //--------------//
+    // getIconsRoot //
+    //--------------//
+    public String getIconsRoot ()
+    {
+        ResourceMap resource = Application.getInstance()
+                .getContext()
+                .getResourceMap(getClass());
+
+        return resource.getString("icons.root");
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this application.
+     *
+     * @return the SingleFrameApplication instance
+     */
+    public static SingleFrameApplication getInstance ()
+    {
+        return (SingleFrameApplication) Application.getInstance();
+    }
+
     //---------//
     // getName //
     //---------//
@@ -371,9 +384,12 @@ public class MainGui
 
                     // Update frame title
                     sb.append(" - ");
-                    sb.append(
-                            MainGui.this.getContext().getResourceMap().getString(
-                            "mainFrame.title"));
+
+                    ResourceMap resource = Application.getInstance()
+                            .getContext()
+                            .getResourceMap(
+                            getClass());
+                    sb.append(resource.getString("mainFrame.title"));
                     frame.setTitle(sb.toString());
                 }
             });
@@ -774,20 +790,6 @@ public class MainGui
     }
 
     //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
-                true,
-                "Should we preload costly packages in the background?");
-
-    }
-
     //
     //------------------//
     // BoardsScrollPane //
@@ -806,5 +808,19 @@ public class MainGui
             setViewportView(boards);
             revalidate();
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
+                true,
+                "Should we preload costly packages in the background?");
+
     }
 }

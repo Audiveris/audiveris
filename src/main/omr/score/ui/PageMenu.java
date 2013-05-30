@@ -15,9 +15,6 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolMenu;
 import omr.glyph.ui.SymbolsController;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.common.PixelPoint;
 import omr.score.entity.Chord;
 import omr.score.entity.Measure;
@@ -25,11 +22,13 @@ import omr.score.entity.Note;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
-import omr.score.entity.SystemPart;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.ui.BoundaryEditor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
