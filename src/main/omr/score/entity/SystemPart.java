@@ -255,12 +255,15 @@ public class SystemPart
     //-----------------//
     /**
      * Create an dummy system part, parallel to this part, just to fill
-     * needed measures in another part.
+     * needed measures for another part.
      * <ul>
-     * <li>Clef is taken from first real measure of part to be extended</li>
+     * <li>Clef is taken from first real measure of part to be extended
+     * (this part, called the refPart, has the provided id and is found in
+     * a following system, or in a preceding system)</li>
      * <li>Key sig is taken from this part</li>
      * <li>Time sig is taken from this part</li>
-     * <li>Measures are filled with just one whole rest</li>
+     * <li>Measures are defined as parallel to this part, and filled with just
+     * one whole rest</li>
      * </ul>
      *
      * @param id the id for the desired dummy part
@@ -271,34 +274,14 @@ public class SystemPart
         logger.debug("{} createDummyPart for id={}", getContextString(), id);
 
         // Find some concrete system part for the provided id
-        SystemPart nextPart;
-        ScoreSystem nextSystem = getSystem();
-
-        while (true) {
-            nextSystem = (ScoreSystem) nextSystem.getNextSibling();
-
-            if (nextSystem != null) {
-                SystemPart part = nextSystem.getPart(id);
-
-                if (part != null) {
-                    nextPart = part;
-
-                    break;
-                }
-            } else {
-                logger.warn("{} Cannot find real system part with id {}",
-                        getContextString(), id);
-
-                return null;
-            }
-        }
+        SystemPart refPart = findRefPart(id);
 
         SystemPart dummyPart = new SystemPart(getSystem(), null);
         dummyPart.setId(id);
         dummyPart.setDummy(true);
-        dummyPart.setScorePart(nextPart.getScorePart());
+        dummyPart.setScorePart(refPart.getScorePart());
 
-        Measure nextMeasure = nextPart.getFirstMeasure();
+        Measure nextMeasure = refPart.getFirstMeasure();
 
         // Loop on measures
         boolean isFirstMeasure = true;
@@ -312,7 +295,7 @@ public class SystemPart
             // Loop on staves
             int staffIndex = -1;
 
-            for (TreeNode sn : nextPart.getStaves()) {
+            for (TreeNode sn : refPart.getStaves()) {
                 Staff nextStaff = (Staff) sn;
                 staffIndex++;
 
@@ -362,12 +345,15 @@ public class SystemPart
                 dummyMeasure.addWholeRest(dummyStaff, null);
             }
 
+            // Compute a not-too-silly ordinate
+            int yOffset = refPart.getBox().y - refPart.getSystem().getBox().y;
+
             dummyMeasure.setBox(
                     new PixelRectangle(
                     measure.getBox().x,
-                    nextPart.getBox().y,
+                    getSystem().getBox().y + yOffset,
                     measure.getBox().width,
-                    nextPart.getBox().height));
+                    refPart.getBox().height));
 
             isFirstMeasure = false;
         }
@@ -379,6 +365,58 @@ public class SystemPart
         }
 
         return dummyPart;
+    }
+
+    //-------------//
+    // findRefPart //
+    //-------------//
+    /**
+     * Look in following systems, then in previous systems, for a real
+     * part with the provided ID.
+     *
+     * @param id the desired part ID
+     * @return the first real part with this ID, either in following systems
+     *         or in preceding systems.
+     */
+    private SystemPart findRefPart (int id)
+    {
+        // First look in the following systems in the same page
+        ScoreSystem nextSystem = getSystem();
+        while (true) {
+            nextSystem = (ScoreSystem) nextSystem.getNextSibling();
+
+            if (nextSystem != null) {
+                SystemPart part = nextSystem.getPart(id);
+
+                if (part != null && !part.isDummy()) {
+                    return part;
+                }
+            } else {
+                break;
+            }
+        }
+
+
+        // Then look in the preceding systems in the same page
+        ScoreSystem prevSystem = getSystem();
+        while (true) {
+            prevSystem = (ScoreSystem) prevSystem.getPreviousSibling();
+
+            if (prevSystem != null) {
+                SystemPart part = prevSystem.getPart(id);
+
+                if (part != null && !part.isDummy()) {
+                    return part;
+                }
+            } else {
+                break;
+            }
+        }
+
+        logger.warn("{} Cannot find real system part with id {}",
+                getContextString(), id);
+
+        return null;
     }
 
     //----------//

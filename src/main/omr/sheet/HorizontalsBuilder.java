@@ -724,6 +724,10 @@ public class HorizontalsBuilder
             logger.debug("{} {}", dist, context);
 
             if (dist > constants.ledgerMarginY.getValue()) {
+                if (context.stick.isVip()) {
+                    logger.info("Ledger candidate {} dy:{} vs {}",
+                            context, dist, constants.ledgerMarginY.getValue());
+                }
                 continue;
             }
 
@@ -735,6 +739,9 @@ public class HorizontalsBuilder
 
                 // Check abscissa compatibility
                 if (prevLedgers == null) {
+                    if (context.stick.isVip()) {
+                        logger.info("Ledger candidate {} orphan", context);
+                    }
                     continue;
                 }
 
@@ -752,6 +759,9 @@ public class HorizontalsBuilder
                 }
 
                 if (!foundPrevious) {
+                    if (context.stick.isVip()) {
+                        logger.info("Ledger candidate {} local orphan", context);
+                    }
                     continue;
                 }
 
@@ -785,7 +795,11 @@ public class HorizontalsBuilder
             context.staff.addLedger(glyph, index);
             found++;
 
-            logger.debug("Ledger at {}", context);
+            if (context.stick.isVip()) {
+                logger.info("Ledger at {}", context);
+            } else {
+                logger.debug("Ledger at {}", context);
+            }
         }
 
         return found;
@@ -921,7 +935,7 @@ public class HorizontalsBuilder
 
         ///
         Scale.Fraction ledgerMarginY = new Scale.Fraction(
-                0.2,
+                0.4,
                 "Margin on ledger ordinate");
 
         Scale.Fraction ledgerMarginX = new Scale.Fraction(

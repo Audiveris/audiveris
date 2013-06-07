@@ -175,14 +175,16 @@ public class TextBuilder
             return false;
         }
 
-        // Check each word
+        // Check ratio of invalid words in the line
+        int invalidCount = 0;
         for (TextWord word : textLine.getWords()) {
             if (!isValid(word)) {
-                return false;
+                invalidCount++;
             }
         }
+        double invalidRatio = (double) invalidCount / textLine.getWords().size();
 
-        return true;
+        return invalidRatio <= constants.maxInvalidRatio.getValue();
     }
 
     //---------//
@@ -1202,7 +1204,7 @@ public class TextBuilder
 
         Constant.Integer minConfidence = new Constant.Integer(
                 "0..100",
-                75,
+                70,
                 "Minimum confidence for OCR validity");
 
         Constant.Integer maxCharCountForAspectCheck = new Constant.Integer(
@@ -1237,6 +1239,10 @@ public class TextBuilder
         Scale.Fraction maxChordDx = new Scale.Fraction(
                 1.0,
                 "Max horizontal gap between two chord words");
+
+        Constant.Ratio maxInvalidRatio = new Constant.Ratio(
+                0.33,
+                "Maximum ratio of invalid words in a line");
 
     }
 

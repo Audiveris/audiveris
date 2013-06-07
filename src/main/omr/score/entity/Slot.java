@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.score.entity;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.InjectionSolver;
 import omr.math.Population;
 import omr.math.Rational;
@@ -22,6 +19,9 @@ import omr.score.common.PixelPoint;
 
 import omr.util.Navigable;
 import omr.util.TreeNode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -432,6 +432,12 @@ public class Slot
     //---------------//
     // toChordString //
     //---------------//
+    /**
+     * Report a slot description focused on the chords that start at
+     * the slot.
+     *
+     * @return slot with its incoming chords
+     */
     public String toChordString ()
     {
         StringBuilder sb = new StringBuilder();
@@ -490,6 +496,11 @@ public class Slot
     //---------------//
     // toVoiceString //
     //---------------//
+    /**
+     * Report a slot description focused on intersected voices.
+     *
+     * @return slot with its voices
+     */
     public String toVoiceString ()
     {
         StringBuilder sb = new StringBuilder();

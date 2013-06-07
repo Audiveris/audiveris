@@ -27,7 +27,8 @@ import java.util.Iterator;
 /**
  * Class {@code Staff} handles a staff in a system part.
  * It is useful for its geometric parameters (topLeft corner, width and height,
- * ability to convert between a PixelPoint ordinate and a staff-based pitchPosition.
+ * ability to convert between a PixelPoint ordinate and a staff-based
+ * pitchPosition.
  * But it contains no further entities, the Measure's are the actual containers.
  * Within a measure, some entities may be assigned a staff, more like a tag than
  * like a parent.
@@ -35,7 +36,7 @@ import java.util.Iterator;
  * @author Hervé Bitteur
  */
 public class Staff
-    extends PartNode
+        extends PartNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -43,7 +44,6 @@ public class Staff
     private static final Logger logger = LoggerFactory.getLogger(Staff.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Top left corner of the staff (relative to the page top left corner) */
     private final PixelPoint topLeft;
 
@@ -57,24 +57,24 @@ public class Staff
     private boolean dummy;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------//
     // Staff //
     //-------//
     /**
      * Build a staff, given all its parameters.
-     * @param info the physical information read from the sheet
-     * @param part the containing systemPart
+     *
+     * @param info    the physical information read from the sheet
+     * @param part    the containing systemPart
      * @param topLeft the coordinate of the upper left corner of this staff,
-     * usually null for dummy staves
-     * @param width the staff width
-     * @param height the staff height
+     *                usually null for dummy staves
+     * @param width   the staff width
+     * @param height  the staff height
      */
-    public Staff (StaffInfo  info,
+    public Staff (StaffInfo info,
                   SystemPart part,
                   PixelPoint topLeft,
-                  int        width,
-                  int        height)
+                  int width,
+                  int height)
     {
         super(part);
 
@@ -95,7 +95,6 @@ public class Staff
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // accept //
     //--------//
@@ -110,6 +109,7 @@ public class Staff
     //-----------//
     /**
      * Report the height of the staff.
+     *
      * @return height in units
      */
     public int getHeight ()
@@ -122,6 +122,7 @@ public class Staff
     //-------//
     /**
      * Report the staff id within the containing system part.
+     *
      * @return the id, counting from 1
      */
     public int getId ()
@@ -134,6 +135,7 @@ public class Staff
     //---------//
     /**
      * Report the physical information retrieved from the sheet.
+     *
      * @return the info entity for this staff
      */
     public StaffInfo getInfo ()
@@ -147,6 +149,7 @@ public class Staff
     /**
      * Report the coordinates of the top left corner of the staff,
      * wrt the containing page.
+     *
      * @return the top left coordinates
      */
     public PixelPoint getTopLeft ()
@@ -159,6 +162,7 @@ public class Staff
     //----------//
     /**
      * Report the width of the staff.
+     *
      * @return the width in units
      */
     public int getWidth ()
@@ -176,6 +180,7 @@ public class Staff
     //-----------------//
     /**
      * Compute the pitch position of a pixel point.
+     *
      * @param pt the pixel point
      * @return the pitch position
      */
@@ -190,7 +195,7 @@ public class Staff
     public int pitchToPixels (double pitchPosition)
     {
         int interline = getScale()
-                            .getInterline();
+                .getInterline();
 
         return (int) Math.rint(((pitchPosition + 4) * interline) / 2.0);
     }
@@ -205,6 +210,7 @@ public class Staff
     //----------//
     /**
      * Set the staff width.
+     *
      * @param width width of the staff
      */
     public void setWidth (int width)
@@ -231,11 +237,11 @@ public class Staff
             }
 
             sb.append(" topLeft=")
-              .append(topLeft);
+                    .append(topLeft);
             sb.append(" width=")
-              .append(getWidth());
+                    .append(getWidth());
             sb.append(" size=")
-              .append(getHeight());
+                    .append(getHeight());
         } catch (NullPointerException e) {
             sb.append("NONE");
         }
@@ -246,7 +252,6 @@ public class Staff
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------------//
     // PartIterator //
     //--------------//
@@ -255,7 +260,7 @@ public class Staff
      * sequence of staves within all parallel measures of a SystemPart.
      */
     public static class PartIterator
-        implements Iterator<Staff>
+            implements Iterator<Staff>
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -263,16 +268,14 @@ public class Staff
         private final Iterator<TreeNode> staffIterator;
 
         //~ Constructors -------------------------------------------------------
-
         public PartIterator (Measure measure)
         {
             staffIterator = measure.getPart()
-                                   .getStaves()
-                                   .iterator();
+                    .getStaves()
+                    .iterator();
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public boolean hasNext ()
         {
@@ -301,29 +304,31 @@ public class Staff
      * whatever the containing part.
      */
     public static class SystemIterator
-        implements Iterator<Staff>
+            implements Iterator<Staff>
     {
         //~ Instance fields ----------------------------------------------------
 
         // Constant
-        private final int                measureIndex;
+        private final int measureIndex;
+
         private final Iterator<TreeNode> partIterator;
 
         // Non constant
-        private SystemPart   part;
-        private Measure      measure;
+        private SystemPart part;
+
+        private Measure measure;
+
         private PartIterator partStaffIterator;
 
         //~ Constructors -------------------------------------------------------
-
         public SystemIterator (Measure measure)
         {
             measureIndex = measure.getParent()
-                                  .getChildren()
-                                  .indexOf(measure);
+                    .getChildren()
+                    .indexOf(measure);
             partIterator = measure.getSystem()
-                                  .getParts()
-                                  .iterator();
+                    .getParts()
+                    .iterator();
 
             if (partIterator.hasNext()) {
                 toNextPart();
@@ -331,7 +336,6 @@ public class Staff
         }
 
         //~ Methods ------------------------------------------------------------
-
         public Measure getMeasure ()
         {
             return measure;
@@ -382,7 +386,7 @@ public class Staff
         {
             part = (SystemPart) partIterator.next();
             measure = (Measure) part.getMeasures()
-                                    .get(measureIndex);
+                    .get(measureIndex);
             partStaffIterator = new PartIterator(measure);
         }
     }

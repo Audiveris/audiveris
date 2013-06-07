@@ -114,7 +114,7 @@ public enum TextRole
         if (line == null) {
             return null;
         }
-        
+
         if (line.isVip()) {
             logger.info("TextRoleInfo. guessRole for {}", line.getValue());
         }
@@ -200,9 +200,9 @@ public enum TextRole
         boolean highText = box.height >= minTitleHeight;
 
         logger.debug("{} firstSystem={} lastSystem={} systemPosition={}"
-                    + " partPosition={} closeToStaff={} leftOfStaves={}"
-                    + " pageCentered={} rightAligned={} shortSentence={}"
-                    + " highText={10}",
+                     + " partPosition={} closeToStaff={} leftOfStaves={}"
+                     + " pageCentered={} rightAligned={} shortSentence={}"
+                     + " highText={10}",
                 box, firstSystem, lastSystem, systemPosition,
                 partPosition, closeToStaff, leftOfStaves, pageCentered,
                 rightAligned, shortSentence, highText);
@@ -262,7 +262,7 @@ public enum TextRole
                 return new TextRoleInfo(TextRole.Direction);
             }
 
-        case BELOW_STAVES: // Copyright
+        case BELOW_STAVES: // Copyright, Lyrics for single-staff part
 
             if (tinySentence) {
                 return new TextRoleInfo(TextRole.UnknownRole);
@@ -270,6 +270,13 @@ public enum TextRole
 
             if (pageCentered && shortSentence && lastSystem) {
                 return new TextRoleInfo(TextRole.Rights);
+            }
+
+            if (part.getStaves().size() == 1) {
+                if (partPosition == StaffPosition.BELOW_STAVES
+                    && !isMainlyItalic) {
+                    return new TextRoleInfo(TextRole.Lyrics);
+                }
             }
         }
 

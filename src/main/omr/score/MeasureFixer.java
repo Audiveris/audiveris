@@ -295,7 +295,7 @@ public class MeasureFixer
         return (im == 1)
                && (prevVerticals.get(0).getActualDuration().equals(
                 Rational.ZERO));
-               ///&& (measureTermination != null); // Too strict!
+        ///&& (measureTermination != null); // Too strict!
     }
 
     //--------------------//
@@ -324,6 +324,11 @@ public class MeasureFixer
         // Check for a suitable repeat barline in between
         Measure prevMeasure = prevVerticals.get(0);
         Barline barline = prevMeasure.getBarline();
+        
+        if (barline == null) {
+            return false;
+        }
+        
         Shape shape = barline.getShape();
 
         if ((shape != Shape.RIGHT_REPEAT_SIGN)

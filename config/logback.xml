@@ -42,6 +42,6 @@
     </root>
     
     <!-- Define DEBUG loggers here below: -->
-    <!--    <logger name="omr.ui.symbol.OmrFont" level="DEBUG"/>-->
+<!--    <logger name="omr.step.Stepping" level="DEBUG"/>-->
 
 </configuration>
