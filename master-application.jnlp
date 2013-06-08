@@ -20,8 +20,8 @@
         
     <!-- check: always, timeout(default), background -->
     <!-- policy: always(default), prompt-update, prompt-run -->
-    <update check="always" policy="prompt-update" />
-    <!--${JNLP.  XXX  UPDATE}-->
+<!--    <update check="always" policy="prompt-update" />-->
+    <!--${JNLP.UPDATE}-->
     
     <!--${JNLP.SECURITY}-->
     

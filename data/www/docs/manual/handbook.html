@@ -50,19 +50,19 @@
             }
 
             /* -- ids -- */
+            #appli-snippet {
+                width: 320px;
+            }
             #cli-snippet {
                 width: 700px;
                 margin-left: 20px;                 
                 font-size: 0.9em; 
             }
-            #java-snippet {
-                width: 650px;
+            #jvm-snippet {
+                width: 500px;
             }
             #plugins-snippet {
                 width: 500px;
-            }
-            #ini-snippet {
-                width: 560px;
             }
             #script-snippet {
                 width: 580px;
@@ -1763,19 +1763,144 @@
 
                 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
-                <article id="cli">
+                <article id="arguments">
                     <h3>
-                        Command line interface
+                        Arguments
                     </h3>
-                    <p>Here is the summary you get when launching Audiveris with the 
-                        <code>-help</code> parameter:</p>
 
-                    <textarea id="cli-snippet" class="snippet" rows="30">
+                    <p>
+                        As we have seen in the <a href="#jws">Java Web Start</a>
+                        section, Audiveris can be launched from the command line
+                        via the <code>javaws</code> program.
+                        However, this program accepts a limited set of arguments.
+                        Type <code>javaws</code> alone to get a description of
+                        possible arguments.
+                    </p>
+                    <p>
+                        <code>javaws</code> accepts JVM arguments but no 
+                        application arguments, at least directly.
+                    </p>
+                    <p>
+                        A much more versatile way is to go through the 
+                        <code>jnlp</code> file itself.
+                        This is a basic XML file which describes how to retrieve
+                        and launch the Java application.
+                        It is this file which is hyperlinked by the
+                        <code class="button">Launch</code> button on Audiveris 
+                        web page and which is also referred to by the 
+                        <code>javaws</code> command.
+                    </p>
+                    <p>
+                        The URL of this jnlp file is 
+                        <code>https://audiveris.kenai.com/jnlp/launch.jnlp</code>.
+                        You can simply download this file and modify it locally 
+                        with a text editor.
+                        Then use a double-click on the local file or use a 
+                        <code>javaws</code> command pointing to the local file
+                        instead of the remote one.
+                    </p>
+
+                    <h4 id="jvm-arguments">
+                        JVM arguments
+                    </h4>
+                    <p>
+                        Many kinds of arguments can be provided to the Java 
+                        Virtual Machine.
+                    </p>
+                    <p>
+                        A typical use is to define the maximum amount of memory 
+                        available, via the <code>-Xmx</code> option, for example
+                        <code>-Xmx512M</code> for 512 megabytes, 
+                        or <code>-Xmx2G</code> for 2 gigabytes.
+                        (Please note that you cannot practically go beyond the 
+                        physical memory available on your machine, otherwise
+                        memory swapping will severely impact the processing 
+                        speed).
+                        Similarly, the <code>-Xms</code> option defines the
+                        initial amount of memory.
+                    </p>
+                    <p>
+                        JVM arguments can be provided via the <code>javaws</code>
+                        command line and via the <code>jnlp</code> file:
+                    </p>
+                    <dl>
+                        <dt>javaws command</dt>
+                        <dd>
+                            <p>Use the javaws <code>-J</code> option for each
+                                JVM argument.
+                                For example, to specify initial and maximum
+                                memory values, you can use something like:
+                            </p>
+                            <p>
+                                <code class="indent">javaws -J-Xms512m -J-Xmx1024m
+                                    https://audiveris.kenai.com/jnlp/launch.jnlp</code>
+                            </p>
+                            <p>
+                                Mind the fact that there is no space between the 
+                                "-J" prefix and the actual JVM argument.
+                            </p>
+                        </dd>                        
+                        <dt>jnlp file</dt>
+                        <dd>
+                            <p>
+                                In the (local) file, look for the 
+                                <code>&lt;resources&gt;</code> element and the
+                                contained <code>&lt;java&gt;</code> element.
+                                Then modify the <code>java-jvm-args</code> 
+                                attribute as you wish, for example:
+                            </p>
+
+                            <pre id="jvm-snippet" class="snippet">
+[...]
+&lt;resources&gt;
+    &lt;java href="..." version="..." <b>java-vm-args="-Xms512m -Xmx1024m"</b> /&gt;
+    [...]
+&lt;/resources&gt;
+[...]</pre>
+
+                        </dd>                        
+                    </dl>
+
+                    <h4 id="appli-arguments">
+                        Application arguments
+                    </h4>
+
+                    <p>
+                        Application arguments can only be provided through the
+                        jnlp file.
+                    </p>
+                    <p>
+                        In the (local) file, look for the 
+                        <code>&lt;application-desc&gt;</code> element.
+                        Then insert there as many <code>&lt;argument&gt;</code>
+                        elements as you wish.
+                    </p>
+                    <p>
+                        Perhaps the most typical use of such arguments is to run
+                        Audiveris in batch.
+                        For example, to open the input file 
+                        <code>myFile.pdf</code> and transcribe it in batch to
+                        the output file <code>myFile.xml</code>, you would use 
+                        something like:
+                    </p>
+
+                            <pre id="appli-snippet" class="snippet">
+[...]
+&lt;application-desc main-class="Audiveris"&gt;
+    <b>&lt;argument&gt;-batch&lt;/argument&gt;
+    &lt;argument&gt;-input&lt;/argument&gt;
+    &lt;argument&gt;path/to/myFile.pdf&lt;/argument&gt;
+    &lt;argument&gt;-export&lt;/argument&gt;
+    &lt;argument&gt;path/to/myFile.xml&lt;/argument&gt;</b>
+&lt;/application-desc&gt;
+[...]</pre>
+                    <p>Here is the summary you get when launching Audiveris with the 
+                        <code>-help</code> argument:</p>
+
+                    <textarea id="cli-snippet" class="snippet" rows="28">
 Version:
-   4.2.3336
-Command line syntax:
-   java [JVM options] -jar &lt;audiveris.jar&gt; [parameters*]
-Parameters syntax:
+   4.2.3374
+Arguments syntax:
    [-help]                             Prints help about command line interface and stops
    [-batch]                            Specifies to run with no graphic user interface
    [-step (STEPNAME|@STEPLIST)+]       Defines a series of target steps
@@ -1803,19 +1928,10 @@ Known step names are in order (non case-sensitive):
    PLUGIN      : Launch the default plugin (MuseScore)
                     </textarea>
 
-                    <p>On Windows, you can also use the executables named
-                        <code>audiveris.exe</code> or 
-                        <code>audiveris-console.exe</code> which are just 
-                        wrappers around the <code>java</code> command.
-                        This command line syntax is also correct: 
-                        <code>audiveris.exe [parameters*]</code>, it takes the JVM 
-                        options declared in the related file 
-                        <code>audiveris.l4j.ini</code>.
-                    </p>
-                    <p>More explanation on Audiveris parameters:</p>
+                    <p>More explanation on Audiveris arguments:</p>
                     <dl>
                         <dt>-help</dt>
-                        <dd>Displays the CLI summary as printed above.</dd>
+                        <dd>Displays the arguments summary as printed above.</dd>
                         <dt>-batch</dt>
                         <dd>Launches Audiveris without any Graphic User Interface.</dd>
                         <dt>-step (STEPNAME | @STEPLIST)+</dt>
@@ -1844,7 +1960,7 @@ Known step names are in order (non case-sensitive):
                             for example back-slashes must be escaped.</dd>
                         <dt>-script (SCRIPTNAME | @SCRIPTLIST)+</dt>
                         <dd>Specifies some scripts to be read, using the same mechanism 
-                            than input command belows.
+                            as input command below.
                             <br/>
                             These script files contain actions generally recorded during
                             a previous run.
@@ -1873,120 +1989,6 @@ Known step names are in order (non case-sensitive):
                         <dd>Defines an output path to MusicXML file (or directory).
                             <br/>
                             Same note as for -bench option.</dd>
-                    </dl>
-                </article>
-
-                <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-
-                <article id="memory">
-                    <h3>
-                        Memory
-                    </h3>
-
-                    <p>
-                        Audiveris is a Java application which is given a default
-                        amount of memory.
-                        You may get the exception <code>OutOfmemoryError</code>
-                        when memory is exhausted, typically when processing
-                        a score with too many pages.
-                    </p>
-                    <p>
-                        You can provide more memory to Audiveris application 
-                        via the JVM option <code>-Xmx</code>, for example
-                        <code>-Xmx512M</code> for 512 megabytes, 
-                        or <code>-Xmx2G</code> for 2 gigabytes.
-                        Please note that you cannot really go beyond the physical
-                        memory available on your machine, or memory swapping will
-                        severely impact the processing speed.
-                    </p>
-                    <p>
-                        How to set this memory option depends on the way you
-                        launch Audiveris:
-                    </p>
-                    <dl>
-                        <dt>Windows audiveris.exe</dt>
-                        <dd>
-                            <p>
-                                This executable is launched by any of the following
-                                actions:</p>
-                            <ul>
-                                <li>A double-click on the file icon in Windows
-                                    Explorer,</li>
-                                <li>A double-click on Audiveris desktop icon
-                                    <img class="icon" 
-                                         src="../images/shortcut.png" />,</li>
-                                <li>A click on Windows start button and 
-                                    selection of the Audiveris menu item,</li>
-                                <li>Entering its name from the command line 
-                                    interface in a Terminal window.</li>
-                            </ul>
-                            <p>
-                                Whatever the launching mechanism, the executable is
-                                driven by the related file <code>audiveris.l4j.ini</code>
-                                located in the same folder and listed below.</p>
-                            <p>Simply modify the line that begins with "-Xmx".
-                            </p>
-
-                            <figure id="ini-snippet" class="snippet">
-                                <pre>
-#------------------------------------------------------------------------------#
-#                       a u d i v e r i s . l 4 j . i n i                      #
-#------------------------------------------------------------------------------#
-# Launch4j runtime config file for audiveris.exe                               #
-#------------------------------------------------------------------------------#
-
-# Initial memory
--Xms384M
-
-# Maximum memory
-<b>-Xmx384M</b>
-
-# Uncomment to specify logging parameters other than settings/logging.properties
-# -Djava.util.logging.config.file=path/to/some-other-file.properties
-
-# Uncomment to specify another target for audiveris.log file
-# -Dstdouterr=path/to/some-other-audiveris.log
-                                </pre>
-                                <figcaption>Content of audiveris.l4j.ini</figcaption>
-                            </figure>
-                        </dd>
-
-                        <dt>Windows audiveris-console.exe</dt>
-                        <dd>
-                            <p>This executable, which displays the console content,
-                                is similarly driven by the related file
-                                <code>audiveris-console.l4j.ini</code></p>
-                            <p>It can be customized as above.</p></dd>
-
-                        <dt>Java command</dt>
-                        <dd>
-                            <p>
-                                From a Terminal window, whatever the operating 
-                                system, the command line interface can be used to
-                                launch the Java program on audiveris application:
-                                <br/>
-                                <code>java -jar path-to-audiveris.jar</code>
-                            </p>
-                            <p>
-                                Simply add the option -Xmx right after the java 
-                                command as in the following example: <br>
-                                <code>java <b>-Xmx1024M</b>
-                                    -jar path-to-audiveris.jar</code>
-                            </p>
-                        </dd>
-
-                        <dt>Linux audiveris</dt>
-                        <dd>
-                            <p>
-                                For Linux, the <code>audiveris</code> executable
-                                is just a shell file that calls the Java 
-                                program as described above.
-                            </p>
-                            <p>
-                                Simply edit this file (Use <code>which audiveris</code>
-                                to know its precise location).
-                            </p>
-                        </dd>
                     </dl>
                 </article>
 
@@ -3895,8 +3897,12 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
                         <a class="inline" href="#advanced">Advanced</a>
                         <div class="expandable">                            
                             <ul>                  
-                                <li><a href="#cli">Command line</a></li>
-                                <li><a href="#memory">Memory</a></li>
+                                <li><a href="#arguments">Arguments</a>
+                                    <ul>
+                                        <li><a href="#jvm-arguments">JVM</a></li>
+                                        <li><a href="#appli-arguments">Application</a></li>
+                                    </ul>
+                                </li>
                                 <li><a href="#log">Log</a></li>
                                 <li><a href="#script">Script</a></li>
                                 <li><a href="#plugins">Plugins</a></li>

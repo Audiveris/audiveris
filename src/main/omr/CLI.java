@@ -121,7 +121,7 @@ public class CLI
         //~ Enumeration constant initializers ----------------------------------
 
         HELP(
-        "Prints help about command line interface and stops",
+        "Prints help about application arguments and stops",
         Card.NONE,
         null),
         BATCH(
@@ -540,10 +540,8 @@ public class CLI
         buf.append("\nVersion:");
         buf.append("\n   ").append(WellKnowns.TOOL_REF);
 
-        // Print standard command line syntax
-        buf.append("\nCommand line syntax:");
-        buf.append("\n   java -jar <audiveris.jar> [parameters*]");
-        buf.append("\nParameters syntax:");
+        // Print arguments syntax
+        buf.append("\nArguments syntax:");
 
         for (Command command : Command.values()) {
             buf.append(
