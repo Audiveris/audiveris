@@ -24,12 +24,14 @@ import omr.sheet.picture.PictureLoader;
 import java.io.File;
 import java.util.Collection;
 import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class {@code LoadStep} reloads the image for a sheet, 
  * from a provided image file.
  * <p>This is simply a RE-loading, triggered by the user. The initial loading
- * is always done in {@link Score#createPages()}.</p>
+ * is always done in {@link Score#createPages(SortedSet)}.</p>
  *
  * @author Hervé Bitteur
  */
@@ -70,9 +72,11 @@ public class LoadStep
         final File imageFile = score.getImageFile();
         final int index = sheet.getPage()
                 .getIndex();
+        final SortedSet<Integer> set = new TreeSet<>();
+        set.add(index);
         
         SortedMap<Integer, RenderedImage> images = 
-                PictureLoader.loadImages(imageFile, index);
+                PictureLoader.loadImages(imageFile, set);
         if (images != null) {
             sheet.setImage(images.get(index));
         }

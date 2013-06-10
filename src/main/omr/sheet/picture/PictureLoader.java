@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
@@ -79,15 +80,15 @@ public class PictureLoader
      * ending with ".pdf" and JAI is used for all other files.
      *
      * @param imgFile the image file to load
-     * @param id      if not null, specifies (counted from 1) which single image
-     *                is desired
+     * @param pages   if not null or empty, specifies (counted from 1) which
+     *                pages are desired. Otherwise all pages are loaded.
      * @return a sorted map of RenderedImage's (often but not always a
      *         BufferedImage), guaranteed not to be null, id counted from 1.
      * @throws IllegalArgumentException if file does not exist
      * @throws RuntimeException         if we are unable to load the file
      */
     public static SortedMap<Integer, RenderedImage> loadImages (File imgFile,
-                                                                Integer id)
+                                                                SortedSet<Integer> pages)
     {
         if (!imgFile.exists()) {
             throw new IllegalArgumentException(imgFile + " does not exist");
@@ -97,13 +98,13 @@ public class PictureLoader
 
         logger.debug("Trying ImageIO");
 
-        SortedMap<Integer, RenderedImage> images = loadImageIO(imgFile, id, null);
+        SortedMap<Integer, RenderedImage> images = loadImageIO(imgFile, pages, 0);
 
         if (images == null) {
             String extension = FileUtil.getExtension(imgFile);
 
             if (extension.equalsIgnoreCase(".pdf")) {
-                images = loadPDF(imgFile, id);
+                images = loadPDF(imgFile, pages);
             } else {
                 logger.debug("Using JAI");
                 images = JaiLoader.loadJAI(imgFile);
@@ -124,16 +125,16 @@ public class PictureLoader
      * Try to load a sequence of images, using ImageIO.
      *
      * @param imgFile the input image file
-     * @param id      if not null, specifies (counted from 1) which single
-     *                image is desired
-     * @param idUser  if not null, identity used in the returned map
-     * @return a map of images, or null if failed to load
+     * @param pages   if not null or empty, specifies (counted from 1) which
+     *                precise pages are desired. Otherwise all pages are loaded.
+     * @param offset  specify offset on page ids.
+     * @return a map (id -> image), or null if failed to load
      */
     private static SortedMap<Integer, RenderedImage> loadImageIO (File imgFile,
-                                                                  Integer id,
-                                                                  Integer idUser)
+                                                                  SortedSet<Integer> pages,
+                                                                  int offset)
     {
-        logger.debug("loadImageIO {} id:{}", imgFile, id);
+        logger.debug("loadImageIO {} pages:{} offset:{}", imgFile, pages, offset);
 
         // Input stream
         ImageInputStream stream;
@@ -176,12 +177,13 @@ public class PictureLoader
                 SortedMap<Integer, RenderedImage> images = new TreeMap<>();
 
                 for (int i = 1; i <= imageCount; i++) {
-                    if ((id == null) || (id == i)) {
+                    int id = i + offset;
+                    if ((pages == null) || pages.isEmpty()
+                        || (pages.contains(id))) {
                         BufferedImage img = reader.read(i - 1);
-                        int identity = idUser != null ? idUser : i;
-                        images.put(identity, img);
+                        images.put(id, img);
                         logger.info("Loaded image #{} ({} x {})",
-                                identity, img.getWidth(), img.getHeight());
+                                id, img.getWidth(), img.getHeight());
                     }
                 }
 
@@ -210,14 +212,15 @@ public class PictureLoader
      * load the temporary TIFF file via loadImageIO().
      *
      * @param imgFile the input PDF file
-     * @param id      if not null, specifies (counted from 1) which single image
-     *                is desired
+     * @param pages   if not null or empty, specifies (counted from 1) which
+     *                precise images are desired. Otherwise all pages are
+     *                loaded.
      * @return a map of images, or null if failed to load
      */
     private static SortedMap<Integer, RenderedImage> loadPDF (File imgFile,
-                                                              Integer id)
+                                                              SortedSet<Integer> pages)
     {
-        logger.debug("loadPDF {} id:{}", imgFile, id);
+        logger.debug("loadPDF {} pages:{}", imgFile, pages);
 
         // Create a temporary tiff file from the PDF input
         Path temp = null;
@@ -238,9 +241,9 @@ public class PictureLoader
         gsArgs.add("-sDEVICE=" + constants.pdfDevice.getValue());
         gsArgs.add("-r" + constants.pdfResolution.getValue());
         gsArgs.add("-sOutputFile=" + temp);
-        if (id != null) {
-            gsArgs.add("-dFirstPage=" + id);
-            gsArgs.add("-dLastPage=" + id);
+        if (pages != null && !pages.isEmpty()) {
+            gsArgs.add("-dFirstPage=" + pages.first());
+            gsArgs.add("-dLastPage=" + pages.last());
         }
         gsArgs.add(imgFile.toString());
         logger.debug("gsArgs:{}", gsArgs);
@@ -250,10 +253,10 @@ public class PictureLoader
             new ProcessBuilder(gsArgs).start().waitFor();
 
             // Now load the temporary tiff file
-            if (id != null) {
-                return loadImageIO(temp.toFile(), 1, id);
+            if (pages != null && !pages.isEmpty()) {
+                return loadImageIO(temp.toFile(), pages, pages.first() - 1);
             } else {
-                return loadImageIO(temp.toFile(), null, null);
+                return loadImageIO(temp.toFile(), null, 0);
             }
         } catch (IOException | InterruptedException ex) {
             logger.warn("Error running Ghostscript " + gsArgs, ex);

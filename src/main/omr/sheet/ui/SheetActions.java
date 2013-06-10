@@ -378,7 +378,7 @@ public class SheetActions
             if (file.exists()) {
                 // Actually load the image file
                 Score score = new Score(file);
-                score.createPages();
+                score.createPages(null);
             } else {
                 logger.warn("File {} does not exist", file);
             }

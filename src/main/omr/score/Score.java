@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.SortedMap;
+import java.util.SortedSet;
 
 import javax.swing.JFrame;
 
@@ -211,12 +212,15 @@ public class Score
     /**
      * Create as many pages (and related sheets) as there are images
      * in the input image file.
+     *
+     * @param pages set of page ids (1-based) explicitly included.
+     *              if set is empty or null all pages are loaded
      */
-    public void createPages ()
+    public void createPages (SortedSet<Integer> pages)
     {
         SortedMap<Integer, RenderedImage> images = PictureLoader.loadImages(
                 imageFile,
-                null);
+                pages);
 
         if (images != null) {
             Page firstPage = null;

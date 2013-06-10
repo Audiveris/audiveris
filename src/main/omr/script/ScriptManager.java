@@ -32,8 +32,8 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 /**
- * Class {@code ScriptManager} is in charge of handling the storing and
- * loading of scripts.
+ * Class {@code ScriptManager} is in charge of handling the storing
+ * and loading of scripts.
  *
  * @author Hervé Bitteur
  */
@@ -44,10 +44,10 @@ public class ScriptManager
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(ScriptManager.class);
 
-    /** File extension for script files */
+    /** File extension for script files. */
     public static final String SCRIPT_EXTENSION = ".script.xml";
 
-    /** Un/marshalling context for use with JAXB */
+    /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
     //~ Constructors -----------------------------------------------------------
@@ -100,6 +100,11 @@ public class ScriptManager
     //------------//
     // loadAndRun //
     //------------//
+    /**
+     * Load and run the script described by the provided file.
+     *
+     * @param file the provided script file
+     */
     public void loadAndRun (File file)
     {
         Script script = null;

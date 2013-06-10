@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Class {@code CLI} parses and holds the parameters of the command
@@ -68,6 +70,9 @@ import java.util.Set;
  * (flagged by a &#64; sign) a file that lists image files (or even other files
  * list recursively).
  * A list file is a simple text file, with one image file name per line.</dd>
+ *
+ * <dt> <b>-pages (PAGE | &#64;PAGELIST)+</b> </dt> <dd> to specify some
+ * specific pages, counted from 1, to be loaded out of the input file.</dd>
  *
  * <dt> <b>-bench (DIRNAME | FILENAME)</b> </dt> <dd> to define an output
  * path to bench data file (or directory).
@@ -144,6 +149,10 @@ public class CLI
         "Defines a series of input image files to process",
         Card.MULTIPLE,
         "(FILENAME|@FILELIST)+"),
+        PAGES(
+        "Defines a set of specific pages to process",
+        Card.MULTIPLE,
+        "(PAGE|@PAGELIST)+"),
         BENCH(
         "Defines an output path to bench data file (or directory)",
         Card.SINGLE,
@@ -261,9 +270,9 @@ public class CLI
      * needed.
      *
      * @param item the item to add, which can be a plain string (which is
-     *             simply added to the list) or an indirection (a string starting by the '
-     * @'
-     * character) which denotes a file of items to be recursively added
+     *             simply added to the list) or an indirection
+     *             (a string starting by the '&#64;' character)
+     *             which denotes a file of items to be recursively added
      * @param list the collection of items to be augmented
      */
     private void addItem (String item,
@@ -350,6 +359,7 @@ public class CLI
         Parameters params = new Parameters();
         List<String> optionPairs = new ArrayList<>();
         List<String> stepStrings = new ArrayList<>();
+        List<String> pageStrings = new ArrayList<>();
 
         // Parse all arguments from command line
         for (int i = 0; i < args.length; i++) {
@@ -437,6 +447,11 @@ public class CLI
 
                     break;
 
+                case PAGES:
+                    addItem(token, pageStrings);
+
+                    break;
+
                 case BENCH:
                     params.benchPath = token;
 
@@ -489,6 +504,24 @@ public class CLI
                 printCommandLine();
                 stopUsage(
                         "Step name expected, found '" + stepString + "' instead");
+
+                return null;
+            }
+        }
+
+        // Check page ids
+        for (String pageString : pageStrings) {
+            try {
+                // Read a page id (counted from 1)
+                int id = Integer.parseInt(pageString);
+                if (params.pages == null) {
+                    params.pages = new TreeSet<>();
+                }
+                params.pages.add(id);
+            } catch (Exception ex) {
+                printCommandLine();
+                stopUsage(
+                        "Page id expected, found '" + pageString + "' instead");
 
                 return null;
             }
@@ -595,6 +628,9 @@ public class CLI
 
         /** The list of input image file names to load */
         final List<String> inputNames = new ArrayList<>();
+
+        /** The set of page ids to load */
+        SortedSet<Integer> pages = null;
 
         /** Where log data is to be saved */
         ///String logPath = null;

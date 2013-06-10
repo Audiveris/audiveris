@@ -175,27 +175,27 @@ public class Stepping
             final boolean finished = sheet.getCurrentStep() == null;
             SwingUtilities.invokeLater(
                     new Runnable()
-                    {
-                        @Override
-                        public void run ()
-                        {
-                            // Update sheet view for this step?
-                            if (finished) {
-                                step.displayUI(sheet);
-                                sheet.getAssembly().selectViewTab(step);
-                            }
+            {
+                @Override
+                public void run ()
+                {
+                    // Update sheet view for this step?
+                    if (finished) {
+                        step.displayUI(sheet);
+                        sheet.getAssembly().selectViewTab(step);
+                    }
 
-                            // Call attention to this sheet (only if displayed), 
-                            // so that score-dependent actions can get enabled.
-                            SheetsController ctrl = SheetsController.
-                                    getInstance();
-                            Sheet currentSheet = ctrl.getSelectedSheet();
+                    // Call attention to this sheet (only if displayed), 
+                    // so that score-dependent actions can get enabled.
+                    SheetsController ctrl = SheetsController.
+                            getInstance();
+                    Sheet currentSheet = ctrl.getSelectedSheet();
 
-                            if (currentSheet == sheet) {
-                                ctrl.callAboutSheet(sheet);
-                            }
-                        }
-                    });
+                    if (currentSheet == sheet) {
+                        ctrl.callAboutSheet(sheet);
+                    }
+                }
+            });
         }
     }
 
@@ -223,9 +223,11 @@ public class Stepping
      * (via the StepTask), and from the drag&drop handler.
      *
      * @param desiredSteps the desired steps
+     * @param pages        specific set of pages, if any
      * @param score        the processed score (and its sheets)
      */
     public static void processScore (Set<Step> desiredSteps,
+                                     SortedSet<Integer> pages,
                                      Score score)
     {
         logger.debug("processScore {} on {}", desiredSteps, score);
@@ -242,12 +244,12 @@ public class Stepping
         try {
             // Determine starting step and stopping step
             final Step loadStep = Steps.valueOf(Steps.LOAD);
-            Step start;
-            Step stop;
+            final Step start;
+            final Step stop;
 
             if (score.getPages().isEmpty()) {
                 // Create score pages if not yet done
-                score.createPages();
+                score.createPages(pages);
                 start = first;
                 stop = orderedSteps.isEmpty() ? first : orderedSteps.last();
             } else {
@@ -303,7 +305,7 @@ public class Stepping
                                         Score score)
     {
         if (!score.getFirstPage().getSheet().isDone(step)) {
-            processScore(Collections.singleton(step), score);
+            processScore(Collections.singleton(step), null, score);
         }
     }
 
@@ -460,19 +462,19 @@ public class Stepping
 
                     tasks.add(
                             new Callable<Void>()
-                            {
-                                @Override
-                                public Void call ()
-                                        throws StepException
-                                {
-                                    doSheetStepSet(
-                                            stepSet,
-                                            page.getSheet(),
-                                            null);
+                    {
+                        @Override
+                        public Void call ()
+                                throws StepException
+                        {
+                            doSheetStepSet(
+                                    stepSet,
+                                    page.getSheet(),
+                                    null);
 
-                                    return null;
-                                }
-                            });
+                            return null;
+                        }
+                    });
                 }
 
                 try {

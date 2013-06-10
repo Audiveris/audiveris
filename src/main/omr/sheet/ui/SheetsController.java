@@ -399,11 +399,20 @@ public class SheetsController
         Page page = sheet.getPage();
         Score score = page.getScore();
         int index = page.getIndex();
-        String label = score.isMultiPage()
-                ? ((page == score.getFirstPage()) ? sheet.getId()
-                : ("#" + index)) : score.getRadix();
-
-        return label;
+        
+        if (score.isMultiPage()) {
+            if (page == score.getFirstPage()) {
+                return score.getRadix() + "#" + index;
+            } else {
+                return "#" + index;
+            }
+        } else {
+            if (index != 1) {
+                return score.getRadix() + "#" + index;
+            } else {
+                return score.getRadix();
+            }
+        }
     }
 
     //------------------//

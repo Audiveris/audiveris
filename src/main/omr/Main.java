@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.SortedSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -238,8 +239,10 @@ public class Main
                         throws Exception
                 {
                     if (!parameters.desiredSteps.isEmpty()) {
-                        logger.info("Launching {} on {}",
-                                parameters.desiredSteps, name);
+                        logger.info("Launching {} on {} {}",
+                                parameters.desiredSteps, name,
+                                parameters.pages != null
+                                ? "pages " + parameters.pages : "");
                     }
 
                     if (file.exists()) {
@@ -248,12 +251,13 @@ public class Main
                         try {
                             Stepping.processScore(
                                     parameters.desiredSteps,
+                                    parameters.pages,
                                     score);
                         } catch (ProcessingCancellationException pce) {
                             logger.warn("Cancelled " + score, pce);
                             score.getBench().recordCancellation();
                             throw pce;
-                        } catch (Exception ex) {
+                        } catch (Throwable ex) {
                             logger.warn("Exception occurred", ex);
                             throw ex;
                         } finally {
@@ -301,6 +305,19 @@ public class Main
     public static String getMidiPath ()
     {
         return parameters.midiPath;
+    }
+
+    //-------------//
+    // getPagesIds //
+    //-------------//
+    /**
+     * Report the set of page ids if present on the CLI
+     *
+     * @return the CLI page ids, or null
+     */
+    public static SortedSet<Integer> getPageIds ()
+    {
+        return parameters.pages;
     }
 
     //--------------//

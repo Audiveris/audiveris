@@ -1897,7 +1897,7 @@
                     <p>Here is the summary you get when launching Audiveris with the 
                         <code>-help</code> argument:</p>
 
-                    <textarea id="cli-snippet" class="snippet" rows="28">
+                    <textarea id="cli-snippet" class="snippet" rows="29">
 Version:
    4.2.3374
 Arguments syntax:
@@ -1907,6 +1907,7 @@ Arguments syntax:
    [-option (KEY=VALUE|@OPTIONLIST)+]  Defines a series of key=value constant pairs
    [-script (SCRIPTNAME|@SCRIPTLIST)+] Defines a series of script files to run
    [-input (FILENAME|@FILELIST)+]      Defines a series of input image files to process
+   [-pages (PAGE|@PAGELIST)+]          Defines a set of specific pages to process
    [-bench (DIRNAME|FILENAME)]         Defines an output path to bench data file (or directory)
    [-print (DIRNAME|FILENAME)]         Defines an output path to PDF file (or directory)
    [-export (DIRNAME|FILENAME)]        Defines an output path to MusicXML file (or directory)
@@ -1970,6 +1971,12 @@ Known step names are in order (non case-sensitive):
                             image file or by referencing (flagged by an @ sign) a file
                             that lists image files (or even other files list recursively).
                             A list file is a simple text file, with one image file name
+                            per line.</dd>
+                        <dt>-pages (PAGE | @PAGELIST)+</dt>
+                        <dd>Specifies some specific pages to be loaded, either by naming the 
+                            page number (counted from 1) or by referencing (flagged by an @ sign)
+                            a file that lists page numbers (or even other page list recursively).
+                            A page file is a simple text file, with one page number
                             per line.</dd>
                         <dt>-bench (DIRNAME | FILENAME)</dt>
                         <dd>Defines an output path to bench data file (or directory).

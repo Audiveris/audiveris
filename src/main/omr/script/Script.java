@@ -21,15 +21,20 @@ import omr.sheet.Sheet;
 
 import omr.step.ProcessingCancellationException;
 
+import omr.util.TreeNode;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
+import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
@@ -52,14 +57,20 @@ public class Script
     private static final Logger logger = LoggerFactory.getLogger(Script.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** Score to which the script is applied */
+    /** Score to which the script is applied. */
     private Score score;
 
-    /** Full path to the Score image file */
+    /** Full path to the Score image file. */
     @XmlAttribute(name = "file")
     private final String scorePath;
 
-    /** Sequence of tasks that compose the script */
+    /** Collection of 1-based page ids explicitly included, if any. */
+    // To get all page numbers, space-separated, in a single element:
+    @XmlList
+    @XmlElement(name = "pages")
+    private SortedSet<Integer> pages; // = new TreeSet<>();
+
+    /** Sequence of tasks that compose the script. */
     @XmlElements({
         @XmlElement(name = "assign",
                     type = AssignTask.class),
@@ -92,7 +103,7 @@ public class Script
     })
     private final List<ScriptTask> tasks = new ArrayList<>();
 
-    /** Flag a script that needs to be stored */
+    /** Flag a script that needs to be stored. */
     private boolean modified;
 
     //~ Constructors -----------------------------------------------------------
@@ -100,7 +111,7 @@ public class Script
     // Script //
     //--------//
     /**
-     * Create a script
+     * Create a script.
      *
      * @param score the related score
      */
@@ -108,6 +119,13 @@ public class Script
     {
         this.score = score;
         scorePath = score.getImagePath();
+
+        // Store page ids
+        pages = new TreeSet<Integer>();
+        for (TreeNode pn : score.getPages()) {
+            Page page = (Page) pn;
+            pages.add(page.getIndex());
+        }
     }
 
     //--------//
@@ -124,7 +142,7 @@ public class Script
     // addTask //
     //---------//
     /**
-     * Add a task to the script
+     * Add a task to the script.
      *
      * @param task the task to add at the end of the current sequence
      */
@@ -139,11 +157,15 @@ public class Script
     // dump //
     //------//
     /**
-     * Meant for debug
+     * Meant for debug.
      */
     public void dump ()
     {
         logger.info(toString());
+
+        if (pages != null && !pages.isEmpty()) {
+            logger.info("Included pages: {}", pages);
+        }
 
         for (ScriptTask task : tasks) {
             logger.info(task.toString());
@@ -154,7 +176,7 @@ public class Script
     // getScore //
     //----------//
     /**
-     * Report the score this script is linked to
+     * Report the score this script is linked to.
      *
      * @return the score concerned
      */
@@ -199,7 +221,7 @@ public class Script
             }
 
             score = new Score(new File(scorePath));
-            score.createPages();
+            score.createPages(pages);
         }
 
         // Run the tasks in sequence
@@ -263,6 +285,10 @@ public class Script
             sb.append(" ").append(scorePath);
         } else if (score != null) {
             sb.append(" ").append(score.getRadix());
+        }
+
+        if (pages != null && !pages.isEmpty()) {
+            sb.append(" pages:").append(pages);
         }
 
         if (tasks != null) {

@@ -180,9 +180,9 @@ public class FileDropHandler
             final Step loadStep = Steps.valueOf(Steps.LOAD);
 
             if (target.equals(loadStep)) {
-                Stepping.processScore(Collections.EMPTY_SET, score);
+                Stepping.processScore(Collections.EMPTY_SET, null, score);
             } else {
-                Stepping.processScore(Collections.singleton(target), score);
+                Stepping.processScore(Collections.singleton(target), null, score);
             }
 
             return null;
