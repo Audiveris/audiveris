@@ -69,7 +69,7 @@ import java.util.Set;
  * </ul>
  *
  * TODO: Split this class into smaller modular classes, one per feature
- * since the browing of the score by itself is very cheap (.15 ms for a page)
+ * since the browsing of the score by itself is very cheap (.15 ms for a page)
  *
  * @author Hervé Bitteur
  */

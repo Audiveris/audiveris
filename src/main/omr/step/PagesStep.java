@@ -124,7 +124,7 @@ public class PagesStep
         if (!sheet.isDone(this)) {
             sheet.done(this);
 
-            // Reperform patterns once
+            // Reperform SYMBOLS once
             try {
                 Stepping.reprocessSheet(
                         Steps.valueOf(Steps.SYMBOLS),

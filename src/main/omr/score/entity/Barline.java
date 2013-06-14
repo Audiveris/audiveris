@@ -119,11 +119,12 @@ public class Barline
      */
     public int getLeftX ()
     {
-        PixelPoint topLeft = getSystem().getTopLeft();
+        PixelRectangle box = getBox();
+        int middleY = box.y + box.height/2;
 
         for (Glyph glyph : getGlyphs()) {
             if (linePredicate.check(glyph)) {
-                int x = glyph.getLine().xAtY(topLeft.y);
+                int x = glyph.getLine().xAtY(middleY);
 
                 return x;
             }
@@ -146,11 +147,12 @@ public class Barline
     public int getRightX ()
     {
         int right = 0;
-        PixelPoint topLeft = getSystem().getTopLeft();
+        PixelRectangle box = getBox();
+        int middleY = box.y + box.height/2;
 
         for (Glyph glyph : getGlyphs()) {
             if (glyph.isBar()) {
-                int x = glyph.getLine().xAtY(topLeft.y);
+                int x = glyph.getLine().xAtY(middleY);
 
                 if (x > right) {
                     right = x;

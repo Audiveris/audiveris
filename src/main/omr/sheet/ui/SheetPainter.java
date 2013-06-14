@@ -39,7 +39,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.util.ConcurrentModificationException;
-import omr.sheet.Scale;
 
 /**
  * Class {@code SheetPainter} defines for every node in Page hierarchy

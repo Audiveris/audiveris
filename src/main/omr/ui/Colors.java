@@ -118,13 +118,12 @@ public class Colors
     public static final Color TRANSLATION_LINK = Color.red;
 
     /** System kind of bracket */
-    public static final Color SYSTEM_BRACKET = Color.yellow;
+    public static final Color SYSTEM_BRACKET = new Color(255, 255, 0, alpha);
 
     /** Warping points */
     public static final Color WARP_POINT = Color.red;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Not meant to be instantiated.
      */

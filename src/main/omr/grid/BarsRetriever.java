@@ -1685,7 +1685,7 @@ public class BarsRetriever
                 "Maximum delta position between two overlapping filaments");
 
         Scale.Fraction maxCoordGap = new Scale.Fraction(
-                0.25,
+                0.5,
                 "Maximum delta coordinate for a gap between filaments");
 
         Scale.Fraction maxPosGap = new Scale.Fraction(

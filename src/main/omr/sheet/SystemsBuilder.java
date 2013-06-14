@@ -371,7 +371,7 @@ public class SystemsBuilder
         //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction yellowZoneHalfHeight = new Scale.Fraction(
-                1,
+                0.1,
                 "Half height of inter-system yellow zone");
 
     }

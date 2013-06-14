@@ -117,7 +117,7 @@ public class SystemTranslator
     {
         system = systemInfo.getScoreSystem();
         logger.debug("buildFinal starting from {}", system);
-
+        
         final Page page = system.getPage();
         final Sheet sheet = page.getSheet();
 
@@ -247,7 +247,7 @@ public class SystemTranslator
         {
             return Accidentals.contains(glyph.getShape());
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -274,7 +274,7 @@ public class SystemTranslator
         {
             return glyph.getShape() == Shape.ARPEGGIATO;
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -307,7 +307,7 @@ public class SystemTranslator
             return Articulations.contains(shape)
                    && (shape != Shape.ARPEGGIATO);
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -335,14 +335,14 @@ public class SystemTranslator
             // Link beams to chords, and populate beam groups
             BeamGroup.populate(measure);
         }
-
+        
         @Override
         public void computeLocation (Glyph glyph)
         {
             // Staff, measure and staff point need specific processing
             // We use the attached stem(s) to determine proper containment
             Glyph stem = glyph.getFirstStem();
-
+            
             if (stem != null) {
                 super.computeLocation(stem);
             } else {
@@ -352,13 +352,13 @@ public class SystemTranslator
                 super.computeLocation(glyph);
             }
         }
-
+        
         @Override
         public boolean isRelevant (Glyph glyph)
         {
             return Beams.contains(glyph.getShape());
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -387,7 +387,7 @@ public class SystemTranslator
             
             return shape == Shape.BRACE || shape == Shape.BRACKET;
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -413,11 +413,11 @@ public class SystemTranslator
         public boolean isRelevant (Glyph glyph)
         {
             Shape shape = glyph.getShape();
-
+            
             return Rests.contains(shape) || NoteHeads.contains(shape)
                    || Notes.contains(shape);
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -445,13 +445,13 @@ public class SystemTranslator
             // Sort the clefs according to containing staff
             Collections.sort(measure.getClefs(), MeasureNode.staffComparator);
         }
-
+        
         @Override
         public boolean isRelevant (Glyph glyph)
         {
             return Clefs.contains(glyph.getShape());
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -477,10 +477,10 @@ public class SystemTranslator
         public boolean isRelevant (Glyph glyph)
         {
             Shape shape = glyph.getShape();
-
+            
             return shape == Shape.CODA;
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -507,7 +507,7 @@ public class SystemTranslator
         {
             return Dots.contains(glyph.getShape());
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -533,11 +533,11 @@ public class SystemTranslator
         public boolean isRelevant (Glyph glyph)
         {
             Shape shape = glyph.getShape();
-
+            
             return Dynamics.contains(shape) && (shape != Shape.CRESCENDO)
                    && (shape != Shape.DECRESCENDO);
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -568,7 +568,7 @@ public class SystemTranslator
             return (glyph.getShape() == Shape.FERMATA)
                    || (glyph.getShape() == Shape.FERMATA_BELOW);
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -596,15 +596,15 @@ public class SystemTranslator
             if (logger.isDebugEnabled()) {
                 // Print flag/beam value of each chord
                 logger.debug("Flag/Beams for {}", measure.getContextString());
-
+                
                 for (TreeNode node : measure.getChords()) {
                     Chord chord = (Chord) node;
                     logger.debug(chord.toString());
-
+                    
                     if (!chord.getBeams().isEmpty()) {
                         logger.debug("   Beams:{}", chord.getBeams().size());
                     }
-
+                    
                     if (chord.getFlagsNumber() > 0) {
                         logger.debug("   Flags:{}", chord.getFlagsNumber());
                     }
@@ -616,13 +616,13 @@ public class SystemTranslator
                 }
             }
         }
-
+        
         @Override
         public void computeLocation (Glyph glyph)
         {
             // We use the attached stem(s) to determine proper containment
             Glyph stem = glyph.getStem(HorizontalSide.LEFT);
-
+            
             if (stem != null) {
                 super.computeLocation(stem);
             } else {
@@ -633,15 +633,15 @@ public class SystemTranslator
                 super.computeLocation(glyph);
             }
         }
-
+        
         @Override
         public boolean isRelevant (Glyph glyph)
         {
             Shape shape = glyph.getShape();
-
+            
             return Flags.contains(shape);
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -672,14 +672,14 @@ public class SystemTranslator
                 logger.warn("Error verifying keys for " + system, ex);
             }
         }
-
+        
         @Override
         public boolean isRelevant (Glyph glyph)
         {
             return (glyph.getShape().isSharpBased())
                    || (glyph.getShape().isFlatBased());
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -698,7 +698,7 @@ public class SystemTranslator
     private class MeasureTranslator
             extends Translator
     {
-
+        
         SlotBuilder slotBuilder = new SlotBuilder(system);
 
         //~ Constructors -------------------------------------------------------
@@ -719,13 +719,13 @@ public class SystemTranslator
 
             // Make sure all barline glyphs point to it
             Barline barline = measure.getBarline();
-
+            
             if (barline != null) {
                 barline.translateGlyphs();
             }
-
+            
         }
-
+        
         @Override
         public void completeSystem ()
         {
@@ -735,24 +735,24 @@ public class SystemTranslator
             for (TreeNode pn : system.getParts()) {
                 SystemPart part = (SystemPart) pn;
                 Barline barline = part.getStartingBarline();
-
+                
                 if (barline != null) {
                     barline.translateGlyphs();
                 }
             }
         }
-
+        
         @Override
         public boolean isRelevant (Glyph glyph)
         {
             return false;
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
         }
-
+        
         @Override
         protected void translateGlyphs ()
         {
@@ -777,12 +777,12 @@ public class SystemTranslator
         public boolean isRelevant (Glyph glyph)
         {
             final Shape shape = glyph.getShape();
-
+            
             return (shape == Shape.TR) || (shape == Shape.TURN)
                    || (shape == Shape.MORDENT)
                    || (shape == Shape.INVERTED_MORDENT);
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -808,11 +808,11 @@ public class SystemTranslator
         public boolean isRelevant (Glyph glyph)
         {
             Shape shape = glyph.getShape();
-
+            
             return (shape == Shape.PEDAL_MARK)
                    || (shape == Shape.PEDAL_UP_MARK);
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -838,10 +838,10 @@ public class SystemTranslator
         public boolean isRelevant (Glyph glyph)
         {
             Shape shape = glyph.getShape();
-
+            
             return shape == Shape.SEGNO;
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -867,13 +867,13 @@ public class SystemTranslator
         public void computeLocation (Glyph glyph)
         {
         }
-
+        
         @Override
         public boolean isRelevant (Glyph glyph)
         {
             return glyph.getShape() == Shape.SLUR;
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -904,20 +904,20 @@ public class SystemTranslator
             for (TextLine sentence : system.getInfo().getSentences()) {
                 Text.populate(sentence, sentence.getLocation());
             }
-
+            
             for (TreeNode node : system.getParts()) {
                 SystemPart part = (SystemPart) node;
                 part.populateLyricsLines();
                 part.mapSyllables();
             }
         }
-
+        
         @Override
         public boolean isRelevant (Glyph glyph)
         {
             return false; // Text is not handled at glyph but system level
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -944,7 +944,7 @@ public class SystemTranslator
         {
             return Times.contains(glyph.getShape());
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -975,7 +975,7 @@ public class SystemTranslator
         {
             super();
             this.name = name;
-
+            
             logger.debug("Creating {}", this);
         }
 
@@ -1003,10 +1003,10 @@ public class SystemTranslator
         {
             for (TreeNode node : system.getParts()) {
                 SystemPart part = (SystemPart) node;
-
+                
                 for (TreeNode mn : part.getMeasures()) {
                     Measure measure = (Measure) mn;
-
+                    
                     try {
                         browse(measure);
                     } catch (Exception ex) {
@@ -1040,7 +1040,7 @@ public class SystemTranslator
          * @return true if the glyph at hand is relevant for the translator
          */
         public abstract boolean isRelevant (Glyph glyph);
-
+        
         @Override
         public String toString ()
         {
@@ -1054,7 +1054,7 @@ public class SystemTranslator
         {
             for (Glyph glyph : system.getInfo().getGlyphs()) {
                 Shape shape = glyph.getShape();
-
+                
                 if (glyph.isWellKnown()
                     && (shape != Shape.CLUTTER)
                     && !glyph.isTranslated()) {
@@ -1062,7 +1062,7 @@ public class SystemTranslator
                     if (isRelevant(glyph)) {
                         // Determine part/staff/measure containment
                         computeLocation(glyph);
-
+                        
                         try {
                             // Perform the translation on this glyph
                             translate(glyph);
@@ -1097,7 +1097,7 @@ public class SystemTranslator
         {
             return Tuplets.contains(glyph.getShape());
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {
@@ -1129,15 +1129,15 @@ public class SystemTranslator
             currentPart = currentStaff.getPart();
             currentMeasure = currentPart.getMeasureAt(currentCenter);
         }
-
+        
         @Override
         public boolean isRelevant (Glyph glyph)
         {
             Shape shape = glyph.getShape();
-
+            
             return (shape == Shape.CRESCENDO) || (shape == Shape.DECRESCENDO);
         }
-
+        
         @Override
         public void translate (Glyph glyph)
         {

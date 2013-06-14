@@ -127,6 +127,11 @@ public class PictureView
 
             // Render the recognized score entities?
             if (painting.isOutputPainting()) {
+                if (sheet.getTargetBuilder() != null) {
+                    sheet.getTargetBuilder()
+                         .renderSystems(g); // TODO: Temporary 
+                }
+                
                 boolean mixed = painting.isInputPainting();
                 sheet.getPage()
                      .accept(
@@ -136,11 +141,6 @@ public class PictureView
                         mixed ? false : painting.isVoicePainting(),
                         true,
                         false));
-
-                if (sheet.getTargetBuilder() != null) {
-                    sheet.getTargetBuilder()
-                         .renderSystems(g); // TODO: Temporary 
-                }
             } else {
                 if (sheet.getTargetBuilder() != null) {
                     sheet.getTargetBuilder()
