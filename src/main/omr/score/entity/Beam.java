@@ -40,14 +40,14 @@ import java.util.List;
 import java.util.SortedSet;
 
 /**
- * <div style="float: right;">
- * <img src="doc-files/Beam.jpg" alt="diagram">
- * </div>
- *
  * Class {@code Beam} represents a beam "line", that may be composed of
  * several BeamItem "segments", aligned horizontally one after the
  * other, along the same line.
  * It can degenerate to just a single beam hook.
+ *
+ * <div style="float: right;">
+ * <img src="doc-files/Beam.jpg" alt="diagram">
+ * </div>
  *
  * @author Hervé Bitteur
  */

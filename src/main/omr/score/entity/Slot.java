@@ -31,10 +31,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * <div style="float: right;">
- * <img src="doc-files/Slot.png" alt="diagram">
- * </div>
- *
  * Class {@code Slot} represents a roughly defined time slot within a
  * measure, to gather all chords that start at the same time.
  *
@@ -42,6 +38,10 @@ import java.util.TreeMap;
  *
  * <p>The slot embraces all the staves of its part measure. Perhaps we should
  * consider merging slots between parts as well?
+ *
+ * <div style="float: right;">
+ * <img src="doc-files/Slot.png" alt="diagram">
+ * </div>
  *
  * @author Hervé Bitteur
  */

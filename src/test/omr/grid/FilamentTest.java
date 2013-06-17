@@ -18,8 +18,6 @@ import omr.lag.Section;
 import omr.run.Orientation;
 import omr.run.Run;
 
-import omr.score.common.PixelPoint;
-
 import omr.sheet.Scale;
 
 import org.junit.After;
@@ -29,22 +27,25 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.awt.Point;
 import java.awt.geom.Point2D;
 
 /**
  * Unitary tests for {@link Filament} class.
+ *
  * @author Hervé Bitteur
  */
 public class FilamentTest
 {
     //~ Instance fields --------------------------------------------------------
 
-    private Scale       scale = new Scale(20, 3);
+    private Scale scale = new Scale(20, 3);
+
     private Orientation orientation;
-    private Lag         lag;
+
+    private Lag lag;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new FilamentTest object.
      */
@@ -54,31 +55,30 @@ public class FilamentTest
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    @BeforeClass
-    public static void setUpClass ()
-        throws Exception
-    {
-        System.out.println("setUpClass");
-    }
-
-    @AfterClass
-    public static void tearDownClass ()
-        throws Exception
-    {
-        System.out.println("tearDownClass");
-    }
-
     @Before
     public void setUp ()
     {
         System.out.println("setUp");
     }
 
+    @BeforeClass
+    public static void setUpClass ()
+            throws Exception
+    {
+        System.out.println("setUpClass");
+    }
+
     @After
     public void tearDown ()
     {
         System.out.println("tearDown");
+    }
+
+    @AfterClass
+    public static void tearDownClass ()
+            throws Exception
+    {
+        System.out.println("tearDownClass");
     }
 
     /**
@@ -93,7 +93,7 @@ public class FilamentTest
             setOrientation(ori);
 
             Filament instance = createNakedInstance();
-            Section  section = createSectionOne();
+            Section section = createSectionOne();
             instance.addSection(section);
             System.out.println(instance.asciiDrawing());
             System.out.println(instance.dumpOf());
@@ -112,9 +112,9 @@ public class FilamentTest
             setOrientation(ori);
 
             Filament instance = createFil();
-            int      id = 2;
-            boolean  expResult = true;
-            boolean  result = instance.containsSection(id);
+            int id = 2;
+            boolean expResult = true;
+            boolean result = instance.containsSection(id);
             assertEquals(expResult, result);
         }
     }
@@ -230,9 +230,9 @@ public class FilamentTest
             setOrientation(ori);
 
             Filament instance = createFil();
-            Point2D  expResult = orientation.absolute(
-                new Point2D.Double(100, 25.5));
-            Point2D  result = instance.getStartPoint(Orientation.HORIZONTAL);
+            Point2D expResult = orientation.absolute(
+                    new Point2D.Double(100, 25.5));
+            Point2D result = instance.getStartPoint(Orientation.HORIZONTAL);
             instance.asciiDrawing();
             assertEquals(expResult, result);
         }
@@ -250,9 +250,9 @@ public class FilamentTest
             setOrientation(ori);
 
             Filament instance = createFil();
-            Point2D  expResult = orientation.absolute(
-                new Point2D.Double(171, 27.8));
-            Point2D  result = instance.getStopPoint(Orientation.HORIZONTAL);
+            Point2D expResult = orientation.absolute(
+                    new Point2D.Double(171, 27.8));
+            Point2D result = instance.getStopPoint(Orientation.HORIZONTAL);
             assertEquals(expResult.getX(), result.getX(), 0.1);
             assertEquals(expResult.getY(), result.getY(), 0.1);
         }
@@ -274,8 +274,8 @@ public class FilamentTest
             Filament instance = createFil();
             instance.asciiDrawing();
 
-            int    coord = 100;
-            int    expResult = 2;
+            int coord = 100;
+            int expResult = 2;
             double result = instance.getThicknessAt(coord, orientation);
             assertEquals(expResult, result, delta);
 
@@ -377,8 +377,8 @@ public class FilamentTest
             instance.stealSections(createFilThree());
             instance.stealSections(createFilFour());
 
-            PixelPoint pStart = new PixelPoint(80, 26);
-            Point2D    pStop = instance.getStopPoint(Orientation.HORIZONTAL);
+            Point pStart = new Point(80, 26);
+            Point2D pStop = instance.getStopPoint(Orientation.HORIZONTAL);
             instance.setEndingPoints(pStart, pStop);
 
             instance.asciiDrawing();
@@ -432,12 +432,6 @@ public class FilamentTest
         }
     }
 
-    private void setOrientation (Orientation orientation)
-    {
-        this.orientation = orientation;
-        System.out.println("Orientation: " + orientation);
-    }
-
     private Filament createFil ()
     {
         Filament fil = createNakedInstance();
@@ -450,10 +444,10 @@ public class FilamentTest
 
     private Filament createFilFour ()
     {
-        Filament  fil = createNakedInstance();
+        Filament fil = createNakedInstance();
         final int level = 127;
-        Run       r1 = new Run(260, 5, level);
-        Section   s = lag.createSection(35, r1);
+        Run r1 = new Run(260, 5, level);
+        Section s = lag.createSection(35, r1);
         fil.addSection(s);
 
         return fil;
@@ -461,10 +455,10 @@ public class FilamentTest
 
     private Filament createFilThree ()
     {
-        Filament  fil = createNakedInstance();
+        Filament fil = createNakedInstance();
         final int level = 127;
-        Run       r1 = new Run(227, 35, level);
-        Section   s = lag.createSection(37, r1);
+        Run r1 = new Run(227, 35, level);
+        Section s = lag.createSection(37, r1);
         fil.addSection(s);
 
         return fil;
@@ -472,11 +466,11 @@ public class FilamentTest
 
     private Filament createFilTwo ()
     {
-        Filament  fil = createNakedInstance();
+        Filament fil = createNakedInstance();
         final int level = 127;
-        Run       r1 = new Run(200, 5, level);
-        Section   s = lag.createSection(34, r1);
-        Run       r2 = new Run(198, 10, level);
+        Run r1 = new Run(200, 5, level);
+        Section s = lag.createSection(34, r1);
+        Run r2 = new Run(198, 10, level);
         s.append(r2);
         fil.addSection(s);
 
@@ -493,9 +487,9 @@ public class FilamentTest
     private Section createSectionOne ()
     {
         final int level = 127;
-        Run       r1 = new Run(100, 10, level);
-        Section   s = lag.createSection(25, r1);
-        Run       r2 = new Run(100, 20, level);
+        Run r1 = new Run(100, 10, level);
+        Section s = lag.createSection(25, r1);
+        Run r2 = new Run(100, 20, level);
         s.append(r2);
 
         //s.dumpOf();
@@ -505,9 +499,9 @@ public class FilamentTest
     private Section createSectionThree ()
     {
         final int level = 127;
-        Run       r1 = new Run(160, 10, level);
-        Section   s = lag.createSection(27, r1);
-        Run       r2 = new Run(160, 12, level);
+        Run r1 = new Run(160, 10, level);
+        Section s = lag.createSection(27, r1);
+        Run r2 = new Run(160, 12, level);
         s.append(r2);
 
         Run r3 = new Run(160, 5, level);
@@ -520,9 +514,9 @@ public class FilamentTest
     private Section createSectionTwo ()
     {
         final int level = 127;
-        Run       r1 = new Run(130, 20, level);
-        Section   s = lag.createSection(30, r1);
-        Run       r2 = new Run(131, 20, level);
+        Run r1 = new Run(130, 20, level);
+        Section s = lag.createSection(30, r1);
+        Run r2 = new Run(131, 20, level);
         s.append(r2);
 
         Run r3 = new Run(132, 20, level);
@@ -530,5 +524,11 @@ public class FilamentTest
 
         //s.dumpOf();
         return s;
+    }
+
+    private void setOrientation (Orientation orientation)
+    {
+        this.orientation = orientation;
+        System.out.println("Orientation: " + orientation);
     }
 }

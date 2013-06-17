@@ -17,7 +17,6 @@ import omr.glyph.facets.Glyph;
 
 import omr.math.Rational;
 
-import omr.score.common.DurationFactor;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;

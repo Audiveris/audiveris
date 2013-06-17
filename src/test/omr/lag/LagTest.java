@@ -17,9 +17,6 @@ import omr.run.Orientation;
 import omr.run.Run;
 import omr.run.RunsTable;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-
 import omr.util.BaseTestCase;
 import static junit.framework.Assert.*;
 
@@ -27,7 +24,10 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Class <code>LagTest</code> gathers some basic tests to exercise unitary
@@ -101,7 +101,7 @@ public class LagTest
             180,
             createRun(hTable, 180, 100, 10));
 
-        PixelRectangle roi = new PixelRectangle(0, 0, 20, 20);
+        Rectangle roi = new Rectangle(0, 0, 20, 20);
         Point          pt = s2.getRectangleCentroid(roi);
         System.out.println("roi=" + roi + " pt=" + pt);
         assertNull("External roi should give a null centroid", pt);
@@ -119,18 +119,18 @@ public class LagTest
         s.append(createRun(hTable, p++, 102, 20));
         s.drawAscii();
 
-        PixelRectangle roi = new PixelRectangle(100, 180, 1, 1);
+        Rectangle roi = new Rectangle(100, 180, 1, 1);
         Point          pt = s.getRectangleCentroid(roi);
         System.out.println("roi=" + roi + " pt=" + pt);
 
-        PixelPoint expected = new PixelPoint(100, 180);
+        Point expected = new Point(100, 180);
         assertEquals("Wrong pt", expected, pt);
 
-        roi = new PixelRectangle(102, 178, 3, 5);
+        roi = new Rectangle(102, 178, 3, 5);
         pt = s.getRectangleCentroid(roi);
         System.out.println("roi=" + roi + " pt=" + pt);
 
-        expected = new PixelPoint(103, 181);
+        expected = new Point(103, 181);
         assertEquals("Wrong pt", expected, pt);
     }
 
@@ -142,7 +142,7 @@ public class LagTest
         Section s2 = hLag.createSection(180, createRun(hTable, 180, 100, 10));
 
         try {
-            PixelRectangle roi = null;
+            Rectangle roi = null;
             System.out.println("roi=" + roi);
 
             Point pt = s2.getRectangleCentroid(roi);
@@ -166,11 +166,11 @@ public class LagTest
         s.append(createRun(vTable, p++, 102, 20));
         s.drawAscii();
 
-        PixelRectangle roi = new PixelRectangle(48, 102, 5, 3);
+        Rectangle roi = new Rectangle(48, 102, 5, 3);
         Point          pt = s.getRectangleCentroid(roi);
         System.out.println("roi=" + roi + " pt=" + pt);
 
-        PixelPoint expected = new PixelPoint(51, 103);
+        Point expected = new Point(51, 103);
         assertEquals("Wrong pt", expected, pt);
     }
 
@@ -319,7 +319,7 @@ public class LagTest
     public void testHabsolute ()
     {
         Point      cp = new Point(12, 34);
-        PixelPoint xy = hLag.getOrientation()
+        Point xy = hLag.getOrientation()
                             .absolute(cp);
         assertEquals("Non expected switch.", cp, xy);
     }
@@ -329,7 +329,7 @@ public class LagTest
     //---------------//
     public void testHoriented ()
     {
-        PixelPoint xy = new PixelPoint(12, 34);
+        Point xy = new Point(12, 34);
         Point      cp = hLag.getOrientation()
                             .oriented(xy);
         assertEquals("Non expected switch.", cp, xy);
@@ -349,15 +349,15 @@ public class LagTest
 
         Set<Section> founds = null;
 
-        founds = hLag.lookupIntersectedSections(new PixelRectangle(0, 0, 0, 0));
+        founds = hLag.lookupIntersectedSections(new Rectangle(0, 0, 0, 0));
         assertEquals("No section.", 0, founds.size());
 
         founds = hLag.lookupIntersectedSections(
-            new PixelRectangle(100, 180, 1, 1));
+            new Rectangle(100, 180, 1, 1));
         assertEquals("One section.", 1, founds.size());
 
         founds = hLag.lookupIntersectedSections(
-            new PixelRectangle(0, 180, 200, 21));
+            new Rectangle(0, 180, 200, 21));
         assertEquals("Two sections.", 2, founds.size());
     }
 
@@ -375,13 +375,13 @@ public class LagTest
 
         Set<Section> founds = null;
 
-        founds = hLag.lookupSections(new PixelRectangle(0, 0, 0, 0));
+        founds = hLag.lookupSections(new Rectangle(0, 0, 0, 0));
         assertEquals("No section.", 0, founds.size());
 
-        founds = hLag.lookupSections(new PixelRectangle(100, 180, 21, 2));
+        founds = hLag.lookupSections(new Rectangle(100, 180, 21, 2));
         assertEquals("One section.", 1, founds.size());
 
-        founds = hLag.lookupSections(new PixelRectangle(100, 180, 85, 23));
+        founds = hLag.lookupSections(new Rectangle(100, 180, 85, 23));
         assertEquals("Two sections.", 2, founds.size());
     }
 
@@ -399,13 +399,13 @@ public class LagTest
 
         Set<Section> founds = null;
 
-        founds = vLag.lookupSections(new PixelRectangle(0, 0, 0, 0));
+        founds = vLag.lookupSections(new Rectangle(0, 0, 0, 0));
         assertEquals("No section.", 0, founds.size());
 
-        founds = vLag.lookupSections(new PixelRectangle(180, 100, 2, 21));
+        founds = vLag.lookupSections(new Rectangle(180, 100, 2, 21));
         assertEquals("One section.", 1, founds.size());
 
-        founds = vLag.lookupSections(new PixelRectangle(180, 100, 23, 85));
+        founds = vLag.lookupSections(new Rectangle(180, 100, 23, 85));
         assertEquals("Two sections.", 2, founds.size());
     }
 
@@ -466,7 +466,7 @@ public class LagTest
         s1.append(createRun(vTable, 5, 1, 6));
         dump("Before translation", s1);
 
-        PixelPoint vector = new PixelPoint(10, 2);
+        Point vector = new Point(10, 2);
         s1.translate(vector);
         dump("After translation", s1);
     }
@@ -492,7 +492,7 @@ public class LagTest
         s1.append(createRun(vTable, 5, 1, 6));
         s1.drawAscii();
 
-        Roi                roi = new BasicRoi(new PixelRectangle(0, 0, 6, 7));
+        Roi                roi = new BasicRoi(new Rectangle(0, 0, 6, 7));
 
         String             expV = "{Histogram 1-5 size:5 [1:5 2:3 3:2 4:1 5:6]}";
         String             expH = "{Histogram 0-6 size:7 [0:1 1:4 2:4 3:2 4:2 5:2 6:2]}";
@@ -551,7 +551,7 @@ public class LagTest
     public void testVabsolute ()
     {
         Point      cp = new Point(12, 34);
-        PixelPoint xy = vLag.getOrientation()
+        Point xy = vLag.getOrientation()
                             .absolute(cp);
         assertEquals("Expected switch.", new Point(cp.y, cp.x), xy);
     }
@@ -561,7 +561,7 @@ public class LagTest
     //---------------//
     public void testVoriented ()
     {
-        PixelPoint xy = new PixelPoint(12, 34);
+        Point xy = new Point(12, 34);
         Point      cp = vLag.getOrientation()
                             .absolute(xy);
         assertEquals("Expected switch.", new Point(cp.y, cp.x), xy);

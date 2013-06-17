@@ -20,7 +20,6 @@ import omr.glyph.facets.Glyph;
 
 import omr.math.Rational;
 
-import omr.score.common.DurationFactor;
 import omr.score.entity.Voice.VoiceChord;
 import omr.score.visitor.ScoreVisitor;
 
