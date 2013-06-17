@@ -11,17 +11,17 @@
 // </editor-fold>
 package omr.score.ui;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Class {@code ScoreController} is only a convenient way to retrieve
- * the current score (which contains the sheet currently selected by 
+ * the current score (which contains the sheet currently selected by
  * the user).
  *
  * @author Hervé Bitteur
@@ -32,10 +32,9 @@ public class ScoreController
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        ScoreController.class);
+            ScoreController.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // ScoreController //
     //-----------------//
@@ -47,7 +46,6 @@ public class ScoreController
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------------//
     // getCurrentScore //
     //-----------------//

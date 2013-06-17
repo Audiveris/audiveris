@@ -14,14 +14,14 @@ package omr.lag;
 import omr.run.Run;
 
 /**
- * Class {@code JunctionRatioPolicy} defines a junction policy based on the
- * ratio between the length of the candidate run and the mean length of the
- * section runs so far.
+ * Class {@code JunctionRatioPolicy} defines a junction policy based
+ * on the ratio between the length of the candidate run and the mean
+ * length of the section runs so far.
  *
  * @author Hervé Bitteur
  */
 public class JunctionRatioPolicy
-    implements JunctionPolicy
+        implements JunctionPolicy
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -36,15 +36,15 @@ public class JunctionRatioPolicy
     private final double minLengthRatio;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------------//
     // JunctionRatioPolicy //
     //---------------------//
     /**
      * Creates a policy based on ratio of run length versus mean length
      * of section runs.
+     *
      * @param maxLengthRatio maximum difference ratio to continue the
-     * current section
+     *                       current section
      */
     public JunctionRatioPolicy (double maxLengthRatio)
     {
@@ -53,7 +53,6 @@ public class JunctionRatioPolicy
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // consistentRun //
     //---------------//
@@ -61,12 +60,13 @@ public class JunctionRatioPolicy
      * Check whether the Run is consistent with the provided Section,
      * according to this junction policy, based on run length and mean
      * section run length.
-     * @param run the Run candidate
+     *
+     * @param run     the Run candidate
      * @param section the potentially hosting Section
      * @return true if consistent, false otherwise
      */
     @Override
-    public boolean consistentRun (Run     run,
+    public boolean consistentRun (Run run,
                                   Section section)
     {
         // Check is based on ratio of lengths
@@ -81,7 +81,7 @@ public class JunctionRatioPolicy
     @Override
     public String toString ()
     {
-        return "{JunctionRatioPolicy" + " maxLengthRatio=" + maxLengthRatio +
-               " minLengthRatio=" + minLengthRatio + "}";
+        return "{JunctionRatioPolicy" + " maxLengthRatio=" + maxLengthRatio
+               + " minLengthRatio=" + minLengthRatio + "}";
     }
 }

@@ -13,9 +13,6 @@ package omr.grid;
 
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.GeoPath;
 
 import omr.sheet.Scale;
@@ -23,6 +20,9 @@ import omr.sheet.Sheet;
 
 import omr.util.Navigable;
 import static omr.util.VerticalSide.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
@@ -33,7 +33,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code StaffManager} handles physical information about all 
+ * Class {@code StaffManager} handles physical information about all
  * the staves of a given sheet.
  *
  * @author Hervé Bitteur
@@ -129,7 +129,7 @@ public class StaffManager
                         middle.lineTo(x, y);
                     }
                 }
-                
+
                 // Point on right side
                 middle.lineTo(width, (prevLine.yAt(width) + nextLine.yAt(width)) / 2);
 
@@ -281,6 +281,7 @@ public class StaffManager
     //-------------//
     // getPartTops //
     //-------------//
+
     /**
      * @return the partTops
      */

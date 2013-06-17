@@ -44,7 +44,8 @@ public abstract class Worker<T>
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    protected static final Logger logger = LoggerFactory.getLogger(Worker.class);
+    protected static final Logger logger = LoggerFactory.getLogger(
+            Worker.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The work result, accessed only via getValue() and setValue() */
@@ -76,7 +77,8 @@ public abstract class Worker<T>
                     setValue(construct());
                 } finally {
                     threadVar.clear();
-                    logger.debug("{} finished after {} ms",
+                    logger.debug(
+                            "{} finished after {} ms",
                             Worker.this.getClass().getName(),
                             System.currentTimeMillis() - startTime);
                 }
@@ -136,10 +138,9 @@ public abstract class Worker<T>
             try {
                 t.join();
             } catch (InterruptedException e) {
-                Thread.currentThread().
-                        interrupt(); // propagate
-                logger.debug("{} interrupted", getClass().
-                        getName());
+                Thread.currentThread()
+                        .interrupt(); // propagate
+                logger.debug("{} interrupted", getClass().getName());
 
                 return null;
             }
@@ -155,8 +156,7 @@ public abstract class Worker<T>
      */
     public void interrupt ()
     {
-        logger.debug("{} interrupt", getClass().
-                getName());
+        logger.debug("{} interrupt", getClass().getName());
 
         Thread t = threadVar.get();
 
@@ -179,8 +179,7 @@ public abstract class Worker<T>
 
         if (t != null) {
             t.start();
-            logger.debug("{} started", getClass().
-                    getName());
+            logger.debug("{} started", getClass().getName());
         }
     }
 

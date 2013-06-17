@@ -14,10 +14,10 @@ package omr.score.entity;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.util.Param;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.util.Param;
 
 /**
  * Class {@code Tempo} handles the default tempo value.

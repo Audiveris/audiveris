@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.moments;
 
-
 /**
  * Class {@code LegendreMoments} defines a descriptor for orthogonal
  * Legendre moments.
@@ -19,10 +18,11 @@ package omr.moments;
  * @author Hervé Bitteur
  */
 public interface LegendreMoments
-    extends OrthogonalMoments<LegendreMoments>
+        extends OrthogonalMoments<LegendreMoments>
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Chosen polynomial order. */
     public static final int ORDER = 10;
+
 }

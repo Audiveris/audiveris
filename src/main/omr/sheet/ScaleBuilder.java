@@ -17,9 +17,6 @@ import static omr.WellKnowns.LINE_SEPARATOR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Histogram;
 import omr.math.Histogram.MaxEntry;
 import omr.math.Histogram.PeakEntry;
@@ -45,6 +42,9 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.util.Arrays;
@@ -478,9 +478,9 @@ public class ScaleBuilder
                 logger.info("Merged two close background peaks");
             }
         }
-        
+
         sb.append(" back:").append(backPeak);
-        
+
         if (secondBackPeak != null) {
             sb.append(" secondBack:").append(secondBackPeak);
         }

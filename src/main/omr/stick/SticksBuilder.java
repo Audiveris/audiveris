@@ -28,15 +28,13 @@ import omr.lag.BasicSection;
 import omr.lag.Section;
 import omr.lag.Sections;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.Orientation;
-
-import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 import static omr.stick.SectionRole.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -516,15 +514,15 @@ public class SticksBuilder
         Collections.sort(
                 sticks,
                 new Comparator<Glyph>()
-                {
-                    @Override
-                    public int compare (Glyph s1,
-                                        Glyph s2)
-                    {
-                        return s1.getMidPos(orientation)
-                               - s2.getMidPos(orientation);
-                    }
-                });
+        {
+            @Override
+            public int compare (Glyph s1,
+                                Glyph s2)
+            {
+                return s1.getMidPos(orientation)
+                       - s2.getMidPos(orientation);
+            }
+        });
 
         // Then use position to narrow the tests
         List<Glyph> removals = new ArrayList<>();
@@ -541,7 +539,7 @@ public class SticksBuilder
                         stick.getBounds());
                 stickBounds.grow(params.maxDeltaCoord, params.maxDeltaPos);
 
-                PixelRectangle stickBox = orientation.absolute(stickBounds);
+                Rectangle stickBox = orientation.absolute(stickBounds);
 
                 // final int maxPos = stick.getMidPos() + (20 * maxDeltaPos);
                 merging = false;
@@ -659,8 +657,8 @@ public class SticksBuilder
      * @param layer     the current layer number of the section, regarding the
      *                  stick
      * @param direction the direction to look into, which is coded as
-     *                  <b>+1</b> for looking at outgoing edges, and
-     *                  <b>-1</b> for looking at incoming edges.
+     * <b>+1</b> for looking at outgoing edges, and
+     * <b>-1</b> for looking at incoming edges.
      */
     private void collectNeighborsOf (Section section,
                                      int layer,

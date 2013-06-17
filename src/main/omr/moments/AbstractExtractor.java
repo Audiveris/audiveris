@@ -91,8 +91,8 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
     //----------------//
     // extractMoments //
     //----------------//
-    /** 
-     * Actual extraction core, to be provided by subclasses. 
+    /**
+     * Actual extraction core, to be provided by subclasses.
      */
     protected abstract void extractMoments ();
 

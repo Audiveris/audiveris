@@ -13,21 +13,21 @@ package omr.score.entity;
 
 import omr.grid.StaffInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Iterator;
 
 /**
  * Class {@code Staff} handles a staff in a system part.
  * It is useful for its geometric parameters (topLeft corner, width and height,
- * ability to convert between a PixelPoint ordinate and a staff-based
+ * ability to convert between a Point ordinate and a staff-based
  * pitchPosition.
  * But it contains no further entities, the Measure's are the actual containers.
  * Within a measure, some entities may be assigned a staff, more like a tag than
@@ -45,7 +45,7 @@ public class Staff
 
     //~ Instance fields --------------------------------------------------------
     /** Top left corner of the staff (relative to the page top left corner) */
-    private final PixelPoint topLeft;
+    private final Point topLeft;
 
     /** Related info from sheet analysis */
     private StaffInfo info;
@@ -72,7 +72,7 @@ public class Staff
      */
     public Staff (StaffInfo info,
                   SystemPart part,
-                  PixelPoint topLeft,
+                  Point topLeft,
                   int width,
                   int height)
     {
@@ -86,7 +86,7 @@ public class Staff
         }
 
         if (topLeft != null) {
-            setBox(new PixelRectangle(topLeft.x, topLeft.y, width, height));
+            setBox(new Rectangle(topLeft.x, topLeft.y, width, height));
             getCenter();
         }
 
@@ -152,7 +152,7 @@ public class Staff
      *
      * @return the top left coordinates
      */
-    public PixelPoint getTopLeft ()
+    public Point getTopLeft ()
     {
         return topLeft;
     }
@@ -184,7 +184,7 @@ public class Staff
      * @param pt the pixel point
      * @return the pitch position
      */
-    public double pitchPositionOf (PixelPoint pt)
+    public double pitchPositionOf (Point pt)
     {
         return info.pitchPositionOf(pt);
     }
@@ -215,7 +215,7 @@ public class Staff
      */
     public void setWidth (int width)
     {
-        PixelRectangle newBox = getBox();
+        Rectangle newBox = getBox();
         reset();
 
         newBox.width = width;

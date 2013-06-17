@@ -20,7 +20,7 @@ import java.util.Scanner;
  * @author Hervé Bitteur
  */
 public class LDoubleField
-    extends LTextField
+        extends LTextField
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -28,12 +28,10 @@ public class LDoubleField
     public static final String DEFAULT_FORMAT = "%.5f";
 
     //~ Instance fields --------------------------------------------------------
-
     /** Specific display format, if any */
     private final String format;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // LDoubleField //
     //--------------//
@@ -41,8 +39,8 @@ public class LDoubleField
      * Create an (initially) editable double labelled field with proper
      * characteristics
      *
-     * @param label string for the label text
-     * @param tip related tool tip text
+     * @param label  string for the label text
+     * @param tip    related tool tip text
      * @param format specific display format
      */
     public LDoubleField (String label,
@@ -60,7 +58,7 @@ public class LDoubleField
      * characteristics
      *
      * @param label string for the label text
-     * @param tip related tool tip text
+     * @param tip   related tool tip text
      */
     public LDoubleField (String label,
                          String tip)
@@ -75,12 +73,12 @@ public class LDoubleField
      * Create a double labelled field with proper characteristics
      *
      * @param editable tells whether the field must be editable
-     * @param label string for the label text
-     * @param tip related tool tip text
+     * @param label    string for the label text
+     * @param tip      related tool tip text
      */
     public LDoubleField (boolean editable,
-                         String  label,
-                         String  tip)
+                         String label,
+                         String tip)
     {
         this(editable, label, tip, null);
     }
@@ -92,21 +90,20 @@ public class LDoubleField
      * Create a double labelled field with proper characteristics
      *
      * @param editable tells whether the field must be editable
-     * @param label string for the label text
-     * @param tip related tool tip text
-     * @param format specific display format
+     * @param label    string for the label text
+     * @param tip      related tool tip text
+     * @param format   specific display format
      */
     public LDoubleField (boolean editable,
-                         String  label,
-                         String  tip,
-                         String  format)
+                         String label,
+                         String tip,
+                         String format)
     {
         super(editable, label, tip);
         this.format = format;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // getValue //
     //----------//
@@ -132,8 +129,8 @@ public class LDoubleField
     public void setValue (double val)
     {
         getField()
-            .setText(
-            String.format((format != null) ? format : DEFAULT_FORMAT, val));
+                .setText(
+                String.format((format != null) ? format : DEFAULT_FORMAT, val));
     }
 
     //----------//
@@ -142,13 +139,13 @@ public class LDoubleField
     /**
      * Set the field value with a double
      *
-     * @param val the provided double value
+     * @param val    the provided double value
      * @param format the specific format to be used
      */
     public void setValue (double val,
                           String format)
     {
         getField()
-            .setText(String.format(format, val));
+                .setText(String.format(format, val));
     }
 }

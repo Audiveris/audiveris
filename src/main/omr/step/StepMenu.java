@@ -11,15 +11,15 @@
 // </editor-fold>
 package omr.step;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.script.StepTask;
 
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetsController;
 
 import omr.util.BasicTask;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 
@@ -31,8 +31,8 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 /**
- * Class {@code StepMenu} encapsulates the user interface needed to deal
- * with application steps.
+ * Class {@code StepMenu} encapsulates the user interface needed to
+ * deal with application steps.
  * Steps are represented by menu items, each one being a check box, to indicate
  * the current status regarding the execution of the step (done or not done).
  *
@@ -43,7 +43,8 @@ public class StepMenu
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(StepMenu.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            StepMenu.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -65,6 +66,7 @@ public class StepMenu
         if (menu == null) {
             menu = new JMenu();
         }
+
         this.menu = menu;
 
         // Build the menu content
@@ -75,19 +77,6 @@ public class StepMenu
     }
 
     //~ Methods ----------------------------------------------------------------
-    //---------//
-    // getMenu //
-    //---------//
-    /**
-     * Report the concrete UI menu.
-     *
-     * @return the menu entity
-     */
-    public JMenu getMenu ()
-    {
-        return menu;
-    }
-
     //------------//
     // updateMenu //
     //------------//
@@ -97,7 +86,7 @@ public class StepMenu
     public final void updateMenu ()
     {
         menu.removeAll();
-        
+
         Step prevStep = null;
 
         // List of Steps classes in proper order
@@ -112,49 +101,20 @@ public class StepMenu
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-    //----------------//
-    // MyMenuListener //
-    //----------------//
+    //---------//
+    // getMenu //
+    //---------//
     /**
-     * Class {@code MyMenuListener} is triggered when the whole sub-menu
-     * is entered.
-     * This is done with respect to currently displayed sheet.
-     * The steps already done are flagged as such.
+     * Report the concrete UI menu.
+     *
+     * @return the menu entity
      */
-    private class MyMenuListener
-            implements MenuListener
+    public JMenu getMenu ()
     {
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void menuCanceled (MenuEvent e)
-        {
-        }
-
-        @Override
-        public void menuDeselected (MenuEvent e)
-        {
-        }
-
-        @Override
-        public void menuSelected (MenuEvent e)
-        {
-            Sheet sheet = SheetsController.getCurrentSheet();
-            boolean isIdle = sheet != null && sheet.getCurrentStep() == null;
-
-            for (int i = 0; i < menu.getItemCount(); i++) {
-                JMenuItem menuItem = menu.getItem(i);
-
-                // Adjust the status for each step
-                if (menuItem instanceof StepItem) {
-                    StepItem item = (StepItem) menuItem;
-                    item.displayState(sheet, isIdle);
-                }
-            }
-        }
+        return menu;
     }
 
+    //~ Inner Classes ----------------------------------------------------------
     //------------//
     // StepAction //
     //------------//
@@ -242,6 +202,7 @@ public class StepMenu
                 action.setEnabled(false);
             } else {
                 action.setEnabled(true);
+
                 if (action.step.isMandatory()) {
                     final boolean done = action.step.isDone(sheet);
                     setState(done);
@@ -252,6 +213,49 @@ public class StepMenu
 
                 if (!isIdle) {
                     action.setEnabled(false);
+                }
+            }
+        }
+    }
+
+    //----------------//
+    // MyMenuListener //
+    //----------------//
+    /**
+     * Class {@code MyMenuListener} is triggered when the whole sub-menu
+     * is entered.
+     * This is done with respect to currently displayed sheet.
+     * The steps already done are flagged as such.
+     */
+    private class MyMenuListener
+            implements MenuListener
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void menuCanceled (MenuEvent e)
+        {
+        }
+
+        @Override
+        public void menuDeselected (MenuEvent e)
+        {
+        }
+
+        @Override
+        public void menuSelected (MenuEvent e)
+        {
+            Sheet sheet = SheetsController.getCurrentSheet();
+            boolean isIdle = (sheet != null)
+                             && (sheet.getCurrentStep() == null);
+
+            for (int i = 0; i < menu.getItemCount(); i++) {
+                JMenuItem menuItem = menu.getItem(i);
+
+                // Adjust the status for each step
+                if (menuItem instanceof StepItem) {
+                    StepItem item = (StepItem) menuItem;
+                    item.displayState(sheet, isIdle);
                 }
             }
         }

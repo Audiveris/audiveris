@@ -15,9 +15,6 @@ import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 
 import omr.script.ScriptManager;
@@ -33,6 +30,9 @@ import omr.util.Dumping;
 import omr.util.OmrExecutors;
 
 import org.jdesktop.application.Application;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;

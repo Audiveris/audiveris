@@ -13,11 +13,6 @@ package omr.ui.view;
 
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelRectangle;
-
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
@@ -30,6 +25,9 @@ import omr.ui.PixelCount;
 import omr.util.ClassUtil;
 
 import org.bushe.swing.event.EventSubscriber;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -66,9 +64,7 @@ import javax.swing.event.ChangeListener;
  */
 public class RubberPanel
         extends JPanel
-        implements ChangeListener,
-                   MouseMonitor,
-                   EventSubscriber<UserEvent>
+        implements ChangeListener, MouseMonitor, EventSubscriber<UserEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -76,7 +72,8 @@ public class RubberPanel
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(RubberPanel.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            RubberPanel.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Current display zoom, if any */
@@ -124,26 +121,6 @@ public class RubberPanel
     }
 
     //~ Methods ----------------------------------------------------------------
-    //--------------//
-    // contextAdded //
-    //--------------//
-    @Override
-    public void contextAdded (Point pt,
-                              MouseMovement movement)
-    {
-        // Nothing by default
-    }
-
-    //-----------------//
-    // contextSelected //
-    //-----------------//
-    @Override
-    public void contextSelected (Point pt,
-                                 MouseMovement movement)
-    {
-        // Nothing by default
-    }
-
     //-----------//
     // setRubber //
     //-----------//
@@ -181,6 +158,26 @@ public class RubberPanel
             // Add a listener on this zoom
             zoom.addChangeListener(this);
         }
+    }
+
+    //--------------//
+    // contextAdded //
+    //--------------//
+    @Override
+    public void contextAdded (Point pt,
+                              MouseMovement movement)
+    {
+        // Nothing by default
+    }
+
+    //-----------------//
+    // contextSelected //
+    //-----------------//
+    @Override
+    public void contextSelected (Point pt,
+                                 MouseMovement movement)
+    {
+        // Nothing by default
     }
 
     //--------------//
@@ -237,8 +234,7 @@ public class RubberPanel
             return null;
         }
 
-        LocationEvent locationEvent = (LocationEvent) locationService.
-                getLastEvent(
+        LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
                 LocationEvent.class);
 
         return (locationEvent != null) ? locationEvent.getData() : null;
@@ -341,16 +337,16 @@ public class RubberPanel
             // Then, adjust zoom ratio to fit the rectangle size
             SwingUtilities.invokeLater(
                     new Runnable()
-                    {
-                        @Override
-                        public void run ()
-                        {
-                            Rectangle vr = getVisibleRect();
-                            double zoomX = (double) vr.width / (double) rect.width;
-                            double zoomY = (double) vr.height / (double) rect.height;
-                            zoom.setRatio(Math.min(zoomX, zoomY));
-                        }
-                    });
+            {
+                @Override
+                public void run ()
+                {
+                    Rectangle vr = getVisibleRect();
+                    double zoomX = (double) vr.width / (double) rect.width;
+                    double zoomY = (double) vr.height / (double) rect.height;
+                    zoom.setRatio(Math.min(zoomX, zoomY));
+                }
+            });
         }
     }
 
@@ -543,7 +539,10 @@ public class RubberPanel
      */
     public void unsubscribe ()
     {
-        logger.debug("Unsubscribe {} {}", getClass().getSimpleName(), getName());
+        logger.debug(
+                "Unsubscribe {} {}",
+                getClass().getSimpleName(),
+                getName());
 
         // Unsubscribe to location events
         if (locationService != null) {
@@ -629,11 +628,7 @@ public class RubberPanel
         // Publish the new user-selected location
         if (locationService != null) {
             locationService.publish(
-                    new LocationEvent(
-                    this,
-                    hint,
-                    movement,
-                    new PixelRectangle(rect)));
+                    new LocationEvent(this, hint, movement, new Rectangle(rect)));
         }
     }
 

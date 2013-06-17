@@ -13,9 +13,6 @@ package omr.score;
 
 import omr.glyph.Shape;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Rational;
 
 import omr.score.entity.Barline;
@@ -28,6 +25,9 @@ import omr.score.entity.Voice;
 import omr.score.visitor.AbstractScoreVisitor;
 
 import omr.util.TreeNode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -324,11 +324,11 @@ public class MeasureFixer
         // Check for a suitable repeat barline in between
         Measure prevMeasure = prevVerticals.get(0);
         Barline barline = prevMeasure.getBarline();
-        
+
         if (barline == null) {
             return false;
         }
-        
+
         Shape shape = barline.getShape();
 
         if ((shape != Shape.RIGHT_REPEAT_SIGN)

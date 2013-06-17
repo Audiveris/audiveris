@@ -17,21 +17,22 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 import omr.score.ui.ScoreController;
 
 import omr.sheet.ui.SheetActions;
 
 import omr.ui.util.OmrFileFilter;
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
 
 import omr.util.BasicTask;
+import omr.util.Param;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -42,7 +43,6 @@ import java.io.IOException;
 
 import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
-import omr.util.Param;
 
 /**
  * Class {@code ScriptActions} gathers UI actions related to script
@@ -60,7 +60,8 @@ public class ScriptActions
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ScriptActions.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ScriptActions.class);
 
     /** Singleton */
     private static ScriptActions INSTANCE;
@@ -98,7 +99,8 @@ public class ScriptActions
                     "Save script for score " + script.getScore().getRadix() + "?");
 
             if (answer == JOptionPane.YES_OPTION) {
-                Task<Void, Void> task = getInstance().storeScript(null);
+                Task<Void, Void> task = getInstance()
+                        .storeScript(null);
 
                 if (task != null) {
                     task.execute();
@@ -143,7 +145,7 @@ public class ScriptActions
     @Action
     public Task<Void, Void> loadScript (ActionEvent e)
     {
-        final File file = UIUtilities.fileChooser(
+        final File file = UIUtil.fileChooser(
                 false,
                 Main.getGui().getFrame(),
                 new File(constants.defaultScriptDirectory.getValue()),
@@ -192,7 +194,7 @@ public class ScriptActions
         }
 
         // Let the user select a script output file
-        File scriptFile = UIUtilities.fileChooser(
+        File scriptFile = UIUtil.fileChooser(
                 true,
                 Main.getGui().getFrame(),
                 getDefaultScriptFile(score),
@@ -245,6 +247,38 @@ public class ScriptActions
 
     }
 
+    //---------//
+    // Default //
+    //---------//
+    private static class Default
+            extends Param<Boolean>
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public Boolean getSpecific ()
+        {
+            return constants.closeConfirmation.getValue();
+        }
+
+        @Override
+        public boolean setSpecific (Boolean specific)
+        {
+            if (!getSpecific()
+                    .equals(specific)) {
+                constants.closeConfirmation.setValue(specific);
+                logger.info(
+                        "You will {} be prompted to save script when"
+                        + " closing score",
+                        specific ? "now" : "no longer");
+
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     //----------------//
     // LoadScriptTask //
     //----------------//
@@ -270,7 +304,8 @@ public class ScriptActions
             logger.info("Running script file {} ...", file);
 
             try {
-                final Script script = ScriptManager.getInstance().load(
+                final Script script = ScriptManager.getInstance()
+                        .load(
                         new FileInputStream(file));
 
                 if (logger.isDebugEnabled()) {
@@ -323,10 +358,12 @@ public class ScriptActions
                 }
 
                 fos = new FileOutputStream(file);
-                omr.script.ScriptManager.getInstance().store(script, fos);
+                omr.script.ScriptManager.getInstance()
+                        .store(script, fos);
                 logger.info("Script stored as {}", file);
                 constants.defaultScriptDirectory.setValue(file.getParent());
-                script.getScore().setScriptFile(file);
+                script.getScore()
+                        .setScriptFile(file);
             } catch (FileNotFoundException ex) {
                 logger.warn("Cannot find script file " + file, ex);
             } catch (JAXBException ex) {
@@ -343,33 +380,6 @@ public class ScriptActions
             }
 
             return null;
-        }
-    }
-
-    //---------//
-    // Default //
-    //---------//
-    private static class Default
-            extends Param<Boolean>
-    {
-
-        @Override
-        public Boolean getSpecific ()
-        {
-            return constants.closeConfirmation.getValue();
-        }
-
-        @Override
-        public boolean setSpecific (Boolean specific)
-        {
-            if (!getSpecific().equals(specific)) {
-                constants.closeConfirmation.setValue(specific);
-                logger.info("You will {} be prompted to save script when"
-                            + " closing score", specific ? "now" : "no longer");
-                return true;
-            } else {
-                return false;
-            }
         }
     }
 }

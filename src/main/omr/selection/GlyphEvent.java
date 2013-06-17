@@ -19,7 +19,7 @@ import omr.glyph.facets.Glyph;
  * @author Hervé Bitteur
  */
 public class GlyphEvent
-    extends NestEvent
+        extends NestEvent
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -27,28 +27,27 @@ public class GlyphEvent
     private final Glyph glyph;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // GlyphEvent //
     //------------//
     /**
      * Creates a new GlyphEvent object.
-     * @param source the entity that created this event
-     * @param hint hint about event origin (or null)
+     *
+     * @param source   the entity that created this event
+     * @param hint     hint about event origin (or null)
      * @param movement the mouse movement
-     * @param glyph the selected glyph (or null)
+     * @param glyph    the selected glyph (or null)
      */
-    public GlyphEvent (Object        source,
+    public GlyphEvent (Object source,
                        SelectionHint hint,
                        MouseMovement movement,
-                       Glyph         glyph)
+                       Glyph glyph)
     {
         super(source, hint, movement);
         this.glyph = glyph;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getEntity //
     //-----------//

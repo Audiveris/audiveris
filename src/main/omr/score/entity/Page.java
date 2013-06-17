@@ -11,14 +11,9 @@
 // </editor-fold>
 package omr.score.entity;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.FilterDescriptor;
 
 import omr.score.Score;
-import omr.score.common.PixelDimension;
-import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -29,6 +24,11 @@ import omr.step.StepException;
 import omr.util.LiveParam;
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.image.RenderedImage;
 import java.util.List;
 
@@ -41,7 +41,7 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class Page
-    extends PageNode
+        extends PageNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -49,7 +49,6 @@ public class Page
     private static final Logger logger = LoggerFactory.getLogger(Page.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Index of page, counted from 1, in the image file. */
     private final int index;
 
@@ -70,28 +69,28 @@ public class Page
 
     /** Progression of measure id within this page. */
     private Integer deltaMeasureId;
-    
+
     /** Param for pixel filter. */
     private final LiveParam<FilterDescriptor> filterContext;
-    
+
     /** Param for text language. */
     private final LiveParam<String> textContext;
 
     //~ Constructors -----------------------------------------------------------
-
     //------//
     // Page //
     //------//
     /**
      * Creates a new Page object.
+     *
      * @param score the containing score
      * @param index page initial index in the containing image file, counted
-     * from 1.
+     *              from 1.
      */
-    public Page (Score         score,
-                 int           index,
+    public Page (Score score,
+                 int index,
                  RenderedImage image)
-        throws StepException
+            throws StepException
     {
         super(score);
         this.index = index;
@@ -104,12 +103,11 @@ public class Page
 
         filterContext = new LiveParam<>(score.getFilterParam());
         textContext = new LiveParam<>(score.getTextParam());
-        
+
         sheet = new Sheet(this, image);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // getFilterParam //
     //----------------//
@@ -148,8 +146,8 @@ public class Page
         for (TreeNode sn : getSystems()) {
             ScoreSystem system = (ScoreSystem) sn;
             count += system.getFirstPart()
-                           .getMeasures()
-                           .size();
+                    .getMeasures()
+                    .size();
         }
 
         measureCount = count;
@@ -163,22 +161,22 @@ public class Page
      */
     public void dumpMeasureCounts ()
     {
-        int           count = 0;
+        int count = 0;
         StringBuilder sb = new StringBuilder();
 
         for (TreeNode node : getSystems()) {
             ScoreSystem sys = (ScoreSystem) node;
-            SystemPart  part = sys.getLastPart();
+            SystemPart part = sys.getLastPart();
 
             if (sb.length() > 0) {
                 sb.append(", ");
             }
 
             sb.append(part.getMeasures().size())
-              .append(" in ")
-              .append(sys.getInfo().idString());
+                    .append(" in ")
+                    .append(sys.getInfo().idString());
             count += part.getMeasures()
-                         .size();
+                    .size();
         }
 
         StringBuilder msg = new StringBuilder();
@@ -190,8 +188,8 @@ public class Page
         }
 
         msg.append(": [")
-           .append(sb)
-           .append("]");
+                .append(sb)
+                .append("]");
 
         logger.info("{}{}", sheet.getLogPrefix(), msg.toString());
     }
@@ -201,6 +199,7 @@ public class Page
     //-------------------//
     /**
      * Report the progression of measure IDs within this page.
+     *
      * @return the deltaMeasureId
      */
     public Integer getDeltaMeasureId ()
@@ -213,9 +212,10 @@ public class Page
     //--------------//
     /**
      * Report the dimension of the sheet/page.
+     *
      * @return the page/sheet dimension in pixels
      */
-    public PixelDimension getDimension ()
+    public Dimension getDimension ()
     {
         return sheet.getDimension();
     }
@@ -225,6 +225,7 @@ public class Page
     //----------------//
     /**
      * Report the first system in the page.
+     *
      * @return the first system
      */
     public ScoreSystem getFirstSystem ()
@@ -263,6 +264,7 @@ public class Page
     //---------------//
     /**
      * Report the last system in the page.
+     *
      * @return the last system
      */
     public ScoreSystem getLastSystem ()
@@ -280,6 +282,7 @@ public class Page
     /**
      * Report the mean staff height based on page interline.
      * This should be refined per system, if not per staff
+     *
      * @return the page-based average value of staff heights
      */
     public int getMeanStaffHeight ()
@@ -292,6 +295,7 @@ public class Page
     //-----------------//
     /**
      * Report the number of (vertical) measures in this page.
+     *
      * @return the number of page measures
      */
     public int getMeasureCount ()
@@ -304,6 +308,7 @@ public class Page
     //-------------//
     /**
      * Report the global list of parts.
+     *
      * @return partList the list of parts
      */
     public List<ScorePart> getPartList ()
@@ -316,6 +321,7 @@ public class Page
     //---------------------//
     /**
      * Report the preceding page of this one within the score.
+     *
      * @return the preceding page, or null if none
      */
     public Page getPrecedingInScore ()
@@ -328,6 +334,7 @@ public class Page
     //----------//
     /**
      * Report the scale of the page.
+     *
      * @return the page scale (basically: number of pixels for main interline)
      */
     @Override
@@ -341,6 +348,7 @@ public class Page
     //----------//
     /**
      * Report the related sheet entity.
+     *
      * @return the related sheet, or null if none
      */
     public Sheet getSheet ()
@@ -353,13 +361,14 @@ public class Page
     //---------------//
     /**
      * Report the system for which id is provided.
+     *
      * @param id id of desired system
      * @return the desired system
      */
     public ScoreSystem getSystemById (int id)
     {
         return (ScoreSystem) getSystems()
-                                 .get(id - 1);
+                .get(id - 1);
     }
 
     //------------//
@@ -367,6 +376,7 @@ public class Page
     //------------//
     /**
      * Report the collection of systems in that score.
+     *
      * @return the systems
      */
     public List<TreeNode> getSystems ()
@@ -384,7 +394,7 @@ public class Page
     {
         // Discard systems
         getSystems()
-            .clear();
+                .clear();
 
         // Discard partlists
         if (partList != null) {
@@ -397,6 +407,7 @@ public class Page
     //-------------------//
     /**
      * Assign the progression of measure IDs within this page.
+     *
      * @param deltaMeasureId the deltaMeasureId to set
      */
     public void setDeltaMeasureId (Integer deltaMeasureId)
@@ -409,6 +420,7 @@ public class Page
     //-------------//
     /**
      * Assign a part list valid for the page.
+     *
      * @param partList the list of parts
      */
     public void setPartList (List<ScorePart> partList)
@@ -421,6 +433,7 @@ public class Page
     //----------//
     /**
      * Assign proper scale for this page.
+     *
      * @param scale the general scale for the page
      */
     public void setScale (Scale scale)
@@ -431,9 +444,9 @@ public class Page
     //----------//
     // setSheet //
     //----------//
-
     /**
      * Register the name of the corresponding sheet entity.
+     *
      * @param sheet the related sheet entity
      */
     public void setSheet (Sheet sheet)
@@ -446,14 +459,15 @@ public class Page
     //----------//
     /**
      * Retrieve which system contains the provided point.
+     *
      * @param point the point in the <b>SHEET</b> display
      * @return the nearest system.
      */
-    public ScoreSystem systemAt (PixelPoint point)
+    public ScoreSystem systemAt (Point point)
     {
         return getSheet()
-                   .getSystemOf(point)
-                   .getScoreSystem();
+                .getSystemOf(point)
+                .getScoreSystem();
     }
 
     //----------//

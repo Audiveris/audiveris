@@ -11,14 +11,16 @@
 // </editor-fold>
 package omr.util;
 
-
 /**
- * Enum {@code HorizontalSide} is meant to ease programmatic use of left and
- * right sides of staves, lines, etc...
+ * Enum {@code HorizontalSide} is meant to ease programmatic use of
+ * left and right sides of staves, lines, etc...
  *
  * @author Hervé Bitteur
  */
-public enum HorizontalSide {
+public enum HorizontalSide
+{
+
     LEFT,
     RIGHT;
+
 }

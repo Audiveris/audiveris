@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.score;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.PartConnection.Candidate;
 import omr.score.PartConnection.Result;
 import omr.score.entity.Page;
@@ -22,6 +19,9 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
 
 import omr.util.TreeNode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

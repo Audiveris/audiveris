@@ -32,22 +32,33 @@ import java.util.Comparator;
  * @author Hervé Bitteur
  */
 public interface Glyph
-    extends 
-/** For handling check results     */ Checkable, 
-/** For id and related lag         */ GlyphAdministration, 
-/** For member sections            */ GlyphComposition, 
-/** For display color              */ GlyphDisplay, 
-/** For items nearby               */ GlyphEnvironment, 
-/** For physical appearance        */ GlyphGeometry, 
-/** For shape assignment           */ GlyphRecognition, 
-/** For transtation to score items */ GlyphTranslation, 
-/** For mean line                  */ GlyphAlignment, 
-/** For textual content            */ GlyphContent
+        extends
+        /** For handling check results */
+        Checkable,
+        /** For id and related lag */
+        GlyphAdministration,
+        /** For member sections */
+        GlyphComposition,
+        /** For display color */
+        GlyphDisplay,
+        /** For items nearby */
+        GlyphEnvironment,
+        /** For physical appearance */
+        GlyphGeometry,
+        /** For shape assignment */
+        GlyphRecognition,
+        /** For translation to score items */
+        GlyphTranslation,
+        /** For mean line */
+        GlyphAlignment,
+        /** For textual content */
+        GlyphContent
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** For comparing glyphs according to their height. */
-    public static final Comparator<Glyph> byHeight = new Comparator<Glyph>() {
+    public static final Comparator<Glyph> byHeight = new Comparator<Glyph>()
+    {
         @Override
         public int compare (Glyph o1,
                             Glyph o2)
@@ -57,7 +68,8 @@ public interface Glyph
     };
 
     /** For comparing glyphs according to their decreasing weight. */
-    public static final Comparator<Glyph> byReverseWeight = new Comparator<Glyph>() {
+    public static final Comparator<Glyph> byReverseWeight = new Comparator<Glyph>()
+    {
         @Override
         public int compare (Glyph o1,
                             Glyph o2)
@@ -67,7 +79,8 @@ public interface Glyph
     };
 
     /** For comparing glyphs according to their id. */
-    public static final Comparator<Glyph> byId = new Comparator<Glyph>() {
+    public static final Comparator<Glyph> byId = new Comparator<Glyph>()
+    {
         @Override
         public int compare (Glyph o1,
                             Glyph o2)
@@ -78,7 +91,8 @@ public interface Glyph
 
     /** For comparing glyphs according to their abscissa,
      * then ordinate, then id. */
-    public static final Comparator<Glyph> byAbscissa = new Comparator<Glyph>() {
+    public static final Comparator<Glyph> byAbscissa = new Comparator<Glyph>()
+    {
         @Override
         public int compare (Glyph o1,
                             Glyph o2)
@@ -88,9 +102,9 @@ public interface Glyph
             }
 
             Point ref = o1.getBounds()
-                          .getLocation();
+                    .getLocation();
             Point otherRef = o2.getBounds()
-                               .getLocation();
+                    .getLocation();
 
             // Are x values different?
             int dx = ref.x - otherRef.x;
@@ -113,7 +127,8 @@ public interface Glyph
 
     /** For comparing glyphs according to their ordinate,
      * then abscissa, then id. */
-    public static final Comparator<Glyph> ordinateComparator = new Comparator<Glyph>() {
+    public static final Comparator<Glyph> ordinateComparator = new Comparator<Glyph>()
+    {
         @Override
         public int compare (Glyph o1,
                             Glyph o2)
@@ -123,9 +138,9 @@ public interface Glyph
             }
 
             Point ref = o1.getBounds()
-                          .getLocation();
+                    .getLocation();
             Point otherRef = o2.getBounds()
-                               .getLocation();
+                    .getLocation();
 
             // Are y values different?
             int dy = ref.y - otherRef.y;
@@ -145,4 +160,5 @@ public interface Glyph
             return o1.getId() - o2.getId();
         }
     };
+
 }

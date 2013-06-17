@@ -11,21 +11,20 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.text.TextRole;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelDimension;
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.SystemInfo;
 
+import omr.text.TextRole;
+
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Collections;
 import java.util.List;
 
@@ -42,7 +41,8 @@ public class ScoreSystem
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ScoreSystem.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ScoreSystem.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Id for debug */
@@ -53,7 +53,7 @@ public class ScoreSystem
      * This points to the first real staff, and does not count the preceding
      * dummy staves if any.
      */
-    private final PixelPoint topLeft;
+    private final Point topLeft;
 
     /** Related info from sheet analysis */
     private final SystemInfo info;
@@ -73,8 +73,8 @@ public class ScoreSystem
      */
     public ScoreSystem (SystemInfo info,
                         Page page,
-                        PixelPoint topLeft,
-                        PixelDimension dimension)
+                        Point topLeft,
+                        Dimension dimension)
     {
         super(page);
 
@@ -84,7 +84,7 @@ public class ScoreSystem
         id = 1 + getChildIndex();
 
         setBox(
-                new PixelRectangle(
+                new Rectangle(
                 topLeft.x,
                 topLeft.y,
                 dimension.width,
@@ -119,12 +119,14 @@ public class ScoreSystem
         }
 
         // If very first page, we are done
-        if (getPage().getChildIndex() == 0) {
+        if (getPage()
+                .getChildIndex() == 0) {
             return;
         }
 
-        ScoreSystem precedingSystem = getPage().getPrecedingInScore().
-                getLastSystem();
+        ScoreSystem precedingSystem = getPage()
+                .getPrecedingInScore()
+                .getLastSystem();
 
         if (precedingSystem != null) {
             // Examine every part in sequence
@@ -161,6 +163,21 @@ public class ScoreSystem
         }
     }
 
+    //-------------------//
+    // connectTiedVoices //
+    //-------------------//
+    /**
+     * Make sure that notes tied across measures keep the same voice.
+     * This is performed for all measures in this system.
+     */
+    public void connectTiedVoices ()
+    {
+        for (TreeNode node : getParts()) {
+            SystemPart part = (SystemPart) node;
+            part.connectTiedVoices();
+        }
+    }
+
     //------------------//
     // fillMissingParts //
     //------------------//
@@ -171,9 +188,11 @@ public class ScoreSystem
     public void fillMissingParts ()
     {
         // Check we have all the defined parts in this system
-        for (ScorePart scorePart : getPage().getPartList()) {
+        for (ScorePart scorePart : getPage()
+                .getPartList()) {
             if (getPart(scorePart.getId()) == null) {
-                getFirstRealPart().createDummyPart(scorePart.getId());
+                getFirstRealPart()
+                        .createDummyPart(scorePart.getId());
                 Collections.sort(getParts(), SystemPart.idComparator);
             }
         }
@@ -192,7 +211,7 @@ public class ScoreSystem
      * @return the system dimension
      */
     @Override
-    public PixelDimension getDimension ()
+    public Dimension getDimension ()
     {
         return super.getDimension();
     }
@@ -210,7 +229,8 @@ public class ScoreSystem
      */
     public SystemPart getFirstPart ()
     {
-        return (SystemPart) getParts().get(0);
+        return (SystemPart) getParts()
+                .get(0);
     }
 
     //------------------//
@@ -267,7 +287,8 @@ public class ScoreSystem
      */
     public SystemPart getLastPart ()
     {
-        return (SystemPart) getParts().get(getParts().size() - 1);
+        return (SystemPart) getParts()
+                .get(getParts().size() - 1);
     }
 
     //---------//
@@ -294,6 +315,26 @@ public class ScoreSystem
         return null;
     }
 
+    //--------------//
+    // getPartAbove //
+    //--------------//
+    /**
+     * Determine the part which is above the given point.
+     *
+     * @param point the given point
+     * @return the part above
+     */
+    public SystemPart getPartAbove (Point point)
+    {
+        Staff staff = getStaffAbove(point);
+
+        if (staff == null) {
+            return getFirstRealPart();
+        } else {
+            return staff.getPart();
+        }
+    }
+
     //-----------//
     // getPartAt //
     //-----------//
@@ -309,26 +350,6 @@ public class ScoreSystem
 
         if (staff == null) {
             return getFirstPart();
-        } else {
-            return staff.getPart();
-        }
-    }
-
-    //--------------//
-    // getPartAbove //
-    //--------------//
-    /**
-     * Determine the part which is above the given point.
-     *
-     * @param point the given point
-     * @return the part above
-     */
-    public SystemPart getPartAbove (PixelPoint point)
-    {
-        Staff staff = getStaffAbove(point);
-
-        if (staff == null) {
-            return getFirstRealPart();
         } else {
             return staff.getPart();
         }
@@ -356,7 +377,7 @@ public class ScoreSystem
      * @param sysPt the given point
      * @return the staff above
      */
-    public Staff getStaffAbove (PixelPoint sysPt)
+    public Staff getStaffAbove (Point sysPt)
     {
         Staff best = null;
 
@@ -419,7 +440,7 @@ public class ScoreSystem
      * @param sysPt the given system point
      * @return the staff below
      */
-    public Staff getStaffBelow (PixelPoint sysPt)
+    public Staff getStaffBelow (Point sysPt)
     {
         for (TreeNode node : getParts()) {
             SystemPart part = (SystemPart) node;
@@ -446,15 +467,17 @@ public class ScoreSystem
      * @param point the point whose ordinate is to be checked
      * @return the StaffPosition value
      */
-    public StaffPosition getStaffPosition (PixelPoint point)
+    public StaffPosition getStaffPosition (Point point)
     {
-        Staff firstStaff = getFirstRealPart().getFirstStaff();
+        Staff firstStaff = getFirstRealPart()
+                .getFirstStaff();
 
         if (point.y < firstStaff.getTopLeft().y) {
             return StaffPosition.ABOVE_STAVES;
         }
 
-        Staff lastStaff = getLastPart().getLastStaff();
+        Staff lastStaff = getLastPart()
+                .getLastStaff();
 
         if (point.y > (lastStaff.getTopLeft().y + lastStaff.getHeight())) {
             return StaffPosition.BELOW_STAVES;
@@ -476,7 +499,7 @@ public class ScoreSystem
      * @return the preferred staff
      */
     public Staff getTextStaff (TextRole role,
-                               PixelPoint point)
+                               Point point)
     {
         Staff staff = null;
 
@@ -501,7 +524,7 @@ public class ScoreSystem
      *
      * @return the top left corner
      */
-    public PixelPoint getTopLeft ()
+    public Point getTopLeft ()
     {
         return topLeft;
     }
@@ -516,7 +539,7 @@ public class ScoreSystem
      * @param sysPt the system point to check
      * @return true if on left
      */
-    public boolean isLeftOfStaves (PixelPoint sysPt)
+    public boolean isLeftOfStaves (Point sysPt)
     {
         return sysPt.x < topLeft.x;
     }
@@ -532,21 +555,6 @@ public class ScoreSystem
         }
     }
 
-    //-------------------//
-    // connectTiedVoices //
-    //-------------------//
-    /**
-     * Make sure that notes tied across measures keep the same voice.
-     * This is performed for all measures in this system.
-     */
-    public void connectTiedVoices ()
-    {
-        for (TreeNode node : getParts()) {
-            SystemPart part = (SystemPart) node;
-            part.connectTiedVoices();
-        }
-    }
-
     //----------//
     // setWidth //
     //----------//
@@ -557,7 +565,7 @@ public class ScoreSystem
      */
     public void setWidth (int unitWidth)
     {
-        PixelRectangle newBox = getBox();
+        Rectangle newBox = getBox();
         reset();
 
         newBox.width = unitWidth;
@@ -572,15 +580,21 @@ public class ScoreSystem
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{System#").append(id);
+        sb.append("{System#")
+                .append(id);
 
         if (topLeft != null) {
-            sb.append(" topLeft=[").append(topLeft.x).append(",").append(
-                    topLeft.y).append("]");
+            sb.append(" topLeft=[")
+                    .append(topLeft.x)
+                    .append(",")
+                    .append(topLeft.y)
+                    .append("]");
         }
 
-        sb.append(" dimension=").append(getBox().width).append("x").append(
-                getBox().height);
+        sb.append(" dimension=")
+                .append(getBox().width)
+                .append("x")
+                .append(getBox().height);
 
         sb.append("}");
 

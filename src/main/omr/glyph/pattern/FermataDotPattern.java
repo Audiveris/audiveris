@@ -15,15 +15,14 @@ import omr.glyph.*;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -80,25 +79,28 @@ public class FermataDotPattern
             }
 
             if (fermata.isVip() || logger.isDebugEnabled()) {
-                logger.info("Checking fermata #{} {}",
-                        fermata.getId(), fermata.getEvaluation());
+                logger.info(
+                        "Checking fermata #{} {}",
+                        fermata.getId(),
+                        fermata.getEvaluation());
             }
 
             // Find related dot within glyph box
-            final PixelRectangle box = fermata.getBounds();
+            final Rectangle box = fermata.getBounds();
 
             Set<Glyph> candidates = Glyphs.lookupGlyphs(
                     system.getGlyphs(),
                     new Predicate<Glyph>()
-                    {
-                        @Override
-                        public boolean check (Glyph glyph)
-                        {
-                            return (glyph != fermata)
-                                   && glyph.getBounds().intersects(box)
-                                   && dots.contains(glyph.getShape());
-                        }
-                    });
+            {
+                @Override
+                public boolean check (Glyph glyph)
+                {
+                    return (glyph != fermata)
+                           && glyph.getBounds()
+                            .intersects(box)
+                           && dots.contains(glyph.getShape());
+                }
+            });
 
             for (Glyph candidate : candidates) {
                 if (fermata.isVip()
@@ -109,7 +111,8 @@ public class FermataDotPattern
 
                 Glyph compound = system.buildTransientCompound(
                         Arrays.asList(fermata, candidate));
-                Evaluation eval = GlyphNetwork.getInstance().vote(
+                Evaluation eval = GlyphNetwork.getInstance()
+                        .vote(
                         compound,
                         system,
                         Grades.noMinGrade);
@@ -120,8 +123,10 @@ public class FermataDotPattern
                     compound.setEvaluation(eval);
 
                     if (compound.isVip() || logger.isDebugEnabled()) {
-                        logger.info("Compound #{} built as {}",
-                                compound.getId(), compound.getEvaluation());
+                        logger.info(
+                                "Compound #{} built as {}",
+                                compound.getId(),
+                                compound.getEvaluation());
                     }
 
                     nb++;

@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import omr.ui.MainGui;
 import omr.ui.util.SeparableMenu;
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
 
 import omr.util.UriUtil;
 
@@ -336,7 +336,7 @@ public class ActionManager
                     AbstractButton button = buttonClass.newInstance();
                     button.setAction(action);
                     toolBar.add(button);
-                    button.setBorder(UIUtilities.getToolBorder());
+                    button.setBorder(UIUtil.getToolBorder());
                     button.setText("");
                 }
             } else {

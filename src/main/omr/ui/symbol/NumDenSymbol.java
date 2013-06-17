@@ -12,46 +12,45 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
 /**
- *  Class {@code NumDenSymbol} displays a time sig, with numerator & denominator
+ * Class {@code NumDenSymbol} displays a time sig, with numerator & denominator
  */
 public class NumDenSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Instance fields --------------------------------------------------------
 
     private final int[] numCodes;
+
     private final int[] denCodes;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // NumDenSymbol //
     //--------------//
     /**
      * Creates a new NumDenSymbol object.
      *
-     * @param shape the related shape
-     * @param numerator the numerator value (not code)
+     * @param shape       the related shape
+     * @param numerator   the numerator value (not code)
      * @param denominator the denominator value (not code)
      */
     public NumDenSymbol (Shape shape,
-                         int   numerator,
-                         int   denominator)
+                         int numerator,
+                         int denominator)
     {
         this(
-            shape,
-            ShapeSymbol.numberCodes(numerator),
-            ShapeSymbol.numberCodes(denominator));
+                shape,
+                ShapeSymbol.numberCodes(numerator),
+                ShapeSymbol.numberCodes(denominator));
     }
 
     //--------------//
@@ -60,7 +59,7 @@ public class NumDenSymbol
     /**
      * Creates a new NumDenSymbol object.
      *
-     * @param shape the related shape
+     * @param shape    the related shape
      * @param numCodes the numerator codes
      * @param denCodes the denominator codes
      */
@@ -77,17 +76,17 @@ public class NumDenSymbol
     /**
      * Creates a new NumDenSymbol object.
      *
-     * @param isIcon true for an icon
-     * @param shape the related shape
+     * @param isIcon    true for an icon
+     * @param shape     the related shape
      * @param decorated true for decoration
-     * @param numCodes the numerator codes
-     * @param denCodes the denominator codes
+     * @param numCodes  the numerator codes
+     * @param denCodes  the denominator codes
      */
     public NumDenSymbol (boolean isIcon,
-                         Shape   shape,
+                         Shape shape,
                          boolean decorated,
-                         int[]   numCodes,
-                         int[]   denCodes)
+                         int[] numCodes,
+                         int[] denCodes)
     {
         super(isIcon, shape, decorated);
         this.numCodes = numCodes;
@@ -95,7 +94,6 @@ public class NumDenSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -111,14 +109,14 @@ public class NumDenSymbol
     @Override
     protected MyParams getParams (MusicFont font)
     {
-        MyParams    p = new MyParams(font);
+        MyParams p = new MyParams(font);
 
         Rectangle2D numRect = p.numLayout.getBounds();
         Rectangle2D denRect = p.denLayout.getBounds();
         p.rect = new Rectangle(
-            (int) Math.rint(Math.max(numRect.getWidth(), denRect.getWidth())),
-            p.dy +
-            (int) Math.rint(Math.max(numRect.getHeight(), denRect.getHeight())));
+                (int) Math.rint(Math.max(numRect.getWidth(), denRect.getWidth())),
+                p.dy
+                + (int) Math.rint(Math.max(numRect.getHeight(), denRect.getHeight())));
 
         return p;
     }
@@ -128,39 +126,39 @@ public class NumDenSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams   p = (MyParams) params;
-        PixelPoint center = alignment.translatedPoint(
-            AREA_CENTER,
-            p.rect,
-            location);
+        MyParams p = (MyParams) params;
+        Point center = alignment.translatedPoint(
+                AREA_CENTER,
+                p.rect,
+                location);
 
-        PixelPoint top = new PixelPoint(center.x, center.y - (p.dy / 2));
+        Point top = new Point(center.x, center.y - (p.dy / 2));
         OmrFont.paint(g, p.numLayout, top, AREA_CENTER);
 
-        PixelPoint bot = new PixelPoint(center.x, center.y + (p.dy / 2));
+        Point bot = new Point(center.x, center.y + (p.dy / 2));
         OmrFont.paint(g, p.denLayout, bot, AREA_CENTER);
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
-        extends Params
+            extends Params
     {
         //~ Instance fields ----------------------------------------------------
 
-        final int        dy;
+        final int dy;
+
         final TextLayout numLayout;
+
         final TextLayout denLayout;
 
         //~ Constructors -------------------------------------------------------
-
         public MyParams (MusicFont font)
         {
             dy = (int) Math.rint(2 * font.getFontInterline());

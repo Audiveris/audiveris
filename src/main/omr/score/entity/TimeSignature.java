@@ -20,15 +20,15 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -157,7 +157,7 @@ public class TimeSignature
 
             if (!staff.isDummy()) {
                 setCenter(
-                        new PixelPoint(
+                        new Point(
                         other.getCenter().x,
                         other.getCenter().y - other.getStaff().getTopLeft().y
                         + staff.getTopLeft().y));
@@ -221,7 +221,7 @@ public class TimeSignature
     // createDummyCopy //
     //-----------------//
     public TimeSignature createDummyCopy (Measure measure,
-                                          PixelPoint center)
+                                          Point center)
     {
         TimeSignature dummy = new TimeSignature(measure, null);
         dummy.setCenter(center);
@@ -438,7 +438,7 @@ public class TimeSignature
     public static boolean populate (Glyph glyph,
                                     Measure measure,
                                     Staff staff,
-                                    PixelPoint center)
+                                    Point center)
     {
         // First, some basic tests
         // Horizontal distance since beginning of measure
@@ -491,7 +491,7 @@ public class TimeSignature
             return true;
         } else {
             logger.debug("Second whole time signature ({}" + ")"
-                        + " in the same measure", glyph.idString());
+                         + " in the same measure", glyph.idString());
 
             return false;
         }
@@ -560,7 +560,7 @@ public class TimeSignature
                              Shape shape)
     {
         this.timeRational = timeRational;
-        
+
         if (shape != null) {
             this.shape = shape;
         } else {
@@ -753,14 +753,14 @@ public class TimeSignature
 
         if (ts != null) {
             // Check we are not too far from this first time signature part
-            PixelPoint center = measure.computeGlyphCenter(glyph);
+            Point center = measure.computeGlyphCenter(glyph);
             double dist = center.distance(ts.getCenter());
             double max = measure.getScale().toPixelsDouble(
                     constants.maxTimeDistance);
 
             if (dist > max) {
                 logger.debug("Time signature part ({}" + ")"
-                            + " too far from previous one", glyph.idString());
+                             + " too far from previous one", glyph.idString());
 
                 return false;
             }

@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 /**
  * Class {@code InjectionSolver} handles the injection of a collection
- * of elements (called domain) into another collection of elements 
+ * of elements (called domain) into another collection of elements
  * (called range, or codomain).
  *
  * <p>It finds a mapping that minimizes the global mapping distance, given
@@ -29,25 +29,30 @@ public class InjectionSolver
 {
     //~ Instance fields --------------------------------------------------------
 
-    private final int       domainSize;
-    private final int       rangeSize;
-    private final Distance  distance;
+    private final int domainSize;
+
+    private final int rangeSize;
+
+    private final Distance distance;
+
     private final boolean[] free;
-    private int             bestCost = Integer.MAX_VALUE;
-    private final int[]     bestConfig;
-    private final int[]     config;
+
+    private int bestCost = Integer.MAX_VALUE;
+
+    private final int[] bestConfig;
+
+    private final int[] config;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new instance of InjectionSolver
      *
      * @param domainSize size of the domain collection
-     * @param rangeSize size of the range collection
+     * @param rangeSize  size of the range collection
      * @param distance
      */
-    public InjectionSolver (int      domainSize,
-                            int      rangeSize,
+    public InjectionSolver (int domainSize,
+                            int rangeSize,
                             Distance distance)
     {
         // Parameters of the solver
@@ -65,16 +70,15 @@ public class InjectionSolver
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------//
     // solve //
     //-------//
     /**
-     * Report (one of) the mapping(s) for which the global distance is 
+     * Report (one of) the mapping(s) for which the global distance is
      * minimum.
      *
      * @return an array parallel to the domain collection, which for each
-     * (domain) element gives the mapped range element
+     *         (domain) element gives the mapped range element
      */
     public int[] solve ()
     {
@@ -91,12 +95,12 @@ public class InjectionSolver
     {
         StringBuilder sb = new StringBuilder();
         sb.append("bestCost=")
-          .append(bestCost);
+                .append(bestCost);
         sb.append(" [");
 
         for (int i = 0; i < bestConfig.length; i++) {
             sb.append(" ")
-              .append(bestConfig[i]);
+                    .append(bestConfig[i]);
         }
 
         sb.append("]");
@@ -135,7 +139,6 @@ public class InjectionSolver
     }
 
     //~ Inner Interfaces -------------------------------------------------------
-
     /**
      * Interface {@code Distance} provides the measurement for
      * individual mapping costs.
@@ -145,7 +148,7 @@ public class InjectionSolver
         //~ Methods ------------------------------------------------------------
 
         /**
-         * Report the distance when mapping element 'id' of domain to 
+         * Report the distance when mapping element 'id' of domain to
          * element 'ir' of range
          *
          * @param id index of domain element

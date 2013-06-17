@@ -11,19 +11,11 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Stroke;
 import omr.score.entity.PartNode;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import omr.score.common.PixelPoint;
-import omr.score.entity.MeasureElement;
-import omr.ui.Colors;
-import omr.ui.util.UIUtilities;
-import omr.util.TreeNode;
 
 /**
  * Class {@code BasicTranslation} is the basic implementation of the

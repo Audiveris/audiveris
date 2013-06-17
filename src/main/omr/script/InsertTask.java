@@ -15,7 +15,7 @@ import omr.glyph.Shape;
 import omr.glyph.VirtualGlyph;
 import omr.glyph.facets.Glyph;
 
-import omr.score.common.PixelPoint;
+import omr.grid.StaffInfo;
 
 import omr.selection.GlyphSetEvent;
 import omr.selection.MouseMovement;
@@ -26,6 +26,7 @@ import omr.sheet.SystemInfo;
 
 import omr.util.PointFacade;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -38,7 +39,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
-import omr.grid.StaffInfo;
 
 /**
  * Class {@code InsertTask} inserts a set of (virtual) glyphs into the
@@ -56,7 +56,7 @@ public class InsertTask
     private final Shape shape;
 
     /** Locations */
-    private List<PixelPoint> locations;
+    private List<Point> locations;
 
     /** Wrapping of the collections of points */
     @XmlElementWrapper(name = "locations")
@@ -77,7 +77,7 @@ public class InsertTask
      */
     public InsertTask (Sheet sheet,
                        Shape shape,
-                       Collection<PixelPoint> locations)
+                       Collection<Point> locations)
     {
         super(sheet);
 
@@ -162,7 +162,7 @@ public class InsertTask
         if (!locations.isEmpty()) {
             sb.append(" locations[");
 
-            for (PixelPoint point : locations) {
+            for (Point point : locations) {
                 sb.append(" ").append(point.toString());
             }
 
@@ -182,7 +182,7 @@ public class InsertTask
     {
         SortedSet<SystemInfo> impactedSystems = new TreeSet<>();
 
-        for (PixelPoint location : locations) {
+        for (Point location : locations) {
             SystemInfo system = sheet.getSystemOf(location);
 
             if (system != null) {
@@ -211,7 +211,7 @@ public class InsertTask
     {
         glyphs = new LinkedHashSet<>();
 
-        for (PixelPoint location : locations) {
+        for (Point location : locations) {
             Glyph glyph = new VirtualGlyph(
                     shape,
                     sheet.getScale().getInterline(),
@@ -248,7 +248,7 @@ public class InsertTask
             locations = new ArrayList<>();
 
             for (PointFacade facade : points) {
-                locations.add(new PixelPoint(facade.getX(), facade.getY()));
+                locations.add(new Point(facade.getX(), facade.getY()));
             }
         }
     }
@@ -265,7 +265,7 @@ public class InsertTask
         if (points == null) {
             List<PointFacade> facades = new ArrayList<>();
 
-            for (PixelPoint point : locations) {
+            for (Point point : locations) {
                 facades.add(new PointFacade(point));
             }
 

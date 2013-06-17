@@ -11,22 +11,15 @@
 // </editor-fold>
 package omr.score.entity;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import omr.Main;
 
 import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.BasicLine;
 import omr.math.Line;
 
-import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -36,6 +29,13 @@ import static omr.util.HorizontalSide.*;
 import omr.util.TreeNode;
 import omr.util.Vip;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 
@@ -114,8 +114,8 @@ public class Beam
      * @param measure the containing measure
      * @return the (perhaps new) containing Beam instance
      */
-    public static Beam populate (PixelPoint left,
-                                 PixelPoint right,
+    public static Beam populate (Point left,
+                                 Point right,
                                  Measure measure)
     {
         ///logger.info("Populating " + glyph);
@@ -348,9 +348,9 @@ public class Beam
             line = new BasicLine();
 
             // Take left side of first item, and right side of last item
-            PixelPoint left = getPoint(LEFT);
+            Point left = getPoint(LEFT);
             line.includePoint(left.x, left.y);
-            PixelPoint right = getPoint(RIGHT);
+            Point right = getPoint(RIGHT);
             line.includePoint(right.x, right.y);
         }
 
@@ -363,9 +363,9 @@ public class Beam
     /**
      * Report the point that define the desired edge of the beam.
      *
-     * @return the PixelPoint coordinates of the point on desired side
+     * @return the Point coordinates of the point on desired side
      */
-    public PixelPoint getPoint (HorizontalSide side)
+    public Point getPoint (HorizontalSide side)
     {
         if (side == LEFT) {
             return getFirstItem().getPoint(LEFT);
@@ -381,10 +381,10 @@ public class Beam
      * Assign the point that define the desired edge of the beam.
      *
      * @param side  the desired side
-     * @param point the PixelPoint coordinates of the point on desired side
+     * @param point the Point coordinates of the point on desired side
      */
     public void setPoint (HorizontalSide side,
-                          PixelPoint point)
+                          Point point)
     {
         if (side == LEFT) {
             getFirstItem().setPoint(LEFT, point);
@@ -523,11 +523,11 @@ public class Beam
     @Override
     protected void computeCenter ()
     {
-        PixelPoint left = getPoint(LEFT);
-        PixelPoint right = getPoint(RIGHT);
+        Point left = getPoint(LEFT);
+        Point right = getPoint(RIGHT);
 
         setCenter(
-                new PixelPoint((left.x + right.x) / 2, (left.y + right.y) / 2));
+                new Point((left.x + right.x) / 2, (left.y + right.y) / 2));
     }
 
     //-------//
@@ -566,8 +566,8 @@ public class Beam
      * @param right right point of item candidate
      * @return true if compatible
      */
-    private boolean isCompatibleWith (PixelPoint left,
-                                      PixelPoint right)
+    private boolean isCompatibleWith (Point left,
+                                      Point right)
     {
         boolean logging = isVip() || logger.isDebugEnabled();
 
@@ -588,8 +588,8 @@ public class Beam
 
         // Check distance along the same alignment
         for (HorizontalSide side : HorizontalSide.values()) {
-            PixelPoint itemPoint = (side == LEFT) ? left : right;
-            PixelPoint beamPoint = getPoint((side == LEFT) ? RIGHT : LEFT);
+            Point itemPoint = (side == LEFT) ? left : right;
+            Point beamPoint = getPoint((side == LEFT) ? RIGHT : LEFT);
             double dx = getScale().pixelsToFrac(itemPoint.distance(beamPoint));
 
             if (logging) {

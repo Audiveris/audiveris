@@ -11,12 +11,6 @@
 // </editor-fold>
 package omr.run;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
@@ -26,6 +20,9 @@ import omr.selection.SelectionService;
 import omr.util.Predicate;
 
 import org.bushe.swing.event.EventSubscriber;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -98,7 +95,7 @@ public class RunsTable
 
         // Allocate the runs, according to orientation
         Rectangle rect = orientation.oriented(
-                new PixelRectangle(0, 0, dimension.width, dimension.height));
+                new Rectangle(0, 0, dimension.width, dimension.height));
 
         // Prepare the collections of runs, one collection per pos value
         runs = new ArrayList<>(rect.height);
@@ -230,7 +227,7 @@ public class RunsTable
     public final Run getRunAt (int x,
                                int y)
     {
-        Point oPt = orientation.oriented(new PixelPoint(x, y));
+        Point oPt = orientation.oriented(new Point(x, y));
 
         // Protection
         if ((oPt.y < 0) || (oPt.y >= runs.size())) {
@@ -513,7 +510,7 @@ public class RunsTable
      * @param point coordinates of the given point
      * @return the run found, or null otherwise
      */
-    public Run lookupRun (PixelPoint point)
+    public Run lookupRun (Point point)
     {
         Point oPt = orientation.oriented(point);
 
@@ -702,7 +699,7 @@ public class RunsTable
      */
     private void handleEvent (LocationEvent locationEvent)
     {
-        PixelRectangle rect = locationEvent.getData();
+        Rectangle rect = locationEvent.getData();
 
         if (rect == null) {
             return;
@@ -716,7 +713,7 @@ public class RunsTable
         }
 
         if ((rect.width == 0) && (rect.height == 0)) {
-            PixelPoint pt = rect.getLocation();
+            Point pt = rect.getLocation();
 
             // Publish Run information
             Run run = getRunAt(pt.x, pt.y);

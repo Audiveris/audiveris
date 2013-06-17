@@ -11,11 +11,10 @@
 // </editor-fold>
 package omr.util;
 
-
 /**
  *
- * Interface {@code Vip} allows to flag an entity as a VIP and generally
- * triggers specific printouts related to this entity
+ * Interface {@code Vip} allows to flag an entity as a VIP and
+ * generally triggers specific printouts related to this entity.
  *
  * @author Hervé Bitteur
  */
@@ -25,6 +24,7 @@ public interface Vip
 
     /**
      * (Debug) Report whether this object is flagged as VIP
+     *
      * @return true if VIP
      */
     boolean isVip ();

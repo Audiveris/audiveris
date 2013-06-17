@@ -20,8 +20,8 @@ import java.util.Collection;
 import java.util.ListIterator;
 
 /**
- * Class {@code Source} allows to formalize the way relevant sections are
- * made available to the area to be scanned.
+ * Class {@code Source} allows to formalize the way relevant sections
+ * are made available to the area to be scanned.
  *
  * @author Hervé Bitteur
  */
@@ -42,7 +42,6 @@ public class SectionsSource
     protected Section section;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------//
     // SectionsSource //
     //----------------//
@@ -65,10 +64,10 @@ public class SectionsSource
      * with a specific predicate for section
      *
      * @param collection the provided sections
-     * @param predicate the predicate to check for candidate sections
+     * @param predicate  the predicate to check for candidate sections
      */
     public SectionsSource (Collection<Section> collection,
-                           Predicate<Section>  predicate)
+                           Predicate<Section> predicate)
     {
         this.predicate = predicate;
 
@@ -79,7 +78,6 @@ public class SectionsSource
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // backup //
     //--------//
@@ -93,6 +91,7 @@ public class SectionsSource
     //---------//
     /**
      * Check whether we have more sections to scan.
+     *
      * @return the boolean result of the test
      */
     public boolean hasNext ()

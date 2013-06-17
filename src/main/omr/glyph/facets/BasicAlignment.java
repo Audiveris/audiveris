@@ -17,9 +17,6 @@ import omr.glyph.Glyphs;
 
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Barycenter;
 import omr.math.BasicLine;
 import omr.math.Line;
@@ -28,15 +25,18 @@ import omr.run.Orientation;
 import static omr.run.Orientation.*;
 import omr.run.Run;
 
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.Scale;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code BasicAlignment} implements a basic handling of Alignment facet
+ * Class {@code BasicAlignment} implements a basic handling of
+ * Alignment facet
  *
  * @author Hervé Bitteur
  */
@@ -50,7 +50,8 @@ public class BasicAlignment
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(BasicAlignment.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            BasicAlignment.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Best (curved or straight) line equation */
@@ -83,7 +84,7 @@ public class BasicAlignment
     @Override
     public final double getAspect (Orientation orientation)
     {
-        PixelRectangle box = glyph.getBounds();
+        Rectangle box = glyph.getBounds();
 
         if (orientation == HORIZONTAL) {
             return (double) box.width / (double) box.height;
@@ -161,7 +162,7 @@ public class BasicAlignment
     @Override
     public final int getLength (Orientation orientation)
     {
-        PixelRectangle box = glyph.getBounds();
+        Rectangle box = glyph.getBounds();
 
         if (orientation == HORIZONTAL) {
             return box.width;
@@ -249,7 +250,7 @@ public class BasicAlignment
      * @return the absolute barycenter of the pixels found
      */
     @Override
-    public Point2D getRectangleCentroid (PixelRectangle absRoi)
+    public Point2D getRectangleCentroid (Rectangle absRoi)
     {
         Barycenter barycenter = new Barycenter();
 
@@ -320,7 +321,7 @@ public class BasicAlignment
     @Override
     public final int getThickness (Orientation orientation)
     {
-        PixelRectangle box = glyph.getBounds();
+        Rectangle box = glyph.getBounds();
 
         if (orientation == HORIZONTAL) {
             return box.height;
@@ -356,6 +357,7 @@ public class BasicAlignment
         if (startPoint != null) {
             sb.append(String.format("   start=%s%n", startPoint));
         }
+
         if (stopPoint != null) {
             sb.append(String.format("   stop=%s%n", stopPoint));
         }
@@ -436,7 +438,7 @@ public class BasicAlignment
         computeLine();
 
         // Enlarge contour box if needed
-        PixelRectangle box = glyph.getBounds();
+        Rectangle box = glyph.getBounds();
         box.add(pStart);
         box.add(pStop);
         glyph.setContourBox(box);
@@ -466,7 +468,7 @@ public class BasicAlignment
             line.includeLine(section.getAbsoluteLine());
         }
 
-        PixelRectangle box = glyph.getBounds();
+        Rectangle box = glyph.getBounds();
 
         // We have a problem if glyph is just 1 pixel: no computable slope!
         if (glyph.getWeight() <= 1) {

@@ -27,22 +27,28 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Class {@code Zip} is a convenient utility that provides both writing and
- * reading from a file which is transparently compressed in Zip.
+ * Class {@code Zip} is a convenient utility that provides both
+ * writing and reading from a file which is transparently compressed
+ * in Zip.
  *
  * @author Hervé Bitteur
  */
 public class Zip
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
+    private Zip ()
+    {
+    }
+
+    //~ Methods ----------------------------------------------------------------
     //--------------------//
     // createInputStream //
     //-------------------//
     /**
-     * Create a InputStream on a given file, by looking for a zip archive whose
-     * path is the file path with ".zip" appended, and by reading the first
-     * entry in this zip file.
+     * Create a InputStream on a given file, by looking for a zip
+     * archive whose path is the file path with ".zip" appended,
+     * and by reading the first entry in this zip file.
      *
      * @param file the file (with no zip extension)
      *
@@ -51,12 +57,13 @@ public class Zip
     public static InputStream createInputStream (File file)
     {
         try {
-            String  path = file.getCanonicalPath();
+            String path = file.getCanonicalPath();
 
             //ZipFile zf = new ZipFile(path + ".zip");
             ZipFile zf = new ZipFile(path);
 
-            for (Enumeration<?> entries = zf.entries(); entries.hasMoreElements();) {
+            for (Enumeration<?> entries = zf.entries();
+                    entries.hasMoreElements();) {
                 ZipEntry entry = (ZipEntry) entries.nextElement();
 
                 return zf.getInputStream(entry);
@@ -86,10 +93,10 @@ public class Zip
     public static OutputStream createOutputStream (File file)
     {
         try {
-            String           path = file.getCanonicalPath();
+            String path = file.getCanonicalPath();
             FileOutputStream fos = new FileOutputStream(path + ".zip");
-            ZipOutputStream  zos = new ZipOutputStream(fos);
-            ZipEntry         ze = new ZipEntry(file.getName());
+            ZipOutputStream zos = new ZipOutputStream(fos);
+            ZipEntry ze = new ZipEntry(file.getName());
             zos.putNextEntry(ze);
 
             return zos;
@@ -118,12 +125,13 @@ public class Zip
     public static Reader createReader (File file)
     {
         try {
-            String  path = file.getCanonicalPath();
+            String path = file.getCanonicalPath();
 
             ZipFile zf = new ZipFile(path + ".zip");
 
-            for (Enumeration<?> entries = zf.entries(); entries.hasMoreElements();) {
-                ZipEntry    entry = (ZipEntry) entries.nextElement();
+            for (Enumeration<?> entries = zf.entries();
+                    entries.hasMoreElements();) {
+                ZipEntry entry = (ZipEntry) entries.nextElement();
                 InputStream is = zf.getInputStream(entry);
 
                 return new InputStreamReader(is);
@@ -153,10 +161,10 @@ public class Zip
     public static Writer createWriter (File file)
     {
         try {
-            String           path = file.getCanonicalPath();
+            String path = file.getCanonicalPath();
             FileOutputStream fos = new FileOutputStream(path + ".zip");
-            ZipOutputStream  zos = new ZipOutputStream(fos);
-            ZipEntry         ze = new ZipEntry(file.getName());
+            ZipOutputStream zos = new ZipOutputStream(fos);
+            ZipEntry ze = new ZipEntry(file.getName());
             zos.putNextEntry(ze);
 
             return new OutputStreamWriter(zos);
@@ -168,9 +176,5 @@ public class Zip
         }
 
         return null;
-    }
-
-    private Zip ()
-    {
     }
 }

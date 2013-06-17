@@ -16,11 +16,6 @@ import omr.constant.ConstantSet;
 
 import omr.run.PixelSource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelDimension;
-
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
@@ -28,6 +23,10 @@ import omr.selection.SelectionService;
 
 import org.bushe.swing.event.EventSubscriber;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -64,8 +63,7 @@ import javax.media.jai.PlanarImage;
  * @author Brenton Partridge
  */
 public class Picture
-        implements PixelSource,
-                   EventSubscriber<LocationEvent>
+        implements PixelSource, EventSubscriber<LocationEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -81,7 +79,7 @@ public class Picture
     //~ Instance fields --------------------------------------------------------
     //
     /** Dimension of current image. */
-    private PixelDimension dimension;
+    private Dimension dimension;
 
     /** Current image. */
     private PlanarImage image;
@@ -123,6 +121,41 @@ public class Picture
     }
 
     //~ Methods ----------------------------------------------------------------
+    //--------//
+    // invert //
+    //--------//
+    public static PlanarImage invert (RenderedImage image)
+    {
+        return JAI.create(
+                "Invert",
+                new ParameterBlock().addSource(image).add(null),
+                null);
+    }
+
+    //----------//
+    // getPixel //
+    //----------//
+    /**
+     * Report the pixel element read at location (x, y) in the picture.
+     *
+     * @param x abscissa value
+     * @param y ordinate value
+     * @return the pixel value
+     */
+    @Override
+    public final int getPixel (int x,
+                               int y)
+    {
+        int[] pixel = raster.getPixel(x, y, (int[]) null); // Allocates pixel!
+
+        if (grayFactor == 1) {
+            // Speed up the normal case
+            return pixel[0];
+        } else {
+            return (grayFactor / 2) + (grayFactor * pixel[0]);
+        }
+    }
+
     //
     //-------//
     // close //
@@ -210,9 +243,9 @@ public class Picture
      *
      * @return the image dimension
      */
-    public PixelDimension getDimension ()
+    public Dimension getDimension ()
     {
-        return new PixelDimension(dimension.width, dimension.height);
+        return new Dimension(dimension.width, dimension.height);
     }
 
     //-----------//
@@ -261,30 +294,6 @@ public class Picture
     public String getName ()
     {
         return "Picture";
-    }
-
-    //----------//
-    // getPixel //
-    //----------//
-    /**
-     * Report the pixel element read at location (x, y) in the picture.
-     *
-     * @param x abscissa value
-     * @param y ordinate value
-     * @return the pixel value
-     */
-    @Override
-    public final int getPixel (int x,
-                               int y)
-    {
-        int[] pixel = raster.getPixel(x, y, (int[]) null); // Allocates pixel!
-
-        if (grayFactor == 1) {
-            // Speed up the normal case
-            return pixel[0];
-        } else {
-            return (grayFactor / 2) + (grayFactor * pixel[0]);
-        }
     }
 
     //----------//
@@ -357,17 +366,6 @@ public class Picture
     {
         Graphics2D g2 = (Graphics2D) g;
         g2.drawRenderedImage(image, identity);
-    }
-
-    //--------//
-    // invert //
-    //--------//
-    public static PlanarImage invert (RenderedImage image)
-    {
-        return JAI.create(
-                "Invert",
-                new ParameterBlock().addSource(image).add(null),
-                null);
     }
 
     //----------//
@@ -484,21 +482,20 @@ public class Picture
 
         if (numBands == 1) {
             // Pixel gray value. Nothing to do
-        } else if (numBands == 2 && hasAlpha) {
+        } else if ((numBands == 2) && hasAlpha) {
             // Pixel + alpha
             // Discard alpha (TODO: check if premultiplied!!!)
             image = JAI.create("bandselect", image, new int[]{});
-        } else if (numBands == 3 && !hasAlpha) {
+        } else if ((numBands == 3) && !hasAlpha) {
             // RGB
             image = RGBToGray(image);
-        } else if (numBands == 4 && hasAlpha) {
+        } else if ((numBands == 4) && hasAlpha) {
             // RGB + alpha
             image = RGBAToGray(image);
         } else {
             throw new ImageFormatException(
                     "Unsupported sample model numBands=" + numBands);
         }
-
     }
 
     //-------------//
@@ -506,9 +503,12 @@ public class Picture
     //-------------//
     private void printBounds ()
     {
-        logger.info("minX:{} minY:{} maxX:{} maxY:{}",
-                image.getMinX(), image.getMinY(),
-                image.getMaxX(), image.getMaxY());
+        logger.info(
+                "minX:{} minY:{} maxX:{} maxY:{}",
+                image.getMinX(),
+                image.getMinY(),
+                image.getMaxX(),
+                image.getMaxY());
     }
 
     //----------//
@@ -531,7 +531,7 @@ public class Picture
         checkImageFormat();
 
         // Cache dimensions
-        dimension = new PixelDimension(image.getWidth(), image.getHeight());
+        dimension = new Dimension(image.getWidth(), image.getHeight());
         raster = Raster.createRaster(
                 image.getData().getSampleModel(),
                 image.getData().getDataBuffer(),

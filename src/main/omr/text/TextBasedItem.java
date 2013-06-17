@@ -11,10 +11,9 @@
 // </editor-fold>
 package omr.text;
 
-import omr.score.common.PixelPoint;
-
 import omr.util.Vip;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -63,18 +62,34 @@ public abstract class TextBasedItem
     }
 
     //~ Methods ----------------------------------------------------------------
-    //
-    //-------------//
-    // setBaseline //
-    //-------------//
-    /**
-     * Assign the word baseline
-     *
-     * @param baseline the new item baseline
-     */
-    public void setBaseline (Line2D baseline)
+    //------------//
+    // baselineOf //
+    //------------//
+    public static Line2D baselineOf (List<? extends TextBasedItem> items)
     {
-        this.baseline = baseline;
+        Point2D first = items.get(0)
+                .getBaseline()
+                .getP1();
+        Point2D last = items.get(items.size() - 1)
+                .getBaseline()
+                .getP2();
+
+        return new Line2D.Double(first, last);
+    }
+
+    //--------------//
+    // confidenceOf //
+    //--------------//
+    public static int confidenceOf (Collection<? extends TextBasedItem> items)
+    {
+        // Use average confidence
+        double total = 0;
+
+        for (TextBasedItem item : items) {
+            total += item.getConfidence();
+        }
+
+        return (int) Math.rint(total / items.size());
     }
 
     //-------------//
@@ -90,18 +105,56 @@ public abstract class TextBasedItem
         return baseline;
     }
 
+    //---------------//
+    // getConfidence //
+    //---------------//
+    /**
+     * Report the item confidence level
+     *
+     * @return the confidence or null
+     */
+    public Integer getConfidence ()
+    {
+        return confidence;
+    }
+
     //-------------//
     // getLocation //
     //-------------//
-    public PixelPoint getLocation ()
+    public Point getLocation ()
     {
         Line2D bl = getBaseline();
+
         if (bl == null) {
             return null;
         }
 
-        return new PixelPoint((int) Math.rint(bl.getX1()),
+        return new Point(
+                (int) Math.rint(bl.getX1()),
                 (int) Math.rint(bl.getY1()));
+    }
+
+    //-------//
+    // isVip //
+    //-------//
+    @Override
+    public boolean isVip ()
+    {
+        return vip;
+    }
+
+    //
+    //-------------//
+    // setBaseline //
+    //-------------//
+    /**
+     * Assign the word baseline
+     *
+     * @param baseline the new item baseline
+     */
+    public void setBaseline (Line2D baseline)
+    {
+        this.baseline = baseline;
     }
 
     //---------------//
@@ -117,39 +170,13 @@ public abstract class TextBasedItem
         this.confidence = confidence;
     }
 
-    //---------------//
-    // getConfidence //
-    //---------------//
-    /**
-     * Report the item confidence level
-     *
-     * @return the confidence or null
-     */
-    public Integer getConfidence ()
-    {
-        return confidence;
-    }
-
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //--------//
+    // setVip //
+    //--------//
     @Override
-    protected String internalsString ()
+    public void setVip ()
     {
-        StringBuilder sb = new StringBuilder(super.internalsString());
-
-        if (getConfidence() != null) {
-            sb.append(" conf:")
-                    .append(getConfidence());
-        }
-
-        if (getBaseline() != null) {
-            sb.append(String.format(" base[%.0f,%.0f]-[%.0f,%.0f]",
-                    baseline.getX1(), baseline.getY1(),
-                    baseline.getX2(), baseline.getY2()));
-        }
-
-        return sb.toString();
+        vip = true;
     }
 
     //-----------//
@@ -170,51 +197,37 @@ public abstract class TextBasedItem
 
         // Translate baseline
         if (getBaseline() != null) {
-            baseline.setLine(baseline.getX1() + dx, baseline.getY1() + dy,
-                    baseline.getX2() + dx, baseline.getY2() + dy);
+            baseline.setLine(
+                    baseline.getX1() + dx,
+                    baseline.getY1() + dy,
+                    baseline.getX2() + dx,
+                    baseline.getY2() + dy);
         }
     }
 
-    //------------//
-    // baselineOf //
-    //------------//
-    public static Line2D baselineOf (List<? extends TextBasedItem> items)
+    //-----------------//
+    // internalsString //
+    //-----------------//
+    @Override
+    protected String internalsString ()
     {
-        Point2D first = items.get(0).getBaseline().getP1();
-        Point2D last = items.get(items.size() - 1).getBaseline().getP2();
+        StringBuilder sb = new StringBuilder(super.internalsString());
 
-        return new Line2D.Double(first, last);
-    }
-
-    //--------------//
-    // confidenceOf //
-    //--------------//
-    public static int confidenceOf (Collection<? extends TextBasedItem> items)
-    {
-        // Use average confidence
-        double total = 0;
-        for (TextBasedItem item : items) {
-            total += item.getConfidence();
+        if (getConfidence() != null) {
+            sb.append(" conf:")
+                    .append(getConfidence());
         }
 
-        return (int) Math.rint(total / items.size());
-    }
+        if (getBaseline() != null) {
+            sb.append(
+                    String.format(
+                    " base[%.0f,%.0f]-[%.0f,%.0f]",
+                    baseline.getX1(),
+                    baseline.getY1(),
+                    baseline.getX2(),
+                    baseline.getY2()));
+        }
 
-    //-------//
-    // isVip //
-    //-------//
-    @Override
-    public boolean isVip ()
-    {
-        return vip;
-    }
-
-    //--------//
-    // setVip //
-    //--------//
-    @Override
-    public void setVip ()
-    {
-        vip = true;
+        return sb.toString();
     }
 }

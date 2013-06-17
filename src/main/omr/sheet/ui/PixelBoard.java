@@ -11,11 +11,6 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelRectangle;
-
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
@@ -31,6 +26,9 @@ import omr.ui.util.Panel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -48,49 +46,48 @@ import javax.swing.KeyStroke;
  * @author Hervé Bitteur
  */
 public class PixelBoard
-    extends Board
+        extends Board
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(PixelBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            PixelBoard.class);
 
     /** Events this entity is interested in */
-    private static final Class<?>[] eventClasses = new Class<?>[] {
-                                                       LocationEvent.class,
-                                                       PixelLevelEvent.class
-                                                   };
+    private static final Class<?>[] eventClasses = new Class<?>[]{
+        LocationEvent.class,
+        PixelLevelEvent.class
+    };
 
     //~ Instance fields --------------------------------------------------------
-
     /** Abscissa of upper Left point */
     private final LIntegerField x = new LIntegerField(
-        "X",
-        "Abscissa of upper left corner");
+            "X",
+            "Abscissa of upper left corner");
 
     /** Ordinate of upper Left point */
     private final LIntegerField y = new LIntegerField(
-        "Y",
-        "Ordinate of upper left corner");
+            "Y",
+            "Ordinate of upper left corner");
 
     /** Width of rectangle */
     private final LIntegerField width = new LIntegerField(
-        "Width",
-        "Width of rectangle");
+            "Width",
+            "Width of rectangle");
 
     /** Height of rectangle */
     private final LIntegerField height = new LIntegerField(
-        "Height",
-        "Height of rectangle");
+            "Height",
+            "Height of rectangle");
 
     /** Pixel gray level */
     private final LIntegerField level = new LIntegerField(
-        false,
-        "Level",
-        "Pixel level");
+            false,
+            "Level",
+            "Pixel level");
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // PixelBoard //
     //------------//
@@ -102,25 +99,24 @@ public class PixelBoard
     public PixelBoard (Sheet sheet)
     {
         super(
-            Board.PIXEL,
-            sheet.getLocationService(),
-            eventClasses,
-            false,
-            true);
+                Board.PIXEL,
+                sheet.getLocationService(),
+                eventClasses,
+                false,
+                true);
 
         // Needed to process user input when RETURN/ENTER is pressed
         getComponent()
-            .getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-            .put(KeyStroke.getKeyStroke("ENTER"), "ParamAction");
+                .getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                .put(KeyStroke.getKeyStroke("ENTER"), "ParamAction");
         getComponent()
-            .getActionMap()
-            .put("ParamAction", new ParamAction());
+                .getActionMap()
+                .put("ParamAction", new ParamAction());
 
         defineLayout();
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // onEvent //
     //---------//
@@ -143,7 +139,7 @@ public class PixelBoard
             if (event instanceof LocationEvent) {
                 // Display rectangle attributes
                 LocationEvent sheetLocation = (LocationEvent) event;
-                Rectangle     rect = sheetLocation.getData();
+                Rectangle rect = sheetLocation.getData();
 
                 if (rect != null) {
                     x.setValue(rect.x);
@@ -161,7 +157,7 @@ public class PixelBoard
             } else if (event instanceof PixelLevelEvent) {
                 // Display pixel gray level
                 PixelLevelEvent pixelLevelEvent = (PixelLevelEvent) event;
-                final Integer   pixelLevel = pixelLevelEvent.getData();
+                final Integer pixelLevel = pixelLevelEvent.getData();
 
                 if (pixelLevel != null) {
                     level.setValue(pixelLevel);
@@ -183,21 +179,21 @@ public class PixelBoard
 
         // Specify that columns 1, 5 & 9 as well as 3, 7 & 11 have equal widths
         layout.setColumnGroups(
-            new int[][] {
-                { 1, 5, 9 },
-                { 3, 7, 11 }
-            });
+                new int[][]{
+            {1, 5, 9},
+            {3, 7, 11}
+        });
 
         PanelBuilder builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
         CellConstraints cst = new CellConstraints();
 
-        int             r = 1; // --------------------------------
+        int r = 1; // --------------------------------
         builder.add(x.getLabel(), cst.xy(1, r));
         builder.add(x.getField(), cst.xy(3, r));
         x.getField()
-         .setColumns(5);
+                .setColumns(5);
 
         builder.add(width.getLabel(), cst.xy(5, r));
         builder.add(width.getField(), cst.xy(7, r));
@@ -214,12 +210,11 @@ public class PixelBoard
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-------------//
     // ParamAction //
     //-------------//
     private class ParamAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Methods ------------------------------------------------------------
 
@@ -231,16 +226,16 @@ public class PixelBoard
             // Remember & forward the new pixel selection
             // A rectangle (which can be degenerated to a point)
             getSelectionService()
-                .publish(
-                new LocationEvent(
+                    .publish(
+                    new LocationEvent(
                     PixelBoard.this,
                     SelectionHint.LOCATION_INIT,
                     MouseMovement.PRESSING,
-                    new PixelRectangle(
-                        x.getValue(),
-                        y.getValue(),
-                        width.getValue(),
-                        height.getValue())));
+                    new Rectangle(
+                    x.getValue(),
+                    y.getValue(),
+                    width.getValue(),
+                    height.getValue())));
         }
     }
 }

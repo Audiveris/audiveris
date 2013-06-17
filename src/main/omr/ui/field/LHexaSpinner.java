@@ -26,7 +26,7 @@ import javax.swing.text.DefaultFormatterFactory;
  * @author Hervé Bitteur
  */
 public class LHexaSpinner
-    extends LIntegerSpinner
+        extends LIntegerSpinner
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -48,12 +48,11 @@ public class LHexaSpinner
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //------------//
     // HexaEditor //
     //------------//
     private static class HexaEditor
-        extends JSpinner.NumberEditor
+            extends JSpinner.NumberEditor
     {
         //~ Constructors -------------------------------------------------------
 
@@ -67,13 +66,12 @@ public class LHexaSpinner
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void stateChanged (ChangeEvent e)
         {
             JSpinner spinner = (JSpinner) (e.getSource());
             getTextField()
-                .setValue(spinner.getValue());
+                    .setValue(spinner.getValue());
         }
     }
 
@@ -81,17 +79,17 @@ public class LHexaSpinner
     // HexaFormatter //
     //---------------//
     private static class HexaFormatter
-        extends DefaultFormatter
+            extends DefaultFormatter
     {
         //~ Methods ------------------------------------------------------------
 
         @Override
         public Object stringToValue (String string)
-            throws ParseException
+                throws ParseException
         {
             try {
                 JFormattedTextField ftf = getFormattedTextField();
-                Object              value = ftf.getValue();
+                Object value = ftf.getValue();
 
                 if (value instanceof Integer) {
                     return Integer.valueOf(string, 16);
@@ -99,8 +97,8 @@ public class LHexaSpinner
                     return Long.valueOf(string, 16);
                 } else {
                     throw new IllegalArgumentException(
-                        "Illegal Number class for HexaFormatter " +
-                        value.getClass());
+                            "Illegal Number class for HexaFormatter "
+                            + value.getClass());
                 }
             } catch (NumberFormatException ex) {
                 throw new ParseException(string, 0);
@@ -109,7 +107,7 @@ public class LHexaSpinner
 
         @Override
         public String valueToString (Object value)
-            throws ParseException
+                throws ParseException
         {
             if (value == null) {
                 return "";
@@ -123,7 +121,7 @@ public class LHexaSpinner
     // HexaFormatterFactory //
     //----------------------//
     private static class HexaFormatterFactory
-        extends DefaultFormatterFactory
+            extends DefaultFormatterFactory
     {
         //~ Constructors -------------------------------------------------------
 

@@ -11,15 +11,14 @@
 // </editor-fold>
 package omr.score;
 
-import omr.Main;
 import omr.WellKnowns;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import omr.sheet.Bench;
 
 import omr.step.Step;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -69,7 +68,7 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public class ScoreBench
-    extends Bench
+        extends Bench
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -80,7 +79,6 @@ public class ScoreBench
     private static final String INTERRUPTION_KEY = "whole.interrupted";
 
     //~ Instance fields --------------------------------------------------------
-
     /** The related score */
     private final Score score;
 
@@ -91,12 +89,12 @@ public class ScoreBench
     private final Date date = new Date(startTime);
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // ScoreBench //
     //------------//
     /**
      * Creates a new ScoreBench object.
+     *
      * @param score the related score
      */
     public ScoreBench (Score score)
@@ -115,7 +113,6 @@ public class ScoreBench
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // flushBench //
     //------------//
@@ -126,7 +123,7 @@ public class ScoreBench
     public final synchronized void flushBench ()
     {
         ScoresManager.getInstance()
-                     .storeBench(this, null, false);
+                .storeBench(this, null, false);
     }
 
     //----------//
@@ -155,8 +152,8 @@ public class ScoreBench
                                          long duration)
     {
         addProp(
-            "step." + step.getName().toLowerCase() + ".duration",
-            "" + duration);
+                "step." + step.getName().toLowerCase() + ".duration",
+                "" + duration);
         flushBench();
     }
 
@@ -166,13 +163,13 @@ public class ScoreBench
     /**
      * Store this bench into an output stream
      *
-     * @param output the output stream to be written
+     * @param output   the output stream to be written
      * @param complete true if bench data must be finalized
      * @throws IOException
      */
     public synchronized void store (OutputStream output,
-                                    boolean      complete)
-        throws IOException
+                                    boolean complete)
+            throws IOException
     {
         // Build external properties
         Properties externals = cleanupProps();
@@ -215,14 +212,14 @@ public class ScoreBench
      */
     private Properties cleanupProps ()
     {
-        Properties  externals = new Properties();
+        Properties externals = new Properties();
 
         // Retrieve key radices
         Set<String> radices = new HashSet<>();
 
         for (Object obj : props.keySet()) {
             String key = (String) obj;
-            int    dot = key.lastIndexOf('.');
+            int dot = key.lastIndexOf('.');
             String radix = key.substring(0, dot);
             radices.add(radix);
         }
@@ -237,9 +234,9 @@ public class ScoreBench
                 // We have several properties, so we keep all the intermediate values
                 // Special case for step radix: we sum up the durations
                 // Standard radix case: we use the latest value
-                boolean isStep = radix.startsWith("step.") &&
-                                 radix.endsWith(".duration");
-                int     sum = 0;
+                boolean isStep = radix.startsWith("step.")
+                                 && radix.endsWith(".duration");
+                int sum = 0;
 
                 for (int index = 1;; index++) {
                     String key = keyOf(radix, index);

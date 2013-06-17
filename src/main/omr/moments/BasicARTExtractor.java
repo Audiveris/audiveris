@@ -20,15 +20,16 @@ import java.awt.image.WritableRaster;
  * of ART Moments.
  *
  * See MPEG-7 Experimentation Model for the original C++ code
+ *
  * @author Hervé Bitteur
  */
 public class BasicARTExtractor
-    extends AbstractExtractor<ARTMoments>
+        extends AbstractExtractor<ARTMoments>
 {
     //~ Static fields/initializers ---------------------------------------------
 
     // Zernike basis function radius
-    private static final int     LUT_RADIUS = 50;
+    private static final int LUT_RADIUS = 50;
 
     /** Real values of ARTMoments basis function */
     private static final LUT[][] realLuts = new LUT[ANGULAR][RADIAL];
@@ -41,7 +42,6 @@ public class BasicARTExtractor
     }
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new BasicARTExtractor object and process
      * the provided foreground points.
@@ -51,7 +51,6 @@ public class BasicARTExtractor
     }
 
     //~ Methods ----------------------------------------------------------------
-
     @Override
     public void reconstruct (WritableRaster raster)
     {
@@ -64,10 +63,10 @@ public class BasicARTExtractor
     @Override
     protected void extractMoments ()
     {
-        final LUT        anyLut = realLuts[0][0]; // Just for template
-        final int        lutRadius = anyLut.getRadius();
-        final double     centerX = center.getX();
-        final double     centerY = center.getY();
+        final LUT anyLut = realLuts[0][0]; // Just for template
+        final int lutRadius = anyLut.getRadius();
+        final double centerX = center.getX();
+        final double centerY = center.getY();
 
         // Coefficients, real part & imaginary part
         final double[][] coeffReal = new double[ANGULAR][RADIAL];
@@ -140,13 +139,13 @@ public class BasicARTExtractor
                         for (int r = 0; r < RADIAL; r++) {
                             double temp = Math.cos(rad * Math.PI * r);
                             realLuts[p][r].assign(
-                                x,
-                                y,
-                                temp * Math.cos(angle * p));
+                                    x,
+                                    y,
+                                    temp * Math.cos(angle * p));
                             imagLuts[p][r].assign(
-                                x,
-                                y,
-                                temp * Math.sin(angle * p));
+                                    x,
+                                    y,
+                                    temp * Math.sin(angle * p));
                         }
                     }
                 } else {

@@ -12,22 +12,21 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
 /**
- *  Class {@code SlantedSymbol} draws symbols made of several slanted parts
+ * Class {@code SlantedSymbol} draws symbols made of several slanted parts
  * (such as in DYNAMICS_FP, where both the F and the P are slanted and appear
  * too far for each other)
  */
 public class SlantedSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -36,10 +35,11 @@ public class SlantedSymbol
     //---------------//
     /**
      * Creates a new SlantedSymbol object, standard size
+     *
      * @param shape the related shape
      * @param codes the codes for MusicFont characters
      */
-    public SlantedSymbol (Shape  shape,
+    public SlantedSymbol (Shape shape,
                           int... codes)
     {
         this(false, shape, codes);
@@ -52,18 +52,17 @@ public class SlantedSymbol
      * Creates a new SlantedSymbol object.
      *
      * @param isIcon true for icon
-     * @param shape the related shape
-     * @param codes the codes for MusicFont characters
+     * @param shape  the related shape
+     * @param codes  the codes for MusicFont characters
      */
     protected SlantedSymbol (boolean isIcon,
-                             Shape   shape,
+                             Shape shape,
                              int... codes)
     {
         super(isIcon, shape, false, codes);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -90,20 +89,20 @@ public class SlantedSymbol
         float x = 0;
 
         for (int i = 0; i < codes.length; i++) {
-            int         code = codes[i];
-            TextLayout  layout = font.layout(code);
+            int code = codes[i];
+            TextLayout layout = font.layout(code);
             Rectangle2D r = layout.getBounds();
 
             // Abscissa reduction because of slanted characters
             // It's value depends on whether we have a 'f' or not
             float dx;
-            int   c = code - MusicFont.CODE_OFFSET;
+            int c = code - MusicFont.CODE_OFFSET;
 
             if ((c == 102) || // F
-                (c == 196) || // FF
-                (c == 236) || // FFF
-                (c == 83) || // SF
-                (c == 90)) { // FZ
+                    (c == 196) || // FF
+                    (c == 236) || // FFF
+                    (c == 83) || // SF
+                    (c == 90)) { // FZ
                 dx = (float) r.getHeight() * 0.215f; // Measured
             } else {
                 dx = (float) r.getHeight() * 0.075f; // Measured
@@ -119,19 +118,19 @@ public class SlantedSymbol
                 rect = layout.getPixelBounds(null, x, 0);
             } else {
                 Rectangle2D.union(
-                    rect,
-                    layout.getPixelBounds(null, x, 0),
-                    rect);
+                        rect,
+                        layout.getPixelBounds(null, x, 0),
+                        rect);
             }
 
             x += (r.getWidth() - dx);
         }
 
         p.rect = new Rectangle(
-            (int) Math.floor(rect.getX()),
-            (int) Math.floor(rect.getY()),
-            (int) Math.ceil(rect.getWidth()),
-            (int) Math.ceil(rect.getHeight()));
+                (int) Math.floor(rect.getX()),
+                (int) Math.floor(rect.getY()),
+                (int) Math.ceil(rect.getWidth()),
+                (int) Math.ceil(rect.getHeight()));
 
         return p;
     }
@@ -141,16 +140,16 @@ public class SlantedSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams   p = (MyParams) params;
+        MyParams p = (MyParams) params;
 
-        PixelPoint loc = alignment.translatedPoint(
-            BASELINE_LEFT,
-            p.rect,
-            location);
+        Point loc = alignment.translatedPoint(
+                BASELINE_LEFT,
+                p.rect,
+                location);
 
         // Precise abscissa
         float x = loc.x;
@@ -163,18 +162,32 @@ public class SlantedSymbol
             }
 
             OmrFont.paint(
-                g,
-                smart.layout,
-                new PixelPoint((int) Math.rint(x), loc.y),
-                BASELINE_LEFT);
+                    g,
+                    smart.layout,
+                    new Point((int) Math.rint(x), loc.y),
+                    BASELINE_LEFT);
 
             x += smart.layout.getBounds()
-                             .getWidth();
+                    .getWidth();
             x -= smart.dx; // After symbol
         }
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //--------//
+    // Params //
+    //--------//
+    protected class MyParams
+            extends Params
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        // layout not used
+        // rect for global image
+        // Sequence of layouts
+        SmartLayout[] layouts;
+
+    }
 
     //-------------//
     // SmartLayout //
@@ -190,28 +203,11 @@ public class SlantedSymbol
         final float dx;
 
         //~ Constructors -------------------------------------------------------
-
         public SmartLayout (TextLayout layout,
-                            float      dx)
+                            float dx)
         {
             this.layout = layout;
             this.dx = dx;
         }
-    }
-
-    //--------//
-    // Params //
-    //--------//
-    protected class MyParams
-        extends Params
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        // layout not used
-
-        // rect for global image
-
-        // Sequence of layouts
-        SmartLayout[] layouts;
     }
 }

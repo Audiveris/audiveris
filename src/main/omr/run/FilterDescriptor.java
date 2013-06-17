@@ -13,13 +13,14 @@ package omr.run;
 
 import omr.constant.ConstantSet;
 
+import omr.util.Param;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import omr.util.Param;
 
 /**
  * Management data meant to describe an implementation instance of

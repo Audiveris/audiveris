@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.glyph;
 
+import omr.util.PointFacade;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.util.PointFacade;
 
 import java.awt.Point;
 import java.io.InputStream;
@@ -30,8 +30,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 /**
- * Class {@code SymbolGlyphDescriptor} brings additional information to a mere
- * shaped glyph.
+ * Class {@code SymbolGlyphDescriptor} brings additional information
+ * to a mere shaped glyph.
  * <p>Such a descriptor contains a simple reference to the related shape,
  * whose appearance will be drawn thanks to MusicFont.
  * The descriptor can be augmented by informations such as stem number, with
@@ -42,14 +42,11 @@ import javax.xml.bind.annotation.XmlType;
  * different values for additional informations (for example, the stem
  * number may be 1 or 2 for NOTEHEAD_BLACK shape).
  *
- *
- *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlType(name = "", propOrder =  {
-    "xmlRefPoint", "stemNumber", "withLedger", "pitchPosition"}
-)
+@XmlType(name = "", propOrder = {
+    "xmlRefPoint", "stemNumber", "withLedger", "pitchPosition"})
 @XmlRootElement(name = "symbol")
 public class SymbolGlyphDescriptor
 {
@@ -57,13 +54,12 @@ public class SymbolGlyphDescriptor
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        SymbolGlyphDescriptor.class);
+            SymbolGlyphDescriptor.class);
 
     /** Un/marshalling context for use with JAXB */
     private static JAXBContext jaxbContext;
 
     //~ Instance fields --------------------------------------------------------
-
     /** Image related interline value */
     @XmlAttribute
     private Integer interline;
@@ -91,7 +87,6 @@ public class SymbolGlyphDescriptor
     private Point refPoint;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------------//
     // SymbolGlyphDescriptor //
     //-----------------------//
@@ -103,6 +98,26 @@ public class SymbolGlyphDescriptor
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-------------------//
+    // loadFromXmlStream //
+    //-------------------//
+    /**
+     * Load a symbol description from an XML stream.
+     *
+     * @param is the input stream
+     * @return a new SymbolGlyphDescriptor, or null if loading has failed
+     */
+    public static SymbolGlyphDescriptor loadFromXmlStream (InputStream is)
+    {
+        try {
+            return (SymbolGlyphDescriptor) jaxbUnmarshal(is);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+
+            // User already notified
+            return null;
+        }
+    }
 
     //---------//
     // getName //
@@ -169,27 +184,6 @@ public class SymbolGlyphDescriptor
         return withLedger;
     }
 
-    //-------------------//
-    // loadFromXmlStream //
-    //-------------------//
-    /**
-     * Load a symbol description from an XML stream.
-     *
-     * @param is the input stream
-     * @return a new SymbolGlyphDescriptor, or null if loading has failed
-     */
-    public static SymbolGlyphDescriptor loadFromXmlStream (InputStream is)
-    {
-        try {
-            return (SymbolGlyphDescriptor) jaxbUnmarshal(is);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-
-            // User already notified
-            return null;
-        }
-    }
-
     //----------//
     // toString //
     //----------//
@@ -201,27 +195,27 @@ public class SymbolGlyphDescriptor
 
         if (name != null) {
             sb.append(" name:")
-              .append(name);
+                    .append(name);
         }
 
         if (interline != null) {
             sb.append(" interline:")
-              .append(interline);
+                    .append(interline);
         }
 
         if (stemNumber != null) {
             sb.append(" stem-number:")
-              .append(stemNumber);
+                    .append(stemNumber);
         }
 
         if (withLedger != null) {
             sb.append(" with-ledger:")
-              .append(withLedger);
+                    .append(withLedger);
         }
 
         if (pitchPosition != null) {
             sb.append(" pitch-position:")
-              .append(pitchPosition);
+                    .append(pitchPosition);
         }
 
         sb.append("}");
@@ -233,7 +227,7 @@ public class SymbolGlyphDescriptor
     // getJaxbContext //
     //----------------//
     private static JAXBContext getJaxbContext ()
-        throws JAXBException
+            throws JAXBException
     {
         // Lazy creation
         if (jaxbContext == null) {
@@ -241,6 +235,18 @@ public class SymbolGlyphDescriptor
         }
 
         return jaxbContext;
+    }
+
+    //---------------//
+    // jaxbUnmarshal //
+    //---------------//
+    private static Object jaxbUnmarshal (InputStream is)
+            throws JAXBException
+    {
+        Unmarshaller um = getJaxbContext()
+                .createUnmarshaller();
+
+        return um.unmarshal(is);
     }
 
     //----------------//
@@ -253,18 +259,6 @@ public class SymbolGlyphDescriptor
         } else {
             return null;
         }
-    }
-
-    //---------------//
-    // jaxbUnmarshal //
-    //---------------//
-    private static Object jaxbUnmarshal (InputStream is)
-        throws JAXBException
-    {
-        Unmarshaller um = getJaxbContext()
-                              .createUnmarshaller();
-
-        return um.unmarshal(is);
     }
 
     //----------------//

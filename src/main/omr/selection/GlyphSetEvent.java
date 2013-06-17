@@ -22,7 +22,7 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public class GlyphSetEvent
-    extends NestEvent
+        extends NestEvent
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -30,28 +30,27 @@ public class GlyphSetEvent
     private final Set<Glyph> glyphs;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // GlyphEvent //
     //------------//
     /**
      * Creates a new GlyphEvent object.
-     * @param source the entity that created this event
-     * @param hint hint about event origin (or null)
+     *
+     * @param source   the entity that created this event
+     * @param hint     hint about event origin (or null)
      * @param movement the user movement
-     * @param glyphs the selected collection of glyphs (or null)
+     * @param glyphs   the selected collection of glyphs (or null)
      */
-    public GlyphSetEvent (Object        source,
+    public GlyphSetEvent (Object source,
                           SelectionHint hint,
                           MouseMovement movement,
-                          Set<Glyph>    glyphs)
+                          Set<Glyph> glyphs)
     {
         super(source, hint, movement);
         this.glyphs = glyphs;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getEntity //
     //-----------//

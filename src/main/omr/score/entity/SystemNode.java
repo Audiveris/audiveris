@@ -13,14 +13,16 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
-import omr.score.common.PixelDimension;
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
+import omr.math.GeoUtil;
+
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.Navigable;
 import omr.util.TreeNode;
 
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -60,10 +62,10 @@ public abstract class SystemNode
     private final ScoreSystem system;
 
     /** Bounding box of this entity, WRT system top-left corner */
-    private PixelRectangle box;
+    private Rectangle box;
 
     /** Location of the center of this entity, WRT system top-left corner */
-    protected PixelPoint center;
+    protected Point center;
 
     //~ Constructors -----------------------------------------------------------
     //------------//
@@ -126,8 +128,11 @@ public abstract class SystemNode
     public void addError (Glyph glyph,
                           String text)
     {
-        if ((getPage() != null) && (getPage().getSheet() != null)) {
-            getPage().getSheet().addError(this, glyph, text);
+        if ((getPage() != null) && (getPage()
+                .getSheet() != null)) {
+            getPage()
+                    .getSheet()
+                    .addError(this, glyph, text);
         }
     }
 
@@ -140,7 +145,7 @@ public abstract class SystemNode
      * @param glyph the glyph
      * @return the glyph center
      */
-    public PixelPoint computeGlyphCenter (Glyph glyph)
+    public Point computeGlyphCenter (Glyph glyph)
     {
         return computeGlyphsCenter(Collections.singleton(glyph));
     }
@@ -153,14 +158,14 @@ public abstract class SystemNode
      *
      * @return the box
      */
-    public PixelRectangle getBox ()
+    public Rectangle getBox ()
     {
         if (box == null) {
             computeBox();
         }
 
         if (box != null) {
-            return (PixelRectangle) box.clone();
+            return (Rectangle) box.clone();
         } else {
             return null;
         }
@@ -174,14 +179,14 @@ public abstract class SystemNode
      *
      * @return the center point
      */
-    public PixelPoint getCenter ()
+    public Point getCenter ()
     {
         if (center == null) {
             computeCenter();
         }
 
         if (center != null) {
-            return (PixelPoint) center.clone();
+            return (Point) center.clone();
         } else {
             return null;
         }
@@ -208,14 +213,14 @@ public abstract class SystemNode
      *
      * @return the entity dimension
      */
-    public PixelDimension getDimension ()
+    public Dimension getDimension ()
     {
         if (box == null) {
             computeBox();
         }
 
         if (box != null) {
-            return new PixelDimension(box.width, box.height);
+            return new Dimension(box.width, box.height);
         } else {
             return null;
         }
@@ -255,10 +260,10 @@ public abstract class SystemNode
      */
     protected void computeCenter ()
     {
-        PixelRectangle theBox = getBox();
+        Rectangle theBox = getBox();
 
         if (theBox != null) {
-            setCenter(theBox.getCenter());
+            setCenter(GeoUtil.centerOf(theBox));
         } else {
             setCenter(null);
         }
@@ -273,14 +278,13 @@ public abstract class SystemNode
      * @param glyphs the collection of glyph components
      * @return the bounding box
      */
-    protected PixelRectangle computeGlyphsBox (
-            Collection<? extends Glyph> glyphs)
+    protected Rectangle computeGlyphsBox (Collection<? extends Glyph> glyphs)
     {
         if ((glyphs == null) || (getSystem() == null)) {
             return null;
         }
 
-        PixelRectangle pixRect = null;
+        Rectangle pixRect = null;
 
         for (Glyph glyph : glyphs) {
             if (pixRect == null) {
@@ -302,19 +306,19 @@ public abstract class SystemNode
      * @param glyphs the collection of glyph components
      * @return the area center
      */
-    protected PixelPoint computeGlyphsCenter (Collection<? extends Glyph> glyphs)
+    protected Point computeGlyphsCenter (Collection<? extends Glyph> glyphs)
     {
         if (glyphs == null) {
             return null;
         }
 
-        PixelRectangle glyphsBox = computeGlyphsBox(glyphs);
+        Rectangle glyphsBox = computeGlyphsBox(glyphs);
 
         if (glyphsBox == null) {
             return null;
         }
 
-        return new PixelPoint(
+        return new Point(
                 glyphsBox.x + (glyphsBox.width / 2),
                 glyphsBox.y + (glyphsBox.height / 2));
     }
@@ -339,7 +343,7 @@ public abstract class SystemNode
      *
      * @param box the bounding box
      */
-    protected void setBox (PixelRectangle box)
+    protected void setBox (Rectangle box)
     {
         this.box = box;
     }
@@ -352,7 +356,7 @@ public abstract class SystemNode
      *
      * @param center the system-based center of the system node
      */
-    protected void setCenter (PixelPoint center)
+    protected void setCenter (Point center)
     {
         this.center = center;
     }

@@ -21,14 +21,12 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
+import omr.glyph.ShapeChecker;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.Sections;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 import static omr.run.Orientation.*;
@@ -43,10 +41,12 @@ import omr.stick.SticksBuilder;
 
 import omr.util.Predicate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
-import omr.glyph.ShapeChecker;
 
 /**
  * Class {@code VerticalsBuilder} is in charge of retrieving all the

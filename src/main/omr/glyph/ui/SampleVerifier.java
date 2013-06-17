@@ -16,9 +16,6 @@ import omr.WellKnowns;
 import omr.glyph.GlyphRepository;
 import omr.glyph.Shape;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.ui.MainGui;
 
 import com.jgoodies.forms.builder.PanelBuilder;
@@ -26,6 +23,9 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import org.jdesktop.application.ResourceMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -511,36 +511,36 @@ public class SampleVerifier
             // To be informed of mouse (de)selections (not programmatic)
             list.addListSelectionListener(
                     new ListSelectionListener()
-                    {
-                        @Override
-                        public void valueChanged (ListSelectionEvent e)
-                        {
-                            updateCardinal(); // Brute force !!!
-                        }
-                    });
+            {
+                @Override
+                public void valueChanged (ListSelectionEvent e)
+                {
+                    updateCardinal(); // Brute force !!!
+                }
+            });
 
             // Same action whatever the subclass : select all items
             selectAll.addActionListener(
                     new ActionListener()
-                    {
-                        @Override
-                        public void actionPerformed (ActionEvent e)
-                        {
-                            selectAll();
-                        }
-                    });
+            {
+                @Override
+                public void actionPerformed (ActionEvent e)
+                {
+                    selectAll();
+                }
+            });
 
             // Same action whatever the subclass : deselect all items
             cancelAll.addActionListener(
                     new ActionListener()
-                    {
-                        @Override
-                        public void actionPerformed (ActionEvent e)
-                        {
-                            list.setSelectedIndices(new int[0]);
-                            updateCardinal();
-                        }
-                    });
+            {
+                @Override
+                public void actionPerformed (ActionEvent e)
+                {
+                    list.setSelectedIndices(new int[0]);
+                    updateCardinal();
+                }
+            });
 
             JPanel buttons = new JPanel(new GridLayout(3, 1));
             buttons.add(load);

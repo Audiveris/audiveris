@@ -14,11 +14,11 @@ package omr.score.entity;
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
-import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;
 
+import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,7 +52,7 @@ public abstract class PartNode
     private Staff staff;
 
     /** Reference point */
-    private PixelPoint referencePoint;
+    private Point referencePoint;
 
     //~ Constructors -----------------------------------------------------------
     //----------//
@@ -150,7 +150,7 @@ public abstract class PartNode
      *
      * @return the point of reference for this element
      */
-    public PixelPoint getReferencePoint ()
+    public Point getReferencePoint ()
     {
         if (referencePoint == null) {
             computeReferencePoint();
@@ -172,10 +172,29 @@ public abstract class PartNode
         return staff;
     }
 
+    //---------------------//
+    // getTranslationLinks //
+    //---------------------//
+    /**
+     * Report the translation link(s) between the provided glyph and
+     * this translating entity.
+     *
+     * @param glyph an originating glyph
+     * @return the collection of links, perhaps empty but not null.
+     */
+    public List<Line2D> getTranslationLinks (Glyph glyph)
+    {
+        Point from = glyph.getLocation();
+        Point to = getReferencePoint();
+        Line2D line = new Line2D.Double(from, to);
+
+        return Arrays.asList(line);
+    }
+
     //-------------------//
     // setReferencePoint //
     //-------------------//
-    public void setReferencePoint (PixelPoint referencePoint)
+    public void setReferencePoint (Point referencePoint)
     {
         this.referencePoint = referencePoint;
     }
@@ -191,24 +210,6 @@ public abstract class PartNode
     public void setStaff (Staff staff)
     {
         this.staff = staff;
-    }
-
-    //---------------------//
-    // getTranslationLinks //
-    //---------------------//
-    /**
-     * Report the translation link(s) between the provided glyph and
-     * this translating entity.
-     *
-     * @param glyph an originating glyph
-     * @return the collection of links, perhaps empty but not null.
-     */
-    public List<Line2D> getTranslationLinks (Glyph glyph)
-    {
-        PixelPoint from = glyph.getLocation();
-        PixelPoint to = getReferencePoint();
-        Line2D line = new Line2D.Double(from, to);
-        return Arrays.asList(line);
     }
 
     //------------//

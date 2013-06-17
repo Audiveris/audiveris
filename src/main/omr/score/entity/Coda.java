@@ -13,11 +13,12 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
+import omr.score.visitor.ScoreVisitor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
-import omr.score.visitor.ScoreVisitor;
+import java.awt.Point;
 
 /**
  * Class {@code Coda} represents a coda event
@@ -31,9 +32,8 @@ public class Coda
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Coda.class);
-    
-    //~ Constructors -----------------------------------------------------------
 
+    //~ Constructors -----------------------------------------------------------
     //-------//
     // Coda //
     //-------//
@@ -46,7 +46,7 @@ public class Coda
      * @param glyph   the underlying glyph
      */
     public Coda (Measure measure,
-                 PixelPoint point,
+                 Point point,
                  Chord chord,
                  Glyph glyph)
     {
@@ -66,7 +66,7 @@ public class Coda
      */
     public static void populate (Glyph glyph,
                                  Measure measure,
-                                 PixelPoint point)
+                                 Point point)
     {
         if (glyph.isVip()) {
             logger.info("Coda. populate {}", glyph.idString());

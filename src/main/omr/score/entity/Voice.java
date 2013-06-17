@@ -11,18 +11,17 @@
 // </editor-fold>
 package omr.score.entity;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.GCD;
 import omr.math.Rational;
-
-import omr.score.common.PixelPoint;
 
 import omr.ui.symbol.Symbols;
 
 import omr.util.Navigable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +75,7 @@ public class Voice
      */
     private final SortedMap<Integer, VoiceChord> slotTable = new TreeMap<>();
 
-    /** 
+    /**
      * How the voice finishes (value = voiceEndTime - expectedMeasureEndTime)
      * - null: We can't tell
      * - negative: Voice is too short WRT expected measure duration
@@ -217,7 +216,7 @@ public class Voice
      */
     public void setId (int id)
     {
-        logger.debug("measure#{} {} renamed as {}", 
+        logger.debug("measure#{} {} renamed as {}",
                 measure.getIdValue(), this, id);
         this.id = id;
     }
@@ -575,7 +574,7 @@ public class Voice
                                 Mark.Position position,
                                 Chord chord)
     {
-        PixelPoint point = new PixelPoint(
+        Point point = new Point(
                 chord.getHeadLocation().x,
                 (chord.getHeadLocation().y + chord.getTailLocation().y) / 2);
 
@@ -656,7 +655,7 @@ public class Voice
 
         //~ Constructors -------------------------------------------------------
         public VoiceChord (Chord chord,
-                          Status status)
+                           Status status)
         {
             this.chord = chord;
             this.status = status;

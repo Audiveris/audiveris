@@ -14,12 +14,12 @@ package omr.ui.util;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.ui.PixelCount;
 
 import com.jgoodies.forms.layout.FormLayout;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -109,6 +109,25 @@ public class Panel
         return constants.fieldWidth.getValue();
     }
 
+    //-----------//
+    // getInsets //
+    //-----------//
+    /**
+     * By this way, Swing will paint the component with its specific
+     * inset values.
+     *
+     * @return the panel insets
+     */
+    @Override
+    public Insets getInsets ()
+    {
+        if (insets != null) {
+            return insets;
+        } else {
+            return getDefaultInsets();
+        }
+    }
+
     /**
      * Selector to the default label - field interval.
      *
@@ -166,11 +185,17 @@ public class Panel
         StringBuilder sbc = new StringBuilder();
 
         for (int i = cols - 1; i >= 0; i--) {
-            sbc.append(labelAlignment).append(labelWidth).append(",").append(
-                    labelInterval).append(",").append(fieldWidth);
+            sbc.append(labelAlignment)
+                    .append(labelWidth)
+                    .append(",")
+                    .append(labelInterval)
+                    .append(",")
+                    .append(fieldWidth);
 
             if (i != 0) {
-                sbc.append(",").append(fieldInterval).append(",");
+                sbc.append(",")
+                        .append(fieldInterval)
+                        .append(",");
             }
         }
 
@@ -187,7 +212,7 @@ public class Panel
      *
      * @param rows number of logical rows (not counting the interlines)
      * @param cols number of logical columns (counting the combination of a
-     * label and its related field as just one column)
+     *             label and its related field as just one column)
      * @return the FormLayout ready to use
      */
     public static FormLayout makeFormLayout (int rows,
@@ -235,7 +260,9 @@ public class Panel
             sbr.append("pref");
 
             if (i != 0) {
-                sbr.append(",").append(fieldInterline).append(",");
+                sbr.append(",")
+                        .append(fieldInterline)
+                        .append(",");
             }
         }
 
@@ -243,25 +270,6 @@ public class Panel
         logger.debug("sbr={}", sbr);
 
         return new FormLayout(colSpec, sbr.toString());
-    }
-
-    //-----------//
-    // getInsets //
-    //-----------//
-    /**
-     * By this way, Swing will paint the component with its specific
-     * inset values.
-     *
-     * @return the panel insets
-     */
-    @Override
-    public Insets getInsets ()
-    {
-        if (insets != null) {
-            return insets;
-        } else {
-            return getDefaultInsets();
-        }
     }
 
     //-----------//
@@ -372,5 +380,6 @@ public class Panel
         Constant.String panelInterline = new Constant.String(
                 "6dlu",
                 "Vertical Gap between two panels");
+
     }
 }

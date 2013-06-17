@@ -17,12 +17,12 @@ import omr.glyph.ShapeDescription;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.ui.ScoreDependent;
 
 import org.jdesktop.application.Action;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.io.BufferedWriter;
@@ -140,7 +140,9 @@ public class Debug
                     out.print((float) in);
                     out.print(",");
                 }
+
                 out.println(glyph.getShape().getPhysicalShape());
+
                 //break; /////////////////////////////////////////////////////////
             }
         }
@@ -157,7 +159,9 @@ public class Debug
     {
         try {
             final BufferedWriter bw = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(file), WellKnowns.FILE_ENCODING));
+                    new OutputStreamWriter(
+                    new FileOutputStream(file),
+                    WellKnowns.FILE_ENCODING));
 
             return new PrintWriter(bw);
         } catch (Exception ex) {

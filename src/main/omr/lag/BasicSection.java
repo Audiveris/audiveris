@@ -17,9 +17,6 @@ import omr.glyph.facets.Glyph;
 
 import omr.graph.BasicVertex;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Barycenter;
 import omr.math.BasicLine;
 import omr.math.Line;
@@ -28,15 +25,15 @@ import omr.math.PointsCollector;
 import omr.run.Orientation;
 import omr.run.Run;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.SystemInfo;
 
 import omr.stick.SectionRole;
 import omr.stick.StickRelation;
 
 import omr.ui.Colors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -63,7 +60,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
 
 /**
  * Class {@code BasicSection} is a basic implementation of {@link Section}.
@@ -100,7 +97,7 @@ public class BasicSection
     protected Rectangle orientedBounds;
 
     /** Absolute mass center */
-    private PixelPoint centroid;
+    private Point centroid;
 
     /** Contribution to the foreground */
     private int foreWeight;
@@ -115,7 +112,7 @@ public class BasicSection
     private Polygon polygon;
 
     /** Absolute contour box */
-    private PixelRectangle bounds;
+    private Rectangle bounds;
 
     /** Adjacent sections from the other orientation */
     private Set<Section> oppositeSections;
@@ -309,7 +306,7 @@ public class BasicSection
         invalidateCache();
 
         logger.debug("Parameters of {} maxRunLength={} meanRunLength={}"
-                    + " weight={} foreWeight={}",
+                     + " weight={} foreWeight={}",
                 this, getMaxRunLength(), getMeanRunLength(),
                 weight, foreWeight);
     }
@@ -329,7 +326,7 @@ public class BasicSection
     //----------//
     @Override
     public void cumulate (Barycenter barycenter,
-                          PixelRectangle absRoi)
+                          Rectangle absRoi)
     {
         if (barycenter == null) {
             throw new IllegalArgumentException("Barycenter is null");
@@ -389,7 +386,7 @@ public class BasicSection
     @Override
     public void cumulate (PointsCollector collector)
     {
-        final PixelRectangle roi = collector.getRoi();
+        final Rectangle roi = collector.getRoi();
 
         if (roi == null) {
             int p = firstPos;
@@ -560,11 +557,11 @@ public class BasicSection
     // getAreaCenter //
     //---------------//
     @Override
-    public PixelPoint getAreaCenter ()
+    public Point getAreaCenter ()
     {
-        PixelRectangle box = getBounds();
+        Rectangle box = getBounds();
 
-        return new PixelPoint(
+        return new Point(
                 box.x + (box.width / 2),
                 box.y + (box.height / 2));
     }
@@ -583,20 +580,20 @@ public class BasicSection
     // getBounds //
     //-----------//
     @Override
-    public PixelRectangle getBounds ()
+    public Rectangle getBounds ()
     {
         if (bounds == null) {
-            bounds = new PixelRectangle(getPolygon().getBounds());
+            bounds = new Rectangle(getPolygon().getBounds());
         }
 
-        return new PixelRectangle(bounds); // Copy!
+        return new Rectangle(bounds); // Copy!
     }
 
     //-------------//
     // getCentroid //
     //-------------//
     @Override
-    public PixelPoint getCentroid ()
+    public Point getCentroid ()
     {
         if (centroid == null) {
             Point orientedPoint = new Point(0, 0);
@@ -889,7 +886,7 @@ public class BasicSection
     // getRectangleCentroid //
     //----------------------//
     @Override
-    public PixelPoint getRectangleCentroid (PixelRectangle absRoi)
+    public Point getRectangleCentroid (Rectangle absRoi)
     {
         if (absRoi == null) {
             throw new IllegalArgumentException("Rectangle of Interest is null");
@@ -899,7 +896,7 @@ public class BasicSection
         cumulate(barycenter, absRoi);
 
         if (barycenter.getWeight() != 0) {
-            return new PixelPoint(
+            return new Point(
                     (int) Math.rint(barycenter.getX()),
                     (int) Math.rint(barycenter.getY()));
         } else {
@@ -1292,7 +1289,7 @@ public class BasicSection
 
         if (clip.intersects(rect)) {
             Graphics2D g2 = (Graphics2D) g;
-            final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g2, 1f);
+            final Stroke oldStroke = UIUtil.setAbsoluteStroke(g2, 1f);
             Polygon polygon = getPolygon();
             g.setColor(Color.white);
             g.fillPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
@@ -1484,7 +1481,7 @@ public class BasicSection
     // translate //
     //-----------//
     @Override
-    public void translate (PixelPoint vector)
+    public void translate (Point vector)
     {
         // Get the coord/pos equivalent of dx/dy vector
         Point cp = orientation.oriented(vector);

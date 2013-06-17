@@ -12,18 +12,17 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Stroke;
 
 /**
  * Class {@code DecrescendoSymbol} displays a decrescendo symbol: ">".
  */
 public class DecrescendoSymbol
-    extends CrescendoSymbol
+        extends CrescendoSymbol
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -32,17 +31,17 @@ public class DecrescendoSymbol
     //-------------------//
     /**
      * Creates a new DecrescendoSymbol object.
+     *
      * @param isIcon true for an icon
-     * @param shape the related shape
+     * @param shape  the related shape
      */
     public DecrescendoSymbol (boolean isIcon,
-                              Shape   shape)
+                              Shape shape)
     {
         super(isIcon, shape);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -57,28 +56,28 @@ public class DecrescendoSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams   p = (MyParams) params;
-        PixelPoint loc = alignment.translatedPoint(
-            MIDDLE_RIGHT,
-            p.rect,
-            location);
+        MyParams p = (MyParams) params;
+        Point loc = alignment.translatedPoint(
+                MIDDLE_RIGHT,
+                p.rect,
+                location);
 
-        Stroke     oldStroke = g.getStroke();
+        Stroke oldStroke = g.getStroke();
         g.setStroke(p.stroke);
         g.drawLine(
-            loc.x,
-            loc.y,
-            loc.x - p.rect.width,
-            loc.y - (p.rect.height / 2));
+                loc.x,
+                loc.y,
+                loc.x - p.rect.width,
+                loc.y - (p.rect.height / 2));
         g.drawLine(
-            loc.x,
-            loc.y,
-            loc.x - p.rect.width,
-            loc.y + (p.rect.height / 2));
+                loc.x,
+                loc.y,
+                loc.x - p.rect.width,
+                loc.y + (p.rect.height / 2));
         g.setStroke(oldStroke);
     }
 }

@@ -20,9 +20,6 @@ import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolsEditor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.RunsTable;
 
 import omr.sheet.Sheet;
@@ -30,6 +27,9 @@ import omr.sheet.Sheet;
 import omr.step.StepException;
 
 import omr.util.StopWatch;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -55,7 +55,8 @@ public class GridBuilder
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(GridBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            GridBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Related sheet. */
@@ -149,7 +150,8 @@ public class GridBuilder
             }
 
             if (Main.getGui() != null) {
-                sheet.getSymbolsEditor().refresh();
+                sheet.getSymbolsEditor()
+                        .refresh();
             }
         }
     }

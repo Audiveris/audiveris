@@ -16,11 +16,11 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.util.Param;
 import omr.util.UriUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -35,8 +35,8 @@ import java.util.TreeMap;
 import javax.swing.AbstractListModel;
 
 /**
- * Class {@code Language} handles the collection of language codes with
- * their related full name, as well as the default language
+ * Class {@code Language} handles the collection of language codes 
+ * with their related full name, as well as the default language
  * specification.
  *
  * <p>A language specification specifies a list of languages.
@@ -92,7 +92,7 @@ public class Language
         if (model == null) {
             model = new LanguageModel();
         }
-        
+
         return model;
     }
 
@@ -160,7 +160,7 @@ public class Language
         {
             // Build the map of all possible codes
             Properties langNames = new Properties();
-            URI uri = UriUtil.toURI(WellKnowns.RES_URI,LANG_FILE_NAME);
+            URI uri = UriUtil.toURI(WellKnowns.RES_URI, LANG_FILE_NAME);
 
             try (InputStream input = uri.toURL().openStream()) {
                 langNames.loadFromXML(input);

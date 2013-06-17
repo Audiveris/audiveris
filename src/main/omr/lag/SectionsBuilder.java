@@ -12,12 +12,12 @@
 package omr.lag;
 
 import omr.run.PixelFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.Run;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;

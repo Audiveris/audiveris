@@ -13,15 +13,15 @@ package omr.step;
 
 import omr.Main;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.plugin.Plugin;
 
 import omr.score.Score;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
@@ -36,7 +36,8 @@ public class PluginStep
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(PluginStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            PluginStep.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -82,6 +83,20 @@ public class PluginStep
         }
     }
 
+    //----------------//
+    // getDescription //
+    //----------------//
+    /**
+     * Augment the description with the plugin title
+     *
+     * @return a named description
+     */
+    @Override
+    public String getDescription ()
+    {
+        return super.getDescription() + " (" + plugin.getTitle() + ")";
+    }
+
     //-----------//
     // setPlugin //
     //-----------//
@@ -97,21 +112,9 @@ public class PluginStep
 
         if (oldPlugin != null) {
             // Update step tooltip with this new plugin
-            Main.getGui().getStepMenu().updateMenu();
+            Main.getGui()
+                    .getStepMenu()
+                    .updateMenu();
         }
-    }
-
-    //----------------//
-    // getDescription //
-    //----------------//
-    /**
-     * Augment the description with the plugin title
-     *
-     * @return a named description
-     */
-    @Override
-    public String getDescription ()
-    {
-        return super.getDescription() + " (" + plugin.getTitle() + ")";
     }
 }

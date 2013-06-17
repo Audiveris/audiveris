@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.script;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 import omr.score.entity.Page;
 
@@ -22,6 +19,9 @@ import omr.sheet.Sheet;
 import omr.step.ProcessingCancellationException;
 
 import omr.util.TreeNode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;

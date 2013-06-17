@@ -14,6 +14,8 @@ package omr.ui.symbol;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.text.FontInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +23,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
-import omr.text.FontInfo;
 
 /**
  * Class {@code TextFont} is meant to simplify the use of text font for
@@ -38,11 +39,11 @@ public class TextFont
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(TextFont.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            TextFont.class);
 
     /** Name of the chosen underlying text font */
-    private static final String fontName = constants.defaultTextFontName.
-            getValue();
+    private static final String fontName = constants.defaultTextFontName.getValue();
 
     /** The base font used for text entities */
     public static final TextFont baseTextFont = new TextFont(
@@ -82,13 +83,11 @@ public class TextFont
      */
     public TextFont (FontInfo info)
     {
-        this(info.isSerif
-             ? Font.SERIF
-             : (info.isMonospace
-                ? Font.MONOSPACED
-                : Font.SANS_SERIF),
-             (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0),
-             info.pointsize);
+        this(
+                info.isSerif ? Font.SERIF
+                : (info.isMonospace ? Font.MONOSPACED : Font.SANS_SERIF),
+                (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0),
+                info.pointsize);
     }
 
     //----------//
@@ -155,5 +154,6 @@ public class TextFont
                 "points",
                 10,
                 "Default font point size for texts");
+
     }
 }

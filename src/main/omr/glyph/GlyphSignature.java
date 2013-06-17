@@ -24,7 +24,7 @@ import omr.moments.GeometricMoments;
  * @author Hervé Bitteur
  */
 public class GlyphSignature
-    implements Comparable<GlyphSignature>
+        implements Comparable<GlyphSignature>
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -35,12 +35,12 @@ public class GlyphSignature
     private GeometricMoments moments;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------//
     // GlyphSignature //
     //----------------//
     /**
      * Creates a new GlyphSignature object.
+     *
      * @param glyph the glyph to compute signature upon
      */
     public GlyphSignature (Glyph glyph)
@@ -62,7 +62,6 @@ public class GlyphSignature
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // compareTo //
     //-----------//
@@ -135,10 +134,10 @@ public class GlyphSignature
         StringBuilder sb = new StringBuilder("{GSig");
 
         sb.append(" weight=")
-          .append(weight);
+                .append(weight);
 
         sb.append(" moments=")
-          .append(moments);
+                .append(moments);
         sb.append("}");
 
         return sb.toString();

@@ -18,7 +18,7 @@ import omr.glyph.facets.GlyphContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
+import java.awt.Point;
 
 /**
  * Class {@code BasicContent} handles the textual aspects of a glyph.
@@ -41,7 +41,8 @@ public class BasicContent
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility. */
-    private static final Logger logger = LoggerFactory.getLogger(BasicContent.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            BasicContent.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -89,9 +90,11 @@ public class BasicContent
         }
 
         if (textWord != null) {
-            sb.append(String.format(
+            sb.append(
+                    String.format(
                     "   textWord=%s textLine=%s%n",
-                    textWord, textWord.getTextLine()));
+                    textWord,
+                    textWord.getTextLine()));
         }
 
         return sb.toString();
@@ -128,7 +131,7 @@ public class BasicContent
     // getTextLocation //
     //-----------------//
     @Override
-    public PixelPoint getTextLocation ()
+    public Point getTextLocation ()
     {
         if (textWord != null) {
             return textWord.getLocation();

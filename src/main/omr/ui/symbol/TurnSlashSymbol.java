@@ -12,12 +12,11 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
@@ -26,7 +25,7 @@ import java.awt.geom.Rectangle2D;
  * Class {@code TurnSlashSymbol} displays a TURN symbol with a vertical slash
  */
 public class TurnSlashSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -34,7 +33,6 @@ public class TurnSlashSymbol
     private final ShapeSymbol turnSymbol = Symbols.getSymbol(Shape.TURN);
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // TurnSlashSymbol //
     //-----------------//
@@ -49,7 +47,6 @@ public class TurnSlashSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -71,8 +68,8 @@ public class TurnSlashSymbol
 
         Rectangle2D rect = p.layout.getBounds();
         p.rect = new Rectangle(
-            (int) Math.ceil(rect.getWidth()),
-            (int) Math.ceil(rect.getHeight() * 1.4));
+                (int) Math.ceil(rect.getWidth()),
+                (int) Math.ceil(rect.getHeight() * 1.4));
         p.stroke = new BasicStroke(Math.max(1f, p.rect.width / 20f));
 
         return p;
@@ -83,15 +80,12 @@ public class TurnSlashSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams   p = (MyParams) params;
-        PixelPoint loc = alignment.translatedPoint(
-            AREA_CENTER,
-            p.rect,
-            location);
+        MyParams p = (MyParams) params;
+        Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
         MusicFont.paint(g, p.layout, loc, AREA_CENTER);
 
         Stroke oldStroke = g.getStroke();
@@ -101,15 +95,15 @@ public class TurnSlashSymbol
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // Params //
     //--------//
     private class MyParams
-        extends Params
+            extends Params
     {
         //~ Instance fields ----------------------------------------------------
 
         Stroke stroke;
+
     }
 }

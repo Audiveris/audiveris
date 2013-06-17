@@ -15,13 +15,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Circle;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -29,6 +24,11 @@ import omr.sheet.Scale;
 import omr.util.Predicate;
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -90,7 +90,7 @@ public class Slur
                 // Check we are in last measure
                 Point2D p2 = slur.getCurve().getP2();
                 Measure measure = slur.getPart().getMeasureAt(
-                        new PixelPoint((int) p2.getX(), (int) p2.getY()));
+                        new Point((int) p2.getX(), (int) p2.getY()));
 
                 if (measure == slur.getPart().getLastMeasure()) {
                     // Check slur ends in last measure half
@@ -114,7 +114,7 @@ public class Slur
                 // Check we are in first measure
                 Point2D p1 = slur.getCurve().getP1();
                 Measure measure = slur.getPart().getMeasureAt(
-                        new PixelPoint((int) p1.getX(), (int) p1.getY()));
+                        new Point((int) p1.getX(), (int) p1.getY()));
 
                 if (measure == slur.getPart().getFirstMeasure()) {
                     // Check slur begins in first measure half
@@ -554,12 +554,12 @@ public class Slur
         List<Line2D> links = new ArrayList<>();
 
         if (leftNote != null) {
-            PixelPoint to = leftNote.getReferencePoint();
+            Point to = leftNote.getReferencePoint();
             links.add(new Line2D.Double(curve.getP1(), to));
         }
 
         if (rightNote != null) {
-            PixelPoint to = rightNote.getReferencePoint();
+            Point to = rightNote.getReferencePoint();
             links.add(new Line2D.Double(curve.getP2(), to));
         }
 
@@ -628,7 +628,7 @@ public class Slur
      * @param ref   the reference point to compare distance from
      */
     private static void filterNodes (List<MeasureNode> nodes,
-                                     PixelPoint ref)
+                                     Point ref)
     {
         if (nodes.size() > 1) {
             NodeComparator comparator = new NodeComparator(ref);
@@ -718,13 +718,13 @@ public class Slur
     {
         // Retrieve prev staff, using the left point of the prev slur
         Staff prevStaff = prevSlur.getPart().getStaffAt(
-                new PixelPoint(
+                new Point(
                 (int) prevSlur.curve.getX1(),
                 (int) prevSlur.curve.getY1()));
 
         // Retrieve staff, using the right point of the slur
         Staff staff = getPart().getStaffAt(
-                new PixelPoint((int) curve.getX2(), (int) curve.getY2()));
+                new Point((int) curve.getX2(), (int) curve.getY2()));
 
         if (prevStaff.getId() != staff.getId()) {
             logger.debug(
@@ -735,12 +735,12 @@ public class Slur
 
         // Retrieve prev position, using the right point of the prev slur
         double prevPp = prevStaff.pitchPositionOf(
-                new PixelPoint(
+                new Point(
                 (int) prevSlur.curve.getX2(),
                 (int) prevSlur.curve.getY2()));
 
         // Retrieve position, using the left point of the slur
-        PixelPoint pt = new PixelPoint(
+        Point pt = new Point(
                 (int) curve.getX1(),
                 (int) curve.getY1());
         double pp = staff.pitchPositionOf(pt);
@@ -780,12 +780,12 @@ public class Slur
         final int dx = scale.toPixels(constants.areaDx);
         final int dy = scale.toPixels(constants.areaDy);
         final int xMg = scale.toPixels(constants.areaXMargin);
-        final PixelRectangle leftRect = new PixelRectangle(
+        final Rectangle leftRect = new Rectangle(
                 (int) Math.rint(curve.getX1() - dx),
                 (int) Math.rint(curve.getY1()),
                 dx + xMg,
                 dy);
-        final PixelRectangle rightRect = new PixelRectangle(
+        final Rectangle rightRect = new Rectangle(
                 (int) Math.rint(curve.getX2() - xMg),
                 (int) Math.rint(curve.getY2()),
                 dx + xMg,
@@ -838,10 +838,10 @@ public class Slur
         // Sort the collections of nodes, and keep only the closest ones
         filterNodes(
                 leftNodes,
-                new PixelPoint((int) curve.getX1(), (int) curve.getY1()));
+                new Point((int) curve.getX1(), (int) curve.getY1()));
         filterNodes(
                 rightNodes,
-                new PixelPoint((int) curve.getX2(), (int) curve.getY2()));
+                new Point((int) curve.getX2(), (int) curve.getY2()));
 
         return below;
     }
@@ -941,10 +941,10 @@ public class Slur
     {
         //~ Instance fields ----------------------------------------------------
 
-        final PixelPoint ref;
+        final Point ref;
 
         //~ Constructors -------------------------------------------------------
-        public NodeComparator (PixelPoint ref)
+        public NodeComparator (Point ref)
         {
             this.ref = ref;
         }
@@ -954,9 +954,9 @@ public class Slur
         public int compare (MeasureNode n1,
                             MeasureNode n2)
         {
-            PixelPoint p1 = (n1 instanceof Chord)
+            Point p1 = (n1 instanceof Chord)
                     ? ((Chord) n1).getTailLocation() : n1.getCenter();
-            PixelPoint p2 = (n2 instanceof Chord)
+            Point p2 = (n2 instanceof Chord)
                     ? ((Chord) n2).getTailLocation() : n2.getCenter();
 
             return Double.compare(p1.distance(ref), p2.distance(ref));

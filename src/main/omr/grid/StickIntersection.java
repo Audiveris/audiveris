@@ -20,20 +20,21 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class {@code StickIntersection} records the intersection point of a 
+ * Class {@code StickIntersection} records the intersection point of a
  * stick with a crossing line.
- * (A typical example is a vertical barline stick that crosses a horizontal 
+ * (A typical example is a vertical barline stick that crosses a horizontal
  * staff line)
  *
  * @author Hervé Bitteur
  */
 public class StickIntersection
-    implements Comparable<StickIntersection>
+        implements Comparable<StickIntersection>
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Comparator on increasing abscissa */
-    public static Comparator<StickIntersection> byAbscissa = new Comparator<StickIntersection>() {
+    public static Comparator<StickIntersection> byAbscissa = new Comparator<StickIntersection>()
+    {
         @Override
         public int compare (StickIntersection o1,
                             StickIntersection o2)
@@ -50,7 +51,8 @@ public class StickIntersection
     };
 
     /** Comparator on increasing ordinate */
-    public static Comparator<StickIntersection> byOrdinate = new Comparator<StickIntersection>() {
+    public static Comparator<StickIntersection> byOrdinate = new Comparator<StickIntersection>()
+    {
         @Override
         public int compare (StickIntersection o1,
                             StickIntersection o2)
@@ -66,9 +68,7 @@ public class StickIntersection
         }
     };
 
-
     //~ Instance fields --------------------------------------------------------
-
     /** Abscissa where the stick intersects the line */
     public final double x;
 
@@ -79,15 +79,14 @@ public class StickIntersection
     private final Glyph stick;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new StickIntersection object.
      *
-     * @param loc absolute location of the intersection
+     * @param loc   absolute location of the intersection
      * @param stick the related stick
      */
     public StickIntersection (Point2D loc,
-                              Glyph   stick)
+                              Glyph stick)
     {
         this.x = loc.getX();
         this.y = loc.getY();
@@ -95,7 +94,6 @@ public class StickIntersection
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // compareTo //
     //-----------//
@@ -146,6 +144,6 @@ public class StickIntersection
     public String toString ()
     {
         return getStickAncestor()
-                   .idString() + "@x:" + (float) x + ",y:" + (float) y;
+                .idString() + "@x:" + (float) x + ",y:" + (float) y;
     }
 }

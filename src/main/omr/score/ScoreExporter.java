@@ -19,13 +19,8 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Rational;
 import static omr.score.MusicXML.*;
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Arpeggiate;
 import omr.score.entity.Articulation;
 import omr.score.entity.Barline;
@@ -69,6 +64,9 @@ import omr.text.FontInfo;
 
 import omr.util.OmrExecutors;
 import omr.util.TreeNode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.w3c.dom.Node;
 
@@ -153,6 +151,8 @@ import com.audiveris.proxymusic.YesNo;
 import com.audiveris.proxymusic.util.Marshalling;
 
 import java.awt.Font;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -816,13 +816,13 @@ public class ScoreExporter
 
             // default-y (of the fermata dot)
             // For upright we use bottom of the box, for inverted the top of the box
-            PixelRectangle box = fermata.getBox();
-            PixelPoint dot;
+            Rectangle box = fermata.getBox();
+            Point dot;
 
             if (fermata.getShape() == Shape.FERMATA_BELOW) {
-                dot = new PixelPoint(box.x + (box.width / 2), box.y);
+                dot = new Point(box.x + (box.width / 2), box.y);
             } else {
-                dot = new PixelPoint(
+                dot = new Point(
                         box.x + (box.width / 2),
                         box.y + box.height);
             }
@@ -1209,7 +1209,7 @@ public class ScoreExporter
             // Stem ?
             if (chord.getStem() != null) {
                 Stem pmStem = factory.createStem();
-                PixelPoint tail = chord.getTailLocation();
+                Point tail = chord.getTailLocation();
                 pmStem.setDefaultY(yOf(tail, staff));
 
                 if (tail.y < note.getCenter().y) {
@@ -1840,7 +1840,7 @@ public class ScoreExporter
             setFontInfo(creditWords, text);
 
             // Position is wrt page
-            PixelPoint pt = text.getReferencePoint();
+            Point pt = text.getReferencePoint();
             creditWords.setDefaultX(toTenths(pt.x));
             creditWords.setDefaultY(
                     toTenths(current.page.getDimension().height - pt.y));
@@ -2076,7 +2076,7 @@ public class ScoreExporter
     // yOf //
     //-----//
     /**
-     * Report the musicXML staff-based Y value of a PixelPoint ordinate.
+     * Report the musicXML staff-based Y value of a Point ordinate.
      *
      * @param ordinate the ordinate (page-based, in pixels)
      * @param staff    the related staff
@@ -2092,7 +2092,7 @@ public class ScoreExporter
     // yOf //
     //-----//
     /**
-     * Report the musicXML staff-based Y value of a PixelPoint.
+     * Report the musicXML staff-based Y value of a Point.
      * This method is safer than the other one which simply accepts a (detyped)
      * double ordinate.
      *
@@ -2100,7 +2100,7 @@ public class ScoreExporter
      * @param staff the related staff
      * @return the upward-oriented ordinate wrt staff top line (in tenths)
      */
-    private BigDecimal yOf (PixelPoint point,
+    private BigDecimal yOf (Point point,
                             Staff staff)
     {
         return yOf(point.y, staff);
@@ -2439,7 +2439,7 @@ public class ScoreExporter
             int right = measure.getLeftX(); // Right of dummy = Left of current
             int midY = (staff.getTopLeft().y + (staff.getHeight() / 2))
                        - measure.getSystem().getTopLeft().y;
-            PixelPoint staffPoint = new PixelPoint(right, midY);
+            Point staffPoint = new Point(right, midY);
 
             // Clef?
             Clef clef = measure.getClefBefore(staffPoint, staff);
@@ -2550,7 +2550,7 @@ public class ScoreExporter
 
         // Perhaps another clef before this one ?
         Clef previousClef = current.measure.getClefBefore(
-                new PixelPoint(clef.getCenter().x - 1, clef.getCenter().y),
+                new Point(clef.getCenter().x - 1, clef.getCenter().y),
                 clef.getStaff());
 
         if (previousClef != null) {

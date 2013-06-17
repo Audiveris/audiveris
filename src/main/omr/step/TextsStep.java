@@ -11,12 +11,12 @@
 // </editor-fold>
 package omr.step;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.sheet.SystemInfo;
 
 import omr.text.TextScanner;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code TextsStep} discovers text items in a system area.
@@ -29,7 +29,8 @@ public class TextsStep
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(TextsStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            TextsStep.class);
 
     //~ Constructors -----------------------------------------------------------
     //

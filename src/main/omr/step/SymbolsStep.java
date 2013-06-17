@@ -16,9 +16,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.ui.SymbolsEditor;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
 
@@ -29,6 +26,9 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.TreeNode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 
@@ -48,7 +48,8 @@ public class SymbolsStep
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(SymbolsStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SymbolsStep.class);
 
     //~ Constructors -----------------------------------------------------------
     //-------------//
@@ -75,12 +76,14 @@ public class SymbolsStep
     public void displayUI (Sheet sheet)
     {
         SymbolsEditor editor = sheet.getSymbolsEditor();
+
         if (editor != null) {
             editor.refresh();
         }
 
         // Update glyph board if needed (to see OCR'ed data)
-        SelectionService service = sheet.getNest().getGlyphService();
+        SelectionService service = sheet.getNest()
+                .getGlyphService();
         GlyphEvent glyphEvent = (GlyphEvent) service.getLastEvent(
                 GlyphEvent.class);
 
@@ -96,14 +99,14 @@ public class SymbolsStep
     public void doSystem (SystemInfo system)
             throws StepException
     {
-//        // Cleanup system sentences
-//        system.getSentences().clear();
+        //        // Cleanup system sentences
+        //        system.getSentences().clear();
 
         // Cleanup system dummy parts
         ScoreSystem scoreSystem = system.getScoreSystem();
 
-        for (Iterator<TreeNode> it = scoreSystem.getParts().iterator(); it.
-                hasNext();) {
+        for (Iterator<TreeNode> it = scoreSystem.getParts()
+                .iterator(); it.hasNext();) {
             SystemPart part = (SystemPart) it.next();
 
             if (part.isDummy()) {

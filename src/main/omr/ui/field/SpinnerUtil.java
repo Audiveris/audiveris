@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                      S p i n n e r U t i l i t i e s                       //
+//                            S p i n n e r U t i l                           //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -23,20 +23,24 @@ import javax.swing.SpinnerListModel;
 import javax.swing.SpinnerModel;
 
 /**
- * Class {@code SpinnerUtilities} gathers a few utilities for JSpinner
+ * Class {@code SpinnerUtil} gathers a few utilities for JSpinner
  * entities
  *
  * @author Hervé Bitteur
  */
-public class SpinnerUtilities
+public class SpinnerUtil
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Specific value to indicate that spinner value is invalid : {@value} */
     public static final int NO_VALUE = 0;
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
+    private SpinnerUtil ()
+    {
+    }
 
+    //~ Methods ----------------------------------------------------------------
     //----------------//
     // fixIntegerList //
     //----------------//
@@ -53,22 +57,23 @@ public class SpinnerUtilities
 
         final JFormattedTextField ftf = editor.getTextField();
         ftf.getInputMap()
-           .put(KeyStroke.getKeyStroke("ENTER"), "enterAction");
+                .put(KeyStroke.getKeyStroke("ENTER"), "enterAction");
         ftf.getActionMap()
-           .put(
-            "enterAction",
-            new AbstractAction() {
+                .put(
+                "enterAction",
+                new AbstractAction()
+        {
             @Override
-                    public void actionPerformed (ActionEvent e)
-                    {
-                        try {
-                            spinner.setValue(Integer.parseInt(ftf.getText()));
-                        } catch (Exception ex) {
-                            // Reset to last value
-                            ftf.setText(ftf.getValue().toString());
-                        }
-                    }
-                });
+            public void actionPerformed (ActionEvent e)
+            {
+                try {
+                    spinner.setValue(Integer.parseInt(ftf.getText()));
+                } catch (Exception ex) {
+                    // Reset to last value
+                    ftf.setText(ftf.getValue().toString());
+                }
+            }
+        });
     }
 
     //-------------//
@@ -78,15 +83,15 @@ public class SpinnerUtilities
      * Make the spinner text field editable, or not
      *
      * @param spinner the spinner to update
-     * @param bool true if editable, false otherwise
+     * @param bool    true if editable, false otherwise
      */
     public static void setEditable (JSpinner spinner,
-                                    boolean  bool)
+                                    boolean bool)
     {
         JSpinner.DefaultEditor editor;
         editor = (JSpinner.DefaultEditor) spinner.getEditor();
         editor.getTextField()
-              .setEditable(bool);
+                .setEditable(bool);
     }
 
     //---------//
@@ -96,10 +101,10 @@ public class SpinnerUtilities
      * Assign the List model (for a list-based spinner)
      *
      * @param spinner the spinner to update
-     * @param values the model list values
+     * @param values  the model list values
      */
     public static void setList (JSpinner spinner,
-                                List<?>  values)
+                                List<?> values)
     {
         SpinnerModel model = spinner.getModel();
 
@@ -107,7 +112,7 @@ public class SpinnerUtilities
             ((SpinnerListModel) model).setList(values);
         } else {
             throw new IllegalArgumentException(
-                "Spinner model is not a SpinnerListModel");
+                    "Spinner model is not a SpinnerListModel");
         }
     }
 
@@ -124,10 +129,6 @@ public class SpinnerUtilities
         JSpinner.DefaultEditor editor;
         editor = (JSpinner.DefaultEditor) spinner.getEditor();
         editor.getTextField()
-              .setHorizontalAlignment(JTextField.RIGHT);
-    }
-
-    private SpinnerUtilities ()
-    {
+                .setHorizontalAlignment(JTextField.RIGHT);
     }
 }

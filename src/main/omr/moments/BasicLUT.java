@@ -11,14 +11,13 @@
 // </editor-fold>
 package omr.moments;
 
-
 /**
  * Class {@code BasicLUT} is a straightforward LUT implementation.
  *
  * @author Hervé Bitteur
  */
 public final class BasicLUT
-    implements LUT
+        implements LUT
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -32,16 +31,16 @@ public final class BasicLUT
     private final double[][] table;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new BasicLUT object.
+     *
      * @param radius the desired LUT radius for a [-radius .. radius] table.
      */
     public BasicLUT (int radius)
     {
         if (radius <= 0) {
             throw new IllegalArgumentException(
-                "Cannot allocate LUT with radius " + radius);
+                    "Cannot allocate LUT with radius " + radius);
         }
 
         this.RADIUS = radius;
@@ -50,13 +49,12 @@ public final class BasicLUT
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // assign //
     //--------//
     @Override
-    public void assign (int    x,
-                        int    y,
+    public void assign (int x,
+                        int y,
                         double value)
     {
         table[x][y] = value;
@@ -107,11 +105,11 @@ public final class BasicLUT
                                double py)
     {
         // Integer coordinates, by truncating precise coordinates
-        final int    x = (int) px;
-        final int    y = (int) py;
+        final int x = (int) px;
+        final int y = (int) py;
 
         // Beware of point on LUT border
-        final int    max = SIZE - 1;
+        final int max = SIZE - 1;
 
         // Value at [x,y]
         final double vxy = table[x][y];
@@ -139,8 +137,8 @@ public final class BasicLUT
                 final double vxy1 = table[x][y + 1];
 
                 // Value at [px, y+1]
-                final double vpxy1 = vxy1 +
-                                     (ix * (table[x + 1][y + 1] - vxy1));
+                final double vpxy1 = vxy1
+                                     + (ix * (table[x + 1][y + 1] - vxy1));
 
                 return vpxy + (iy * (vpxy1 - vpxy)); // v[px,py]
             }

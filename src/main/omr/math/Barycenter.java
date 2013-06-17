@@ -35,7 +35,6 @@ public class Barycenter
     private double yy;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // Barycenter //
     //------------//
@@ -47,7 +46,6 @@ public class Barycenter
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getWeight //
     //-----------//
@@ -61,6 +59,7 @@ public class Barycenter
     //------//
     /**
      * Report the current barycenter abscissa.
+     *
      * @return current abscissa
      */
     public final double getX ()
@@ -73,6 +72,7 @@ public class Barycenter
     //------//
     /**
      * Report the current barycenter ordinate.
+     *
      * @return current ordinate
      */
     public final double getY ()
@@ -85,9 +85,10 @@ public class Barycenter
     //---------//
     /**
      * Include another barycenter.
+     *
      * @param weight total weight of this other barycenter
-     * @param x abscissa
-     * @param y ordinate
+     * @param x      abscissa
+     * @param y      ordinate
      */
     public final void include (double weight,
                                double x,
@@ -103,6 +104,7 @@ public class Barycenter
     //---------//
     /**
      * Include another barycenter.
+     *
      * @param that the other barycenter to include
      */
     public final void include (Barycenter that)
@@ -117,6 +119,7 @@ public class Barycenter
     //---------//
     /**
      * Include one point (with default weight assigned to 1).
+     *
      * @param x point abscissa
      * @param y point ordinate
      */
@@ -131,6 +134,7 @@ public class Barycenter
     //---------//
     /**
      * Include one point (with default weight assigned to 1).
+     *
      * @param point point to include
      */
     public final void include (Point2D point)
@@ -143,10 +147,11 @@ public class Barycenter
     //---------//
     /**
      * Include one point.
+     *
      * @param weight weight assigned to the point
-     * @param point point to include
+     * @param point  point to include
      */
-    public final void include (double  weight,
+    public final void include (double weight,
                                Point2D point)
     {
         include(weight, point.getX(), point.getY());
@@ -160,14 +165,14 @@ public class Barycenter
     {
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName())
-          .append(" weight:")
-          .append(weight);
+                .append(" weight:")
+                .append(weight);
 
         if (weight > 0) {
             sb.append(" x:")
-              .append((float) getX())
-              .append(" y:")
-              .append((float) getY());
+                    .append((float) getX())
+                    .append(" y:")
+                    .append((float) getY());
         }
 
         return sb.toString();

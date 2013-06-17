@@ -13,22 +13,24 @@ package omr.glyph.ui;
 
 import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
+import static omr.ui.field.SpinnerUtil.*;
+
+import omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static omr.ui.field.SpinnerUtilities.*;
-
-import omr.util.Predicate;
 
 import javax.swing.AbstractSpinnerModel;
 
 /**
- * Class {@code SpinnerGlyphModel} is a spinner model backed by a {@link
- * Nest}. Any modification in the nest is thus transparently
- * handled, since the nest <b>is</b> the model. <p>A glyph {@link Predicate} can
- * be assigned to this SpinnerGlyphModel at construction time in order to
- * restrict the population of glyphs in the spinner. This class is used by
- * {@link GlyphBoard} only, but is not coupled with it.
+ * Class {@code SpinnerGlyphModel} is a spinner model backed by a
+ * {@link Nest}.
+ * Any modification in the nest is thus transparently handled, since the nest
+ * <b>is</b> the model.
+ * <p>A glyph {@link Predicate} can be assigned to this SpinnerGlyphModel at
+ * construction time in order to restrict the population of glyphs in the
+ * spinner.
+ * This class is used by {@link GlyphBoard} only, but is not coupled with it.
  *
  * @author Hervé Bitteur
  */

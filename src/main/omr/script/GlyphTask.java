@@ -36,14 +36,14 @@ import javax.xml.bind.annotation.XmlAccessorType;
  * or remain to be created (as in {@link InsertTask})</p>
  *
  * <h4>Glyphs and sections in a script:<br/>
- *    <img src="doc-files/script.jpg"/>
+ * <img src="doc-files/script.jpg"/>
  * </h4>
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class GlyphTask
-    extends SheetTask
+        extends SheetTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -54,17 +54,16 @@ public abstract class GlyphTask
     protected SortedSet<SystemInfo> initialSystems;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // GlyphTask //
     //-----------//
     /**
      * Creates a new GlyphTask object.
      *
-     * @param sheet the sheet impacted
+     * @param sheet  the sheet impacted
      * @param glyphs the collection of glyphs concerned by this task
      */
-    protected GlyphTask (Sheet             sheet,
+    protected GlyphTask (Sheet sheet,
                          Collection<Glyph> glyphs)
     {
         super(sheet);
@@ -72,7 +71,7 @@ public abstract class GlyphTask
         // Check parameters
         if ((glyphs == null) || glyphs.isEmpty()) {
             throw new IllegalArgumentException(
-                getClass().getSimpleName() + " needs at least one glyph");
+                    getClass().getSimpleName() + " needs at least one glyph");
         }
 
         this.glyphs = new TreeSet<>(Glyph.byAbscissa);
@@ -84,6 +83,7 @@ public abstract class GlyphTask
     //-----------//
     /**
      * Creates a new GlyphTask object
+     *
      * @param sheet the sheet impacted
      */
     protected GlyphTask (Sheet sheet)
@@ -100,7 +100,6 @@ public abstract class GlyphTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // epilog //
     //--------//
@@ -108,10 +107,10 @@ public abstract class GlyphTask
     public void epilog (Sheet sheet)
     {
         Stepping.reprocessSheet(
-            Steps.valueOf(Steps.SYMBOLS),
-            sheet,
-            getImpactedSystems(sheet),
-            false);
+                Steps.valueOf(Steps.SYMBOLS),
+                sheet,
+                getImpactedSystems(sheet),
+                false);
     }
 
     //--------------------//
@@ -119,6 +118,7 @@ public abstract class GlyphTask
     //--------------------//
     /**
      * Report the set of systems that are impacted by the action
+     *
      * @param sheet the containing sheet
      * @return the ordered set of impacted systems
      */
@@ -136,6 +136,7 @@ public abstract class GlyphTask
     //------------------//
     /**
      * Report the collection of initial glyphs
+     *
      * @return the impactedGlyphs
      */
     public Set<Glyph> getInitialGlyphs ()
@@ -181,7 +182,7 @@ public abstract class GlyphTask
 
         if (glyphs != null) {
             sb.append(" ")
-              .append(Glyphs.toString(glyphs));
+                    .append(Glyphs.toString(glyphs));
         } else {
             sb.append(" no-glyphs");
         }
@@ -194,6 +195,7 @@ public abstract class GlyphTask
     //-----------//
     /**
      * Report the collection of systems that follow the provided one
+     *
      * @param system the one after which we pick any system
      * @return the remaining portion of the sequence of systems in the sheet
      */
@@ -210,6 +212,7 @@ public abstract class GlyphTask
     /**
      * Report the set of systems that are impacted by the action, as determined
      * by the *current status* of the glyphs *currently* pointed by the sections
+     *
      * @param sheet the containing sheet
      * @return the ordered set of impacted systems
      */

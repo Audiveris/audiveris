@@ -20,8 +20,6 @@ import omr.run.Orientation;
 import omr.run.Run;
 import omr.run.RunsTable;
 
-import omr.score.common.PixelRectangle;
-
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,49 +31,48 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class BasicRoi
-    implements Roi
+        implements Roi
 {
     //~ Instance fields --------------------------------------------------------
 
     /** Region of interest with absolute coordinates */
-    final PixelRectangle absContour;
+    final Rectangle absContour;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // BasicRoi //
     //----------//
     /**
      * Define a region of interest
+     *
      * @param absoluteContour the absolute contour of the region of interest,
-     * specified in the usual (x, y, width, height) form.
+     *                        specified in the usual (x, y, width, height) form.
      */
-    public BasicRoi (PixelRectangle absoluteContour)
+    public BasicRoi (Rectangle absoluteContour)
     {
         this.absContour = absoluteContour;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------------//
     // getAbsoluteContour //
     //--------------------//
     @Override
-    public PixelRectangle getAbsoluteContour ()
+    public Rectangle getAbsoluteContour ()
     {
-        return new PixelRectangle(absContour);
+        return new Rectangle(absContour);
     }
 
     //-------------------//
     // getGlyphHistogram //
     //-------------------//
     @Override
-    public Histogram<Integer> getGlyphHistogram (Orientation       projection,
+    public Histogram<Integer> getGlyphHistogram (Orientation projection,
                                                  Collection<Glyph> glyphs)
     {
         return getSectionHistogram(
-            projection,
-            Glyphs.sectionsOf(glyphs));
+                projection,
+                Glyphs.sectionsOf(glyphs));
     }
 
     //-----------------//
@@ -83,20 +80,20 @@ public class BasicRoi
     //-----------------//
     @Override
     public Histogram<Integer> getRunHistogram (Orientation projection,
-                                               RunsTable   table)
+                                               RunsTable table)
     {
-        final Orientation        tableOrient = table.getOrientation();
-        final boolean            alongTheRuns = projection == tableOrient;
+        final Orientation tableOrient = table.getOrientation();
+        final boolean alongTheRuns = projection == tableOrient;
         final Histogram<Integer> histo = new Histogram<>();
-        final Rectangle          tableContour = new Rectangle(
-            table.getDimension());
-        final PixelRectangle     inter = new PixelRectangle(
-            absContour.intersection(tableContour));
-        final Rectangle          oriInter = tableOrient.oriented(inter);
-        final int                minPos = oriInter.y;
-        final int                maxPos = (oriInter.y + oriInter.height) - 1;
-        final int                minCoord = oriInter.x;
-        final int                maxCoord = (oriInter.x + oriInter.width) - 1;
+        final Rectangle tableContour = new Rectangle(
+                table.getDimension());
+        final Rectangle inter = new Rectangle(
+                absContour.intersection(tableContour));
+        final Rectangle oriInter = tableOrient.oriented(inter);
+        final int minPos = oriInter.y;
+        final int maxPos = (oriInter.y + oriInter.height) - 1;
+        final int minCoord = oriInter.x;
+        final int maxCoord = (oriInter.x + oriInter.width) - 1;
 
         for (int pos = minPos; pos <= maxPos; pos++) {
             List<Run> seq = table.getSequence(pos);
@@ -127,7 +124,7 @@ public class BasicRoi
     // getSectionHistogram //
     //---------------------//
     @Override
-    public Histogram<Integer> getSectionHistogram (Orientation         projection,
+    public Histogram<Integer> getSectionHistogram (Orientation projection,
                                                    Collection<Section> sections)
     {
         // Split the sections into 2 populations along & across wrt projection
@@ -163,21 +160,22 @@ public class BasicRoi
     //----------//
     /**
      * Populate an histo with a collection of sections
-     * @param histo the histo to populate
+     *
+     * @param histo              the histo to populate
      * @param sectionOrientation orientation of the sections
-     * @param sections the collections of (parallel) sections
-     * @param alongTheRuns true if sections are parallel to projection
+     * @param sections           the collections of (parallel) sections
+     * @param alongTheRuns       true if sections are parallel to projection
      */
     private void populate (Histogram<Integer> histo,
-                           Orientation        sectionOrientation,
-                           List<Section>      sections,
-                           boolean            alongTheRuns)
+                           Orientation sectionOrientation,
+                           List<Section> sections,
+                           boolean alongTheRuns)
     {
         final Rectangle oriContour = sectionOrientation.oriented(absContour);
-        final int       minPos = oriContour.y;
-        final int       maxPos = (oriContour.y + oriContour.height) - 1;
-        final int       minCoord = oriContour.x;
-        final int       maxCoord = (oriContour.x + oriContour.width) - 1;
+        final int minPos = oriContour.y;
+        final int maxPos = (oriContour.y + oriContour.height) - 1;
+        final int minCoord = oriContour.x;
+        final int maxCoord = (oriContour.x + oriContour.width) - 1;
 
         for (Section section : sections) {
             int pos = section.getFirstPos() - 1;

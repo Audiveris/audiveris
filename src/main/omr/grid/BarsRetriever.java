@@ -26,13 +26,10 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Barycenter;
 import omr.math.BasicLine;
 import omr.math.Line;
-import omr.math.LineUtilities;
+import omr.math.LineUtil;
 
 import static omr.run.Orientation.*;
 import omr.run.RunsTable;
@@ -46,11 +43,14 @@ import omr.sheet.SystemInfo;
 import omr.step.StepException;
 
 import omr.ui.Colors;
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.VipUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -189,7 +189,7 @@ public class BarsRetriever
             return;
         }
 
-        final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
+        final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
         final Color oldColor = g.getColor();
         g.setColor(Colors.ENTITY_MINOR);
 
@@ -313,7 +313,7 @@ public class BarsRetriever
             retrieveMajorBars(oldGlyphs, newGlyphs);
         } catch (Exception ex) {
             logger.warn(sheet.getLogPrefix()
-                           + "BarsRetriever cannot retrieveBars", ex);
+                        + "BarsRetriever cannot retrieveBars", ex);
         }
 
         try {
@@ -321,7 +321,7 @@ public class BarsRetriever
             buildSystems();
         } catch (Exception ex) {
             logger.warn(sheet.getLogPrefix()
-                           + "BarsRetriever cannot retrieveSystems", ex);
+                        + "BarsRetriever cannot retrieveSystems", ex);
         }
 
         // Adjust precise horizontal sides for systems, staves & lines
@@ -397,7 +397,7 @@ public class BarsRetriever
                 }
             } catch (Exception ex) {
                 logger.warn("BarsRetriever can't adjust side bars of "
-                               + system.idString(), ex);
+                            + system.idString(), ex);
             }
         }
     }
@@ -480,7 +480,7 @@ public class BarsRetriever
                 adjustStaffLines(system);
             } catch (Exception ex) {
                 logger.warn("BarsRetriever cannot adjust system#"
-                               + system.getId(), ex);
+                            + system.getId(), ex);
             }
         }
     }
@@ -1104,7 +1104,7 @@ public class BarsRetriever
         Point2D stopPoint = stick.getStopPoint(VERTICAL);
 
         // First, get a rough intersection
-        Point2D pt = LineUtilities.intersection(line.getEndPoint(LEFT),
+        Point2D pt = LineUtil.intersection(line.getEndPoint(LEFT),
                 line.getEndPoint(RIGHT),
                 startPoint, stopPoint);
 
@@ -1374,8 +1374,8 @@ public class BarsRetriever
         // Give first importance to long (inter-staff) sticks
         for (boolean takeAllSticks : new boolean[]{false, true}) {
             // Browse bar sticks from outside to inside of staff
-            for (StickIntersection crossing :
-                    (dir > 0) ? staffCrossings : staffCrossings.descendingSet()) {
+            for (StickIntersection crossing
+                    : (dir > 0) ? staffCrossings : staffCrossings.descendingSet()) {
                 double x = crossing.x;
 
                 if ((dir * (xBreak - x)) < 0) {

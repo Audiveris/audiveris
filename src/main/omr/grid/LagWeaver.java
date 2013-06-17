@@ -19,9 +19,6 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.Sections;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.Orientation;
 import omr.run.Run;
 
@@ -29,6 +26,9 @@ import omr.sheet.Sheet;
 
 import omr.util.Predicate;
 import omr.util.StopWatch;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.geom.PathIterator;
@@ -651,35 +651,35 @@ public class LagWeaver
     {
         return hLag.purgeSections(
                 new Predicate<Section>()
-                {
-                    @Override
-                    public boolean check (Section section)
-                    {
-                        Glyph glyph = section.getGlyph();
+        {
+            @Override
+            public boolean check (Section section)
+            {
+                Glyph glyph = section.getGlyph();
 
-                        if ((glyph != null)
-                            && (glyph.getShape() == Shape.STAFF_LINE)) {
-                            /**
-                             * Narrow horizontal section can be kept to avoid
-                             * over-segmentation between vertical sections
-                             */
-                            if ((section.getLength(Orientation.HORIZONTAL) == 1)
-                                && (section.getLength(Orientation.VERTICAL) > 1)) {
-                                if (section.isVip() || logger.isDebugEnabled()) {
-                                    logger.info("Keeping staffline section {}",
-                                            section);
-                                }
-
-                                section.setGlyph(null);
-
-                                return false;
-                            } else {
-                                return true;
-                            }
-                        } else {
-                            return false;
+                if ((glyph != null)
+                    && (glyph.getShape() == Shape.STAFF_LINE)) {
+                    /**
+                     * Narrow horizontal section can be kept to avoid
+                     * over-segmentation between vertical sections
+                     */
+                    if ((section.getLength(Orientation.HORIZONTAL) == 1)
+                        && (section.getLength(Orientation.VERTICAL) > 1)) {
+                        if (section.isVip() || logger.isDebugEnabled()) {
+                            logger.info("Keeping staffline section {}",
+                                    section);
                         }
+
+                        section.setGlyph(null);
+
+                        return false;
+                    } else {
+                        return true;
                     }
-                });
+                } else {
+                    return false;
+                }
+            }
+        });
     }
 }

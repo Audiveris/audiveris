@@ -17,8 +17,6 @@ import omr.run.Oriented;
 import omr.run.Run;
 import omr.run.RunsTable;
 
-import omr.score.common.PixelRectangle;
-
 import omr.selection.SectionEvent;
 import omr.selection.SectionIdEvent;
 import omr.selection.SectionSetEvent;
@@ -26,6 +24,7 @@ import omr.selection.SelectionService;
 
 import omr.util.Predicate;
 
+import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -54,7 +53,7 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public interface Lag
-    extends Digraph<Lag, Section>, Oriented
+        extends Digraph<Lag, Section>, Oriented
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -66,15 +65,16 @@ public interface Lag
     };
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * Include the content of runs table to the lag.
+     *
      * @param runsTable the populated runs
      */
     void addRuns (RunsTable runsTable);
 
     /**
      * Create a section in the lag (using the defined vertexClass).
+     *
      * @param firstPos the starting position of the section
      * @param firstRun the very first run of the section
      * @return the created section
@@ -83,28 +83,37 @@ public interface Lag
                            Run firstRun);
 
     /**
+     * Cut dependency about other services for lag.
+     */
+    void cutServices ();
+
+    /**
      * Report the run found at given coordinates, if any.
+     *
      * @param x absolute abscissa
      * @param y absolute ordinate
-     * @return  the run found, or null otherwise
+     * @return the run found, or null otherwise
      */
     Run getRunAt (int x,
                   int y);
 
     /**
      * Report the selection service for runs.
+     *
      * @return the run selection service
      */
     SelectionService getRunService ();
 
     /**
      * Report the underlying runs table.
+     *
      * @return the table of runs
      */
     RunsTable getRuns ();
 
     /**
      * Report the section selection service.
+     *
      * @return the section selection service
      */
     SelectionService getSectionService ();
@@ -112,6 +121,7 @@ public interface Lag
     /**
      * Return a view of the collection of sections that are currently
      * part of this lag.
+     *
      * @return the sections collection
      */
     Collection<Section> getSections ();
@@ -119,6 +129,7 @@ public interface Lag
     /**
      * Convenient method to report the UI currently selected Section,
      * if any, in this lag.
+     *
      * @return the UI selected section, or null if none
      */
     Section getSelectedSection ();
@@ -126,6 +137,7 @@ public interface Lag
     /**
      * Convenient method to report the UI currently selected set of
      * Sections, if any, in this lag.
+     *
      * @return the UI selected section set, or null if none
      */
     Set<Section> getSelectedSectionSet ();
@@ -134,22 +146,25 @@ public interface Lag
      * Lookup for lag sections that are <b>intersected</b> by the
      * provided rectangle.
      * Specific sections are not considered.
+     *
      * @param rect the given rectangle
      * @return the set of lag sections intersected, which may be empty
      */
-    Set<Section> lookupIntersectedSections (PixelRectangle rect);
+    Set<Section> lookupIntersectedSections (Rectangle rect);
 
     /**
      * Lookup for lag sections that are <b>contained</b> in the
      * provided rectangle.
      * Specific sections are not considered.
+     *
      * @param rect the given rectangle
      * @return the set of lag sections contained, which may be empty
      */
-    Set<Section> lookupSections (PixelRectangle rect);
+    Set<Section> lookupSections (Rectangle rect);
 
     /**
      * Purge the lag of all sections for which provided predicate holds.
+     *
      * @param predicate means to specify whether a section applies for purge
      * @return the list of sections purged in this call
      */
@@ -157,20 +172,17 @@ public interface Lag
 
     /**
      * Use the provided runs table as the lag underlying table.
+     *
      * @param runsTable the populated runs
      */
     void setRuns (RunsTable runsTable);
 
     /**
      * Inject dependency about other services for lag.
+     *
      * @param locationService the location service to read & write
-     * @param sceneService the glyphservice to write
+     * @param sceneService    the glyphservice to write
      */
     void setServices (SelectionService locationService,
                       SelectionService sceneService);
-
-    /**
-     * Cut dependency about other services for lag.
-     */
-    void cutServices ();
 }

@@ -19,8 +19,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.QuadCurve2D;
 
 /**
- * Class {@code NaturalSpline} defines a natural (cubic) spline interpolated
- * on a sequence of knots.
+ * Class {@code NaturalSpline} defines a natural (cubic) spline
+ * interpolated on a sequence of knots.
  *
  * <p>Internally the spline is composed of a sequence of curves, one
  * curve between two consecutive knots.
@@ -41,8 +41,8 @@ import java.awt.geom.QuadCurve2D;
  * @author Hervé Bitteur
  */
 public class NaturalSpline
-    extends GeoPath
-    implements Line
+        extends GeoPath
+        implements Line
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -51,6 +51,7 @@ public class NaturalSpline
     //---------------//
     /**
      * Creates a new NaturalSpline object from a sequence of connected shapes
+     *
      * @param curves the smooth sequence of shapes (cubic curves expected)
      */
     private NaturalSpline (Shape... curves)
@@ -61,6 +62,107 @@ public class NaturalSpline
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-------------//
+    // interpolate //
+    //-------------//
+    /**
+     * Create the natural spline that interpolates the provided knots
+     *
+     * @param points the provided points
+     * @return the resulting spline curve
+     */
+    public static NaturalSpline interpolate (Point2D... points)
+    {
+        // Check parameters
+        if (points == null) {
+            throw new IllegalArgumentException(
+                    "NaturalSpline cannot interpolate null arrays");
+        }
+
+        double[] xx = new double[points.length];
+        double[] yy = new double[points.length];
+
+        for (int i = 0; i < points.length; i++) {
+            Point2D pt = points[i];
+            xx[i] = pt.getX();
+            yy[i] = pt.getY();
+        }
+
+        return interpolate(xx, yy);
+    }
+
+    //-------------//
+    // interpolate //
+    //-------------//
+    /**
+     * Create the natural spline that interpolates the provided knots
+     *
+     * @param xx the abscissae of the provided points
+     * @param yy the ordinates of the provided points
+     * @return the resulting spline curve
+     */
+    public static NaturalSpline interpolate (double[] xx,
+                                             double[] yy)
+    {
+        // Check parameters
+        if ((xx == null) || (yy == null)) {
+            throw new IllegalArgumentException(
+                    "NaturalSpline cannot interpolate null arrays");
+        }
+
+        if (xx.length != yy.length) {
+            throw new IllegalArgumentException(
+                    "NaturalSpline interpolation needs consistent coordinates");
+        }
+
+        // Number of segments
+        final int n = xx.length - 1;
+
+        if (n < 1) {
+            throw new IllegalArgumentException(
+                    "NaturalSpline interpolation needs at least 2 points");
+        }
+
+        if (n == 1) {
+            // Use a Line
+            return new NaturalSpline(
+                    new Line2D.Double(xx[0], yy[0], xx[1], yy[1]));
+        } else if (n == 2) {
+            // Use a Quadratic (TODO: check this formula...)
+            //            double t = (xx[1] - xx[0]) / (xx[2] - xx[0]);
+            //            double u = 1 - t;
+            //            double cpx = (xx[1] - (u * u * xx[0]) - (t * t * xx[2])) / 2 * t * u;
+            //            double cpy = (yy[1] - (u * u * yy[0]) - (t * t * yy[2])) / 2 * t * u;
+            return new NaturalSpline(
+                    new QuadCurve2D.Double(
+                    xx[0],
+                    yy[0],
+                    (2 * xx[1]) - ((xx[0] + xx[2]) / 2),
+                    (2 * yy[1]) - ((yy[0] + yy[2]) / 2),
+                    xx[2],
+                    yy[2]));
+        } else {
+            // Use a sequence of cubics
+            double[] dx = getCubicDerivatives(xx);
+            double[] dy = getCubicDerivatives(yy);
+            Shape[] curves = new Shape[n];
+
+            for (int i = 0; i < n; i++) {
+                // Build each segment curve
+                curves[i] = new CubicCurve2D.Double(
+                        xx[i],
+                        yy[i],
+                        xx[i] + (dx[i] / 3),
+                        yy[i] + (dy[i] / 3),
+                        xx[i + 1] - (dx[i + 1] / 3),
+                        yy[i + 1] - (dy[i + 1] / 3),
+                        xx[i + 1],
+                        yy[i + 1]);
+            }
+
+            return new NaturalSpline(curves);
+        }
+    }
 
     @Override
     public double distanceOf (double x,
@@ -104,106 +206,6 @@ public class NaturalSpline
                               double y)
     {
         throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    //-------------//
-    // interpolate //
-    //-------------//
-    /**
-     * Create the natural spline that interpolates the provided knots
-     * @param points the provided points
-     * @return the resulting spline curve
-     */
-    public static NaturalSpline interpolate (Point2D... points)
-    {
-        // Check parameters
-        if (points == null) {
-            throw new IllegalArgumentException(
-                "NaturalSpline cannot interpolate null arrays");
-        }
-
-        double[] xx = new double[points.length];
-        double[] yy = new double[points.length];
-
-        for (int i = 0; i < points.length; i++) {
-            Point2D pt = points[i];
-            xx[i] = pt.getX();
-            yy[i] = pt.getY();
-        }
-
-        return interpolate(xx, yy);
-    }
-
-    //-------------//
-    // interpolate //
-    //-------------//
-    /**
-     * Create the natural spline that interpolates the provided knots
-     * @param xx the abscissae of the provided points
-     * @param yy the ordinates of the provided points
-     * @return the resulting spline curve
-     */
-    public static NaturalSpline interpolate (double[] xx,
-                                             double[] yy)
-    {
-        // Check parameters
-        if ((xx == null) || (yy == null)) {
-            throw new IllegalArgumentException(
-                "NaturalSpline cannot interpolate null arrays");
-        }
-
-        if (xx.length != yy.length) {
-            throw new IllegalArgumentException(
-                "NaturalSpline interpolation needs consistent coordinates");
-        }
-
-        // Number of segments
-        final int n = xx.length - 1;
-
-        if (n < 1) {
-            throw new IllegalArgumentException(
-                "NaturalSpline interpolation needs at least 2 points");
-        }
-
-        if (n == 1) {
-            // Use a Line
-            return new NaturalSpline(
-                new Line2D.Double(xx[0], yy[0], xx[1], yy[1]));
-        } else if (n == 2) {
-            // Use a Quadratic (TODO: check this formula...)
-            //            double t = (xx[1] - xx[0]) / (xx[2] - xx[0]);
-            //            double u = 1 - t;
-            //            double cpx = (xx[1] - (u * u * xx[0]) - (t * t * xx[2])) / 2 * t * u;
-            //            double cpy = (yy[1] - (u * u * yy[0]) - (t * t * yy[2])) / 2 * t * u;
-            return new NaturalSpline(
-                new QuadCurve2D.Double(
-                    xx[0],
-                    yy[0],
-                    (2 * xx[1]) - ((xx[0] + xx[2]) / 2),
-                    (2 * yy[1]) - ((yy[0] + yy[2]) / 2),
-                    xx[2],
-                    yy[2]));
-        } else {
-            // Use a sequence of cubics
-            double[] dx = getCubicDerivatives(xx);
-            double[] dy = getCubicDerivatives(yy);
-            Shape[]  curves = new Shape[n];
-
-            for (int i = 0; i < n; i++) {
-                // Build each segment curve
-                curves[i] = new CubicCurve2D.Double(
-                    xx[i],
-                    yy[i],
-                    xx[i] + (dx[i] / 3),
-                    yy[i] + (dy[i] / 3),
-                    xx[i + 1] - (dx[i + 1] / 3),
-                    yy[i + 1] - (dy[i + 1] / 3),
-                    xx[i + 1],
-                    yy[i + 1]);
-            }
-
-            return new NaturalSpline(curves);
-        }
     }
 
     @Override
@@ -276,41 +278,42 @@ public class NaturalSpline
     /**
      * Report the abscissa derivative value of the spline at provided ordinate
      * (assuming true function)
+     *
      * @param y the provided ordinate
      * @return the x derivative value at this ordinate
      */
     public double xDerivativeAtY (double y)
     {
-        final double[]       buffer = new double[6];
+        final double[] buffer = new double[6];
         final Point2D.Double p1 = new Point2D.Double();
         final Point2D.Double p2 = new Point2D.Double();
-        final int            segmentKind = getYSegment(y, buffer, p1, p2);
-        final double         deltaY = p2.y - p1.y;
-        final double         t = (y - p1.y) / deltaY;
-        final double         u = 1 - t;
+        final int segmentKind = getYSegment(y, buffer, p1, p2);
+        final double deltaY = p2.y - p1.y;
+        final double t = (y - p1.y) / deltaY;
+        final double u = 1 - t;
 
         // dx/dy = dx/dt * dt/dy
         // dt/dy = 1/deltaY
         switch (segmentKind) {
-        case SEG_LINETO :
+        case SEG_LINETO:
             return (p2.x - p1.x) / deltaY;
 
-        case SEG_QUADTO : {
+        case SEG_QUADTO: {
             double cpx = buffer[0];
 
-            return ((-2 * p1.x * u) + (2 * cpx * (1 - (2 * t))) +
-                   (2 * p2.x * t)) / deltaY;
+            return ((-2 * p1.x * u) + (2 * cpx * (1 - (2 * t)))
+                    + (2 * p2.x * t)) / deltaY;
         }
 
-        case SEG_CUBICTO : {
+        case SEG_CUBICTO: {
             double cpx1 = buffer[0];
             double cpx2 = buffer[2];
 
-            return ((-3 * p1.x * u * u) + (3 * cpx1 * ((u * u) - (2 * u * t))) +
-                   (3 * cpx2 * ((2 * t * u) - (t * t))) + (3 * p2.x * t * t)) / deltaY;
+            return ((-3 * p1.x * u * u) + (3 * cpx1 * ((u * u) - (2 * u * t)))
+                    + (3 * cpx2 * ((2 * t * u) - (t * t))) + (3 * p2.x * t * t)) / deltaY;
         }
 
-        default :
+        default:
             throw new RuntimeException("Illegal currentSegment " + segmentKind);
         }
     }
@@ -327,41 +330,42 @@ public class NaturalSpline
     /**
      * Report the ordinate derivative value of the spline at provided abscissa
      * (assuming true function)
+     *
      * @param x the provided abscissa
      * @return the y derivative value at this abscissa
      */
     public double yDerivativeAtX (double x)
     {
-        final double[]       buffer = new double[6];
+        final double[] buffer = new double[6];
         final Point2D.Double p1 = new Point2D.Double();
         final Point2D.Double p2 = new Point2D.Double();
-        final int            segmentKind = getXSegment(x, buffer, p1, p2);
-        final double         deltaX = p2.x - p1.x;
-        final double         t = (x - p1.x) / deltaX;
-        final double         u = 1 - t;
+        final int segmentKind = getXSegment(x, buffer, p1, p2);
+        final double deltaX = p2.x - p1.x;
+        final double t = (x - p1.x) / deltaX;
+        final double u = 1 - t;
 
         // dy/dx = dy/dt * dt/dx
         // dt/dx = 1/deltaX
         switch (segmentKind) {
-        case SEG_LINETO :
+        case SEG_LINETO:
             return (p2.y - p1.y) / deltaX;
 
-        case SEG_QUADTO : {
+        case SEG_QUADTO: {
             double cpy = buffer[1];
 
-            return ((-2 * p1.y * u) + (2 * cpy * (1 - (2 * t))) +
-                   (2 * p2.y * t)) / deltaX;
+            return ((-2 * p1.y * u) + (2 * cpy * (1 - (2 * t)))
+                    + (2 * p2.y * t)) / deltaX;
         }
 
-        case SEG_CUBICTO : {
+        case SEG_CUBICTO: {
             double cpy1 = buffer[1];
             double cpy2 = buffer[3];
 
-            return ((-3 * p1.y * u * u) + (3 * cpy1 * ((u * u) - (2 * u * t))) +
-                   (3 * cpy2 * ((2 * t * u) - (t * t))) + (3 * p2.y * t * t)) / deltaX;
+            return ((-3 * p1.y * u * u) + (3 * cpy1 * ((u * u) - (2 * u * t)))
+                    + (3 * cpy2 * ((2 * t * u) - (t * t))) + (3 * p2.y * t * t)) / deltaX;
         }
 
-        default :
+        default:
             throw new RuntimeException("Illegal currentSegment " + segmentKind);
         }
     }
@@ -372,6 +376,7 @@ public class NaturalSpline
     /**
      * Computes the derivatives of natural cubic spline that interpolates the
      * provided knots
+     *
      * @param z the provided n knots
      * @return the corresponding array of derivative values
      */
@@ -384,14 +389,14 @@ public class NaturalSpline
         double[] D = new double[n + 1];
 
         /* Equation to solve:
-           [2 1       ] [D[0]]   [3(z[1] - z[0])  ]
-           |1 4 1     | |D[1]|   |3(z[2] - z[0])  |
-           |  1 4 1   | | .  | = |      .         |
-           |    ..... | | .  |   |      .         |
-           |     1 4 1| | .  |   |3(z[n] - z[n-2])|
-           [       1 2] [D[n]]   [3(z[n] - z[n-1])]
-           by using row operations to convert the matrix to upper triangular
-           and then back sustitution.
+         * [2 1 ] [D[0]] [3(z[1] - z[0]) ]
+         * |1 4 1 | |D[1]| |3(z[2] - z[0]) |
+         * | 1 4 1 | | . | = | . |
+         * | ..... | | . | | . |
+         * | 1 4 1| | . | |3(z[n] - z[n-2])|
+         * [ 1 2] [D[n]] [3(z[n] - z[n-1])]
+         * by using row operations to convert the matrix to upper triangular
+         * and then back sustitution.
          */
         double[] gamma = new double[n + 1];
         gamma[0] = 1.0f / 2.0f;

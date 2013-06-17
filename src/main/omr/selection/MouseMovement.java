@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.selection;
 
-
 /**
  * Class {@code MouseMovement} defines which phase of user action
  * generated the event.
@@ -21,7 +20,9 @@ package omr.selection;
  *
  * @author Hervé Bitteur
  */
-public enum MouseMovement {
+public enum MouseMovement
+{
+
     /**
      * User presses the mouse button down or, by extension, manually
      * enters the location data in a dedicated board.
@@ -30,9 +31,10 @@ public enum MouseMovement {
     /**
      * User moves the mouse while keeping the button down.
      */
-    DRAGGING, 
+    DRAGGING,
     /**
      * User releases the mouse button.
      */
     RELEASING;
+
 }

@@ -13,15 +13,15 @@ package omr.glyph;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.entity.TimeRational;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.step.Steps;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;

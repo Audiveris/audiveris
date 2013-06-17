@@ -13,22 +13,23 @@ package omr.glyph;
 
 import omr.lag.Section;
 
-import omr.score.common.PixelPoint;
+import omr.math.GeoUtil;
 
 import omr.ui.symbol.Symbols;
 
 import java.awt.Color;
+import java.awt.Point;
 import java.util.Collection;
 
 /**
- * Class {@code VirtualGlyph} is an artificial glyph specifically build from
- * a MusicFont-based symbol, to carry a shape and features just like a standard
- * glyph would.
+ * Class {@code VirtualGlyph} is an artificial glyph specifically
+ * build from a MusicFont-based symbol, to carry a shape and features
+ * just like a standard glyph would.
  *
  * @author Hervé Bitteur
  */
 public class VirtualGlyph
-    extends SymbolGlyph
+        extends SymbolGlyph
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -38,23 +39,22 @@ public class VirtualGlyph
     /**
      * Create a new VirtualGlyph object
      *
-     * @param shape the assigned shape
+     * @param shape     the assigned shape
      * @param interline the related interline scaling value
-     * @param center where the glyph area center will be located
+     * @param center    where the glyph area center will be located
      */
-    public VirtualGlyph (Shape      shape,
-                         int        interline,
-                         PixelPoint center)
+    public VirtualGlyph (Shape shape,
+                         int interline,
+                         Point center)
     {
         // Build a glyph of proper size
         super(shape, Symbols.getSymbol(shape), interline, null);
 
         // Translation from generic center to actual center
-        translate(getAreaCenter().to(center));
+        translate(GeoUtil.vectorOf(getAreaCenter(), center));
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // colorize //
     //----------//
@@ -69,7 +69,7 @@ public class VirtualGlyph
     //----------//
     @Override
     public void colorize (Collection<Section> sections,
-                          Color               color)
+                          Color color)
     {
     }
 
@@ -78,6 +78,7 @@ public class VirtualGlyph
     //----------//
     /**
      * By definition a virtual glyph is always active
+     *
      * @return true
      */
     @Override

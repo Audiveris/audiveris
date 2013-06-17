@@ -13,7 +13,6 @@ package omr.glyph.facets;
 
 import omr.score.entity.PartNode;
 
-import java.awt.Graphics2D;
 import java.util.Collection;
 
 /**
@@ -23,12 +22,13 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 interface GlyphTranslation
-    extends GlyphFacet
+        extends GlyphFacet
 {
     //~ Methods ----------------------------------------------------------------
 
     /**
      * Add a score entity as a translation for this glyph
+     *
      * @param entity the counterpart of this glyph on the score side
      */
     void addTranslation (PartNode entity);
@@ -40,18 +40,21 @@ interface GlyphTranslation
 
     /**
      * Report the collection of score entities this glyph contributes to
+     *
      * @return the collection of entities that are translations of this glyph
      */
     Collection<PartNode> getTranslations ();
 
     /**
      * Report whether this glyph is translated to a score entity
+     *
      * @return true if this glyph is translated to score
      */
     boolean isTranslated ();
 
     /**
      * Assign a unique score translation for this glyph
+     *
      * @param entity the score entity that is a translation of this glyph
      */
     void setTranslation (PartNode entity);

@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class RemoveTask
-    extends SheetTask
+        extends SheetTask
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -49,7 +49,6 @@ public class RemoveTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // core //
     //------//

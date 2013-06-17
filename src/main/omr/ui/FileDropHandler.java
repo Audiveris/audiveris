@@ -13,9 +13,6 @@ package omr.ui;
 
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 
 import omr.script.ScriptManager;
@@ -26,6 +23,9 @@ import omr.step.Steps;
 
 import omr.util.BasicTask;
 import omr.util.Param;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -115,7 +115,8 @@ public class FileDropHandler
 
             /* Loop through the files */
             for (File file : fileList) {
-                if (file.getName().endsWith(ScriptManager.SCRIPT_EXTENSION)) {
+                if (file.getName()
+                        .endsWith(ScriptManager.SCRIPT_EXTENSION)) {
                     new DropScriptTask(file).execute();
                 } else {
                     new DropImageTask(file, defaultStep.getTarget()).execute();
@@ -147,6 +148,35 @@ public class FileDropHandler
                 Steps.valueOf(Steps.LOAD),
                 "Default step launched when an image file is dropped");
 
+    }
+
+    //---------//
+    // Default //
+    //---------//
+    private static class Default
+            extends Param<Step>
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public Step getSpecific ()
+        {
+            return constants.defaultStep.getValue();
+        }
+
+        @Override
+        public boolean setSpecific (Step specific)
+        {
+            if (!getSpecific()
+                    .equals(specific)) {
+                constants.defaultStep.setValue(specific);
+                logger.info("Default drop step is now ''{}''", specific);
+
+                return true;
+            }
+
+            return false;
+        }
     }
 
     //---------------//
@@ -182,7 +212,10 @@ public class FileDropHandler
             if (target.equals(loadStep)) {
                 Stepping.processScore(Collections.EMPTY_SET, null, score);
             } else {
-                Stepping.processScore(Collections.singleton(target), null, score);
+                Stepping.processScore(
+                        Collections.singleton(target),
+                        null,
+                        score);
             }
 
             return null;
@@ -210,36 +243,10 @@ public class FileDropHandler
         protected Void doInBackground ()
                 throws Exception
         {
-            ScriptManager.getInstance().loadAndRun(file);
+            ScriptManager.getInstance()
+                    .loadAndRun(file);
 
             return null;
-        }
-    }
-
-    //---------//
-    // Default //
-    //---------//
-    private static class Default
-            extends Param<Step>
-    {
-
-        @Override
-        public Step getSpecific ()
-        {
-            return constants.defaultStep.getValue();
-        }
-
-        @Override
-        public boolean setSpecific (Step specific)
-        {
-            if (!getSpecific().equals(specific)) {
-                constants.defaultStep.setValue(specific);
-                logger.info("Default drop step is now ''{}''", specific);
-
-                return true;
-            }
-
-            return false;
         }
     }
 }

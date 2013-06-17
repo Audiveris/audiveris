@@ -11,11 +11,11 @@
 // </editor-fold>
 package omr.step;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
@@ -26,15 +26,15 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class SticksStep
-    extends AbstractSystemStep
+        extends AbstractSystemStep
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(SticksStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SticksStep.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // SticksStep //
     //------------//
@@ -44,15 +44,14 @@ public class SticksStep
     public SticksStep ()
     {
         super(
-            Steps.STICKS,
-            Level.SHEET_LEVEL,
-            Mandatory.MANDATORY,
-            DATA_TAB,
-            "Extract vertical & horizontal sticks");
+                Steps.STICKS,
+                Level.SHEET_LEVEL,
+                Mandatory.MANDATORY,
+                DATA_TAB,
+                "Extract vertical & horizontal sticks");
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // displayUI //
     //-----------//
@@ -61,13 +60,13 @@ public class SticksStep
     {
         // Create verticals display
         sheet.getVerticalsController()
-             .refresh();
+                .refresh();
 
         // Add ledger checkboard
         sheet.getSystems()
-             .get(0)
-             .getHorizontalsBuilder()
-             .addCheckBoard();
+                .get(0)
+                .getHorizontalsBuilder()
+                .addCheckBoard();
     }
 
     //----------//
@@ -75,7 +74,7 @@ public class SticksStep
     //----------//
     @Override
     public void doSystem (SystemInfo system)
-        throws StepException
+            throws StepException
     {
         clearSystemErrors(system);
         system.retrieveVerticals();
@@ -87,8 +86,8 @@ public class SticksStep
     //----------//
     @Override
     protected void doEpilog (Collection<SystemInfo> systems,
-                             Sheet                  sheet)
-        throws StepException
+                             Sheet sheet)
+            throws StepException
     {
         sheet.createVerticalsController();
     }

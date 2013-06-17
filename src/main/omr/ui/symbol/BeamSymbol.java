@@ -12,8 +12,6 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Composite;
@@ -30,7 +28,7 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class BeamSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -38,21 +36,20 @@ public class BeamSymbol
     private static final BasicSymbol quarter = Symbols.SYMBOL_QUARTER;
 
     //~ Instance fields --------------------------------------------------------
-
     // Number of beams
     protected final int beamCount;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // BeamSymbol //
     //------------//
     /**
      * Create a BeamSymbol.
+     *
      * @param beamCount the number of beams
-     * @param shape the precise shape
+     * @param shape     the precise shape
      */
-    public BeamSymbol (int   beamCount,
+    public BeamSymbol (int beamCount,
                        Shape shape)
     {
         this(beamCount, false, shape);
@@ -63,20 +60,20 @@ public class BeamSymbol
     //------------//
     /**
      * Create a BeamSymbol.
+     *
      * @param beamCount the number of beams
-     * @param isIcon true for an icon
-     * @param shape the precise shape
+     * @param isIcon    true for an icon
+     * @param shape     the precise shape
      */
-    protected BeamSymbol (int     beamCount,
+    protected BeamSymbol (int beamCount,
                           boolean isIcon,
-                          Shape   shape)
+                          Shape shape)
     {
         super(isIcon, shape, true); // Decorated
         this.beamCount = beamCount;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -102,8 +99,8 @@ public class BeamSymbol
         p.quarterDy = (int) Math.rint(qRect.getWidth() * 0.8);
 
         p.rect = new Rectangle(
-            (int) Math.ceil(qRect.getWidth() + p.quarterDx),
-            (int) Math.ceil(qRect.getHeight() + p.quarterDy));
+                (int) Math.ceil(qRect.getWidth() + p.quarterDx),
+                (int) Math.ceil(qRect.getHeight() + p.quarterDy));
 
         return p;
     }
@@ -113,27 +110,27 @@ public class BeamSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams    p = (MyParams) params;
-        PixelPoint  loc = alignment.translatedPoint(
-            TOP_RIGHT,
-            p.rect,
-            location);
+        MyParams p = (MyParams) params;
+        Point loc = alignment.translatedPoint(
+                TOP_RIGHT,
+                p.rect,
+                location);
 
         // Beams
         Rectangle2D quarterRect = p.layout.getBounds();
-        int         beamHeight = (int) Math.rint(
-            quarterRect.getHeight() * 0.12);
-        int         beamDelta = (int) Math.rint(quarterRect.getHeight() * 0.18);
+        int beamHeight = (int) Math.rint(
+                quarterRect.getHeight() * 0.12);
+        int beamDelta = (int) Math.rint(quarterRect.getHeight() * 0.18);
 
         for (int i = 0; i < beamCount; i++) {
-            Point   left = new Point(
-                loc.x - p.quarterDx,
-                loc.y + (i * beamDelta) + p.quarterDy);
-            Point   right = new Point(loc.x, loc.y + (i * beamDelta));
+            Point left = new Point(
+                    loc.x - p.quarterDx,
+                    loc.y + (i * beamDelta) + p.quarterDy);
+            Point right = new Point(loc.x, loc.y + (i * beamDelta));
             Polygon polygon = new Polygon();
             polygon.addPoint(left.x, left.y);
             polygon.addPoint(left.x, left.y + beamHeight);
@@ -154,23 +151,21 @@ public class BeamSymbol
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // Params //
     //--------//
     protected class MyParams
-        extends Params
+            extends Params
     {
         //~ Instance fields ----------------------------------------------------
 
         // layout for just quarter layout
-
         // rect for global image 
-
         // Between the 2 quarters
         int quarterDx;
 
         // Between the 2 quarters
         int quarterDy;
+
     }
 }

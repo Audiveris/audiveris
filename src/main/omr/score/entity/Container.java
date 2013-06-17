@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.score.entity;
 
-
 /**
  * Class {@code Container} is meant for intermediate containers with
  * no values by themselves. Thus, there are shown in the score tree, only if
@@ -20,7 +19,7 @@ package omr.score.entity;
  * @author Hervé Bitteur
  */
 public class Container
-    extends VisitableNode
+        extends VisitableNode
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -28,7 +27,6 @@ public class Container
     private final String name;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // Container //
     //-----------//
@@ -36,17 +34,16 @@ public class Container
      * Creates a new Container object.
      *
      * @param container the parent in the score hierarchy
-     * @param name a name for this container
+     * @param name      a name for this container
      */
     public Container (VisitableNode container,
-                      String        name)
+                      String name)
     {
         super(container);
         this.name = name;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // toString //
     //----------//

@@ -31,14 +31,13 @@ import javax.swing.UIDefaults;
  * @author Brenton Partridge
  */
 public class OmrUIDefaults
-    extends UIDefaults
+        extends UIDefaults
 {
     //~ Static fields/initializers ---------------------------------------------
 
     private static volatile OmrUIDefaults INSTANCE;
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // getInstance //
     //-------------//
@@ -83,6 +82,7 @@ public class OmrUIDefaults
 
     /**
      * Load UI strings from a Properties object.
+     *
      * @param properties properties
      */
     public void loadFrom (Properties properties)
@@ -96,21 +96,21 @@ public class OmrUIDefaults
      * Load UI strings from a properties file (.properties).
      *
      * @param file properties file path without locale or country information
-     * or .properties extension
+     *             or .properties extension
      * @throws FileNotFoundException
      * @throws IOException
      */
     public void loadFrom (File file)
-        throws FileNotFoundException, IOException
+            throws FileNotFoundException, IOException
     {
-        String        path = file.getPath();
+        String path = file.getPath();
         StringBuilder b = new StringBuilder(path);
-        Locale        locale = Locale.getDefault();
-        String        language = locale.getLanguage();
+        Locale locale = Locale.getDefault();
+        String language = locale.getLanguage();
 
         if ((language != null) && (language.length() > 0)) {
             b.append('_')
-             .append(language);
+                    .append(language);
         }
 
         b.append(".properties");
@@ -120,7 +120,7 @@ public class OmrUIDefaults
             file = new File(path + ".properties");
         }
 
-        Properties  p = new Properties();
+        Properties p = new Properties();
         InputStream in = null;
 
         try {

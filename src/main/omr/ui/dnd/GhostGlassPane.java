@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.ui.dnd;
 
+import omr.ui.symbol.SymbolImage;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.ui.symbol.SymbolImage;
 
 import java.awt.AlphaComposite;
 import java.awt.Graphics;
@@ -26,31 +26,31 @@ import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
 /**
- * Class {@code GhostGlassPane} is a special glasspane, meant for displaying
- * a shape being dragged and finally dropped.
+ * Class {@code GhostGlassPane} is a special glasspane, meant for
+ * displaying a shape being dragged and finally dropped.
  *
  * @author Hervé Bitteur (from Romain Guy's demo)
  */
 public class GhostGlassPane
-    extends JPanel
+        extends JPanel
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(GhostGlassPane.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            GhostGlassPane.class);
 
     /** Composite to be used over a droppable target */
     private static AlphaComposite targetComposite = AlphaComposite.getInstance(
-        AlphaComposite.SRC_OVER,
-        0.5f);
+            AlphaComposite.SRC_OVER,
+            0.5f);
 
     /** Composite to be used over a non-droppable target */
     private static AlphaComposite nonTargetComposite = AlphaComposite.getInstance(
-        AlphaComposite.SRC_OVER,
-        0.2f);
+            AlphaComposite.SRC_OVER,
+            0.2f);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The image to be dragged */
     private BufferedImage draggedImage = null;
 
@@ -64,7 +64,6 @@ public class GhostGlassPane
     private boolean overTarget = false;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------//
     // GhostGlassPane //
     //----------------//
@@ -78,7 +77,6 @@ public class GhostGlassPane
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // paintComponent //
     //----------------//
@@ -107,6 +105,7 @@ public class GhostGlassPane
     //---------//
     /**
      * Assign the image to be dragged
+     *
      * @param draggedImage the image to drag
      */
     public void setImage (BufferedImage draggedImage)
@@ -119,6 +118,7 @@ public class GhostGlassPane
     //---------------//
     /**
      * Tell the glasspane whether we are currently over a droppable target
+     *
      * @param overTarget true if over a target
      */
     public void setOverTarget (boolean overTarget)
@@ -132,6 +132,7 @@ public class GhostGlassPane
     /**
      * Assign the current point, where the dragged image is to be displayed,
      * and repaint as few as possible of the glass pane.
+     *
      * @param localPoint the current location (glasspane-based)
      */
     public void setPoint (Point localPoint)
@@ -163,6 +164,7 @@ public class GhostGlassPane
     //----------//
     /**
      * Assign the current point, where the dragged image is to be displayed
+     *
      * @param screenPoint the current location (screen-based)
      */
     public void setPoint (ScreenPoint screenPoint)
@@ -180,7 +182,7 @@ public class GhostGlassPane
 
         if (draggedImage instanceof SymbolImage) {
             SymbolImage symbolImage = (SymbolImage) draggedImage;
-            Point       refPoint = symbolImage.getRefPoint();
+            Point refPoint = symbolImage.getRefPoint();
 
             if (refPoint != null) {
                 rect.translate(-refPoint.x, -refPoint.y);

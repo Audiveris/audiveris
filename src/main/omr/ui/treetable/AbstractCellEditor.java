@@ -21,7 +21,7 @@ import javax.swing.event.EventListenerList;
  * @author Hervé Bitteur
  */
 public class AbstractCellEditor
-    implements CellEditor
+        implements CellEditor
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -31,7 +31,6 @@ public class AbstractCellEditor
     protected EventListenerList listenerList = new EventListenerList();
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------------------//
     // addCellEditorListener //
     //-----------------------//
@@ -146,7 +145,7 @@ public class AbstractCellEditor
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == CellEditorListener.class) {
                 ((CellEditorListener) listeners[i + 1]).editingCanceled(
-                    new ChangeEvent(this));
+                        new ChangeEvent(this));
             }
         }
     }
@@ -166,7 +165,7 @@ public class AbstractCellEditor
         for (int i = listeners.length - 2; i >= 0; i -= 2) {
             if (listeners[i] == CellEditorListener.class) {
                 ((CellEditorListener) listeners[i + 1]).editingStopped(
-                    new ChangeEvent(this));
+                        new ChangeEvent(this));
             }
         }
     }

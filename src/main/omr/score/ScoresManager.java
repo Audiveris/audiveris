@@ -17,9 +17,6 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.ui.SheetPdfOutput;
 
 import omr.script.ScriptActions;
@@ -27,6 +24,9 @@ import omr.script.ScriptActions;
 import omr.util.NameSet;
 
 import org.jdesktop.application.Application.ExitListener;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -83,28 +83,28 @@ public class ScoresManager
         if (Main.getGui() != null) {
             Main.getGui().addExitListener(
                     new ExitListener()
-                    {
-                        @Override
-                        public boolean canExit (EventObject e)
-                        {
-                            // Are all scripts stored (or explicitly ignored)?
-                            for (Score score : instances) {
-                                if (!ScriptActions.checkStored(
-                                        score.getScript())) {
-                                    return false;
-                                }
-                            }
-
-                            return true;
+            {
+                @Override
+                public boolean canExit (EventObject e)
+                {
+                    // Are all scripts stored (or explicitly ignored)?
+                    for (Score score : instances) {
+                        if (!ScriptActions.checkStored(
+                                score.getScript())) {
+                            return false;
                         }
+                    }
 
-                        @Override
-                        public void willExit (EventObject e)
-                        {
-                            // Close all sheets, to record their bench data
-                            closeAllScores();
-                        }
-                    });
+                    return true;
+                }
+
+                @Override
+                public void willExit (EventObject e)
+                {
+                    // Close all sheets, to record their bench data
+                    closeAllScores();
+                }
+            });
         }
     }
 

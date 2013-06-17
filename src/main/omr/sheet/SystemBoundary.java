@@ -11,14 +11,14 @@
 // </editor-fold>
 package omr.sheet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.util.BrokenLine;
 import omr.util.Navigable;
 import omr.util.VerticalSide;
 
 import net.jcip.annotations.NotThreadSafe;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Graphics;

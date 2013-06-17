@@ -11,13 +11,11 @@
 // </editor-fold>
 package omr.score.entity;
 
-import java.awt.Graphics2D;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;
 
 import java.util.Comparator;
-import omr.glyph.facets.Glyph;
 
 /**
  * Class {@code MeasureNode} is an abstract class that is subclassed for
@@ -27,7 +25,7 @@ import omr.glyph.facets.Glyph;
  * @author Hervé Bitteur
  */
 public abstract class MeasureNode
-    extends PartNode
+        extends PartNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -35,16 +33,17 @@ public abstract class MeasureNode
      * Specific comparator to sort collections of MeasureNode instances,
      * according first to staff index, then to abscissa.
      */
-    public static final Comparator<TreeNode> staffComparator = new Comparator<TreeNode>() {
+    public static final Comparator<TreeNode> staffComparator = new Comparator<TreeNode>()
+    {
         @Override
         public int compare (TreeNode tn1,
                             TreeNode tn2)
         {
             MeasureNode mn1 = (MeasureNode) tn1;
             MeasureNode mn2 = (MeasureNode) tn2;
-            int         deltaStaff = mn1.getStaff()
-                                        .getId() - mn2.getStaff()
-                                                      .getId();
+            int deltaStaff = mn1.getStaff()
+                    .getId() - mn2.getStaff()
+                    .getId();
 
             if (deltaStaff != 0) {
                 // Staves are different
@@ -56,9 +55,7 @@ public abstract class MeasureNode
         }
     };
 
-
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // MeasureNode //
     //-------------//
@@ -73,7 +70,6 @@ public abstract class MeasureNode
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // accept //
     //--------//
@@ -82,7 +78,7 @@ public abstract class MeasureNode
     {
         return visitor.visit(this);
     }
-    
+
     //------------------//
     // getContextString //
     //------------------//
@@ -91,11 +87,11 @@ public abstract class MeasureNode
     {
         StringBuilder sb = new StringBuilder(super.getContextString());
         sb.append("M")
-          .append(getMeasure().getPageId());
+                .append(getMeasure().getPageId());
 
         if (getStaff() != null) {
             sb.append("F")
-              .append(getStaff().getId());
+                    .append(getStaff().getId());
         }
 
         return sb.toString();

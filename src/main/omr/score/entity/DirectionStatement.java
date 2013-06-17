@@ -11,13 +11,12 @@
 // </editor-fold>
 package omr.score.entity;
 
+import omr.score.visitor.ScoreVisitor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
-import omr.score.visitor.ScoreVisitor;
-
-import omr.text.TextLine;
+import java.awt.Point;
 
 /**
  * Class {@code DirectionStatement} represents a direction in the score
@@ -50,11 +49,14 @@ public class DirectionStatement
      * @param text           the sentence text
      */
     public DirectionStatement (Measure measure,
-                               PixelPoint referencePoint,
+                               Point referencePoint,
                                Chord chord,
                                Text.DirectionText text)
     {
-        super(measure, referencePoint, chord,
+        super(
+                measure,
+                referencePoint,
+                chord,
                 text.getSentence().getFirstWord().getGlyph());
         this.text = text;
     }

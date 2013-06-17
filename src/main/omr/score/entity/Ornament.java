@@ -13,11 +13,12 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
+import omr.score.visitor.ScoreVisitor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
-import omr.score.visitor.ScoreVisitor;
+import java.awt.Point;
 
 /**
  * Class {@code Ornament} represents an ornament event, a special notation.
@@ -40,15 +41,15 @@ import omr.score.visitor.ScoreVisitor;
  * @author Hervé Bitteur
  */
 public class Ornament
-    extends AbstractNotation
+        extends AbstractNotation
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(Ornament.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Ornament.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // Ornament //
     //----------//
@@ -56,38 +57,37 @@ public class Ornament
      * Creates a new instance of Ornament event
      *
      * @param measure measure that contains this mark
-     * @param point location of mark
-     * @param chord the chord related to the mark
-     * @param glyph the underlying glyph
+     * @param point   location of mark
+     * @param chord   the chord related to the mark
+     * @param glyph   the underlying glyph
      */
-    public Ornament (Measure    measure,
-                     PixelPoint point,
-                     Chord      chord,
-                     Glyph      glyph)
+    public Ornament (Measure measure,
+                     Point point,
+                     Chord chord,
+                     Glyph glyph)
     {
         super(measure, point, chord, glyph);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // populate //
     //----------//
     /**
      * Used by SystemTranslator to allocate the trill marks
      *
-     * @param glyph underlying glyph
+     * @param glyph   underlying glyph
      * @param measure measure where the mark is located
-     * @param point location for the mark
+     * @param point   location for the mark
      */
-    public static void populate (Glyph      glyph,
-                                 Measure    measure,
-                                 PixelPoint point)
+    public static void populate (Glyph glyph,
+                                 Measure measure,
+                                 Point point)
     {
         if (glyph.isVip()) {
             logger.info("Ornament. populate {}", glyph.idString());
         }
-        
+
         // An Ornament relates to the note below on the same time slot
         Slot slot = measure.getClosestSlot(point);
 
@@ -96,7 +96,7 @@ public class Ornament
 
             if (chord != null) {
                 glyph.setTranslation(
-                    new Ornament(measure, point, chord, glyph));
+                        new Ornament(measure, point, chord, glyph));
             }
         }
     }

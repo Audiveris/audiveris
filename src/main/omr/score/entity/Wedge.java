@@ -14,12 +14,13 @@ package omr.score.entity;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.score.visitor.ScoreVisitor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-import omr.score.visitor.ScoreVisitor;
+import java.awt.Point;
+import java.awt.Rectangle;
 
 /**
  * Class {@code Wedge} represents a crescendo (&lt;) or a
@@ -55,7 +56,7 @@ public class Wedge
      */
     public Wedge (Measure measure,
                   boolean start,
-                  PixelPoint point,
+                  Point point,
                   Chord chord,
                   Glyph glyph)
     {
@@ -71,50 +72,6 @@ public class Wedge
     }
 
     //~ Methods ----------------------------------------------------------------
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Used by SystemTranslator to allocate the wedges
-     *
-     * @param glyph           underlying glyph
-     * @param startingMeasure measure where left side is located
-     * @param startingPoint   location for left point
-     */
-    public static void populate (Glyph glyph,
-                                 Measure startingMeasure,
-                                 PixelPoint startingPoint)
-    {
-        if (glyph.isVip()) {
-            logger.info("Wedge. populate {}", glyph.idString());
-        }
-        
-        SystemPart part = startingMeasure.getPart();
-        PixelRectangle box = glyph.getBounds();
-
-        // Start
-        glyph.setTranslation(
-                new Wedge(
-                startingMeasure,
-                true,
-                startingPoint,
-                findChord(startingMeasure, startingPoint),
-                glyph));
-
-        // Stop
-        PixelPoint endingPoint = new PixelPoint(
-                box.x + box.width,
-                box.y + (box.height / 2));
-        Measure endingMeasure = part.getMeasureAt(endingPoint);
-        glyph.addTranslation(
-                new Wedge(
-                endingMeasure,
-                false,
-                endingPoint,
-                findChord(endingMeasure, endingPoint),
-                glyph));
-    }
-
     //--------//
     // accept //
     //--------//
@@ -135,5 +92,49 @@ public class Wedge
     public int getSpread ()
     {
         return spread;
+    }
+
+    //----------//
+    // populate //
+    //----------//
+    /**
+     * Used by SystemTranslator to allocate the wedges
+     *
+     * @param glyph           underlying glyph
+     * @param startingMeasure measure where left side is located
+     * @param startingPoint   location for left point
+     */
+    public static void populate (Glyph glyph,
+                                 Measure startingMeasure,
+                                 Point startingPoint)
+    {
+        if (glyph.isVip()) {
+            logger.info("Wedge. populate {}", glyph.idString());
+        }
+
+        SystemPart part = startingMeasure.getPart();
+        Rectangle box = glyph.getBounds();
+
+        // Start
+        glyph.setTranslation(
+                new Wedge(
+                startingMeasure,
+                true,
+                startingPoint,
+                findChord(startingMeasure, startingPoint),
+                glyph));
+
+        // Stop
+        Point endingPoint = new Point(
+                box.x + box.width,
+                box.y + (box.height / 2));
+        Measure endingMeasure = part.getMeasureAt(endingPoint);
+        glyph.addTranslation(
+                new Wedge(
+                endingMeasure,
+                false,
+                endingPoint,
+                findChord(endingMeasure, endingPoint),
+                glyph));
     }
 }

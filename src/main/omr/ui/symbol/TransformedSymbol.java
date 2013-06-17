@@ -12,21 +12,21 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code TransformedSymbol} displays a baseShape symbol with the application
+ * Class {@code TransformedSymbol} displays a baseShape symbol with the
+ * application
  * on an AffineTransform
  */
 public class TransformedSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -40,21 +40,20 @@ public class TransformedSymbol
     private final AffineTransform at;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------------//
     // TransformedSymbol //
     //-------------------//
     /**
      * Creates a new TransformedSymbol object.
      *
-     * @param isIcon true for an icon
-     * @param shape the related shape
+     * @param isIcon    true for an icon
+     * @param shape     the related shape
      * @param baseShape the baseShape shape which is reused
-     * @param at the AffineTransform to apply
+     * @param at        the AffineTransform to apply
      */
-    public TransformedSymbol (boolean         isIcon,
-                              Shape           shape,
-                              Shape           baseShape,
+    public TransformedSymbol (boolean isIcon,
+                              Shape shape,
+                              Shape baseShape,
                               AffineTransform at)
     {
         super(isIcon, shape, false);
@@ -64,7 +63,6 @@ public class TransformedSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -86,8 +84,8 @@ public class TransformedSymbol
 
         Rectangle2D r = p.layout.getBounds();
         p.rect = new Rectangle(
-            (int) Math.ceil(r.getWidth()),
-            (int) Math.ceil(r.getHeight()));
+                (int) Math.ceil(r.getWidth()),
+                (int) Math.ceil(r.getHeight()));
 
         return p;
     }
@@ -97,11 +95,11 @@ public class TransformedSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     p,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params p,
+                          Point location,
+                          Alignment alignment)
     {
-        PixelPoint loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        Point loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
         MusicFont.paint(g, p.layout, loc, TOP_LEFT);
     }
 }

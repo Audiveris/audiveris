@@ -16,11 +16,6 @@ import omr.constant.ConstantSet;
 import omr.glyph.facets.Glyph;
 import omr.glyph.facets.GlyphContent;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
@@ -30,6 +25,11 @@ import omr.text.TextWord;
 
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.util.Collections;
 import java.util.Comparator;
@@ -51,7 +51,8 @@ public class LyricsItem
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(LyricsItem.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            LyricsItem.class);
 
     /** Comparator based on line number */
     public static final Comparator<LyricsItem> numberComparator = new Comparator<LyricsItem>()
@@ -144,7 +145,7 @@ public class LyricsItem
      * @param content  The underlying text for this lyrics item
      */
     public LyricsItem (TextLine sentence,
-                       PixelPoint location,
+                       Point location,
                        Glyph seed,
                        int width,
                        String content)
@@ -217,7 +218,7 @@ public class LyricsItem
     // getBox //
     //--------//
     @Override
-    public PixelRectangle getBox ()
+    public Rectangle getBox ()
     {
         return seed.getBounds();
     }
@@ -258,6 +259,19 @@ public class LyricsItem
     public SyllabicType getSyllabicType ()
     {
         return syllabicType;
+    }
+
+    //---------------------//
+    // getTranslationLinks //
+    //---------------------//
+    @Override
+    public List<Line2D> getTranslationLinks (Glyph glyph)
+    {
+        if (mappedChord != null) {
+            return mappedChord.getTranslationLinks(glyph);
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     //----------//
@@ -329,8 +343,10 @@ public class LyricsItem
                     if (!note.isRest()) {
                         note.addSyllable(this);
                         mappedChord = bestChord;
-                        if (word != null && word.getGlyph() != null) {
-                            word.getGlyph().setTranslation(this);
+
+                        if ((word != null) && (word.getGlyph() != null)) {
+                            word.getGlyph()
+                                    .setTranslation(this);
                         }
                     }
 
@@ -340,19 +356,6 @@ public class LyricsItem
         }
 
         addError(seed, "Could not find note for " + this);
-    }
-
-    //---------------------//
-    // getTranslationLinks //
-    //---------------------//
-    @Override
-    public List<Line2D> getTranslationLinks (Glyph glyph)
-    {
-        if (mappedChord != null) {
-            return mappedChord.getTranslationLinks(glyph);
-        } else {
-            return Collections.emptyList();
-        }
     }
 
     //-------------//
@@ -377,9 +380,8 @@ public class LyricsItem
     @Override
     protected void computeReferencePoint ()
     {
-        PixelRectangle itemBox = seed.getBounds();
-        setReferencePoint(
-                new PixelPoint(itemBox.x, getSentence()
+        Rectangle itemBox = seed.getBounds();
+        setReferencePoint(new Point(itemBox.x, getSentence()
                 .getLocation().y));
     }
 

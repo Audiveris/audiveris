@@ -22,7 +22,7 @@ import javax.swing.event.ChangeListener;
  * @author Hervé Bitteur
  */
 public class LIntegerSpinner
-    extends LSpinner
+        extends LSpinner
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -34,7 +34,7 @@ public class LIntegerSpinner
      * characteristics.
      *
      * @param label the string to be used as label text
-     * @param tip the related tool tip text
+     * @param tip   the related tool tip text
      */
     public LIntegerSpinner (String label,
                             String tip)
@@ -43,7 +43,6 @@ public class LIntegerSpinner
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------------//
     // addChangeListener //
     //-------------------//

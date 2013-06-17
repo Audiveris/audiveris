@@ -11,13 +11,13 @@
 // </editor-fold>
 package omr.step;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.ScoresManager;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
@@ -27,15 +27,15 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class PrintStep
-    extends AbstractStep
+        extends AbstractStep
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(PrintStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            PrintStep.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // PrintStep //
     //-----------//
@@ -45,24 +45,23 @@ public class PrintStep
     public PrintStep ()
     {
         super(
-            Steps.PRINT,
-            Level.SCORE_LEVEL,
-            Mandatory.OPTIONAL,
-            DATA_TAB,
-            "Write the output PDF file");
+                Steps.PRINT,
+                Level.SCORE_LEVEL,
+                Mandatory.OPTIONAL,
+                DATA_TAB,
+                "Write the output PDF file");
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // doit //
     //------//
     @Override
     public void doit (Collection<SystemInfo> systems,
-                      Sheet                  sheet)
-        throws StepException
+                      Sheet sheet)
+            throws StepException
     {
         ScoresManager.getInstance()
-                     .writePhysicalPdf(sheet.getScore(), null);
+                .writePhysicalPdf(sheet.getScore(), null);
     }
 }

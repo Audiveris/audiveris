@@ -11,14 +11,14 @@
 // </editor-fold>
 package omr.score;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Rational;
 
 import omr.score.entity.Chord;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.AbstractScoreVisitor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.SortedSet;

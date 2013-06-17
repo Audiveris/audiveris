@@ -12,11 +12,10 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
@@ -27,7 +26,7 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class FlagsDownSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -35,24 +34,22 @@ public class FlagsDownSymbol
     protected final int fn;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new FlagsDownSymbol object.
      *
      * @param flagCount the number of flags
-     * @param isIcon true for an icon
-     * @param shape the related shape
+     * @param isIcon    true for an icon
+     * @param shape     the related shape
      */
-    public FlagsDownSymbol (int     flagCount,
+    public FlagsDownSymbol (int flagCount,
                             boolean isIcon,
-                            Shape   shape)
+                            Shape shape)
     {
         super(isIcon, shape, false);
         this.fn = flagCount;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -71,11 +68,11 @@ public class FlagsDownSymbol
         MyParams p = initParams(font);
 
         p.rect = new Rectangle(
-            0,
-            0,
-            (int) Math.ceil(p.rect2.getWidth()),
-            (((fn / 2) + ((fn + 1) % 2)) * Math.abs(p.dy)) +
-            ((fn % 2) * (int) Math.ceil(p.rect1.getHeight())));
+                0,
+                0,
+                (int) Math.ceil(p.rect2.getWidth()),
+                (((fn / 2) + ((fn + 1) % 2)) * Math.abs(p.dy))
+                + ((fn % 2) * (int) Math.ceil(p.rect1.getHeight())));
 
         return p;
     }
@@ -102,12 +99,12 @@ public class FlagsDownSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams   p = (MyParams) params;
-        PixelPoint loc = alignment.translatedPoint(p.align, p.rect, location);
+        MyParams p = (MyParams) params;
+        Point loc = alignment.translatedPoint(p.align, p.rect, location);
 
         // We draw from tail to head, double(s) then single if needed
         for (int i = 0; i < (fn / 2); i++) {
@@ -121,20 +118,25 @@ public class FlagsDownSymbol
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
-        extends BasicSymbol.Params
+            extends BasicSymbol.Params
     {
         //~ Instance fields ----------------------------------------------------
 
-        TextLayout  flag1;
+        TextLayout flag1;
+
         Rectangle2D rect1;
-        TextLayout  flag2;
+
+        TextLayout flag2;
+
         Rectangle2D rect2;
-        int         dy;
-        Alignment   align;
+
+        int dy;
+
+        Alignment align;
+
     }
 }

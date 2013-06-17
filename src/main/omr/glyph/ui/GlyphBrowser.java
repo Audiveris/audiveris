@@ -16,9 +16,9 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.*;
 import omr.glyph.BasicNest;
 import omr.glyph.GlyphRepository;
+import omr.glyph.GlyphSignature;
 import omr.glyph.GlyphsModel;
 import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
@@ -26,9 +26,6 @@ import omr.glyph.facets.Glyph;
 import omr.lag.BasicLag;
 import omr.lag.Lag;
 import omr.lag.Section;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import omr.run.Orientation;
 
@@ -56,6 +53,9 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -67,8 +67,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -98,11 +96,13 @@ class GlyphBrowser
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(GlyphBrowser.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            GlyphBrowser.class);
 
     /** Events that can be published on internal service (TODO: Check this!) */
     private static final Class<?>[] locEvents = new Class<?>[]{
-        LocationEvent.class};
+        LocationEvent.class
+    };
 
     /**
      * Field constant {@code NO_INDEX} is a specific value {@value} to
@@ -236,7 +236,8 @@ class GlyphBrowser
         glyphBoard = new MyGlyphBoard(controller);
 
         glyphBoard.connect();
-        glyphBoard.getDeassignAction().setEnabled(false);
+        glyphBoard.getDeassignAction()
+                .setEnabled(false);
 
         // Passive evaluation board
         EvaluationBoard evalBoard = new EvaluationBoard(controller, true);
@@ -414,6 +415,7 @@ class GlyphBrowser
                 true,
                 "Should user confirm each glyph deletion"
                 + " from training material");
+
     }
 
     //----------------//
@@ -587,8 +589,8 @@ class GlyphBrowser
                         Rectangle rect = sheetLocation.getData();
 
                         if ((rect != null)
-                                && (rect.width == 0)
-                                && (rect.height == 0)) {
+                            && (rect.width == 0)
+                            && (rect.height == 0)) {
                             // Look for pointed glyph
                             int index = glyphLookup(rect);
                             navigator.setIndex(index, sheetLocation.hint);
@@ -710,45 +712,45 @@ class GlyphBrowser
 
             all.addActionListener(
                     new ActionListener()
-                    {
-                        @Override
-                        public void actionPerformed (ActionEvent e)
-                        {
-                            // Load all (non icon) glyphs
-                            int index = -1;
+            {
+                @Override
+                public void actionPerformed (ActionEvent e)
+                {
+                    // Load all (non icon) glyphs
+                    int index = -1;
 
-                            for (String gName : names) {
-                                index++;
+                    for (String gName : names) {
+                        index++;
 
-                                if (!repository.isIcon(gName)) {
-                                    setIndex(index, GLYPH_INIT);
-                                }
-                            }
-
-                            // Load & point to first icon
-                            setIndex(0, GLYPH_INIT);
+                        if (!repository.isIcon(gName)) {
+                            setIndex(index, GLYPH_INIT);
                         }
-                    });
+                    }
+
+                    // Load & point to first icon
+                    setIndex(0, GLYPH_INIT);
+                }
+            });
 
             prev.addActionListener(
                     new ActionListener()
-                    {
-                        @Override
-                        public void actionPerformed (ActionEvent e)
-                        {
-                            setIndex(nameIndex - 1, GLYPH_INIT); // To prev
-                        }
-                    });
+            {
+                @Override
+                public void actionPerformed (ActionEvent e)
+                {
+                    setIndex(nameIndex - 1, GLYPH_INIT); // To prev
+                }
+            });
 
             next.addActionListener(
                     new ActionListener()
-                    {
-                        @Override
-                        public void actionPerformed (ActionEvent e)
-                        {
-                            setIndex(nameIndex + 1, GLYPH_INIT); // To next
-                        }
-                    });
+            {
+                @Override
+                public void actionPerformed (ActionEvent e)
+                {
+                    setIndex(nameIndex + 1, GLYPH_INIT); // To next
+                }
+            });
 
             load.setToolTipText("Load the selected glyphs");
             all.setToolTipText("Display all glyphs");
@@ -776,7 +778,8 @@ class GlyphBrowser
             if (glyph.getNest() != tNest) {
                 tNest.addGlyph(glyph);
 
-                Color color = glyph.getShape().getColor();
+                Color color = glyph.getShape()
+                        .getColor();
 
                 for (Section section : glyph.getMembers()) {
                     Lag lag = section.isVertical() ? vtLag : htLag;
@@ -859,8 +862,8 @@ class GlyphBrowser
 
             nameIndex = index;
 
-            tNest.getGlyphService().publish(new GlyphEvent(this, hint, null,
-                                                           glyph));
+            tNest.getGlyphService()
+                    .publish(new GlyphEvent(this, hint, null, glyph));
 
             // Enable buttons according to glyph selection
             all.setEnabled(!names.isEmpty());
@@ -891,7 +894,8 @@ class GlyphBrowser
             JLabel file = new JLabel("File", SwingConstants.RIGHT);
             builder.add(file, cst.xy(1, r));
 
-            nameField.getField().setHorizontalAlignment(JTextField.LEFT);
+            nameField.getField()
+                    .setHorizontalAlignment(JTextField.LEFT);
             builder.add(nameField.getField(), cst.xyw(3, r, 9));
         }
     }

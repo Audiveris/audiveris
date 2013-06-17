@@ -14,16 +14,15 @@ package omr.grid;
 import omr.lag.Section;
 
 import omr.math.Line;
-import omr.math.LineUtilities;
+import omr.math.LineUtil;
 
 import omr.run.Orientation;
-
-import omr.score.common.PixelRectangle;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 
@@ -34,7 +33,7 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class FilamentLine
-    implements LineInfo
+        implements LineInfo
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -42,12 +41,12 @@ public class FilamentLine
     LineFilament fil;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // FilamentLine //
     //--------------//
     /**
      * Creates a new FilamentLine object.
+     *
      * @param fil the initial filament to add
      */
     public FilamentLine (LineFilament fil)
@@ -56,7 +55,6 @@ public class FilamentLine
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----//
     // add //
     //-----//
@@ -73,7 +71,7 @@ public class FilamentLine
     // getBounds //
     //-----------//
     @Override
-    public PixelRectangle getBounds ()
+    public Rectangle getBounds ()
     {
         return fil.getBounds();
     }
@@ -188,22 +186,23 @@ public class FilamentLine
     //---------------//
     /**
      * Report whether the provided abscissa lies within the line range
+     *
      * @param x the provided abscissa
      * @return true if within range
      */
     public boolean isWithinRange (double x)
     {
         return (x >= getStartPoint()
-                         .getX()) && (x <= getStopPoint()
-                                               .getX());
+                .getX()) && (x <= getStopPoint()
+                .getX());
     }
 
     //--------//
     // render //
     //--------//
     public void render (Graphics2D g,
-                        int        left,
-                        int        right)
+                        int left,
+                        int right)
     {
         // Ignore left and right
         render(g);
@@ -238,13 +237,39 @@ public class FilamentLine
         sb.append("[");
 
         sb.append("F")
-          .append(fil.getId());
+                .append(fil.getId());
 
         sb.append("]");
 
         sb.append(fil.trueLength());
 
         return sb.toString();
+    }
+
+    //----------------------//
+    // verticalIntersection //
+    //----------------------//
+    @Override
+    public Point2D verticalIntersection (Line vertical)
+    {
+        // We need two points on the rather vertical line
+        Point2D startPoint = new Point2D.Double(vertical.xAtY(0.0), 0.0);
+        Point2D stopPoint = new Point2D.Double(vertical.xAtY(1000.0), 1000.0);
+
+        // First, get a rough intersection
+        Point2D pt = LineUtil.intersection(
+                getEndPoint(LEFT),
+                getEndPoint(RIGHT),
+                startPoint,
+                stopPoint);
+
+        // Second, get a precise ordinate
+        double y = yAt(pt.getX());
+
+        // Third, get a precise abscissa
+        double x = vertical.xAtY(y);
+
+        return new Point2D.Double(x, y);
     }
 
     //-----//
@@ -263,29 +288,5 @@ public class FilamentLine
     public double yAt (double x)
     {
         return fil.getPositionAt(x, Orientation.HORIZONTAL);
-    }
-
-    //----------------------//
-    // verticalIntersection //
-    //----------------------//
-    @Override
-    public Point2D verticalIntersection (Line vertical)
-    {
-        // We need two points on the rather vertical line
-        Point2D startPoint = new Point2D.Double(vertical.xAtY(0.0), 0.0);
-        Point2D stopPoint = new Point2D.Double(vertical.xAtY(1000.0), 1000.0);
-
-        // First, get a rough intersection
-        Point2D pt = LineUtilities.intersection(getEndPoint(LEFT),
-                                                getEndPoint(RIGHT),
-                                                startPoint, stopPoint);
-
-        // Second, get a precise ordinate
-        double y = yAt(pt.getX());
-
-        // Third, get a precise abscissa
-        double x = vertical.xAtY(y);
-
-        return new Point2D.Double(x, y);
     }
 }

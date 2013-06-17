@@ -16,13 +16,13 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerListModel;
 
 /**
- * Class {@code IntegerListSpinner} is a spinner whose model is a list of
- * integers
+ * Class {@code IntegerListSpinner} is a spinner whose model is a list
+ * of integers.
  *
  * @author Hervé Bitteur
  */
 public class IntegerListSpinner
-    extends JSpinner
+        extends JSpinner
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -40,6 +40,6 @@ public class IntegerListSpinner
         JSpinner.DefaultEditor editor;
         editor = (JSpinner.DefaultEditor) getEditor();
         editor.getTextField()
-              .setHorizontalAlignment(JTextField.RIGHT);
+                .setHorizontalAlignment(JTextField.RIGHT);
     }
 }

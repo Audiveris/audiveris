@@ -23,11 +23,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import omr.math.GeoUtil;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Barline;
 import omr.score.entity.Chord;
 import omr.score.entity.Clef;
@@ -46,6 +43,11 @@ import omr.sheet.SystemInfo;
 
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.EnumSet;
 
 /**
@@ -112,7 +114,7 @@ public class TimeSignatureRetriever
             }
 
             // No TS found. Let's look where it should be, if there was one
-            PixelRectangle roi = getRoi(firstMeasure);
+            Rectangle roi = getRoi(firstMeasure);
 
             if (roi.width < timeSigWidth) {
                 logger.debug("No room for time sig: {}", roi.width);
@@ -168,7 +170,7 @@ public class TimeSignatureRetriever
      * @param firstMeasure the containing measure (whatever the part)
      * @return a degenerated rectangle, just to provide left and right bounds
      */
-    private PixelRectangle getRoi (Measure firstMeasure)
+    private Rectangle getRoi (Measure firstMeasure)
     {
         ScoreSystem system = firstMeasure.getSystem();
         int left = 0; // Min
@@ -190,19 +192,19 @@ public class TimeSignatureRetriever
             KeySignature keySig = measure.getFirstMeasureKey(staffId);
 
             if (keySig != null) {
-                PixelRectangle kBox = keySig.getBox();
+                Rectangle kBox = keySig.getBox();
                 left = Math.max(left, kBox.x + kBox.width);
             } else {
                 Clef clef = measure.getFirstMeasureClef(staffId);
 
                 if (clef != null) {
-                    PixelRectangle cBox = clef.getBox();
+                    Rectangle cBox = clef.getBox();
                     left = Math.max(left, cBox.x + cBox.width);
                 }
             }
 
             // After: alteration? + chord?
-            Chord chord = measure.getClosestChord(new PixelPoint(0, 0));
+            Chord chord = measure.getClosestChord(new Point(0, 0));
 
             if (chord != null) {
                 for (TreeNode tn : chord.getNotes()) {
@@ -225,7 +227,7 @@ public class TimeSignatureRetriever
             logger.debug("Staff:{} left:{} right:{}", staffId, left, right);
         }
 
-        return new PixelRectangle(left, 0, right - left, 0);
+        return new Rectangle(left, 0, right - left, 0);
     }
 
     //------------//
@@ -302,10 +304,10 @@ public class TimeSignatureRetriever
 
         //~ Methods ------------------------------------------------------------
         @Override
-        public PixelRectangle computeReferenceBox ()
+        public Rectangle computeReferenceBox ()
         {
             StaffInfo staffInfo = staff.getInfo();
-            PixelRectangle newBox = new PixelRectangle(
+            Rectangle newBox = new Rectangle(
                     center,
                     staffInfo.getFirstLine().yAt(center)
                     + (staffInfo.getHeight() / 2),
@@ -317,7 +319,7 @@ public class TimeSignatureRetriever
 
             // Draw the box, for visual debug
             SystemPart part = system.getScoreSystem()
-                    .getPartAt(newBox.getCenter());
+                    .getPartAt(GeoUtil.centerOf(newBox));
             Barline barline = part.getStartingBarline();
             Glyph line = null;
 

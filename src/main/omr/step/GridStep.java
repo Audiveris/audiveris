@@ -22,7 +22,7 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class GridStep
-    extends AbstractStep
+        extends AbstractStep
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -35,24 +35,24 @@ public class GridStep
     public GridStep ()
     {
         super(
-            Steps.GRID,
-            Level.SHEET_LEVEL,
-            Mandatory.MANDATORY,
-            "Dewarped",
-            "Retrieve the grid of all systems");
+                Steps.GRID,
+                Level.SHEET_LEVEL,
+                Mandatory.MANDATORY,
+                "Dewarped",
+                "Retrieve the grid of all systems");
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // doit //
     //------//
     @Override
     public void doit (Collection<SystemInfo> unused,
-                      Sheet                  sheet)
-        throws StepException
+                      Sheet sheet)
+            throws StepException
     {
         sheet.reset(Steps.GRID);
-        sheet.getGridBuilder().buildInfo();
+        sheet.getGridBuilder()
+                .buildInfo();
     }
 }

@@ -26,7 +26,13 @@ public class ClassUtil
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ClassUtil.class);
+
+    //~ Constructors -----------------------------------------------------------
+    private ClassUtil ()
+    {
+    }
 
     //~ Methods ----------------------------------------------------------------
     //-----------------//
@@ -170,6 +176,7 @@ public class ClassUtil
             System.loadLibrary(library);
 
             logger.debug("Loaded  library {}", library);
+
             return true;
         } catch (Throwable ex) {
             logger.warn("Error while loading library " + library, ex);
@@ -202,9 +209,5 @@ public class ClassUtil
         }
 
         return sb.toString();
-    }
-
-    private ClassUtil ()
-    {
     }
 }

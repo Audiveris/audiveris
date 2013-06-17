@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.util;
 
-
 /**
- * Interface {@code Predicate} is used to specify a filter on a provided
- * entity
+ * Interface {@code Predicate} is used to specify a filter on a
+ * provided entity.
+ *
  * @param <E> Specific type of the entity on which the predicate is checked
  */
 public interface Predicate<E>

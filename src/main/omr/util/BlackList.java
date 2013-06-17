@@ -61,7 +61,6 @@ public class BlackList
     /** Specific filter for blacklist */
     protected final FileFilter blackFilter = new FileFilter()
     {
-
         @Override
         public boolean accept (File file)
         {
@@ -215,7 +214,7 @@ public class BlackList
                     in.close();
                 } catch (IOException ex) {
                     logger.warn("IO error while reading file ''{}''",
-                                   blackFile);
+                            blackFile);
                 }
             } catch (FileNotFoundException ex) {
                 logger.warn("Cannot find file ''{}''", blackFile);

@@ -11,14 +11,14 @@
 // </editor-fold>
 package omr.script;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.sheet.Sheet;
 
 import omr.util.BasicTask;
 
 import org.jdesktop.application.Task;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code ScriptTask} is the root class of all possible tasks
@@ -43,10 +43,10 @@ public abstract class ScriptTask
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    protected static final Logger logger = LoggerFactory.getLogger(ScriptTask.class);
+    protected static final Logger logger = LoggerFactory.getLogger(
+            ScriptTask.class);
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new ScriptTask object.
      */
@@ -55,35 +55,6 @@ public abstract class ScriptTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-----//
-    // run //
-    //-----//
-    /**
-     * Run this task synchronously (prolog + core + epilog)
-     * This is meant to be called by the script engine, to ensure that 
-     * every task is completed before the next is run.
-     * This method is final, subclasses should define core() and potentially
-     * customize prolog() and epilog().
-     *
-     * @param sheet the sheet to run this task against
-     * @exception Exception
-     */
-    public final void run (Sheet sheet)
-        throws Exception
-    {
-        prolog(sheet);
-        core(sheet);
-        epilog(sheet);
-
-        // Record the task instance in the current script?
-        if (isRecordable()) {
-            sheet.getScore()
-                 .getScript()
-                 .addTask(this);
-        }
-    }
-
     //------//
     // core //
     //------//
@@ -94,13 +65,14 @@ public abstract class ScriptTask
      * @exception Exception
      */
     public abstract void core (Sheet sheet)
-        throws Exception;
+            throws Exception;
 
     //--------//
     // epilog //
     //--------//
     /**
      * Epilog if any, to be called after the run() method
+     *
      * @param sheet the sheet to run this task against
      */
     public void epilog (Sheet sheet)
@@ -115,15 +87,17 @@ public abstract class ScriptTask
      * Launch this task asynchronously (prolog + core + epilog).
      * This is meant to be called by UI code, for maximum responsiveness of the
      * user interface.
+     *
      * @param sheet the sheet to run this task against
      * @return the launched SAF task
      */
     public Task<Void, Void> launch (final Sheet sheet)
     {
-        Task<Void, Void> task = new BasicTask() {
+        Task<Void, Void> task = new BasicTask()
+        {
             @Override
             protected Void doInBackground ()
-                throws Exception
+                    throws Exception
             {
                 ScriptTask.this.run(sheet);
 
@@ -141,11 +115,40 @@ public abstract class ScriptTask
     //--------//
     /**
      * Prolog if any, to be called before the run() method
+     *
      * @param sheet the sheet to run this task against
      */
     public void prolog (Sheet sheet)
     {
         // Empty by default
+    }
+
+    //-----//
+    // run //
+    //-----//
+    /**
+     * Run this task synchronously (prolog + core + epilog)
+     * This is meant to be called by the script engine, to ensure that
+     * every task is completed before the next is run.
+     * This method is final, subclasses should define core() and potentially
+     * customize prolog() and epilog().
+     *
+     * @param sheet the sheet to run this task against
+     * @exception Exception
+     */
+    public final void run (Sheet sheet)
+            throws Exception
+    {
+        prolog(sheet);
+        core(sheet);
+        epilog(sheet);
+
+        // Record the task instance in the current script?
+        if (isRecordable()) {
+            sheet.getScore()
+                    .getScript()
+                    .addTask(this);
+        }
     }
 
     //----------//
@@ -183,6 +186,7 @@ public abstract class ScriptTask
     //--------------//
     /**
      * Report whether this task should be written in the current script
+     *
      * @return true if recordable
      */
     boolean isRecordable ()

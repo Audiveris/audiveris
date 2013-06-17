@@ -15,8 +15,8 @@ import omr.grid.StaffInfo;
 import omr.grid.StaffInfo.IndexedLedger;
 
 /**
- * Class {@code NotePosition} handles the precise position of a note-like
- * entity, with respect to its related staff.
+ * Class {@code NotePosition} handles the precise position of a
+ * note-like entity, with respect to its related staff.
  *
  * @author Hervé Bitteur
  */

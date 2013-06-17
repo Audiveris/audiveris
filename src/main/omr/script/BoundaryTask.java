@@ -13,6 +13,7 @@ package omr.script;
 
 import omr.sheet.BrokenLineContext;
 import omr.sheet.Sheet;
+import omr.sheet.SystemBoundary;
 import omr.sheet.SystemInfo;
 
 import omr.step.Stepping;
@@ -28,7 +29,6 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
-import omr.sheet.SystemBoundary;
 
 /**
  * Class {@code BoundaryTask} modifies systems boundaries

@@ -11,12 +11,12 @@
 // </editor-fold>
 package omr.ui.symbol;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.PixelFilter;
 
 import net.jcip.annotations.ThreadSafe;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -34,7 +34,8 @@ public class SymbolPicture
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(SymbolPicture.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SymbolPicture.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Image data buffer */
@@ -69,15 +70,14 @@ public class SymbolPicture
     }
 
     //~ Methods ----------------------------------------------------------------
-    //
-    // -------//
-    // isFore //
-    // -------//
+    //------------//
+    // getContext //
+    //------------//
     @Override
-    public boolean isFore (int x,
-                           int y)
+    public Context getContext (int x,
+                               int y)
     {
-        return getPixel(x, y) <= maxForeground;
+        return new Context(maxForeground);
     }
 
     //-----------//
@@ -114,13 +114,14 @@ public class SymbolPicture
         return width;
     }
 
-    //------------//
-    // getContext //
-    //------------//
+    //
+    // -------//
+    // isFore //
+    // -------//
     @Override
-    public Context getContext (int x,
-                               int y)
+    public boolean isFore (int x,
+                           int y)
     {
-        return new Context(maxForeground);
+        return getPixel(x, y) <= maxForeground;
     }
 }

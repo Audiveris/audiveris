@@ -23,7 +23,7 @@ import java.awt.geom.AffineTransform;
  * @author Hervé Bitteur
  */
 public class LongRestSymbol
-    extends RestSymbol
+        extends RestSymbol
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -46,7 +46,7 @@ public class LongRestSymbol
     /**
      * Create a LongRestSymbol (with decoration?)
      *
-     * @param isIcon true for an icon
+     * @param isIcon    true for an icon
      * @param decorated true for a decorated image
      */
     private LongRestSymbol (boolean isIcon,
@@ -56,7 +56,6 @@ public class LongRestSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -76,9 +75,9 @@ public class LongRestSymbol
     @Override
     protected TextLayout getRestLayout (MusicFont font)
     {
-        TextLayout      layout = super.getRestLayout(font);
-        double          restHeight = layout.getBounds()
-                                           .getHeight() * 1.03;
+        TextLayout layout = super.getRestLayout(font);
+        double restHeight = layout.getBounds()
+                .getHeight() * 1.03;
         AffineTransform at = new AffineTransform(1, 0, 0, 2, 0, restHeight);
 
         return font.layout(getString(), at);

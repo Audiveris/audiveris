@@ -14,10 +14,10 @@ package omr.util;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.step.ProcessingCancellationException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.step.ProcessingCancellationException;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,7 +42,8 @@ public class OmrExecutors
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(OmrExecutors.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            OmrExecutors.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
@@ -51,13 +52,15 @@ public class OmrExecutors
     public static final Param<Boolean> defaultParallelism = new Default();
 
     /** Number of processors available. */
-    private static final int cpuCount = Runtime.getRuntime().
-            availableProcessors();
+    private static final int cpuCount = Runtime.getRuntime()
+            .availableProcessors();
 
     static {
         if (constants.printEnvironment.isSet()) {
-            logger.info("Environment. CPU count: {}, Use of parallelism: {}",
-                    cpuCount, defaultParallelism.getTarget());
+            logger.info(
+                    "Environment. CPU count: {}, Use of parallelism: {}",
+                    cpuCount,
+                    defaultParallelism.getTarget());
         }
     }
 
@@ -172,33 +175,103 @@ public class OmrExecutors
                 logger.debug("Pool {} not active", pool.getName());
             }
         }
+
         logger.debug("OmrExecutors closed");
     }
 
     //~ Inner Classes ----------------------------------------------------------
-    //
-    //------------//
-    // CachedLows //
-    //------------//
-
-    /** Cached pool with low priority */
-    private static class CachedLows
-            extends Pool
+    //------//
+    // Pool //
+    //------//
+    private abstract static class Pool
     {
+        //~ Instance fields ----------------------------------------------------
+
+        /** The underlying pool of threads */
+        protected ExecutorService pool;
+
         //~ Methods ------------------------------------------------------------
+        /**
+         * Name the pool.
+         */
+        public abstract String getName ();
 
-        @Override
-        public String getName ()
+        //
+        /**
+         * Terminate the pool.
+         */
+        public synchronized void close (boolean immediately)
         {
-            return "cachedLow";
+            if (!isActive()) {
+                return;
+            }
+
+            logger.debug(
+                    "Closing pool {}{}",
+                    getName(),
+                    immediately ? " immediately" : "");
+
+            if (!immediately) {
+                pool.shutdown(); // Disable new tasks from being submitted
+
+                try {
+                    // Wait a while for existing tasks to terminate
+                    if (!pool.awaitTermination(
+                            constants.graceDelay.getValue(),
+                            TimeUnit.SECONDS)) {
+                        // Cancel currently executing tasks
+                        pool.shutdownNow();
+                        logger.warn("Pool {} did not terminate", getName());
+                    }
+                } catch (InterruptedException ie) {
+                    // (Re-)Cancel if current thread also got interrupted
+                    pool.shutdownNow();
+                    // Preserve interrupt status
+                    Thread.currentThread()
+                            .interrupt();
+                }
+            } else {
+                // Cancel currently executing tasks
+                pool.shutdownNow();
+            }
+
+            logger.debug("Pool {} closed.", getName());
+
+            // Let garbage collector work
+            pool = null;
         }
 
-        @Override
-        protected ExecutorService createPool ()
+        /**
+         * Get the pool ready to use.
+         */
+        public synchronized ExecutorService getPool ()
         {
-            return Executors.newCachedThreadPool(
-                    new Factory(getName(), Thread.MIN_PRIORITY, 0));
+            if (!creationAllowed) {
+                logger.info("No longer allowed to create pool: {}", getName());
+
+                throw new ProcessingCancellationException("Executor closed");
+            }
+
+            if (!isActive()) {
+                logger.debug("Creating pool: {}", getName());
+                pool = createPool();
+            }
+
+            return pool;
         }
+
+        /**
+         * Is the pool active?.
+         */
+        public synchronized boolean isActive ()
+        {
+            return (pool != null) && !pool.isShutdown();
+        }
+
+        /**
+         * Needed to create the concrete pool.
+         */
+        protected abstract ExecutorService createPool ();
     }
 
     //-----------//
@@ -226,6 +299,61 @@ public class OmrExecutors
 
     }
 
+    //
+    //------------//
+    // CachedLows //
+    //------------//
+    /** Cached pool with low priority */
+    private static class CachedLows
+            extends Pool
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public String getName ()
+        {
+            return "cachedLow";
+        }
+
+        @Override
+        protected ExecutorService createPool ()
+        {
+            return Executors.newCachedThreadPool(
+                    new Factory(getName(), Thread.MIN_PRIORITY, 0));
+        }
+    }
+
+    //---------//
+    // Default //
+    //---------//
+    private static class Default
+            extends Param<Boolean>
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public Boolean getSpecific ()
+        {
+            return constants.useParallelism.getValue();
+        }
+
+        @Override
+        public boolean setSpecific (Boolean specific)
+        {
+            if (!getSpecific()
+                    .equals(specific)) {
+                constants.useParallelism.setValue(specific);
+                logger.info(
+                        "Parallelism is {} allowed",
+                        specific ? "now" : "no longer");
+
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     //---------//
     // Factory //
     //---------//
@@ -251,7 +379,8 @@ public class OmrExecutors
         {
             SecurityManager s = System.getSecurityManager();
             group = (s != null) ? s.getThreadGroup()
-                    : Thread.currentThread().getThreadGroup();
+                    : Thread.currentThread()
+                    .getThreadGroup();
             this.threadPrefix = threadPrefix;
             this.threadPriority = threadPriority;
             this.stackSize = stackSize;
@@ -325,123 +454,6 @@ public class OmrExecutors
             return Executors.newFixedThreadPool(
                     defaultParallelism.getTarget() ? (cpuCount + 1) : 1,
                     new Factory(getName(), Thread.MIN_PRIORITY, 0));
-        }
-    }
-
-    //------//
-    // Pool //
-    //------//
-    private abstract static class Pool
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** The underlying pool of threads */
-        protected ExecutorService pool;
-
-        //~ Methods ------------------------------------------------------------
-        //
-        /**
-         * Terminate the pool.
-         */
-        public synchronized void close (boolean immediately)
-        {
-            if (!isActive()) {
-                return;
-            }
-
-            logger.debug("Closing pool {}{}",
-                    getName(), immediately ? " immediately" : "");
-
-            if (!immediately) {
-                pool.shutdown(); // Disable new tasks from being submitted
-
-                try {
-                    // Wait a while for existing tasks to terminate
-                    if (!pool.awaitTermination(
-                            constants.graceDelay.getValue(),
-                            TimeUnit.SECONDS)) {
-                        // Cancel currently executing tasks
-                        pool.shutdownNow();
-                        logger.warn("Pool {} did not terminate", getName());
-                    }
-                } catch (InterruptedException ie) {
-                    // (Re-)Cancel if current thread also got interrupted
-                    pool.shutdownNow();
-                    // Preserve interrupt status
-                    Thread.currentThread().interrupt();
-                }
-            } else {
-                // Cancel currently executing tasks
-                pool.shutdownNow();
-            }
-
-            logger.debug("Pool {} closed.", getName());
-
-            // Let garbage collector work
-            pool = null;
-        }
-
-        /**
-         * Name the pool.
-         */
-        public abstract String getName ();
-
-        /**
-         * Get the pool ready to use.
-         */
-        public synchronized ExecutorService getPool ()
-        {
-            if (!creationAllowed) {
-                logger.info("No longer allowed to create pool: {}", getName());
-
-                throw new ProcessingCancellationException("Executor closed");
-            }
-
-            if (!isActive()) {
-                logger.debug("Creating pool: {}", getName());
-                pool = createPool();
-            }
-
-            return pool;
-        }
-
-        /**
-         * Is the pool active?.
-         */
-        public synchronized boolean isActive ()
-        {
-            return (pool != null) && !pool.isShutdown();
-        }
-
-        /**
-         * Needed to create the concrete pool.
-         */
-        protected abstract ExecutorService createPool ();
-    }
-
-    //---------//
-    // Default //
-    //---------//
-    private static class Default
-            extends Param<Boolean>
-    {
-        @Override
-        public Boolean getSpecific ()
-        {
-            return constants.useParallelism.getValue();
-        }
-
-        @Override
-        public boolean setSpecific (Boolean specific)
-        {
-            if (!getSpecific().equals(specific)) {
-                constants.useParallelism.setValue(specific);
-                logger.info("Parallelism is {} allowed",
-                        specific ? "now" : "no longer");
-                return true;
-            } else {
-                return false;
-            }
         }
     }
 }

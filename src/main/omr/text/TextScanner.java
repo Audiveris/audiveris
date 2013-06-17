@@ -21,13 +21,9 @@ import omr.grid.StaffInfo;
 
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.GeoPath;
 import omr.math.ReversePathIterator;
 
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Page;
 
 
@@ -39,6 +35,10 @@ import omr.util.LiveParam;
 import omr.util.Navigable;
 import omr.util.Predicate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -118,7 +118,7 @@ public class TextScanner
         allGlyphs = retrieveRegionGlyphs();
 
         // Generate an image with these glyphs
-        final PixelRectangle bounds = system.getBounds();
+        final Rectangle bounds = system.getBounds();
         final BufferedImage image = new BufferedImage(
                 bounds.width,
                 bounds.height,
@@ -212,7 +212,7 @@ public class TextScanner
                 }
 
                 // Discard too large glyphs
-                PixelRectangle bounds = glyph.getBounds();
+                Rectangle bounds = glyph.getBounds();
 
                 if (bounds.width > params.maxGlyphWidth) {
                     return false;

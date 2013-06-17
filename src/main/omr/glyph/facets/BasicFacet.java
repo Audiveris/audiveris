@@ -14,13 +14,13 @@ package omr.glyph.facets;
 import omr.util.Navigable;
 
 /**
- * Class {@code BasicFacet} is the root for implementation on any 
+ * Class {@code BasicFacet} is the root for implementation on any
  * glyph facet.
  *
  * @author Hervé Bitteur
  */
 public class BasicFacet
-    implements GlyphFacet
+        implements GlyphFacet
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -29,7 +29,6 @@ public class BasicFacet
     protected final Glyph glyph;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // BasicFacet //
     //------------//
@@ -44,7 +43,6 @@ public class BasicFacet
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // dumpOf //
     //--------//

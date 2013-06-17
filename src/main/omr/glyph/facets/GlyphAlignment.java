@@ -15,9 +15,8 @@ import omr.math.Line;
 
 import omr.run.Orientation;
 
-import omr.score.common.PixelRectangle;
-
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 
 /**
@@ -41,12 +40,13 @@ import java.awt.geom.Point2D;
  * @author Hervé Bitteur
  */
 public interface GlyphAlignment
-    extends GlyphFacet
+        extends GlyphFacet
 {
     //~ Methods ----------------------------------------------------------------
 
     /**
      * Report the average thickness, using the provided orientation.
+     *
      * @return the average thickness
      */
     public double getMeanThickness (Orientation orientation);
@@ -54,6 +54,7 @@ public interface GlyphAlignment
     /**
      * Report the ratio of length over thickness, using provided
      * orientation.
+     *
      * @param orientation the general orientation reference
      * @return the "slimness" of the glyph
      * @see #getLength
@@ -63,24 +64,28 @@ public interface GlyphAlignment
 
     /**
      * Compute the number of pixels stuck on first side of the glyph.
+     *
      * @return the number of pixels
      */
     int getFirstStuck ();
 
     /**
      * Report the co-tangent of glyph line angle with abscissa axis
+     *
      * @return co-tangent of heading angle (dx/dy).
      */
     double getInvertedSlope ();
 
     /**
      * Compute the nb of pixels stuck on last side of the glyph.
+     *
      * @return the number of pixels
      */
     int getLastStuck ();
 
     /**
      * Report the length of the glyph, along the provided orientation.
+     *
      * @param orientation the general orientation reference
      * @return the glyph length in pixels
      */
@@ -90,6 +95,7 @@ public interface GlyphAlignment
      * Return the approximating line computed on the glyph, as an
      * <b>absolute</b> line, with x for horizontal axis and y for
      * vertical axis.
+     *
      * @return The absolute line
      */
     Line getLine ();
@@ -106,29 +112,33 @@ public interface GlyphAlignment
     /**
      * Return the position at the middle of the glyph,
      * using the provided orientation.
+     *
      * @return the position of the middle of the glyph
      */
     int getMidPos (Orientation orientation);
 
     /**
      * Report the precise glyph position for the provided coordinate.
-     * @param coord the coord value (x for horizontal, y for vertical)
+     *
+     * @param coord       the coord value (x for horizontal, y for vertical)
      * @param orientation the general orientation reference
      * @return the pos value (y for horizontal, x for vertical)
      */
-    double getPositionAt (double      coord,
+    double getPositionAt (double coord,
                           Orientation orientation);
 
     /**
      * Report the absolute centroid of all the glyph pixels found in the
      * provided absolute ROI
+     *
      * @param absRoi the desired absolute region of interest
      * @return the absolute barycenter of the pixels found
      */
-    Point2D getRectangleCentroid (PixelRectangle absRoi);
+    Point2D getRectangleCentroid (Rectangle absRoi);
 
     /**
      * Report the tangent of glyph line angle with abscissa axis
+     *
      * @return tangent of heading angle (dy/dx).
      */
     double getSlope ();
@@ -136,6 +146,7 @@ public interface GlyphAlignment
     /**
      * Report the absolute point at the beginning (with respect to the provided
      * orientation) of the approximating line.
+     *
      * @param orientation the general orientation reference
      * @return the starting point of the glyph line
      */
@@ -144,6 +155,7 @@ public interface GlyphAlignment
     /**
      * Report the absolute point at the end (with respect to the provided
      * orientation) of the approximating line.
+     *
      * @param orientation the general orientation reference
      * @return the ending point of the line
      */
@@ -151,6 +163,7 @@ public interface GlyphAlignment
 
     /**
      * Report the glyph thickness across the desired orientation.
+     *
      * @param orientation the general orientation reference
      * @return the thickness in pixels
      */
@@ -159,24 +172,27 @@ public interface GlyphAlignment
     /**
      * Report the resulting thickness of this glyph at the provided
      * coordinate, using a predefined probe width.
-     * @param coord the desired abscissa
+     *
+     * @param coord       the desired abscissa
      * @param orientation the general orientation reference
      * @return the thickness measured, expressed in number of pixels.
      */
-    double getThicknessAt (double      coord,
+    double getThicknessAt (double coord,
                            Orientation orientation);
 
     /**
      * Render the main guiding line of the glyph, using the current
      * foreground color.
+     *
      * @param g the graphic context
      */
     void renderLine (Graphics2D g);
 
     /**
      * Force the locations of start point and stop points.
+     *
      * @param pStart new start point
-     * @param pStop new stop point
+     * @param pStop  new stop point
      */
     void setEndingPoints (Point2D pStart,
                           Point2D pStop);

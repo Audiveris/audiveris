@@ -13,13 +13,13 @@ package omr.step;
 
 import omr.Main;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.OmrExecutors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -196,8 +196,8 @@ public abstract class AbstractSystemStep
                             doSystem(system);
                         } catch (Exception ex) {
                             logger.warn(sheet.getLogPrefix()
-                                           + "Interrupt on "
-                                           + system.idString(),
+                                        + "Interrupt on "
+                                        + system.idString(),
                                     ex);
                         }
 

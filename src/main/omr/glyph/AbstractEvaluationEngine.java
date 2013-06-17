@@ -19,14 +19,14 @@ import omr.glyph.ShapeEvaluator.Condition;
 import static omr.glyph.ShapeEvaluator.Condition.*;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
 import omr.util.UriUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;

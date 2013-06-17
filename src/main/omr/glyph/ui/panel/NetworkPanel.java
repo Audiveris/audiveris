@@ -12,12 +12,8 @@
 package omr.glyph.ui.panel;
 
 import omr.glyph.EvaluationEngine;
-import omr.glyph.ShapeEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.ui.panel.TrainingPanel.DumpAction;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import omr.math.NeuralNetwork;
 
@@ -25,14 +21,13 @@ import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerField;
 import omr.ui.field.LTextField;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Observable;
-import java.util.Observer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -51,15 +46,15 @@ import javax.swing.event.ChangeListener;
  * @author Hervé Bitteur
  */
 class NetworkPanel
-    extends TrainingPanel
+        extends TrainingPanel
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(NetworkPanel.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            NetworkPanel.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Best neural weights so far */
     private NeuralNetwork.Backup bestSnap;
 
@@ -68,59 +63,59 @@ class NetworkPanel
 
     /** To display ETA as a date */
     private DateFormat dateFormat = DateFormat.getDateTimeInstance(
-        DateFormat.MEDIUM, // Date
-        DateFormat.MEDIUM); // Time
+            DateFormat.MEDIUM, // Date
+            DateFormat.MEDIUM); // Time
 
     /** Input field for Learning rate of the neural network */
     private LDoubleField learningRate = new LDoubleField(
-        "Learning Rate",
-        "Learning rate of the neural network",
-        "%.2f");
+            "Learning Rate",
+            "Learning rate of the neural network",
+            "%.2f");
 
     /** Input field for Momentum value of the neural network */
     private LDoubleField momentum = new LDoubleField(
-        "Momentum",
-        "Momentum value for the neural network",
-        "%.2f");
+            "Momentum",
+            "Momentum value for the neural network",
+            "%.2f");
 
     /** Output of Estimated time for end of training */
     private LTextField eta = new LTextField(
-        "ETA",
-        "Estimated time for end of training");
+            "ETA",
+            "Estimated time for end of training");
 
     /** Input field for Maximum number of iterations to perform */
     private LIntegerField listEpochs = new LIntegerField(
-        "Epochs",
-        "Maximum number of iterations to perform");
+            "Epochs",
+            "Maximum number of iterations to perform");
 
     /** Output for Index of best configuration so far */
     private LIntegerField bestIndex = new LIntegerField(
-        false,
-        "Best Index",
-        "Index of best configuration so far");
+            false,
+            "Best Index",
+            "Index of best configuration so far");
 
     /** Output for Number of iterations performed so far */
     private LIntegerField trainIndex = new LIntegerField(
-        false,
-        "Last Index",
-        "Number of iterations performed so far");
+            false,
+            "Last Index",
+            "Number of iterations performed so far");
 
     /** Input field for Error threshold to stop learning */
     private LDoubleField maxError = new LDoubleField(
-        "Max Error",
-        "Error threshold to stop learning");
+            "Max Error",
+            "Error threshold to stop learning");
 
     /** Output for Best recorded value of remaining error */
     private LDoubleField bestError = new LDoubleField(
-        false,
-        "Best Error",
-        "Best recorded value of remaining error");
+            false,
+            "Best Error",
+            "Best recorded value of remaining error");
 
     /** Output for Last value of remaining error */
     private LDoubleField trainError = new LDoubleField(
-        false,
-        "Last Error",
-        "Last value of remaining error");
+            false,
+            "Last Error",
+            "Last value of remaining error");
 
     /** User action to pick the last weight */
     private LastAction lastAction = new LastAction();
@@ -150,7 +145,6 @@ class NetworkPanel
     private long startTime;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // NetworkPanel //
     //--------------//
@@ -158,22 +152,22 @@ class NetworkPanel
      * Creates a new NetworkPanel object.
      *
      *
-     * @param task the current training activity
-     * @param standardWidth standard width for fields & buttons
-     * @param errorListener a listener on remaining error
+     * @param task           the current training activity
+     * @param standardWidth  standard width for fields & buttons
+     * @param errorListener  a listener on remaining error
      * @param selectionPanel the panel for glyph repository
      */
     public NetworkPanel (GlyphTrainer.Task task,
-                         String            standardWidth,
-                         ChangeListener    errorListener,
-                         SelectionPanel    selectionPanel)
+                         String standardWidth,
+                         ChangeListener errorListener,
+                         SelectionPanel selectionPanel)
     {
         super(
-            task,
-            standardWidth,
-            GlyphNetwork.getInstance(),
-            selectionPanel,
-            6);
+                task,
+                standardWidth,
+                GlyphNetwork.getInstance(),
+                selectionPanel,
+                6);
         this.errorListener = errorListener;
         task.addObserver(this);
 
@@ -184,33 +178,32 @@ class NetworkPanel
         }
 
         eta.getField()
-           .setEditable(false); // ETA is just an output
+                .setEditable(false); // ETA is just an output
 
         component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                 .put(KeyStroke.getKeyStroke("ENTER"), "readParams");
+                .put(KeyStroke.getKeyStroke("ENTER"), "readParams");
         component.getActionMap()
-                 .put("readParams", new ParamAction());
+                .put("readParams", new ParamAction());
 
         trainAction = new NetworkTrainAction(
-            "Re-Train",
-            EvaluationEngine.StartingMode.SCRATCH,
-            /* confirmationRequired => */ true);
+                "Re-Train",
+                EvaluationEngine.StartingMode.SCRATCH,
+                /* confirmationRequired => */ true);
         incrementalTrainAction = new NetworkTrainAction(
-            "Inc-Train",
-            EvaluationEngine.StartingMode.INCREMENTAL,
-            /* confirmationRequired => */ false);
+                "Inc-Train",
+                EvaluationEngine.StartingMode.INCREMENTAL,
+                /* confirmationRequired => */ false);
 
         defineSpecificLayout();
         displayParams();
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // epochEnded //
     //------------//
     @Override
-    public void epochEnded (final int    epochIndex,
+    public void epochEnded (final int epochIndex,
                             final double mse)
     {
         // This part is run on trainer thread
@@ -223,7 +216,7 @@ class NetworkPanel
             bestMse = mse;
 
             // Take a snap
-            GlyphNetwork  glyphNetwork = (GlyphNetwork) engine;
+            GlyphNetwork glyphNetwork = (GlyphNetwork) engine;
             NeuralNetwork network = glyphNetwork.getNetwork();
             bestSnap = network.backup();
             snap = true;
@@ -235,38 +228,39 @@ class NetworkPanel
         final boolean snapTaken = snap;
 
         SwingUtilities.invokeLater(
-            new Runnable() {
-                    // This part is run on swing thread
+                new Runnable()
+        {
+            // This part is run on swing thread
             @Override
-                    public void run ()
-                    {
-                        // Update current values
-                        trainIndex.setValue(index);
-                        trainError.setValue(mse);
+            public void run ()
+            {
+                // Update current values
+                trainIndex.setValue(index);
+                trainError.setValue(mse);
 
-                        // Update best values
-                        if (snapTaken) {
-                            bestIndex.setValue(index);
-                            bestError.setValue(mse);
+                // Update best values
+                if (snapTaken) {
+                    bestIndex.setValue(index);
+                    bestError.setValue(mse);
 
-                            if (errorListener != null) {
-                                errorListener.stateChanged(errorEvent);
-                            }
-                        }
-
-                        // Update progress bar ?
-                        progressBar.setValue(index);
-
-                        // Compute ETA
-                        long sofar = System.currentTimeMillis() - startTime;
-                        long total = (GlyphNetwork.getInstance()
-                                                  .getListEpochs() * sofar) / index;
-                        Date etaDate = new Date(startTime + total);
-                        eta.setText(dateFormat.format(etaDate));
-
-                        component.repaint();
+                    if (errorListener != null) {
+                        errorListener.stateChanged(errorEvent);
                     }
-                });
+                }
+
+                // Update progress bar ?
+                progressBar.setValue(index);
+
+                // Compute ETA
+                long sofar = System.currentTimeMillis() - startTime;
+                long total = (GlyphNetwork.getInstance()
+                        .getListEpochs() * sofar) / index;
+                Date etaDate = new Date(startTime + total);
+                eta.setText(dateFormat.format(etaDate));
+
+                component.repaint();
+            }
+        });
     }
 
     //--------------//
@@ -286,33 +280,34 @@ class NetworkPanel
     // trainingStarted //
     //-----------------//
     @Override
-    public void trainingStarted (final int    epochIndex,
+    public void trainingStarted (final int epochIndex,
                                  final double mse)
     {
         // This part is run on trainer thread
-        final int     index = epochIndex + 1;
+        final int index = epochIndex + 1;
         NeuralNetwork network = ((GlyphNetwork) engine).getNetwork();
         bestSnap = network.backup();
         bestMse = mse;
 
         SwingUtilities.invokeLater(
-            new Runnable() {
-                    // This part is run on swing thread
+                new Runnable()
+        {
+            // This part is run on swing thread
             @Override
-                    public void run ()
-                    {
-                        // Update best values
-                        bestIndex.setValue(index);
-                        bestError.setValue(mse);
+            public void run ()
+            {
+                // Update best values
+                bestIndex.setValue(index);
+                bestError.setValue(mse);
 
-                        if (errorListener != null) {
-                            errorListener.stateChanged(errorEvent);
-                        }
+                if (errorListener != null) {
+                    errorListener.stateChanged(errorEvent);
+                }
 
-                        // Remember starting time
-                        startTime = System.currentTimeMillis();
-                    }
-                });
+                // Remember starting time
+                startTime = System.currentTimeMillis();
+            }
+        });
     }
 
     //--------//
@@ -323,29 +318,29 @@ class NetworkPanel
      * {@link TrainingPanel#update}, actions specific to training a neural
      * network are handled here.
      *
-     * @param obs the task object
+     * @param obs    the task object
      * @param unused not used
      */
     @Override
     public void update (Observable obs,
-                        Object     unused)
+                        Object unused)
     {
         super.update(obs, unused);
 
         switch (task.getActivity()) {
-        case INACTIVE :
+        case INACTIVE:
             incrementalTrainAction.setEnabled(true);
             stopAction.setEnabled(false);
 
             break;
 
-        case SELECTING :
+        case SELECTING:
             incrementalTrainAction.setEnabled(false);
             stopAction.setEnabled(false);
 
             break;
 
-        case TRAINING :
+        case TRAINING:
             incrementalTrainAction.setEnabled(false);
             stopAction.setEnabled(true);
             inputParams();
@@ -456,12 +451,11 @@ class NetworkPanel
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //------------//
     // BestAction //
     //------------//
     private class BestAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -471,11 +465,10 @@ class NetworkPanel
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            GlyphNetwork  glyphNetwork = (GlyphNetwork) engine;
+            GlyphNetwork glyphNetwork = (GlyphNetwork) engine;
             NeuralNetwork network = glyphNetwork.getNetwork();
             network.restore(bestSnap);
             logger.info("Network remaining error : {}", (float) bestMse);
@@ -491,7 +484,7 @@ class NetworkPanel
     // LastAction //
     //------------//
     private class LastAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -501,22 +494,21 @@ class NetworkPanel
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {
             // Ask user confirmation if needed
             if (lastMse > bestMse) {
                 final int answer = JOptionPane.showConfirmDialog(
-                    component,
-                    "Do you want to switch to this non-optimal network ?");
+                        component,
+                        "Do you want to switch to this non-optimal network ?");
 
                 if (answer != JOptionPane.YES_OPTION) {
                     return;
                 }
             }
 
-            GlyphNetwork  glyphNetwork = (GlyphNetwork) engine;
+            GlyphNetwork glyphNetwork = (GlyphNetwork) engine;
             NeuralNetwork network = glyphNetwork.getNetwork();
             network.restore(lastSnap);
             logger.info("Network remaining error : {}", (float) lastMse);
@@ -532,13 +524,13 @@ class NetworkPanel
     // NetworkTrainAction //
     //--------------------//
     private class NetworkTrainAction
-        extends TrainingPanel.TrainAction
+            extends TrainingPanel.TrainAction
     {
         //~ Constructors -------------------------------------------------------
 
-        public NetworkTrainAction (String                        title,
+        public NetworkTrainAction (String title,
                                    EvaluationEngine.StartingMode mode,
-                                   boolean                       confirmationRequired)
+                                   boolean confirmationRequired)
         {
             super(title);
             this.mode = mode;
@@ -546,7 +538,6 @@ class NetworkPanel
         }
 
         //~ Methods ------------------------------------------------------------
-
         //-------//
         // train //
         //-------//
@@ -571,7 +562,7 @@ class NetworkPanel
     // ParamAction //
     //-------------//
     private class ParamAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Methods ------------------------------------------------------------
 
@@ -590,7 +581,7 @@ class NetworkPanel
     // StopAction //
     //------------//
     private class StopAction
-        extends AbstractAction
+            extends AbstractAction
     {
         //~ Constructors -------------------------------------------------------
 
@@ -600,7 +591,6 @@ class NetworkPanel
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public void actionPerformed (ActionEvent e)
         {

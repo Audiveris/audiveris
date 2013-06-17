@@ -26,7 +26,7 @@ import omr.ui.view.ScrollView;
 import java.awt.Graphics2D;
 
 /**
- * Class {@code RunsViewer} handles the display of instance(s) of 
+ * Class {@code RunsViewer} handles the display of instance(s) of
  * {@link RunsTable} in the assembly of the related sheet.
  *
  * @author Hervé Bitteur

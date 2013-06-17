@@ -11,8 +11,10 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import omr.run.AdaptiveFilter;
+import omr.run.AdaptiveFilter.AdaptiveContext;
+import omr.run.FilterDescriptor;
+import omr.run.PixelFilter;
 
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
@@ -28,11 +30,10 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Rectangle;
-import omr.run.AdaptiveFilter;
-import omr.run.AdaptiveFilter.AdaptiveContext;
-import omr.run.FilterDescriptor;
-import omr.run.PixelFilter;
 
 /**
  * Class {@code BinarizationBoard} is a board meant to display the
@@ -46,7 +47,8 @@ public class BinarizationBoard
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(BinarizationBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            BinarizationBoard.class);
 
     /** Events this entity is interested in */
     private static final Class<?>[] eventClasses = new Class<?>[]{
@@ -83,13 +85,15 @@ public class BinarizationBoard
             format);
 
     //~ Constructors -----------------------------------------------------------
-    //
-    //-------------------//
-    // BinarizationBoard //
-    //-------------------//
+    /**
+     * Creates a new BinarizationBoard object.
+     *
+     * @param sheet DOCUMENT ME!
+     */
     public BinarizationBoard (Sheet sheet)
     {
-        super("Binarization",
+        super(
+                "Binarization",
                 150,
                 sheet.getLocationService(),
                 eventClasses,
@@ -123,23 +127,28 @@ public class BinarizationBoard
                 Rectangle rect = sheetLocation.getData();
 
                 if (rect != null) {
-                    FilterDescriptor desc = sheet.getPage().getFilterParam().getTarget();
-                    PixelFilter source = desc.getFilter(sheet.getPicture());
+                    FilterDescriptor desc = sheet.getPage()
+                            .getFilterParam()
+                            .getTarget();
+                    PixelFilter source = desc.getFilter(
+                            sheet.getPicture());
+
                     if (source == null) {
-                        source = new AdaptiveFilter(sheet.getPicture(),
+                        source = new AdaptiveFilter(
+                                sheet.getPicture(),
                                 AdaptiveFilter.getDefaultMeanCoeff(),
                                 AdaptiveFilter.getDefaultStdDevCoeff());
                     }
-                    
+
                     PixelFilter.Context context = source.getContext(
-                            rect.x, rect.y);
+                            rect.x,
+                            rect.y);
 
                     if (context != null) {
                         if (context instanceof AdaptiveContext) {
                             AdaptiveContext ctx = (AdaptiveContext) context;
                             mean.setValue(ctx.mean);
                             stdDev.setValue(ctx.standardDeviation);
-
                         } else {
                             mean.setText("");
                             stdDev.setText("");

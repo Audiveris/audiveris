@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.ui.field;
 
-
 /**
  * Class {@code LIntegerField} is an {@link LTextField}, whose field is
  * meant to handle an integer value.
@@ -19,7 +18,7 @@ package omr.ui.field;
  * @author Hervé Bitteur
  */
 public class LIntegerField
-    extends LTextField
+        extends LTextField
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -30,7 +29,7 @@ public class LIntegerField
      * Create a (constant) integer labelled field
      *
      * @param label string to be used as label text
-     * @param tip related tool tip text
+     * @param tip   related tool tip text
      */
     public LIntegerField (String label,
                           String tip)
@@ -45,18 +44,17 @@ public class LIntegerField
      * Create an integer labelled field
      *
      * @param editable tells whether the field is editable
-     * @param label string to be used as label text
-     * @param tip related tool tip text
+     * @param label    string to be used as label text
+     * @param tip      related tool tip text
      */
     public LIntegerField (boolean editable,
-                          String  label,
-                          String  tip)
+                          String label,
+                          String tip)
     {
         super(editable, label, tip);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // getValue //
     //----------//
@@ -69,8 +67,8 @@ public class LIntegerField
     public int getValue ()
     {
         String str = getField()
-                         .getText()
-                         .trim();
+                .getText()
+                .trim();
 
         if (str.length() == 0) {
             return 0;
@@ -90,6 +88,6 @@ public class LIntegerField
     public void setValue (int val)
     {
         getField()
-            .setText(Integer.toString(val));
+                .setText(Integer.toString(val));
     }
 }

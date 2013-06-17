@@ -24,13 +24,13 @@ import omr.text.BasicContent;
 import omr.text.OCR;
 import omr.text.TextLine;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.util.ClassUtil;
 
 import tesseract.TessBridge.TessBaseAPI.SegmentationMode;
 import static tesseract.TessBridge.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;

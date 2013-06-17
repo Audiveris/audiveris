@@ -12,18 +12,18 @@
 package omr.math;
 
 import java.io.PrintStream;
-import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code IntegerHistogram} is an histogram where buckets are integers.
+ * Class {@code IntegerHistogram} is an histogram where buckets are
+ * integers.
  *
  * @author Hervé Bitteur
  */
 public class IntegerHistogram
-    extends Histogram<Integer>
+        extends Histogram<Integer>
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -31,7 +31,6 @@ public class IntegerHistogram
     private SortedMap<Integer, Double> derivatives;
 
     //~ Methods ----------------------------------------------------------------
-
     //-------//
     // clear //
     //-------//
@@ -63,9 +62,9 @@ public class IntegerHistogram
                     if (prevKey != null) {
                         // We can compute a derivative 
                         derivatives.put(
-                            key,
-                            (double) (nextValue - prevValue) / (nextKey -
-                                                               prevKey));
+                                key,
+                                (double) (nextValue - prevValue) / (nextKey
+                                                                    - prevKey));
                     }
 
                     prevKey = key;
@@ -85,7 +84,7 @@ public class IntegerHistogram
     //---------------//
     @Override
     public void increaseCount (Integer bucket,
-                               int     delta)
+                               int delta)
     {
         super.increaseCount(bucket, delta);
         derivatives = null;
@@ -103,12 +102,12 @@ public class IntegerHistogram
 
         for (Map.Entry<Integer, Integer> entry : entrySet()) {
             Integer key = entry.getKey();
-            Double  der = derivatives.get(key);
+            Double der = derivatives.get(key);
             stream.format(
-                " %s: v:%d d:%s\n",
-                key.toString(),
-                entry.getValue(),
-                (der != null) ? der.toString() : "");
+                    " %s: v:%d d:%s\n",
+                    key.toString(),
+                    entry.getValue(),
+                    (der != null) ? der.toString() : "");
         }
 
         stream.println("]");

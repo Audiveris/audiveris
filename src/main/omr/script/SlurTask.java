@@ -28,16 +28,17 @@ import javax.xml.bind.annotation.XmlAccessorType;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class SlurTask
-    extends GlyphUpdateTask
+        extends GlyphUpdateTask
 {
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new SlurTask object.
-     * @param sheet the sheet impacted
+     *
+     * @param sheet  the sheet impacted
      * @param glyphs the collection of glyphs to process
      */
-    public SlurTask (Sheet             sheet,
+    public SlurTask (Sheet sheet,
                      Collection<Glyph> glyphs)
     {
         super(sheet, glyphs);
@@ -52,17 +53,16 @@ public class SlurTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // core //
     //------//
     @Override
     public void core (Sheet sheet)
-        throws Exception
+            throws Exception
     {
         sheet.getSymbolsController()
-             .getModel()
-             .trimSlurs(getInitialGlyphs());
+                .getModel()
+                .trimSlurs(getInitialGlyphs());
     }
 
     //-----------------//

@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyphs;
@@ -21,17 +22,14 @@ import omr.grid.Filament;
 import omr.grid.FilamentLine;
 import omr.grid.LineInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.NaturalSpline;
 import static omr.run.Orientation.*;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-
 import omr.util.BrokenLine;
 import omr.util.Predicate;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -40,7 +38,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import omr.constant.Constant;
 
 /**
  * Class {@code BorderBuilder} implements a smart approach
@@ -145,9 +142,9 @@ public class BorderBuilder
         // First, retrieve glyphs intersected by intersystem rectangle
         LineInfo topLine = prevSystem.getLastStaff().getLastLine();
         LineInfo botLine = system.getFirstStaff().getFirstLine();
-        PixelRectangle box = topLine.getBounds();
+        Rectangle box = topLine.getBounds();
         box.add(botLine.getBounds());
-        final PixelRectangle interBox = box;
+        final Rectangle interBox = box;
 
         Set<Glyph> glyphs = sheet.getNest().lookupIntersectedGlyphs(interBox);
 
@@ -156,30 +153,30 @@ public class BorderBuilder
         Glyphs.purge(
                 glyphs,
                 new Predicate<Glyph>()
-                {
-                    @Override
-                    public boolean check (Glyph glyph)
-                    {
-                        // Purge staff lines
-                        if (glyph.getShape() == Shape.STAFF_LINE) {
-                            return true;
-                        }
-                        
-                        // Purge abnormally tall glyphs
-                        PixelRectangle glyphBox = glyph.getBounds();
-                        if (glyphBox.y <= interBox.y && 
-                            glyphBox.y + glyphBox.height >= interBox.y + interBox.height) {
-                            return true;
-                        }
-                        
-                        // Purge too light glyphs
-                        if (glyph.getWeight() < minGlyphWeight) {
-                            return true;
-                        }
-                        
-                        return false;
-                    }
-                });
+        {
+            @Override
+            public boolean check (Glyph glyph)
+            {
+                // Purge staff lines
+                if (glyph.getShape() == Shape.STAFF_LINE) {
+                    return true;
+                }
+
+                // Purge abnormally tall glyphs
+                Rectangle glyphBox = glyph.getBounds();
+                if (glyphBox.y <= interBox.y
+                    && glyphBox.y + glyphBox.height >= interBox.y + interBox.height) {
+                    return true;
+                }
+
+                // Purge too light glyphs
+                if (glyph.getWeight() < minGlyphWeight) {
+                    return true;
+                }
+
+                return false;
+            }
+        });
 
         // Split the set between staff limits and free glyphs in the middle
         topLimit = buildLimit(topLine, glyphs, -1);
@@ -347,7 +344,7 @@ public class BorderBuilder
                 it.remove();
             } else {
                 // Check glyph position WRT line
-                PixelPoint center = glyph.getAreaCenter();
+                Point center = glyph.getAreaCenter();
                 int y = filamentLine.yAt(center.x);
 
                 if (((center.y - y) * dir) > 0) {
@@ -361,7 +358,7 @@ public class BorderBuilder
         int x1 = 0;
 
         for (Glyph glyph : lineGlyphs) {
-            PixelRectangle contour = glyph.getBounds();
+            Rectangle contour = glyph.getBounds();
 
             if (contour.x > x1) {
                 // We need to insert an artificial box, based on line segment
@@ -526,7 +523,7 @@ public class BorderBuilder
      * A standard rectangle, which keeps track of its building glyphs.
      */
     private static class GlyphRect
-            extends PixelRectangle
+            extends Rectangle
     {
         //~ Instance fields ----------------------------------------------------
 

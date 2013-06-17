@@ -11,14 +11,13 @@
 // </editor-fold>
 package omr.selection;
 
-
 /**
  * Class {@code SectionIdEvent} represents a Section Id selection.
  *
  * @author Hervé Bitteur
  */
 public class SectionIdEvent
-    extends LagEvent
+        extends LagEvent
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -26,23 +25,22 @@ public class SectionIdEvent
     private final Integer id;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new SectionIdEvent object.
+     *
      * @param source the entity that created this event
-     * @param hint hint about event origin (or null)
-     * @param id the selected section id (or null)
+     * @param hint   hint about event origin (or null)
+     * @param id     the selected section id (or null)
      */
-    public SectionIdEvent (Object        source,
+    public SectionIdEvent (Object source,
                            SelectionHint hint,
-                           Integer       id)
+                           Integer id)
     {
         super(source, hint, null);
         this.id = id;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getEntity //
     //-----------//

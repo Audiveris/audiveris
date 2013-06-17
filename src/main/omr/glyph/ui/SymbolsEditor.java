@@ -25,12 +25,8 @@ import omr.lag.Section;
 import omr.lag.Sections;
 import omr.lag.ui.SectionBoard;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.RunBoard;
 
-import omr.score.common.PixelPoint;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
@@ -59,8 +55,11 @@ import omr.step.Step;
 import omr.ui.BoardsPane;
 import omr.ui.Colors;
 import omr.ui.PixelCount;
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
 import omr.ui.view.ScrollView;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -404,14 +403,14 @@ public class SymbolsEditor
             //            }
             //
             //            ScoreSystem system = measure.getSystem();
-            //            PixelDimension dimension = system.getDimension();
-            //            PixelRectangle systemBox = new PixelRectangle(system.getTopLeft().x,
+            //            Dimension dimension = system.getDimension();
+            //            Rectangle systemBox = new Rectangle(system.getTopLeft().x,
             //                    system.getTopLeft().y, dimension.width,
             //                    dimension.height
             //                    + system.getLastPart().getLastStaff().getHeight());
             //
             //            // Make the measure rectangle visible
-            //            PixelRectangle rect = measure.getBox();
+            //            Rectangle rect = measure.getBox();
             //            int margin = constants.measureMargin.getValue();
             //            // Actually, use the whole system height
             //            rect.y = systemBox.y;
@@ -468,7 +467,7 @@ public class SymbolsEditor
                         .isSectionMode();
 
                 // Stroke for borders
-                final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
+                final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
 
                 if (lags != null) {
                     for (Lag lag : lags) {
@@ -644,7 +643,7 @@ public class SymbolsEditor
         //---------------//
         private void showPagePopup (Point pt)
         {
-            pageMenu.updateMenu(new PixelPoint(pt.x, pt.y));
+            pageMenu.updateMenu(new Point(pt.x, pt.y));
 
             JPopupMenu popup = pageMenu.getPopup();
 

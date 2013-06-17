@@ -13,11 +13,11 @@ package omr.glyph;
 
 import omr.constant.Constant;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.util.ArrayList;

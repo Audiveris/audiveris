@@ -73,7 +73,6 @@ public class Dumper
     private static final int MAX_COLLECTION_INDEX = 9;
 
     //~ Instance fields --------------------------------------------------------
-
     /** To filter classes and fields */
     protected final Relevance relevance;
 
@@ -99,17 +98,16 @@ public class Dumper
     protected Class<?> classe;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new Dumper.
      *
      * @param relevance the relevance filter
-     * @param object the object instance to be dumped.
-     * @param useHtml ????
+     * @param object    the object instance to be dumped.
+     * @param useHtml   ????
      */
     public Dumper (Relevance relevance,
-                   Object    object,
-                   boolean   useHtml)
+                   Object object,
+                   boolean useHtml)
     {
         this.relevance = relevance;
 
@@ -123,7 +121,6 @@ public class Dumper
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------//
     // print //
     //-------//
@@ -189,8 +186,9 @@ public class Dumper
 
             // Safeguard action when the object is a big collection
             if (i > MAX_COLLECTION_INDEX) {
-                sb.append(" ... ").
-                        append(collection.size()).append(" items");
+                sb.append(" ... ")
+                        .append(collection.size())
+                        .append(" items");
 
                 break;
             } else {
@@ -281,7 +279,6 @@ public class Dumper
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // Column //
     //--------//
@@ -291,24 +288,24 @@ public class Dumper
      * left indented, according to the specified indentation level.
      */
     public static class Column
-        extends Dumper
+            extends Dumper
     {
         //~ Static fields/initializers -----------------------------------------
 
         private static final String MEMBER_GAP = "   ";
+
         private static final String INDENT_GAP = ".  ";
 
         //~ Instance fields ----------------------------------------------------
+        private final String title;
 
-        private final String        title;
         private final StringBuilder prefix;
 
         //~ Constructors -------------------------------------------------------
-
         public Column (Relevance relevance,
-                       Object    object,
-                       String    title,
-                       int       level)
+                       Object object,
+                       String title,
+                       int level)
         {
             super(relevance, object, false);
 
@@ -328,7 +325,6 @@ public class Dumper
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         protected void printClassProlog ()
         {
@@ -337,10 +333,10 @@ public class Dumper
             if (object.getClass() == classe) {
                 sb.append("\n");
                 sb.append(prefix)
-                  .append(classe.getName());
+                        .append(classe.getName());
                 sb.append(" ")
-                  .append(title)
-                  .append(":");
+                        .append(title)
+                        .append(":");
             }
         }
 
@@ -350,9 +346,9 @@ public class Dumper
         {
             sb.append("\n");
             sb.append(prefix)
-              .append(MEMBER_GAP);
+                    .append(MEMBER_GAP);
             sb.append(name)
-              .append("=");
+                    .append("=");
             super.printField(name, value);
         }
     }
@@ -365,27 +361,26 @@ public class Dumper
      * fields in a table.
      */
     public static class Html
-        extends Dumper
+            extends Dumper
     {
         //~ Constructors -------------------------------------------------------
 
         public Html (Relevance relevance,
-                     Object    object)
+                     Object object)
         {
             super(relevance, object, true);
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public String toString ()
         {
             // Style
             sb.append("<style> td {")
-              .append(" font-family: Lucida Console, Verdana, sans-serif;")
-              .append(" font-size: 9px;")
-              .append(" font-style: normal;")
-              .append("} </style>");
+                    .append(" font-family: Lucida Console, Verdana, sans-serif;")
+                    .append(" font-size: 9px;")
+                    .append(" font-style: normal;")
+                    .append("} </style>");
 
             // Table begin
             sb.append("<table border=0 cellpadding=3>");
@@ -405,8 +400,8 @@ public class Dumper
         {
             // Class name
             sb.append("<tr><td colspan=2><font color='BLUE'>")
-              .append(classe.getName())
-              .append("</font></td></tr>");
+                    .append(classe.getName())
+                    .append("</font></td></tr>");
         }
 
         @Override
@@ -418,15 +413,15 @@ public class Dumper
 
             // First the field name
             sb.append("<td align='right'><font color='RED'>")
-              .append(name)
-              .append("</font></td>");
+                    .append(name)
+                    .append("</font></td>");
 
             // Then the field value
             sb.append("<td>");
             super.printField(name, value);
 
             sb.append("</td>")
-              .append("</tr>");
+                    .append("</tr>");
         }
     }
 
@@ -438,18 +433,17 @@ public class Dumper
      * presented on the same line.
      */
     public static class Row
-        extends Dumper
+            extends Dumper
     {
         //~ Constructors -------------------------------------------------------
 
         public Row (Relevance relevance,
-                    Object    object)
+                    Object object)
         {
             super(relevance, object, false);
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         protected void printClassEpilog ()
         {
@@ -468,7 +462,7 @@ public class Dumper
             }
 
             sb.append(classe.getName())
-              .append(":");
+                    .append(":");
         }
 
         @Override
@@ -477,7 +471,7 @@ public class Dumper
         {
             sb.append(" ");
             sb.append(name)
-              .append("=");
+                    .append("=");
             super.printField(name, value);
         }
     }

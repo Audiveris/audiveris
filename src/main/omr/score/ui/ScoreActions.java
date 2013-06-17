@@ -16,9 +16,6 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 import omr.score.ScoresManager;
 import omr.score.entity.ScorePart;
@@ -33,13 +30,16 @@ import omr.step.Steps;
 
 import omr.ui.MainGui;
 import omr.ui.util.OmrFileFilter;
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
 
 import omr.util.BasicTask;
 import omr.util.WrappedBoolean;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -63,7 +63,8 @@ public class ScoreActions
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ScoreActions.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ScoreActions.class);
 
     /** Should we rebuild the score on each user action */
     private static final String REBUILD_ALLOWED = "rebuildAllowed";
@@ -95,22 +96,6 @@ public class ScoreActions
     }
 
     //~ Methods ----------------------------------------------------------------
-    //
-    //-------------//
-    // browseScore //
-    //-------------//
-    /**
-     * Launch the tree display of the current score.
-     *
-     * @param e
-     */
-    @Action(enabledProperty = SCORE_AVAILABLE)
-    public void browseScore (ActionEvent e)
-    {
-        MainGui.getInstance().show(ScoreController.getCurrentScore().
-                getBrowserFrame());
-    }
-
     //-----------------//
     // checkParameters //
     //-----------------//
@@ -127,6 +112,63 @@ public class ScoreActions
             return applyUserSettings(sheet);
         } else {
             return fillParametersWithDefaults(sheet.getScore());
+        }
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized ScoreActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new ScoreActions();
+        }
+
+        return INSTANCE;
+    }
+
+    //
+    //-------------//
+    // browseScore //
+    //-------------//
+    /**
+     * Launch the tree display of the current score.
+     *
+     * @param e
+     */
+    @Action(enabledProperty = SCORE_AVAILABLE)
+    public void browseScore (ActionEvent e)
+    {
+        MainGui.getInstance()
+                .show(ScoreController.getCurrentScore().getBrowserFrame());
+    }
+
+    //------------//
+    // buildScore //
+    //------------//
+    /**
+     * Translate all sheet glyphs to score entities, or rebuild the
+     * sheet at end if SCORE step has already been reached.
+     * Actually, it's just a convenient way to launch the SCORE step
+     * or relaunch from the SYMBOLS step.
+     *
+     * @param e the event that triggered this action
+     * @return the task to launch in background
+     */
+    @Action(enabledProperty = SCORE_IDLE)
+    public Task<Void, Void> buildScore (ActionEvent e)
+    {
+        Sheet sheet = SheetsController.getCurrentSheet();
+
+        if (sheet.isDone(Steps.valueOf(Steps.SCORE))) {
+            return new RebuildTask(sheet);
+        } else {
+            return new BuildTask(sheet);
         }
     }
 
@@ -173,24 +215,8 @@ public class ScoreActions
     @Action(enabledProperty = SCORE_AVAILABLE)
     public void dumpScore (ActionEvent e)
     {
-        ScoreController.getCurrentScore().dump();
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized ScoreActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new ScoreActions();
-        }
-
-        return INSTANCE;
+        ScoreController.getCurrentScore()
+                .dump();
     }
 
     //-------------------//
@@ -207,30 +233,6 @@ public class ScoreActions
     public boolean isRebuildAllowed ()
     {
         return rebuildAllowed;
-    }
-
-    //------------//
-    // buildScore //
-    //------------//
-    /**
-     * Translate all sheet glyphs to score entities, or rebuild the
-     * sheet at end if SCORE step has already been reached.
-     * Actually, it's just a convenient way to launch the SCORE step
-     * or relaunch from the SYMBOLS step.
-     *
-     * @param e the event that triggered this action
-     * @return the task to launch in background
-     */
-    @Action(enabledProperty = SCORE_IDLE)
-    public Task<Void, Void> buildScore (ActionEvent e)
-    {
-        Sheet sheet = SheetsController.getCurrentSheet();
-
-        if (sheet.isDone(Steps.valueOf(Steps.SCORE))) {
-            return new RebuildTask(sheet);
-        } else {
-            return new BuildTask(sheet);
-        }
     }
 
     //--------------------//
@@ -271,7 +273,8 @@ public class ScoreActions
             return null;
         }
 
-        final File exportFile = sheet.getScore().getExportFile();
+        final File exportFile = sheet.getScore()
+                .getExportFile();
 
         if (exportFile != null) {
             return new StoreScoreTask(sheet, exportFile);
@@ -300,10 +303,12 @@ public class ScoreActions
         }
 
         // Let the user select a score output file
-        File exportFile = UIUtilities.fileChooser(
+        File exportFile = UIUtil.fileChooser(
                 true,
                 null,
-                ScoresManager.getInstance().getDefaultExportFile(null, sheet.getScore()),
+                ScoresManager.getInstance().getDefaultExportFile(
+                null,
+                sheet.getScore()),
                 new OmrFileFilter(
                 "XML files",
                 new String[]{ScoresManager.SCORE_EXTENSION}));
@@ -326,7 +331,8 @@ public class ScoreActions
     @Action(selectedProperty = MANUAL_PERSISTED)
     public void togglePersist (ActionEvent e)
     {
-        logger.info("Persistency mode is {}",
+        logger.info(
+                "Persistency mode is {}",
                 (isManualPersisted() ? "on" : "off"));
     }
 
@@ -390,7 +396,7 @@ public class ScoreActions
         }
 
         // Let the user select a PDF output file
-        File pdfFile = UIUtilities.fileChooser(
+        File pdfFile = UIUtil.fileChooser(
                 true,
                 null,
                 ScoresManager.getInstance().getDefaultPrintFile(null, score),
@@ -400,6 +406,82 @@ public class ScoreActions
             return new WriteSheetPdfTask(score, pdfFile);
         } else {
             return null;
+        }
+    }
+
+    //-------------------//
+    // applyUserSettings //
+    //-------------------//
+    /**
+     * Prompts the user for interactive confirmation or modification of
+     * score/page parameters
+     *
+     * @param sheet the current sheet, or null
+     * @return true if parameters are applied, false otherwise
+     */
+    private static boolean applyUserSettings (final Sheet sheet)
+    {
+        try {
+            final WrappedBoolean apply = new WrappedBoolean(false);
+            final ScoreParameters scoreParams = new ScoreParameters(sheet);
+            final JOptionPane optionPane = new JOptionPane(
+                    scoreParams.getComponent(),
+                    JOptionPane.QUESTION_MESSAGE,
+                    JOptionPane.OK_CANCEL_OPTION);
+            final String frameTitle = (sheet != null)
+                    ? (sheet.getScore()
+                    .getRadix()
+                       + " parameters")
+                    : "General parameters";
+            final JDialog dialog = new JDialog(
+                    Main.getGui().getFrame(),
+                    frameTitle,
+                    true); // Modal flag
+            dialog.setContentPane(optionPane);
+            dialog.setName("scoreParams");
+
+            optionPane.addPropertyChangeListener(
+                    new PropertyChangeListener()
+            {
+                @Override
+                public void propertyChange (PropertyChangeEvent e)
+                {
+                    String prop = e.getPropertyName();
+
+                    if (dialog.isVisible()
+                        && (e.getSource() == optionPane)
+                        && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
+                        Object obj = optionPane.getValue();
+                        int value = ((Integer) obj).intValue();
+                        apply.set(value == JOptionPane.OK_OPTION);
+
+                        // Exit only if user gives up or enters correct data
+                        if (!apply.isSet()
+                            || scoreParams.commit(sheet)) {
+                            dialog.setVisible(false);
+                            dialog.dispose();
+                        } else {
+                            // Incorrect data, so don't exit yet
+                            try {
+                                // TODO: Is there a more civilized way?
+                                optionPane.setValue(
+                                        JOptionPane.UNINITIALIZED_VALUE);
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    }
+                }
+            });
+
+            dialog.pack();
+            MainGui.getInstance()
+                    .show(dialog);
+
+            return apply.value;
+        } catch (Exception ex) {
+            logger.warn("Error in ScoreParameters", ex);
+
+            return false;
         }
     }
 
@@ -437,77 +519,6 @@ public class ScoreActions
         return true;
     }
 
-    //-------------------//
-    // applyUserSettings //
-    //-------------------//
-    /**
-     * Prompts the user for interactive confirmation or modification of
-     * score/page parameters
-     *
-     * @param sheet the current sheet, or null
-     * @return true if parameters are applied, false otherwise
-     */
-    private static boolean applyUserSettings (final Sheet sheet)
-    {
-        try {
-            final WrappedBoolean apply = new WrappedBoolean(false);
-            final ScoreParameters scoreParams = new ScoreParameters(sheet);
-            final JOptionPane optionPane = new JOptionPane(
-                    scoreParams.getComponent(),
-                    JOptionPane.QUESTION_MESSAGE,
-                    JOptionPane.OK_CANCEL_OPTION);
-            final String frameTitle = (sheet != null)
-                    ? (sheet.getScore().getRadix() + " parameters")
-                    : "General parameters";
-            final JDialog dialog = new JDialog(
-                    Main.getGui().getFrame(),
-                    frameTitle,
-                    true); // Modal flag
-            dialog.setContentPane(optionPane);
-            dialog.setName("scoreParams");
-
-            optionPane.addPropertyChangeListener(
-                    new PropertyChangeListener()
-            {
-                @Override
-                public void propertyChange (PropertyChangeEvent e)
-                {
-                    String prop = e.getPropertyName();
-
-                    if (dialog.isVisible()
-                        && (e.getSource() == optionPane)
-                        && (prop.equals(JOptionPane.VALUE_PROPERTY))) {
-                        Object obj = optionPane.getValue();
-                        int value = ((Integer) obj).intValue();
-                        apply.set(value == JOptionPane.OK_OPTION);
-
-                        // Exit only if user gives up or enters correct data
-                        if (!apply.isSet() || scoreParams.commit(sheet)) {
-                            dialog.setVisible(false);
-                            dialog.dispose();
-                        } else {
-                            // Incorrect data, so don't exit yet
-                            try {
-                                // TODO: Is there a more civilized way?
-                                optionPane.setValue(
-                                        JOptionPane.UNINITIALIZED_VALUE);
-                            } catch (Exception ignored) {
-                            }
-                        }
-                    }
-                }
-            });
-
-            dialog.pack();
-            MainGui.getInstance().show(dialog);
-
-            return apply.value;
-        } catch (Exception ex) {
-            logger.warn("Error in ScoreParameters", ex);
-            return false;
-        }
-    }
-
     //~ Inner Classes ----------------------------------------------------------
     //-------------------//
     // WriteSheetPdfTask //
@@ -535,24 +546,11 @@ public class ScoreActions
                 throws InterruptedException
         {
             Stepping.ensureScoreStep(Steps.valueOf(Steps.SCORE), score);
-            ScoresManager.getInstance().writePhysicalPdf(score, pdfFile);
+            ScoresManager.getInstance()
+                    .writePhysicalPdf(score, pdfFile);
 
             return null;
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Constant.Boolean promptParameters = new Constant.Boolean(
-                false,
-                "Should we prompt the user for score parameters?");
-
     }
 
     //-----------//
@@ -561,9 +559,11 @@ public class ScoreActions
     private static class BuildTask
             extends BasicTask
     {
+        //~ Instance fields ----------------------------------------------------
 
         private final Sheet sheet;
 
+        //~ Constructors -------------------------------------------------------
         public BuildTask (Sheet sheet)
         {
             this.sheet = sheet;
@@ -585,15 +585,31 @@ public class ScoreActions
         }
     }
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Constant.Boolean promptParameters = new Constant.Boolean(
+                false,
+                "Should we prompt the user for score parameters?");
+
+    }
+
     //-------------//
     // RebuildTask //
     //-------------//
     private static class RebuildTask
             extends BasicTask
     {
+        //~ Instance fields ----------------------------------------------------
 
         private final Sheet sheet;
 
+        //~ Constructors -------------------------------------------------------
         public RebuildTask (Sheet sheet)
         {
             this.sheet = sheet;

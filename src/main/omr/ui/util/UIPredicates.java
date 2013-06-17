@@ -57,9 +57,8 @@ public class UIPredicates
 
             return left && command && !e.isPopupTrigger();
         } else {
-            return (SwingUtilities.isRightMouseButton(e)
-                    != SwingUtilities.isLeftMouseButton(e)) 
-                   && e.isControlDown();
+            return (SwingUtilities.isRightMouseButton(e) != SwingUtilities.isLeftMouseButton(
+                    e)) && e.isControlDown();
         }
     }
 

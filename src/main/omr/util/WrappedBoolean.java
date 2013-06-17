@@ -11,15 +11,14 @@
 // </editor-fold>
 package omr.util;
 
-
 /**
- * Class {@code WrappedBoolean} is a specific wrapper around a boolean, meant
- * to carry an output boolean as method parameter
+ * Class {@code WrappedBoolean} is a specific wrapper around a boolean,
+ * meant to carry an output boolean as method parameter.
  *
  * @author Hervé Bitteur
  */
 public class WrappedBoolean
-    extends Wrapper<Boolean>
+        extends Wrapper<Boolean>
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -37,28 +36,29 @@ public class WrappedBoolean
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-------//
+    // isSet //
+    //-------//
+    /**
+     * Report the current boolean value
+     *
+     * @return the current value
+     */
+    public boolean isSet ()
+    {
+        return value;
+    }
 
     //-----//
     // set //
     //-----//
     /**
      * Assign the boolean value
+     *
      * @param value the assigned value
      */
     public final void set (boolean value)
     {
         this.value = value;
-    }
-
-    //-------//
-    // isSet //
-    //-------//
-    /**
-     * Report the current boolean value
-     * @return the current value
-     */
-    public boolean isSet ()
-    {
-        return value;
     }
 }

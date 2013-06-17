@@ -22,7 +22,7 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public class SectionSetEvent
-    extends LagEvent
+        extends LagEvent
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -30,28 +30,27 @@ public class SectionSetEvent
     private final Set<Section> sections;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // SectionSetEvent //
     //-----------------//
     /**
      * Creates a new SectionSetEvent object.
-     * @param source the entity that created this event
-     * @param hint hint about event origin (or null)
+     *
+     * @param source   the entity that created this event
+     * @param hint     hint about event origin (or null)
      * @param movement the mouse movement
      * @param sections the selected collection of sections (or null)
      */
-    public SectionSetEvent (Object        source,
+    public SectionSetEvent (Object source,
                             SelectionHint hint,
                             MouseMovement movement,
-                            Set<Section>  sections)
+                            Set<Section> sections)
     {
         super(source, hint, movement);
         this.sections = sections;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getEntity //
     //-----------//

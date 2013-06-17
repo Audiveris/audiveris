@@ -16,8 +16,8 @@ import omr.sheet.Sheet;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code SheetTask} is a {@link ScriptTask} that applies to a given
- * sheet.
+ * Class {@code SheetTask} is a {@link ScriptTask} that applies to a
+ * given sheet.
  *
  * @author Hervé Bitteur
  */

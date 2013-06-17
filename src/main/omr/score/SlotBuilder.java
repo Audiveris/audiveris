@@ -15,12 +15,8 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Rational;
 
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Beam;
 import omr.score.entity.BeamGroup;
 import omr.score.entity.Chord;
@@ -35,6 +31,10 @@ import omr.sheet.Scale;
 
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -331,7 +331,7 @@ public class SlotBuilder
                 if (ch1.isWholeDuration()) {
                     continue;
                 }
-                PixelRectangle box1 = ch1.getBox();
+                Rectangle box1 = ch1.getBox();
 
                 for (TreeNode n : measure.getChords().subList(index, chordCount)) {
                     Chord ch2 = (Chord) n;
@@ -340,7 +340,7 @@ public class SlotBuilder
                     }
 
                     // Check y overlap
-                    PixelRectangle box2 = ch2.getBox();
+                    Rectangle box2 = ch2.getBox();
                     int yOverlap = Math.min(box1.y + box1.height, box2.y + box2.height)
                                    - Math.max(box1.y, box2.y);
                     if (yOverlap > 0) {
@@ -406,8 +406,8 @@ public class SlotBuilder
         private boolean areAdjacent (Chord ch1,
                                      Chord ch2)
         {
-            final PixelRectangle box1 = ch1.getBox();
-            final PixelRectangle box2 = ch2.getBox();
+            final Rectangle box1 = ch1.getBox();
+            final Rectangle box2 = ch2.getBox();
 
             // Check horizontal void gap
             final int xGap = Math.max(box1.x, box2.x)

@@ -16,16 +16,16 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,8 +35,8 @@ import java.util.Map;
  * @author Hervé Bitteur
  */
 public class Dynamics
-    extends MeasureElement
-    implements Direction, Notation
+        extends MeasureElement
+        implements Direction, Notation
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -127,21 +127,21 @@ public class Dynamics
     }
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // Dynamics //
     //----------//
     /**
      * Creates a new instance of Dynamics event.
+     *
      * @param measure measure that contains this mark
-     * @param point location of mark
-     * @param chord the chord related to the mark
-     * @param glyph the underlying glyph
+     * @param point   location of mark
+     * @param chord   the chord related to the mark
+     * @param glyph   the underlying glyph
      */
-    public Dynamics (Measure    measure,
-                     PixelPoint point,
-                     Chord      chord,
-                     Glyph      glyph)
+    public Dynamics (Measure measure,
+                     Point point,
+                     Chord chord,
+                     Glyph glyph)
     {
         super(measure, true, point, chord, glyph);
 
@@ -151,7 +151,6 @@ public class Dynamics
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // getSoundLevel //
     //---------------//
@@ -171,13 +170,14 @@ public class Dynamics
     //----------//
     /**
      * Used by SystemTranslator to allocate the dynamics marks.
-     * @param glyph underlying glyph
+     *
+     * @param glyph   underlying glyph
      * @param measure measure where the mark is located
-     * @param point location for the mark
+     * @param point   location for the mark
      */
-    public static void populate (Glyph      glyph,
-                                 Measure    measure,
-                                 PixelPoint point)
+    public static void populate (Glyph glyph,
+                                 Measure measure,
+                                 Point point)
     {
         if (glyph.isVip()) {
             logger.info("Dynamics. populate {}", glyph.idString());
@@ -199,7 +199,7 @@ public class Dynamics
 
         // Otherwise, create a brand new instance
         glyph.setTranslation(
-            new Dynamics(measure, point, findChord(measure, point), glyph));
+                new Dynamics(measure, point, findChord(measure, point), glyph));
     }
 
     //--------//
@@ -244,18 +244,18 @@ public class Dynamics
     //------------------//
     // isCompatibleWith //
     //------------------//
-    private boolean isCompatibleWith (PixelPoint point)
+    private boolean isCompatibleWith (Point point)
     {
         // Check x-proximity and y-alignment
         Scale scale = getSystem()
-                          .getScale();
-        int   dx = scale.toPixels(constants.maxDx);
-        int   dy = scale.toPixels(constants.maxDy);
+                .getScale();
+        int dx = scale.toPixels(constants.maxDx);
+        int dy = scale.toPixels(constants.maxDy);
 
         // Horizontal distance
         int xDist = Math.min(
-            Math.abs(getBox().x - point.x),
-            Math.abs((getBox().x + getBox().width) - point.x));
+                Math.abs(getBox().x - point.x),
+                Math.abs((getBox().x + getBox().width) - point.x));
 
         // Vertical distance
         int yDist = Math.abs(getReferencePoint().y - point.y);
@@ -264,23 +264,23 @@ public class Dynamics
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         /** Maximum abscissa difference */
         Scale.Fraction maxDx = new Scale.Fraction(
-            1.5,
-            "Maximum abscissa difference");
+                1.5,
+                "Maximum abscissa difference");
 
         /** Maximum ordinate difference */
         Scale.Fraction maxDy = new Scale.Fraction(
-            0.5,
-            "Maximum ordinate difference");
+                0.5,
+                "Maximum ordinate difference");
+
     }
 }

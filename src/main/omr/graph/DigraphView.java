@@ -29,6 +29,7 @@ public interface DigraphView
 
     /**
      * Render the whole graph view
+     *
      * @param g the graphics context
      */
     void render (Graphics2D g);

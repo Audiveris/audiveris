@@ -13,11 +13,6 @@ package omr.sheet.ui;
 
 import omr.Main;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelRectangle;
-
 import omr.selection.LocationEvent;
 
 import omr.sheet.Sheet;
@@ -29,7 +24,7 @@ import omr.ui.BoardsPane;
 import omr.ui.GuiActions;
 import omr.ui.MainGui;
 import omr.ui.util.Panel;
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
 import omr.ui.view.LogSlider;
 import omr.ui.view.Rubber;
 import omr.ui.view.RubberPanel;
@@ -38,9 +33,13 @@ import omr.ui.view.Zoom;
 
 import org.bushe.swing.event.EventService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -178,7 +177,7 @@ public class SheetAssembly
                             BoardsPane boardsPane)
     {
         JScrollPane scroll = sv.getComponent();
-        UIUtilities.suppressBorders(scroll);
+        UIUtil.suppressBorders(scroll);
 
         if (boardsPane != null) {
             boardsPane.setName(label);
@@ -565,7 +564,7 @@ public class SheetAssembly
             // Force update of LocationEvent
             LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
                     LocationEvent.class);
-            PixelRectangle location = (locationEvent != null)
+            Rectangle location = (locationEvent != null)
                     ? locationEvent.getData() : null;
 
             if (location != null) {

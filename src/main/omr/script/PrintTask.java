@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class PrintTask
-    extends ScriptTask
+        extends ScriptTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -37,7 +37,6 @@ public class PrintTask
     private String path;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // PrintTask //
     //------------//
@@ -60,7 +59,6 @@ public class PrintTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // core //
     //------//
@@ -68,9 +66,9 @@ public class PrintTask
     public void core (Sheet sheet)
     {
         ScoresManager.getInstance()
-                     .writePhysicalPdf(
-            sheet.getScore(),
-            (path != null) ? new File(path) : null);
+                .writePhysicalPdf(
+                sheet.getScore(),
+                (path != null) ? new File(path) : null);
     }
 
     //-----------------//

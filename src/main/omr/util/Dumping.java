@@ -35,12 +35,11 @@ public class Dumping
     protected final Relevance relevance;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new Dumping service.
      *
      * @param rootPackages The collection of root packages used to filter which
-     * classes are relevant.
+     *                     classes are relevant.
      */
     public Dumping (Collection<Package> rootPackages)
     {
@@ -58,7 +57,6 @@ public class Dumping
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // dump //
     //------//
@@ -76,14 +74,14 @@ public class Dumping
     // dump //
     //------//
     /**
-     * Print the internal data of an object onto the  standard output, with a
+     * Print the internal data of an object onto the standard output, with a
      * specified left indentation level.
      *
      * @param obj   the instance to dump
      * @param level the indentation level (0 means no indentation)
      */
     public void dump (Object obj,
-                      int    level)
+                      int level)
     {
         dump(obj, null, level);
     }
@@ -117,7 +115,7 @@ public class Dumping
      */
     public void dump (Object obj,
                       String title,
-                      int    level)
+                      int level)
     {
         new Column(relevance, obj, title, level).print();
     }
@@ -154,7 +152,6 @@ public class Dumping
     }
 
     //~ Inner Interfaces -------------------------------------------------------
-
     //-----------//
     // Relevance //
     //-----------//
@@ -164,6 +161,7 @@ public class Dumping
 
         /**
          * Predicate to determine if a given class is worth being printed.
+         *
          * @param classe the class at stake
          * @return true if found relevant
          */
@@ -171,6 +169,7 @@ public class Dumping
 
         /**
          * Predicate to determine if a given field is worth being printed.
+         *
          * @param field the field at stake
          * @return true if found relevant
          */
@@ -178,7 +177,6 @@ public class Dumping
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //------------------//
     // PackageRelevance //
     //------------------//
@@ -186,7 +184,7 @@ public class Dumping
      * A relevance filter, based on root packages
      */
     public static class PackageRelevance
-        implements Relevance
+            implements Relevance
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -194,7 +192,6 @@ public class Dumping
         protected final Set<Package> rootPackages = new HashSet<>();
 
         //~ Constructors -------------------------------------------------------
-
         public PackageRelevance (Collection<Package> rootPackages)
         {
             this.rootPackages.addAll(rootPackages);
@@ -208,7 +205,6 @@ public class Dumping
         }
 
         //~ Methods ------------------------------------------------------------
-
         //-----------------//
         // isClassRelevant //
         //-----------------//
@@ -221,7 +217,7 @@ public class Dumping
 
             for (Package pkg : rootPackages) {
                 if (classe.getName()
-                          .startsWith(pkg.getName() + ".")) {
+                        .startsWith(pkg.getName() + ".")) {
                     return true;
                 }
             }
@@ -242,7 +238,7 @@ public class Dumping
 
             // We don't print non-user visible entities
             if (field.getName()
-                     .indexOf('$') != -1) {
+                    .indexOf('$') != -1) {
                 return false;
             }
 

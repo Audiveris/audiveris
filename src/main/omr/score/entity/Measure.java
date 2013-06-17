@@ -13,19 +13,18 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Rational;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.TimeSignature.InvalidTimeSignature;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -329,7 +328,7 @@ public class Measure
             int right = getLeftX(); // Right of dummy = Left of current
             int midY = (staff.getTopLeft().y + (staff.getHeight() / 2))
                        - getSystem().getTopLeft().y;
-            PixelPoint staffPoint = new PixelPoint(right, midY);
+            Point staffPoint = new Point(right, midY);
 
             // Clef?
             Clef clef = getClefBefore(staffPoint, staff);
@@ -339,7 +338,7 @@ public class Measure
                         dummyMeasure,
                         staff,
                         clef.getShape(),
-                        new PixelPoint(right - 40, midY),
+                        new Point(right - 40, midY),
                         clef.getPitchPosition(),
                         null); // No glyph
             }
@@ -350,7 +349,7 @@ public class Measure
             if (key != null) {
                 key.createDummyCopy(
                         dummyMeasure,
-                        new PixelPoint(right - 30, midY));
+                        new Point(right - 30, midY));
             }
 
             // Time?
@@ -359,7 +358,7 @@ public class Measure
             if (time != null) {
                 time.createDummyCopy(
                         dummyMeasure,
-                        new PixelPoint(right - 20, midY));
+                        new Point(right - 20, midY));
             }
         }
 
@@ -448,7 +447,7 @@ public class Measure
      * @param point the provided point
      * @return the (perhaps empty) collection of chords
      */
-    public Collection<Chord> getChordsAbove (PixelPoint point)
+    public Collection<Chord> getChordsAbove (Point point)
     {
         Staff desiredStaff = getSystem().getStaffAbove(point);
         Collection<Chord> found = new ArrayList<>();
@@ -457,7 +456,7 @@ public class Measure
             Chord chord = (Chord) node;
 
             if (chord.getStaff() == desiredStaff) {
-                PixelPoint head = chord.getHeadLocation();
+                Point head = chord.getHeadLocation();
                 if (head != null && head.y < point.y) {
                     found.add(chord);
                 }
@@ -477,7 +476,7 @@ public class Measure
      * @param point the provided point
      * @return the (perhaps empty) collection of chords
      */
-    public Collection<Chord> getChordsBelow (PixelPoint point)
+    public Collection<Chord> getChordsBelow (Point point)
     {
         Staff desiredStaff = getSystem().getStaffBelow(point);
         Collection<Chord> found = new ArrayList<>();
@@ -486,7 +485,7 @@ public class Measure
             Chord chord = (Chord) node;
 
             if (chord.getStaff() == desiredStaff) {
-                PixelPoint head = chord.getHeadLocation();
+                Point head = chord.getHeadLocation();
                 if (head != null && head.y > point.y) {
                     found.add(chord);
                 }
@@ -507,7 +506,7 @@ public class Measure
      * @param point the point after which to look
      * @return the first clef defined, or null
      */
-    public Clef getClefAfter (PixelPoint point)
+    public Clef getClefAfter (Point point)
     {
         // Which staff we are in
         Clef clef;
@@ -548,7 +547,7 @@ public class Measure
      * @param staff the containing staff (if null, it is derived from center.y)
      * @return the latest clef defined, or null
      */
-    public Clef getClefBefore (PixelPoint point,
+    public Clef getClefBefore (Point point,
                                Staff staff)
     {
         // First, look in this measure, with same staff, going backwards
@@ -613,7 +612,7 @@ public class Measure
      * @return the abscissa-wise closest chord
      */
     public Chord getClosestChord (Collection<Chord> chords,
-                                  PixelPoint point)
+                                  Point point)
     {
         Chord bestChord = null;
         int bestDx = Integer.MAX_VALUE;
@@ -640,7 +639,7 @@ public class Measure
      * @param point the reference point
      * @return the abscissa-wise closest chord, perhaps null
      */
-    public Chord getClosestChord (PixelPoint point)
+    public Chord getClosestChord (Point point)
     {
         Chord bestChord = null;
         int bestDx = Integer.MAX_VALUE;
@@ -668,7 +667,7 @@ public class Measure
      * @param point the reference point
      * @return the abscissa-wise closest chord among the chords above, if any.
      */
-    public Chord getClosestChordAbove (PixelPoint point)
+    public Chord getClosestChordAbove (Point point)
     {
         return getClosestChord(getChordsAbove(point), point);
     }
@@ -683,7 +682,7 @@ public class Measure
      * @param point the reference point
      * @return the abscissa-wise closest chord among the chords below, if any.
      */
-    public Chord getClosestChordBelow (PixelPoint point)
+    public Chord getClosestChordBelow (Point point)
     {
         return getClosestChord(getChordsBelow(point), point);
     }
@@ -725,7 +724,7 @@ public class Measure
      * @param point the reference point
      * @return the abscissa-wise closest chord among the chords below, if any.
      */
-    public Chord getClosestWholeChordAbove (PixelPoint point)
+    public Chord getClosestWholeChordAbove (Point point)
     {
         return getClosestChord(getWholeChordsAbove(point), point);
     }
@@ -740,7 +739,7 @@ public class Measure
      * @param point the reference point
      * @return the abscissa-wise closest chord among the chords below, if any.
      */
-    public Chord getClosestWholeChordBelow (PixelPoint point)
+    public Chord getClosestWholeChordBelow (Point point)
     {
         return getClosestChord(getWholeChordsBelow(point), point);
     }
@@ -799,7 +798,7 @@ public class Measure
      * @param point the system-based location
      * @return the most suitable chord, or null
      */
-    public Chord getDirectionChord (PixelPoint point)
+    public Chord getDirectionChord (Point point)
     {
         // Priority on slot
         Chord chord = getEventChord(point);
@@ -825,7 +824,7 @@ public class Measure
      * @param point the system-based location
      * @return the most suitable chord, or null
      */
-    public Chord getEventChord (PixelPoint point)
+    public Chord getEventChord (Point point)
     {
         // Choose the x-closest slot
         Slot slot = getClosestSlot(point);
@@ -1006,7 +1005,7 @@ public class Measure
      * @param staff the containing staff (cannot be null)
      * @return the current key signature, or null if not found
      */
-    public KeySignature getKeyBefore (PixelPoint point,
+    public KeySignature getKeyBefore (Point point,
                                       Staff staff)
     {
         if (point == null) {
@@ -1166,7 +1165,7 @@ public class Measure
      * @param staff the containing staff (if null, it is derived from point.y)
      * @return the measure clef defined, or null
      */
-    public Clef getMeasureClefBefore (PixelPoint point,
+    public Clef getMeasureClefBefore (Point point,
                                       Staff staff)
     {
         Clef clef = null;
@@ -1281,7 +1280,7 @@ public class Measure
      * @param staff the staff if known, otherwise null
      * @return the staff id
      */
-    public int getStaffId (PixelPoint point,
+    public int getStaffId (Point point,
                            Staff staff)
     {
         return (staff != null) ? staff.getId()
@@ -1386,7 +1385,7 @@ public class Measure
      * @param point the provided point
      * @return the (perhaps empty) collection of chords
      */
-    public Collection<Chord> getWholeChordsAbove (PixelPoint point)
+    public Collection<Chord> getWholeChordsAbove (Point point)
     {
         Staff desiredStaff = getSystem().getStaffAbove(point);
         Collection<Chord> found = new ArrayList<>();
@@ -1411,7 +1410,7 @@ public class Measure
      * @param point the provided point
      * @return the (perhaps empty) collection of whole chords
      */
-    public Collection<Chord> getWholeChordsBelow (PixelPoint point)
+    public Collection<Chord> getWholeChordsBelow (Point point)
     {
         Staff desiredStaff = getSystem().getStaffBelow(point);
         Collection<Chord> found = new ArrayList<>();
@@ -1688,7 +1687,7 @@ public class Measure
     //----------//
     public void setLeftX (int val)
     {
-        PixelRectangle newBox = getBox();
+        Rectangle newBox = getBox();
         newBox.width = val;
         setBox(newBox);
     }
@@ -1819,9 +1818,9 @@ public class Measure
             rightX = system.getTopLeft().x + system.getDimension().width;
         }
 
-        PixelRectangle partBox = getPart().getBox();
+        Rectangle partBox = getPart().getBox();
         setBox(
-                new PixelRectangle(
+                new Rectangle(
                 leftX,
                 partBox.y,
                 rightX - leftX,
@@ -1837,8 +1836,8 @@ public class Measure
     @Override
     protected void computeCenter ()
     {
-        PixelPoint bl = barline.getCenter();
-        setCenter(new PixelPoint((bl.x + getLeftX()) / 2, bl.y));
+        Point bl = barline.getCenter();
+        setCenter(new Point((bl.x + getLeftX()) / 2, bl.y));
     }
 
     //---------------//
@@ -1875,7 +1874,7 @@ public class Measure
      * @param center the location for the rest note
      */
     void addWholeRest (Staff staff,
-                       PixelPoint center)
+                       Point center)
     {
         Chord chord = new Chord(this, null);
         Note.createWholeRest(staff, chord, center);

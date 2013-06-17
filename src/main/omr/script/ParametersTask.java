@@ -56,9 +56,9 @@ public class ParametersTask
     private String language;
 
     /** Tempo value. */
-    @XmlElement(name="tempo")
+    @XmlElement(name = "tempo")
     private Integer tempo;
-    
+
     /** Pixel filter. */
     @XmlElements({
         @XmlElement(name = "global-filter",

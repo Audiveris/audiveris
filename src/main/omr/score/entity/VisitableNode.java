@@ -11,13 +11,13 @@
 // </editor-fold>
 package omr.score.entity;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.visitor.ScoreVisitor;
 import omr.score.visitor.Visitable;
 
 import omr.util.TreeNode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code VisitableNode} is a node which can accept a score
@@ -30,16 +30,16 @@ import omr.util.TreeNode;
  * @author Hervé Bitteur
  */
 public abstract class VisitableNode
-    extends TreeNode
-    implements Visitable
+        extends TreeNode
+        implements Visitable
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(VisitableNode.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            VisitableNode.class);
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new VisitableNode object.
      *
@@ -51,7 +51,6 @@ public abstract class VisitableNode
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // accept //
     //--------//
@@ -60,9 +59,10 @@ public abstract class VisitableNode
      * polymorphic visit() method in the provided visitor.
      * The returned boolean is used to tell whether the visit shall continue to
      * the children of this class
+     *
      * @param visitor the specific visitor which browses this class
      * @return false if children should not be (automatically) visited,
-     * true otherwise (which should be the default).
+     *         true otherwise (which should be the default).
      */
     @Override
     public boolean accept (ScoreVisitor visitor)
@@ -76,6 +76,7 @@ public abstract class VisitableNode
     /**
      * Pattern to traverse the children of this node, and recursively
      * the grand-children, etc, in a "depth-first" mode.
+     *
      * @param visitor concrete visitor object to define the actual processing
      */
     public void acceptChildren (ScoreVisitor visitor)

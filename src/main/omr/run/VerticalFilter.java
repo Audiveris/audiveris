@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.run;
 
+import net.jcip.annotations.NotThreadSafe;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import net.jcip.annotations.NotThreadSafe;
 
 /**
  * Class {@code VerticalFilter} is a specialization of
@@ -66,7 +66,8 @@ public class VerticalFilter
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(VerticalFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            VerticalFilter.class);
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -85,10 +86,12 @@ public class VerticalFilter
                            double stdDevCoeff)
     {
         super(source, meanCoeff, stdDevCoeff);
-        
+
         // Prepare tiles
-        tile = new MyTile(/* squared => */false);
-        sqrTile = new MyTile(/* squared => */true);
+        tile = new MyTile( /* squared => */
+                false);
+        sqrTile = new MyTile( /* squared => */
+                true);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -98,7 +101,7 @@ public class VerticalFilter
     //----------------------//
     public static FilterDescriptor getDefaultDescriptor ()
     {
-        return  AdaptiveDescriptor.getDefault();
+        return AdaptiveDescriptor.getDefault();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -112,12 +115,14 @@ public class VerticalFilter
     private class MyTile
             extends Tile
     {
+        //~ Constructors -------------------------------------------------------
 
         public MyTile (boolean squared)
         {
-            super(2 + 2 * HALF_WINDOW_SIZE, source.getHeight(), squared);
+            super(2 + (2 * HALF_WINDOW_SIZE), source.getHeight(), squared);
         }
 
+        //~ Methods ------------------------------------------------------------
         @Override
         protected void shiftTile (int x2)
         {

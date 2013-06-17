@@ -35,19 +35,19 @@ public class LField<C extends JComponent>
     private final C field;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------//
     // LField //
     //--------//
     /**
      * Creates a new LField object.
+     *
      * @param label the string to be used as label text
      * @param tip   the related tool tip text
      * @param field the field instance
      */
     public LField (String label,
                    String tip,
-                   C      field)
+                   C field)
     {
         this.label = new JLabel(label, SwingConstants.RIGHT);
 
@@ -59,12 +59,12 @@ public class LField<C extends JComponent>
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // getField //
     //----------//
     /**
      * Getter for the field.
+     *
      * @return the field
      */
     public C getField ()
@@ -77,6 +77,7 @@ public class LField<C extends JComponent>
     //----------//
     /**
      * Getter for the label.
+     *
      * @return the label
      */
     public JLabel getLabel ()
@@ -89,6 +90,7 @@ public class LField<C extends JComponent>
     //------------//
     /**
      * Enable or disable the whole label + field structure.
+     *
      * @param bool true for enable, false for disable
      */
     public void setEnabled (boolean bool)
@@ -102,6 +104,7 @@ public class LField<C extends JComponent>
     //------------//
     /**
      * Make the whole label + field structure visible or not.
+     *
      * @param bool true for visible, false for non visible
      */
     public void setVisible (boolean bool)

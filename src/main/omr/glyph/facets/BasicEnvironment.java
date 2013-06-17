@@ -16,8 +16,6 @@ import omr.lag.Section;
 
 import omr.run.Run;
 
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
@@ -117,7 +115,7 @@ class BasicEnvironment
     //--------------------//
     @Override
     public int getAlienPixelsFrom (Lag lag,
-                                   PixelRectangle absRoi,
+                                   Rectangle absRoi,
                                    Predicate<Section> predicate)
     {
         // Use lag orientation

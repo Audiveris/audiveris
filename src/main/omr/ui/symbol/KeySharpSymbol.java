@@ -20,7 +20,7 @@ import omr.glyph.Shape;
  *
  */
 public class KeySharpSymbol
-    extends KeySymbol
+        extends KeySymbol
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -30,19 +30,18 @@ public class KeySharpSymbol
     /**
      * Creates a new KeySharpSymbol object.
      *
-     * @param key the key value: 1..7 for sharps
+     * @param key    the key value: 1..7 for sharps
      * @param isIcon true for an icon
-     * @param shape the related shape
+     * @param shape  the related shape
      */
-    public KeySharpSymbol (int     key,
+    public KeySharpSymbol (int key,
                            boolean isIcon,
-                           Shape   shape)
+                           Shape shape)
     {
         super(key, isIcon, shape, 35);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//

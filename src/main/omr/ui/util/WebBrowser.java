@@ -166,9 +166,9 @@ public class WebBrowser
                 logger.warn("Could not find any suitable web browser");
             }
         } catch (ClassNotFoundException | NoSuchMethodException |
-                 SecurityException | IllegalAccessException |
-                 IllegalArgumentException | InvocationTargetException |
-                 IOException | InterruptedException ex) {
+                SecurityException | IllegalAccessException |
+                IllegalArgumentException | InvocationTargetException |
+                IOException | InterruptedException ex) {
             logger.warn("Could not launch browser", ex);
         }
     }

@@ -20,13 +20,8 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Rational;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.NotePosition;
@@ -34,6 +29,11 @@ import omr.sheet.Scale;
 
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -199,13 +199,13 @@ public class Note
      * @param chord         the containing chord
      * @param shape         the provided shape
      * @param pitchPosition the pitchPosition
-     * @param center        the center (PixelPoint) of the note
+     * @param center        the center (Point) of the note
      */
     private Note (Staff staff,
                   Chord chord,
                   Shape shape,
                   double pitchPosition,
-                  PixelPoint center)
+                  Point center)
     {
         super(chord);
 
@@ -224,7 +224,7 @@ public class Note
         // Location center?
         if (center != null) {
             setCenter(
-                    new PixelPoint(
+                    new Point(
                     center.x,
                     (int) Math.rint(
                     (staff.getTopLeft().y
@@ -252,7 +252,7 @@ public class Note
      */
     private Note (Chord chord,
                   Glyph glyph,
-                  PixelPoint center,
+                  Point center,
                   int packCard,
                   int packIndex)
     {
@@ -331,7 +331,7 @@ public class Note
         final int card = packCardOf(glyph.getShape());
 
         final Glyph stem = chord.getStem();
-        PixelRectangle stemBox = null;
+        Rectangle stemBox = null;
         Scale scale = chord.getScale();
 
         // Variable stemSir exists only when we have a dual stem situation.
@@ -348,7 +348,7 @@ public class Note
 
         // Index goes from top to bottom
         for (int i = 0; i < card; i++) {
-            PixelRectangle itemBox = getItemBox(glyph, i, scale.getInterline());
+            Rectangle itemBox = getItemBox(glyph, i, scale.getInterline());
 
             if (stemDir != null) {
                 // Apply the stem test, except on the item closest to the stem
@@ -364,7 +364,7 @@ public class Note
                 }
             }
 
-            PixelPoint center = new PixelPoint(
+            Point center = new Point(
                     itemBox.x + (itemBox.width / 2),
                     itemBox.y + (itemBox.height / 2));
             glyph.addTranslation(new Note(chord, glyph, center, card, i));
@@ -390,9 +390,9 @@ public class Note
         if (getGlyphs().contains(glyph)) {
             Chord chord = getChord();
             if (chord != null) {
-                PixelPoint from = glyph.getLocation();
+                Point from = glyph.getLocation();
                 Glyph stem = chord.getStem();
-                PixelPoint to = stem != null
+                Point to = stem != null
                         ? stem.getAreaCenter()
                         : chord.getReferencePoint();
                 Line2D line = new Line2D.Double(from, to);
@@ -448,7 +448,7 @@ public class Note
     //-----------------//
     public static Note createWholeRest (Staff staff,
                                         Chord chord,
-                                        PixelPoint center)
+                                        Point center)
     {
         return new Note(staff, chord, Shape.WHOLE_REST, -1.5, center);
     }
@@ -466,7 +466,7 @@ public class Note
      */
     public static void populateAccidental (Glyph glyph,
                                            Measure measure,
-                                           final PixelPoint accidCenter)
+                                           final Point accidCenter)
     {
         if (glyph.isVip()) {
             logger.info("Note. populateAccidental {}", glyph.idString());
@@ -480,7 +480,7 @@ public class Note
 
         // An accidental impacts the note right after (even if mirrored)
         // Use an intersection rectangle defined from accidCenter
-        PixelRectangle rect = new PixelRectangle(
+        Rectangle rect = new Rectangle(
                 accidCenter.x + minDx, accidCenter.y - maxDy,
                 maxDx - minDx, 2 * maxDy);
         glyph.addAttachment("#", rect);
@@ -697,9 +697,9 @@ public class Note
      *
      * @return center point at bottom of note
      */
-    public PixelPoint getCenterBottom ()
+    public Point getCenterBottom ()
     {
-        return new PixelPoint(
+        return new Point(
                 getCenter().x,
                 getCenter().y + (getBox().height / 2));
     }
@@ -712,9 +712,9 @@ public class Note
      *
      * @return left point at mid height
      */
-    public PixelPoint getCenterLeft ()
+    public Point getCenterLeft ()
     {
-        return new PixelPoint(
+        return new Point(
                 getCenter().x - (getBox().width / 2),
                 getCenter().y);
     }
@@ -727,9 +727,9 @@ public class Note
      *
      * @return right point at mid height
      */
-    public PixelPoint getCenterRight ()
+    public Point getCenterRight ()
     {
-        return new PixelPoint(
+        return new Point(
                 getCenter().x + (getBox().width / 2),
                 getCenter().y);
     }
@@ -742,9 +742,9 @@ public class Note
      *
      * @return center point at top of note
      */
-    public PixelPoint getCenterTop ()
+    public Point getCenterTop ()
     {
-        return new PixelPoint(
+        return new Point(
                 getCenter().x,
                 getCenter().y - (getBox().height / 2));
     }
@@ -1136,22 +1136,22 @@ public class Note
      * Compute the bounding box of item with rank 'index' in the
      * provided note pack glyph.
      */
-    private static PixelRectangle getItemBox (Glyph glyph,
-                                              int index,
-                                              int interline)
+    private static Rectangle getItemBox (Glyph glyph,
+                                         int index,
+                                         int interline)
     {
         final Shape shape = glyph.getShape();
         final int card = packCardOf(shape);
-        final PixelRectangle box = glyph.getBounds();
+        final Rectangle box = glyph.getBounds();
 
         // For true notes use centroid y, for rests use area center y
         if (ShapeSet.Rests.contains(shape)) {
             return glyph.getBounds();
         } else {
-            final PixelPoint centroid = glyph.getCentroid();
+            final Point centroid = glyph.getCentroid();
             final int top = centroid.y - ((card * interline) / 2);
 
-            return new PixelRectangle(
+            return new Rectangle(
                     box.x,
                     top + (index * interline),
                     box.width,
@@ -1166,13 +1166,13 @@ public class Note
      * Compute the center of item with rank 'index' in the provided note
      * pack glyph.
      */
-    private static PixelPoint getItemCenter (Glyph glyph,
-                                             int index,
-                                             int interline)
+    private static Point getItemCenter (Glyph glyph,
+                                        int index,
+                                        int interline)
     {
-        PixelRectangle box = getItemBox(glyph, index, interline);
+        Rectangle box = getItemBox(glyph, index, interline);
 
-        return new PixelPoint(
+        return new Point(
                 box.x + (box.width / 2),
                 box.y + (box.height / 2));
     }

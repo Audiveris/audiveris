@@ -11,12 +11,6 @@
 // </editor-fold>
 package omr.run;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
@@ -26,8 +20,12 @@ import omr.selection.UserEvent;
 
 import omr.ui.view.RubberPanel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.List;
 
@@ -43,7 +41,8 @@ public class RunsTableView
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(RunsTableView.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            RunsTableView.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The underlying table of runs */
@@ -183,9 +182,9 @@ public class RunsTableView
     //----------//
     protected Color runColor (Run run)
     {
-//        int level = run.getLevel();
-//
-//        return new Color(level, level, level);
+        //        int level = run.getLevel();
+        //
+        //        return new Color(level, level, level);
         return Color.BLACK;
     }
 
@@ -203,7 +202,7 @@ public class RunsTableView
 
         // Lookup for Run pointed by this pixel location
         // Search and forward run & section info
-        PixelRectangle rect = locationEvent.getData();
+        Rectangle rect = locationEvent.getData();
 
         if (rect == null) {
             return;
@@ -216,10 +215,11 @@ public class RunsTableView
             return;
         }
 
-        PixelPoint pt = rect.getLocation();
+        Point pt = rect.getLocation();
         Run run = table.lookupRun(pt);
 
         // Publish Run information
-        table.getRunService().publish(new RunEvent(this, hint, movement, run));
+        table.getRunService()
+                .publish(new RunEvent(this, hint, movement, run));
     }
 }

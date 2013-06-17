@@ -11,30 +11,30 @@
 // </editor-fold>
 package omr.step;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
 /**
- * Class {@code ScaleStep} determines the general scale of the sheet, based on
- * the mean distance between staff lines
+ * Class {@code ScaleStep} determines the general scale of the sheet,
+ * based on the mean distance between staff lines.
  *
  * @author Hervé Bitteur
  */
 public class ScaleStep
-    extends AbstractStep
+        extends AbstractStep
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ScaleStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ScaleStep.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // ScaleStep //
     //-----------//
@@ -44,25 +44,24 @@ public class ScaleStep
     public ScaleStep ()
     {
         super(
-            Steps.SCALE,
-            Level.SHEET_LEVEL,
-            Mandatory.MANDATORY,
-            PICTURE_TAB,
-            "Compute general scale");
+                Steps.SCALE,
+                Level.SHEET_LEVEL,
+                Mandatory.MANDATORY,
+                PICTURE_TAB,
+                "Compute general scale");
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // doit //
     //------//
     @Override
     public void doit (Collection<SystemInfo> unused,
-                      Sheet                  sheet)
-        throws StepException
+                      Sheet sheet)
+            throws StepException
     {
         sheet.reset(Steps.SCALE);
         sheet.getScaleBuilder()
-             .retrieveScale();
+                .retrieveScale();
     }
 }

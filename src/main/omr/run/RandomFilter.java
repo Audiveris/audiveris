@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.run;
 
+import net.jcip.annotations.ThreadSafe;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import net.jcip.annotations.ThreadSafe;
 
 /**
  * Class {@code RandomFilter} is a specialization of
@@ -37,7 +37,8 @@ public class RandomFilter
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(RandomFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            RandomFilter.class);
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -56,10 +57,12 @@ public class RandomFilter
                          double stdDevCoeff)
     {
         super(source, meanCoeff, stdDevCoeff);
-        
+
         // Prepare tiles
-        tile = new MyTile(/* squared => */false);
-        sqrTile = new MyTile(/* squared => */true);
+        tile = new MyTile( /* squared => */
+                false);
+        sqrTile = new MyTile( /* squared => */
+                true);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -74,6 +77,7 @@ public class RandomFilter
     private class MyTile
             extends Tile
     {
+        //~ Constructors -------------------------------------------------------
 
         public MyTile (boolean squared)
         {

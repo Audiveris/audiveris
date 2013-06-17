@@ -16,13 +16,14 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 
 /**
- * Class {@code WeakPropertyChangeListener} is a wrapper meant to weakly
- * reference a concrete PropertyChangeListener, and thus avoid memory leaks.
+ * Class {@code WeakPropertyChangeListener} is a wrapper meant to
+ * weakly reference a concrete PropertyChangeListener, and thus avoid
+ * memory leaks.
  *
  * @author Hervé Bitteur
  */
 public class WeakPropertyChangeListener
-    implements PropertyChangeListener
+        implements PropertyChangeListener
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -30,7 +31,6 @@ public class WeakPropertyChangeListener
     protected final WeakReference<PropertyChangeListener> weakListener;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------------------//
     // WeakPropertyChangeListener //
     //----------------------------//
@@ -45,12 +45,12 @@ public class WeakPropertyChangeListener
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // propertyChange //
     //----------------//
     /**
      * Delegate the call-back to the concrete listener, if still there
+     *
      * @param evt the property change event
      */
     @Override

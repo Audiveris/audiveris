@@ -22,7 +22,7 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class TextSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -30,16 +30,16 @@ public class TextSymbol
     private final String str;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // TextSymbol //
     //------------//
     /**
      * Create an TextSymbol
+     *
      * @param shape the precise shape
-     * @param str the text to draw
+     * @param str   the text to draw
      */
-    public TextSymbol (Shape  shape,
+    public TextSymbol (Shape shape,
                        String str)
     {
         this(false, shape, str);
@@ -52,19 +52,18 @@ public class TextSymbol
      * Create an TextSymbol
      *
      * @param isIcon true for an icon
-     * @param shape the precise shape
-     * @param str the text to draw
+     * @param shape  the precise shape
+     * @param str    the text to draw
      */
     protected TextSymbol (boolean isIcon,
-                          Shape   shape,
-                          String  str)
+                          Shape shape,
+                          String str)
     {
         super(isIcon, shape, true); // Decorated
         this.str = str;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -80,16 +79,16 @@ public class TextSymbol
     @Override
     protected Params getParams (MusicFont font)
     {
-        Params   p = new Params();
+        Params p = new Params();
 
         TextFont textFont = new TextFont(
-            (int) Math.rint(font.getSize2D() * 0.62));
+                (int) Math.rint(font.getSize2D() * 0.62));
         p.layout = textFont.layout(str);
 
         Rectangle2D r = p.layout.getBounds();
         p.rect = new Rectangle(
-            (int) Math.ceil(r.getWidth()),
-            (int) Math.ceil(r.getHeight()));
+                (int) Math.ceil(r.getWidth()),
+                (int) Math.ceil(r.getHeight()));
 
         return p;
     }

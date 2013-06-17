@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemBoundary;
 import omr.sheet.SystemInfo;
@@ -23,6 +20,9 @@ import omr.step.Steps;
 
 import omr.util.BrokenLine;
 import omr.util.VerticalSide;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;

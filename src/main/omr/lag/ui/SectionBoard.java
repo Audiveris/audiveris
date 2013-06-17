@@ -17,9 +17,6 @@ import omr.constant.ConstantSet;
 import omr.lag.Lag;
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.Orientation;
 
 import omr.selection.MouseMovement;
@@ -33,12 +30,15 @@ import omr.stick.StickRelation;
 
 import omr.ui.Board;
 import omr.ui.field.LIntegerField;
-import omr.ui.field.SpinnerUtilities;
+import omr.ui.field.SpinnerUtil;
 import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -69,7 +69,8 @@ public class SectionBoard
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(SectionBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SectionBoard.class);
 
     /** Events this board is interested in */
     private static final Class<?>[] eventsRead = new Class<?>[]{
@@ -176,50 +177,51 @@ public class SectionBoard
         dump.setToolTipText("Dump this section");
         dump.addActionListener(
                 new ActionListener()
-                {
-                    @Override
-                    public void actionPerformed (ActionEvent e)
-                    {
-                        // Retrieve current section selection
-                        Section section = (Section) lag.getSectionService().
-                                getSelection(
-                                SectionEvent.class);
+        {
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                // Retrieve current section selection
+                Section section = (Section) lag.getSectionService()
+                        .getSelection(
+                        SectionEvent.class);
 
-                        if (section != null) {
-                            section.dump();
-                        }
-                    }
-                });
+                if (section != null) {
+                    section.dump();
+                }
+            }
+        });
         dump.setEnabled(false); // Until a section selection is made
 
         // ID Spinner
         id.setToolTipText("General spinner for any section id");
         id.addChangeListener(
                 new ChangeListener()
-                {
-                    @Override
-                    public void stateChanged (ChangeEvent e)
-                    {
-                        // Make sure this new Id value is due to user
-                        // action on an Id spinner, and not the mere update
-                        // of section fields (which include this id).
-                        if (!updating) {
-                            Integer sectionId = (Integer) id.getValue();
-                            logger.debug("sectionId={} for {}", sectionId, lag);
+        {
+            @Override
+            public void stateChanged (ChangeEvent e)
+            {
+                // Make sure this new Id value is due to user
+                // action on an Id spinner, and not the mere update
+                // of section fields (which include this id).
+                if (!updating) {
+                    Integer sectionId = (Integer) id.getValue();
+                    logger.debug("sectionId={} for {}", sectionId, lag);
 
-                            idSelecting = true;
-                            lag.getSectionService().publish(
-                                    new SectionIdEvent(
-                                    SectionBoard.this,
-                                    SelectionHint.SECTION_INIT,
-                                    sectionId));
-                            idSelecting = false;
-                        }
-                    }
-                });
+                    idSelecting = true;
+                    lag.getSectionService()
+                            .publish(
+                            new SectionIdEvent(
+                            SectionBoard.this,
+                            SelectionHint.SECTION_INIT,
+                            sectionId));
+                    idSelecting = false;
+                }
+            }
+        });
         id.setModel(new SpinnerSectionModel(lag));
-        SpinnerUtilities.setEditable(id, true);
-        SpinnerUtilities.setRightAlignment(id);
+        SpinnerUtil.setEditable(id, true);
+        SpinnerUtil.setRightAlignment(id);
 
         // Relation
         if (constants.hideRelationFields.getValue()) {
@@ -348,7 +350,7 @@ public class SectionBoard
                 if (idSelecting) {
                     id.setValue(sectionId);
                 } else {
-                    id.setValue(SpinnerUtilities.NO_VALUE);
+                    id.setValue(SpinnerUtil.NO_VALUE);
                 }
 
                 if (constants.hideRelationFields.getValue()) {

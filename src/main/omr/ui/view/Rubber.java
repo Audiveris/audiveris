@@ -13,13 +13,13 @@ package omr.ui.view;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import static omr.selection.MouseMovement.*;
 
 import omr.ui.Colors;
 import static omr.ui.util.UIPredicates.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.BasicStroke;
 import java.awt.Container;
@@ -40,10 +40,10 @@ import javax.swing.event.MouseInputAdapter;
 
 /**
  * Class {@code Rubber} keeps track of nothing more than a rectangle,
- * to define an area of interest. 
- * 
- * The rectangle can be degenerated to a simple point, when both its width and 
- * height are zero. Moreover, the display can be moved or resized 
+ * to define an area of interest.
+ *
+ * The rectangle can be degenerated to a simple point, when both its width and
+ * height are zero. Moreover, the display can be moved or resized
  * (see the precise triggers below).
  *
  * <p> The rubber data is rendered as a 'rubber', so the name, using a
@@ -67,8 +67,10 @@ import javax.swing.event.MouseInputAdapter;
  * <li> Drag the component itself. Default trigger is when both <b>Left +
  * Right</b> buttons are dragged. </li> </ul>
  *
- * <p/> Note: Actual triggers are defined by protected predicate methods
- * that can be redefined in a subclass.  <p/>
+ * <p/>
+ * Note: Actual triggers are defined by protected predicate methods
+ * that can be redefined in a subclass.
+ * <p/>
  *
  * <p> Mouse Events are handled in the following way: <ul>
  *
@@ -92,7 +94,7 @@ import javax.swing.event.MouseInputAdapter;
  * @author Hervé Bitteur
  */
 public class Rubber
-    extends MouseInputAdapter
+        extends MouseInputAdapter
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -101,15 +103,17 @@ public class Rubber
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Rubber.class);
+
     private static AtomicInteger globalId = new AtomicInteger(0);
 
     /** To handle zoom through mouse wheel */
     private static final double base = 2;
-    private static final double  intervals = 5;
-    private static final double  factor = Math.pow(base, 1d / intervals);
+
+    private static final double intervals = 5;
+
+    private static final double factor = Math.pow(base, 1d / intervals);
 
     //~ Instance fields --------------------------------------------------------
-
     /** View from which the rubber will receive physical mouse events */
     protected JComponent component;
 
@@ -132,7 +136,6 @@ public class Rubber
     private final int id;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------//
     // Rubber //
     //--------//
@@ -172,7 +175,7 @@ public class Rubber
      * @param zoom      the zoom entity to handle the display zoom
      */
     public Rubber (JComponent component,
-                   Zoom       zoom)
+                   Zoom zoom)
     {
         id = globalId.addAndGet(1);
         connectComponent(component);
@@ -180,7 +183,6 @@ public class Rubber
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------------//
     // connectComponent //
     //------------------//
@@ -216,6 +218,7 @@ public class Rubber
     //---------------------//
     /**
      * Disconnect the provided component
+     *
      * @param component the component to disconnect
      */
     public void disconnectComponent (JComponent component)
@@ -243,8 +246,8 @@ public class Rubber
 
         if (rect != null) {
             pt = new Point(
-                rect.x + (rect.width / 2),
-                rect.y + (rect.height / 2));
+                    rect.x + (rect.width / 2),
+                    rect.y + (rect.height / 2));
         }
 
         return pt;
@@ -254,7 +257,7 @@ public class Rubber
     // getRectangle //
     //--------------//
     /**
-     * Return the model rectangle defined by the rubber.  This is a
+     * Return the model rectangle defined by the rubber. This is a
      * dezoomed rectangle, should the component have a related zoom.
      *
      * @return the model rectangle
@@ -284,18 +287,19 @@ public class Rubber
         if (isDragWanted(e)) {
             final Rectangle vr = component.getVisibleRect();
             vr.setBounds(
-                (vr.x + rawRect.x) - e.getX(),
-                (vr.y + rawRect.y) - e.getY(),
-                vr.width,
-                vr.height);
+                    (vr.x + rawRect.x) - e.getX(),
+                    (vr.y + rawRect.y) - e.getY(),
+                    vr.width,
+                    vr.height);
             SwingUtilities.invokeLater(
-                new Runnable() {
+                    new Runnable()
+            {
                 @Override
-                        public void run ()
-                        {
-                            component.scrollRectToVisible(vr);
-                        }
-                    });
+                public void run ()
+                {
+                    component.scrollRectToVisible(vr);
+                }
+            });
         } else if (isRubberWanted(e)) {
             updateSize(e);
             mouseMonitor.rectangleSelected(rect, DRAGGING);
@@ -376,10 +380,10 @@ public class Rubber
         } else if (isDragWanted(e)) {
             Rectangle vr = component.getVisibleRect();
             rawRect.setBounds(
-                vr.x + (vr.width / 2),
-                vr.y + (vr.height / 2),
-                0,
-                0);
+                    vr.x + (vr.width / 2),
+                    vr.y + (vr.height / 2),
+                    0,
+                    0);
             normalize();
         } else if (isAdditionWanted(e)) {
             if (isContextWanted(e)) {
@@ -401,7 +405,7 @@ public class Rubber
         }
 
         e.getComponent()
-         .setCursor(Cursor.getDefaultCursor());
+                .setCursor(Cursor.getDefaultCursor());
     }
 
     //-----------------//
@@ -411,6 +415,7 @@ public class Rubber
      * Called when the mouse wheel is moved.
      * If CTRL key is down, modify current zoom ratio accordingly, otherwise
      * forward the wheel event to proper container (JScrollPane usually).
+     *
      * @param e the mouse wheel event
      */
     @Override
@@ -433,7 +438,7 @@ public class Rubber
 
             while (container != null) {
                 if (container instanceof JComponent) {
-                    JComponent           comp = (JComponent) container;
+                    JComponent comp = (JComponent) container;
                     MouseWheelListener[] listeners = comp.getMouseWheelListeners();
 
                     if (listeners.length > 0) {
@@ -466,7 +471,7 @@ public class Rubber
         if (rect != null) {
             Graphics2D g = (Graphics2D) unscaledGraphics.create();
 
-            Rectangle  r = new Rectangle(rect);
+            Rectangle r = new Rectangle(rect);
 
             if (zoom != null) {
                 zoom.scale(r);
@@ -481,8 +486,8 @@ public class Rubber
             // Draw horizontal & vertical rules (point or rectangle)
             g.setColor(Colors.RUBBER_RULE);
 
-            int   x = scaled(rect.x + (rect.width / 2));
-            int   y = scaled(rect.y + (rect.height / 2));
+            int x = scaled(rect.x + (rect.width / 2));
+            int y = scaled(rect.y + (rect.height / 2));
             float pixelSize = scaled(1);
 
             if (pixelSize < 1) {
@@ -598,7 +603,6 @@ public class Rubber
     }
 
     //-- private access ---------------------------------------------------
-
     //-----------//
     // normalize //
     //-----------//
@@ -606,16 +610,16 @@ public class Rubber
     {
         if (rect == null) {
             rect = new Rectangle(
-                unscaled(rawRect.x),
-                unscaled(rawRect.y),
-                unscaled(rawRect.width),
-                unscaled(rawRect.height));
+                    unscaled(rawRect.x),
+                    unscaled(rawRect.y),
+                    unscaled(rawRect.width),
+                    unscaled(rawRect.height));
         } else {
             rect.setBounds(
-                unscaled(rawRect.x),
-                unscaled(rawRect.y),
-                unscaled(rawRect.width),
-                unscaled(rawRect.height));
+                    unscaled(rawRect.x),
+                    unscaled(rawRect.y),
+                    unscaled(rawRect.width),
+                    unscaled(rawRect.height));
         }
 
         // The x & y are the original coordinates when mouse began
@@ -701,22 +705,22 @@ public class Rubber
     {
         if (isDragWanted(e)) {
             e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+                    .setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
         } else if (isAdditionWanted(e)) {
             e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+                    .setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
         } else if (isContextWanted(e)) {
             e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    .setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         } else if (isRubberWanted(e)) {
             e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+                    .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
         } else if (isRezoomWanted(e)) {
             e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+                    .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
         } else {
             e.getComponent()
-             .setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    .setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     }
 
@@ -746,21 +750,22 @@ public class Rubber
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Boolean displayCross = new Constant.Boolean(
-            true,
-            "Should we display just a cross for rubber (or whole lines)");
+                true,
+                "Should we display just a cross for rubber (or whole lines)");
+
         Constant.Integer crossLegLength = new Constant.Integer(
-            "Pixels",
-            100,
-            "Length for each leg of the rubber cross");
+                "Pixels",
+                100,
+                "Length for each leg of the rubber cross");
+
     }
 }

@@ -18,15 +18,14 @@ import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.Set;
 
@@ -82,31 +81,34 @@ public class DoubleBeamPattern
             final Glyph stem = beam.getFirstStem();
 
             // Look for a beam glyph next to it
-            final PixelRectangle beamBox = beam.getBounds();
+            final Rectangle beamBox = beam.getBounds();
             beamBox.grow(1, 1);
 
             Set<Glyph> candidates = Glyphs.lookupGlyphs(
                     system.getGlyphs(),
                     new Predicate<Glyph>()
-                    {
-                        @Override
-                        public boolean check (Glyph glyph)
-                        {
-                            return (glyph != stem) && (glyph != beam)
-                                   && (glyph.getShape() == Shape.BEAM)
-                                   && glyph.getBounds().intersects(beamBox);
-                        }
-                    });
+            {
+                @Override
+                public boolean check (Glyph glyph)
+                {
+                    return (glyph != stem) && (glyph != beam)
+                           && (glyph.getShape() == Shape.BEAM)
+                           && glyph.getBounds()
+                            .intersects(beamBox);
+                }
+            });
 
             for (Glyph candidate : candidates) {
-                if (beam.isVip() || candidate.isVip()
+                if (beam.isVip()
+                    || candidate.isVip()
                     || logger.isDebugEnabled()) {
                     logger.info("Beam candidate #{}", candidate);
                 }
 
                 Glyph compound = system.buildTransientCompound(
                         Arrays.asList(beam, candidate));
-                Evaluation eval = GlyphNetwork.getInstance().vote(
+                Evaluation eval = GlyphNetwork.getInstance()
+                        .vote(
                         compound,
                         system,
                         Grades.noMinGrade);
@@ -117,8 +119,10 @@ public class DoubleBeamPattern
                     compound.setEvaluation(eval);
 
                     if (compound.isVip() || logger.isDebugEnabled()) {
-                        logger.info("Compound #{} built as {}",
-                                compound.getId(), compound.getEvaluation());
+                        logger.info(
+                                "Compound #{} built as {}",
+                                compound.getId(),
+                                compound.getEvaluation());
                     }
 
                     nb++;

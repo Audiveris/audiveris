@@ -17,13 +17,12 @@ import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.sheet.SystemInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelRectangle;
-
-import omr.sheet.SystemInfo;
-
+import java.awt.Rectangle;
 import java.util.EnumSet;
 
 /**
@@ -34,26 +33,27 @@ import java.util.EnumSet;
  * @author Hervé Bitteur
  */
 public class FortePattern
-    extends GlyphPattern
+        extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(FortePattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            FortePattern.class);
 
     /** Pre-forte shapes */
     public static final EnumSet<Shape> forteNeighbors = EnumSet.of(
-        Shape.DYNAMICS_CHAR_M,
-        Shape.DYNAMICS_CHAR_R,
-        Shape.DYNAMICS_CHAR_S);
+            Shape.DYNAMICS_CHAR_M,
+            Shape.DYNAMICS_CHAR_R,
+            Shape.DYNAMICS_CHAR_S);
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // FortePattern //
     //--------------//
     /**
      * Creates a new FortePattern object.
+     *
      * @param system the system to process
      */
     public FortePattern (SystemInfo system)
@@ -62,7 +62,6 @@ public class FortePattern
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // runPattern //
     //------------//
@@ -75,10 +74,10 @@ public class FortePattern
             // Focus on forte shaped glyphs
             if (forte.getShape() == Shape.DYNAMICS_F) {
                 Glyph compound = system.buildCompound(
-                    forte,
-                    false,
-                    system.getGlyphs(),
-                    new ForteAdapter(
+                        forte,
+                        false,
+                        system.getGlyphs(),
+                        new ForteAdapter(
                         system,
                         Grades.forteMinGrade,
                         forteNeighbors));
@@ -93,7 +92,6 @@ public class FortePattern
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //---------------//
     // ForteAdapter //
     //---------------//
@@ -101,28 +99,27 @@ public class FortePattern
      * Adapter to actively search a Forte-compatible entity near the Forte glyph
      */
     private final class ForteAdapter
-        extends CompoundBuilder.TopShapeAdapter
+            extends CompoundBuilder.TopShapeAdapter
     {
         //~ Constructors -------------------------------------------------------
 
-        public ForteAdapter (SystemInfo     system,
-                             double         minGrade,
+        public ForteAdapter (SystemInfo system,
+                             double minGrade,
                              EnumSet<Shape> desiredShapes)
         {
             super(system, minGrade, desiredShapes);
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
-        public PixelRectangle computeReferenceBox ()
+        public Rectangle computeReferenceBox ()
         {
-            PixelRectangle rect = seed.getBounds();
-            PixelRectangle leftBox = new PixelRectangle(
-                rect.x,
-                rect.y + (rect.height / 3),
-                rect.width / 3,
-                rect.height / 3);
+            Rectangle rect = seed.getBounds();
+            Rectangle leftBox = new Rectangle(
+                    rect.x,
+                    rect.y + (rect.height / 3),
+                    rect.width / 3,
+                    rect.height / 3);
             seed.addAttachment("fl", leftBox);
 
             return rect;

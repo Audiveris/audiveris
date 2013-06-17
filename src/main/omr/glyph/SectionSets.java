@@ -17,12 +17,12 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.Sections;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.Orientation;
 
 import omr.sheet.Sheet;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Class {@code SectionSets} handles a  collection of section sets,
+ * Class {@code SectionSets} handles a collection of section sets,
  * with the ability to (un)marshall its content using the sections ids.
  *
  * @author Hervé Bitteur
@@ -49,7 +49,6 @@ public class SectionSets
     private static final Logger logger = LoggerFactory.getLogger(SectionSets.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The collection of sections sets */
     protected Collection<Collection<Section>> sets;
 
@@ -58,7 +57,6 @@ public class SectionSets
     private Collection<SectionDescSet> descSets;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // SectionSets //
     //-------------//
@@ -80,13 +78,13 @@ public class SectionSets
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------------//
     // createFromGlyphs //
     //------------------//
     /**
      * Convenient method to create the proper SectionSets out of a provided
      * collection of glyphs
+     *
      * @param glyphs the provided glyphs
      * @return a newly built SectionSets instance
      */
@@ -108,6 +106,7 @@ public class SectionSets
     /**
      * Convenient method to create the proper SectionSets out of a provided
      * collection of sections
+     *
      * @param sections the provided sections
      * @return a newly built SectionSets instance (a singleton actually)
      */
@@ -125,6 +124,7 @@ public class SectionSets
     //---------//
     /**
      * Report the collection of section sets
+     *
      * @param sheet the containing sheet (needed to get sections from their id)
      * @return the collection of section sets
      */
@@ -137,15 +137,15 @@ public class SectionSets
                 List<Section> sectionSet = new ArrayList<>();
 
                 for (SectionDesc sectionId : idSet.sections) {
-                    Lag     lag = (sectionId.orientation == Orientation.VERTICAL)
-                                  ? sheet.getVerticalLag()
-                                  : sheet.getHorizontalLag();
+                    Lag lag = (sectionId.orientation == Orientation.VERTICAL)
+                            ? sheet.getVerticalLag()
+                            : sheet.getHorizontalLag();
                     Section section = lag.getVertexById(sectionId.id);
 
                     if (section == null) {
-                        logger.warn(sheet.getLogPrefix() +
-                            "Cannot find section for " + sectionId,
-                            new Throwable());
+                        logger.warn(sheet.getLogPrefix()
+                                    + "Cannot find section for " + sectionId,
+                                new Throwable());
                     } else {
                         sectionSet.add(section);
                     }
@@ -200,7 +200,7 @@ public class SectionSets
 
                 for (Section section : set) {
                     descSet.sections.add(
-                        new SectionDesc(
+                            new SectionDesc(
                             section.getId(),
                             section.getOrientation()));
                 }
@@ -211,7 +211,6 @@ public class SectionSets
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-------------//
     // SectionDesc //
     //-------------//
@@ -227,7 +226,6 @@ public class SectionSets
         // Annotation to avoid any wrapper:
         //@XmlValue
         //private Collection<Integer> ids = new ArrayList<Integer>();
-
         /** Section id */
         @XmlAttribute(name = "id")
         Integer id;
@@ -237,13 +235,12 @@ public class SectionSets
         Orientation orientation;
 
         //~ Constructors -------------------------------------------------------
-
         // For JAXB
         public SectionDesc ()
         {
         }
 
-        public SectionDesc (Integer     id,
+        public SectionDesc (Integer id,
                             Orientation orientation)
         {
             this.id = id;
@@ -251,15 +248,14 @@ public class SectionSets
         }
 
         //~ Methods ------------------------------------------------------------
-
         @Override
         public String toString ()
         {
             StringBuilder sb = new StringBuilder("{SectionDesc");
             sb.append(" ")
-              .append(orientation);
+                    .append(orientation);
             sb.append(" ")
-              .append(id);
+                    .append(id);
             sb.append("}");
 
             return super.toString();
@@ -284,5 +280,6 @@ public class SectionSets
         //        @XmlValue
         @XmlElement(name = "section")
         private Collection<SectionDesc> sections = new ArrayList<>();
+
     }
 }

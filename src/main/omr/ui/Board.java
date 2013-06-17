@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.ui;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
@@ -26,6 +23,9 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 import org.bushe.swing.event.EventSubscriber;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Component;
 
@@ -64,8 +64,7 @@ import javax.swing.JTextField;
  * @author Hervé Bitteur
  */
 public abstract class Board
-        implements EventSubscriber<UserEvent>,
-                   Comparable<Board>
+        implements EventSubscriber<UserEvent>, Comparable<Board>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -179,23 +178,6 @@ public abstract class Board
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-------------//
-    // emptyFields //
-    //-------------//
-    /**
-     * Convenient method to empty all the text fields of a given JComponent.
-     *
-     * @param component the component to "blank".
-     */
-    public static void emptyFields (JComponent component)
-    {
-        for (Component comp : component.getComponents()) {
-            if (comp instanceof JTextField) {
-                ((JTextField) comp).setText("");
-            }
-        }
-    }
-
     //-----------//
     // compareTo //
     //-----------//
@@ -246,6 +228,23 @@ public abstract class Board
         if (eventsRead != null) {
             for (Class<?> eventClass : eventsRead) {
                 selectionService.unsubscribe(eventClass, this);
+            }
+        }
+    }
+
+    //-------------//
+    // emptyFields //
+    //-------------//
+    /**
+     * Convenient method to empty all the text fields of a given JComponent.
+     *
+     * @param component the component to "blank".
+     */
+    public static void emptyFields (JComponent component)
+    {
+        for (Component comp : component.getComponents()) {
+            if (comp instanceof JTextField) {
+                ((JTextField) comp).setText("");
             }
         }
     }
@@ -453,8 +452,7 @@ public abstract class Board
         {
             CellConstraints cst = new CellConstraints();
             FormLayout layout = new FormLayout(
-                    "152"
-                    + "dlu," + Panel.getFieldInterval() + ",35dlu",
+                    "152" + "dlu," + Panel.getFieldInterval() + ",35dlu",
                     "pref");
             PanelBuilder builder = new PanelBuilder(layout, this);
 

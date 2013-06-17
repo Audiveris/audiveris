@@ -21,17 +21,17 @@ import javax.swing.JSlider;
 
 /**
  * Class {@code LogSlider} is a specific {@link JSlider} which handles
- * double values with a logarithmic scale (while normal JSlider handles only
- * integer values).
+ * double values with a logarithmic scale (while normal JSlider
+ * handles only integer values).
  *
- *<p>As with a basic JSlider, any external entity can be notified of new
- *slider value, by first registering to this LogSlider via the {@link
+ * <p>As with a basic JSlider, any external entity can be notified of new
+ * slider value, by first registering to this LogSlider via the {@link
  *#addChangeListener} method.
  *
  * @author Hervé Bitteur
  */
 public class LogSlider
-    extends JSlider
+        extends JSlider
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -39,35 +39,38 @@ public class LogSlider
     private static final Constants constants = new Constants();
 
     // Internal resolution
-    private static final int    unit = constants.resolution.getValue();
+    private static final int unit = constants.resolution.getValue();
+
     private static final double doubleUnit = unit; // To speed up
 
     //~ Instance fields --------------------------------------------------------
-
     // Base of log (generally 2 or 10)
     private final double base;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // LogSlider //
     //-----------//
     /**
      * Creates a new {@code LogSlider} instance.
      *
-     * @param base to specify the base of logarithm, generally either 2 or
+     * @param base        to specify the base of logarithm, generally either 2
+     *                    or
      *                    10.
-     * @param minors number of minor intervals within one major interval (if
+     * @param minors      number of minor intervals within one major interval
+     *                    (if
      *                    specified as 1 minor per major, this means that
      *                    there is no minor ticks)
      * @param orientation to specify the slider orientation, either VERTICAL
      *                    or HORIZONTAL.
-     * @param min to set lower bound of the slider, specified in power of
+     * @param min         to set lower bound of the slider, specified in power
+     *                    of
      *                    base, for example -3 to mean 1/8 (2**-3 if base =
      *                    2).
-     * @param max to set upper bound, for example 5 to mean 32 (2**5, if base
+     * @param max         to set upper bound, for example 5 to mean 32 (2**5, if
+     *                    base
      *                    = 2).
-     * @param initial to set the slider initial value, specified in power of
+     * @param initial     to set the slider initial value, specified in power of
      *                    base, for example 0 to mean 1 (2**0, if base = 2)
      */
     public LogSlider (int base,
@@ -104,10 +107,10 @@ public class LogSlider
 
         for (int i = min; i <= max; i++) {
             labelTable.put(
-                Integer.valueOf(i * unit),
-                new JLabel(
+                    Integer.valueOf(i * unit),
+                    new JLabel(
                     (i < 0) ? ("1/" + (int) expOf(-i * unit))
-                                        : ("" + (int) expOf(i * unit))));
+                    : ("" + (int) expOf(i * unit))));
         }
 
         setLabelTable(labelTable);
@@ -118,7 +121,6 @@ public class LogSlider
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // getDoubleValue //
     //----------------//
@@ -160,7 +162,7 @@ public class LogSlider
     public void setMajorTickSpacing (int n)
     {
         throw new UnsupportedOperationException(
-            "Method setMajorTickSpacing not supported by LogSlider");
+                "Method setMajorTickSpacing not supported by LogSlider");
     }
 
     //---------------------//
@@ -178,7 +180,7 @@ public class LogSlider
     public void setMinorTickSpacing (int n)
     {
         throw new UnsupportedOperationException(
-            "Method setMinorTickSpacing not supported by LogSlider");
+                "Method setMinorTickSpacing not supported by LogSlider");
     }
 
     //-------//
@@ -198,18 +200,18 @@ public class LogSlider
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Integer resolution = new Constant.Integer(
-            "Values",
-            480,
-            "Number of values between two major ticks");
+                "Values",
+                480,
+                "Number of values between two major ticks");
+
     }
 }

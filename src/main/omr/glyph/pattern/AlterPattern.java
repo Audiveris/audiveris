@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.glyph.pattern;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import omr.constant.ConstantSet;
 
 import omr.glyph.CompoundBuilder;
@@ -23,22 +20,24 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
+import omr.util.Vip;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
-import omr.util.Vip;
 
 /**
  * Class {@code AlterPattern} implements a pattern for alteration
@@ -158,7 +157,7 @@ public class AlterPattern
                 if (!pair.left.isStem() || !pair.right.isStem()) {
                     continue; // This pair is no longer relevant
                 }
-                
+
                 if (pair.isVip()) {
                     logger.info("{} Alter pair: {}", glyph.idString(), pair);
                 }
@@ -342,11 +341,11 @@ public class AlterPattern
 
         // First, come up with candidate stems
         SortedSet<Glyph> neighbors = Glyphs.sortedSet(Arrays.asList(seed));
-        PixelRectangle box = seed.getBounds();
+        Rectangle box = seed.getBounds();
 
         for (Glyph glyph : stems) {
             if (glyph != seed && glyph.isStem()) {
-                PixelRectangle glyphBox = glyph.getBounds();
+                Rectangle glyphBox = glyph.getBounds();
                 glyphBox.grow(maxCloseStemDx, 0);
 
                 if (box.intersects(glyphBox)) {
@@ -360,7 +359,7 @@ public class AlterPattern
 
         // Second, evaluate pairs and keep only the possible ones
         for (Glyph left : neighbors) {
-            final PixelRectangle leftBox = left.getBounds();
+            final Rectangle leftBox = left.getBounds();
             final int leftX = leftBox.x + (leftBox.width / 2);
 
             for (Glyph other : neighbors.tailSet(left)) {
@@ -369,7 +368,7 @@ public class AlterPattern
                 }
 
                 // Check horizontal distance
-                final PixelRectangle rightBox = other.getBounds();
+                final Rectangle rightBox = other.getBounds();
                 final int rightX = rightBox.x + (rightBox.width / 2);
                 if (rightX - leftX > maxCloseStemDx) {
                     continue;
@@ -462,11 +461,11 @@ public class AlterPattern
 
         //~ Methods ------------------------------------------------------------
         @Override
-        public PixelRectangle computeReferenceBox ()
+        public Rectangle computeReferenceBox ()
         {
-            final PixelRectangle stemBox = seed.getBounds();
+            final Rectangle stemBox = seed.getBounds();
 
-            return new PixelRectangle(
+            return new Rectangle(
                     stemBox.x,
                     (stemBox.y + stemBox.height) - flatHeadHeight,
                     flatHeadWidth,
@@ -506,9 +505,9 @@ public class AlterPattern
 
         //~ Methods ------------------------------------------------------------
         @Override
-        public PixelRectangle computeReferenceBox ()
+        public Rectangle computeReferenceBox ()
         {
-            PixelRectangle newBox = getStemsBox();
+            Rectangle newBox = getStemsBox();
             newBox.grow(maxCloseStemDx / 4, minCloseStemOverlap / 2);
 
             return newBox;
@@ -527,9 +526,9 @@ public class AlterPattern
     {
         //~ Instance fields ----------------------------------------------------
 
-        protected PixelRectangle leftBox;
+        protected Rectangle leftBox;
 
-        protected PixelRectangle rightBox;
+        protected Rectangle rightBox;
 
         //~ Constructors -------------------------------------------------------
         public PairAdapter (SystemInfo system,
@@ -552,20 +551,20 @@ public class AlterPattern
             return !glyph.isManualShape();
         }
 
-        public void setStemBoxes (PixelRectangle leftBox,
-                                  PixelRectangle rightBox)
+        public void setStemBoxes (Rectangle leftBox,
+                                  Rectangle rightBox)
         {
             this.leftBox = leftBox;
             this.rightBox = rightBox;
         }
 
-        protected PixelRectangle getStemsBox ()
+        protected Rectangle getStemsBox ()
         {
             if ((leftBox == null) || (rightBox == null)) {
                 throw new NullPointerException("Stem boxes have not been set");
             }
 
-            PixelRectangle box = new PixelRectangle(leftBox);
+            Rectangle box = new Rectangle(leftBox);
             box.add(rightBox);
 
             return box;
@@ -590,9 +589,9 @@ public class AlterPattern
 
         //~ Methods ------------------------------------------------------------
         @Override
-        public PixelRectangle computeReferenceBox ()
+        public Rectangle computeReferenceBox ()
         {
-            PixelRectangle newBox = getStemsBox();
+            Rectangle newBox = getStemsBox();
             newBox.grow(maxCloseStemDx / 2, minCloseStemOverlap / 2);
 
             return newBox;
@@ -624,9 +623,9 @@ public class AlterPattern
         boolean vip = false;
 
         public StemPair (Glyph left,
-                     Glyph right,
-                     int overlap,
-                     double distance)
+                         Glyph right,
+                         int overlap,
+                         double distance)
         {
             this.left = left;
             this.right = right;

@@ -16,7 +16,7 @@ import omr.glyph.facets.Glyph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
+import java.awt.Point;
 
 /**
  * Class {@code Direction} is the basis for all variants of direction
@@ -30,45 +30,44 @@ import omr.score.common.PixelPoint;
  * @author Hervé Bitteur
  */
 public abstract class AbstractDirection
-    extends MeasureElement
-    implements Direction
+        extends MeasureElement
+        implements Direction
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        AbstractDirection.class);
+            AbstractDirection.class);
 
     //~ Constructors -----------------------------------------------------------
-
     /** Creates a new instance of Direction
      *
-     * @param measure the containing measure
+     * @param measure        the containing measure
      * @param referencePoint the reference point for this direction
-     * @param chord the related chord if any
-     * @param glyph the underlying glyph
+     * @param chord          the related chord if any
+     * @param glyph          the underlying glyph
      */
-    public AbstractDirection (Measure    measure,
-                              PixelPoint referencePoint,
-                              Chord      chord,
-                              Glyph      glyph)
+    public AbstractDirection (Measure measure,
+                              Point referencePoint,
+                              Chord chord,
+                              Glyph glyph)
     {
         this(measure, true, referencePoint, chord, glyph);
     }
 
     /** Creates a new instance of Direction
      *
-     * @param measure  the containing measure
-     * @param isStart true or false, to flag a start or a stop
+     * @param measure        the containing measure
+     * @param isStart        true or false, to flag a start or a stop
      * @param referencePoint the reference point for this direction
-     * @param chord the related chord if any
-     * @param glyph the underlying glyph
+     * @param chord          the related chord if any
+     * @param glyph          the underlying glyph
      */
-    public AbstractDirection (Measure    measure,
-                              boolean    isStart,
-                              PixelPoint referencePoint,
-                              Chord      chord,
-                              Glyph      glyph)
+    public AbstractDirection (Measure measure,
+                              boolean isStart,
+                              Point referencePoint,
+                              Chord chord,
+                              Glyph glyph)
     {
         super(measure, isStart, referencePoint, chord, glyph);
 

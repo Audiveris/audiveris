@@ -16,9 +16,6 @@ import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 import omr.text.TextRole;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.entity.Text.CreatorText.CreatorType;
 import omr.score.entity.TimeRational;
 import omr.score.entity.TimeSignature;
@@ -37,6 +34,9 @@ import omr.ui.field.LComboBox;
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerField;
 import omr.ui.field.LTextField;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.util.Set;

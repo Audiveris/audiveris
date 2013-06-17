@@ -13,10 +13,10 @@ package omr.sheet;
 
 import omr.constant.Constant;
 
+import omr.util.DoubleValue;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.util.DoubleValue;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -134,6 +134,20 @@ public class Scale
     }
 
     //~ Methods ----------------------------------------------------------------
+    //--------------//
+    // fracToPixels //
+    //--------------//
+    /**
+     * Convert a fraction of interline to a number of pixels.
+     *
+     * @param val the fraction value
+     * @return the (double) number of pixels
+     */
+    public double fracToPixels (double val)
+    {
+        return interlineRange.best * val;
+    }
+
     //--------------//
     // getInterline //
     //--------------//
@@ -357,20 +371,6 @@ public class Scale
     public double toPixelsDouble (Fraction frac)
     {
         return fracToPixels(frac.getWrappedValue().doubleValue());
-    }
-
-    //--------------//
-    // fracToPixels //
-    //--------------//
-    /**
-     * Convert a fraction of interline to a number of pixels.
-     *
-     * @param val the fraction value
-     * @return the (double) number of pixels
-     */
-    public double fracToPixels (double val)
-    {
-        return interlineRange.best * val;
     }
 
     //----------------//

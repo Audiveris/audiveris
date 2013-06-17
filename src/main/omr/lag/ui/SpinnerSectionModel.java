@@ -13,16 +13,16 @@ package omr.lag.ui;
 
 import omr.lag.Lag;
 
+import omr.ui.field.SpinnerUtil;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.ui.field.SpinnerUtilities;
 
 import javax.swing.AbstractSpinnerModel;
 
 /**
  * Class {@code SpinnerSectionModel} is a spinner model backed by a
- * {@link Lag}. 
+ * {@link Lag}.
  * Any modification in the lag is thus transparently handled,
  * since the lag <b>is</b> the model.
  *
@@ -62,7 +62,7 @@ public class SpinnerSectionModel
 
         this.lag = lag;
 
-        currentId = SpinnerUtilities.NO_VALUE;
+        currentId = SpinnerUtil.NO_VALUE;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -71,7 +71,7 @@ public class SpinnerSectionModel
     //--------------//
     /**
      * Return the next legal section id in the sequence that comes after
-     * the section id returned by {@code getValue()}. 
+     * the section id returned by {@code getValue()}.
      * If the end of the sequence has been reached then return null.
      *
      * @return the next legal section id or null if one doesn't exist
@@ -82,7 +82,7 @@ public class SpinnerSectionModel
         final int cur = currentId.intValue();
         logger.debug("getNextValue cur={}", cur);
 
-        if (cur == SpinnerUtilities.NO_VALUE) {
+        if (cur == SpinnerUtil.NO_VALUE) {
             return (lag.getLastVertexId() > 0) ? 1 : null;
         } else {
             return (cur < lag.getLastVertexId()) ? (cur + 1) : null;
@@ -94,7 +94,7 @@ public class SpinnerSectionModel
     //------------------//
     /**
      * Return the legal section id in the sequence that comes before the
-     * section id returned by {@code getValue()}. 
+     * section id returned by {@code getValue()}.
      * If the end of the sequence has been reached then return null.
      *
      * @return the previous legal value or null if one doesn't exist
@@ -105,7 +105,7 @@ public class SpinnerSectionModel
         final int cur = currentId.intValue();
         logger.debug("getPreviousValue cur={}", cur);
 
-        if (cur == SpinnerUtilities.NO_VALUE) {
+        if (cur == SpinnerUtil.NO_VALUE) {
             return null;
         } else {
             return (cur > 1) ? (cur - 1) : null;

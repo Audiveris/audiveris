@@ -15,19 +15,18 @@ import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.Orientation;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.util.Predicate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.BasicStroke;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.util.Collection;
 import java.util.HashMap;
@@ -51,15 +50,14 @@ public class Barline
     /** Predicate to detect a barline glyph (not a repeat dot) */
     public static final Predicate<Glyph> linePredicate = new Predicate<Glyph>()
     {
-
         @Override
         public boolean check (Glyph glyph)
         {
             Shape shape = glyph.getShape();
 
             return (shape == Shape.PART_DEFINING_BARLINE)
-                    || (shape == Shape.THIN_BARLINE)
-                    || (shape == Shape.THICK_BARLINE);
+                   || (shape == Shape.THIN_BARLINE)
+                   || (shape == Shape.THICK_BARLINE);
         }
     };
 
@@ -119,8 +117,8 @@ public class Barline
      */
     public int getLeftX ()
     {
-        PixelRectangle box = getBox();
-        int middleY = box.y + box.height/2;
+        Rectangle box = getBox();
+        int middleY = box.y + box.height / 2;
 
         for (Glyph glyph : getGlyphs()) {
             if (linePredicate.check(glyph)) {
@@ -147,8 +145,8 @@ public class Barline
     public int getRightX ()
     {
         int right = 0;
-        PixelRectangle box = getBox();
-        int middleY = box.y + box.height/2;
+        Rectangle box = getBox();
+        int middleY = box.y + box.height / 2;
 
         for (Glyph glyph : getGlyphs()) {
             if (glyph.isBar()) {
@@ -194,7 +192,7 @@ public class Barline
     public boolean joinsAllStaves (Collection<Staff> staves)
     {
         // We check that the barline box intersects each staff box
-        PixelRectangle barBox = getBox();
+        Rectangle barBox = getBox();
 
         for (Staff staff : staves) {
             if (!barBox.intersects(staff.getBox())) {
@@ -224,7 +222,7 @@ public class Barline
     // render //
     //--------//
     /**
-     * Render the bar contour, with proper strokes according to the 
+     * Render the bar contour, with proper strokes according to the
      * thickness of each barline component
      *
      * @param g the graphics context
@@ -403,7 +401,7 @@ public class Barline
                         }
                     } else {
                         // BAR : Check overlap with staff reference
-                        PixelRectangle box = glyph.getBounds();
+                        Rectangle box = glyph.getBounds();
 
                         if (Math.max(box.y, topStaff) > Math.min(
                                 box.y + box.height,

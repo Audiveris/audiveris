@@ -20,7 +20,7 @@ import java.util.Locale;
  * @author Hervé Bitteur
  */
 public class BasicLegendreMoments
-    implements LegendreMoments
+        implements LegendreMoments
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -28,7 +28,6 @@ public class BasicLegendreMoments
     protected double[][] moments = new double[ORDER + 1][ORDER + 1];
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------------//
     // BasicLegendreMoments //
     //----------------------//
@@ -40,7 +39,6 @@ public class BasicLegendreMoments
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // distanceTo //
     //------------//
@@ -53,7 +51,7 @@ public class BasicLegendreMoments
             for (int n = 0; n <= ORDER; n++) {
                 if ((m + n) <= ORDER) {
                     distance += Math.abs(
-                        that.getMoment(m, n) - getMoment(m, n));
+                            that.getMoment(m, n) - getMoment(m, n));
                 }
             }
         }
@@ -75,8 +73,8 @@ public class BasicLegendreMoments
     // setMoment //
     //-----------//
     @Override
-    public void setMoment (int    m,
-                           int    n,
+    public void setMoment (int m,
+                           int n,
                            double value)
     {
         moments[m][n] = value;
@@ -98,7 +96,7 @@ public class BasicLegendreMoments
                     }
 
                     sb.append(
-                        String.format(
+                            String.format(
                             Locale.US,
                             "%04.0f",
                             1000 * getMoment(m, n)));

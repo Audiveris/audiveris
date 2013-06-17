@@ -19,10 +19,10 @@ import static omr.glyph.Shape.*;
 import omr.glyph.facets.Glyph;
 import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 
+import omr.ui.util.Panel;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.ui.util.Panel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;

@@ -26,7 +26,7 @@ import javax.imageio.ImageIO;
  * @author Hervé Bitteur (from Romain Guy's demo)
  */
 public class GhostPictureAdapter<A>
-    extends GhostDropAdapter<A>
+        extends GhostDropAdapter<A>
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -34,22 +34,21 @@ public class GhostPictureAdapter<A>
      * Create a new GhostPictureAdapter object
      *
      * @param glassPane The related glasspane
-     * @param action the carried action
-     * @param picture the path to the image resource
+     * @param action    the carried action
+     * @param picture   the path to the image resource
      */
-
     //---------------------//
     // GhostPictureAdapter //
     //---------------------//
     public GhostPictureAdapter (GhostGlassPane glassPane,
-                                A              action,
-                                String         picture)
+                                A action,
+                                String picture)
     {
         super(glassPane, action);
 
         try {
             image = ImageIO.read(
-                new BufferedInputStream(
+                    new BufferedInputStream(
                     GhostPictureAdapter.class.getResourceAsStream(picture)));
         } catch (MalformedURLException mue) {
             throw new IllegalStateException("Invalid picture URL.");

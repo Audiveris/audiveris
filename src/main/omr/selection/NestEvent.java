@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.selection;
 
-
 /**
  * Class {@code NestEvent} is an abstract class to represent any event
  * specific to a glyph service (glyph, glyph id, glyph set).
@@ -19,17 +18,18 @@ package omr.selection;
  * @author Hervé Bitteur
  */
 public abstract class NestEvent
-    extends UserEvent
+        extends UserEvent
 {
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new NestEvent object.
-     * @param source the actual entity that created this event
-     * @param hint how the event originated
+     *
+     * @param source   the actual entity that created this event
+     * @param hint     how the event originated
      * @param movement the precise mouse movement
      */
-    public NestEvent (Object        source,
+    public NestEvent (Object source,
                       SelectionHint hint,
                       MouseMovement movement)
     {

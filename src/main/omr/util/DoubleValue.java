@@ -28,12 +28,12 @@ public class DoubleValue
     protected final double value;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // DoubleValue //
     //-------------//
     /**
      * Creates a new DoubleValue object.
+     *
      * @param value a double value
      */
     public DoubleValue (double value)
@@ -46,6 +46,7 @@ public class DoubleValue
     //-------------//
     /**
      * Creates a new DoubleValue object.
+     *
      * @param value a Double value (note the initial capital D)
      */
     public DoubleValue (Double value)
@@ -58,6 +59,7 @@ public class DoubleValue
     //-------------//
     /**
      * Creates a new DoubleValue object.
+     *
      * @param str the string representation of the value
      */
     public DoubleValue (String str)
@@ -77,12 +79,12 @@ public class DoubleValue
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // doubleValue //
     //-------------//
     /**
      * Returns the {@code double} value of this object.
+     *
      * @return the {@code double} value represented by this object
      */
     public double doubleValue ()
@@ -110,9 +112,9 @@ public class DoubleValue
     public int hashCode ()
     {
         int hash = 5;
-        hash = (83 * hash) +
-               (int) (Double.doubleToLongBits(this.value) ^
-               (Double.doubleToLongBits(this.value) >>> 32));
+        hash = (83 * hash)
+               + (int) (Double.doubleToLongBits(this.value)
+                        ^ (Double.doubleToLongBits(this.value) >>> 32));
 
         return hash;
     }

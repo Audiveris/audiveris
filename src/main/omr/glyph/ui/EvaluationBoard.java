@@ -21,9 +21,6 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
@@ -35,6 +32,9 @@ import omr.sheet.SystemInfo;
 import omr.ui.Board;
 import omr.ui.Colors;
 import omr.ui.util.Panel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -223,8 +223,8 @@ class EvaluationBoard
                 evaluate(glyph);
             }
         } catch (Exception ex) {
-            logger.warn(sheet.getLogPrefix() + 
-                           getClass().getName() + " output error", ex);
+            logger.warn(sheet.getLogPrefix()
+                        + getClass().getName() + " output error", ex);
         }
     }
 

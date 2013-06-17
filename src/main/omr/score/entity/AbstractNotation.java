@@ -16,7 +16,7 @@ import omr.glyph.facets.Glyph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
+import java.awt.Point;
 
 /**
  * Class {@code Notation} is the basis for all variants of notations:
@@ -25,29 +25,29 @@ import omr.score.common.PixelPoint;
  * @author Hervé Bitteur
  */
 public abstract class AbstractNotation
-    extends MeasureElement
-    implements Notation
+        extends MeasureElement
+        implements Notation
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        AbstractNotation.class);
+            AbstractNotation.class);
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new instance of a simple Notation (assumed to be both the
      * start and the stop)
+     *
      * @param measure the containing measure
      * @param point
-     * @param chord the related chord
-     * @param glyph the underlying glyph
+     * @param chord   the related chord
+     * @param glyph   the underlying glyph
      */
-    public AbstractNotation (Measure    measure,
-                             PixelPoint point,
-                             Chord      chord,
-                             Glyph      glyph)
+    public AbstractNotation (Measure measure,
+                             Point point,
+                             Chord chord,
+                             Glyph glyph)
     {
         super(measure, true, point, chord, glyph);
 

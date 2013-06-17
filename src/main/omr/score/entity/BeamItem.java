@@ -17,19 +17,18 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.BasicLine;
 import omr.math.Line;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 
 import omr.util.HorizontalSide;
 import omr.util.TreeNode;
 import omr.util.Vip;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -51,7 +50,8 @@ public class BeamItem
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(BeamItem.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            BeamItem.class);
 
     /** Compare two BeamItem instances by abscissa within a Beam. */
     public static final Comparator<TreeNode> byNodeAbscissa = new Comparator<TreeNode>()
@@ -86,10 +86,10 @@ public class BeamItem
     private Line line;
 
     /** Left point of beam item. */
-    private PixelPoint left;
+    private Point left;
 
     /** Right point of beam item. */
-    private PixelPoint right;
+    private Point right;
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -107,8 +107,8 @@ public class BeamItem
      */
     private BeamItem (Beam beam,
                       Glyph glyph,
-                      PixelPoint left,
-                      PixelPoint right,
+                      Point left,
+                      Point right,
                       int packCard,
                       int packIndex)
     {
@@ -118,8 +118,8 @@ public class BeamItem
 
         this.packCard = packCard;
         this.packIndex = packIndex;
-        this.left = new PixelPoint(left);
-        this.right = new PixelPoint(right);
+        this.left = new Point(left);
+        this.right = new Point(right);
 
         // Keep the items sorted by abscissa in Beam container
         Collections.sort(beam.getItems(), BeamItem.byNodeAbscissa);
@@ -151,23 +151,8 @@ public class BeamItem
         if (glyph.isVip()) {
             logger.info("BeamItem. populate {}", glyph.idString());
         }
-        
-        createPack(measure, glyph);
-    }
 
-    //---------------//
-    // computeCenter //
-    //---------------//
-    /**
-     * Compute the center of this beam item (which is different from the
-     * glyph center in case of a multi-beam pack glyph).
-     */
-    @Override
-    protected void computeCenter ()
-    {
-        setCenter(new PixelPoint(
-                (left.x + right.x) / 2,
-                (left.y + right.y) / 2));
+        createPack(measure, glyph);
     }
 
     //----------//
@@ -212,36 +197,13 @@ public class BeamItem
      *
      * @return (a copy) of the point on desired side
      */
-    public PixelPoint getPoint (HorizontalSide side)
+    public Point getPoint (HorizontalSide side)
     {
         if (side == HorizontalSide.LEFT) {
-            return new PixelPoint(left);
+            return new Point(left);
         } else {
-            return new PixelPoint(right);
+            return new Point(right);
         }
-    }
-
-    //----------//
-    // setPoint //
-    //----------//
-    /**
-     * Set the point that defines the desired edge of the beam item.
-     *
-     * @param side  the desired side
-     * @param point the new point on desired side
-     */
-    public void setPoint (HorizontalSide side,
-                          PixelPoint point)
-    {
-        if (side == HorizontalSide.LEFT) {
-            this.left = point;
-        } else {
-            this.right = point;
-        }
-
-        // Invalidate
-        line = null;
-        center = null;
     }
 
     //---------//
@@ -254,7 +216,8 @@ public class BeamItem
      */
     public Glyph getStem (HorizontalSide side)
     {
-        return getGlyph().getStem(side);
+        return getGlyph()
+                .getStem(side);
     }
 
     //--------//
@@ -267,7 +230,8 @@ public class BeamItem
      */
     public boolean isHook ()
     {
-        return getGlyph().getShape() == Shape.BEAM_HOOK;
+        return getGlyph()
+                .getShape() == Shape.BEAM_HOOK;
     }
 
     //-------//
@@ -277,6 +241,29 @@ public class BeamItem
     public boolean isVip ()
     {
         return vip;
+    }
+
+    //----------//
+    // setPoint //
+    //----------//
+    /**
+     * Set the point that defines the desired edge of the beam item.
+     *
+     * @param side  the desired side
+     * @param point the new point on desired side
+     */
+    public void setPoint (HorizontalSide side,
+                          Point point)
+    {
+        if (side == HorizontalSide.LEFT) {
+            this.left = point;
+        } else {
+            this.right = point;
+        }
+
+        // Invalidate
+        line = null;
+        center = null;
     }
 
     //--------//
@@ -298,20 +285,34 @@ public class BeamItem
         sb.append("{BeamItem");
 
         try {
-            sb.append(" ").append(getGlyph().idString());
+            sb.append(" ")
+                    .append(getGlyph().idString());
 
             if (packCard != 1) {
-                sb.append(" [").append(packIndex).append("/").append(packCard).
-                        append("]");
+                sb.append(" [")
+                        .append(packIndex)
+                        .append("/")
+                        .append(packCard)
+                        .append("]");
             }
 
-            sb.append(" left=[").append(left.x).append(",").append(left.y).
-                    append("]");
-            sb.append(" center=[").append(getCenter().x).append(",").append(
-                    getCenter().y).append("]");
-            sb.append(" right=[").append(right.x).append(",").append(right.y).
-                    append("]");
-            sb.append(" slope=").append((float) getLine().getSlope());
+            sb.append(" left=[")
+                    .append(left.x)
+                    .append(",")
+                    .append(left.y)
+                    .append("]");
+            sb.append(" center=[")
+                    .append(getCenter().x)
+                    .append(",")
+                    .append(getCenter().y)
+                    .append("]");
+            sb.append(" right=[")
+                    .append(right.x)
+                    .append(",")
+                    .append(right.y)
+                    .append("]");
+            sb.append(" slope=")
+                    .append((float) getLine().getSlope());
         } catch (NullPointerException e) {
             sb.append(" INVALID");
         }
@@ -319,6 +320,19 @@ public class BeamItem
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //---------------//
+    // computeCenter //
+    //---------------//
+    /**
+     * Compute the center of this beam item (which is different from the
+     * glyph center in case of a multi-beam pack glyph).
+     */
+    @Override
+    protected void computeCenter ()
+    {
+        setCenter(new Point((left.x + right.x) / 2, (left.y + right.y) / 2));
     }
 
     //------------//
@@ -340,15 +354,18 @@ public class BeamItem
         try {
             for (int i = 0; i < card; i++) {
                 // Compute item defining points
-                PixelPoint left;
-                PixelPoint right;
+                Point left;
+                Point right;
 
                 // For hooks, the stick line is not reliable
-                PixelRectangle box = glyph.getBounds();
+                Rectangle box = glyph.getBounds();
+
                 if (glyph.getShape() == Shape.BEAM_HOOK) {
                     // Make a simple horizontal beam item
-                    left = new PixelPoint(box.x, box.y + (box.height / 2));
-                    right = new PixelPoint(box.x + box.width - 1, box.y + (box.height / 2));
+                    left = new Point(box.x, box.y + (box.height / 2));
+                    right = new Point(
+                            (box.x + box.width) - 1,
+                            box.y + (box.height / 2));
                 } else {
                     // Check line slope
                     Line glyphLine = glyph.getLine();
@@ -356,31 +373,34 @@ public class BeamItem
                     if (Math.abs(glyphLine.getSlope()) > constants.maxBeamSlope.getValue()) {
                         // Slope is not realistic, use horizontal lines
                         double halfHeight = box.height / (card * 2);
-                        int y = box.y + (int) Math.rint(halfHeight * (2 * i + 1));
-                        left = new PixelPoint(box.x, y);
-                        right = new PixelPoint(box.x + box.width - 1, y);
+                        int y = box.y
+                                + (int) Math.rint(halfHeight * ((2 * i) + 1));
+                        left = new Point(box.x, y);
+                        right = new Point((box.x + box.width) - 1, y);
                     } else {
                         double yMidLeft = glyphLine.yAtX((double) box.x);
                         double yMidRight = glyphLine.yAtX(
-                                (double) (box.x + box.width - 1));
-                        double deltaMid1 = Math.min(yMidLeft, yMidRight) - box.y;
+                                (double) ((box.x + box.width) - 1));
+                        double deltaMid1 = Math.min(yMidLeft, yMidRight)
+                                           - box.y;
                         double deltaMid2 = (box.y + box.height)
                                            - Math.max(yMidLeft, yMidRight);
 
                         double deltaMid = (deltaMid1 + deltaMid2) / 2.0;
-                        double deltaY = (((4 * i) + 1) * deltaMid) / ((2 * card) - 1);
+                        double deltaY = (((4 * i) + 1) * deltaMid) / ((2 * card)
+                                                                      - 1);
                         int highY = (int) Math.rint(box.y + deltaY);
                         int lowY = (int) Math.rint(
                                 (box.y + box.height) - (2 * deltaMid) + deltaY);
 
                         if (yMidLeft > yMidRight) {
                             // This is an ascending beam
-                            left = new PixelPoint(box.x, lowY);
-                            right = new PixelPoint(box.x + box.width - 1, highY);
+                            left = new Point(box.x, lowY);
+                            right = new Point((box.x + box.width) - 1, highY);
                         } else {
                             // This is a descending beam
-                            left = new PixelPoint(box.x, highY);
-                            right = new PixelPoint(box.x + box.width - 1, lowY);
+                            left = new Point(box.x, highY);
+                            right = new Point((box.x + box.width) - 1, lowY);
                         }
                     }
                 }
@@ -393,9 +413,9 @@ public class BeamItem
                 glyph.addTranslation(item);
             }
         } catch (Exception ex) {
-            logger.warn(measure.getContextString()
-                           + " Error creating BeamItem from "
-                           + glyph.idString(),
+            logger.warn(
+                    measure.getContextString() + " Error creating BeamItem from "
+                    + glyph.idString(),
                     ex);
         }
     }

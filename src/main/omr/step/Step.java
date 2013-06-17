@@ -53,7 +53,8 @@ public interface Step
 
         /** Step makes sense at score level only */
         SCORE_LEVEL,
-        /** The step can be performed at sheet level */
+        /** The step can be
+         * performed at sheet level */
         SHEET_LEVEL;
 
     }

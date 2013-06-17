@@ -11,15 +11,12 @@
 // </editor-fold>
 package omr.score;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.PartConnection.Candidate;
 import omr.score.PartConnection.Result;
 
 import omr.util.StopWatch;
 import omr.util.WrappedBoolean;
-import omr.util.XmlUtilities;
+import omr.util.XmlUtil;
 
 import com.audiveris.proxymusic.Credit;
 import com.audiveris.proxymusic.Instrument;
@@ -34,6 +31,9 @@ import com.audiveris.proxymusic.ScorePartwise.Part;
 import com.audiveris.proxymusic.ScorePartwise.Part.Measure;
 import com.audiveris.proxymusic.YesNo;
 import com.audiveris.proxymusic.util.Marshalling;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -886,7 +886,7 @@ public class ScoreXmlReduction
 
             // Filter out invalid XML characters if any
             WrappedBoolean stripped = new WrappedBoolean(false);
-            String fragment = XmlUtilities.stripNonValidXMLCharacters(
+            String fragment = XmlUtil.stripNonValidXMLCharacters(
                     rawFragment,
                     stripped);
 

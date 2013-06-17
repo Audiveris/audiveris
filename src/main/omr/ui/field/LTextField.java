@@ -20,15 +20,14 @@ import javax.swing.JTextField;
  * @author Hervé Bitteur
  */
 public class LTextField
-    extends LField<JTextField>
+        extends LField<JTextField>
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Defaut number of characters in the text field : {@value}*/
+    /** Defaut number of characters in the text field : {@value} */
     private static final int FIELD_WIDTH = 6;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // LTextField //
     //------------//
@@ -36,12 +35,12 @@ public class LTextField
      * Creates a new LTextField object.
      *
      * @param editable Specifies whether this field will be editable
-     * @param label the string to be used as label text
-     * @param tip the related tool tip text
+     * @param label    the string to be used as label text
+     * @param tip      the related tool tip text
      */
     public LTextField (boolean editable,
-                       String  label,
-                       String  tip)
+                       String label,
+                       String tip)
     {
         super(label, tip, new JTextField(FIELD_WIDTH));
 
@@ -60,7 +59,7 @@ public class LTextField
      * Creates a new non-editable LTextField object.
      *
      * @param label the string to be used as label text
-     * @param tip the related tool tip text
+     * @param tip   the related tool tip text
      */
     public LTextField (String label,
                        String tip)
@@ -69,7 +68,6 @@ public class LTextField
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // getText //
     //---------//
@@ -81,7 +79,7 @@ public class LTextField
     public String getText ()
     {
         return getField()
-                   .getText();
+                .getText();
     }
 
     //---------//
@@ -95,6 +93,6 @@ public class LTextField
     public void setText (String text)
     {
         getField()
-            .setText(text);
+                .setText(text);
     }
 }

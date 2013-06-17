@@ -26,6 +26,11 @@ public abstract class ShapeDescription
     ///private static final Descriptor INSTANCE = new ShapeDescriptorGeo();
     private static final Descriptor INSTANCE = new ShapeDescriptorART();
 
+    //~ Constructors -----------------------------------------------------------
+    private ShapeDescription ()
+    {
+    }
+
     //~ Methods ----------------------------------------------------------------
     //--------------//
     // boolAsDouble //
@@ -128,9 +133,5 @@ public abstract class ShapeDescription
          * @return the number of features
          */
         int length ();
-    }
-
-    private ShapeDescription ()
-    {
     }
 }

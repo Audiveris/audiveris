@@ -32,13 +32,9 @@ import omr.grid.StaffManager;
 
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.Orientation;
 import static omr.run.Orientation.*;
 
-import omr.score.common.PixelRectangle;
 
 import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
@@ -49,8 +45,12 @@ import omr.sheet.BarsChecker.BarCheckSuite;
 import static omr.util.HorizontalSide.*;
 import omr.util.Predicate;
 
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import net.jcip.annotations.NotThreadSafe;
 
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.HashMap;
@@ -282,7 +282,7 @@ public class BarsChecker
     // getAlienPixelsIn //
     //------------------//
     private int getAlienPixelsIn (Glyph glyph,
-                                  PixelRectangle absRoi)
+                                  Rectangle absRoi)
     {
         Predicate<Section> predicate = new Predicate<Section>()
         {
@@ -856,13 +856,13 @@ public class BarsChecker
         }
 
         //~ Methods ------------------------------------------------------------
-        protected abstract PixelRectangle getBox (Glyph stick);
+        protected abstract Rectangle getBox (Glyph stick);
 
         @Override
         protected double getValue (GlyphContext context)
         {
             Glyph stick = context.stick;
-            PixelRectangle box = getBox(stick);
+            Rectangle box = getBox(stick);
 
             int aliens = getAlienPixelsIn(stick, box);
             int area = box.width * box.height;
@@ -900,10 +900,10 @@ public class BarsChecker
 
         //~ Methods ------------------------------------------------------------
         @Override
-        protected PixelRectangle getBox (Glyph stick)
+        protected Rectangle getBox (Glyph stick)
         {
             Point2D bottom = stick.getStopPoint(VERTICAL);
-            PixelRectangle box = new PixelRectangle(
+            Rectangle box = new Rectangle(
                     (int) Math.rint(bottom.getX() - nWidth),
                     (int) Math.rint(bottom.getY() - (1.5 * nHeight)),
                     nWidth,
@@ -935,10 +935,10 @@ public class BarsChecker
 
         //~ Methods ------------------------------------------------------------
         @Override
-        protected PixelRectangle getBox (Glyph stick)
+        protected Rectangle getBox (Glyph stick)
         {
             Point2D bottom = stick.getStopPoint(VERTICAL);
-            PixelRectangle box = new PixelRectangle(
+            Rectangle box = new Rectangle(
                     (int) Math.rint(bottom.getX()),
                     (int) Math.rint(bottom.getY() - (1.5 * nHeight)),
                     nWidth,
@@ -1266,10 +1266,10 @@ public class BarsChecker
 
         //~ Methods ------------------------------------------------------------
         @Override
-        protected PixelRectangle getBox (Glyph stick)
+        protected Rectangle getBox (Glyph stick)
         {
             Point2D top = stick.getStartPoint(VERTICAL);
-            PixelRectangle box = new PixelRectangle(
+            Rectangle box = new Rectangle(
                     (int) Math.rint(top.getX() - nWidth),
                     (int) Math.rint(top.getY() - (nHeight / 2)),
                     nWidth,
@@ -1300,10 +1300,10 @@ public class BarsChecker
 
         //~ Methods ------------------------------------------------------------
         @Override
-        protected PixelRectangle getBox (Glyph stick)
+        protected Rectangle getBox (Glyph stick)
         {
             Point2D top = stick.getStartPoint(VERTICAL);
-            PixelRectangle box = new PixelRectangle(
+            Rectangle box = new Rectangle(
                     (int) Math.rint(top.getX()),
                     (int) Math.rint(top.getY() - (nHeight / 2)),
                     nWidth,

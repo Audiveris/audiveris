@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "rational")
 public class Rational
-    implements Comparable<Rational>
+        implements Comparable<Rational>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -48,7 +48,6 @@ public class Rational
     public static final Rational MAX_VALUE = new Rational(Integer.MAX_VALUE, 1);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Final denominator value */
     @XmlAttribute
     public final int den;
@@ -58,7 +57,6 @@ public class Rational
     public final int num;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // Rational //
     //----------//
@@ -102,6 +100,98 @@ public class Rational
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-----//
+    // abs //
+    //-----//
+    /**
+     * Report the absolute value
+     *
+     * @return |num| / den
+     */
+    public Rational abs ()
+    {
+        return new Rational(Math.abs(num), den);
+    }
+
+    //-----------//
+    // compareTo //
+    //-----------//
+    /**
+     * Comparison
+     *
+     * @param that the other rational instance
+     * @return -1,0,1 if this <,==,> that respectively
+     */
+    @Override
+    public int compareTo (Rational that)
+    {
+        int a = this.num * that.den;
+        int b = this.den * that.num;
+
+        // Detect overflow, using the fact that den's are always >= 1
+        if ((Integer.signum(b) != Integer.signum(that.num))
+            || (Integer.signum(a) != Integer.signum(this.num))) {
+            BigInteger bigThisNum = BigInteger.valueOf(this.num);
+            BigInteger bigThisDen = BigInteger.valueOf(this.den);
+            BigInteger bigThatNum = BigInteger.valueOf(that.num);
+            BigInteger bigThatDen = BigInteger.valueOf(that.den);
+            BigInteger A = bigThisNum.multiply(bigThatDen);
+            BigInteger B = bigThisDen.multiply(bigThatNum);
+
+            return A.compareTo(B);
+        } else {
+            return Integer.signum(a - b);
+        }
+
+        ///return Integer.signum((this.num * that.den) - (this.den * that.num));
+    }
+
+    //---------//
+    // divides //
+    //---------//
+    /**
+     * Division
+     *
+     * @param that the other rational instance
+     * @return this / that
+     */
+    public Rational divides (Rational that)
+    {
+        return times(that.inverse());
+    }
+
+    //---------//
+    // divides //
+    //---------//
+    /**
+     * Division
+     *
+     * @param that the integer to divide by
+     * @return this / that
+     */
+    public Rational divides (int that)
+    {
+        return new Rational(num, den * that);
+    }
+
+    //--------//
+    // equals //
+    //--------//
+    /**
+     * Identity
+     *
+     * @param obj the instance to compare to
+     * @return true if this value equals that value
+     */
+    @Override
+    public boolean equals (Object obj)
+    {
+        if (!(obj instanceof Rational)) {
+            return false;
+        } else {
+            return compareTo((Rational) obj) == 0;
+        }
+    }
 
     //-----//
     // gcd //
@@ -130,94 +220,6 @@ public class Rational
         return s;
     }
 
-    //-----//
-    // abs //
-    //-----//
-    /**
-     * Report the absolute value
-     * @return |num| / den
-     */
-    public Rational abs ()
-    {
-        return new Rational(Math.abs(num), den);
-    }
-
-    //-----------//
-    // compareTo //
-    //-----------//
-    /**
-     * Comparison
-     * @param that the other rational instance
-     * @return -1,0,1 if this <,==,> that respectively
-     */
-    @Override
-    public int compareTo (Rational that)
-    {
-        int a = this.num * that.den;
-        int b = this.den * that.num;
-
-        // Detect overflow, using the fact that den's are always >= 1
-        if ((Integer.signum(b) != Integer.signum(that.num)) ||
-            (Integer.signum(a) != Integer.signum(this.num))) {
-            BigInteger bigThisNum = BigInteger.valueOf(this.num);
-            BigInteger bigThisDen = BigInteger.valueOf(this.den);
-            BigInteger bigThatNum = BigInteger.valueOf(that.num);
-            BigInteger bigThatDen = BigInteger.valueOf(that.den);
-            BigInteger A = bigThisNum.multiply(bigThatDen);
-            BigInteger B = bigThisDen.multiply(bigThatNum);
-
-            return A.compareTo(B);
-        } else {
-            return Integer.signum(a - b);
-        }
-
-        ///return Integer.signum((this.num * that.den) - (this.den * that.num));
-    }
-
-    //---------//
-    // divides //
-    //---------//
-    /**
-     * Division
-     * @param that the other rational instance
-     * @return this / that
-     */
-    public Rational divides (Rational that)
-    {
-        return times(that.inverse());
-    }
-
-    //---------//
-    // divides //
-    //---------//
-    /**
-     * Division
-     * @param that the integer to divide by
-     * @return this / that
-     */
-    public Rational divides (int that)
-    {
-        return new Rational(num, den * that);
-    }
-
-    //--------//
-    // equals //
-    //--------//
-    /**
-     * Identity
-     * @param obj the instance to compare to
-     * @return true if this value equals that value
-     */
-    @Override
-    public boolean equals (Object obj)
-    {
-        if (!(obj instanceof Rational)) {
-            return false;
-        } else {
-            return compareTo((Rational) obj) == 0;
-        }
-    }
-
     //----------//
     // hashCode //
     //----------//
@@ -237,6 +239,7 @@ public class Rational
     //---------//
     /**
      * Unary inversion
+     *
      * @return 1 / this
      */
     public Rational inverse ()
@@ -249,6 +252,7 @@ public class Rational
     //-------//
     /**
      * Substraction
+     *
      * @param that the other rational instance
      * @return this - that
      */
@@ -262,6 +266,7 @@ public class Rational
     //-------//
     /**
      * Substraction
+     *
      * @param that the integer to substract
      * @return this - that
      */
@@ -275,6 +280,7 @@ public class Rational
     //----------//
     /**
      * Unary negation
+     *
      * @return -this
      */
     public Rational opposite ()
@@ -287,6 +293,7 @@ public class Rational
     //------//
     /**
      * Addition
+     *
      * @param that the other rational instance
      * @return this + that
      */
@@ -301,8 +308,8 @@ public class Rational
         }
 
         return new Rational(
-            (this.num * that.den) + (this.den * that.num),
-            this.den * that.den);
+                (this.num * that.den) + (this.den * that.num),
+                this.den * that.den);
     }
 
     //------//
@@ -310,6 +317,7 @@ public class Rational
     //------//
     /**
      * Addition
+     *
      * @param that the integer to add
      * @return this + that
      */
@@ -323,6 +331,7 @@ public class Rational
     //-------//
     /**
      * Multiplication
+     *
      * @param that the other rational instance
      * @return this * that
      */
@@ -336,6 +345,7 @@ public class Rational
     //-------//
     /**
      * Multiplication
+     *
      * @param that the integer to multiply by
      * @return this * that
      */

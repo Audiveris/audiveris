@@ -19,14 +19,13 @@ import omr.math.Histogram;
 
 import omr.run.Orientation;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphIdEvent;
 import omr.selection.GlyphSetEvent;
 import omr.selection.SelectionService;
 
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.Set;
 
@@ -75,11 +74,17 @@ public interface Nest
     Glyph addGlyph (Glyph glyph);
 
     /**
+     * Remove link and subscription to locationService
+     *
+     * @param locationService thte location service
+     */
+    void cutServices (SelectionService locationService);
+
+    /**
      * Print out major internal info about this glyph nest.
      *
      * @param title a specific title to be used for the dumpOf
      */
-    
     String dumpOf (String title);
 
     /**
@@ -176,7 +181,7 @@ public interface Nest
      * @param rect the coordinates rectangle
      * @return the glyphs found, which may be an empty list
      */
-    Set<Glyph> lookupGlyphs (PixelRectangle rect);
+    Set<Glyph> lookupGlyphs (Rectangle rect);
 
     /**
      * Look up for <b>all</b> active glyphs intersected by a provided
@@ -185,7 +190,7 @@ public interface Nest
      * @param rect the coordinates rectangle
      * @return the glyphs found, which may be an empty list
      */
-    Set<Glyph> lookupIntersectedGlyphs (PixelRectangle rect);
+    Set<Glyph> lookupIntersectedGlyphs (Rectangle rect);
 
     /**
      * Look for a virtual glyph whose box contains the designated point
@@ -193,7 +198,7 @@ public interface Nest
      * @param point the designated point
      * @return the virtual glyph found, or null
      */
-    Glyph lookupVirtualGlyph (PixelPoint point);
+    Glyph lookupVirtualGlyph (Point point);
 
     /**
      * Map a section to a glyph, making the glyph active
@@ -227,11 +232,4 @@ public interface Nest
      * @param locationService the location service
      */
     void setServices (SelectionService locationService);
-
-    /**
-     * Remove link and subscription to locationService
-     *
-     * @param locationService thte location service
-     */
-    void cutServices (SelectionService locationService);
 }

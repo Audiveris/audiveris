@@ -13,11 +13,6 @@ package omr.ui;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Measure;
 import omr.score.entity.MeasureNode;
 import omr.score.entity.SystemNode;
@@ -29,7 +24,13 @@ import omr.selection.SelectionHint;
 import omr.sheet.Sheet;
 
 import omr.step.Step;
+import omr.step.Steps;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -42,7 +43,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import omr.step.Steps;
 
 /**
  * Class {@code ErrorsEditor} handles the set of error messages
@@ -377,7 +377,7 @@ public class ErrorsEditor
                     } else {
                         // Otherwise use node location as possible
                         try {
-                            PixelPoint pixPt = null;
+                            Point pixPt = null;
 
                             try {
                                 pixPt = record.node.getCenter();
@@ -400,7 +400,7 @@ public class ErrorsEditor
                                     ErrorsEditor.this,
                                     SelectionHint.LOCATION_INIT,
                                     null,
-                                    new PixelRectangle(pixPt)));
+                                    new Rectangle(pixPt)));
                         } catch (Exception ex) {
                             logger.warn(
                                     "Failed pointing to " + record.node,

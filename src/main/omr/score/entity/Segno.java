@@ -12,11 +12,13 @@
 package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
+
+import omr.score.visitor.ScoreVisitor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
-import omr.score.visitor.ScoreVisitor;
+import java.awt.Point;
 
 /**
  * Class {@code Segno} represents a segno event
@@ -24,15 +26,14 @@ import omr.score.visitor.ScoreVisitor;
  * @author Hervé Bitteur
  */
 public class Segno
-    extends AbstractDirection
+        extends AbstractDirection
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Segno.class);
-    
-    //~ Constructors -----------------------------------------------------------
 
+    //~ Constructors -----------------------------------------------------------
     //-------//
     // Segno //
     //-------//
@@ -40,19 +41,27 @@ public class Segno
      * Creates a new instance of Segno event
      *
      * @param measure measure that contains this mark
-     * @param point location of mark
-     * @param chord the chord related to the mark, if any
-     * @param glyph the underlying glyph
+     * @param point   location of mark
+     * @param chord   the chord related to the mark, if any
+     * @param glyph   the underlying glyph
      */
-    public Segno (Measure    measure,
-                  PixelPoint point,
-                  Chord      chord,
-                  Glyph      glyph)
+    public Segno (Measure measure,
+                  Point point,
+                  Chord chord,
+                  Glyph glyph)
     {
         super(measure, point, chord, glyph);
     }
 
     //~ Methods ----------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
 
     //----------//
     // populate //
@@ -60,13 +69,13 @@ public class Segno
     /**
      * Used by SystemTranslator to allocate the segno marks
      *
-     * @param glyph underlying glyph
+     * @param glyph   underlying glyph
      * @param measure measure where the mark is located
-     * @param point location for the mark
+     * @param point   location for the mark
      */
-    public static void populate (Glyph      glyph,
-                                 Measure    measure,
-                                 PixelPoint point)
+    public static void populate (Glyph glyph,
+                                 Measure measure,
+                                 Point point)
     {
         if (glyph.isVip()) {
             logger.info("Segno. populate {}", glyph.idString());
@@ -76,16 +85,7 @@ public class Segno
 
         if (slot != null) {
             glyph.setTranslation(
-                new Segno(measure, point, slot.getChordJustBelow(point), glyph));
+                    new Segno(measure, point, slot.getChordJustBelow(point), glyph));
         }
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
     }
 }

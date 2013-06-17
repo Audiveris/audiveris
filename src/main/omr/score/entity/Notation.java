@@ -32,11 +32,11 @@ import omr.score.visitor.Visitable;
  *  non-arpeggiate      nyi
  *  accidental-mark     nyi
  *  other-notation      nyi
- *  </pre>
+ * </pre>
  *
  * @author Hervé Bitteur
  */
 public interface Notation
-    extends Visitable
+        extends Visitable
 {
 }

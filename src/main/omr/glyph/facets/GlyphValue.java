@@ -22,9 +22,9 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code GlyphValue} is used to map a Glyph with its XML representation
- * as handled by JAXB, to allow the decoupling between in-memory layout and XML
- * layout.
+ * Class {@code GlyphValue} is used to map a Glyph with its XML
+ * representation as handled by JAXB, to allow the decoupling between
+ * in-memory layout and XML layout.
  *
  * @author Hervé Bitteur
  */
@@ -62,7 +62,6 @@ public class GlyphValue
     final SortedSet<Section> members;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // GlyphValue //
     //------------//
@@ -77,12 +76,12 @@ public class GlyphValue
      * @param pitchPosition
      * @param members
      */
-    public GlyphValue (Shape              shape,
-                       int                interline,
-                       int                id,
-                       int                stemNumber,
-                       boolean            withLedger,
-                       double             pitchPosition,
+    public GlyphValue (Shape shape,
+                       int interline,
+                       int id,
+                       int stemNumber,
+                       boolean withLedger,
+                       double pitchPosition,
                        SortedSet<Section> members)
     {
         this.shape = shape;
@@ -102,14 +101,14 @@ public class GlyphValue
     public GlyphValue (Glyph glyph)
     {
         this(
-            (glyph.getShape() != null) ? glyph.getShape().getPhysicalShape()
-                        : null,
-            glyph.getInterline(),
-            glyph.getId(),
-            glyph.getStemNumber(),
-            glyph.isWithLedger(),
-            glyph.getPitchPosition(),
-            glyph.getMembers());
+                (glyph.getShape() != null) ? glyph.getShape().getPhysicalShape()
+                : null,
+                glyph.getInterline(),
+                glyph.getId(),
+                glyph.getStemNumber(),
+                glyph.isWithLedger(),
+                glyph.getPitchPosition(),
+                glyph.getMembers());
     }
 
     //------------//

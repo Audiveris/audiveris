@@ -19,7 +19,7 @@ import omr.run.Run;
  * @author Hervé Bitteur
  */
 public class RunEvent
-    extends UserEvent
+        extends UserEvent
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -27,28 +27,27 @@ public class RunEvent
     private final Run run;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // RunEvent //
     //----------//
     /**
      * Creates a new RunEvent object.
-     * @param source the entity that created this event
-     * @param hint how the event originated
+     *
+     * @param source   the entity that created this event
+     * @param hint     how the event originated
      * @param movement the mouse movement
-     * @param run the selected run (or null)
+     * @param run      the selected run (or null)
      */
-    public RunEvent (Object        source,
+    public RunEvent (Object source,
                      SelectionHint hint,
                      MouseMovement movement,
-                     Run           run)
+                     Run run)
     {
         super(source, hint, movement);
         this.run = run;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getEntity //
     //-----------//

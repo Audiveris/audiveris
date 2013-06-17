@@ -75,14 +75,20 @@ public class AdaptiveDescriptor
     }
 
     //~ Methods ----------------------------------------------------------------
-    //
-    //---------//
-    // getKind //
-    //---------//
+    //--------//
+    // equals //
+    //--------//
     @Override
-    public FilterKind getKind ()
+    public boolean equals (Object obj)
     {
-        return FilterKind.ADAPTIVE;
+        if ((obj instanceof AdaptiveDescriptor) && super.equals(obj)) {
+            AdaptiveDescriptor that = (AdaptiveDescriptor) obj;
+
+            return (this.meanCoeff == that.meanCoeff)
+                   && (this.stdDevCoeff == that.stdDevCoeff);
+        }
+
+        return false;
     }
 
     //------------//
@@ -107,7 +113,10 @@ public class AdaptiveDescriptor
             Constructor cons = classe.getConstructor(
                     new Class[]{PixelSource.class, double.class, double.class});
 
-            return (PixelFilter) cons.newInstance(source, meanCoeff, stdDevCoeff);
+            return (PixelFilter) cons.newInstance(
+                    source,
+                    meanCoeff,
+                    stdDevCoeff);
         } catch (Exception ex) {
             logger.error("Error on getFilter {}", ex);
 
@@ -115,19 +124,14 @@ public class AdaptiveDescriptor
         }
     }
 
-    //--------//
-    // equals //
-    //--------//
+    //
+    //---------//
+    // getKind //
+    //---------//
     @Override
-    public boolean equals (Object obj)
+    public FilterKind getKind ()
     {
-        if ((obj instanceof AdaptiveDescriptor) && super.equals(obj)) {
-            AdaptiveDescriptor that = (AdaptiveDescriptor) obj;
-            return this.meanCoeff == that.meanCoeff
-                   && this.stdDevCoeff == that.stdDevCoeff;
-        }
-
-        return false;
+        return FilterKind.ADAPTIVE;
     }
 
     //----------//
@@ -137,8 +141,13 @@ public class AdaptiveDescriptor
     public int hashCode ()
     {
         int hash = 5;
-        hash = 97 * hash + (int) (Double.doubleToLongBits(this.meanCoeff) ^ (Double.doubleToLongBits(this.meanCoeff) >>> 32));
-        hash = 97 * hash + (int) (Double.doubleToLongBits(this.stdDevCoeff) ^ (Double.doubleToLongBits(this.stdDevCoeff) >>> 32));
+        hash = (97 * hash)
+               + (int) (Double.doubleToLongBits(this.meanCoeff)
+                        ^ (Double.doubleToLongBits(this.meanCoeff) >>> 32));
+        hash = (97 * hash)
+               + (int) (Double.doubleToLongBits(this.stdDevCoeff)
+                        ^ (Double.doubleToLongBits(this.stdDevCoeff) >>> 32));
+
         return hash;
     }
 
@@ -149,8 +158,10 @@ public class AdaptiveDescriptor
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
-        sb.append(" meanCoeff:").append(meanCoeff);
-        sb.append(" stdDevCoeff:").append(stdDevCoeff);
+        sb.append(" meanCoeff:")
+                .append(meanCoeff);
+        sb.append(" stdDevCoeff:")
+                .append(stdDevCoeff);
 
         return sb.toString();
     }

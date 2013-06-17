@@ -19,12 +19,7 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.Orientation;
-
-import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
@@ -34,6 +29,10 @@ import omr.text.TextWord;
 
 import omr.util.Predicate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.util.Collections;
 import java.util.Set;
@@ -53,7 +52,8 @@ public class DotPattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(DotPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            DotPattern.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -96,11 +96,15 @@ public class DotPattern
     public int runPattern ()
     {
         int nb = 0;
-        String language = system.getSheet().getPage().getTextParam().getTarget();
+        String language = system.getSheet()
+                .getPage()
+                .getTextParam()
+                .getTarget();
 
         for (Glyph glyph : getQuestionableDots()) {
             // Check alignment with a TextLine
             TextLine line = getEmbracingLine(glyph);
+
             if (line == null) {
                 continue;
             }
@@ -109,7 +113,7 @@ public class DotPattern
             if (!isDashLooking(glyph)) {
                 continue;
             }
-            
+
             // OK, assign it the character shape
             glyph.setShape(Shape.CHARACTER);
 
@@ -121,7 +125,6 @@ public class DotPattern
 
             // Counters
             nb++;
-
         }
 
         return nb;
@@ -138,7 +141,7 @@ public class DotPattern
      */
     private TextLine getEmbracingLine (Glyph glyph)
     {
-        PixelRectangle glyphBox = glyph.getBounds();
+        Rectangle glyphBox = glyph.getBounds();
 
         for (TextLine sentence : system.getSentences()) {
             Line2D baseline = sentence.getBaseline();
@@ -222,8 +225,7 @@ public class DotPattern
      */
     private boolean isDashLooking (Glyph glyph)
     {
-        return glyph.getAspect(Orientation.HORIZONTAL)
-               >= constants.minAspect.getValue();
+        return glyph.getAspect(Orientation.HORIZONTAL) >= constants.minAspect.getValue();
     }
 
     //~ Inner Classes ----------------------------------------------------------

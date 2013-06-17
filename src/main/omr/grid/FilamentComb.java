@@ -37,12 +37,12 @@ public class FilamentComb
     private boolean processed = false;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // FilamentComb //
     //-----------------//
     /**
      * Creates a new FilamentComb object.
+     *
      * @param col the column index
      */
     public FilamentComb (int col)
@@ -54,17 +54,17 @@ public class FilamentComb
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // append //
     //--------//
     /**
      * Append a filament to the series.
+     *
      * @param filament the filament to append
      * @param y        the filament ordinate at x abscissa
      */
     public void append (LineFilament filament,
-                        double       y)
+                        double y)
     {
         filaments.add(filament);
         ys.add(y);
@@ -76,6 +76,7 @@ public class FilamentComb
     //----------//
     /**
      * Report the number of filaments in this series.
+     *
      * @return the count
      */
     public int getCount ()
@@ -157,19 +158,19 @@ public class FilamentComb
         sb.append("Pattern");
 
         sb.append(" col:")
-          .append(col);
+                .append(col);
 
         sb.append(" ")
-          .append(filaments.size());
+                .append(filaments.size());
 
         for (int i = 0; i < filaments.size(); i++) {
             LineFilament fil = (LineFilament) filaments.get(i)
-                                                       .getAncestor();
-            double       y = ys.get(i);
+                    .getAncestor();
+            double y = ys.get(i);
             sb.append(" F#")
-              .append(fil.getId())
-              .append("@")
-              .append((float) y);
+                    .append(fil.getId())
+                    .append("@")
+                    .append((float) y);
         }
 
         sb.append("}");

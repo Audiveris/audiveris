@@ -22,9 +22,6 @@ import omr.glyph.facets.Glyph;
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.BasicLine;
 import omr.math.Line;
 
@@ -33,6 +30,9 @@ import omr.step.Steps;
 
 import omr.util.BrokenLine;
 import omr.util.HorizontalSide;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Polygon;

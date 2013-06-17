@@ -49,7 +49,8 @@ public class LiveParam<E>
     //-------------//
     public boolean needsUpdate ()
     {
-        return !getTarget().equals(actual);
+        return !getTarget()
+                .equals(actual);
     }
 
     //-----------//
@@ -69,7 +70,8 @@ public class LiveParam<E>
         StringBuilder sb = new StringBuilder(super.internalsString());
 
         if (actual != null) {
-            sb.append(" actual:").append(actual);
+            sb.append(" actual:")
+                    .append(actual);
         }
 
         return sb.toString();

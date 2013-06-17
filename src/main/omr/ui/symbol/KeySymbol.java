@@ -13,11 +13,11 @@ package omr.ui.symbol;
 
 import omr.glyph.Shape;
 
-import omr.score.common.PixelPoint;
 import omr.score.entity.KeySignature;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 
@@ -28,7 +28,7 @@ import java.awt.geom.Rectangle2D;
  *
  */
 public abstract class KeySymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -36,21 +36,20 @@ public abstract class KeySymbol
     protected final int key;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // KeySymbol //
     //-----------//
     /**
      * Creates a new KeySymbol object.
      *
-     * @param key the key value: 1..7 for sharps
+     * @param key    the key value: 1..7 for sharps
      * @param isIcon true for an icon
-     * @param shape the related shape
-     * @param codes the code for item shape
+     * @param shape  the related shape
+     * @param codes  the code for item shape
      */
-    public KeySymbol (int     key,
+    public KeySymbol (int key,
                       boolean isIcon,
-                      Shape   shape,
+                      Shape shape,
                       int... codes)
     {
         super(isIcon, shape, false, codes);
@@ -58,7 +57,6 @@ public abstract class KeySymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getParams //
     //-----------//
@@ -77,16 +75,16 @@ public abstract class KeySymbol
 
         int sign = Integer.signum(key);
         p.itemRect = new Rectangle(
-            (int) Math.ceil(r2.getWidth()),
-            (int) Math.ceil(r2.getHeight()));
+                (int) Math.ceil(r2.getWidth()),
+                (int) Math.ceil(r2.getHeight()));
 
         for (int k = 1; k <= (key * sign); k++) {
-            int       position = KeySignature.getItemPosition(k * sign, null);
+            int position = KeySignature.getItemPosition(k * sign, null);
             Rectangle r = new Rectangle(
-                (int) Math.rint((k - 1) * p.itemDx),
-                (int) Math.rint(position * p.stepDy),
-                p.itemRect.width,
-                p.itemRect.height);
+                    (int) Math.rint((k - 1) * p.itemDx),
+                    (int) Math.rint(position * p.stepDy),
+                    p.itemRect.width,
+                    p.itemRect.height);
 
             if (p.rect == null) {
                 p.rect = r;
@@ -97,7 +95,7 @@ public abstract class KeySymbol
 
         p.rect.x = (p.rect.width / 2);
         p.rect.y = -(int) Math.rint(
-            KeySignature.getStandardPosition(key) * p.stepDy);
+                KeySignature.getStandardPosition(key) * p.stepDy);
 
         return p;
     }
@@ -107,45 +105,44 @@ public abstract class KeySymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams   p = (MyParams) params;
-        PixelPoint loc = alignment.translatedPoint(
-            AREA_CENTER,
-            p.rect,
-            location);
+        MyParams p = (MyParams) params;
+        Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
         loc.x -= (p.rect.width / 2);
         loc.y -= (int) Math.rint(
-            KeySignature.getStandardPosition(key) * p.stepDy);
+                KeySignature.getStandardPosition(key) * p.stepDy);
 
         int sign = Integer.signum(key);
 
         for (int k = 1; k <= (key * sign); k++) {
             int position = KeySignature.getItemPosition(k * sign, null);
             MusicFont.paint(
-                g,
-                p.layout,
-                new PixelPoint(
+                    g,
+                    p.layout,
+                    new Point(
                     loc.x + (int) Math.rint((k - 1) * p.itemDx),
                     loc.y + (int) Math.rint(position * p.stepDy)),
-                MIDDLE_LEFT);
+                    MIDDLE_LEFT);
         }
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
-        extends Params
+            extends Params
     {
         //~ Instance fields ----------------------------------------------------
 
-        double    stepDy; // Dy from one step to the other
-        double    itemDx; // Dx from one item to the other
+        double stepDy; // Dy from one step to the other
+
+        double itemDx; // Dx from one item to the other
+
         Rectangle itemRect; // Item rectangle
+
     }
 }

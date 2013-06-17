@@ -27,17 +27,19 @@ public interface MomentsExtractor<D extends OrthogonalMoments<D>>
 
     /**
      * Extract information from provided foreground points and save
-     * the results in the target  descriptor.
+     * the results in the target descriptor.
+     *
      * @param xx   the array of abscissa values
      * @param yy   the array of ordinate values
      * @param mass the number of points
      */
     void extract (int[] xx,
                   int[] yy,
-                  int   mass);
+                  int mass);
 
     /**
      * Reconstruct an image from the shape features.
+     *
      * @param raster the (square) raster to populate
      */
     void reconstruct (WritableRaster raster);
@@ -45,6 +47,7 @@ public interface MomentsExtractor<D extends OrthogonalMoments<D>>
     /**
      * Assign a target descriptor of this extractor, to receive
      * extraction results.
+     *
      * @param descriptor the target descriptor
      */
     void setDescriptor (D descriptor);

@@ -11,9 +11,8 @@
 // </editor-fold>
 package omr.ui.symbol;
 
-import omr.score.common.PixelPoint;
-
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
@@ -36,14 +35,14 @@ import javax.swing.Icon;
  * <li>It may also be used to convey the <b>reference point</b> of that shape.
  * Most shapes have no reference point, and thus we use their area center,
  * which is the center of their bounding box.
- * However, a few shapes (e.g. clefs to precisely position them  on the staff)
+ * However, a few shapes (e.g. clefs to precisely position them on the staff)
  * need a very precise reference center (actually the y ordinate) which is
  * somewhat different from the area center. See {@link #getRefPoint}.</li>
  *
  * @author Hervé Bitteur
  */
 public interface Symbol
-    extends Icon
+        extends Icon
 {
     //~ Methods ----------------------------------------------------------------
 
@@ -51,21 +50,23 @@ public interface Symbol
      * Paint the symbol that represents the related shape, using the
      * scaled font and context, the symbol being aligned at provided
      * location.
+     *
      * @param g         graphic context
      * @param font      properly-scaled font (for interline & zoom)
      * @param location  where to paint the shape with provided alignment
      * @param alignment the way the symbol is aligned wrt the location
      */
     public void paintSymbol (Graphics2D g,
-                             MusicFont  font,
-                             PixelPoint location,
-                             Alignment  alignment);
+                             MusicFont font,
+                             Point location,
+                             Alignment alignment);
 
     /**
      * Build the image that represents the related shape, using the
      * scaled font.
      * The main difficulty is to determine up-front the size of the image to
      * allocate.
+     *
      * @param font properly-scaled font (for interline & zoom)
      * @return the image built, or null if failed
      */
@@ -73,6 +74,7 @@ public interface Symbol
 
     /**
      * Report the icon image, suitable for icon display.
+     *
      * @return the image meant for icon display
      */
     BufferedImage getIconImage ();
@@ -80,8 +82,9 @@ public interface Symbol
     /**
      * Report the symbol reference point, which is usually the area
      * center, but somewhat different for some symbols (such as flats).
+     *
      * @param area the contour box of the entity (symbol or glyph)
      * @return the reference point
      */
-    PixelPoint getRefPoint (Rectangle area);
+    Point getRefPoint (Rectangle area);
 }

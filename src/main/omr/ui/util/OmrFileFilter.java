@@ -20,8 +20,8 @@ import java.io.File;
  * @author Hervé Bitteur
  */
 public class OmrFileFilter
-    extends javax.swing.filechooser.FileFilter
-    implements java.io.FilenameFilter
+        extends javax.swing.filechooser.FileFilter
+        implements java.io.FilenameFilter
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -32,7 +32,6 @@ public class OmrFileFilter
     private final String[] extensions;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------//
     // OmrFileFilter //
     //---------------//
@@ -59,7 +58,7 @@ public class OmrFileFilter
     public OmrFileFilter (String description,
                           String extension)
     {
-        this(description, new String[] { extension });
+        this(description, new String[]{extension});
     }
 
     //---------------//
@@ -72,7 +71,7 @@ public class OmrFileFilter
      * @param description the user readable description
      * @param extensions  the array of allowed file extensions
      */
-    public OmrFileFilter (String   description,
+    public OmrFileFilter (String description,
                           String[] extensions)
     {
         if (description == null) {
@@ -86,7 +85,6 @@ public class OmrFileFilter
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // accept //
     //--------//
@@ -122,13 +120,13 @@ public class OmrFileFilter
     /**
      * Tests if a specified file should be included in a file list.
      *
-     * @param   dir    the directory in which the file was found.
-     * @param   name   the name of the file.
-     * @return  {@code true} if and only if the name should be
-     * included in the file list; {@code false} otherwise.
+     * @param dir  the directory in which the file was found.
+     * @param name the name of the file.
+     * @return {@code true} if and only if the name should be
+     *         included in the file list; {@code false} otherwise.
      */
     @Override
-    public boolean accept (File   dir,
+    public boolean accept (File dir,
                            String name)
     {
         return accept(new File(dir, name));

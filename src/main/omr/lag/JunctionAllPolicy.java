@@ -14,13 +14,14 @@ package omr.lag;
 import omr.run.Run;
 
 /**
- * Class {@code JunctionAllPolicy} defines a junction policy which imposes
- * no condition on run consistency, thus taking all runs considered.
+ * Class {@code JunctionAllPolicy} defines a junction policy which
+ * imposes no condition on run consistency, thus taking all runs
+ * considered.
  *
  * @author Hervé Bitteur
  */
 public class JunctionAllPolicy
-    implements JunctionPolicy
+        implements JunctionPolicy
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -35,19 +36,19 @@ public class JunctionAllPolicy
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // consistentRun //
     //---------------//
     /**
      * Check whether the Run is consistent with the provided Section,
      * according to this junction policy.
-     * @param run the Run candidate
+     *
+     * @param run     the Run candidate
      * @param section the potentially hosting Section
      * @return always true
      */
     @Override
-    public boolean consistentRun (Run     run,
+    public boolean consistentRun (Run run,
                                   Section section)
     {
         return true;

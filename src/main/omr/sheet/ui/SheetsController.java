@@ -14,9 +14,6 @@ package omr.sheet.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 import omr.score.entity.Page;
 
@@ -28,6 +25,9 @@ import omr.sheet.Sheet;
 import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.Action;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 

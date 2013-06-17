@@ -11,11 +11,10 @@
 // </editor-fold>
 package omr.ui;
 
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Collection;
 
 import javax.swing.AbstractAction;
@@ -29,7 +28,7 @@ import javax.swing.KeyStroke;
 
 /**
  * Class {@code EntityAction} is a template for any entity-dependent
- * action.  It builds the action, registers it in the list of entity-dependent
+ * action. It builds the action, registers it in the list of entity-dependent
  * actions if such list if provided, inserts the action in the proper menu, and
  * inserts a button in the toolbar if provided.
  *
@@ -37,7 +36,7 @@ import javax.swing.KeyStroke;
  * @author Hervé Bitteur
  */
 public class EntityAction
-    extends AbstractAction
+        extends AbstractAction
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -45,7 +44,6 @@ public class EntityAction
     private Action delegate = null;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // OmrAction //
     //-----------//
@@ -54,21 +52,22 @@ public class EntityAction
      * well as in the toolbar (if so desired)
      *
      * @param entityActions collection of actions that depend on existence of a
-     *                       current entity, or null
-     * @param menu the menu where the related item is to be inserted
-     * @param toolBar the toolBar for icon insertion (if so desired), or null
-     * @param label label for the menu item
-     * @param tip tooltip text
-     * @param key accelerator key, or null
-     * @param icon icon for menu and toolbar, or null
+     *                      current entity, or null
+     * @param menu          the menu where the related item is to be inserted
+     * @param toolBar       the toolBar for icon insertion (if so desired), or
+     *                      null
+     * @param label         label for the menu item
+     * @param tip           tooltip text
+     * @param key           accelerator key, or null
+     * @param icon          icon for menu and toolbar, or null
      */
     protected EntityAction (Collection<Action> entityActions,
-                            JMenu              menu,
-                            JToolBar           toolBar,
-                            String             label,
-                            String             tip,
-                            String             key,
-                            Icon               icon)
+                            JMenu menu,
+                            JToolBar toolBar,
+                            String label,
+                            String tip,
+                            String key,
+                            Icon icon)
     {
         super(label, icon);
 
@@ -86,7 +85,7 @@ public class EntityAction
         // Accelerator key?
         if (key != null) {
             item.setAccelerator(
-                KeyStroke.getKeyStroke(
+                    KeyStroke.getKeyStroke(
                     (int) key.charAt(0),
                     Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         }
@@ -94,7 +93,7 @@ public class EntityAction
         // Add an icon in the Tool bar?
         if ((toolBar != null) && (icon != null)) {
             final JButton button = toolBar.add(this);
-            button.setBorder(UIUtilities.getToolBorder());
+            button.setBorder(UIUtil.getToolBorder());
         }
     }
 
@@ -105,18 +104,18 @@ public class EntityAction
      * Wraps an existing action, used as a delegate
      */
     protected EntityAction (Collection<Action> entityActions,
-                            JMenu              menu,
-                            JToolBar           toolBar,
-                            Action             delegate)
+                            JMenu menu,
+                            JToolBar toolBar,
+                            Action delegate)
     {
         this(
-            entityActions,
-            menu,
-            toolBar,
-            (String) delegate.getValue(Action.NAME),
-            (String) delegate.getValue(Action.SHORT_DESCRIPTION),
-            (String) delegate.getValue(Action.ACCELERATOR_KEY),
-            (Icon) delegate.getValue(Action.SMALL_ICON));
+                entityActions,
+                menu,
+                toolBar,
+                (String) delegate.getValue(Action.NAME),
+                (String) delegate.getValue(Action.SHORT_DESCRIPTION),
+                (String) delegate.getValue(Action.ACCELERATOR_KEY),
+                (Icon) delegate.getValue(Action.SMALL_ICON));
         this.delegate = delegate;
     }
 
@@ -127,17 +126,16 @@ public class EntityAction
      * Convenient constructor with no delegate and no accelerator
      */
     protected EntityAction (Collection<Action> entityActions,
-                            JMenu              menu,
-                            JToolBar           toolBar,
-                            String             label,
-                            String             tip,
-                            Icon               icon)
+                            JMenu menu,
+                            JToolBar toolBar,
+                            String label,
+                            String tip,
+                            Icon icon)
     {
         this(entityActions, menu, toolBar, label, tip, null, icon);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------------//
     // actionPerformed //
     //-----------------//

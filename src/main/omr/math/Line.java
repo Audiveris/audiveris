@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.math;
 
-
 /**
  * Interface {@code Line} handles the equation of a line (or more
  * generally some curved line for which Y can be computed from X),
@@ -27,6 +26,7 @@ public interface Line
      * Compute the orthogonal distance between the line and the
      * provided point.
      * Note that the distance may be negative.
+     *
      * @param x the point abscissa
      * @param y the point ordinate
      * @return the algebraic orthogonal distance
@@ -52,12 +52,14 @@ public interface Line
 
     /**
      * Return the cardinality of the population of defining points.
+     *
      * @return the number of defining points so far
      */
     int getNumberOfPoints ();
 
     /**
      * Return -a/b, from a*x + b*y +c.
+     *
      * @return the y/x coefficient
      */
     double getSlope ();
@@ -65,6 +67,7 @@ public interface Line
     /**
      * Add the whole population of another line, which results in
      * merging this other line with the line at hand.
+     *
      * @param other the other line
      * @return this augmented line, which permits to chain the additions.
      */
@@ -72,6 +75,7 @@ public interface Line
 
     /**
      * Add the coordinates of a point in the population of points.
+     *
      * @param x abscissa of the new point
      * @param y ordinate of the new point
      */
@@ -87,19 +91,22 @@ public interface Line
 
     /**
      * Check if line is vertical ('b' coeff is null).
+     *
      * @return true if vertical
      */
     boolean isVertical ();
 
     /**
      * Remove the whole population of points.
-     * The line is not immediately usable, it needs now to include defining points.
+     * The line is not immediately usable, it needs now to include defining
+     * points.
      */
     void reset ();
 
     /**
      * Return a new line whose coordinates are swapped with respect
      * to this one.
+     *
      * @return a new X/Y swapped line
      */
     Line swappedCoordinates ();
@@ -107,6 +114,7 @@ public interface Line
     /**
      * Retrieve the abscissa where the line crosses the given ordinate y.
      * Beware of horizontal lines !!!
+     *
      * @param y the imposed ordinate
      * @return the corresponding x value
      */
@@ -116,6 +124,7 @@ public interface Line
      * Retrieve the abscissa where the line crosses the given ordinate y,
      * rounded to the nearest integer value.
      * Beware of horizontal lines !!!
+     *
      * @param y the imposed ordinate
      * @return the corresponding x value
      */
@@ -124,6 +133,7 @@ public interface Line
     /**
      * Retrieve the ordinate where the line crosses the given abscissa x.
      * Beware of vertical lines !!!
+     *
      * @param x the imposed abscissa
      * @return the corresponding y value
      */
@@ -133,6 +143,7 @@ public interface Line
      * Retrieve the ordinate where the line crosses the given abscissa x,
      * rounded to the nearest integer value.
      * Beware of vertical lines !!!
+     *
      * @param x the imposed abscissa
      * @return the corresponding y value
      */
@@ -146,6 +157,7 @@ public interface Line
     static class NonInvertibleLineException
             extends RuntimeException
     {
+        //~ Constructors -------------------------------------------------------
 
         NonInvertibleLineException (String message)
         {
@@ -158,7 +170,7 @@ public interface Line
      * undefined parameters.
      */
     static class UndefinedLineException
-        extends RuntimeException
+            extends RuntimeException
     {
         //~ Constructors -------------------------------------------------------
 

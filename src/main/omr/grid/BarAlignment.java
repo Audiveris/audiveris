@@ -139,6 +139,32 @@ public class BarAlignment
     }
 
     //----------//
+    // isManual //
+    //----------//
+    /**
+     * Report whether this alignment is manually defined or not.
+     *
+     * @return the manual flag
+     */
+    public boolean isManual ()
+    {
+        return manual;
+    }
+
+    //-----------//
+    // setManual //
+    //-----------//
+    /**
+     * Flag this alignment as a manual one.
+     *
+     * @param manual the manual flag to set
+     */
+    public void setManual (boolean manual)
+    {
+        this.manual = manual;
+    }
+
+    //----------//
     // toString //
     //----------//
     @Override
@@ -169,31 +195,5 @@ public class BarAlignment
         sb.append("}");
 
         return sb.toString();
-    }
-
-    //----------//
-    // isManual //
-    //----------//
-    /**
-     * Report whether this alignment is manually defined or not.
-     *
-     * @return the manual flag
-     */
-    public boolean isManual ()
-    {
-        return manual;
-    }
-
-    //-----------//
-    // setManual //
-    //-----------//
-    /**
-     * Flag this alignment as a manual one.
-     *
-     * @param manual the manual flag to set
-     */
-    public void setManual (boolean manual)
-    {
-        this.manual = manual;
     }
 }

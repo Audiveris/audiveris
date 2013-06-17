@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.util;
 
-
 /**
  * Class {@code Wrapper} is used to wrap a mutable output value
  *
@@ -27,7 +26,6 @@ public class Wrapper<T>
     public T value;
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // toString //
     //----------//

@@ -15,14 +15,13 @@ import omr.math.InjectionSolver;
 import omr.math.Population;
 import omr.math.Rational;
 
-import omr.score.common.PixelPoint;
-
 import omr.util.Navigable;
 import omr.util.TreeNode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -64,7 +63,7 @@ public class Slot
     private final int id;
 
     /** Reference point of the slot. */
-    private PixelPoint refPoint;
+    private Point refPoint;
 
     /** Chords incoming into this slot, sorted by staff then ordinate. */
     private List<Chord> incomings = new ArrayList<>();
@@ -145,12 +144,12 @@ public class Slot
         Population yPop = new Population();
 
         for (Chord chord : chords) {
-            PixelPoint center = chord.getCenter();
+            Point center = chord.getCenter();
             xPop.includeValue(center.x);
             yPop.includeValue(center.y);
         }
 
-        refPoint = new PixelPoint(
+        refPoint = new Point(
                 (int) Math.rint(xPop.getMeanValue()),
                 (int) Math.rint(yPop.getMeanValue()));
     }
@@ -273,7 +272,7 @@ public class Slot
      * @param point the given point
      * @return the chord above, or null
      */
-    public Chord getChordJustAbove (PixelPoint point)
+    public Chord getChordJustAbove (Point point)
     {
         Chord chordAbove = null;
 
@@ -282,7 +281,7 @@ public class Slot
 
         // We look for the chord just above
         for (Chord chord : getChords()) {
-            PixelPoint head = chord.getHeadLocation();
+            Point head = chord.getHeadLocation();
             if (head != null && head.y < point.y) {
                 if (chord.getStaff() == targetStaff) {
                     chordAbove = chord;
@@ -305,14 +304,14 @@ public class Slot
      * @param point the given point
      * @return the chord below, or null
      */
-    public Chord getChordJustBelow (PixelPoint point)
+    public Chord getChordJustBelow (Point point)
     {
         // Staff at or below
         Staff targetStaff = measure.getPart().getStaffJustBelow(point);
 
         // We look for the chord just below
         for (Chord chord : getChords()) {
-            PixelPoint head = chord.getHeadLocation();
+            Point head = chord.getHeadLocation();
             if (head != null && head.y > point.y
                 && chord.getStaff() == targetStaff) {
                 return chord;
@@ -346,8 +345,8 @@ public class Slot
      * @param bottom lower point of range
      * @return the collection of chords, which may be empty
      */
-    public List<Chord> getEmbracedChords (PixelPoint top,
-                                          PixelPoint bottom)
+    public List<Chord> getEmbracedChords (Point top,
+                                          Point bottom)
     {
         List<Chord> embracedChords = new ArrayList<>();
 

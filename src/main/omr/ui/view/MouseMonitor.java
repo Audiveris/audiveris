@@ -28,52 +28,59 @@ public interface MouseMonitor
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Contextual action (by right button click + control) of an additional point
-     * @param pt the current point in model pixel coordinates
+     * Contextual action (by right button click + control) of an
+     * additional point
+     *
+     * @param pt       the current point in model pixel coordinates
      * @param movement the mouse movement
      */
-    void contextAdded (Point         pt,
+    void contextAdded (Point pt,
                        MouseMovement movement);
 
     /**
      * Contextual action (by right button click)
-     * @param pt the current point in model pixel coordinates
+     *
+     * @param pt       the current point in model pixel coordinates
      * @param movement the mouse movement
      */
-    void contextSelected (Point         pt,
+    void contextSelected (Point pt,
                           MouseMovement movement);
 
     /**
      * Selection (by left button click + control) of an additional point
-     * @param pt the added point in model pixel coordinates
+     *
+     * @param pt       the added point in model pixel coordinates
      * @param movement the mouse movement
      */
-    void pointAdded (Point         pt,
+    void pointAdded (Point pt,
                      MouseMovement movement);
 
     /**
      * Selection (by left button click)
-     * @param pt the selected point in model pixel coordinates
+     *
+     * @param pt       the selected point in model pixel coordinates
      * @param movement the mouse movement
      */
-    void pointSelected (Point         pt,
+    void pointSelected (Point pt,
                         MouseMovement movement);
 
     /**
      * Selection (by left button drag) of a rectangle when mouse is
      * released
-     * @param rect the selected rectangle in model pixel coordinates
+     *
+     * @param rect     the selected rectangle in model pixel coordinates
      * @param movement the mouse movement
      */
-    void rectangleSelected (Rectangle     rect,
+    void rectangleSelected (Rectangle rect,
                             MouseMovement movement);
 
     /**
      * Rectangle zoom (by shift + ctrl) at end of rectangle selection
-     * @param rect the rectangle in model pixel coordinates, which defines
-     *             the focus and the zoom ratio
+     *
+     * @param rect     the rectangle in model pixel coordinates, which defines
+     *                 the focus and the zoom ratio
      * @param movement the mouse movement
      */
-    void rectangleZoomed (Rectangle     rect,
+    void rectangleZoomed (Rectangle rect,
                           MouseMovement movement);
 }

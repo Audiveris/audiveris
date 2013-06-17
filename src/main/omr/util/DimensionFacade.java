@@ -19,9 +19,9 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code DimensionFacade} is a (hopefully temporary) fix to allow Xml
- * binding of standard class Dimension that we cannot annotate
- *
+ * Class {@code DimensionFacade} is a (hopefully temporary) fix
+ * to allow Xml binding of standard class Dimension that we cannot
+ * annotate.
  *
  * @author Hervé Bitteur
  */
@@ -35,7 +35,6 @@ public class DimensionFacade
     private Dimension dimension;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // DimensionFacade //
     //-----------------//
@@ -60,7 +59,6 @@ public class DimensionFacade
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------//
     // getDimension //
     //--------------//

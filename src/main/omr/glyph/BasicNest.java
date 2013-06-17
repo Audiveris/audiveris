@@ -24,15 +24,9 @@ import omr.lag.Roi;
 import omr.lag.Section;
 import omr.lag.Sections;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Histogram;
 
 import omr.run.Orientation;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphIdEvent;
@@ -52,6 +46,11 @@ import omr.util.VipUtil;
 
 import org.bushe.swing.event.EventSubscriber;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -263,7 +262,7 @@ public class BasicNest
         Histogram<Integer> histo = new Histogram<>();
 
         if (!glyphs.isEmpty()) {
-            PixelRectangle box = Glyphs.getBounds(glyphs);
+            Rectangle box = Glyphs.getBounds(glyphs);
             Roi roi = new BasicRoi(box);
             histo = roi.getSectionHistogram(
                     orientation,
@@ -346,7 +345,7 @@ public class BasicNest
     // lookupGlyphs //
     //--------------//
     @Override
-    public Set<Glyph> lookupGlyphs (PixelRectangle rect)
+    public Set<Glyph> lookupGlyphs (Rectangle rect)
     {
         return Glyphs.lookupGlyphs(getActiveGlyphs(), rect);
     }
@@ -355,7 +354,7 @@ public class BasicNest
     // lookupIntersectedGlyphs //
     //-------------------------//
     @Override
-    public Set<Glyph> lookupIntersectedGlyphs (PixelRectangle rect)
+    public Set<Glyph> lookupIntersectedGlyphs (Rectangle rect)
     {
         return Glyphs.lookupIntersectedGlyphs(getActiveGlyphs(), rect);
     }
@@ -364,7 +363,7 @@ public class BasicNest
     // lookupVirtualGlyph //
     //--------------------//
     @Override
-    public Glyph lookupVirtualGlyph (PixelPoint point)
+    public Glyph lookupVirtualGlyph (Point point)
     {
         for (Glyph virtual : virtualGlyphs) {
             if (virtual.getBounds().contains(point)) {
@@ -622,7 +621,7 @@ public class BasicNest
     {
         SelectionHint hint = locationEvent.hint;
         MouseMovement movement = locationEvent.movement;
-        PixelRectangle rect = locationEvent.getData();
+        Rectangle rect = locationEvent.getData();
 
         if (!hint.isLocation() && !hint.isContext()) {
             return;
@@ -647,7 +646,7 @@ public class BasicNest
         } else {
             // This is just a point
             Glyph glyph = lookupVirtualGlyph(
-                    new PixelPoint(rect.getLocation()));
+                    new Point(rect.getLocation()));
 
             // Publish virtual Glyph, if any
             if (glyph != null) {
@@ -681,7 +680,7 @@ public class BasicNest
         if ((hint == GLYPH_INIT) || (hint == GLYPH_MODIFIED)) {
             // Display glyph contour
             if (glyph != null) {
-                PixelRectangle box = glyph.getBounds();
+                Rectangle box = glyph.getBounds();
                 publish(new LocationEvent(this, hint, movement, box));
             }
         }

@@ -24,18 +24,22 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
 import omr.util.Predicate;
 
-import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Class {@code ClefPattern} verifies all the initial clefs of a
@@ -130,7 +134,7 @@ public class ClefPattern
             // Define the inner box to intersect clef glyph(s)
             int left = (int) Math.rint(
                     staff.getAbscissa(HorizontalSide.LEFT));
-            PixelRectangle inner = new PixelRectangle(
+            Rectangle inner = new Rectangle(
                     left + (2 * xOffset) + (clefWidth / 2),
                     staff.getFirstLine().yAt(left) + (staff.getHeight() / 2),
                     0,
@@ -233,7 +237,7 @@ public class ClefPattern
                     vote.shape, Glyphs.toString(glyphs));
 
             // Look for larger stuff
-            PixelRectangle outer = compound.getBounds();
+            Rectangle outer = compound.getBounds();
             outer.grow(xMargin, yMargin);
 
             // Remember the box, for visual debug

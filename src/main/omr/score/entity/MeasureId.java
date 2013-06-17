@@ -11,16 +11,14 @@
 // </editor-fold>
 package omr.score.entity;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 
 import omr.util.TreeNode;
 
-import java.util.ListIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ListIterator;
 
 /**
  * Class {@code MeasureId} is a non-mutable class meant to handle the
@@ -41,7 +39,8 @@ public abstract class MeasureId
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(MeasureId.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            MeasureId.class);
 
     /** Char prefix for a second half id */
     protected static final char SH_CHAR = 'X';
@@ -50,7 +49,6 @@ public abstract class MeasureId
     protected static final String SH_STRING = Character.toString(SH_CHAR);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Underlying numeric value */
     protected final int value;
 
@@ -58,17 +56,16 @@ public abstract class MeasureId
     protected final boolean secondHalf;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // MeasureId //
     //-----------//
     /**
      * Creates a new MeasureId object.
      *
-     * @param value The underlying numeric value
+     * @param value      The underlying numeric value
      * @param secondHalf True if this is a second repeat half
      */
-    private MeasureId (int     value,
+    private MeasureId (int value,
                        boolean secondHalf)
     {
         this.value = value;
@@ -76,7 +73,6 @@ public abstract class MeasureId
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------------//
     // createScoreBased //
     //------------------//
@@ -85,22 +81,22 @@ public abstract class MeasureId
      *
      * @param strId the score-based id (as visible by the user)
      */
-    public static ScoreBased createScoreBased (Score  score,
+    public static ScoreBased createScoreBased (Score score,
                                                String strId)
     {
         // Check syntax
         String str = strId.trim()
-                          .toUpperCase();
+                .toUpperCase();
 
         if ((str == null) || (str.length() == 0)) {
             throw new IllegalArgumentException("Null or empty Id string");
         }
 
-        char    initial = str.charAt(0);
+        char initial = str.charAt(0);
         boolean secondHalf = initial == SH_CHAR;
 
-        int     value = secondHalf ? Integer.parseInt(str.substring(1))
-                        : Integer.parseInt(str);
+        int value = secondHalf ? Integer.parseInt(str.substring(1))
+                : Integer.parseInt(str);
 
         return new ScoreBased(score, value, secondHalf);
     }
@@ -111,17 +107,18 @@ public abstract class MeasureId
     /**
      * Report the measure in the provided score, for which the id matches the
      * provided score-based id
-     * @param score the related score
+     *
+     * @param score        the related score
      * @param scoreBasedId the score-based id to search for
      * @return the measure found, or null if not found
      */
-    public static Measure retrieveMeasure (Score      score,
+    public static Measure retrieveMeasure (Score score,
                                            ScoreBased scoreBasedId)
     {
-        int    scoreValue = scoreBasedId.value;
+        int scoreValue = scoreBasedId.value;
         String strId = scoreBasedId.toString();
 
-        Page   page = retrievePage(score, scoreValue);
+        Page page = retrievePage(score, scoreValue);
 
         if (page != null) {
             int pageIdOffset = score.getMeasureIdOffset(page);
@@ -129,15 +126,15 @@ public abstract class MeasureId
 
             for (TreeNode sn : page.getSystems()) {
                 ScoreSystem system = (ScoreSystem) sn;
-                SystemPart  part = system.getFirstPart();
+                SystemPart part = system.getFirstPart();
 
                 if (pageValue <= part.getLastMeasure()
-                                     .getIdValue()) {
+                        .getIdValue()) {
                     for (TreeNode mn : part.getMeasures()) {
                         Measure measure = (Measure) mn;
 
-                        if ((pageValue == measure.getIdValue()) &&
-                            strId.equals(measure.getScoreId())) {
+                        if ((pageValue == measure.getIdValue())
+                            && strId.equals(measure.getScoreId())) {
                             return measure;
                         }
                     }
@@ -154,16 +151,17 @@ public abstract class MeasureId
     /**
      * Report the page that contains the measure with provided score-based id
      * value
-     * @param score the score at hand
+     *
+     * @param score             the score at hand
      * @param scoreBasedIdValue the numeric value of score-based measure id
      * @return the containing page, or null if not found
      */
     public static Page retrievePage (Score score,
-                                     int   scoreBasedIdValue)
+                                     int scoreBasedIdValue)
     {
         for (ListIterator<TreeNode> pageIt = score.getPages()
-                                        .listIterator(score.getPages().size());
-             pageIt.hasPrevious();) {
+                .listIterator(
+                score.getPages().size()); pageIt.hasPrevious();) {
             Page page = (Page) pageIt.previous();
 
             if (scoreBasedIdValue >= score.getMeasureIdOffset(page)) {
@@ -175,7 +173,6 @@ public abstract class MeasureId
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------------//
     // MeasureRange // =========================================================
     //--------------//
@@ -197,11 +194,11 @@ public abstract class MeasureId
         private final ScoreBased lastId;
 
         //~ Constructors -------------------------------------------------------
-
         /**
          * Create a MeasureRange instance from score-based ids
+         *
          * @param firstScoreId score-based id of the first measure of the range
-         * @param lastScoreId score-based id of the last measure of the range
+         * @param lastScoreId  score-based id of the last measure of the range
          */
         public MeasureRange (ScoreBased firstScoreId,
                              ScoreBased lastScoreId)
@@ -216,22 +213,23 @@ public abstract class MeasureId
         }
 
         /**
-         * Create a MeasureRange instance from score-based ids provided as strings
-         * @param score the related score
+         * Create a MeasureRange instance from score-based ids provided as
+         * strings
+         *
+         * @param score        the related score
          * @param firstScoreId score-based id of the first measure of the range
-         * @param lastScoreId score-based id of the last measure of the range
+         * @param lastScoreId  score-based id of the last measure of the range
          */
-        public MeasureRange (Score  score,
+        public MeasureRange (Score score,
                              String firstScoreId,
                              String lastScoreId)
         {
             this(
-                createScoreBased(score, firstScoreId),
-                createScoreBased(score, lastScoreId));
+                    createScoreBased(score, firstScoreId),
+                    createScoreBased(score, lastScoreId));
         }
 
         //~ Methods ------------------------------------------------------------
-
         //----------//
         // contains //
         //----------//
@@ -239,15 +237,15 @@ public abstract class MeasureId
          * Checks whether the provided page-based measure id is within the
          * measure range
          *
-         * @param pageBasedId the page-based measure id  to check
+         * @param pageBasedId the page-based measure id to check
          * @return true if id is within the range, false otherwise
          */
         public boolean contains (PageBased pageBasedId)
         {
             ScoreBased scoreBasedId = new ScoreBased(pageBasedId);
 
-            return (scoreBasedId.compareTo(firstId) >= 0) &&
-                   (scoreBasedId.compareTo(lastId) <= 0);
+            return (scoreBasedId.compareTo(firstId) >= 0)
+                   && (scoreBasedId.compareTo(lastId) <= 0);
         }
 
         //--------//
@@ -261,9 +259,9 @@ public abstract class MeasureId
             } else {
                 MeasureRange that = (MeasureRange) obj;
 
-                return (this.score == that.score) &&
-                       this.firstId.equals(that.firstId) &&
-                       this.lastId.equals(that.lastId);
+                return (this.score == that.score)
+                       && this.firstId.equals(that.firstId)
+                       && this.lastId.equals(that.lastId);
             }
         }
 
@@ -272,6 +270,7 @@ public abstract class MeasureId
         //------------//
         /**
          * Report the id of the first measure in range
+         *
          * @return the score-based id of first measure
          */
         public ScoreBased getFirstId ()
@@ -284,6 +283,7 @@ public abstract class MeasureId
         //---------------//
         /**
          * Report the score-based index of the first measure of the range
+         *
          * @return the index (score-based) of the first measure
          */
         public int getFirstIndex ()
@@ -291,7 +291,7 @@ public abstract class MeasureId
             Measure measure = retrieveMeasure(score, firstId);
 
             return measure.getPageId()
-                          .getScoreIndex();
+                    .getScoreIndex();
         }
 
         //-----------//
@@ -299,6 +299,7 @@ public abstract class MeasureId
         //-----------//
         /**
          * Report the id of the last measure in range
+         *
          * @return the score-based id of last measure
          */
         public ScoreBased getLastId ()
@@ -328,10 +329,10 @@ public abstract class MeasureId
         {
             StringBuilder sb = new StringBuilder();
             sb.append("ids[")
-              .append(firstId)
-              .append("..")
-              .append(lastId)
-              .append("]");
+                    .append(firstId)
+                    .append("..")
+                    .append(lastId)
+                    .append("]");
 
             return sb.toString();
         }
@@ -344,7 +345,7 @@ public abstract class MeasureId
      * A page-based measure id
      */
     public static class PageBased
-        extends MeasureId
+            extends MeasureId
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -352,23 +353,21 @@ public abstract class MeasureId
         protected final Measure measure;
 
         //~ Constructors -------------------------------------------------------
-
         public PageBased (Measure measure,
-                          int     value,
+                          int value,
                           boolean secondHalf)
         {
             super(value, secondHalf);
             this.measure = measure;
         }
 
-        public PageBased (Measure   measure,
+        public PageBased (Measure measure,
                           PageBased other)
         {
             this(measure, other.value, other.secondHalf);
         }
 
         //~ Methods ------------------------------------------------------------
-
         //--------//
         // equals //
         //--------//
@@ -381,9 +380,9 @@ public abstract class MeasureId
 
             PageBased that = (PageBased) obj;
 
-            return (this.measure == that.measure) &&
-                   (this.value == that.value) &&
-                   (this.secondHalf == that.secondHalf);
+            return (this.measure == that.measure)
+                   && (this.value == that.value)
+                   && (this.secondHalf == that.secondHalf);
         }
 
         //---------------//
@@ -391,19 +390,20 @@ public abstract class MeasureId
         //---------------//
         /**
          * Report the score-based index of this measure
+         *
          * @return the score-based measure index
          */
         public int getScoreIndex ()
         {
-            Page  page = measure.getPage();
+            Page page = measure.getPage();
             Score score = page.getScore();
-            int   offset = score.getMeasureOffset(page);
+            int offset = score.getMeasureOffset(page);
 
             for (TreeNode sn : page.getSystems()) {
                 ScoreSystem system = (ScoreSystem) sn;
-                SystemPart  part = system.getFirstPart();
-                int         measureCount = part.getMeasures()
-                                               .size();
+                SystemPart part = system.getFirstPart();
+                int measureCount = part.getMeasures()
+                        .size();
 
                 if (value < (offset + measureCount)) {
                     return measure.getChildIndex() + offset;
@@ -413,7 +413,9 @@ public abstract class MeasureId
             }
 
             // This should not happen
-            logger.error("Cannot retrieve score index of page-based measure id {}", this);
+            logger.error(
+                    "Cannot retrieve score index of page-based measure id {}",
+                    this);
 
             return 0; // To keep the compiler happy
         }
@@ -435,14 +437,15 @@ public abstract class MeasureId
         /**
          * Present the score-based display (even though the stored
          * value is page-based)
+         *
          * @return [X]absId
          */
         public String toScoreString ()
         {
             Page page = measure.getPage();
 
-            int  pageMeasureIdOffset = page.getScore()
-                                           .getMeasureIdOffset(page);
+            int pageMeasureIdOffset = page.getScore()
+                    .getMeasureIdOffset(page);
 
             if (secondHalf) {
                 return SH_STRING + (pageMeasureIdOffset + value);
@@ -476,8 +479,8 @@ public abstract class MeasureId
      * A score-based measure id
      */
     public static class ScoreBased
-        extends MeasureId
-        implements Comparable<ScoreBased>
+            extends MeasureId
+            implements Comparable<ScoreBased>
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -485,9 +488,8 @@ public abstract class MeasureId
         private final Score score;
 
         //~ Constructors -------------------------------------------------------
-
-        public ScoreBased (Score   score,
-                           int     value,
+        public ScoreBased (Score score,
+                           int value,
                            boolean secondHalf)
         {
             super(value, secondHalf);
@@ -497,13 +499,12 @@ public abstract class MeasureId
         public ScoreBased (PageBased pageBasedId)
         {
             this(
-                pageBasedId.measure.getScore(),
-                pageBasedId.value,
-                pageBasedId.secondHalf);
+                    pageBasedId.measure.getScore(),
+                    pageBasedId.value,
+                    pageBasedId.secondHalf);
         }
 
         //~ Methods ------------------------------------------------------------
-
         //-----------//
         // compareTo //
         //-----------//
@@ -512,7 +513,7 @@ public abstract class MeasureId
         {
             if (this.score != that.score) {
                 throw new IllegalArgumentException(
-                    "Cannot compare ids from different scores");
+                        "Cannot compare ids from different scores");
             }
 
             int deltaValue = this.value - that.value;
@@ -544,8 +545,8 @@ public abstract class MeasureId
 
             ScoreBased that = (ScoreBased) obj;
 
-            return (this.value == that.value) &&
-                   (this.secondHalf == that.secondHalf);
+            return (this.value == that.value)
+                   && (this.secondHalf == that.secondHalf);
         }
 
         //----------//
@@ -564,6 +565,7 @@ public abstract class MeasureId
         //----------//
         /**
          * Present the score-based display
+         *
          * @return [X]absId
          */
         @Override

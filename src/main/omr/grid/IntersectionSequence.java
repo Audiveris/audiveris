@@ -76,12 +76,14 @@ class IntersectionSequence
 
                 if ((tail.x - head.x) <= maxDeltaPos) {
                     if (logger.isDebugEnabled()
-                            || head.getStickAncestor().isVip()
-                            || tail.getStickAncestor().isVip()) {
+                        || head.getStickAncestor()
+                            .isVip()
+                        || tail.getStickAncestor()
+                            .isVip()) {
                         logger.info("Merging verticals {} & {}", head, tail);
                     }
 
-                    Glyph tailAncestor =  tail.getStickAncestor();
+                    Glyph tailAncestor = tail.getStickAncestor();
                     tailAncestor.stealSections(head.getStickAncestor());
                     headIt.remove();
 

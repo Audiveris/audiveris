@@ -12,12 +12,11 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
@@ -28,7 +27,7 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class StemSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -39,7 +38,6 @@ public class StemSymbol
     private static final BasicSymbol stem = Symbols.SYMBOL_STEM;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // StemSymbol //
     //------------//
@@ -65,7 +63,6 @@ public class StemSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -91,8 +88,8 @@ public class StemSymbol
 
         Rectangle2D qRect = p.layout.getBounds();
         p.rect = new Rectangle(
-            (int) Math.ceil(qRect.getWidth()),
-            (int) Math.ceil(qRect.getHeight()));
+                (int) Math.ceil(qRect.getWidth()),
+                (int) Math.ceil(qRect.getHeight()));
 
         return p;
     }
@@ -102,13 +99,13 @@ public class StemSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams   p = (MyParams) params;
+        MyParams p = (MyParams) params;
 
-        PixelPoint loc = alignment.translatedPoint(TOP_RIGHT, p.rect, location);
+        Point loc = alignment.translatedPoint(TOP_RIGHT, p.rect, location);
 
         // Decorations (using composite)
         Composite oldComposite = g.getComposite();
@@ -121,20 +118,18 @@ public class StemSymbol
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // Params //
     //--------//
     protected class MyParams
-        extends Params
+            extends Params
     {
         //~ Instance fields ----------------------------------------------------
 
         // layout for quarter layout
-
         // rect for global image 
-
         // layout for stem
         TextLayout stemLayout;
+
     }
 }

@@ -34,33 +34,33 @@ public abstract class GlyphPattern
     protected final Scale scale;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // GlyphPattern //
     //--------------//
     /**
      * Creates a new GlyphPattern object.
-     * @param name the unique name for this pattern
+     *
+     * @param name   the unique name for this pattern
      * @param system the related system
      */
-    public GlyphPattern (String     name,
+    public GlyphPattern (String name,
                          SystemInfo system)
     {
         this.name = name;
         this.system = system;
 
         scale = system.getSheet()
-                      .getScale();
+                .getScale();
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // runPattern //
     //------------//
     /**
      * This method runs the pattern and reports the number of modified
      * glyphs.
+     *
      * @return the number of modified glyphs
      */
     public abstract int runPattern ();

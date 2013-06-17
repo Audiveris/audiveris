@@ -24,18 +24,16 @@ import omr.grid.StaffInfo;
 
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.Orientation;
 
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.HorizontalsBuilder;
-import omr.sheet.Ledger;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -246,10 +244,10 @@ public class LedgerPattern
 
         //~ Methods ------------------------------------------------------------
         @Override
-        public PixelRectangle computeReferenceBox ()
+        public Rectangle computeReferenceBox ()
         {
             Point2D stop = seed.getStopPoint(Orientation.HORIZONTAL);
-            PixelRectangle rect = new PixelRectangle(
+            Rectangle rect = new Rectangle(
                     (int) Math.rint(stop.getX()),
                     (int) Math.rint(stop.getY()),
                     interChunkDx,

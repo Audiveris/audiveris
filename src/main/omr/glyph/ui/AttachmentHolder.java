@@ -29,14 +29,16 @@ public interface AttachmentHolder
      * Register an attachment with a key and a shape.
      * This is meant to add arbitrary awt shapes to an entity, mainly for
      * display and analysis purposes.
-     * @param id the attachment ID
+     *
+     * @param id         the attachment ID
      * @param attachment Shape to attach. If null, attachment is ignored.
      */
     void addAttachment (String id,
-                        Shape  attachment);
+                        Shape attachment);
 
     /**
      * Report a view on the map of attachments.
+     *
      * @return a (perhaps empty) map of attachments
      */
     Map<String, Shape> getAttachments ();
@@ -44,6 +46,7 @@ public interface AttachmentHolder
     /**
      * Remove all the attachments whose id begins with the provided
      * prefix.
+     *
      * @param prefix the beginning of ids
      * @return the number of attachments removed
      */
@@ -51,6 +54,7 @@ public interface AttachmentHolder
 
     /**
      * Render the attachments on the provided graphics context.
+     *
      * @param g the graphics context
      */
     void renderAttachments (Graphics2D g);

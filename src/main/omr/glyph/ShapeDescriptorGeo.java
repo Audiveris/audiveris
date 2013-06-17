@@ -27,7 +27,7 @@ import java.util.Map;
  * @author Hervé Bitteur
  */
 public class ShapeDescriptorGeo
-    implements ShapeDescription.Descriptor
+        implements ShapeDescription.Descriptor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -38,7 +38,6 @@ public class ShapeDescriptorGeo
     private static final int length = momentCount + 3;
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // features //
     //----------//
@@ -49,7 +48,7 @@ public class ShapeDescriptorGeo
 
         // We take all the first moments
         Double[] k = glyph.getGeometricMoments()
-                          .getValues();
+                .getValues();
 
         for (int i = 0; i < momentCount; i++) {
             ins[i] = k[i];
@@ -92,7 +91,6 @@ public class ShapeDescriptorGeo
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------------//
     // LabelsHolder //
     //--------------//

@@ -27,36 +27,35 @@ import javax.swing.JButton;
  * @author Hervé Bitteur
  */
 class RegressionPanel
-    extends TrainingPanel
+        extends TrainingPanel
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        RegressionPanel.class);
+            RegressionPanel.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // RegressionPanel //
     //-----------------//
     /**
      * Creates a new RegressionPanel object.
      *
-     * @param task the current training activity
-     * @param standardWidth standard width for fields & buttons
+     * @param task           the current training activity
+     * @param standardWidth  standard width for fields & buttons
      * @param selectionPanel the panel for glyph repository
      */
     public RegressionPanel (GlyphTrainer.Task task,
-                            String            standardWidth,
-                            SelectionPanel    selectionPanel)
+                            String standardWidth,
+                            SelectionPanel selectionPanel)
     {
         super(
-            task,
-            standardWidth,
-            GlyphRegression.getInstance(),
-            selectionPanel,
-            4);
+                task,
+                standardWidth,
+                GlyphRegression.getInstance(),
+                selectionPanel,
+                4);
         task.addObserver(this);
 
         trainAction = new TrainAction("Train");
@@ -65,13 +64,12 @@ class RegressionPanel
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------------//
     // defineSpecificLayout //
     //----------------------//
     private void defineSpecificLayout ()
     {
-        int     r = 7;
+        int r = 7;
 
         // Training entities
         JButton dumpButton = new JButton(new DumpAction());

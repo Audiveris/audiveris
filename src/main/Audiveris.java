@@ -30,12 +30,12 @@ public final class Audiveris
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // main //
     //------//
     /**
      * The main entry point, which just calls {@link omr.Main#doMain}.
+     *
      * @param args These args are simply passed to Main
      */
     public static void main (final String[] args)

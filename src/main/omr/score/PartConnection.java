@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.score;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.entity.Page;
 import omr.score.entity.ScorePart;
 import omr.score.entity.ScoreSystem;
@@ -24,6 +21,9 @@ import omr.util.TreeNode;
 import com.audiveris.proxymusic.PartList;
 import com.audiveris.proxymusic.PartName;
 import com.audiveris.proxymusic.ScorePartwise;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -311,7 +311,7 @@ public class PartConnection
                         // We are compatible
                         candidateMap.put(candidate, result);
                         logger.debug("Compatible."
-                                    + " Mapped candidate {} to result {}",
+                                     + " Mapped candidate {} to result {}",
                                 candidate, result);
 
                         rawMap.get(result).add(candidate);
@@ -406,7 +406,8 @@ public class PartConnection
      * Interface {@code Result} is used to process resulting ScorePart
      * instances,
      * regardless whether they are instances of standard Audiveris {@link
-     * ScorePart} or instances of ProxyMusic {@link com.audiveris.proxymusic.ScorePart}.
+     * ScorePart} or instances of ProxyMusic
+     * {@link com.audiveris.proxymusic.ScorePart}.
      */
     public static interface Result
             extends Comparable<Result>
@@ -513,9 +514,10 @@ public class PartConnection
         private Integer staffCount;
 
         //~ Constructors -------------------------------------------------------
-        public PMScorePartCandidate (com.audiveris.proxymusic.ScorePart scorePart,
-                                     ScorePartwise scorePartwise,
-                                     int inputIndex)
+        public PMScorePartCandidate (
+                com.audiveris.proxymusic.ScorePart scorePart,
+                ScorePartwise scorePartwise,
+                int inputIndex)
         {
             this.scorePart = scorePart;
             this.scorePartwise = scorePartwise;

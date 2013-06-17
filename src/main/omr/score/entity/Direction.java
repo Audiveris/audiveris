@@ -14,8 +14,8 @@ package omr.score.entity;
 import omr.score.visitor.Visitable;
 
 /**
- * Interface {@code Direction} is the basis for all variants of direction
- * indications.
+ * Interface {@code Direction} is the basis for all variants of
+ * direction indications.
  * This should apply to:
  * <pre>
  * rehearsal                    nyi
@@ -47,6 +47,6 @@ import omr.score.visitor.Visitable;
  * @author Hervé Bitteur
  */
 public interface Direction
-    extends Visitable
+        extends Visitable
 {
 }

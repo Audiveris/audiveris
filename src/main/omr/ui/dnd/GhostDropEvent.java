@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.ui.dnd;
 
-
 /**
  * Class {@code GhostDropEvent} is the type of event that is handed to
  * any {@link GhostDropListener} instance.
@@ -30,16 +29,16 @@ public class GhostDropEvent<A>
     private A action;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------//
     // GhostDropEvent //
     //----------------//
     /**
      * Create a new GhostDropEvent object.
-     * @param action the action carried by the drop
+     *
+     * @param action      the action carried by the drop
      * @param screenPoint the screen-based location of the drop
      */
-    public GhostDropEvent (A           action,
+    public GhostDropEvent (A action,
                            ScreenPoint screenPoint)
     {
         this.action = action;
@@ -47,12 +46,12 @@ public class GhostDropEvent<A>
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getAction //
     //-----------//
     /**
      * Report the action carried by the drop.
+     *
      * @return the carried action
      */
     public A getAction ()
@@ -65,6 +64,7 @@ public class GhostDropEvent<A>
     //-----------------//
     /**
      * Report the drop location.
+     *
      * @return the screen-based location of the drop
      */
     public ScreenPoint getDropLocation ()

@@ -12,11 +12,10 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 
@@ -25,28 +24,27 @@ import java.awt.geom.Rectangle2D;
  * (black, void or whole)
  */
 public class HeadsSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Instance fields --------------------------------------------------------
 
     private final int count;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // HeadsSymbol //
     //-------------//
     /**
      * Creates a new HeadsSymbol object.
      *
-     * @param count the number of heads
+     * @param count  the number of heads
      * @param isIcon true for an icon
-     * @param shape the related shape
-     * @param codes the codes for MusicFont characters
+     * @param shape  the related shape
+     * @param codes  the codes for MusicFont characters
      */
-    public HeadsSymbol (int     count,
+    public HeadsSymbol (int count,
                         boolean isIcon,
-                        Shape   shape,
+                        Shape shape,
                         int... codes)
     {
         super(isIcon, shape, false, codes);
@@ -54,7 +52,6 @@ public class HeadsSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -76,8 +73,8 @@ public class HeadsSymbol
         Rectangle2D r = p.layout.getBounds();
         p.dy = (int) Math.rint(font.getFontInterline());
         p.rect = new Rectangle(
-            (int) Math.ceil(r.getWidth()),
-            ((count * p.dy) + (int) Math.rint(r.getHeight())) - p.dy);
+                (int) Math.ceil(r.getWidth()),
+                ((count * p.dy) + (int) Math.rint(r.getHeight())) - p.dy);
 
         return p;
     }
@@ -87,12 +84,12 @@ public class HeadsSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams   p = (MyParams) params;
-        PixelPoint loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        MyParams p = (MyParams) params;
+        Point loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
 
         for (int i = 0; i < count; i++) {
             MusicFont.paint(g, p.layout, loc, TOP_LEFT);
@@ -101,15 +98,15 @@ public class HeadsSymbol
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
-        extends Params
+            extends Params
     {
         //~ Instance fields ----------------------------------------------------
 
         int dy;
+
     }
 }

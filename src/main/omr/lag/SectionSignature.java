@@ -29,14 +29,13 @@ public class SectionSignature
     private Rectangle bounds;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new SectionSignature object.
      *
      * @param weight the section weight
      * @param bounds the section bounds
      */
-    public SectionSignature (int       weight,
+    public SectionSignature (int weight,
                              Rectangle bounds)
     {
         this.weight = weight;
@@ -44,7 +43,6 @@ public class SectionSignature
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // equals //
     //--------//
@@ -58,10 +56,10 @@ public class SectionSignature
         if (obj instanceof SectionSignature) {
             SectionSignature that = (SectionSignature) obj;
 
-            return (weight == that.weight) && (bounds.x == that.bounds.x) &&
-                   (bounds.y == that.bounds.y) &&
-                   (bounds.width == that.bounds.width) &&
-                   (bounds.height == that.bounds.height);
+            return (weight == that.weight) && (bounds.x == that.bounds.x)
+                   && (bounds.y == that.bounds.y)
+                   && (bounds.width == that.bounds.width)
+                   && (bounds.height == that.bounds.height);
         } else {
             return false;
         }
@@ -87,18 +85,18 @@ public class SectionSignature
     {
         StringBuilder sb = new StringBuilder("{SSig");
         sb.append(" weight=")
-          .append(weight);
+                .append(weight);
 
         if (bounds != null) {
             sb.append(" Rectangle[x=")
-              .append(bounds.x)
-              .append(",y=")
-              .append(bounds.y)
-              .append(",width=")
-              .append(bounds.width)
-              .append(",height=")
-              .append(bounds.height)
-              .append("]");
+                    .append(bounds.x)
+                    .append(",y=")
+                    .append(bounds.y)
+                    .append(",width=")
+                    .append(bounds.width)
+                    .append(",height=")
+                    .append(bounds.height)
+                    .append("]");
         }
 
         sb.append("}");

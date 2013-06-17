@@ -14,14 +14,12 @@ package omr.script;
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
-
-import omr.score.common.PixelPoint;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.PointFacade;
 
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -46,7 +44,7 @@ public class DeleteTask
     //~ Instance fields --------------------------------------------------------
 
     /** Locations */
-    private List<PixelPoint> locations;
+    private List<Point> locations;
 
     /** Wrapping of the collections of points */
     @XmlElementWrapper(name = "locations")
@@ -119,7 +117,7 @@ public class DeleteTask
         if (!locations.isEmpty()) {
             sb.append(" locations[");
 
-            for (PixelPoint point : locations) {
+            for (Point point : locations) {
                 sb.append(" ").append(point.toString());
             }
 
@@ -140,7 +138,7 @@ public class DeleteTask
         SortedSet<SystemInfo> impactedSystems = new TreeSet<>();
 
         for (Glyph glyph : glyphs) {
-            PixelPoint location = glyph.getAreaCenter();
+            Point location = glyph.getAreaCenter();
             SystemInfo system = sheet.getSystemOf(location);
 
             if (system != null) {
@@ -168,7 +166,7 @@ public class DeleteTask
     {
         glyphs = new LinkedHashSet<>();
 
-        for (PixelPoint location : locations) {
+        for (Point location : locations) {
             Glyph glyph = sheet.getNest().lookupVirtualGlyph(location);
             glyphs.add(glyph);
             logger.debug("To be deleted: {}", glyph);
@@ -191,7 +189,7 @@ public class DeleteTask
             locations = new ArrayList<>();
 
             for (PointFacade facade : points) {
-                locations.add(new PixelPoint(facade.getX(), facade.getY()));
+                locations.add(new Point(facade.getX(), facade.getY()));
             }
         }
     }
@@ -208,7 +206,7 @@ public class DeleteTask
         if (points == null) {
             List<PointFacade> facades = new ArrayList<>();
 
-            for (PixelPoint point : locations) {
+            for (Point point : locations) {
                 facades.add(new PointFacade(point));
             }
 

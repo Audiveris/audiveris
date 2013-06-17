@@ -21,12 +21,6 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.NotePosition;
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
@@ -34,6 +28,11 @@ import omr.sheet.SystemInfo;
 import omr.util.Predicate;
 import omr.util.VerticalSide;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.List;
 
 /**
@@ -75,19 +74,21 @@ public class ArticulationPattern
     @Override
     public int runPattern ()
     {
-        int xMargin = system.getSheet().getScale().toPixels(constants.xMargin);
+        int xMargin = system.getSheet()
+                .getScale()
+                .toPixels(constants.xMargin);
         int nb = 0;
 
         for (Glyph glyph : system.getGlyphs()) {
             if (!ShapeSet.Articulations.contains(glyph.getShape())
-                    || glyph.isManualShape()) {
+                || glyph.isManualShape()) {
                 continue;
             }
 
-            PixelPoint center = glyph.getAreaCenter();
+            Point center = glyph.getAreaCenter();
             NotePosition pos = system.getNoteStaffAt(center);
             StaffInfo staff = pos.getStaff();
-            PixelRectangle box = glyph.getBounds();
+            Rectangle box = glyph.getBounds();
 
             // Extend height till end of staff area
             double topLimit = staff.getLimitAtX(VerticalSide.TOP, center.x);
@@ -100,18 +101,17 @@ public class ArticulationPattern
             boolean hasNote = Glyphs.contains(
                     glyphs,
                     new Predicate<Glyph>()
-                    {
+            {
+                @Override
+                public boolean check (Glyph entity)
+                {
+                    Shape shape = entity.getShape();
 
-                        @Override
-                        public boolean check (Glyph entity)
-                        {
-                            Shape shape = entity.getShape();
-
-                            return ShapeSet.NoteHeads.contains(shape)
-                                    || ShapeSet.Notes.contains(shape)
-                                    || ShapeSet.Rests.contains(shape);
-                        }
-                    });
+                    return ShapeSet.NoteHeads.contains(shape)
+                           || ShapeSet.Notes.contains(shape)
+                           || ShapeSet.Rests.contains(shape);
+                }
+            });
 
             if (!hasNote) {
                 logger.debug("Deassign articulation {}", glyph.idString());
@@ -136,5 +136,6 @@ public class ArticulationPattern
         Scale.Fraction xMargin = new Scale.Fraction(
                 0.5,
                 "Abscissa margin around articulation");
+
     }
 }

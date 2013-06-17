@@ -11,17 +11,15 @@
 // </editor-fold>
 package omr.glyph.pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code HiddenSlurPattern} processes the significant glyphs
@@ -30,7 +28,7 @@ import omr.sheet.SystemInfo;
  * @author Hervé Bitteur
  */
 public class HiddenSlurPattern
-    extends GlyphPattern
+        extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -39,15 +37,15 @@ public class HiddenSlurPattern
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        HiddenSlurPattern.class);
+            HiddenSlurPattern.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------------//
     // HiddenSlurPattern //
     //-------------------//
     /**
      * Creates a new HiddenSlurPattern object.
+     *
      * @param system the containing system
      */
     public HiddenSlurPattern (SystemInfo system)
@@ -56,7 +54,6 @@ public class HiddenSlurPattern
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // runPattern //
     //------------//
@@ -64,13 +61,13 @@ public class HiddenSlurPattern
     public int runPattern ()
     {
         SlurInspector inspector = system.getSlurInspector();
-        int           successNb = 0;
-        final double  minGlyphWeight = constants.minGlyphWeight.getValue();
+        int successNb = 0;
+        final double minGlyphWeight = constants.minGlyphWeight.getValue();
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.isKnown() ||
-                glyph.isManualShape() ||
-                (glyph.getNormalizedWeight() < minGlyphWeight)) {
+            if (glyph.isKnown()
+                || glyph.isManualShape()
+                || (glyph.getNormalizedWeight() < minGlyphWeight)) {
                 continue;
             }
 
@@ -91,17 +88,17 @@ public class HiddenSlurPattern
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
-            0.5,
-            "Minimum normalized glyph weight to lookup a slur section");
+                0.5,
+                "Minimum normalized glyph weight to lookup a slur section");
+
     }
 }

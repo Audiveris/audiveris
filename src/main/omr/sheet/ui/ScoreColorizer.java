@@ -13,13 +13,13 @@ package omr.sheet.ui;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 import omr.score.entity.Barline;
 import omr.score.entity.SystemPart;
 import omr.score.visitor.AbstractScoreVisitor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 
@@ -35,7 +35,8 @@ public class ScoreColorizer
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ScoreColorizer.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ScoreColorizer.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The color to use */

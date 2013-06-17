@@ -11,13 +11,12 @@
 // </editor-fold>
 package omr.lag;
 
+import omr.run.Orientation;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.run.Orientation;
-
-import omr.score.common.PixelRectangle;
-
+import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -38,22 +37,22 @@ public class Sections
     private static final Logger logger = LoggerFactory.getLogger(Sections.class);
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getBounds //
     //-----------//
     /**
      * Return the display bounding box of a collection of sections.
+     *
      * @param sections the provided collection of sections
      * @return the bounding contour
      */
-    public static PixelRectangle getBounds (Collection<?extends Section> sections)
+    public static Rectangle getBounds (Collection<? extends Section> sections)
     {
-        PixelRectangle box = null;
+        Rectangle box = null;
 
         for (Section section : sections) {
             if (box == null) {
-                box = new PixelRectangle(section.getBounds());
+                box = new Rectangle(section.getBounds());
             } else {
                 box.add(section.getBounds());
             }
@@ -68,19 +67,22 @@ public class Sections
     /**
      * Return a comparator for comparing Section instances on their
      * decreasing length, using the provided orientation.
+     *
      * @param orientation the provided orientation
      */
-    public static Comparator<Section> getReverseLengthComparator (final Orientation orientation)
+    public static Comparator<Section> getReverseLengthComparator (
+            final Orientation orientation)
     {
-        return new Comparator<Section>() {
-                @Override
-                public int compare (Section s1,
-                                    Section s2)
-                {
-                    return Integer.signum(
+        return new Comparator<Section>()
+        {
+            @Override
+            public int compare (Section s1,
+                                Section s2)
+            {
+                return Integer.signum(
                         s2.getLength(orientation) - s1.getLength(orientation));
-                }
-            };
+            }
+        };
     }
 
     //---------------------------//
@@ -89,12 +91,13 @@ public class Sections
     /**
      * Convenient method to look for sections that intersect the
      * provided rectangle
-     * @param rect provided rectangle
+     *
+     * @param rect     provided rectangle
      * @param sections the collection of sections to browse
      * @return the set of intersecting sections
      */
-    public static Set<Section> lookupIntersectedSections (PixelRectangle               rect,
-                                                          Collection<?extends Section> sections)
+    public static Set<Section> lookupIntersectedSections (Rectangle rect,
+                                                          Collection<? extends Section> sections)
     {
         Set<Section> found = new LinkedHashSet<>();
 
@@ -113,12 +116,13 @@ public class Sections
     /**
      * Convenient method to look for sections contained by the provided
      * rectangle
-     * @param rect provided rectangle
+     *
+     * @param rect     provided rectangle
      * @param sections the collection of sections to browse
      * @return the set of contained sections
      */
-    public static Set<Section> lookupSections (PixelRectangle               rect,
-                                               Collection<?extends Section> sections)
+    public static Set<Section> lookupSections (Rectangle rect,
+                                               Collection<? extends Section> sections)
     {
         Set<Section> found = new LinkedHashSet<>();
 
@@ -137,12 +141,13 @@ public class Sections
     /**
      * Convenient method, to build a string with just the ids of the
      * section collection, introduced by the provided label.
-     * @param label the string that introduces the list of IDs
+     *
+     * @param label    the string that introduces the list of IDs
      * @param sections the collection of sections
      * @return the string built
      */
-    public static String toString (String                       label,
-                                   Collection<?extends Section> sections)
+    public static String toString (String label,
+                                   Collection<? extends Section> sections)
     {
         if (sections == null) {
             return "";
@@ -150,12 +155,12 @@ public class Sections
 
         StringBuilder sb = new StringBuilder();
         sb.append(label)
-          .append("[");
+                .append("[");
 
         for (Section section : sections) {
             sb.append("#")
-              .append(section.isVertical() ? "V" : "H")
-              .append(section.getId());
+                    .append(section.isVertical() ? "V" : "H")
+                    .append(section.getId());
         }
 
         sb.append("]");
@@ -169,11 +174,12 @@ public class Sections
     /**
      * Convenient method, to build a string with just the ids of the
      * section array, introduced by the provided label.
-     * @param label the string that introduces the list of IDs
+     *
+     * @param label    the string that introduces the list of IDs
      * @param sections the array of sections
      * @return the string built
      */
-    public static String toString (String     label,
+    public static String toString (String label,
                                    Section... sections)
     {
         return toString(label, Arrays.asList(sections));
@@ -185,10 +191,11 @@ public class Sections
     /**
      * Convenient method, to build a string with just the ids of the
      * section collection, introduced by the label "sections".
+     *
      * @param sections the collection of sections
      * @return the string built
      */
-    public static String toString (Collection<?extends Section> sections)
+    public static String toString (Collection<? extends Section> sections)
     {
         return toString("sections", sections);
     }
@@ -199,6 +206,7 @@ public class Sections
     /**
      * Convenient method, to build a string with just the ids of the
      * section array, introduced by the label "sections".
+     *
      * @param sections the array of sections
      * @return the string built
      */

@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                          X m l U t i l i t i e s                           //
+//                                X m l U t i l                               //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -12,14 +12,19 @@
 package omr.util;
 
 /**
- * Class {@code XmlUtilities} gathers methods about XML data
+ * Class {@code XmlUtil} gathers methods about XML data
  *
  * @author Hervé Bitteur
  */
-public class XmlUtilities
+public class XmlUtil
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
+    private XmlUtil ()
+    {
+    }
+
+    //~ Methods ----------------------------------------------------------------
     //----------------------------//
     // stripNonValidXMLCharacters //
     //----------------------------//
@@ -54,11 +59,11 @@ public class XmlUtilities
 
         for (char c : input.toCharArray()) {
             if ((c == 0x9)
-                    || (c == 0xA)
-                    || (c == 0xD)
-                    || ((c >= 0x20) && (c <= 0xD7FF))
-                    || ((c >= 0xE000) && (c <= 0xFFFD))
-                    || ((c >= 0x10000) && (c <= 0x10FFFF))) {
+                || (c == 0xA)
+                || (c == 0xD)
+                || ((c >= 0x20) && (c <= 0xD7FF))
+                || ((c >= 0xE000) && (c <= 0xFFFD))
+                || ((c >= 0x10000) && (c <= 0x10FFFF))) {
                 sb.append(c);
             } else {
                 if (stripped != null) {
@@ -68,9 +73,5 @@ public class XmlUtilities
         }
 
         return sb.toString();
-    }
-
-    private XmlUtilities ()
-    {
     }
 }

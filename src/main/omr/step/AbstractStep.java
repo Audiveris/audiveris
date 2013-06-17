@@ -11,13 +11,13 @@
 // </editor-fold>
 package omr.step;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.Main;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
@@ -33,7 +33,8 @@ public abstract class AbstractStep
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(AbstractStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            AbstractStep.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Step name */
@@ -76,6 +77,18 @@ public abstract class AbstractStep
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-------------//
+    // clearErrors //
+    //-------------//
+    @Override
+    public void clearErrors (Sheet sheet)
+    {
+        if (Main.getGui() != null) {
+            sheet.getErrorsEditor()
+                    .clearStep(this);
+        }
+    }
+
     //
     //-----------//
     // displayUI //
@@ -111,17 +124,6 @@ public abstract class AbstractStep
                 sheet.setCurrentStep(null);
                 Stepping.notifyStep(sheet, this); // Stop
             }
-        }
-    }
-
-    //-------------//
-    // clearErrors //
-    //-------------//
-    @Override
-    public void clearErrors (Sheet sheet)
-    {
-        if (Main.getGui() != null) {
-            sheet.getErrorsEditor().clearStep(this);
         }
     }
 

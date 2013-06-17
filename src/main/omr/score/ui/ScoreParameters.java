@@ -39,7 +39,7 @@ import omr.text.OCR.UnavailableOcrException;
 
 import omr.ui.FileDropHandler;
 import omr.ui.field.LTextField;
-import omr.ui.field.SpinnerUtilities;
+import omr.ui.field.SpinnerUtil;
 import omr.ui.util.Panel;
 
 import omr.util.OmrExecutors;
@@ -1086,7 +1086,7 @@ public class ScoreParameters
 
             // ComboBox for triggered step
             pluginCombo = new JComboBox<>(
-                   PluginsManager.getInstance().getPluginIds().toArray(new String[0]));
+                    PluginsManager.getInstance().getPluginIds().toArray(new String[0]));
             pluginCombo.setToolTipText("Default plugin to be launched");
         }
 
@@ -1406,8 +1406,8 @@ public class ScoreParameters
             this.label = new JLabel(label, SwingConstants.RIGHT);
 
             spinner = new JSpinner(model);
-            SpinnerUtilities.setRightAlignment(spinner);
-            SpinnerUtilities.setEditable(spinner, true);
+            SpinnerUtil.setRightAlignment(spinner);
+            SpinnerUtil.setEditable(spinner, true);
             spinner.setToolTipText(tip);
         }
 

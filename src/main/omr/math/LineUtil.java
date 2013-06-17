@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                         L i n e U t i l i t i e s                          //
+//                               L i n e U t i l                              //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -15,15 +15,20 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code LineUtilities} is a collection of utilities related to
+ * Class {@code LineUtil} is a collection of utilities related to
  * lines.
  *
  * @author Hervé Bitteur
  */
-public class LineUtilities
+public class LineUtil
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
 
+    private LineUtil ()
+    {
+    }
+
+    //~ Methods ----------------------------------------------------------------
     //----------//
     // bisector //
     //----------//
@@ -89,9 +94,5 @@ public class LineUtilities
         double y = ((v12 * (y3 - y4)) - ((y1 - y2) * v34)) / den;
 
         return new Point2D.Double(x, y);
-    }
-
-    private LineUtilities ()
-    {
     }
 }

@@ -15,8 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code TargetPage} is an immutable perfect destination object for a
- * page.
+ * Class {@code TargetPage} is an immutable perfect destination object
+ * for a page.
  *
  * @author Hervé Bitteur
  */
@@ -34,14 +34,13 @@ public class TargetPage
     public final List<TargetSystem> systems = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // TargetPage //
     //------------//
     /**
      * Creates a new TargetPage object.
      *
-     * @param width page width
+     * @param width  page width
      * @param height page height
      */
     public TargetPage (double width,
@@ -52,7 +51,6 @@ public class TargetPage
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // toString //
     //----------//
@@ -62,9 +60,9 @@ public class TargetPage
         StringBuilder sb = new StringBuilder("{Page");
 
         sb.append(" width:")
-          .append(width);
+                .append(width);
         sb.append(" height:")
-          .append(height);
+                .append(height);
 
         sb.append("}");
 

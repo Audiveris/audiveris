@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.run;
 
-import omr.score.common.PixelRectangle;
-
 import net.jcip.annotations.NotThreadSafe;
 import net.jcip.annotations.ThreadSafe;
 
@@ -20,10 +18,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.awt.Rectangle;
 
 /**
- * Class {@code RunsTableFactory} retrieves the runs structure out of a
- * given pixel source and builds the related {@link RunsTable} structure.
+ * Class {@code RunsTableFactory} retrieves the runs structure out of
+ * a given pixel source and builds the related {@link RunsTable} 
+ * structure.
  *
  * @author Hervé Bitteur
  */
@@ -101,7 +101,7 @@ public class RunsTableFactory
                 new MyAdapter());
 
         retriever.retrieveRuns(
-                new PixelRectangle(0, 0, source.getWidth(), source.getHeight()));
+                new Rectangle(0, 0, source.getWidth(), source.getHeight()));
 
         return table;
     }
@@ -172,6 +172,15 @@ public class RunsTableFactory
             }
         }
 
+        // ----------//
+        // terminate //
+        // ----------//
+        @Override
+        public final void terminate ()
+        {
+            logger.debug("{} Retrieved runs: {}", table, table.getRunCount());
+        }
+
         //--------------//
         // isThreadSafe //
         //--------------//
@@ -202,15 +211,6 @@ public class RunsTableFactory
 
             // No annotation: it's safer to assume no thread safety
             return false;
-        }
-
-        // ----------//
-        // terminate //
-        // ----------//
-        @Override
-        public final void terminate ()
-        {
-            logger.debug("{} Retrieved runs: {}", table, table.getRunCount());
         }
     }
 }

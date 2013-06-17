@@ -25,7 +25,7 @@ import java.util.Set;
  * @author Hervé Bitteur (from Romain Guy's demo)
  */
 public abstract class GhostDropAdapter<A>
-    extends MouseAdapter
+        extends MouseAdapter
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -42,7 +42,6 @@ public abstract class GhostDropAdapter<A>
     protected BufferedImage image;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------------//
     // GhostDropAdapter //
     //------------------//
@@ -50,22 +49,22 @@ public abstract class GhostDropAdapter<A>
      * Create a new GhostDropAdapter object
      *
      * @param glassPane the related glasspane
-     * @param action the carried action
+     * @param action    the carried action
      */
     public GhostDropAdapter (GhostGlassPane glassPane,
-                             A              action)
+                             A action)
     {
         this.glassPane = glassPane;
         this.action = action;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------------//
     // addDropListener //
     //-----------------//
     /**
      * Register a drop listener
+     *
      * @param listener the listener to registrate
      */
     public void addDropListener (GhostDropListener<A> listener)
@@ -92,8 +91,8 @@ public abstract class GhostDropAdapter<A>
         glassPane.setVisible(true);
 
         ScreenPoint screenPoint = new ScreenPoint(
-            e.getXOnScreen(),
-            e.getYOnScreen());
+                e.getXOnScreen(),
+                e.getYOnScreen());
 
         glassPane.setImage(image);
         glassPane.setPoint(screenPoint);
@@ -106,8 +105,8 @@ public abstract class GhostDropAdapter<A>
     public void mouseReleased (MouseEvent e)
     {
         ScreenPoint screenPoint = new ScreenPoint(
-            e.getXOnScreen(),
-            e.getYOnScreen());
+                e.getXOnScreen(),
+                e.getYOnScreen());
 
         glassPane.setVisible(false);
         glassPane.setImage(null);
@@ -120,6 +119,7 @@ public abstract class GhostDropAdapter<A>
     //--------------------//
     /**
      * Unregister a drop listener
+     *
      * @param listener the listener to remove
      */
     public void removeDropListener (GhostDropListener<A> listener)
@@ -134,6 +134,7 @@ public abstract class GhostDropAdapter<A>
     //---------------//
     /**
      * Forward the provided drop event to all registered listeners
+     *
      * @param event the drop event to forward
      */
     protected void fireDropEvent (GhostDropEvent<A> event)

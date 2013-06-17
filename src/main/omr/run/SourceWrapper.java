@@ -25,10 +25,11 @@ public class SourceWrapper
     protected final PixelSource source;
 
     //~ Constructors -----------------------------------------------------------
-    //
-    //---------------//
-    // SourceWrapper //
-    //---------------//
+    /**
+     * Creates a new SourceWrapper object.
+     *
+     * @param source DOCUMENT ME!
+     */
     public SourceWrapper (PixelSource source)
     {
         this.source = source;

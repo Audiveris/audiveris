@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.selection;
 
-
 /**
  * Class {@code LagEvent} is an abstract class to represent any event
  * related to a lag (section, section id, section set).
@@ -19,17 +18,18 @@ package omr.selection;
  * @author Hervé Bitteur
  */
 public abstract class LagEvent
-    extends UserEvent
+        extends UserEvent
 {
     //~ Constructors -----------------------------------------------------------
 
     /**
      * Creates a new LagEvent object.
-     * @param source the actual entity that created this event
-     * @param hint how the event originated
+     *
+     * @param source   the actual entity that created this event
+     * @param hint     how the event originated
      * @param movement the mouse movement
      */
-    public LagEvent (Object        source,
+    public LagEvent (Object source,
                      SelectionHint hint,
                      MouseMovement movement)
     {

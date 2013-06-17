@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                          L o g U t i l i t i e s                           //
+//                                L o g U t i l                               //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -28,12 +28,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Class {@code LogUtilities} handles logging features that depend on
+ * Class {@code LogUtil} handles logging features that depend on
  * underlying LogBack binding.
  *
  * @author Hervé Bitteur
  */
-public class LogUtilities
+public class LogUtil
 {
     //~ Static fields/initializers ---------------------------------------------
 

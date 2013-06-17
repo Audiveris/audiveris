@@ -12,11 +12,10 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
@@ -28,7 +27,7 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class BraceSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -39,7 +38,6 @@ public class BraceSymbol
     private static final BasicSymbol lowerSymbol = Symbols.SYMBOL_BRACE_LOWER_HALF;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // BraceSymbol //
     //-------------//
@@ -54,7 +52,6 @@ public class BraceSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -70,7 +67,7 @@ public class BraceSymbol
     @Override
     protected Params getParams (MusicFont font)
     {
-        MyParams        p = new MyParams();
+        MyParams p = new MyParams();
 
         AffineTransform at = isIcon ? tiny : null;
         p.upperLayout = font.layout(upperSymbol.getString(), at);
@@ -78,8 +75,8 @@ public class BraceSymbol
 
         Rectangle2D r = p.upperLayout.getBounds();
         p.rect = new Rectangle(
-            (int) Math.ceil(r.getWidth()),
-            (int) Math.ceil(2 * r.getHeight()));
+                (int) Math.ceil(r.getWidth()),
+                (int) Math.ceil(2 * r.getHeight()));
 
         return p;
     }
@@ -89,30 +86,28 @@ public class BraceSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams   p = (MyParams) params;
-        PixelPoint loc = alignment.translatedPoint(
-            MIDDLE_LEFT,
-            p.rect,
-            location);
+        MyParams p = (MyParams) params;
+        Point loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
         MusicFont.paint(g, p.upperLayout, loc, BOTTOM_LEFT);
         MusicFont.paint(g, p.lowerLayout, loc, TOP_LEFT);
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // Params //
     //--------//
     protected class MyParams
-        extends Params
+            extends Params
     {
         //~ Instance fields ----------------------------------------------------
 
         TextLayout upperLayout;
+
         TextLayout lowerLayout;
+
     }
 }

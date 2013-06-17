@@ -16,14 +16,9 @@ import omr.glyph.ui.ViewParameters;
 
 import omr.graph.BasicDigraph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.Orientation;
 import omr.run.Run;
 import omr.run.RunsTable;
-
-import omr.score.common.PixelRectangle;
 
 import omr.selection.GlyphEvent;
 import omr.selection.LagEvent;
@@ -34,7 +29,6 @@ import omr.selection.SectionEvent;
 import omr.selection.SectionIdEvent;
 import omr.selection.SectionSetEvent;
 import omr.selection.SelectionHint;
-import static omr.selection.SelectionHint.*;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
@@ -42,6 +36,10 @@ import omr.util.Predicate;
 
 import org.bushe.swing.event.EventSubscriber;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -251,7 +249,7 @@ public class BasicLag
     // lookupIntersectedSections //
     //---------------------------//
     @Override
-    public Set<Section> lookupIntersectedSections (PixelRectangle rect)
+    public Set<Section> lookupIntersectedSections (Rectangle rect)
     {
         return Sections.lookupIntersectedSections(rect, getSections());
     }
@@ -260,7 +258,7 @@ public class BasicLag
     // lookupSections //
     //----------------//
     @Override
-    public Set<Section> lookupSections (PixelRectangle rect)
+    public Set<Section> lookupSections (Rectangle rect)
     {
         return Sections.lookupSections(rect, getSections());
     }
@@ -454,7 +452,7 @@ public class BasicLag
     {
         logger.debug("Lag. sheetLocation:{}", locationEvent);
 
-        PixelRectangle rect = locationEvent.getData();
+        Rectangle rect = locationEvent.getData();
 
         if (rect == null) {
             return;

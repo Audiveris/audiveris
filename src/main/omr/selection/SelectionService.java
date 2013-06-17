@@ -14,11 +14,11 @@ package omr.selection;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.bushe.swing.event.EventSubscriber;
 import org.bushe.swing.event.ThreadSafeEventService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -81,14 +81,17 @@ public class SelectionService
 
             if (!subscribers.isEmpty()) {
                 UserEvent last = (UserEvent) getLastEvent(eventClass);
-                logger.info("   {}: {}{}",
+                logger.info(
+                        "   {}: {}{}",
                         eventClass.getSimpleName(),
                         subscribers.size(),
                         (last != null) ? (" " + last) : "");
 
                 for (Object obj : subscribers) {
-                    logger.info("      @{} {}",
-                            Integer.toHexString(obj.hashCode()), obj);
+                    logger.info(
+                            "      @{} {}",
+                            Integer.toHexString(obj.hashCode()),
+                            obj);
                 }
             }
         }
@@ -169,17 +172,6 @@ public class SelectionService
         }
     }
 
-    @Override
-    public boolean unsubscribe (Class cl,
-                                EventSubscriber eh)
-    {
-        boolean res = super.unsubscribe(cl, eh);
-        logger.debug("{} unsubscribe {} subscriber:{}@{} res:{}",
-                this, cl.getName(), eh, Integer.toHexString(eh.hashCode()), res);
-
-        return res;
-    }
-
     //------------------//
     // subscribersCount //
     //------------------//
@@ -192,7 +184,8 @@ public class SelectionService
      */
     public int subscribersCount (Class<? extends UserEvent> classe)
     {
-        return getSubscribers(classe).size();
+        return getSubscribers(classe)
+                .size();
     }
 
     //----------//
@@ -203,10 +196,27 @@ public class SelectionService
     {
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
-        sb.append(" ").append(name);
+        sb.append(" ")
+                .append(name);
         sb.append("}");
 
         return sb.toString();
+    }
+
+    @Override
+    public boolean unsubscribe (Class cl,
+                                EventSubscriber eh)
+    {
+        boolean res = super.unsubscribe(cl, eh);
+        logger.debug(
+                "{} unsubscribe {} subscriber:{}@{} res:{}",
+                this,
+                cl.getName(),
+                eh,
+                Integer.toHexString(eh.hashCode()),
+                res);
+
+        return res;
     }
 
     //----------//

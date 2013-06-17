@@ -32,7 +32,6 @@ public class BarInfo
     private List<Glyph> sticks;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------//
     // BarInfo //
     //---------//
@@ -54,13 +53,12 @@ public class BarInfo
      *
      * @param sticks one or several physical bars, from left to right
      */
-    public BarInfo (Collection<?extends Glyph> sticks)
+    public BarInfo (Collection<? extends Glyph> sticks)
     {
         setSticks(sticks);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------------//
     // getSticksAncestors //
     //--------------------//
@@ -78,7 +76,7 @@ public class BarInfo
     //-----------//
     // setSticks //
     //-----------//
-    public final void setSticks (Collection<?extends Glyph> sticks)
+    public final void setSticks (Collection<? extends Glyph> sticks)
     {
         this.sticks = new ArrayList<>(sticks); // Copy
     }
@@ -93,7 +91,7 @@ public class BarInfo
 
         for (Glyph stick : sticks) {
             sb.append(" #")
-              .append(stick.getAncestor().getId());
+                    .append(stick.getAncestor().getId());
         }
 
         sb.append("}");

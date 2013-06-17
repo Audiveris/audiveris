@@ -31,7 +31,7 @@ import java.util.Map;
  * @author Hervé Bitteur
  */
 public class BasicAttachmentHolder
-    implements AttachmentHolder
+        implements AttachmentHolder
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -39,13 +39,12 @@ public class BasicAttachmentHolder
     protected Map<String, java.awt.Shape> attachments = new HashMap<>();
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // addAttachment //
     //---------------//
     @Override
     public void addAttachment (String id,
-                               Shape  attachment)
+                               Shape attachment)
     {
         if (attachment != null) {
             attachments.put(id, attachment);
@@ -89,9 +88,9 @@ public class BasicAttachmentHolder
     @Override
     public void renderAttachments (Graphics2D g)
     {
-        if (attachments.isEmpty() ||
-            !ViewParameters.getInstance()
-                           .isAttachmentPainting()) {
+        if (attachments.isEmpty()
+            || !ViewParameters.getInstance()
+                .isAttachmentPainting()) {
             return;
         }
 
@@ -105,12 +104,12 @@ public class BasicAttachmentHolder
             Shape shape = entry.getValue();
             g.draw(shape);
 
-            String    key = entry.getKey();
+            String key = entry.getKey();
             Rectangle rect = shape.getBounds();
             g.drawString(
-                key,
-                rect.x + (rect.width / 2),
-                rect.y + (rect.height / 2));
+                    key,
+                    rect.x + (rect.width / 2),
+                    rect.y + (rect.height / 2));
         }
 
         g.setFont(oldFont);

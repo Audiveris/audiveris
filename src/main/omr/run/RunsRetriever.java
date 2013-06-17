@@ -11,15 +11,13 @@
 // </editor-fold>
 package omr.run;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelRectangle;
-
 import omr.step.ProcessingCancellationException;
 
 import omr.util.Concurrency;
 import omr.util.OmrExecutors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -27,8 +25,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
- * Class {@code RunsRetriever} is in charge of reading a source of pixels
- * and retrieving foreground runs and background runs from it.
+ * Class {@code RunsRetriever} is in charge of reading a source of 
+ * pixels and retrieving foreground runs and background runs from it.
  * What is done with the retrieved runs is essentially the purpose of the
  * provided adapter.
  *
@@ -80,7 +78,7 @@ public class RunsRetriever
      *
      * @param area the ABSOLUTE rectangular area to explore
      */
-    public void retrieveRuns (PixelRectangle area)
+    public void retrieveRuns (Rectangle area)
     {
         Rectangle rect = orientation.oriented(area);
         final int cMin = rect.x;
@@ -192,16 +190,16 @@ public class RunsRetriever
                     final int pp = p;
                     tasks.add(
                             new Callable<Void>()
-                            {
-                                @Override
-                                public Void call ()
-                                        throws Exception
-                                {
-                                    processPosition(pp, cMin, cMax);
+                    {
+                        @Override
+                        public Void call ()
+                                throws Exception
+                        {
+                            processPosition(pp, cMin, cMax);
 
-                                    return null;
-                                }
-                            });
+                            return null;
+                        }
+                    });
                 }
 
                 // Launch the tasks and wait for their completion

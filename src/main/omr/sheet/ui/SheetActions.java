@@ -18,9 +18,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphRepository;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 import omr.score.ScoresManager;
 import omr.score.ui.ScoreController;
@@ -32,13 +29,16 @@ import omr.sheet.Sheet;
 
 import omr.ui.MainGui;
 import omr.ui.util.OmrFileFilter;
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
 
 import omr.util.BasicTask;
 import omr.util.NameSet;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.ResourceMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -62,7 +62,8 @@ public class SheetActions
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(SheetActions.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SheetActions.class);
 
     /** Singleton */
     private static SheetActions INSTANCE;
@@ -79,23 +80,6 @@ public class SheetActions
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized SheetActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new SheetActions();
-        }
-
-        return INSTANCE;
-    }
-
     //------------//
     // closeScore //
     //------------//
@@ -114,6 +98,23 @@ public class SheetActions
         }
     }
 
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized SheetActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new SheetActions();
+        }
+
+        return INSTANCE;
+    }
+
     //---------------//
     // openImageFile //
     //---------------//
@@ -128,7 +129,7 @@ public class SheetActions
     {
         String suffixes = constants.validImageExtensions.getValue();
         String allSuffixes = suffixes + " " + suffixes.toUpperCase();
-        File file = UIUtilities.fileChooser(
+        File file = UIUtil.fileChooser(
                 false,
                 Main.getGui().getFrame(),
                 new File(ScoresManager.getInstance().getDefaultInputDirectory()),

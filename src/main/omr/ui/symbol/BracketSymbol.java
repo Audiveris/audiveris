@@ -12,11 +12,10 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
@@ -28,7 +27,7 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class BracketSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -39,7 +38,6 @@ public class BracketSymbol
     private static final BasicSymbol lowerSymbol = Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------//
     // BracketSymbol //
     //---------------//
@@ -54,7 +52,6 @@ public class BracketSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -70,7 +67,7 @@ public class BracketSymbol
     @Override
     protected Params getParams (MusicFont font)
     {
-        MyParams        p = new MyParams();
+        MyParams p = new MyParams();
 
         AffineTransform at = isIcon ? tiny : null;
         p.upperLayout = font.layout(upperSymbol.getString(), at);
@@ -81,10 +78,10 @@ public class BracketSymbol
         Rectangle2D trunkRect = p.layout.getBounds();
         Rectangle2D lowerRect = p.lowerLayout.getBounds();
         p.rect = new Rectangle(
-            (int) Math.ceil(upperRect.getWidth()),
-            (int) Math.floor(
-                upperRect.getHeight() + trunkRect.getHeight() +
-                lowerRect.getHeight()));
+                (int) Math.ceil(upperRect.getWidth()),
+                (int) Math.floor(
+                upperRect.getHeight() + trunkRect.getHeight()
+                + lowerRect.getHeight()));
 
         return p;
     }
@@ -94,15 +91,12 @@ public class BracketSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams   p = (MyParams) params;
-        PixelPoint loc = alignment.translatedPoint(
-            MIDDLE_LEFT,
-            p.rect,
-            location);
+        MyParams p = (MyParams) params;
+        Point loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
         MusicFont.paint(g, p.layout, loc, MIDDLE_LEFT);
         loc.y -= (p.rect.height / 2);
         MusicFont.paint(g, p.upperLayout, loc, TOP_LEFT);
@@ -111,16 +105,17 @@ public class BracketSymbol
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // Params //
     //--------//
     protected class MyParams
-        extends Params
+            extends Params
     {
         //~ Instance fields ----------------------------------------------------
 
         TextLayout upperLayout;
+
         TextLayout lowerLayout;
+
     }
 }

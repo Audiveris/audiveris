@@ -29,6 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "text-role-info")
 public class TextRoleInfo
 {
+    //~ Instance fields --------------------------------------------------------
 
     /** Role of this piece of text. */
     @XmlAttribute(name = "role")
@@ -38,9 +39,13 @@ public class TextRoleInfo
     @XmlAttribute(name = "creator-type")
     public final Text.CreatorText.CreatorType creatorType;
 
-    //--------------//
-    // TextRoleInfo //
-    //--------------//
+    //~ Constructors -----------------------------------------------------------
+    /**
+     * Creates a new TextRoleInfo object.
+     *
+     * @param role        DOCUMENT ME!
+     * @param creatorType DOCUMENT ME!
+     */
     public TextRoleInfo (TextRole role,
                          CreatorType creatorType)
     {
@@ -49,8 +54,11 @@ public class TextRoleInfo
     }
 
     //--------------//
-    // TextRoleInfo //
-    //--------------//
+    /**
+     * Creates a new TextRoleInfo object.
+     *
+     * @param role DOCUMENT ME!
+     */
     public TextRoleInfo (TextRole role)
     {
         this(role, null);
@@ -64,6 +72,7 @@ public class TextRoleInfo
         this(null, null);
     }
 
+    //~ Methods ----------------------------------------------------------------
     //----------//
     // toString //
     //----------//
@@ -71,13 +80,15 @@ public class TextRoleInfo
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        
-        sb.append(" role:").append(role);
-        
+
+        sb.append(" role:")
+                .append(role);
+
         if (creatorType != null) {
-            sb.append("/").append(creatorType);
+            sb.append("/")
+                    .append(creatorType);
         }
-        
+
         return sb.toString();
     }
 }

@@ -49,7 +49,8 @@ public class NeuralNetwork
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(NeuralNetwork.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            NeuralNetwork.class);
 
     /** Un/marshalling context for use with JAXB */
     private static volatile JAXBContext jaxbContext;
@@ -115,7 +116,14 @@ public class NeuralNetwork
      * @param hiddenSize   number of cells in hidden layer
      * @param outputSize   number of cells in output layer
      * @param amplitude    amplitude ( <= 1.0) for initial random values
-     * @param inputLabels  array of labels for input cells, or null
+     *                     @param inputLabels array
+     * o      f
+     *                                                                                                                                                                                                                                                                                                                                                                                                                       labels
+     *                                                                                                                                                                                                                                                                                                                                                                                                                       for
+     *                                                                                                                                                                                                                                                                                                                                                                                                                       input
+     *                                                                                                                                                                                                                                                                                                                                                                                                                       cells,
+     *                                                                                                                                                                                                                                                                                                                                                                                                                       or
+     *                                                                                                                                                                                                                                                                                                                                                                                                                       null
      * @param outputLabels array of labels for output cells, or null
      */
     public NeuralNetwork (int inputSize,
@@ -140,16 +148,20 @@ public class NeuralNetwork
 
         // Labels for input, if any
         this.inputLabels = inputLabels;
-        if (inputLabels != null && inputLabels.length != inputSize) {
-            throw new IllegalArgumentException("Inconsistent input labels "
-                                               + inputLabels + " vs " + inputSize);
+
+        if ((inputLabels != null) && (inputLabels.length != inputSize)) {
+            throw new IllegalArgumentException(
+                    "Inconsistent input labels " + inputLabels + " vs "
+                    + inputSize);
         }
 
         // Labels for output, if any
         this.outputLabels = outputLabels;
-        if (outputLabels != null && outputLabels.length != outputSize) {
-            throw new IllegalArgumentException("Inconsistent output labels "
-                                               + outputLabels + " vs " + outputSize);
+
+        if ((outputLabels != null) && (outputLabels.length != outputSize)) {
+            throw new IllegalArgumentException(
+                    "Inconsistent output labels " + outputLabels + " vs "
+                    + outputSize);
         }
 
         logger.debug("Network created");
@@ -166,7 +178,14 @@ public class NeuralNetwork
      * @param hiddenSize   number of cells in hidden layer
      * @param outputSize   number of cells in output layer
      * @param amplitude    amplitude ( <= 1.0) for initial random values
-     * @param inputLabels  array of labels for input cells, or null
+     *                     @param inputLabels array
+     * o      f
+     *                                                                                                                                                                                                                                                                                                                                                                                                                           labels
+     *                                                                                                                                                                                                                                                                                                                                                                                                                           for
+     *                                                                                                                                                                                                                                                                                                                                                                                                                           input
+     *                                                                                                                                                                                                                                                                                                                                                                                                                           cells,
+     *                                                                                                                                                                                                                                                                                                                                                                                                                           or
+     *                                                                                                                                                                                                                                                                                                                                                                                                                           null
      * @param outputLabels array of labels for output cells, or null
      * @param learningRate learning rate factor
      * @param momentum     momentum from last adjustment
@@ -184,8 +203,13 @@ public class NeuralNetwork
                           double maxError,
                           int epochs)
     {
-        this(inputSize, hiddenSize, outputSize, amplitude,
-                inputLabels, outputLabels);
+        this(
+                inputSize,
+                hiddenSize,
+                outputSize,
+                amplitude,
+                inputLabels,
+                outputLabels);
 
         // Cache parameters
         this.learningRate = learningRate;
@@ -208,6 +232,30 @@ public class NeuralNetwork
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the provided XML stream to allocate the corresponding
+     * NeuralNetwork.
+     *
+     * @param in the input stream that contains the network definition in XML
+     *           format. The stream is not closed by this method
+     *
+     * @return the allocated network.
+     * @exception JAXBException raised when unmarshalling goes wrong
+     */
+    public static NeuralNetwork unmarshal (InputStream in)
+            throws JAXBException
+    {
+        Unmarshaller um = getJaxbContext()
+                .createUnmarshaller();
+        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
+        logger.debug("Network unmarshalled");
+
+        return nn;
+    }
+
     //
     //--------//
     // backup //
@@ -268,6 +316,19 @@ public class NeuralNetwork
         return hiddenSize;
     }
 
+    //----------------//
+    // getInputLabels //
+    //----------------//
+    /**
+     * Report the input labels, if any.
+     *
+     * @return the inputLabels, perhaps null
+     */
+    public String[] getInputLabels ()
+    {
+        return inputLabels;
+    }
+
     //--------------//
     // getInputSize //
     //--------------//
@@ -279,6 +340,19 @@ public class NeuralNetwork
     public int getInputSize ()
     {
         return inputSize;
+    }
+
+    //-----------------//
+    // getOutputLabels //
+    //-----------------//
+    /**
+     * Report the output labels, if any.
+     *
+     * @return the outputLabels, perhaps null
+     */
+    public String[] getOutputLabels ()
+    {
+        return outputLabels;
     }
 
     //---------------//
@@ -306,7 +380,8 @@ public class NeuralNetwork
     public void marshal (OutputStream os)
             throws JAXBException
     {
-        Marshaller m = getJaxbContext().createMarshaller();
+        Marshaller m = getJaxbContext()
+                .createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.marshal(this, os);
         logger.debug("Network marshalled");
@@ -365,9 +440,11 @@ public class NeuralNetwork
         if (inputs == null) {
             logger.error("run method. inputs array is null");
         } else if (inputs.length != inputSize) {
-            logger.error("run method. input size {} not consistent with"
-                          + " network input layer {}",
-                    inputs.length, inputSize);
+            logger.error(
+                    "run method. input size {} not consistent with"
+                    + " network input layer {}",
+                    inputs.length,
+                    inputSize);
         }
 
         // Allocate the hiddens if not provided
@@ -382,9 +459,11 @@ public class NeuralNetwork
         if (outputs == null) {
             outputs = new double[outputSize];
         } else if (outputs.length != outputSize) {
-            logger.error("run method. output size {} not consistent with"
-                          + " network output layer {}",
-                    outputs.length, outputSize);
+            logger.error(
+                    "run method. output size {} not consistent with"
+                    + " network output layer {}",
+                    outputs.length,
+                    outputSize);
         }
 
         // Then, compute the output values
@@ -636,29 +715,6 @@ public class NeuralNetwork
         return mse;
     }
 
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Unmarshal the provided XML stream to allocate the corresponding
-     * NeuralNetwork.
-     *
-     * @param in the input stream that contains the network definition in XML
-     *           format. The stream is not closed by this method
-     *
-     * @return the allocated network.
-     * @exception JAXBException raised when unmarshalling goes wrong
-     */
-    public static NeuralNetwork unmarshal (InputStream in)
-            throws JAXBException
-    {
-        Unmarshaller um = getJaxbContext().createUnmarshaller();
-        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
-        logger.debug("Network unmarshalled");
-
-        return nn;
-    }
-
     //-------------//
     // cloneMatrix //
     //-------------//
@@ -713,20 +769,6 @@ public class NeuralNetwork
         return matrix;
     }
 
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(NeuralNetwork.class);
-        }
-
-        return jaxbContext;
-    }
-
     //------------//
     // dumpMatrix //
     //------------//
@@ -740,7 +782,7 @@ public class NeuralNetwork
     private String dumpOfMatrix (double[][] matrix)
     {
         StringBuilder sb = new StringBuilder();
-        
+
         for (int col = 0; col < matrix[0].length; col++) {
             sb.append(String.format("%14d", col));
         }
@@ -792,6 +834,20 @@ public class NeuralNetwork
         }
     }
 
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(NeuralNetwork.class);
+        }
+
+        return jaxbContext;
+    }
+
     //---------//
     // sigmoid //
     //---------//
@@ -804,32 +860,6 @@ public class NeuralNetwork
     private double sigmoid (double val)
     {
         return 1.0d / (1.0d + Math.exp(-val));
-    }
-
-    //----------------//
-    // getInputLabels //
-    //----------------//
-    /**
-     * Report the input labels, if any.
-     *
-     * @return the inputLabels, perhaps null
-     */
-    public String[] getInputLabels ()
-    {
-        return inputLabels;
-    }
-
-    //-----------------//
-    // getOutputLabels //
-    //-----------------//
-    /**
-     * Report the output labels, if any.
-     *
-     * @return the outputLabels, perhaps null
-     */
-    public String[] getOutputLabels ()
-    {
-        return outputLabels;
     }
 
     //~ Inner Interfaces -------------------------------------------------------

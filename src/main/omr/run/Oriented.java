@@ -11,9 +11,9 @@
 // </editor-fold>
 package omr.run;
 
-
 /**
- * Interface {@code Oriented} flags an entity as having some orientation.
+ * Interface {@code Oriented} flags an entity as having some 
+ * orientation.
  *
  * @author Hervé Bitteur
  */
@@ -23,6 +23,7 @@ public interface Oriented
 
     /**
      * Report the orientation constant
+     *
      * @return HORIZONTAL or VERTICAL
      */
     Orientation getOrientation ();

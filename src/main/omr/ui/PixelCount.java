@@ -17,7 +17,7 @@ import omr.constant.Constant;
  * A subclass of Constant.Integer, meant to store a number of pixels.
  */
 public class PixelCount
-    extends Constant.Integer
+        extends Constant.Integer
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -26,10 +26,11 @@ public class PixelCount
     //------------//
     /**
      * Specific constructor, where 'unit' and 'name' are assigned later.
+     *
      * @param defaultValue the (int) default value
      * @param description  the semantic of the constant
      */
-    public PixelCount (int              defaultValue,
+    public PixelCount (int defaultValue,
                        java.lang.String description)
     {
         super("Pixels", defaultValue, description);

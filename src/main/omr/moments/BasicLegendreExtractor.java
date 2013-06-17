@@ -23,7 +23,7 @@ import java.awt.image.WritableRaster;
  * @author Hervé Bitteur
  */
 public class BasicLegendreExtractor
-    extends AbstractExtractor<LegendreMoments>
+        extends AbstractExtractor<LegendreMoments>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -58,7 +58,6 @@ public class BasicLegendreExtractor
     }
 
     //~ Constructors -----------------------------------------------------------
-
     //------------------------//
     // BasicLegendreExtractor //
     //------------------------//
@@ -70,20 +69,19 @@ public class BasicLegendreExtractor
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // reconstruct //
     //-------------//
     @Override
     public void reconstruct (WritableRaster raster)
     {
-        int         size = raster.getHeight();
+        int size = raster.getHeight();
 
         ///double[][] buf = new double[size][size];
-        final int   rad = size / 2;
+        final int rad = size / 2;
         final int[] ia = new int[1];
-        double      minVal = Double.MAX_VALUE;
-        double      maxVal = Double.MIN_VALUE;
+        double minVal = Double.MAX_VALUE;
+        double maxVal = Double.MIN_VALUE;
 
         for (int x = 0; x < size; x++) {
             double tx = (x - rad) / (double) rad;
@@ -95,7 +93,7 @@ public class BasicLegendreExtractor
                 for (int m = 0; m <= ORDER; m++) {
                     for (int n = 0; n <= (ORDER - m); n++) {
                         double tau = Math.sqrt(
-                            (((2 * m) + 1) * ((2 * n) + 1)) / 4d);
+                                (((2 * m) + 1) * ((2 * n) + 1)) / 4d);
                         double moment = descriptor.getMoment(m, n);
                         double pm = P[m].evaluate(tx);
                         double pn = P[n].evaluate(ty);
@@ -122,8 +120,8 @@ public class BasicLegendreExtractor
                 maxVal = Math.max(maxVal, val);
 
                 int gray = Math.min(
-                    255,
-                    Math.max(0, (int) Math.rint(val * 256)));
+                        255,
+                        Math.max(0, (int) Math.rint(val * 256)));
                 ia[0] = 255 - gray;
                 raster.setPixel(x, y, ia);
             }
@@ -156,11 +154,11 @@ public class BasicLegendreExtractor
             return;
         }
 
-        final double     area = 1.0 / (radius * radius);
-        final double     centerX = center.getX();
-        final double     centerY = center.getY();
-        final LUT        anyLut = luts[0][0]; // Just for template
-        final int        lutRadius = anyLut.getRadius();
+        final double area = 1.0 / (radius * radius);
+        final double centerX = center.getX();
+        final double centerY = center.getY();
+        final LUT anyLut = luts[0][0]; // Just for template
+        final int lutRadius = anyLut.getRadius();
 
         // Coefficients
         final double[][] coeffs = new double[ORDER + 1][ORDER + 1];
@@ -189,65 +187,6 @@ public class BasicLegendreExtractor
             for (int n = 0; n <= (ORDER - m); n++) {
                 double nNorm = Math.sqrt(((2 * n) + 1) / 2.0);
                 descriptor.setMoment(m, n, coeffs[m][n] * area * mNorm * nNorm);
-            }
-        }
-    }
-
-    //---------------------//
-    // generatePolynomials //
-    //---------------------//
-    /**
-     * Generate all Legendre polynomials, iteratively up to ORDER.
-     * @return the array of polynomials
-     */
-    private static Polynomial[] generatePolynomials ()
-    {
-        Polynomial[] Q = new Polynomial[ORDER + 1];
-
-        Q[0] = new Polynomial(1, 0);
-        Q[1] = new Polynomial(1, 1);
-
-        for (int n = 2; n <= ORDER; n++) {
-            Q[n] = Q[1].times(Q[n - 1])
-                       .times((2 * n) - 1)
-                       .minus(Q[n - 2].times(n - 1))
-                       .times(1d / n);
-        }
-
-        if (false) {
-            for (int n = 0; n <= ORDER; n++) {
-                System.out.println("P[" + n + "] = " + Q[n]);
-            }
-        }
-
-        return Q;
-    }
-
-    //---------//
-    // initLUT //
-    //---------//
-    /**
-     * Compute, once for all, the lookup table values.
-     */
-    private static void initLUT ()
-    {
-        final LUT anyLut = luts[0][0]; // Just for template
-        final int lutSize = anyLut.getSize();
-        final int lutRadius = anyLut.getRadius();
-
-        for (int x = 0; x < lutSize; x++) {
-            double tx = (x - lutRadius) / (double) lutRadius;
-
-            for (int y = 0; y < lutSize; y++) {
-                double ty = (y - lutRadius) / (double) lutRadius;
-
-                for (int m = 0; m <= ORDER; m++) {
-                    double pmx = P[m].evaluate(tx);
-
-                    for (int n = 0; n <= (ORDER - m); n++) {
-                        luts[m][n].assign(x, y, pmx * P[n].evaluate(ty));
-                    }
-                }
             }
         }
     }
@@ -306,6 +245,65 @@ public class BasicLegendreExtractor
         }
     }
 
+    //---------------------//
+    // generatePolynomials //
+    //---------------------//
+    /**
+     * Generate all Legendre polynomials, iteratively up to ORDER.
+     *
+     * @return the array of polynomials
+     */
+    private static Polynomial[] generatePolynomials ()
+    {
+        Polynomial[] Q = new Polynomial[ORDER + 1];
+
+        Q[0] = new Polynomial(1, 0);
+        Q[1] = new Polynomial(1, 1);
+
+        for (int n = 2; n <= ORDER; n++) {
+            Q[n] = Q[1].times(Q[n - 1])
+                    .times((2 * n) - 1)
+                    .minus(Q[n - 2].times(n - 1))
+                    .times(1d / n);
+        }
+
+        if (false) {
+            for (int n = 0; n <= ORDER; n++) {
+                System.out.println("P[" + n + "] = " + Q[n]);
+            }
+        }
+
+        return Q;
+    }
+
+    //---------//
+    // initLUT //
+    //---------//
+    /**
+     * Compute, once for all, the lookup table values.
+     */
+    private static void initLUT ()
+    {
+        final LUT anyLut = luts[0][0]; // Just for template
+        final int lutSize = anyLut.getSize();
+        final int lutRadius = anyLut.getRadius();
+
+        for (int x = 0; x < lutSize; x++) {
+            double tx = (x - lutRadius) / (double) lutRadius;
+
+            for (int y = 0; y < lutSize; y++) {
+                double ty = (y - lutRadius) / (double) lutRadius;
+
+                for (int m = 0; m <= ORDER; m++) {
+                    double pmx = P[m].evaluate(tx);
+
+                    for (int n = 0; n <= (ORDER - m); n++) {
+                        luts[m][n].assign(x, y, pmx * P[n].evaluate(ty));
+                    }
+                }
+            }
+        }
+    }
     //    //-----------------//
     //    // checkOrthogonal //
     //    //-----------------//

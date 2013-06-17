@@ -16,9 +16,6 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 import omr.score.entity.Container;
 
@@ -30,6 +27,9 @@ import omr.util.Dumping.Relevance;
 import omr.util.Navigable;
 
 import org.jdesktop.application.ResourceMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
@@ -194,13 +194,13 @@ public class ScoreTree
             // Set up the views, and display it all
             JButton refreshButton = new JButton(
                     new AbstractAction()
-                    {
-                        @Override
-                        public void actionPerformed (ActionEvent e)
-                        {
-                            refresh();
-                        }
-                    });
+            {
+                @Override
+                public void actionPerformed (ActionEvent e)
+                {
+                    refresh();
+                }
+            });
             refreshButton.setName("refreshButton");
             toolBar.add(refreshButton);
             frame.add(component);

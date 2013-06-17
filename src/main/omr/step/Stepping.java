@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.step;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 import omr.score.entity.Page;
 import omr.score.ui.ScoreActions;
@@ -27,6 +24,9 @@ import static omr.step.Steps.*;
 
 import omr.util.OmrExecutors;
 import omr.util.TreeNode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;

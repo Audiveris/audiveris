@@ -12,7 +12,7 @@
 package omr.run;
 
 /**
- * Interface {@code PixelSource} defines the operations expected 
+ * Interface {@code PixelSource} defines the operations expected
  * from a rectangular pixel source, limited by its width and height.
  * <p>It is a <b>raw</b> pixel source, because just the pixel gray value
  * is returned, with no interpretation as foreground or background.
@@ -36,7 +36,7 @@ public interface PixelSource
     int getHeight ();
 
     /**
-     * Report the pixel element, as read at location (x, y) in the 
+     * Report the pixel element, as read at location (x, y) in the
      * source.
      *
      * @param x abscissa value

@@ -11,31 +11,31 @@
 // </editor-fold>
 package omr.score;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.entity.Measure;
 import omr.score.entity.Page;
 import omr.score.visitor.AbstractScoreVisitor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * Class {@code MeasureBasicNumberer} visits a page hierarchy to assign
- * very basic measures ids. These Ids are very basic (and temporary), ranging
- * from 1 for the first measure in the page.
+ * Class {@code MeasureBasicNumberer} visits a page hierarchy to
+ * assign very basic measures ids.
+ * These Ids are very basic (and temporary), ranging from 1 for the first
+ * measure in the page.
  *
  * @author Hervé Bitteur
  */
 public class MeasureBasicNumberer
-    extends AbstractScoreVisitor
+        extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        MeasureBasicNumberer.class);
+            MeasureBasicNumberer.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------------//
     // MeasureBasicNumberer //
     //----------------------//
@@ -47,7 +47,6 @@ public class MeasureBasicNumberer
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // visit Measure //
     //---------------//
@@ -67,8 +66,8 @@ public class MeasureBasicNumberer
             }
         } catch (Exception ex) {
             logger.warn(
-                getClass().getSimpleName() + " Error visiting " + measure,
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + measure,
+                    ex);
         }
 
         return true;

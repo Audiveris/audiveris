@@ -17,16 +17,16 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 /**
- * Class {@code GhostComponentAdapter} is a {@link GhostDropAdapter} whose
- * image is copied from the appearance of the component where the mouse is
- * pressed.
+ * Class {@code GhostComponentAdapter} is a {@link GhostDropAdapter}
+ * whose image is copied from the appearance of the component where
+ * the mouse is pressed.
  *
  * @param <A> The precise type of action carried by the drop
  *
  * @author Hervé Bitteur (from Romain Guy's demo)
  */
 public class GhostComponentAdapter<A>
-    extends GhostDropAdapter<A>
+        extends GhostDropAdapter<A>
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -37,16 +37,15 @@ public class GhostComponentAdapter<A>
      * Create a new GhostComponentAdapter object
      *
      * @param glassPane the related glasspane
-     * @param action the carried action
+     * @param action    the carried action
      */
     public GhostComponentAdapter (GhostGlassPane glassPane,
-                                  A              action)
+                                  A action)
     {
         super(glassPane, action);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------//
     // mousePressed //
     //--------------//
@@ -57,9 +56,9 @@ public class GhostComponentAdapter<A>
 
         // Copy the component current appearance
         image = new BufferedImage(
-            c.getWidth(),
-            c.getHeight(),
-            BufferedImage.TYPE_INT_ARGB);
+                c.getWidth(),
+                c.getHeight(),
+                BufferedImage.TYPE_INT_ARGB);
 
         Graphics g = image.getGraphics();
         c.paint(g);

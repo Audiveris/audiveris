@@ -14,10 +14,10 @@ package omr.run;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.math.Population;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.math.Population;
 
 import java.util.Arrays;
 
@@ -26,7 +26,8 @@ import java.util.Arrays;
  * {@code PixelFilter} which provides foreground information based on
  * mean value and standard deviation in pixel neighborhood.
  *
- * <p>See work of Sauvola et al.<a href="http://www.mediateam.oulu.fi/publications/pdf/24.p">
+ * <p>See work of Sauvola et al.<a
+ * href="http://www.mediateam.oulu.fi/publications/pdf/24.p">
  * here</a>.
  *
  * <p>The mean value and the standard deviation value are provided thanks to
@@ -122,38 +123,6 @@ public class AdaptiveFilter
     }
 
     //~ Methods ----------------------------------------------------------------
-    //---------------------//
-    // getDefaultMeanCoeff //
-    //---------------------//
-    public static double getDefaultMeanCoeff ()
-    {
-        return constants.meanCoeff.getValue();
-    }
-
-    //-----------------------//
-    // getDefaultStdDevCoeff //
-    //-----------------------//
-    public static double getDefaultStdDevCoeff ()
-    {
-        return constants.stdDevCoeff.getValue();
-    }
-
-    //---------------------//
-    // setDefaultMeanCoeff //
-    //---------------------//
-    public static void setDefaultMeanCoeff (double meanCoeff)
-    {
-        constants.meanCoeff.setValue(meanCoeff);
-    }
-
-    //-----------------------//
-    // setDefaultStdDevCoeff //
-    //-----------------------//
-    public static void setDefaultStdDevCoeff (double stdDevCoeff)
-    {
-        constants.stdDevCoeff.setValue(stdDevCoeff);
-    }
-
     //------------//
     // getContext //
     //------------//
@@ -190,6 +159,22 @@ public class AdaptiveFilter
         }
     }
 
+    //---------------------//
+    // getDefaultMeanCoeff //
+    //---------------------//
+    public static double getDefaultMeanCoeff ()
+    {
+        return constants.meanCoeff.getValue();
+    }
+
+    //-----------------------//
+    // getDefaultStdDevCoeff //
+    //-----------------------//
+    public static double getDefaultStdDevCoeff ()
+    {
+        return constants.stdDevCoeff.getValue();
+    }
+
     //
     // -------//
     // isFore //
@@ -209,6 +194,38 @@ public class AdaptiveFilter
         boolean isFore = pixValue <= threshold;
 
         return isFore;
+    }
+
+    //---------------------//
+    // setDefaultMeanCoeff //
+    //---------------------//
+    public static void setDefaultMeanCoeff (double meanCoeff)
+    {
+        constants.meanCoeff.setValue(meanCoeff);
+    }
+
+    //-----------------------//
+    // setDefaultStdDevCoeff //
+    //-----------------------//
+    public static void setDefaultStdDevCoeff (double stdDevCoeff)
+    {
+        constants.stdDevCoeff.setValue(stdDevCoeff);
+    }
+
+    //------------------//
+    // getAdaptiveClass //
+    //------------------//
+    static Class<?> getImplementationClass ()
+    {
+        String name = constants.className.getValue();
+
+        try {
+            return Class.forName(name);
+        } catch (ClassNotFoundException ex) {
+            logger.error("Cannot find adaptive filter class " + name);
+
+            return null;
+        }
     }
 
     //--------------//
@@ -244,22 +261,6 @@ public class AdaptiveFilter
             super(threshold);
             this.mean = mean;
             this.standardDeviation = standardDeviation;
-        }
-    }
-
-    //------------------//
-    // getAdaptiveClass //
-    //------------------//
-    static Class<?> getImplementationClass ()
-    {
-        String name = constants.className.getValue();
-
-        try {
-            return Class.forName(name);
-        } catch (ClassNotFoundException ex) {
-            logger.error("Cannot find adaptive filter class " + name);
-
-            return null;
         }
     }
 

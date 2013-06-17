@@ -18,13 +18,13 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.LinearEvaluator;
 import omr.math.LinearEvaluator.Sample;
 
 import org.jdesktop.application.Application.ExitListener;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

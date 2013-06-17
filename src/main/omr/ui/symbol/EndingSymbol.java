@@ -12,11 +12,10 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
@@ -25,7 +24,7 @@ import java.awt.Rectangle;
  * @author Hervé Bitteur
  */
 public class EndingSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -54,7 +53,6 @@ public class EndingSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -71,7 +69,7 @@ public class EndingSymbol
     protected Params getParams (MusicFont font)
     {
         Params p = new Params();
-        int    il = font.getFontInterline();
+        int il = font.getFontInterline();
         p.rect = new Rectangle(4 * il, il);
 
         return p;
@@ -82,17 +80,17 @@ public class EndingSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     p,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params p,
+                          Point location,
+                          Alignment alignment)
     {
-        PixelPoint loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        Point loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
 
         g.drawLine(loc.x, loc.y, (loc.x + p.rect.width) - 1, loc.y);
         g.drawLine(
-            (loc.x + p.rect.width) - 1,
-            loc.y,
-            (loc.x + p.rect.width) - 1,
-            loc.y + p.rect.height);
+                (loc.x + p.rect.width) - 1,
+                loc.y,
+                (loc.x + p.rect.width) - 1,
+                loc.y + p.rect.height);
     }
 }

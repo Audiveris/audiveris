@@ -20,14 +20,14 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.Orientation;
 
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.SymbolPicture;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 
@@ -44,7 +44,8 @@ public class SymbolGlyph
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(SymbolGlyph.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SymbolGlyph.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The underlying symbol, with generic size */
@@ -83,10 +84,8 @@ public class SymbolGlyph
         Lag iLag = new BasicLag("iLag", Orientation.VERTICAL);
 
         new SectionsBuilder(iLag, new JunctionAllPolicy()) // catch all
-                .createSections(
-                "symbol",
-                symbolPicture,
-                /* minRunLength => */ 0);
+                .createSections("symbol", symbolPicture, /* minRunLength
+                 * => */ 0);
 
         // Retrieve the whole glyph made of all sections
         for (Section section : iLag.getSections()) {

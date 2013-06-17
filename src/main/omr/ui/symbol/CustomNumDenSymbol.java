@@ -12,20 +12,19 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 
 /**
- *  Class {@code CustomNumDenSymbol} displays a custom time signature, with
+ * Class {@code CustomNumDenSymbol} displays a custom time signature, with
  * just the N and D letters
  */
 public class CustomNumDenSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -54,7 +53,6 @@ public class CustomNumDenSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -73,12 +71,12 @@ public class CustomNumDenSymbol
         MyParams p = new MyParams();
 
         TextFont textFont = new TextFont(
-            (int) Math.rint(font.getSize2D() * 0.62));
+                (int) Math.rint(font.getSize2D() * 0.62));
         p.nLayout = textFont.layout("N");
         p.dLayout = textFont.layout("D");
         p.rect = new Rectangle(
-            (int) Math.ceil(p.nLayout.getBounds().getWidth()),
-            (int) Math.ceil(p.nLayout.getBounds().getHeight() * 2.2));
+                (int) Math.ceil(p.nLayout.getBounds().getWidth()),
+                (int) Math.ceil(p.nLayout.getBounds().getHeight() * 2.2));
 
         return p;
     }
@@ -88,16 +86,13 @@ public class CustomNumDenSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams   p = (MyParams) params;
+        MyParams p = (MyParams) params;
 
-        PixelPoint loc = alignment.translatedPoint(
-            TOP_CENTER,
-            p.rect,
-            location);
+        Point loc = alignment.translatedPoint(TOP_CENTER, p.rect, location);
         OmrFont.paint(g, p.nLayout, loc, TOP_CENTER);
 
         loc.y += p.rect.height;
@@ -105,22 +100,21 @@ public class CustomNumDenSymbol
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // Params //
     //--------//
     protected class MyParams
-        extends Params
+            extends Params
     {
         //~ Instance fields ----------------------------------------------------
 
         // layout not used
         // rect for global image
-
         // Layout for N
         TextLayout nLayout;
 
         // Layout for D
         TextLayout dLayout;
+
     }
 }

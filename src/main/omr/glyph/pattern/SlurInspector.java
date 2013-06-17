@@ -27,15 +27,10 @@ import omr.grid.StaffInfo;
 import omr.lag.Section;
 import omr.lag.Sections;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Barycenter;
 import omr.math.Circle;
 import omr.math.PointsCollector;
 import static omr.run.Orientation.*;
-
-import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
@@ -44,6 +39,10 @@ import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.Wrapper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
 import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -128,7 +127,7 @@ public class SlurInspector
      */
     public Circle computeCircle (Collection<? extends Section> sections)
     {
-        final PixelRectangle box = Sections.getBounds(sections);
+        final Rectangle box = Sections.getBounds(sections);
 
         // Cumulate points from sections
         PointsCollector collector = new PointsCollector(box);
@@ -479,7 +478,7 @@ public class SlurInspector
         }
 
         // Let's grow the seed incrementally as much as possible
-        PixelRectangle slurBox = seedSection.getBounds();
+        Rectangle slurBox = seedSection.getBounds();
         seedSection.setProcessed(true);
 
         boolean growing = true;
@@ -493,7 +492,7 @@ public class SlurInspector
                 }
 
                 // Need connection
-                PixelRectangle sctBox = section.getBounds();
+                Rectangle sctBox = section.getBounds();
                 sctBox.grow(1, 1);
 
                 if (!sctBox.intersects(slurBox)) {
@@ -544,7 +543,7 @@ public class SlurInspector
                                                   List<Section> collected)
     {
         final List<Section> isolated = new ArrayList<>(collected);
-        final PixelRectangle slurBox = seedSection.getBounds();
+        final Rectangle slurBox = seedSection.getBounds();
         boolean makingProgress;
 
         do {
@@ -552,7 +551,7 @@ public class SlurInspector
 
             for (Iterator<Section> it = isolated.iterator(); it.hasNext();) {
                 Section section = it.next();
-                PixelRectangle sectBox = section.getBounds();
+                Rectangle sectBox = section.getBounds();
                 sectBox.grow(params.slurBoxDx, params.slurBoxDy);
 
                 if (sectBox.intersects(slurBox)) {
@@ -899,9 +898,9 @@ public class SlurInspector
      */
     private Point2D getSlurPointNearX (int x,
                                        Collection<? extends Section> sections,
-                                       PixelRectangle box)
+                                       Rectangle box)
     {
-        PixelRectangle roi = new PixelRectangle(x, box.y, 0, box.height);
+        Rectangle roi = new Rectangle(x, box.y, 0, box.height);
         Barycenter bary;
 
         do {
@@ -1027,9 +1026,9 @@ public class SlurInspector
          * @see #setSide
          */
         @Override
-        public PixelRectangle computeReferenceBox ()
+        public Rectangle computeReferenceBox ()
         {
-            PixelRectangle sBox = seed.getBounds(); // Seed box
+            Rectangle sBox = seed.getBounds(); // Seed box
             boolean isShort = sBox.width <= params.minSlurWidth;
             Point2D cp; // Related control point
 
@@ -1046,9 +1045,9 @@ public class SlurInspector
             }
 
             // Exact ending point (?)
-            PixelRectangle roi = (side == LEFT)
-                    ? new PixelRectangle(sBox.x, sBox.y, 1, sBox.height)
-                    : new PixelRectangle((sBox.x + sBox.width) - 1, sBox.y, 1, sBox.height);
+            Rectangle roi = (side == LEFT)
+                    ? new Rectangle(sBox.x, sBox.y, 1, sBox.height)
+                    : new Rectangle((sBox.x + sBox.width) - 1, sBox.y, 1, sBox.height);
             Point2D ep = seed.getRectangleCentroid(roi);
             if (ep != null) {
                 if (side == RIGHT) {
@@ -1094,7 +1093,7 @@ public class SlurInspector
                     ep.getX() + (lambda * cp2pt.getX()),
                     ep.getY() + (lambda * cp2pt.getY()));
 
-            PixelRectangle rect = new PixelRectangle(
+            Rectangle rect = new Rectangle(
                     (int) Math.rint(Math.min(ext.getX(), ep.getX())),
                     (int) Math.rint(Math.min(ext.getY(), ep.getY())),
                     (int) Math.rint(Math.abs(ext.getX() - ep.getX())),
@@ -1221,7 +1220,7 @@ public class SlurInspector
         }
 
         @Override
-        public PixelRectangle setSeed (Glyph seed)
+        public Rectangle setSeed (Glyph seed)
         {
             box = null;
 
@@ -1275,7 +1274,7 @@ public class SlurInspector
          */
         private double toEndSq (Section section)
         {
-            PixelRectangle b = section.getBounds();
+            Rectangle b = section.getBounds();
 
             if (side == LEFT) {
                 // Use box right vertical

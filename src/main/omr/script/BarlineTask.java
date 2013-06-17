@@ -107,8 +107,11 @@ public class BarlineTask
             if (getAssignedShape() != null) {
                 // Assignment
                 if (isCompound()) {
-                    Glyph firstGlyph = glyphs.iterator().next();
-                    Glyph compound = firstGlyph.getMembers().first().getGlyph();
+                    Glyph firstGlyph = glyphs.iterator()
+                            .next();
+                    Glyph compound = firstGlyph.getMembers()
+                            .first()
+                            .getGlyph();
                     gridBuilder.updateBars(glyphs, Arrays.asList(compound));
                 } else {
                     gridBuilder.updateBars(glyphs, glyphs);

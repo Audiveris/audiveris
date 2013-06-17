@@ -13,12 +13,7 @@ package omr.text;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.entity.PartNode;
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
@@ -26,6 +21,11 @@ import omr.sheet.SystemInfo;
 
 import omr.util.Navigable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -224,7 +224,7 @@ public class TextLine
      * @return the line bounds
      */
     @Override
-    public PixelRectangle getBounds ()
+    public Rectangle getBounds ()
     {
         if (super.getBounds() == null) {
             setBounds(boundsOf(getWords()));
@@ -408,7 +408,7 @@ public class TextLine
     public SystemPart getSystemPart ()
     {
         final TextRole role = getRole().role;
-        final PixelPoint location = getFirstWord().getLocation();
+        final Point location = getFirstWord().getLocation();
         final Staff staff = system.getScoreSystem().getTextStaff(role, location);
 
         return staff.getPart();

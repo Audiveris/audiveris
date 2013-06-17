@@ -33,15 +33,10 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.Sections;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.RunsTable;
 
 import omr.score.Score;
 import omr.score.ScoresManager;
-import omr.score.common.PixelDimension;
-import omr.score.common.PixelPoint;
 import omr.score.entity.Page;
 import omr.score.entity.SystemNode;
 
@@ -66,6 +61,10 @@ import omr.step.Steps;
 import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
@@ -459,7 +458,7 @@ public class Sheet
      *
      * @return the page/sheet dimension in pixels
      */
-    public PixelDimension getDimension ()
+    public Dimension getDimension ()
     {
         return picture.getDimension();
     }

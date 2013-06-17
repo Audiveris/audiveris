@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.score.common.PixelPoint;
-
 import omr.text.TextRoleInfo;
 import omr.text.TextWord;
+
+import java.awt.Point;
 
 /**
  * Interface {@code GlyphContent} defines a facet that deals with the
@@ -23,7 +23,7 @@ import omr.text.TextWord;
  * @author Hervé Bitteur
  */
 public interface GlyphContent
-    extends GlyphFacet
+        extends GlyphFacet
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -37,7 +37,6 @@ public interface GlyphContent
     String HYPHEN_STRING = "-";
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * Report the manually assigned role, if any.
      *
@@ -65,7 +64,7 @@ public interface GlyphContent
      *
      * @return the starting point of the text glyph, specified in pixels
      */
-    PixelPoint getTextLocation ();
+    Point getTextLocation ();
 
     /**
      * Report the text role of the textual glyph within the score.
@@ -109,6 +108,6 @@ public interface GlyphContent
      * @param ocrLanguage the language provided to OCR engine for recognition
      * @param textWord    the TextWord for this glyph
      */
-    void setTextWord (String   ocrLanguage,
+    void setTextWord (String ocrLanguage,
                       TextWord textWord);
 }

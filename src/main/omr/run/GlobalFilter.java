@@ -45,7 +45,7 @@ public class GlobalFilter
     /**
      * Create a binary wrapper on a raw pixel source.
      *
-     * @param source        the underlying source of raw pixels
+     * @param source    the underlying source of raw pixels
      * @param threshold maximum gray level of foreground pixel
      */
     public GlobalFilter (PixelSource source,
@@ -56,6 +56,30 @@ public class GlobalFilter
     }
 
     //~ Methods ----------------------------------------------------------------
+    //----------------------//
+    // getDefaultDescriptor //
+    //----------------------//
+    public static FilterDescriptor getDefaultDescriptor ()
+    {
+        return GlobalDescriptor.getDefault();
+    }
+
+    //---------------------//
+    // getDefaultThreshold //
+    //---------------------//
+    public static int getDefaultThreshold ()
+    {
+        return constants.defaultThreshold.getValue();
+    }
+
+    //---------------------//
+    // setDefaultThreshold //
+    //---------------------//
+    public static void setDefaultThreshold (int threshold)
+    {
+        constants.defaultThreshold.setValue(threshold);
+    }
+
     //
     //------------//
     // getContext //
@@ -67,22 +91,6 @@ public class GlobalFilter
         return new Context(threshold);
     }
 
-    //----------------------//
-    // getDefaultDescriptor //
-    //----------------------//
-    public static FilterDescriptor getDefaultDescriptor ()
-    {
-        return  GlobalDescriptor.getDefault();
-    }
-
-    //---------------------//
-    // getDefaultThreshold //
-    //---------------------//
-    public static int getDefaultThreshold ()
-    {
-        return constants.defaultThreshold.getValue();
-    }
-
     //
     // -------//
     // isFore //
@@ -92,14 +100,6 @@ public class GlobalFilter
                            int y)
     {
         return source.getPixel(x, y) <= threshold;
-    }
-
-    //---------------------//
-    // setDefaultThreshold //
-    //---------------------//
-    public static void setDefaultThreshold (int threshold)
-    {
-        constants.defaultThreshold.setValue(threshold);
     }
 
     //~ Inner Classes ----------------------------------------------------------

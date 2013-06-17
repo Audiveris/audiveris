@@ -16,15 +16,15 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.selection.GlyphEvent;
 import omr.selection.SelectionHint;
 
 import omr.sheet.Sheet;
 
 import omr.ui.util.SeparableMenu;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

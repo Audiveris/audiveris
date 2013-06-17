@@ -18,13 +18,9 @@ import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import omr.math.GeoUtil;
 
 import omr.score.Score;
-import omr.score.common.PixelDimension;
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.AbstractNotation;
 import omr.score.entity.Arpeggiate;
 import omr.score.entity.Articulation;
@@ -70,12 +66,16 @@ import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
 import static omr.ui.symbol.Symbols.*;
 import omr.ui.symbol.TextFont;
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
 
 import omr.util.HorizontalSide;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -262,7 +262,7 @@ public abstract class PagePainter
             // Draw an arpeggiate symbol with proper height
             // Using half-height of arpeggiate character as the elementary unit
             // We need clipping to draw half characters
-            final PixelRectangle box = arpeggiate.getBox();
+            final Rectangle box = arpeggiate.getBox();
             box.height -= 2; // Gives better results
 
             // How many half arpeggiate symbols do we need?
@@ -322,9 +322,9 @@ public abstract class PagePainter
     public boolean visit (Beam beam)
     {
         try {
-            final PixelPoint left = new PixelPoint(
+            final Point left = new Point(
                     beam.getPoint(HorizontalSide.LEFT));
-            final PixelPoint right = new PixelPoint(
+            final Point right = new Point(
                     beam.getPoint(HorizontalSide.RIGHT));
             final int dx = (int) Math.rint(stemHalfThickness);
             final int dy = (int) Math.rint(beamHalfThickness);
@@ -403,8 +403,8 @@ public abstract class PagePainter
             final int fn = chord.getFlagsNumber();
 
             if (fn > 0) {
-                PixelPoint tail = chord.getTailLocation();
-                PixelPoint head = chord.getHeadLocation();
+                Point tail = chord.getTailLocation();
+                Point head = chord.getHeadLocation();
 
                 // We draw from tail
                 boolean goesUp = head.y < tail.y;
@@ -481,7 +481,7 @@ public abstract class PagePainter
             final int sign = Integer.signum(key);
             final Shape shape = (key < 0) ? FLAT : SHARP;
             final TextLayout layout = musicFont.layout(shape);
-            final PixelRectangle box = keySignature.getBox();
+            final Rectangle box = keySignature.getBox();
             final int unitDx = getKeySigItemDx();
 
             if (box == null) {
@@ -495,7 +495,7 @@ public abstract class PagePainter
             final Alignment alignment = new Alignment(
                     BASELINE,
                     (key < 0) ? LEFT : CENTER);
-            PixelPoint point = new PixelPoint(box.x, 0);
+            Point point = new Point(box.x, 0);
 
             for (int i = 1; i <= (key * sign); i++) {
                 int n = i * sign;
@@ -504,7 +504,7 @@ public abstract class PagePainter
 
                 if (ref != null) {
                     ///logger.info(n + ":" + ref + " for " + keySignature);
-                    point = new PixelPoint(ref, 0);
+                    point = new Point(ref, 0);
                 }
 
                 paint(layout, location(point, staff, pitch), alignment);
@@ -562,7 +562,7 @@ public abstract class PagePainter
             final Chord chord = note.getChord();
             final Glyph stem = chord.getStem();
             final Shape shape = note.getShape();
-            final PixelPoint center = note.getCenter();
+            final Point center = note.getCenter();
 
             // Note head
             if (stem != null) {
@@ -692,9 +692,9 @@ public abstract class PagePainter
             if (part.getBrace() != null) {
                 if (part.getBrace().getShape() == Shape.BRACE) {
                     // We have nice half braces in MusicalSymbols font
-                    final PixelRectangle box = braceBox(part);
-                    final PixelPoint center = box.getCenter();
-                    final PixelDimension halfDim = new PixelDimension(
+                    final Rectangle box = braceBox(part);
+                    final Point center = GeoUtil.centerOf(box);
+                    final Dimension halfDim = new Dimension(
                             box.width,
                             box.height / 2);
                     paint(
@@ -712,10 +712,10 @@ public abstract class PagePainter
                     AffineTransform at = AffineTransform.getScaleInstance(barWidth / width, 1);
 
                     final Line2D line = bracketLine(part);
-                    PixelPoint topLeft = new PixelPoint(
+                    Point topLeft = new Point(
                             (int) Math.rint(line.getX1() - barWidth / 2),
                             (int) Math.rint(line.getY1()));
-                    PixelPoint botLeft = new PixelPoint(
+                    Point botLeft = new Point(
                             (int) Math.rint(line.getX2() - barWidth / 2),
                             (int) Math.rint(line.getY2()));
 
@@ -844,7 +844,7 @@ public abstract class PagePainter
 
         try {
             final Shape shape = timeSignature.getShape();
-            final PixelPoint center = timeSignature.getCenter();
+            final Point center = timeSignature.getCenter();
             final Staff staff = timeSignature.getStaff();
             final int dy = staff.pitchToPixels(-2);
 
@@ -861,12 +861,12 @@ public abstract class PagePainter
                 // Paint numerator
                 paintTimeNumber(
                         timeSignature.getNumerator(),
-                        new PixelPoint(center.x, center.y - dy));
+                        new Point(center.x, center.y - dy));
 
                 // Paint denominator
                 paintTimeNumber(
                         timeSignature.getDenominator(),
-                        new PixelPoint(center.x, center.y + dy));
+                        new Point(center.x, center.y + dy));
             }
         } catch (InvalidTimeSignature ex) {
             logger.warn("Invalid time signature", ex);
@@ -890,22 +890,22 @@ public abstract class PagePainter
 
         try {
             if (wedge.isStart()) {
-                final PixelRectangle box = wedge.getGlyph().getBounds();
+                final Rectangle box = wedge.getGlyph().getBounds();
 
-                PixelPoint single;
-                PixelPoint top;
-                PixelPoint bot;
+                Point single;
+                Point top;
+                Point bot;
 
                 if (wedge.getShape() == Shape.CRESCENDO) {
-                    single = new PixelPoint(box.x, box.y + (box.height / 2));
-                    top = new PixelPoint(box.x + box.width, box.y);
-                    bot = new PixelPoint(box.x + box.width, box.y + box.height);
+                    single = new Point(box.x, box.y + (box.height / 2));
+                    top = new Point(box.x + box.width, box.y);
+                    bot = new Point(box.x + box.width, box.y + box.height);
                 } else {
-                    single = new PixelPoint(
+                    single = new Point(
                             box.x + box.width,
                             box.y + (box.height / 2));
-                    top = new PixelPoint(box.x, box.y);
-                    bot = new PixelPoint(box.x, box.y + box.height);
+                    top = new Point(box.x, box.y);
+                    bot = new Point(box.x, box.y + box.height);
                 }
 
                 paintLine(single, top);
@@ -932,8 +932,8 @@ public abstract class PagePainter
      * @param accidental the accidental glyph
      * @return the location to be used for painting
      */
-    protected abstract PixelPoint accidentalLocation (Note note,
-                                                      Glyph accidental);
+    protected abstract Point accidentalLocation (Note note,
+                                                 Glyph accidental);
 
     //----------//
     // braceBox //
@@ -944,7 +944,7 @@ public abstract class PagePainter
      * @param part the related part
      * @return the box to be used for painting
      */
-    protected abstract PixelRectangle braceBox (SystemPart part);
+    protected abstract Rectangle braceBox (SystemPart part);
 
     //-------------//
     // bracketLine //
@@ -967,7 +967,7 @@ public abstract class PagePainter
      * @param note the related note
      * @return the location to be used for painting
      */
-    protected abstract PixelPoint noteLocation (Note note);
+    protected abstract Point noteLocation (Note note);
 
     //-------------//
     // basicLayout //
@@ -1032,7 +1032,7 @@ public abstract class PagePainter
         if (linePainting) {
             g.setStroke(lineStroke);
         } else {
-            UIUtilities.setAbsoluteStroke(g, 1f);
+            UIUtil.setAbsoluteStroke(g, 1f);
         }
     }
 
@@ -1048,14 +1048,14 @@ public abstract class PagePainter
      * @param chord    the chord whose stem must be stuck to the (note) symbol
      * @param staff    the containing staff
      * @param pitch    the pitch position with respect to the staff
-     * @return the PixelPoint, as precise as possible in X & Y
+     * @return the Point, as precise as possible in X & Y
      */
-    protected PixelPoint location (PixelPoint sysPoint,
-                                   Chord chord,
-                                   Staff staff,
-                                   double pitch)
+    protected Point location (Point sysPoint,
+                              Chord chord,
+                              Staff staff,
+                              double pitch)
     {
-        return new PixelPoint(
+        return new Point(
                 preciseAbscissa(sysPoint, chord),
                 staff.getTopLeft().y + staff.pitchToPixels(pitch));
     }
@@ -1069,12 +1069,12 @@ public abstract class PagePainter
      *
      * @param sysPoint the (approximate) system-based drawing point
      * @param chord    the chord whose stem must be stuck to the (note) symbol
-     * @return the PixelPoint, as precise as possible in X
+     * @return the Point, as precise as possible in X
      */
-    protected PixelPoint location (PixelPoint sysPoint,
-                                   Chord chord)
+    protected Point location (Point sysPoint,
+                              Chord chord)
     {
-        return new PixelPoint(preciseAbscissa(sysPoint, chord), sysPoint.y);
+        return new Point(preciseAbscissa(sysPoint, chord), sysPoint.y);
     }
 
     //----------//
@@ -1087,13 +1087,13 @@ public abstract class PagePainter
      * @param sysPoint the (approximate) system-based drawing point
      * @param staff    the containing staff
      * @param pitch    the pitch position with respect to the staff
-     * @return the PixelPoint, as precise as possible in Y
+     * @return the Point, as precise as possible in Y
      */
-    protected PixelPoint location (PixelPoint sysPoint,
-                                   Staff staff,
-                                   double pitch)
+    protected Point location (Point sysPoint,
+                              Staff staff,
+                              double pitch)
     {
-        return new PixelPoint(
+        return new Point(
                 sysPoint.x,
                 staff.getTopLeft().y + staff.pitchToPixels(pitch));
     }
@@ -1110,7 +1110,7 @@ public abstract class PagePainter
      * @param alignment how: the way the symbol is aligned wrt the location
      */
     protected void paint (TextLayout layout,
-                          PixelPoint location,
+                          Point location,
                           Alignment alignment)
     {
         OmrFont.paint(g, layout, location, alignment);
@@ -1127,7 +1127,7 @@ public abstract class PagePainter
      * @param location where: the precise location in the display
      */
     protected void paint (TextLayout layout,
-                          PixelPoint location)
+                          Point location)
     {
         if (layout != null) {
             paint(layout, location, defaultAlignment);
@@ -1147,7 +1147,7 @@ public abstract class PagePainter
      * @param alignment alignment wrt the symbol
      */
     protected void paint (Shape shape,
-                          PixelPoint location,
+                          Point location,
                           Alignment alignment)
     {
         ShapeSymbol symbol = Symbols.getSymbol(shape);
@@ -1167,7 +1167,7 @@ public abstract class PagePainter
      * @param location the precise location
      */
     protected void paint (Shape shape,
-                          PixelPoint location)
+                          Point location)
     {
         paint(shape, location, defaultAlignment);
     }
@@ -1176,13 +1176,13 @@ public abstract class PagePainter
     // paintLine //
     //-----------//
     /**
-     * Draw a line from one PixelPoint to another PixelPoint
+     * Draw a line from one Point to another Point
      *
      * @param from first point
      * @param to   second point
      */
-    protected void paintLine (PixelPoint from,
-                              PixelPoint to)
+    protected void paintLine (Point from,
+                              Point to)
     {
         if ((from != null) && (to != null)) {
             g.drawLine(from.x, from.y, to.x, to.y);
@@ -1202,7 +1202,7 @@ public abstract class PagePainter
      * @param center the center of desired location
      */
     protected void paintTimeNumber (int number,
-                                    PixelPoint center)
+                                    Point center)
     {
         int[] codes = ShapeSymbol.numberCodes(number);
         String str = new String(codes, 0, codes.length);
@@ -1220,7 +1220,7 @@ public abstract class PagePainter
      * @param chord    the chord/stem the note should be stuck to
      * @return the precise value for x
      */
-    protected int preciseAbscissa (PixelPoint sysPoint,
+    protected int preciseAbscissa (Point sysPoint,
                                    Chord chord)
     {
         // Compute symbol abscissa according to chord stem

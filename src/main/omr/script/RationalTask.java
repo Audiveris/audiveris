@@ -23,13 +23,13 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Class {@code RationalTask} records the assignment of a time rational value
- * to a collection of glyphs
+ * Class {@code RationalTask} records the assignment of a time
+ * rational value to a collection of glyphs
  *
  * @author Hervé Bitteur
  */
 public class RationalTask
-    extends GlyphUpdateTask
+        extends GlyphUpdateTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -38,19 +38,18 @@ public class RationalTask
     private final TimeRational timeRational;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // RationalTask //
     //--------------//
     /**
      * Creates a new RationalTask object.
      *
-     * @param sheet the sheet impacted
+     * @param sheet        the sheet impacted
      * @param timeRational the custom time sig rational value
-     * @param glyphs the impacted glyph(s)
+     * @param glyphs       the impacted glyph(s)
      */
-    public RationalTask (Sheet             sheet,
-                         TimeRational      timeRational,
+    public RationalTask (Sheet sheet,
+                         TimeRational timeRational,
                          Collection<Glyph> glyphs)
     {
         super(sheet, glyphs);
@@ -67,20 +66,19 @@ public class RationalTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // core //
     //------//
     @Override
     public void core (Sheet sheet)
-        throws Exception
+            throws Exception
     {
         sheet.getSymbolsController()
-             .getModel()
-             .assignTimeRational(
-            getInitialGlyphs(),
-            timeRational,
-            Evaluation.MANUAL);
+                .getModel()
+                .assignTimeRational(
+                getInitialGlyphs(),
+                timeRational,
+                Evaluation.MANUAL);
     }
 
     //-----------------//
@@ -94,7 +92,7 @@ public class RationalTask
 
         if (timeRational != null) {
             sb.append(" ")
-              .append(timeRational);
+                    .append(timeRational);
         }
 
         return sb.toString();

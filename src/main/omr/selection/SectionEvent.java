@@ -19,7 +19,7 @@ import omr.lag.Section;
  * @author Hervé Bitteur
  */
 public class SectionEvent
-    extends LagEvent
+        extends LagEvent
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -27,28 +27,27 @@ public class SectionEvent
     private final Section section;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // SectionEvent //
     //--------------//
     /**
      * Creates a new SectionEvent object.
-     * @param source the entity that created this event
-     * @param hint hint about event origin
+     *
+     * @param source   the entity that created this event
+     * @param hint     hint about event origin
      * @param movement the mouse movement
-     * @param section the selected section (or null)
+     * @param section  the selected section (or null)
      */
-    public SectionEvent (Object        source,
+    public SectionEvent (Object source,
                          SelectionHint hint,
                          MouseMovement movement,
-                         Section       section)
+                         Section section)
     {
         super(source, hint, movement);
         this.section = section;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getEntity //
     //-----------//

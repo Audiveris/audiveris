@@ -83,7 +83,9 @@ public class TextTask
     public void core (Sheet sheet)
             throws Exception
     {
-        sheet.getSymbolsController().getModel().assignText(
+        sheet.getSymbolsController()
+                .getModel()
+                .assignText(
                 getInitialGlyphs(),
                 roleInfo,
                 content,
@@ -99,13 +101,17 @@ public class TextTask
         StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" text");
 
-        sb.append(" ").append(roleInfo.role);
+        sb.append(" ")
+                .append(roleInfo.role);
 
         if (roleInfo.creatorType != null) {
-            sb.append(" ").append(roleInfo.creatorType);
+            sb.append(" ")
+                    .append(roleInfo.creatorType);
         }
 
-        sb.append(" \"").append(content).append("\"");
+        sb.append(" \"")
+                .append(content)
+                .append("\"");
 
         return sb.toString();
     }

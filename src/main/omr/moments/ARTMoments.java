@@ -11,16 +11,16 @@
 // </editor-fold>
 package omr.moments;
 
-
 /**
  * Interface {@code ARTMoments} defines a region shape features
  * descriptor based on Angular Radial Transform.
  *
  * See MPEG-7 Experimentation Model for the original C++ code
+ *
  * @author Hervé Bitteur
  */
 public interface ARTMoments
-    extends OrthogonalMoments<ARTMoments>
+        extends OrthogonalMoments<ARTMoments>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -31,9 +31,9 @@ public interface ARTMoments
     public static final int RADIAL = 3;
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * Report the argument value for provided phase and radius indices.
+     *
      * @param p phase index
      * @param r radius index
      * @return the argument double value [-PI..PI]
@@ -43,6 +43,7 @@ public interface ARTMoments
 
     /**
      * Report the imaginary value for provided phase and radius indices.
+     *
      * @param p phase index
      * @param r radius index
      * @return the module double value [0..1]
@@ -52,6 +53,7 @@ public interface ARTMoments
 
     /**
      * Report the module value for provided phase and radius indices.
+     *
      * @param p phase index
      * @param r radius index
      * @return the module double value [0..1]
@@ -61,6 +63,7 @@ public interface ARTMoments
 
     /**
      * Report the real value for provided phase and radius indices.
+     *
      * @param p phase index
      * @param r radius index
      * @return the module double value [0..1]
@@ -70,41 +73,45 @@ public interface ARTMoments
 
     /**
      * Set the argument value for provided phase and radius indices.
+     *
      * @param p     phase index
      * @param r     radius index
      * @param value the argument double value [-PI..PI]
      */
-    void setArgument (int    p,
-                      int    r,
+    void setArgument (int p,
+                      int r,
                       double value);
 
     /**
      * Set the imaginary value for provided phase and radius indices.
+     *
      * @param p     phase index
      * @param r     radius index
      * @param value the element double value [0..1]
      */
-    void setImag (int    p,
-                  int    r,
+    void setImag (int p,
+                  int r,
                   double value);
 
     /**
      * Set the module value for provided phase and radius indices.
+     *
      * @param p     phase index
      * @param r     radius index
      * @param value the element double value [0..1]
      */
-    void setModule (int    p,
-                    int    r,
+    void setModule (int p,
+                    int r,
                     double value);
 
     /**
      * Set the real value for provided phase and radius indices.
+     *
      * @param p     phase index
      * @param r     radius index
      * @param value the element double value [0..1]
      */
-    void setReal (int    p,
-                  int    r,
+    void setReal (int p,
+                  int r,
                   double value);
 }

@@ -11,11 +11,12 @@
 // </editor-fold>
 package omr.score.entity;
 
+import omr.score.visitor.ScoreVisitor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
-import omr.score.visitor.ScoreVisitor;
+import java.awt.Point;
 
 /**
  * Class {@code ChordSymbol} represents a chord symbol in the score.
@@ -53,11 +54,15 @@ public class ChordSymbol
      * @param text           the sentence text
      */
     public ChordSymbol (Measure measure,
-                        PixelPoint referencePoint,
+                        Point referencePoint,
                         Chord chord,
                         Text.ChordText text)
     {
-        super(measure, true, referencePoint, chord,
+        super(
+                measure,
+                true,
+                referencePoint,
+                chord,
                 text.getSentence().getFirstWord().getGlyph());
 
         this.text = text;
@@ -83,19 +88,19 @@ public class ChordSymbol
     }
 
     //---------//
-    // getText //
-    //---------//
-    public Text.ChordText getText ()
-    {
-        return text;
-    }
-
-    //---------//
     // getInfo //
     //---------//
     public ChordInfo getInfo ()
     {
         return info;
+    }
+
+    //---------//
+    // getText //
+    //---------//
+    public Text.ChordText getText ()
+    {
+        return text;
     }
 
     //-----------------------//

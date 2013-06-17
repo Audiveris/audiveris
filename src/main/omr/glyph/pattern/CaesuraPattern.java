@@ -14,15 +14,16 @@ package omr.glyph.pattern;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
 
 import omr.sheet.SystemInfo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
 
 /**
  * Class {@code CaesuraPattern} checks that a caesura in a measure
@@ -31,20 +32,21 @@ import omr.sheet.SystemInfo;
  * @author Hervé Bitteur
  */
 public class CaesuraPattern
-    extends GlyphPattern
+        extends GlyphPattern
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(CaesuraPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            CaesuraPattern.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------//
     // CaesuraPattern //
     //----------------//
     /**
      * Creates a new CaesuraPattern object.
+     *
      * @param system the system to process
      */
     public CaesuraPattern (SystemInfo system)
@@ -53,14 +55,13 @@ public class CaesuraPattern
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // runPattern //
     //------------//
     @Override
     public int runPattern ()
     {
-        int         nb = 0;
+        int nb = 0;
         ScoreSystem scoreSystem = system.getScoreSystem();
 
         for (Glyph glyph : system.getGlyphs()) {
@@ -68,12 +69,12 @@ public class CaesuraPattern
                 continue;
             }
 
-            PixelPoint center = glyph.getAreaCenter();
+            Point center = glyph.getAreaCenter();
             SystemPart part = scoreSystem.getPartAt(center);
-            Measure    measure = part.getMeasureAt(center);
+            Measure measure = part.getMeasureAt(center);
 
             if (!measure.getChords()
-                        .isEmpty()) {
+                    .isEmpty()) {
                 if (glyph.isVip() || logger.isDebugEnabled()) {
                     logger.info("Cancelled caesura #{}", glyph.getId());
                 }

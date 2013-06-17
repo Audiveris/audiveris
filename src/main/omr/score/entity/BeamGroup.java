@@ -14,14 +14,9 @@ package omr.score.entity;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Line;
 import omr.math.Rational;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 
@@ -30,6 +25,11 @@ import omr.util.Navigable;
 import omr.util.TreeNode;
 import omr.util.Vip;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -510,8 +510,8 @@ public class BeamGroup
             double slope = bestBeam.getLine().getSlope();
 
             for (Beam beam : beams) {
-                PixelPoint left = beam.getPoint(HorizontalSide.LEFT);
-                PixelPoint right = beam.getPoint(HorizontalSide.RIGHT);
+                Point left = beam.getPoint(HorizontalSide.LEFT);
+                Point right = beam.getPoint(HorizontalSide.RIGHT);
                 double yMid = (left.y + right.y) / 2d;
                 double dy = (right.x - left.x) * slope;
                 left.y = (int) Math.rint(yMid - (dy / 2));
@@ -560,7 +560,7 @@ public class BeamGroup
         // We check the vertical distance between any chord and the beams
         // above or below the chord.
         for (Chord chord : getChords()) {
-            PixelRectangle chordBox = chord.getBox();
+            Rectangle chordBox = chord.getBox();
             for (Beam beam : beams) {
                 // Beam hooks are not concerned
                 if (beam.isHook()) {
@@ -571,7 +571,7 @@ public class BeamGroup
                     continue;
                 }
                 // Check abscissa overlap
-                PixelRectangle beamBox = beam.getBox();
+                Rectangle beamBox = beam.getBox();
                 int xOverlap = Math.min(chordBox.x + chordBox.width,
                         beamBox.x + beamBox.width)
                                - Math.max(chordBox.x, beamBox.x);
@@ -581,7 +581,7 @@ public class BeamGroup
 
                 // Check vertical gap
                 Line line = beam.getLine();
-                PixelPoint tail = chord.getTailLocation();
+                Point tail = chord.getTailLocation();
                 int lineY = line.yAtX(tail.x);
                 int yOverlap = Math.min(lineY, chordBox.y + chordBox.height)
                                - Math.max(lineY, chordBox.y);

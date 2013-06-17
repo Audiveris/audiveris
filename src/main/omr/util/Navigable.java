@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.util;
 
-
 /**
  * Annotation {@code Navigable} is used to drive the browsing done by
  * ScoreTree.
@@ -21,12 +20,15 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Navigable {
+public @interface Navigable
+{
+
     /**
      * @return whether the annotated field can be navigated
      */
-    boolean value() default true;
+    boolean value () default true;
 }

@@ -31,7 +31,8 @@ public abstract class DynamicMenu
     private final JMenu menu;
 
     /** Specific menu listener */
-    private MenuListener listener = new MenuListener() {
+    private MenuListener listener = new MenuListener()
+    {
         @Override
         public void menuCanceled (MenuEvent e)
         {
@@ -53,14 +54,13 @@ public abstract class DynamicMenu
         }
     };
 
-
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // DynamicMenu //
     //-------------//
     /**
      * Create the dynamic menu.
+     *
      * @param menuLabel the label to be used for the menu
      */
     public DynamicMenu (String menuLabel)
@@ -73,6 +73,7 @@ public abstract class DynamicMenu
 
     /**
      * Creates a new DynamicMenu object.
+     *
      * @param action related action
      */
     public DynamicMenu (Action action)
@@ -84,12 +85,12 @@ public abstract class DynamicMenu
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // getMenu //
     //---------//
     /**
      * Report the concrete menu.
+     *
      * @return the usable menu
      */
     public JMenu getMenu ()

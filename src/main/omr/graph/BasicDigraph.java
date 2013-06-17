@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.graph;
 
+import net.jcip.annotations.ThreadSafe;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import net.jcip.annotations.ThreadSafe;
 
 import java.util.Collection;
 import java.util.Collections;

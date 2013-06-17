@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.grid;
 
+import omr.sheet.Scale;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.sheet.Scale;
 
 import java.util.List;
 import java.util.SortedMap;
@@ -42,7 +42,7 @@ public class LineFilament
 
     /**
      * Relative position in cluster.
-     * (relevant only if cluster is not null) 
+     * (relevant only if cluster is not null)
      */
     private int clusterPos;
 
@@ -89,12 +89,12 @@ public class LineFilament
     public String dumpOf ()
     {
         StringBuilder sb = new StringBuilder();
-        
+
         sb.append(super.dumpOf());
         sb.append(String.format("   cluster=%s%n", cluster));
         sb.append(String.format("   clusterPos=%s%n", clusterPos));
         sb.append(String.format("   combs=%s%n", combs));
-        
+
         return sb.toString();
     }
 

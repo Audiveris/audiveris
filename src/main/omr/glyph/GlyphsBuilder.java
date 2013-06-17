@@ -18,11 +18,6 @@ import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Staff;
 
 import omr.sheet.Scale;
@@ -31,6 +26,11 @@ import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -285,7 +285,7 @@ public class GlyphsBuilder
         // Mass center (which makes sure moments are available)
         glyph.getCentroid();
 
-        PixelPoint center = glyph.getAreaCenter();
+        Point center = glyph.getAreaCenter();
         Staff staff = system.getScoreSystem()
                 .getStaffAt(center);
 
@@ -406,9 +406,9 @@ public class GlyphsBuilder
      * @param stem the stem
      * @return the enlarged stem box
      */
-    public PixelRectangle stemBoxOf (Glyph stem)
+    public Rectangle stemBoxOf (Glyph stem)
     {
-        PixelRectangle box = new PixelRectangle(stem.getBounds());
+        Rectangle box = new Rectangle(stem.getBounds());
         box.grow(stemXMargin, stemYMargin);
 
         return box;
@@ -424,10 +424,10 @@ public class GlyphsBuilder
      * @param side the desired side for the box
      * @return the proper stem side box
      */
-    public PixelRectangle stemBoxOf (Glyph stem,
-                                     HorizontalSide side)
+    public Rectangle stemBoxOf (Glyph stem,
+                                HorizontalSide side)
     {
-        PixelRectangle box = stem.getBounds();
+        Rectangle box = stem.getBounds();
         int width = box.width;
         box.grow(stemXMargin, stemYMargin);
         box.width = 2 * stemXMargin;
@@ -481,7 +481,7 @@ public class GlyphsBuilder
     // checkDashIntersect //
     //--------------------//
     private boolean checkDashIntersect (Iterable<Glyph> items,
-                                        PixelRectangle box)
+                                        Rectangle box)
     {
         for (Glyph item : items) {
             if (item.getShape() == Shape.LEDGER
@@ -496,9 +496,9 @@ public class GlyphsBuilder
     //-----------//
     // ledgerBox //
     //-----------//
-    private PixelRectangle ledgerBox (PixelRectangle rect)
+    private Rectangle ledgerBox (Rectangle rect)
     {
-        PixelRectangle box = new PixelRectangle(rect);
+        Rectangle box = new Rectangle(rect);
         box.grow(0, stemYMargin);
 
         return box;
@@ -516,14 +516,14 @@ public class GlyphsBuilder
         }
 
         // Box for stem(s) lookup
-        final PixelRectangle box = stemBoxOf(glyph, side);
+        final Rectangle box = stemBoxOf(glyph, side);
         final List<Glyph> stems = new ArrayList<>();
 
         for (Glyph s : glyphs) {
             // Check bounding box intersection
             if (s.isStem() && s.isActive() && s.getBounds().intersects(box)) {
                 // Use section intersection for confirmation
-                PixelRectangle b = stemBoxOf(s);
+                Rectangle b = stemBoxOf(s);
 
                 for (Section section : glyph.getMembers()) {
                     if (section.intersects(b)) {

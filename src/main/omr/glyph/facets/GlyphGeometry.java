@@ -19,8 +19,8 @@ import omr.math.PointsCollector;
 import omr.moments.ARTMoments;
 import omr.moments.GeometricMoments;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
+import java.awt.Point;
+import java.awt.Rectangle;
 
 /**
  * Interface {@code GlyphGeometry} defines the facet which handles all
@@ -33,12 +33,13 @@ import omr.score.common.PixelRectangle;
  * @author Hervé Bitteur
  */
 interface GlyphGeometry
-    extends GlyphFacet
+        extends GlyphFacet
 {
     //~ Methods ----------------------------------------------------------------
 
     /**
      * Report the glyph ART moments, which are lazily computed.
+     *
      * @return the glyph ART moments
      */
     ARTMoments getARTMoments ();
@@ -46,26 +47,30 @@ interface GlyphGeometry
     /**
      * Report the glyph area center.
      * (The point is lazily evaluated).
+     *
      * @return the area center point
      */
-    PixelPoint getAreaCenter ();
+    Point getAreaCenter ();
 
     /**
      * Return a copy of the absolute display bounding box.
      * Useful to quickly check if the glyph needs to be repainted.
+     *
      * @return a COPY of the bounding contour rectangle box
      */
-    PixelRectangle getBounds ();
+    Rectangle getBounds ();
 
     /**
      * Report the glyph absolute centroid (mass center).
      * The point is lazily evaluated.
+     *
      * @return the absolute mass center point
      */
-    PixelPoint getCentroid ();
+    Point getCentroid ();
 
     /**
      * Report the approximating circle, if any.
+     *
      * @return the approximating circle, or null
      */
     Circle getCircle ();
@@ -73,12 +78,14 @@ interface GlyphGeometry
     /**
      * Report the density of the stick, that is its weight divided by
      * the area of its bounding rectangle.
+     *
      * @return the density
      */
     double getDensity ();
 
     /**
      * Report the glyph geometric moments, which are lazily computed.
+     *
      * @return the glyph geometric moments
      */
     GeometricMoments getGeometricMoments ();
@@ -86,6 +93,7 @@ interface GlyphGeometry
     /**
      * Report the interline value for the glyph containing staff,
      * which is used for some of the moments.
+     *
      * @return the interline value
      */
     int getInterline ();
@@ -95,13 +103,15 @@ interface GlyphGeometry
      * of the icon reference point if one such point exists, or the
      * glyph area center otherwise.
      * The point is lazily evaluated.
+     *
      * @return the reference center point
      */
-    PixelPoint getLocation ();
+    Point getLocation ();
 
     /**
      * Report the height of this glyph, after normalization to sheet
      * interline.
+     *
      * @return the height value, expressed as an interline fraction
      */
     double getNormalizedHeight ();
@@ -109,6 +119,7 @@ interface GlyphGeometry
     /**
      * Report the weight of this glyph, after normalization to sheet
      * interline.
+     *
      * @return the weight value, expressed as an interline square fraction
      */
     double getNormalizedWeight ();
@@ -116,24 +127,28 @@ interface GlyphGeometry
     /**
      * Report the width of this glyph, after normalization to sheet
      * interline.
+     *
      * @return the width value, expressed as an interline fraction
      */
     double getNormalizedWidth ();
 
     /**
      * Report the collector filled with glyph points.
+     *
      * @return the populated points collector
      */
     PointsCollector getPointsCollector ();
 
     /**
      * Report the last registration signature.
+     *
      * @return the previous valid glyph signature
      */
     GlyphSignature getRegisteredSignature ();
 
     /**
      * Report current signature that distinguishes this glyph.
+     *
      * @return the glyph signature
      */
     GlyphSignature getSignature ();
@@ -141,6 +156,7 @@ interface GlyphGeometry
     /**
      * Report the total weight of this glyph, as the sum of its section
      * weights.
+     *
      * @return the total weight (number of pixels)
      */
     int getWeight ();
@@ -148,13 +164,15 @@ interface GlyphGeometry
     /**
      * Check whether the glyph intersect the provided absolute
      * rectangle.
+     *
      * @param rectangle the provided absolute rectangle
      * @return true if intersection is not empty, false otherwise
      */
-    boolean intersects (PixelRectangle rectangle);
+    boolean intersects (Rectangle rectangle);
 
     /**
      * Remember an approximating circle.
+     *
      * @param circle the circle value, or null
      */
     void setCircle (Circle circle);
@@ -162,12 +180,14 @@ interface GlyphGeometry
     /**
      * Force the glyph contour box (when start and stop points are
      * forced).
+     *
      * @param contourBox the forced contour box
      */
-    void setContourBox (PixelRectangle contourBox);
+    void setContourBox (Rectangle contourBox);
 
     /**
      * Remember registration signature.
+     *
      * @param sig the signature used for registration
      */
     void setRegisteredSignature (GlyphSignature sig);
@@ -175,7 +195,8 @@ interface GlyphGeometry
     /**
      * Apply a translation to the glyph from its current location,
      * according to the provided vector.
+     *
      * @param vector the (dx, dy) translation
      */
-    void translate (PixelPoint vector);
+    void translate (Point vector);
 }

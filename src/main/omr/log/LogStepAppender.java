@@ -26,7 +26,7 @@ import ch.qos.logback.core.AppenderBase;
  * @author Hervé Bitteur
  */
 public class LogStepAppender
-    extends AppenderBase<ILoggingEvent>
+        extends AppenderBase<ILoggingEvent>
 {
     //~ Methods ----------------------------------------------------------------
 
@@ -34,7 +34,7 @@ public class LogStepAppender
     protected void append (ILoggingEvent event)
     {
         if (event.getLevel()
-                 .toInt() >= Level.INFO_INT) {
+                .toInt() >= Level.INFO_INT) {
             Stepping.notifyProgress();
         }
     }

@@ -11,14 +11,13 @@
 // </editor-fold>
 package omr.selection;
 
-
 /**
  * Class {@code PixelLevelEvent} represent a Pixel Level selection.
  *
  * @author Hervé Bitteur
  */
 public class PixelLevelEvent
-    extends UserEvent
+        extends UserEvent
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -26,28 +25,27 @@ public class PixelLevelEvent
     private final Integer pixelLevel;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // PixelLevelEvent //
     //-----------------//
     /**
      * Creates a new PixelLevelEvent object.
-     * @param source the entity that created this event
-     * @param hint hint about event origin
-     * @param movement the mouse movement
+     *
+     * @param source     the entity that created this event
+     * @param hint       hint about event origin
+     * @param movement   the mouse movement
      * @param pixelLevel the selected pixelLevel (or null)
      */
-    public PixelLevelEvent (Object        source,
+    public PixelLevelEvent (Object source,
                             SelectionHint hint,
                             MouseMovement movement,
-                            Integer       pixelLevel)
+                            Integer pixelLevel)
     {
         super(source, hint, movement);
         this.pixelLevel = pixelLevel;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // getData //
     //---------//

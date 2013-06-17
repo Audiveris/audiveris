@@ -35,7 +35,8 @@ public class ScorePart
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ScorePart.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ScorePart.class);
 
     //~ Instance fields --------------------------------------------------------
     /**
@@ -81,19 +82,6 @@ public class ScorePart
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Set the id of this part
-     *
-     * @param id the distinguished part id
-     */
-    public final void setId (int id)
-    {
-        this.id = id;
-    }
-
     //-----------------//
     // getAbbreviation //
     //-----------------//
@@ -223,6 +211,19 @@ public class ScorePart
         this.abbreviation = abbreviation;
     }
 
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Set the id of this part
+     *
+     * @param id the distinguished part id
+     */
+    public final void setId (int id)
+    {
+        this.id = id;
+    }
+
     //----------------//
     // setMidiProgram //
     //----------------//
@@ -253,17 +254,21 @@ public class ScorePart
         StringBuilder sb = new StringBuilder();
         sb.append("{ScorePart");
 
-        sb.append(" id=").append(id);
+        sb.append(" id=")
+                .append(id);
 
         if (name != null) {
-            sb.append(" name=").append(name);
+            sb.append(" name=")
+                    .append(name);
         }
 
         if (abbreviation != null) {
-            sb.append(" abrv=").append(abbreviation);
+            sb.append(" abrv=")
+                    .append(abbreviation);
         }
 
-        sb.append(" staffCount:").append(staffCount);
+        sb.append(" staffCount:")
+                .append(staffCount);
 
         sb.append("}");
 
@@ -307,5 +312,6 @@ public class ScorePart
                 "MidiProgram",
                 1,
                 "Default program number for a part with more than two staves");
+
     }
 }

@@ -15,18 +15,17 @@ import omr.glyph.Glyphs;
 
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.Orientation;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 
 import omr.util.GeoUtil;
 import omr.util.Vip;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -77,7 +76,7 @@ public class LineCluster
     private SortedMap<Integer, FilamentLine> lines;
 
     /** (Cached) bounding box of this cluster */
-    private PixelRectangle contourBox;
+    private Rectangle contourBox;
 
     /** CLuster true length */
     private Integer trueLength;
@@ -150,14 +149,14 @@ public class LineCluster
     //-----------//
     // getBounds //
     //-----------//
-    public PixelRectangle getBounds ()
+    public Rectangle getBounds ()
     {
         if (contourBox == null) {
-            PixelRectangle box = null;
+            Rectangle box = null;
 
             for (FilamentLine line : getLines()) {
                 if (box == null) {
-                    box = new PixelRectangle(line.getBounds());
+                    box = new Rectangle(line.getBounds());
                 } else {
                     box.add(line.getBounds());
                 }
@@ -167,7 +166,7 @@ public class LineCluster
         }
 
         if (contourBox != null) {
-            return new PixelRectangle(contourBox);
+            return new Rectangle(contourBox);
         } else {
             return null;
         }
@@ -181,11 +180,11 @@ public class LineCluster
      *
      * @return the center
      */
-    public PixelPoint getCenter ()
+    public Point getCenter ()
     {
-        PixelRectangle box = getBounds();
+        Rectangle box = getBounds();
 
-        return new PixelPoint(
+        return new Point(
                 box.x + (box.width / 2),
                 box.y + (box.height / 2));
     }
@@ -423,7 +422,7 @@ public class LineCluster
     public boolean includeFilamentByIndex (LineFilament filament,
                                            int index)
     {
-        final PixelRectangle filBox = filament.getBounds();
+        final Rectangle filBox = filament.getBounds();
         int i = 0;
 
         for (Entry<Integer, FilamentLine> entry : lines.entrySet()) {
@@ -434,7 +433,7 @@ public class LineCluster
                 // For filaments one above the other, check resulting thickness
                 for (Section section : line.fil.getMembers()) {
                     // Horizontal overlap?
-                    PixelRectangle sctBox = section.getBounds();
+                    Rectangle sctBox = section.getBounds();
                     int overlap = GeoUtil.xOverlap(filBox, sctBox);
                     if (overlap > 0) {
                         // Check resulting thickness

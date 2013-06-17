@@ -312,7 +312,7 @@ public class Circle
     {
         // Make sure we do have an arc defined, rather than a full circle
         if (((stopAngle == null) || (stopAngle.isNaN()))
-                || ((startAngle == null) || (startAngle.isNaN()))) {
+            || ((startAngle == null) || (startAngle.isNaN()))) {
             return;
         }
 
@@ -333,26 +333,26 @@ public class Circle
         ///System.out.println("angleDeg/2=" + Math.toDegrees(theta));
         final Matrix rotation = new Matrix(
                 new double[][]{
-                    {cos(theta), -sin(theta), 0},
-                    {sin(theta), cos(theta), 0},
-                    {0, 0, 1}
-                });
+            {cos(theta), -sin(theta), 0},
+            {sin(theta), cos(theta), 0},
+            {0, 0, 1}
+        });
 
         // Scaling
         final Matrix scaling = new Matrix(
                 new double[][]{
-                    {radius, 0, 0},
-                    {0, radius, 0},
-                    {0, 0, 1}
-                });
+            {radius, 0, 0},
+            {0, radius, 0},
+            {0, 0, 1}
+        });
 
         // Translation
         final Matrix translation = new Matrix(
                 new double[][]{
-                    {1, 0, center.x},
-                    {0, 1, center.y},
-                    {0, 0, 1}
-                });
+            {1, 0, center.x},
+            {0, 1, center.y},
+            {0, 0, 1}
+        });
 
         // Composite operation
         final Matrix op = translation.times(scaling).times(rotation);
@@ -360,34 +360,34 @@ public class Circle
         final Matrix M0 = op.times(
                 new Matrix(
                 new double[][]{
-                    {x0},
-                    {y0},
-                    {1}
-                }));
+            {x0},
+            {y0},
+            {1}
+        }));
 
         final Matrix M1 = op.times(
                 new Matrix(
                 new double[][]{
-                    {x1},
-                    {y1},
-                    {1}
-                }));
+            {x1},
+            {y1},
+            {1}
+        }));
 
         final Matrix M2 = op.times(
                 new Matrix(
                 new double[][]{
-                    {x2},
-                    {y2},
-                    {1}
-                }));
+            {x2},
+            {y2},
+            {1}
+        }));
 
         final Matrix M3 = op.times(
                 new Matrix(
                 new double[][]{
-                    {x3},
-                    {y3},
-                    {1}
-                }));
+            {x3},
+            {y3},
+            {1}
+        }));
 
         // Bezier curve (make sure the curve goes from left to right)
         if (M0.get(0, 0) <= M3.get(0, 0)) {
@@ -458,11 +458,11 @@ public class Circle
                                Point2D middle,
                                Point2D right)
     {
-        Line2D prevBisector = LineUtilities.bisector(
+        Line2D prevBisector = LineUtil.bisector(
                 new Line2D.Double(left, middle));
-        Line2D bisector = LineUtilities.bisector(
+        Line2D bisector = LineUtil.bisector(
                 new Line2D.Double(middle, right));
-        center = LineUtilities.intersection(
+        center = LineUtil.intersection(
                 prevBisector.getP1(),
                 prevBisector.getP2(),
                 bisector.getP1(),

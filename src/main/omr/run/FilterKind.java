@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
 public enum FilterKind
 {
 
-    GLOBAL("Basic filter using a global threshold",
-    GlobalFilter.class),
-    ADAPTIVE("Adaptive filter using a local threshold",
+    GLOBAL("Basic filter using a global threshold", GlobalFilter.class),
+    ADAPTIVE(
+    "Adaptive filter using a local threshold",
     AdaptiveFilter.getImplementationClass());
 
     /** Description. */
@@ -56,6 +56,7 @@ public enum FilterKind
     public static class Constant
             extends omr.constant.Constant
     {
+
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *

@@ -22,11 +22,8 @@ import omr.glyph.ShapeEvaluator;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import omr.math.GeoUtil;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Beam;
 import omr.score.entity.BeamGroup;
 import omr.score.entity.Chord;
@@ -47,6 +44,11 @@ import omr.util.Predicate;
 import omr.util.TreeNode;
 import omr.util.WrappedBoolean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -319,7 +321,7 @@ public class ScoreChecker
     public boolean visit (SystemPart systemPart)
     {
         systemPart.checkSlurConnections();
-        
+
         return true;
     }
 
@@ -521,8 +523,8 @@ public class ScoreChecker
             return;
         }
 
-        PixelPoint pixPoint = stem.getAreaCenter();
-        PixelPoint stemCenter = pixPoint;
+        Point pixPoint = stem.getAreaCenter();
+        Point stemCenter = pixPoint;
 
         // Look on left and right sides
         List<TreeNode> allNotes = new ArrayList<>(chord.getNotes());
@@ -533,7 +535,7 @@ public class ScoreChecker
 
         for (TreeNode nNode : allNotes) {
             Note note = (Note) nNode;
-            PixelPoint center = note.getCenter();
+            Point center = note.getCenter();
 
             if (center.x < stemCenter.x) {
                 lefts.add(note);
@@ -689,7 +691,7 @@ public class ScoreChecker
             return;
         }
 
-        PixelRectangle tailBox = new PixelRectangle(chord.getTailLocation());
+        Rectangle tailBox = new Rectangle(chord.getTailLocation());
         int halfTailBoxSide = chord.getScale().toPixels(constants.halfTailBoxSide);
         tailBox.grow(halfTailBoxSide, halfTailBoxSide);
 
@@ -879,7 +881,7 @@ public class ScoreChecker
     {
         // Up(+1) or down(-1) stem?
         final int stemDir = chord.getStemDir();
-        final PixelPoint chordCenter = chord.getCenter();
+        final Point chordCenter = chord.getCenter();
         final ScoreSystem system = chord.getSystem();
         final GlyphNetwork network = GlyphNetwork.getInstance();
 
@@ -892,9 +894,9 @@ public class ScoreChecker
 
             // Check we are on the tail (beam) end of the stem
             // Beware, stemDir is >0 upwards, while y is >0 downwards
-            PixelPoint glyphCenter = glyph.getAreaCenter();
+            Point glyphCenter = glyph.getAreaCenter();
 
-            if ((chordCenter.to(glyphCenter).y * stemDir) > 0) {
+            if ((GeoUtil.vectorOf(chordCenter, glyphCenter).y * stemDir) > 0) {
                 logger.debug("{} not on beam side", glyph.idString());
 
                 continue;

@@ -19,9 +19,6 @@ import omr.glyph.facets.GlyphValue;
 
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.sheet.Sheet;
 
 import omr.ui.symbol.MusicFont;
@@ -30,6 +27,9 @@ import omr.ui.symbol.Symbols;
 
 import omr.util.BlackList;
 import omr.util.FileUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileFilter;

@@ -68,7 +68,10 @@ public class StepTask
     public void core (final Sheet sheet)
             throws StepException
     {
-        Stepping.processScore(Collections.singleton(step), null, sheet.getScore());
+        Stepping.processScore(
+                Collections.singleton(step),
+                null,
+                sheet.getScore());
     }
 
     //-----------------//

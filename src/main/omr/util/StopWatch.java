@@ -37,7 +37,6 @@ public class StopWatch
     private long total;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // StopWatch //
     //-----------//
@@ -52,7 +51,6 @@ public class StopWatch
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------//
     // print //
     //-------//
@@ -78,7 +76,7 @@ public class StopWatch
         for (Task t : tasks) {
             if (t != task) {
                 out.println(
-                    String.format(
+                        String.format(
                         format,
                         t.elapsed,
                         (total != 0) ? ((100 * t.elapsed) / total) : 100,
@@ -122,14 +120,14 @@ public class StopWatch
     {
         StringBuilder sb = new StringBuilder(getClass().getSimpleName());
         sb.append(" \"")
-          .append(name)
-          .append("\"");
+                .append(name)
+                .append("\"");
 
         sb.append(" tasks:")
-          .append(tasks.size());
+                .append(tasks.size());
 
         sb.append(" total:")
-          .append(total);
+                .append(total);
 
         if (task != null) {
             sb.append(" running");
@@ -141,7 +139,6 @@ public class StopWatch
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //------//
     // Task //
     //------//
@@ -159,7 +156,6 @@ public class StopWatch
         private long elapsed;
 
         //~ Constructors -------------------------------------------------------
-
         public Task (String label)
         {
             this.label = label;

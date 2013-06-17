@@ -21,10 +21,9 @@ import omr.lag.Section;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
-
 import omr.sheet.SystemInfo;
 
+import java.awt.Point;
 import java.util.Collections;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -329,7 +328,7 @@ class BasicComposition
      *
      * @param vector the provided translation vector
      */
-    public void translate (PixelPoint vector)
+    public void translate (Point vector)
     {
         for (Section section : glyph.getMembers()) {
             section.translate(vector);

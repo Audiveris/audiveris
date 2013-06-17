@@ -13,7 +13,7 @@ package omr.ui.treetable;
  * Copyright (c) 1998 Sun Microsystems, Inc. All Rights Reserved.
  *
  * This software is the confidential and proprietary information of Sun
- * Microsystems, Inc. ("Confidential Information").  You shall not
+ * Microsystems, Inc. ("Confidential Information"). You shall not
  * disclose such Confidential Information and shall use it only in
  * accordance with the terms of the license agreement you entered into
  * with Sun.
@@ -40,7 +40,7 @@ import javax.swing.tree.TreeModel;
  * @author Scott Violet
  */
 public interface TreeTableModel
-    extends TreeModel
+        extends TreeModel
 {
     //~ Methods ----------------------------------------------------------------
 
@@ -64,14 +64,14 @@ public interface TreeTableModel
      * number {@code column}.
      */
     public Object getValueAt (Object node,
-                              int    column);
+                              int column);
 
     /**
      * Indicates whether the the value for node {@code node}, at column
      * number {@code column} is editable.
      */
     public boolean isCellEditable (Object node,
-                                   int    column);
+                                   int column);
 
     /**
      * Sets the value for node {@code node}, at column number
@@ -79,5 +79,5 @@ public interface TreeTableModel
      */
     public void setValueAt (Object aValue,
                             Object node,
-                            int    column);
+                            int column);
 }

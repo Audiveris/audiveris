@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.step;
 
+import omr.sheet.SystemInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.sheet.SystemInfo;
 
 import java.util.Collection;
 
@@ -30,7 +30,8 @@ public abstract class SheetTask
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(SheetTask.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SheetTask.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The related step for this task */
@@ -57,18 +58,6 @@ public abstract class SheetTask
     }
 
     //~ Methods ----------------------------------------------------------------
-    //------//
-    // doit //
-    //------//
-    /**
-     * Actually perform the step
-     *
-     * @param systems the collection of systems to process
-     * @throws StepException raised if processing failed
-     */
-    public abstract void doit (Collection<SystemInfo> systems)
-            throws StepException;
-
     //-----------//
     // displayUI //
     //-----------//
@@ -96,6 +85,18 @@ public abstract class SheetTask
         doit(systems);
         done();
     }
+
+    //------//
+    // doit //
+    //------//
+    /**
+     * Actually perform the step
+     *
+     * @param systems the collection of systems to process
+     * @throws StepException raised if processing failed
+     */
+    public abstract void doit (Collection<SystemInfo> systems)
+            throws StepException;
 
     //------//
     // done //

@@ -11,16 +11,16 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.score.ScoreBench;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.score.ScoreBench;
 
 import java.util.Properties;
 
 /**
- * Class {@code Bench} defines the general features of a bench, used by
- * each individual {@link SheetBench} and the containing {@link
+ * Class {@code Bench} defines the general features of a bench, used 
+ * by each individual {@link SheetBench} and the containing {@link
  * ScoreBench}.
  *
  * @author Hervé Bitteur
@@ -45,14 +45,6 @@ public abstract class Bench
     }
 
     //~ Methods ----------------------------------------------------------------
-    //------------//
-    // flushBench //
-    //------------//
-    /**
-     * Flush the current content of bench to disk
-     */
-    protected abstract void flushBench ();
-
     //---------//
     // addProp //
     //---------//
@@ -81,6 +73,14 @@ public abstract class Bench
 
         logger.debug("addProp key:{} value:{}", key, value);
     }
+
+    //------------//
+    // flushBench //
+    //------------//
+    /**
+     * Flush the current content of bench to disk
+     */
+    protected abstract void flushBench ();
 
     //-------//
     // keyOf //

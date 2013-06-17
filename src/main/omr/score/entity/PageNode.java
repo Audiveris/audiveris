@@ -16,13 +16,13 @@ import omr.sheet.Scale;
 import omr.util.TreeNode;
 
 /**
- * Class {@code PageNode} represents a score entity in a page, so its direct
- * children are {@link ScoreSystem} instances.
+ * Class {@code PageNode} represents a score entity in a page, so its
+ * direct children are {@link ScoreSystem} instances.
  *
  * @author Hervé Bitteur
  */
 public abstract class PageNode
-    extends ScoreNode
+        extends ScoreNode
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -40,7 +40,6 @@ public abstract class PageNode
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------------//
     // getContextString //
     //------------------//
@@ -52,8 +51,8 @@ public abstract class PageNode
         if (getScore()
                 .isMultiPage()) {
             sb.append("[#")
-              .append(getPage().getIndex())
-              .append("] ");
+                    .append(getPage().getIndex())
+                    .append("] ");
         }
 
         return sb.toString();
@@ -89,6 +88,6 @@ public abstract class PageNode
     public Scale getScale ()
     {
         return getPage()
-                   .getScale();
+                .getScale();
     }
 }

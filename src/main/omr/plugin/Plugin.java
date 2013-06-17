@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.plugin;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 
 import omr.step.Stepping;
@@ -23,6 +20,9 @@ import omr.util.BasicTask;
 import omr.util.FileUtil;
 
 import org.jdesktop.application.Task;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.List;

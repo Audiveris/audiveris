@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code TargetSystem} is an immutable perfect destination object for a
- * system.
+ * Class {@code TargetSystem} is an immutable perfect destination
+ * object for a system.
  *
  * @author Hervé Bitteur
  */
@@ -45,22 +45,21 @@ public class TargetSystem
     public final List<TargetStaff> staves = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // TargetSystem //
     //--------------//
     /**
      * Creates a new TargetSystem object.
      *
-     * @param info the original raw information
-     * @param top ordinate of top
-     * @param left abscissa of left
+     * @param info  the original raw information
+     * @param top   ordinate of top
+     * @param left  abscissa of left
      * @param right abscissa of right
      */
     public TargetSystem (SystemInfo info,
-                         double     top,
-                         double     left,
-                         double     right)
+                         double top,
+                         double left,
+                         double right)
     {
         this.info = info;
         this.top = top;
@@ -71,7 +70,6 @@ public class TargetSystem
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // toString //
     //----------//
@@ -80,13 +78,13 @@ public class TargetSystem
     {
         StringBuilder sb = new StringBuilder("{System");
         sb.append("#")
-          .append(id);
+                .append(id);
         sb.append(" top:")
-          .append(top);
+                .append(top);
         sb.append(" left:")
-          .append(left);
+                .append(left);
         sb.append(" right:")
-          .append(right);
+                .append(right);
         sb.append("}");
 
         return sb.toString();

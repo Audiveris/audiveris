@@ -11,11 +11,11 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.score.common.PixelPoint;
-
 import omr.ui.symbol.Symbol;
 
 import omr.util.Navigable;
+
+import java.awt.Point;
 
 /**
  * Class {@code Mark} encapsulates information to be made visible to the
@@ -28,24 +28,25 @@ public class Mark
     //~ Enumerations -----------------------------------------------------------
 
     /** Position relative to an entity */
-    public static enum Position {
+    public static enum Position
+    {
         //~ Enumeration constant initializers ----------------------------------
-
 
         /** Mark should be horizontally located <b>before</b> the entity */
         BEFORE,
-        /** Mark should be horizontally located <b>after</b> the entity */
+        /** Mark
+         * should be horizontally located <b>after</b> the entity */
         AFTER;
+
     }
 
     //~ Instance fields --------------------------------------------------------
-
     /** Containing system */
     @Navigable(false)
     private final ScoreSystem system;
 
     /** Precise location within system */
-    private final PixelPoint location;
+    private final Point location;
 
     /** Position of the mark symbol with respect to the mark location */
     private final Position position;
@@ -57,23 +58,23 @@ public class Mark
     private final Object data;
 
     //~ Constructors -----------------------------------------------------------
-
     //------//
     // Mark //
     //------//
     /**
      * Creates a new instance of Mark
-     * @param system containing system
+     *
+     * @param system   containing system
      * @param location precise locatrion wrt the containing system
      * @param position relative symbol position wrt location
-     * @param symbol MusicFont descriptor to be used
-     * @param data related data or null
+     * @param symbol   MusicFont descriptor to be used
+     * @param data     related data or null
      */
     public Mark (ScoreSystem system,
-                 PixelPoint  location,
-                 Position    position,
-                 Symbol      symbol,
-                 Object      data)
+                 Point location,
+                 Position position,
+                 Symbol symbol,
+                 Object data)
     {
         this.system = system;
         this.location = location;
@@ -83,7 +84,6 @@ public class Mark
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // getData //
     //---------//
@@ -105,7 +105,7 @@ public class Mark
      *
      * @return the mark location
      */
-    public PixelPoint getLocation ()
+    public Point getLocation ()
     {
         return location;
     }

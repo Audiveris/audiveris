@@ -18,14 +18,9 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Rational;
 
 import omr.score.common.DurationFactor;
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Voice.VoiceChord;
 import omr.score.visitor.ScoreVisitor;
 
@@ -34,7 +29,12 @@ import omr.sheet.Scale;
 import omr.util.HorizontalSide;
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -157,10 +157,10 @@ public class Chord
     private Slot slot;
 
     /** Location for chord head (head farthest from chord tail) */
-    private PixelPoint headLocation;
+    private Point headLocation;
 
     /** Location for chord tail */
-    private PixelPoint tailLocation;
+    private Point tailLocation;
 
     /** Collection of beams this chord is connected to */
     private List<Beam> beams = new ArrayList<>();
@@ -335,7 +335,7 @@ public class Chord
                 }
             }
 
-            PixelRectangle box = chord.getBox();
+            Rectangle box = chord.getBox();
 
             if (polygon.intersects(box.x, box.y, box.width, box.height)) {
                 found.add(chord);
@@ -380,7 +380,7 @@ public class Chord
 
                 // Interested in rest notes only
                 if (note.isRest()) {
-                    PixelRectangle box = note.getBox();
+                    Rectangle box = note.getBox();
 
                     if (polygon.intersects(box.x, box.y, box.width, box.height)) {
                         return note;
@@ -506,8 +506,8 @@ public class Chord
     @Override
     public List<Line2D> getTranslationLinks (Glyph glyph)
     {
-        PixelPoint from = glyph.getLocation();
-        PixelPoint to = stem != null
+        Point from = glyph.getLocation();
+        Point to = stem != null
                 ? stem.getAreaCenter()
                 : getReferencePoint();
 
@@ -892,7 +892,7 @@ public class Chord
      *
      * @return the head location
      */
-    public PixelPoint getHeadLocation ()
+    public Point getHeadLocation ()
     {
         if (headLocation == null) {
             computeLocations();
@@ -1102,7 +1102,7 @@ public class Chord
      *
      * @return the tail location
      */
-    public PixelPoint getTailLocation ()
+    public Point getTailLocation ()
     {
         if (tailLocation == null) {
             computeLocations();
@@ -1169,12 +1169,12 @@ public class Chord
      * @param bottom bottom of vertical range
      * @return true if all notes are within the given range
      */
-    public boolean isEmbracedBy (PixelPoint top,
-                                 PixelPoint bottom)
+    public boolean isEmbracedBy (Point top,
+                                 Point bottom)
     {
         for (TreeNode node : getNotes()) {
             Note note = (Note) node;
-            PixelPoint center = note.getCenter();
+            Point center = note.getCenter();
 
             if ((center.y >= top.y) && (center.y <= bottom.y)) {
                 return true;
@@ -1532,7 +1532,7 @@ public class Chord
     protected void computeBox ()
     {
         // Stem or similar info
-        PixelRectangle newBox = new PixelRectangle(getTailLocation());
+        Rectangle newBox = new Rectangle(getTailLocation());
         newBox.add(getHeadLocation());
 
         // Each and every note
@@ -1639,7 +1639,7 @@ public class Chord
         // Find the note farthest from stem middle point
         if (!getNotes().isEmpty()) {
             if (stem != null) {
-                PixelPoint middle = stem.getLocation();
+                Point middle = stem.getLocation();
                 Note bestNote = null;
                 int bestDy = Integer.MIN_VALUE;
 
@@ -1654,16 +1654,16 @@ public class Chord
                     }
                 }
 
-                PixelRectangle stemBox = stem.getBounds();
+                Rectangle stemBox = stem.getBounds();
 
                 if (middle.y < bestNote.getCenter().y) {
                     // Stem is up
-                    tailLocation = new PixelPoint(
+                    tailLocation = new Point(
                             stemBox.x + (stemBox.width / 2),
                             stemBox.y);
                 } else {
                     // Stem is down
-                    tailLocation = new PixelPoint(
+                    tailLocation = new Point(
                             stemBox.x + (stemBox.width / 2),
                             (stemBox.y + stemBox.height));
                 }
@@ -1728,9 +1728,9 @@ public class Chord
      * @param note the head note
      * @return the head location
      */
-    private PixelPoint getHeadLocation (Note note)
+    private Point getHeadLocation (Note note)
     {
-        return new PixelPoint(tailLocation.x, note.getReferencePoint().y);
+        return new Point(tailLocation.x, note.getReferencePoint().y);
     }
 
     //---------------//

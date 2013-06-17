@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.ui;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.ui.util.Panel;
 import omr.ui.util.SeparablePopupMenu;
 import static omr.ui.util.UIPredicates.*;
@@ -21,6 +18,9 @@ import static omr.ui.util.UIPredicates.*;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Component;
 import java.awt.event.ItemEvent;

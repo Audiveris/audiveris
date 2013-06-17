@@ -44,7 +44,6 @@ public class Run
     private Section section;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----//
     // Run //
     //-----//
@@ -53,7 +52,7 @@ public class Run
      *
      * @param start  the coordinate of start for a run (y for vertical run)
      * @param length the length of the run in pixels
-     * @param level the average level of gray in the run (0 for totally black,
+     * @param level  the average level of gray in the run (0 for totally black,
      *               255 for totally white)
      */
     public Run (int start,
@@ -75,6 +74,23 @@ public class Run
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-----------------//
+    // getCommonLength //
+    //-----------------//
+    /**
+     * Report the length of the common part with another run (assumed to be
+     * adjacent)
+     *
+     * @param other the other run
+     * @return the length of the common part
+     */
+    public int getCommonLength (Run other)
+    {
+        int startCommon = Math.max(this.getStart(), other.getStart());
+        int stopCommon = Math.min(this.getStop(), other.getStop());
+
+        return stopCommon - startCommon + 1;
+    }
 
     //-----------//
     // getLength //
@@ -102,18 +118,6 @@ public class Run
         return level;
     }
 
-    //------------//
-    // getSection //
-    //------------//
-    /**
-     * Report the section that contains this run
-     * @return the containing section, or null if none
-     */
-    public Section getSection ()
-    {
-        return section;
-    }
-
     //----------//
     // getStart //
     //----------//
@@ -132,7 +136,7 @@ public class Run
     // getStop //
     //---------//
     /**
-     * Return the coordinate of the stop for a run.  This is the bottom ordinate
+     * Return the coordinate of the stop for a run. This is the bottom ordinate
      * for a vertical run, or the right abscissa for a horizontal run.
      *
      * @return the stop coordinate
@@ -142,23 +146,12 @@ public class Run
         return (start + length) - 1;
     }
 
-    //------------//
-    // setSection //
-    //------------//
-    /**
-     * Records the containing section
-     * @param section the section to set
-     */
-    public void setSection (Section section)
-    {
-        this.section = section;
-    }
-
     //-----------//
     // translate //
     //-----------//
     /**
      * Apply a delta-coordinate translation to this run
+     *
      * @param dc the (coordinate) translation
      */
     public final void translate (int dc)
@@ -166,22 +159,17 @@ public class Run
         start += dc;
     }
 
-    //-----------------//
-    // getCommonLength //
-    //-----------------//
+    //------------//
+    // getSection //
+    //------------//
     /**
-     * Report the length of the common part with another run (assumed to be
-     * adjacent)
+     * Report the section that contains this run
      *
-     * @param other the other run
-     * @return the length of the common part
+     * @return the containing section, or null if none
      */
-    public int getCommonLength (Run other)
+    public Section getSection ()
     {
-        int startCommon = Math.max(this.getStart(), other.getStart());
-        int stopCommon = Math.min(this.getStop(), other.getStop());
-
-        return stopCommon - startCommon + 1;
+        return section;
     }
 
     //-------------//
@@ -189,13 +177,27 @@ public class Run
     //-------------//
     /**
      * Field by field comparison
+     *
      * @param that the other Run to compare with
      * @return true if identical
      */
     public boolean isIdentical (Run that)
     {
-        return (this.start == that.start) && (this.length == that.length) &&
-               (this.level == that.level);
+        return (this.start == that.start) && (this.length == that.length)
+               && (this.level == that.level);
+    }
+
+    //------------//
+    // setSection //
+    //------------//
+    /**
+     * Records the containing section
+     *
+     * @param section the section to set
+     */
+    public void setSection (Section section)
+    {
+        this.section = section;
     }
 
     //----------//
@@ -213,10 +215,10 @@ public class Run
         StringBuilder sb = new StringBuilder(80);
         sb.append("{Run ");
         sb.append(start)
-          .append("/")
-          .append(length);
+                .append("/")
+                .append(length);
         sb.append("@")
-          .append(level);
+                .append(level);
         sb.append("}");
 
         return sb.toString();

@@ -33,8 +33,6 @@ import omr.grid.StaffInfo;
 
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import static omr.run.Orientation.*;
 
 import omr.selection.GlyphEvent;
@@ -43,6 +41,9 @@ import omr.selection.UserEvent;
 
 import omr.step.Step;
 import omr.step.StepException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -601,7 +602,7 @@ public class HorizontalsBuilder
     //                                  int   width)
     //    {
     //        Point2D        start = glyph.getStartPoint();
-    //        PixelRectangle roi = new PixelRectangle(
+    //        Rectangle roi = new Rectangle(
     //            (int) Math.rint(start.getX()),
     //            (int) Math.rint(start.getY() - halfHeight),
     //            width,
@@ -638,7 +639,7 @@ public class HorizontalsBuilder
     //                                 int   width)
     //    {
     //        Point2D        stop = glyph.getStopPoint();
-    //        PixelRectangle roi = new PixelRectangle(
+    //        Rectangle roi = new Rectangle(
     //            (int) Math.rint(stop.getX() - width),
     //            (int) Math.rint(stop.getY() - halfHeight),
     //            width,
@@ -768,7 +769,7 @@ public class HorizontalsBuilder
                 //            } else if (context.stick.getLength(HORIZONTAL) < minFullLedgerLength) {
                 //                // If ledger is short, check for presence of stem
                 //                // This test discards ledgers of whole notes!
-                //                PixelRectangle stickBox = context.stick.getBounds();
+                //                Rectangle stickBox = context.stick.getBounds();
                 //                stickBox.grow(maxStemDx, maxStemDy);
                 //
                 //                List<Glyph> others = system.lookupIntersectedGlyphs(stickBox);

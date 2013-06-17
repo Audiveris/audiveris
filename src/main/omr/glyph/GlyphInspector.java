@@ -15,14 +15,13 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -219,19 +218,19 @@ public class GlyphInspector
 
         //~ Methods ------------------------------------------------------------
         @Override
-        public PixelRectangle computeReferenceBox ()
+        public Rectangle computeReferenceBox ()
         {
             if (seed == null) {
                 throw new NullPointerException(
                         "Compound seed has not been set");
             }
 
-            PixelRectangle newBox = seed.getBounds();
+            Rectangle newBox = seed.getBounds();
 
             Scale scale = system.getScoreSystem().getScale();
             int boxMargin = scale.toPixels(GlyphInspector.constants.boxMargin);
             int boxWiden = scale.toPixels(GlyphInspector.constants.boxWiden);
-            
+
             if (wide) {
                 newBox.grow(boxWiden, boxMargin);
             } else {

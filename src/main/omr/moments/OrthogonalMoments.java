@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.moments;
 
-
 /**
  * Interface {@code OrthogonalMoments} is a general definition for a
  * descriptor of orthogonal moments.
@@ -26,6 +25,7 @@ public interface OrthogonalMoments<D extends OrthogonalMoments<D>>
 
     /**
      * Report the distance to another descriptor instance.
+     *
      * @param that the other instance
      * @return the measured distance
      */
@@ -33,6 +33,7 @@ public interface OrthogonalMoments<D extends OrthogonalMoments<D>>
 
     /**
      * Report the moment for m and n orders.
+     *
      * @param m m order
      * @param n n order
      * @return moments(m, n)
@@ -42,14 +43,14 @@ public interface OrthogonalMoments<D extends OrthogonalMoments<D>>
 
     /**
      * Assign the moment for m and n orders.
-     * @param m m order
-     * @param n n order
+     *
+     * @param m     m order
+     * @param n     n order
      * @param value the moment value
      */
-    void setMoment (int    m,
-                    int    n,
+    void setMoment (int m,
+                    int n,
                     double value);
-
     //    /**
     //     * Report a label for the (m,n) moment.
     //     * @param m m order

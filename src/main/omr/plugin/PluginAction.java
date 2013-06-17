@@ -11,11 +11,11 @@
 // </editor-fold>
 package omr.plugin;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 import omr.score.ui.ScoreController;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 
@@ -28,25 +28,25 @@ import javax.swing.AbstractAction;
  * @author Hervé Bitteur
  */
 class PluginAction
-    extends AbstractAction
+        extends AbstractAction
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(PluginAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            PluginAction.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The related plugin */
     private final Plugin plugin;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // PluginAction //
     //--------------//
     /**
      * Creates a new PluginAction object.
+     *
      * @param plugin the underlying scripting plugin
      */
     public PluginAction (Plugin plugin)
@@ -57,7 +57,6 @@ class PluginAction
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -68,7 +67,7 @@ class PluginAction
 
         if (score != null) {
             plugin.getTask(score)
-                  .execute();
+                    .execute();
         }
     }
 }

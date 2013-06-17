@@ -419,18 +419,17 @@ public class ShapeSet
     {
         int shapeCount = 1 + LAST_PHYSICAL_SHAPE.ordinal();
         String[] names = new String[shapeCount];
-        
+
         for (Shape shape : allPhysicalShapes) {
             names[shape.ordinal()] = shape.name();
         }
-        
+
         return names;
     }
-    
+
     //-----------------//
     // addAllShapeSets //
     //-----------------//
-
     /**
      * Populate the given menu with all ShapeSet instances defined
      * in this class.

@@ -11,12 +11,12 @@
 // </editor-fold>
 package omr.score.entity;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 
 import omr.util.TreeNode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code ScoreNode} handles a node in the tree hierarchy of a score
@@ -25,15 +25,15 @@ import omr.util.TreeNode;
  * @author Hervé Bitteur
  */
 public abstract class ScoreNode
-    extends VisitableNode
+        extends VisitableNode
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ScoreNode.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ScoreNode.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // ScoreNode //
     //-----------//
@@ -48,7 +48,6 @@ public abstract class ScoreNode
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------------//
     // getContextString //
     //------------------//

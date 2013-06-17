@@ -14,11 +14,11 @@ package omr.glyph.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 
@@ -30,12 +30,13 @@ import java.awt.event.ActionEvent;
  * @author Hervé Bitteur
  */
 public class ViewParameters
-    extends AbstractBean
+        extends AbstractBean
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ViewParameters.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ViewParameters.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
@@ -46,7 +47,7 @@ public class ViewParameters
     /** Should the stick lines be painted */
     public static final String LINE_PAINTING = "linePainting";
 
-    /** Should the Sections selection be enabled  */
+    /** Should the Sections selection be enabled */
     public static final String SECTION_MODE = "sectionMode";
 
     /** Should the stick attachments be painted */
@@ -59,12 +60,10 @@ public class ViewParameters
     public static final String SENTENCE_PAINTING = "sentencePainting";
 
     //~ Instance fields --------------------------------------------------------
-
     /** Dynamic flag to remember if section mode is enabled */
     private boolean sectionMode = false;
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // getInstance //
     //-------------//
@@ -79,22 +78,6 @@ public class ViewParameters
     public boolean isAttachmentPainting ()
     {
         return constants.attachmentPainting.getValue();
-    }
-
-    //-----------------------//
-    // isTranslationPainting //
-    //-----------------------//
-    public boolean isTranslationPainting ()
-    {
-        return constants.translationPainting.getValue();
-    }
-
-    //--------------------//
-    // isSentencePainting //
-    //--------------------//
-    public boolean isSentencePainting ()
-    {
-        return constants.sentencePainting.getValue();
     }
 
     //---------------------//
@@ -121,6 +104,22 @@ public class ViewParameters
         return sectionMode;
     }
 
+    //--------------------//
+    // isSentencePainting //
+    //--------------------//
+    public boolean isSentencePainting ()
+    {
+        return constants.sentencePainting.getValue();
+    }
+
+    //-----------------------//
+    // isTranslationPainting //
+    //-----------------------//
+    public boolean isTranslationPainting ()
+    {
+        return constants.translationPainting.getValue();
+    }
+
     //-----------------------//
     // setAttachmentPainting //
     //-----------------------//
@@ -129,26 +128,6 @@ public class ViewParameters
         boolean oldValue = constants.attachmentPainting.getValue();
         constants.attachmentPainting.setValue(value);
         firePropertyChange(ATTACHMENT_PAINTING, oldValue, value);
-    }
-
-    //------------------------//
-    // setTranslationPainting //
-    //------------------------//
-    public void setTranslationPainting (boolean value)
-    {
-        boolean oldValue = constants.translationPainting.getValue();
-        constants.translationPainting.setValue(value);
-        firePropertyChange(TRANSLATION_PAINTING, oldValue, value);
-    }
-
-    //---------------------//
-    // setSentencePainting //
-    //---------------------//
-    public void setSentencePainting (boolean value)
-    {
-        boolean oldValue = constants.sentencePainting.getValue();
-        constants.sentencePainting.setValue(value);
-        firePropertyChange(SENTENCE_PAINTING, oldValue, value);
     }
 
     //----------------------//
@@ -181,39 +160,36 @@ public class ViewParameters
         firePropertyChange(SECTION_MODE, oldValue, value);
     }
 
+    //---------------------//
+    // setSentencePainting //
+    //---------------------//
+    public void setSentencePainting (boolean value)
+    {
+        boolean oldValue = constants.sentencePainting.getValue();
+        constants.sentencePainting.setValue(value);
+        firePropertyChange(SENTENCE_PAINTING, oldValue, value);
+    }
+
+    //------------------------//
+    // setTranslationPainting //
+    //------------------------//
+    public void setTranslationPainting (boolean value)
+    {
+        boolean oldValue = constants.translationPainting.getValue();
+        constants.translationPainting.setValue(value);
+        firePropertyChange(TRANSLATION_PAINTING, oldValue, value);
+    }
+
     //-------------------//
     // toggleAttachments //
     //-------------------//
     /**
      * Action that toggles the display of attachments in selected sticks
+     *
      * @param e the event that triggered this action
      */
     @Action(selectedProperty = ATTACHMENT_PAINTING)
     public void toggleAttachments (ActionEvent e)
-    {
-    }
-
-    //--------------------//
-    // toggleTranslations //
-    //--------------------//
-    /**
-     * Action that toggles the display of translations in selected glyphs
-     * @param e the event that triggered this action
-     */
-    @Action(selectedProperty = TRANSLATION_PAINTING)
-    public void toggleTranslations (ActionEvent e)
-    {
-    }
-
-    //-----------------//
-    // toggleSentences //
-    //-----------------//
-    /**
-     * Action that toggles the display of sentences in selected glyphs
-     * @param e the event that triggered this action
-     */
-    @Action(selectedProperty = SENTENCE_PAINTING)
-    public void toggleSentences (ActionEvent e)
     {
     }
 
@@ -222,6 +198,7 @@ public class ViewParameters
     //---------------//
     /**
      * Action that toggles the display of letter boxes in selected glyphs
+     *
      * @param e the event that triggered this action
      */
     @Action(selectedProperty = LETTER_BOX_PAINTING)
@@ -234,6 +211,7 @@ public class ViewParameters
     //-------------//
     /**
      * Action that toggles the display of mean line in selected sticks
+     *
      * @param e the event that triggered this action
      */
     @Action(selectedProperty = LINE_PAINTING)
@@ -246,6 +224,7 @@ public class ViewParameters
     //----------------//
     /**
      * Action that toggles the ability to select Sections (rather than Glyphs)
+     *
      * @param e the event that triggered this action
      */
     @Action(selectedProperty = SECTION_MODE)
@@ -253,8 +232,33 @@ public class ViewParameters
     {
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
+    //-----------------//
+    // toggleSentences //
+    //-----------------//
+    /**
+     * Action that toggles the display of sentences in selected glyphs
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = SENTENCE_PAINTING)
+    public void toggleSentences (ActionEvent e)
+    {
+    }
 
+    //--------------------//
+    // toggleTranslations //
+    //--------------------//
+    /**
+     * Action that toggles the display of translations in selected glyphs
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(selectedProperty = TRANSLATION_PAINTING)
+    public void toggleTranslations (ActionEvent e)
+    {
+    }
+
+    //~ Inner Interfaces -------------------------------------------------------
     //--------//
     // Holder //
     //--------//
@@ -263,36 +267,37 @@ public class ViewParameters
         //~ Static fields/initializers -----------------------------------------
 
         public static final ViewParameters INSTANCE = new ViewParameters();
+
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         final Constant.Boolean letterBoxPainting = new Constant.Boolean(
-            true,
-            "Should the letter boxes be painted");
+                true,
+                "Should the letter boxes be painted");
 
         final Constant.Boolean linePainting = new Constant.Boolean(
-            false,
-            "Should the stick lines be painted");
+                false,
+                "Should the stick lines be painted");
 
         final Constant.Boolean attachmentPainting = new Constant.Boolean(
-            false,
-            "Should the staff & glyph attachments be painted");
+                false,
+                "Should the staff & glyph attachments be painted");
 
         final Constant.Boolean translationPainting = new Constant.Boolean(
-            true,
-            "Should the glyph translations links be painted");
+                true,
+                "Should the glyph translations links be painted");
 
         final Constant.Boolean sentencePainting = new Constant.Boolean(
-            true,
-            "Should the sentence words links be painted");
+                true,
+                "Should the sentence words links be painted");
+
     }
 }

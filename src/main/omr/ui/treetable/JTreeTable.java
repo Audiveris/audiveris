@@ -27,19 +27,18 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 /*
- * @(#)JTreeTable.java  1.2 98/10/27
+ * @(#)JTreeTable.java 1.2 98/10/27
  *
  * Copyright 1997, 1998 by Sun Microsystems, Inc.,
  * 901 San Antonio Road, Palo Alto, California, 94303, U.S.A.
  * All rights reserved.
  *
  * This software is the confidential and proprietary information
- * of Sun Microsystems, Inc. ("Confidential Information").  You
+ * of Sun Microsystems, Inc. ("Confidential Information"). You
  * shall not disclose such Confidential Information and shall use
  * it only in accordance with the terms of the license agreement
  * you entered into with Sun.
  */
-
 /**
  * This example shows how to create a simple JTreeTable component, by using a
  * JTree as a renderer (and editor) for the cells in a particular column in
@@ -50,7 +49,7 @@ import javax.swing.tree.TreePath;
  * @version 1.2 10/27/98
  */
 public class JTreeTable
-    extends JTable
+        extends JTable
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -60,7 +59,6 @@ public class JTreeTable
     protected TreeTableCellRenderer tree;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // JTreeTable //
     //------------//
@@ -110,7 +108,6 @@ public class JTreeTable
      * is not the right thing to do for an editor. Returning -1 for the
      * editing row in this case, ensures the editor is never painted.
      */
-
     //---------------//
     // getEditingRow //
     //---------------//
@@ -118,13 +115,12 @@ public class JTreeTable
     public int getEditingRow ()
     {
         return (getColumnClass(editingColumn) == TreeTableModel.class) ? (-1)
-               : editingRow;
+                : editingRow;
     }
 
     /**
      * Returns the tree that is being shared between the model.
      */
-
     //---------//
     // getTree //
     //---------//
@@ -136,7 +132,6 @@ public class JTreeTable
     /**
      * Overridden to pass the new rowHeight to the tree.
      */
-
     //--------------//
     // setRowHeight //
     //--------------//
@@ -155,7 +150,6 @@ public class JTreeTable
      * the tree is not actually in the component hierarchy it will never receive
      * this unless we forward it in this manner.
      */
-
     //----------//
     // updateUI //
     //----------//
@@ -171,14 +165,13 @@ public class JTreeTable
         // Use the tree's default foreground and background colors in the
         // table.
         LookAndFeel.installColorsAndFont(
-            this,
-            "Tree.background",
-            "Tree.foreground",
-            "Tree.font");
+                this,
+                "Tree.background",
+                "Tree.foreground",
+                "Tree.font");
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //---------------------//
     // TreeTableCellEditor //
     //---------------------//
@@ -186,17 +179,17 @@ public class JTreeTable
      * TreeTableCellEditor implementation. Component returned is the JTree.
      */
     public class TreeTableCellEditor
-        extends AbstractCellEditor
-        implements TableCellEditor
+            extends AbstractCellEditor
+            implements TableCellEditor
     {
         //~ Methods ------------------------------------------------------------
 
         @Override
-        public Component getTableCellEditorComponent (JTable  table,
-                                                      Object  value,
+        public Component getTableCellEditorComponent (JTable table,
+                                                      Object value,
                                                       boolean isSelected,
-                                                      int     r,
-                                                      int     c)
+                                                      int r,
+                                                      int c)
         {
             return tree;
         }
@@ -205,7 +198,8 @@ public class JTreeTable
          * Overridden to return false, and if the event is a mouse event it is
          * forwarded to the tree.
          * <p/>
-         * <p/>
+         * <
+         * p/>
          * The behavior for this is debatable, and should really be offered as
          * a property. By returning false, all keyboard actions are
          * implemented in terms of the table. By returning true, the tree
@@ -218,7 +212,8 @@ public class JTreeTable
          * node, but still in the tree column will select the row, whereas if
          * this returned true that wouldn't be the case. </p>
          * <p/>
-         * <p/>
+         * <
+         * p/>
          * By returning false we are also enforcing the policy that the tree
          * will never be editable (at least by a key sequence). </p>
          */
@@ -227,18 +222,18 @@ public class JTreeTable
         {
             if (e instanceof MouseEvent) {
                 for (int counter = getColumnCount() - 1; counter >= 0;
-                     counter--) {
+                        counter--) {
                     if (getColumnClass(counter) == TreeTableModel.class) {
                         MouseEvent me = (MouseEvent) e;
                         MouseEvent newME = new MouseEvent(
-                            tree,
-                            me.getID(),
-                            me.getWhen(),
-                            me.getModifiers(),
-                            me.getX() - getCellRect(0, counter, true).x,
-                            me.getY(),
-                            me.getClickCount(),
-                            me.isPopupTrigger());
+                                tree,
+                                me.getID(),
+                                me.getWhen(),
+                                me.getModifiers(),
+                                me.getX() - getCellRect(0, counter, true).x,
+                                me.getY(),
+                                me.getClickCount(),
+                                me.isPopupTrigger());
                         tree.dispatchEvent(newME);
 
                         break;
@@ -257,8 +252,8 @@ public class JTreeTable
      * A TreeCellRenderer that displays a JTree.
      */
     public class TreeTableCellRenderer
-        extends JTree
-        implements TableCellRenderer
+            extends JTree
+            implements TableCellRenderer
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -268,24 +263,22 @@ public class JTreeTable
         protected int visibleRow;
 
         //~ Constructors -------------------------------------------------------
-
         public TreeTableCellRenderer (TreeModel model)
         {
             super(model);
         }
 
         //~ Methods ------------------------------------------------------------
-
         /**
          * TreeCellRenderer method. Overridden to update the visible row.
          */
         @Override
-        public Component getTableCellRendererComponent (JTable  table,
-                                                        Object  value,
+        public Component getTableCellRendererComponent (JTable table,
+                                                        Object value,
                                                         boolean isSelected,
                                                         boolean hasFocus,
-                                                        int     row,
-                                                        int     column)
+                                                        int row,
+                                                        int column)
         {
             if (isSelected) {
                 setBackground(table.getSelectionBackground());
@@ -331,8 +324,8 @@ public class JTreeTable
             if (rowHeight > 0) {
                 super.setRowHeight(rowHeight);
 
-                if ((JTreeTable.this != null) &&
-                    (JTreeTable.this.getRowHeight() != rowHeight)) {
+                if ((JTreeTable.this != null)
+                    && (JTreeTable.this.getRowHeight() != rowHeight)) {
                     JTreeTable.this.setRowHeight(getRowHeight());
                 }
             }
@@ -359,9 +352,9 @@ public class JTreeTable
                 // null.
                 dtcr.setBorderSelectionColor(null);
                 dtcr.setTextSelectionColor(
-                    UIManager.getColor("Table.selectionForeground"));
+                        UIManager.getColor("Table.selectionForeground"));
                 dtcr.setBackgroundSelectionColor(
-                    UIManager.getColor("Table.selectionBackground"));
+                        UIManager.getColor("Table.selectionBackground"));
             }
         }
     }
@@ -376,7 +369,7 @@ public class JTreeTable
      * DefaultTreeSelectionModel.
      */
     protected class ListToTreeSelectionModelWrapper
-        extends DefaultTreeSelectionModel
+            extends DefaultTreeSelectionModel
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -386,16 +379,14 @@ public class JTreeTable
         protected boolean updatingListSelectionModel;
 
         //~ Constructors -------------------------------------------------------
-
         public ListToTreeSelectionModelWrapper ()
         {
             super();
             getListSelectionModel()
-                .addListSelectionListener(createListSelectionListener());
+                    .addListSelectionListener(createListSelectionListener());
         }
 
         //~ Methods ------------------------------------------------------------
-
         /**
          * Returns the list selection model. ListToTreeSelectionModelWrapper
          * listens for changes to this model and updates the selected paths
@@ -475,13 +466,12 @@ public class JTreeTable
         }
 
         //~ Inner Classes ------------------------------------------------------
-
         /**
          * Class responsible for calling updateSelectedPathsFromSelectedRows
          * when the selection of the list changse.
          */
         class ListSelectionHandler
-            implements ListSelectionListener
+                implements ListSelectionListener
         {
             //~ Methods --------------------------------------------------------
 

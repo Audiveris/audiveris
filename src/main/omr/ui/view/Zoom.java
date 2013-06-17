@@ -323,24 +323,24 @@ public class Zoom
 
             slider.addChangeListener(
                     new ChangeListener()
-                    {
-                        @Override
-                        public void stateChanged (ChangeEvent e)
-                        {
-                            // Forward the new zoom ratio
-                            if (constants.continuousSliderReading.getValue()
-                                || !slider.getValueIsAdjusting()) {
-                                double newRatio = slider.getDoubleValue();
-                                logger.debug("Slider firing zoom newRatio={}", newRatio);
+            {
+                @Override
+                public void stateChanged (ChangeEvent e)
+                {
+                    // Forward the new zoom ratio
+                    if (constants.continuousSliderReading.getValue()
+                        || !slider.getValueIsAdjusting()) {
+                        double newRatio = slider.getDoubleValue();
+                        logger.debug("Slider firing zoom newRatio={}", newRatio);
 
-                                // Stop condition to avoid endless loop between
-                                // slider and zoom
-                                if (Math.abs(newRatio - ratio) > .001) {
-                                    forceRatio(newRatio);
-                                }
-                            }
+                        // Stop condition to avoid endless loop between
+                        // slider and zoom
+                        if (Math.abs(newRatio - ratio) > .001) {
+                            forceRatio(newRatio);
                         }
-                    });
+                    }
+                }
+            });
         }
     }
 

@@ -11,14 +11,13 @@
 // </editor-fold>
 package omr.selection;
 
-
 /**
  * Class {@code GlyphIdEvent} represents a Glyph Id selection.
  *
  * @author Hervé Bitteur
  */
 public class GlyphIdEvent
-    extends NestEvent
+        extends NestEvent
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -26,25 +25,24 @@ public class GlyphIdEvent
     private final Integer id;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new GlyphIdEvent object.
-     * @param source the entity that created this event
-     * @param hint hint about event origin (or null)
+     *
+     * @param source   the entity that created this event
+     * @param hint     hint about event origin (or null)
      * @param movement the precise mouse movement
-     * @param id the glyph id
+     * @param id       the glyph id
      */
-    public GlyphIdEvent (Object        source,
+    public GlyphIdEvent (Object source,
                          SelectionHint hint,
                          MouseMovement movement,
-                         Integer       id)
+                         Integer id)
     {
         super(source, hint, null);
         this.id = id;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getEntity //
     //-----------//

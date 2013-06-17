@@ -19,7 +19,7 @@ import java.awt.Dimension;
 import java.util.Arrays;
 
 /**
- * Class {@code PixelsBuffer} handles a plain rectangular buffer of 
+ * Class {@code PixelsBuffer} handles a plain rectangular buffer of
  * chars.
  * It is an efficient {@link PixelFilter} both for writing and for reading.
  *
@@ -27,7 +27,7 @@ import java.util.Arrays;
  */
 @ThreadSafe
 public class PixelsBuffer
-    implements PixelFilter 
+        implements PixelFilter
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -39,10 +39,8 @@ public class PixelsBuffer
 
     /** Underlying buffer */
     private char[] buffer;
-    
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // PixelsBuffer //
     //--------------//
@@ -55,14 +53,23 @@ public class PixelsBuffer
     {
         width = dimension.width;
         height = dimension.height;
-        
+
         buffer = new char[width * height];
 
         // Initialize the whole buffer with background color value
-        Arrays.fill(buffer, (char) BACKGROUND);        
+        Arrays.fill(buffer, (char) BACKGROUND);
     }
 
     //~ Methods ----------------------------------------------------------------
+    //------------//
+    // getContext //
+    //------------//
+    @Override
+    public Context getContext (int x,
+                               int y)
+    {
+        return new Context(BACKGROUND / 2);
+    }
 
     //-----------//
     // getHeight //
@@ -92,16 +99,6 @@ public class PixelsBuffer
         return width;
     }
 
-    //----------//
-    // setPixel //
-    //----------//
-    public void setPixel (int  x,
-                          int  y,
-                          char val)
-    {
-        buffer[(y * width) + x] = val;
-    } 
-
     //--------//
     // isFore //
     //--------//
@@ -109,16 +106,16 @@ public class PixelsBuffer
     public boolean isFore (int x,
                            int y)
     {
-        return getPixel(x,y) != BACKGROUND;
-    }    
+        return getPixel(x, y) != BACKGROUND;
+    }
 
-    //------------//
-    // getContext //
-    //------------//
-    @Override
-    public Context getContext (int x,
-                               int y)
+    //----------//
+    // setPixel //
+    //----------//
+    public void setPixel (int x,
+                          int y,
+                          char val)
     {
-        return new Context(BACKGROUND/2);
+        buffer[(y * width) + x] = val;
     }
 }

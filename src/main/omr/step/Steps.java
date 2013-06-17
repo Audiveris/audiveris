@@ -11,11 +11,11 @@
 // </editor-fold>
 package omr.step;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.plugin.Plugin;
 import omr.plugin.PluginsManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,21 +39,32 @@ public class Steps
     private static final Logger logger = LoggerFactory.getLogger(Steps.class);
 
     // Mandatory step names
-    public static final String             LOAD = "LOAD";
-    public static final String             SCALE = "SCALE";
-    public static final String             GRID = "GRID";
-    public static final String             SYSTEMS = "SYSTEMS";
-    public static final String             MEASURES = "MEASURES";
-    public static final String             TEXTS = "TEXTS";
-    public static final String             STICKS = "STICKS";
-    public static final String             SYMBOLS = "SYMBOLS";
-    public static final String             PAGES = "PAGES";
-    public static final String             SCORE = "SCORE";
+    public static final String LOAD = "LOAD";
+
+    public static final String SCALE = "SCALE";
+
+    public static final String GRID = "GRID";
+
+    public static final String SYSTEMS = "SYSTEMS";
+
+    public static final String MEASURES = "MEASURES";
+
+    public static final String TEXTS = "TEXTS";
+
+    public static final String STICKS = "STICKS";
+
+    public static final String SYMBOLS = "SYMBOLS";
+
+    public static final String PAGES = "PAGES";
+
+    public static final String SCORE = "SCORE";
 
     // Optional step names
-    public static final String             PRINT = "PRINT";
-    public static final String             EXPORT = "EXPORT";
-    public static final String             PLUGIN = "PLUGIN";
+    public static final String PRINT = "PRINT";
+
+    public static final String EXPORT = "EXPORT";
+
+    public static final String PLUGIN = "PLUGIN";
 
     /** Ordered sequence of steps */
     private static final List<Step> steps = new ArrayList<>();
@@ -82,7 +93,7 @@ public class Steps
 
         // Plugin step depends on default plugin
         Plugin plugin = PluginsManager.getInstance()
-                                      .getDefaultPlugin();
+                .getDefaultPlugin();
 
         if (plugin != null) {
             addStep(new PluginStep(plugin));
@@ -90,7 +101,8 @@ public class Steps
     }
 
     /** Compare steps WRT their position in the sequence of defined steps */
-    public static final Comparator<Step> comparator = new Comparator<Step>() {
+    public static final Comparator<Step> comparator = new Comparator<Step>()
+    {
         @Override
         public int compare (Step s1,
                             Step s2)
@@ -100,14 +112,13 @@ public class Steps
     };
 
     //--------------------------------------------------------------------------
-
     /** First step */
     public static final Step first = steps.iterator()
-                                          .next();
+            .next();
 
     /** Last step */
     public static final Step last = steps.listIterator(steps.size())
-                                         .previous();
+            .previous();
 
     //-------//
     // Steps // Not meant to be instantiated
@@ -117,13 +128,13 @@ public class Steps
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // compare //
     //---------//
     /**
      * Compare two steps wrt their position in steps sequence
-     * @param left one step
+     *
+     * @param left  one step
      * @param right other step
      * @return -1,0,+1
      */
@@ -138,6 +149,7 @@ public class Steps
     //---------//
     /**
      * Report the concrete step for a given name
+     *
      * @param str the step name
      * @return the concrete step, or null if not found
      */
@@ -159,6 +171,7 @@ public class Steps
     //--------//
     /**
      * Report a non-modifiable view of the step list
+     *
      * @return the sequence of steps defined
      */
     public static List<Step> values ()
@@ -171,6 +184,7 @@ public class Steps
     //------//
     /**
      * Report the step right after the provided one
+     *
      * @return the following step, or null if none
      */
     static Step next (Step step)
@@ -217,7 +231,8 @@ public class Steps
     //-------//
     /**
      * Report the range of steps from 'left' to 'right' inclusive
-     * @param left the first step of the range
+     *
+     * @param left  the first step of the range
      * @param right the last step of the range
      * @return the step sequence (which is empty if left > right)
      */
@@ -225,7 +240,7 @@ public class Steps
                                   Step right)
     {
         List<Step> stepList = new ArrayList<>();
-        boolean    started = false;
+        boolean started = false;
 
         for (Step step : steps) {
             if (step == left) {
@@ -257,7 +272,6 @@ public class Steps
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------//
     // Constant //
     //----------//
@@ -266,25 +280,26 @@ public class Steps
      * {@link omr.constant.Constant}, meant to store a {@link Step} value.
      */
     public static class Constant
-        extends omr.constant.Constant
+            extends omr.constant.Constant
     {
         //~ Constructors -------------------------------------------------------
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
+         *
          * @param defaultValue the default Step value
          * @param description  the semantic of the constant
          */
-        public Constant (Step             defaultValue,
+        public Constant (Step defaultValue,
                          java.lang.String description)
         {
             super(null, defaultValue.toString(), description);
         }
 
         //~ Methods ------------------------------------------------------------
-
         /**
          * Retrieve the current constant value
+         *
          * @return the current Step value
          */
         public Step getValue ()
@@ -294,6 +309,7 @@ public class Steps
 
         /**
          * Set a new value to the constant
+         *
          * @param val the new Step value
          */
         public void setValue (Step val)

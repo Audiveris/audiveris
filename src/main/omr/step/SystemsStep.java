@@ -25,7 +25,7 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class SystemsStep
-    extends AbstractStep
+        extends AbstractStep
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -38,15 +38,14 @@ public class SystemsStep
     public SystemsStep ()
     {
         super(
-            Steps.SYSTEMS,
-            Level.SHEET_LEVEL,
-            Mandatory.MANDATORY,
-            DATA_TAB,
-            "Split all data per system");
+                Steps.SYSTEMS,
+                Level.SHEET_LEVEL,
+                Mandatory.MANDATORY,
+                DATA_TAB,
+                "Split all data per system");
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // displayUI //
     //-----------//
@@ -54,7 +53,7 @@ public class SystemsStep
     public void displayUI (Sheet sheet)
     {
         sheet.getAssembly()
-             .addBoard(Step.DATA_TAB, sheet.getBarsChecker().getCheckBoard());
+                .addBoard(Step.DATA_TAB, sheet.getBarsChecker().getCheckBoard());
     }
 
     //------//
@@ -62,8 +61,8 @@ public class SystemsStep
     //------//
     @Override
     public void doit (Collection<SystemInfo> systems,
-                      Sheet                  sheet)
-        throws StepException
+                      Sheet sheet)
+            throws StepException
     {
         // Purge sections & runs of staff lines from hLag
         // Cross-connect vertical & remaining horizontal sections
@@ -73,6 +72,6 @@ public class SystemsStep
         // Create systems & parts
         sheet.createSystemsBuilder();
         sheet.getSystemsBuilder()
-             .buildSystems();
+                .buildSystems();
     }
 }

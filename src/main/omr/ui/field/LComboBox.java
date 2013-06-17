@@ -25,7 +25,7 @@ import javax.swing.JComboBox;
  * @author Hervé Bitteur
  */
 public class LComboBox<E>
-    extends LField<JComboBox<E>>
+        extends LField<JComboBox<E>>
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -37,29 +37,29 @@ public class LComboBox<E>
      * characteristics.
      *
      * @param label the string to be used as label text
-     * @param tip the related tool tip text
+     * @param tip   the related tool tip text
      * @param items the items handled by the combo
      */
     public LComboBox (String label,
                       String tip,
-                      E[]    items)
+                      E[] items)
     {
         super(label, tip, new JComboBox<>(items));
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------------//
     // addActionListener //
     //-------------------//
     /**
      * Add an action listener to the combo.
+     *
      * @param listener
      */
     public void addActionListener (ActionListener listener)
     {
         getField()
-            .addActionListener(listener);
+                .addActionListener(listener);
     }
 
     //-----------------//
@@ -69,7 +69,7 @@ public class LComboBox<E>
     public E getSelectedItem ()
     {
         return (E) getField()
-                       .getSelectedItem();
+                .getSelectedItem();
     }
 
     //-----------------//
@@ -78,6 +78,6 @@ public class LComboBox<E>
     public void setSelectedItem (E item)
     {
         getField()
-            .setSelectedItem(item);
+                .setSelectedItem(item);
     }
 }

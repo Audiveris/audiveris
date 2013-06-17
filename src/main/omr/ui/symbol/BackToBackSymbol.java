@@ -13,11 +13,10 @@ package omr.ui.symbol;
 
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
@@ -28,7 +27,7 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class BackToBackSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -39,10 +38,9 @@ public class BackToBackSymbol
     private static final double DX_RATIO = 1.15;
 
     //~ Instance fields --------------------------------------------------------
-
     // The RIGHT_REPEAT_SIGN symbol
     private final ShapeSymbol rightSymbol = Symbols.getSymbol(
-        RIGHT_REPEAT_SIGN);
+            RIGHT_REPEAT_SIGN);
 
     // The THIN_BARLINE symbol
     private final ShapeSymbol thinSymbol = Symbols.getSymbol(THIN_BARLINE);
@@ -51,7 +49,6 @@ public class BackToBackSymbol
     private final ShapeSymbol dotsSymbol = Symbols.getSymbol(REPEAT_DOT_PAIR);
 
     //~ Constructors -----------------------------------------------------------
-
     //------------------//
     // BackToBackSymbol //
     //------------------//
@@ -66,7 +63,6 @@ public class BackToBackSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -91,8 +87,8 @@ public class BackToBackSymbol
         Rectangle2D rightRect = p.layout.getBounds();
         p.dx = (int) Math.ceil(rightRect.getWidth() * DX_RATIO);
         p.rect = new Rectangle(
-            (int) Math.ceil(rightRect.getWidth() * WIDTH_RATIO),
-            (int) Math.ceil(rightRect.getHeight()));
+                (int) Math.ceil(rightRect.getWidth() * WIDTH_RATIO),
+                (int) Math.ceil(rightRect.getHeight()));
 
         return p;
     }
@@ -102,15 +98,12 @@ public class BackToBackSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams   p = (MyParams) params;
-        PixelPoint loc = alignment.translatedPoint(
-            MIDDLE_LEFT,
-            p.rect,
-            location);
+        MyParams p = (MyParams) params;
+        Point loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
         MusicFont.paint(g, p.layout, loc, MIDDLE_LEFT);
 
         loc.x += p.dx;
@@ -121,17 +114,19 @@ public class BackToBackSymbol
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
-        extends Params
+            extends Params
     {
         //~ Instance fields ----------------------------------------------------
 
         TextLayout thinLayout;
+
         TextLayout dotsLayout;
-        int        dx;
+
+        int dx;
+
     }
 }

@@ -20,16 +20,11 @@ import static omr.glyph.Shape.*;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Histogram;
 import omr.math.Histogram.PeakEntry;
 
 import omr.run.Orientation;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import static omr.score.entity.Note.Step.*;
 import omr.score.visitor.ScoreVisitor;
 
@@ -38,6 +33,11 @@ import omr.sheet.SystemInfo;
 
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -119,7 +119,7 @@ public class KeySignature
     private Shape shape;
 
     /** Center of mass of the key sig */
-    private PixelPoint centroid;
+    private Point centroid;
 
     /** Related Clef kind (G, F or C) */
     private Shape clefKind;
@@ -170,7 +170,7 @@ public class KeySignature
         clefKind = other.clefKind;
 
         // Nota: Center.y is irrelevant
-        setCenter(new PixelPoint(other.getCenter().x, 0));
+        setCenter(new Point(other.getCenter().x, 0));
 
         logger.debug("{} KeySignature cloned: {}",
                 getContextString(), this);
@@ -190,7 +190,7 @@ public class KeySignature
     // createDummyCopy //
     //-----------------//
     public KeySignature createDummyCopy (Measure measure,
-                                         PixelPoint center)
+                                         Point center)
     {
         KeySignature dummy = new KeySignature(measure, null);
 
@@ -320,7 +320,7 @@ public class KeySignature
     public static boolean populate (Glyph glyph,
                                     Measure measure,
                                     Staff staff,
-                                    PixelPoint center)
+                                    Point center)
     {
         logger.debug("Populating keysig for {}", glyph);
 
@@ -339,7 +339,7 @@ public class KeySignature
         // Use a enlarged rectangular box around the glyph, and check what's in
         // Check for lack of stem symbols (beam, beam hook, note head, flags),
         // or stand-alone note (THIS IS TOO RESTRICTIVE!!!)
-        PixelRectangle glyphFatBox = glyph.getBounds();
+        Rectangle glyphFatBox = glyph.getBounds();
         glyphFatBox.grow(
                 measure.getScale().toPixels(constants.xMargin),
                 measure.getScale().toPixels(constants.yMargin));
@@ -668,7 +668,7 @@ public class KeySignature
      * @return true if OK, false otherwise
      */
     private static boolean checkPitchPosition (Glyph glyph,
-                                               PixelPoint center,
+                                               Point center,
                                                Staff staff,
                                                Clef clef)
     {
@@ -729,7 +729,7 @@ public class KeySignature
      * @return true if OK, false otherwise
      */
     private static boolean checkPosition (Glyph glyph,
-                                          PixelPoint center,
+                                          Point center,
                                           Staff staff,
                                           double[] positions,
                                           int index,
@@ -814,17 +814,17 @@ public class KeySignature
      * Report the actual center of mass of the glyphs that compose the
      * signature
      *
-     * @return the PixelPoint that represent the center of mass
+     * @return the Point that represent the center of mass
      */
-    private PixelPoint getCentroid ()
+    private Point getCentroid ()
     {
         if (centroid == null) {
-            centroid = new PixelPoint();
+            centroid = new Point();
 
             double totalWeight = 0;
 
             for (Glyph glyph : glyphs) {
-                PixelPoint c = glyph.getCentroid();
+                Point c = glyph.getCentroid();
                 double w = glyph.getWeight();
                 centroid.x += (c.x * w);
                 centroid.y += (c.y * w);

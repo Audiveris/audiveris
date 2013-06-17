@@ -1,7 +1,14 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                              U r i U t i l                                 //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
+//  This software is released under the GNU General Public License.           //
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
+//----------------------------------------------------------------------------//
+// </editor-fold>
 package omr.util;
 
 import java.io.File;
@@ -32,7 +39,7 @@ public class UriUtil
         if (url == null) {
             return null;
         }
-        
+
         try {
             return new File(url.toURI());
         } catch (URISyntaxException ex) {
@@ -54,32 +61,10 @@ public class UriUtil
         if (url == null) {
             return null;
         }
-        
+
         try {
             return url.toURI();
         } catch (URISyntaxException ex) {
-            throw new IllegalArgumentException(ex.getMessage(), ex);
-        }
-    }
-
-    //-------//
-    // toURL //
-    //-------//
-    /**
-     * Convenient method to avoid exception burden
-     *
-     * @param uri the initial URI
-     * @return the equivalent URL
-     */
-    public static URL toURL (URI uri)
-    {
-        if (uri == null) {
-            return null;
-        }
-        
-        try {
-            return uri.toURL();
-        } catch (MalformedURLException ex) {
             throw new IllegalArgumentException(ex.getMessage(), ex);
         }
     }
@@ -121,6 +106,28 @@ public class UriUtil
 
             return new URI(dirName.append(child).toString());
         } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(ex.getMessage(), ex);
+        }
+    }
+
+    //-------//
+    // toURL //
+    //-------//
+    /**
+     * Convenient method to avoid exception burden
+     *
+     * @param uri the initial URI
+     * @return the equivalent URL
+     */
+    public static URL toURL (URI uri)
+    {
+        if (uri == null) {
+            return null;
+        }
+
+        try {
+            return uri.toURL();
+        } catch (MalformedURLException ex) {
             throw new IllegalArgumentException(ex.getMessage(), ex);
         }
     }

@@ -15,10 +15,10 @@ import omr.glyph.Evaluation;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 
+import omr.score.entity.TimeRational;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.score.entity.TimeRational;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -20,19 +20,7 @@ package omr.run;
 public interface PixelFilter
         extends PixelSource
 {
-
-    /**
-     * Report whether the pixel at location (x,y) is a foreground pixel
-     * or not.
-     * It is assumed that this feature is efficiently implemented, since it will
-     * be typically called several million times.
-     *
-     * @param x abscissa value
-     * @param y ordinate value
-     * @return true for a foreground pixel, false for a background pixel
-     */
-    boolean isFore (int x,
-                    int y);
+    //~ Methods ----------------------------------------------------------------
 
     /**
      * Report the source context at provided location.
@@ -47,15 +35,31 @@ public interface PixelFilter
                         int y);
 
     /**
+     * Report whether the pixel at location (x,y) is a foreground pixel
+     * or not.
+     * It is assumed that this feature is efficiently implemented, since it will
+     * be typically called several million times.
+     *
+     * @param x abscissa value
+     * @param y ordinate value
+     * @return true for a foreground pixel, false for a background pixel
+     */
+    boolean isFore (int x,
+                    int y);
+
+    //~ Inner Classes ----------------------------------------------------------
+    /**
      * Structure used to report precise context of the source.
      * It can be extended for more specialized data.
      */
     class Context
     {
+        //~ Instance fields ----------------------------------------------------
 
         /** Threshold used on pixel value. */
         public final double threshold;
 
+        //~ Constructors -------------------------------------------------------
         public Context (double threshold)
         {
             this.threshold = threshold;

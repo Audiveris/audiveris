@@ -16,10 +16,9 @@ import omr.Main;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.Section;
+import omr.grid.StaffInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import omr.lag.Section;
 
 import omr.score.ui.ScoreActions;
 
@@ -28,10 +27,11 @@ import omr.sheet.SystemInfo;
 
 import omr.step.Step;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import omr.grid.StaffInfo;
-import omr.sheet.Ledger;
 
 /**
  * Class {@code GlyphsModel} is a common model for synchronous glyph

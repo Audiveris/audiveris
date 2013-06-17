@@ -19,12 +19,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import omr.math.LineUtil;
 
-import omr.math.LineUtilities;
-
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Page;
 
 import omr.sheet.Scale;
@@ -35,7 +31,10 @@ import omr.text.tesseract.TesseractOCR;
 import omr.util.GeoUtil;
 import omr.util.LiveParam;
 import omr.util.WrappedBoolean;
-import omr.util.XmlUtilities;
+import omr.util.XmlUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -204,7 +203,7 @@ public class TextBuilder
 
         // Check for invalid XML characters
         WrappedBoolean stripped = new WrappedBoolean(false);
-        XmlUtilities.stripNonValidXMLCharacters(value, stripped);
+        XmlUtil.stripNonValidXMLCharacters(value, stripped);
 
         if (stripped.isSet()) {
             logger.warn("Invalid XML chars in {}", word);
@@ -220,7 +219,7 @@ public class TextBuilder
             }
         }
 
-//        PixelRectangle box = word.getBounds();
+//        Rectangle box = word.getBounds();
 //        String str = word.getValue();
 //        Font font = new TextFont(word.getFontInfo());
 //        TextLayout layout = new TextLayout(str, font, frc);
@@ -441,7 +440,7 @@ public class TextBuilder
         if (logger.isDebugEnabled()) {
             logger.info("{} recomposeLines", system.idString());
         }
-        
+
         // Separate lyrics and standard populations
         List<TextLine> standards = new ArrayList<>();
         List<TextLine> lyrics = new ArrayList<>();
@@ -929,7 +928,7 @@ public class TextBuilder
                 Integer stop = null;
 
                 for (TextWord word : words) {
-                    PixelRectangle bounds = word.getBounds();
+                    Rectangle bounds = word.getBounds();
 
                     if (stop != null) {
                         int gap = bounds.x - stop;
@@ -1001,13 +1000,13 @@ public class TextBuilder
                 // Compute (sub) baseline parameters
                 Line2D base = word.getBaseline();
                 int x1 = wordChars.get(0).getBounds().x;
-                Point2D p1 = LineUtilities.intersection(
+                Point2D p1 = LineUtil.intersection(
                         base.getP1(), base.getP2(),
                         new Point2D.Double(x1, 0), new Point2D.Double(x1, 100));
 
                 Rectangle box = wordChars.get(wordChars.size() - 1).getBounds();
                 int x2 = box.x + box.width - 1;
-                Point2D p2 = LineUtilities.intersection(
+                Point2D p2 = LineUtil.intersection(
                         base.getP1(), base.getP2(),
                         new Point2D.Double(x2, 0), new Point2D.Double(x2, 100));
                 Line2D subBase = new Line2D.Double(p1, p2);
@@ -1143,7 +1142,7 @@ public class TextBuilder
     private TextWord findNewWord (TextWord oldWord,
                                   TextLine newLine)
     {
-        PixelRectangle oldBounds = oldWord.getBounds();
+        Rectangle oldBounds = oldWord.getBounds();
 
         for (TextWord word : newLine.getWords()) {
             if (word.getBounds().equals(oldBounds)) {

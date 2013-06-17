@@ -46,7 +46,8 @@ public class ScrollView
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ScrollView.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ScrollView.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Current view inside the scrolled pane */
@@ -179,10 +180,13 @@ public class ScrollView
 
             if (center != null) {
                 logger.debug("getRubberFocus rubber center={}", center);
+
                 return center; // Of rubber band
             } else {
-                logger.debug("getRubberFocus panelcenter={}",
+                logger.debug(
+                        "getRubberFocus panelcenter={}",
                         view.getPanelCenter());
+
                 return view.getPanelCenter(); // Of visible rectangle
             }
         } else {
@@ -263,7 +267,8 @@ public class ScrollView
         logger.debug("setZoomRatio zoomRatio={}", zoomRatio);
 
         if (view.getZoom() != null) {
-            view.getZoom().setRatio(zoomRatio);
+            view.getZoom()
+                    .setRatio(zoomRatio);
         } else {
             logger.warn("setZoomRatio. No zoom assigned");
         }
@@ -276,6 +281,7 @@ public class ScrollView
     private static final class Constants
             extends ConstantSet
     {
+        //~ Instance fields ----------------------------------------------------
 
         Constant.Integer unitIncrement = new Constant.Integer(
                 "Pixels",

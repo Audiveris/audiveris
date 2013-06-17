@@ -19,21 +19,20 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.script.AssignTask;
 import omr.script.BarlineTask;
 import omr.script.DeleteTask;
 
 import omr.selection.GlyphEvent;
-import omr.selection.GlyphSetEvent;
 import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
 
 import omr.sheet.Sheet;
 
 import org.jdesktop.application.Task;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Set;
@@ -117,7 +116,7 @@ public class GlyphsController
         }
 
         if (ShapeSet.Barlines.contains(shape)
-                || Glyphs.containsBarline(glyphs)) {
+            || Glyphs.containsBarline(glyphs)) {
             // Special case for barlines assignment or deassignment
             return new BarlineTask(sheet, shape, compound, glyphs).launch(
                     sheet);
@@ -190,7 +189,8 @@ public class GlyphsController
      */
     public SelectionService getLocationService ()
     {
-        return model.getSheet().getLocationService();
+        return model.getSheet()
+                .getLocationService();
     }
 
     //----------//
@@ -258,7 +258,9 @@ public class GlyphsController
                     Evaluation.MANUAL);
 
             // Publish modifications (about new glyph)
-            Glyph firstGlyph = glyphs.iterator().next();
+            Glyph firstGlyph = glyphs.iterator()
+                    .next();
+
             if (firstGlyph != null) {
                 publish(firstGlyph.getMembers().first().getGlyph());
             }
@@ -295,9 +297,10 @@ public class GlyphsController
     {
         // Update immediately the glyph info as displayed
         if (model.getSheet() != null) {
-            getNest().getGlyphService().publish(
-                    new GlyphEvent(this, SelectionHint.GLYPH_MODIFIED, null,
-                                   glyph));
+            getNest()
+                    .getGlyphService()
+                    .publish(
+                    new GlyphEvent(this, SelectionHint.GLYPH_MODIFIED, null, glyph));
         }
     }
 }

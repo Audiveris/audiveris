@@ -13,11 +13,6 @@ package omr.score.entity;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.text.TextLine;
@@ -27,7 +22,12 @@ import omr.text.TextWord;
 
 import omr.ui.symbol.TextFont;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Font;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.Collections;
@@ -93,7 +93,7 @@ public abstract class Text
      * @param location specific location
      */
     public Text (TextLine sentence,
-                 PixelPoint location)
+                 Point location)
     {
         super(sentence.getSystemPart());
         this.sentence = sentence;
@@ -105,6 +105,42 @@ public abstract class Text
     }
 
     //~ Methods ----------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //------------//
+    // getContent //
+    //------------//
+    /**
+     * Report the current string value of this text
+     *
+     * @return the string value of this text
+     */
+    public String getContent ()
+    {
+        return sentence.getValue();
+    }
+
+    //---------------------//
+    // getExportedFontSize //
+    //---------------------//
+    /**
+     * Report the font size to be exported for this text
+     *
+     * @return the exported font size
+     */
+    public int getExportedFontSize ()
+    {
+        return (int) Math.rint(
+                sentence.getMeanFont().pointsize * TextFont.TO_POINT);
+    }
+
     //---------------//
     // getLyricsFont //
     //---------------//
@@ -131,6 +167,41 @@ public abstract class Text
         return TextFont.baseTextFont.getSize();
     }
 
+    //-------------//
+    // getSentence //
+    //-------------//
+    /**
+     * Report the sentence that relates to this text
+     *
+     * @return the related sentence
+     */
+    public TextLine getSentence ()
+    {
+        return sentence;
+    }
+
+    //---------------------//
+    // getTranslationLinks //
+    //---------------------//
+    @Override
+    public List<Line2D> getTranslationLinks (Glyph glyph)
+    {
+        return Collections.emptyList(); // By default
+    }
+
+    //----------//
+    // getWidth //
+    //----------//
+    /**
+     * Report the width of this text
+     *
+     * @return the text width
+     */
+    public int getWidth ()
+    {
+        return getBox().width;
+    }
+
     //----------//
     // populate //
     //----------//
@@ -152,7 +223,7 @@ public abstract class Text
      * @param location its starting reference wrt containing system
      */
     public static void populate (TextLine sentence,
-                                 PixelPoint location)
+                                 Point location)
     {
         final SystemPart systemPart = sentence.getSystemPart();
         final TextRoleInfo roleInfo = sentence.getRole();
@@ -164,8 +235,11 @@ public abstract class Text
                     "Sentence with no role defined");
         }
 
-        logger.debug("Populating {} {} \"{}\"",
-                sentence, role, sentence.getValue());
+        logger.debug(
+                "Populating {} {} \"{}\"",
+                sentence,
+                role,
+                sentence.getValue());
 
         if (role == null) {
             return;
@@ -177,19 +251,20 @@ public abstract class Text
             // Create as many lyrics items as needed
             for (TextWord word : sentence.getWords()) {
                 Glyph glyph = word.getGlyph();
-                PixelRectangle itemBox = word.getBounds();
+                Rectangle itemBox = word.getBounds();
                 String itemStr = word.getValue();
 
                 if (itemStr == null) {
                     // A very rough char count ...
-//                    int nbChar = (int) Math.rint(
-//                            (double) itemBox.width / sentence.getTextHeight());
+                    //                    int nbChar = (int) Math.rint(
+                    //                            (double) itemBox.width / sentence.getTextHeight());
                     int nbChar = 5;
                     itemStr = role.getStringHolder(nbChar);
                 }
 
-                Point2D p1 = word.getBaseline().getP1();
-                PixelPoint start = new PixelPoint(
+                Point2D p1 = word.getBaseline()
+                        .getP1();
+                Point start = new Point(
                         (int) Math.rint(p1.getX()),
                         (int) Math.rint(p1.getY()));
                 glyph.setTranslation(
@@ -209,6 +284,7 @@ public abstract class Text
             break;
 
         case Direction:
+
             Measure measure = systemPart.getMeasureAt(location);
             sentence.setGlyphsTranslation(
                     new DirectionStatement(
@@ -256,77 +332,6 @@ public abstract class Text
         }
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //---------------------//
-    // getTranslationLinks //
-    //---------------------//
-    @Override
-    public List<Line2D> getTranslationLinks (Glyph glyph)
-    {
-        return Collections.emptyList(); // By default
-    }
-
-    //------------//
-    // getContent //
-    //------------//
-    /**
-     * Report the current string value of this text
-     *
-     * @return the string value of this text
-     */
-    public String getContent ()
-    {
-        return sentence.getValue();
-    }
-
-    //---------------------//
-    // getExportedFontSize //
-    //---------------------//
-    /**
-     * Report the font size to be exported for this text
-     *
-     * @return the exported font size
-     */
-    public int getExportedFontSize ()
-    {
-        return (int) Math.rint(sentence.getMeanFont().pointsize
-                               * TextFont.TO_POINT);
-    }
-
-    //-------------//
-    // getSentence //
-    //-------------//
-    /**
-     * Report the sentence that relates to this text
-     *
-     * @return the related sentence
-     */
-    public TextLine getSentence ()
-    {
-        return sentence;
-    }
-
-    //----------//
-    // getWidth //
-    //----------//
-    /**
-     * Report the width of this text
-     *
-     * @return the text width
-     */
-    public int getWidth ()
-    {
-        return getBox().width;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -340,19 +345,25 @@ public abstract class Text
         sb.append("{Text");
 
         if (sentence.getRole() != null) {
-            sb.append(" ").append(sentence.getRole());
+            sb.append(" ")
+                    .append(sentence.getRole());
         }
 
         sb.append(internalsString());
 
         if (getContent() != null) {
-            sb.append(" \"").append(getContent()).append("\"");
+            sb.append(" \"")
+                    .append(getContent())
+                    .append("\"");
         }
 
-        sb.append(" loc:").append(getReferencePoint());
+        sb.append(" loc:")
+                .append(getReferencePoint());
 
-        sb.append(" S").append(getSystem().getId());
-        sb.append("P").append(getPart().getId());
+        sb.append(" S")
+                .append(getSystem().getId());
+        sb.append("P")
+                .append(getPart().getId());
 
         sb.append("}");
 
@@ -383,6 +394,21 @@ public abstract class Text
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //-----------//
+    // ChordText //
+    //-----------//
+    /** Subclass of Text, dedicated to a chord marker. */
+    public static class ChordText
+            extends Text
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public ChordText (TextLine sentence)
+        {
+            super(sentence);
+        }
+    }
+
     //-------------//
     // CreatorText //
     //-------------//
@@ -397,9 +423,7 @@ public abstract class Text
         {
             //~ Enumeration constant initializers ------------------------------
 
-            composer,
-            lyricist,
-            arranger;
+            composer, lyricist, arranger;
 
         }
 
@@ -456,7 +480,8 @@ public abstract class Text
             super(sentence);
 
             if (getContent() != null) {
-                sentence.getSystemPart().setName(getContent());
+                sentence.getSystemPart()
+                        .setName(getContent());
             }
         }
     }
@@ -486,21 +511,6 @@ public abstract class Text
         //~ Constructors -------------------------------------------------------
 
         public RightsText (TextLine sentence)
-        {
-            super(sentence);
-        }
-    }
-
-    //-----------//
-    // ChordText //
-    //-----------//
-    /** Subclass of Text, dedicated to a chord marker. */
-    public static class ChordText
-            extends Text
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public ChordText (TextLine sentence)
         {
             super(sentence);
         }

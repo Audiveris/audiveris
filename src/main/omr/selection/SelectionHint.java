@@ -11,14 +11,15 @@
 // </editor-fold>
 package omr.selection;
 
-
 /**
  * Enum {@code SelectionHint} gives a hint about what observers should
  * do with the published selection.
  *
  * @author Hervé Bitteur
  */
-public enum SelectionHint {
+public enum SelectionHint
+{
+
     /**
      * Designation is by location pointing, so we keep the original location
      * information, and try to lookup for designated Run, Section & Glyph
@@ -29,34 +30,34 @@ public enum SelectionHint {
      * selection(s), so we keep the original location information, and try to
      * lookup for designated Run, Section & Glyph
      */
-    LOCATION_ADD, 
+    LOCATION_ADD,
     /**
      * Designation is by context pointing, discarding any previous
      * selection
      */
-    CONTEXT_INIT, 
+    CONTEXT_INIT,
     /**
      * Designation is by context pointing while keeping the existing
      * selection(s) if any
      */
-    CONTEXT_ADD, 
+    CONTEXT_ADD,
     /**
      * Designation is at Section level, so we display the pixel contour of the
      * Section, Run information is not available, and related Glyph information
      * is displayed
      */
-    SECTION_INIT, 
+    SECTION_INIT,
     /**
      * Designation is at Glyph level, so we display the pixel contour of the
      * Glyph, as well as Glyph information, but Run & Section informations are
      * not available
      */
-    GLYPH_INIT, 
+    GLYPH_INIT,
     /**
      * Designation is at Glyph level, for which a characteristic (typically the
      * shape) has just been modified
      */
-    GLYPH_MODIFIED, 
+    GLYPH_MODIFIED,
     /**
      * Glyph information is for temporary display / evaluation only, with no
      * impact on other structures such as glyph set
@@ -66,12 +67,13 @@ public enum SelectionHint {
     //------------//
     // isLocation //
     //------------//
+
     /** Predicate for LOCATION_XXX. */
     public boolean isLocation ()
     {
         switch (this) {
-        case LOCATION_INIT :
-        case LOCATION_ADD :
+        case LOCATION_INIT:
+        case LOCATION_ADD:
             return true;
         }
 
@@ -85,8 +87,8 @@ public enum SelectionHint {
     public boolean isContext ()
     {
         switch (this) {
-        case CONTEXT_INIT :
-        case CONTEXT_ADD :
+        case CONTEXT_INIT:
+        case CONTEXT_ADD:
             return true;
         }
 
@@ -100,7 +102,7 @@ public enum SelectionHint {
     public boolean isSection ()
     {
         switch (this) {
-        case SECTION_INIT :
+        case SECTION_INIT:
             return true;
         }
 
@@ -114,9 +116,9 @@ public enum SelectionHint {
     public boolean isGlyph ()
     {
         switch (this) {
-        case GLYPH_INIT :
-        case GLYPH_MODIFIED :
-        case GLYPH_TRANSIENT :
+        case GLYPH_INIT:
+        case GLYPH_MODIFIED:
+        case GLYPH_TRANSIENT:
             return true;
         }
 

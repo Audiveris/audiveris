@@ -15,8 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code TargetStaff} is an immutable perfect destination object for a
- * staff.
+ * Class {@code TargetStaff} is an immutable perfect destination
+ * object for a staff.
  *
  * @author Hervé Bitteur
  */
@@ -40,7 +40,6 @@ public class TargetStaff
     public final TargetSystem system;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // TargetStaff //
     //-------------//
@@ -48,10 +47,10 @@ public class TargetStaff
      * Creates a new TargetStaff object.
      *
      * @param info initial raw information
-     * @param top Ordinate of top in containing page
+     * @param top  Ordinate of top in containing page
      */
-    public TargetStaff (StaffInfo    info,
-                        double       top,
+    public TargetStaff (StaffInfo info,
+                        double top,
                         TargetSystem system)
     {
         this.info = info;
@@ -62,7 +61,6 @@ public class TargetStaff
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // toString //
     //----------//
@@ -71,9 +69,9 @@ public class TargetStaff
     {
         StringBuilder sb = new StringBuilder("{Staff");
         sb.append("#")
-          .append(id);
+                .append(id);
         sb.append(" top:")
-          .append(top);
+                .append(top);
         sb.append("}");
 
         return sb.toString();

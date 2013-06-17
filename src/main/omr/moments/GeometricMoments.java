@@ -14,7 +14,7 @@ package omr.moments;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
+import java.awt.Point;
 
 /**
  * Class {@code GeometricMoments} encapsulates the set of all
@@ -30,62 +30,60 @@ public class GeometricMoments
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        GeometricMoments.class);
+            GeometricMoments.class);
 
     // Hu coefficients are optional
-    public static final boolean   useHuCoefficients = false;
+    public static final boolean useHuCoefficients = false;
 
-    /**  Number of features handled: {@value}*/
+    /** Number of features handled: {@value} */
     public static final int size = 12 + (useHuCoefficients ? 7 : 0);
 
     /** Labels for better display */
     private static final String[] labels = {
-                                               
-    /**
-     * Unit-normalized stuff
-     */
-    "weight", // 0
-    "width", //  1
-    "height", // 2
-    /**
-     * Mass-normalized central moments
-     */
-    "n20", // 3
-    "n11", // 4
-    "n02", // 5
-    "n30", // 6
-    "n21", // 7
-    "n12", // 8
-    "n03", // 9
-    /**
-     * Mass center
-     */
-    "xBar", // 10
-    "yBar", // 11
-    /**
-     * Hu coefficients, if any
-     */
-    "h1", // 12
-    "h2", // 13
-    "h3", // 14
-    "h4", // 15
-    "h5", // 16
-    "h6", // 17
-    "h7", // 18
-                                           };
+        /**
+         * Unit-normalized stuff
+         */
+        "weight", // 0
+        "width", //  1
+        "height", // 2
+        /**
+         * Mass-normalized central moments
+         */
+        "n20", // 3
+        "n11", // 4
+        "n02", // 5
+        "n30", // 6
+        "n21", // 7
+        "n12", // 8
+        "n03", // 9
+        /**
+         * Mass center
+         */
+        "xBar", // 10
+        "yBar", // 11
+        /**
+         * Hu coefficients, if any
+         */
+        "h1", // 12
+        "h2", // 13
+        "h3", // 14
+        "h4", // 15
+        "h5", // 16
+        "h6", // 17
+        "h7", // 18
+    };
 
     //~ Instance fields --------------------------------------------------------
-
     /** The various moments, implemented as an array of double's. */
     private final Double[] k = new Double[size];
 
     //~ Constructors -----------------------------------------------------------
-
     //------------------//
     // GeometricMoments //
     //------------------//
     /**
      * Creates a new GeometricMoments object.
+     *
      * @param that the other GeometricMoments to clone
      */
     public GeometricMoments (GeometricMoments that)
@@ -100,6 +98,7 @@ public class GeometricMoments
      * Compute the moments for a set of points whose x and y
      * coordinates are provided, all values being normalized by the
      * provided unit value.
+     *
      * @param xx   the array of abscissa values
      * @param yy   the array of ordinate values
      * @param dim  the number of points
@@ -107,18 +106,18 @@ public class GeometricMoments
      */
     public GeometricMoments (int[] xx,
                              int[] yy,
-                             int   dim,
-                             int   unit)
+                             int dim,
+                             int unit)
     {
         // Safety check
         if (unit == 0) {
             throw new IllegalArgumentException("Zero-valued unit");
         }
 
-        int    xMin = Integer.MAX_VALUE;
-        int    xMax = Integer.MIN_VALUE;
-        int    yMin = Integer.MAX_VALUE;
-        int    yMax = Integer.MIN_VALUE;
+        int xMin = Integer.MAX_VALUE;
+        int xMax = Integer.MIN_VALUE;
+        int yMin = Integer.MAX_VALUE;
+        int yMax = Integer.MIN_VALUE;
 
         // Normalized GeometricMoments
         double n00 = (double) dim / (double) (unit * unit);
@@ -218,32 +217,32 @@ public class GeometricMoments
             //
             k[i++] = ((n20 - n02) * (n20 - n02)) + (4 * n11 * n11);
             //
-            k[i++] = ((n30 - (3 * n12)) * (n30 - (3 * n12))) +
-                     ((n03 - (3 * n21)) * (n03 - (3 * n21)));
+            k[i++] = ((n30 - (3 * n12)) * (n30 - (3 * n12)))
+                     + ((n03 - (3 * n21)) * (n03 - (3 * n21)));
             //
             k[i++] = ((n30 + n12) * (n30 + n12)) + ((n03 + n21) * (n03 + n21));
             //
-            k[i++] = ((n30 - (3 * n12)) * (n30 + n12) * (((n30 + n12) * (n30 +
-                                                                        n12)) -
-                                                        (3 * (n21 + n03) * (n21 +
-                                                                           n03)))) +
-                     ((n03 - (3 * n21)) * (n03 + n21) * (((n03 + n21) * (n03 +
-                                                                        n21)) -
-                                                        (3 * (n12 + n30) * (n12 +
-                                                                           n30))));
+            k[i++] = ((n30 - (3 * n12)) * (n30 + n12) * (((n30 + n12) * (n30
+                                                                         + n12))
+                                                         - (3 * (n21 + n03) * (n21
+                                                                               + n03))))
+                     + ((n03 - (3 * n21)) * (n03 + n21) * (((n03 + n21) * (n03
+                                                                           + n21))
+                                                           - (3 * (n12 + n30) * (n12
+                                                                                 + n30))));
             //
-            k[i++] = ((n20 - n02) * (((n30 + n12) * (n30 + n12)) -
-                                    ((n03 + n21) * (n03 + n21)))) +
-                     (4 * n11 * (n30 + n12) * (n03 + n21));
+            k[i++] = ((n20 - n02) * (((n30 + n12) * (n30 + n12))
+                                     - ((n03 + n21) * (n03 + n21))))
+                     + (4 * n11 * (n30 + n12) * (n03 + n21));
             //
-            k[i++] = (((3 * n21) - n03) * (n30 + n12) * (((n30 + n12) * (n30 +
-                                                                        n12)) -
-                                                        (3 * (n21 + n03) * (n21 +
-                                                                           n03)))) -
-                     (((3 * n12) - n30) * (n03 + n21) * (((n03 + n21) * (n03 +
-                                                                        n21)) -
-                                                        (3 * (n12 + n30) * (n12 +
-                                                                           n30))));
+            k[i++] = (((3 * n21) - n03) * (n30 + n12) * (((n30 + n12) * (n30
+                                                                         + n12))
+                                                         - (3 * (n21 + n03) * (n21
+                                                                               + n03))))
+                     - (((3 * n12) - n30) * (n03 + n21) * (((n03 + n21) * (n03
+                                                                           + n21))
+                                                           - (3 * (n12 + n30) * (n12
+                                                                                 + n30))));
         }
     }
 
@@ -258,12 +257,12 @@ public class GeometricMoments
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // getLabel //
     //----------//
     /**
      * Report the label related to moment at specified index.
+     *
      * @param index the moment index
      * @return the related index
      */
@@ -277,11 +276,12 @@ public class GeometricMoments
     //-------------//
     /**
      * Report the mass center of the glyph.
+     *
      * @return the centroid
      */
-    public PixelPoint getCentroid ()
+    public Point getCentroid ()
     {
-        return new PixelPoint((int) Math.rint(k[10]), (int) Math.rint(k[11]));
+        return new Point((int) Math.rint(k[10]), (int) Math.rint(k[11]));
     }
 
     //-----------//
@@ -289,6 +289,7 @@ public class GeometricMoments
     //-----------//
     /**
      * Report the height of the glyph, normalized by unit.
+     *
      * @return the normalized height
      */
     public Double getHeight ()
@@ -301,6 +302,7 @@ public class GeometricMoments
     //--------//
     /**
      * Report the n11 moment (which relates to xy covariance).
+     *
      * @return the n11 moment
      */
     public Double getN11 ()
@@ -313,6 +315,7 @@ public class GeometricMoments
     //--------//
     /**
      * Report the n12 moment (which relates to xy2: > vs <).
+     *
      * @return the n12 moment
      */
     public Double getN12 ()
@@ -325,6 +328,7 @@ public class GeometricMoments
     //--------//
     /**
      * Report the n21 moment (which relates to x2y: V vs ^).
+     *
      * @return the n21 moment
      */
     public Double getN21 ()
@@ -337,6 +341,7 @@ public class GeometricMoments
     //-----------//
     /**
      * Report the array of moment values.
+     *
      * @return the moment values
      */
     public Double[] getValues ()
@@ -349,6 +354,7 @@ public class GeometricMoments
     //-----------//
     /**
      * Report the total weight of the glyph, normalized by unit**2.
+     *
      * @return the normalized weight
      */
     public Double getWeight ()
@@ -361,6 +367,7 @@ public class GeometricMoments
     //----------//
     /**
      * Report the width of the glyph, normalized by unit.
+     *
      * @return the normalized width
      */
     public Double getWidth ()
@@ -379,11 +386,11 @@ public class GeometricMoments
 
         for (int i = 0; i < k.length; i++) {
             sb.append(" ")
-              .append(i)
-              .append("/")
-              .append(labels[i])
-              .append("=")
-              .append(String.format("%g", k[i]));
+                    .append(i)
+                    .append("/")
+                    .append(labels[i])
+                    .append("=")
+                    .append(String.format("%g", k[i]));
         }
 
         sb.append("}");

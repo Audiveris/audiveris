@@ -18,9 +18,6 @@ import omr.glyph.Grades;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SampleVerifier;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerField;
 import omr.ui.util.Panel;
@@ -28,6 +25,9 @@ import omr.ui.util.Panel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -37,8 +37,6 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -298,7 +296,7 @@ class ValidationPanel
         int total = gNames.size();
         double pc = ((double) positives * 100) / (double) total;
         String pcStr = String.format(" %5.2f%%", pc);
-        logger.info("{}Evaluator. Ratio={} : {}/{}", 
+        logger.info("{}Evaluator. Ratio={} : {}/{}",
                 evaluator.getName(), pcStr, positives, total);
         positiveValue.setValue(positives);
         pcValue.setValue(pc);
@@ -374,18 +372,18 @@ class ValidationPanel
         {
             executor.execute(
                     new Runnable()
-                    {
-                        @Override
-                        public void run ()
-                        {
-                            setEnabled(false);
-                            runValidation();
-                            negativeAction.setEnabled(negatives.size() > 0);
-                            falsePositiveAction.setEnabled(
-                                    !falsePositives.isEmpty());
-                            setEnabled(true);
-                        }
-                    });
+            {
+                @Override
+                public void run ()
+                {
+                    setEnabled(false);
+                    runValidation();
+                    negativeAction.setEnabled(negatives.size() > 0);
+                    falsePositiveAction.setEnabled(
+                            !falsePositives.isEmpty());
+                    setEnabled(true);
+                }
+            });
         }
     }
 }

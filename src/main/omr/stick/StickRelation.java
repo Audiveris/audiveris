@@ -24,8 +24,8 @@ public class StickRelation
     //~ Instance fields --------------------------------------------------------
 
     /**
-     * The role of the section in the enclosing stick. Not final, since it may
-     * be modified afterhand
+     * The role of the section in the enclosing stick.
+     * Not final, since it may be modified afterhand.
      */
     public SectionRole role;
 
@@ -40,7 +40,6 @@ public class StickRelation
     public int layer;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------//
     // StickRelation //
     //---------------//
@@ -52,13 +51,12 @@ public class StickRelation
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // getColor //
     //----------//
     /**
-     * Define a color, according to the data at hand, that is according to the
-     * role of this section in the enclosing stick.
+     * Define a color, according to the data at hand, that is according
+     * to the role of this section in the enclosing stick.
      *
      * @return the related color
      */
@@ -75,14 +73,15 @@ public class StickRelation
     // isCandidate //
     //-------------//
     /**
-     * Checks whether the section is a good candidate to be a member of a stick
+     * Checks whether the section is a good candidate to be a member
+     * of a stick
      *
      * @return the result of the test
      */
     public boolean isCandidate ()
     {
-        return (role != null) &&
-               (role.ordinal() < SectionRole.BORDER.ordinal());
+        return (role != null)
+               && (role.ordinal() < SectionRole.BORDER.ordinal());
     }
 
     //-----------//
@@ -96,8 +95,8 @@ public class StickRelation
      * @param direction the direction when departing from the stick core
      */
     public void setParams (SectionRole role,
-                           int         layer,
-                           int         direction)
+                           int layer,
+                           int direction)
     {
         this.role = role;
         this.layer = layer;
@@ -120,13 +119,13 @@ public class StickRelation
         sb.append("[");
 
         sb.append("L=")
-          .append(layer);
+                .append(layer);
         sb.append(" D=")
-          .append(direction);
+                .append(direction);
 
         if (role != null) {
             sb.append(" ")
-              .append(role);
+                    .append(role);
         }
 
         sb.append("]");

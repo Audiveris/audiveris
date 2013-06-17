@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.sheet.picture;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
 
@@ -24,6 +21,9 @@ import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 
 import omr.util.WeakPropertyChangeListener;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -38,21 +38,20 @@ import java.beans.PropertyChangeListener;
  * @author Hervé Bitteur
  */
 public class PictureView
-    extends ScrollView
-    implements PropertyChangeListener
+        extends ScrollView
+        implements PropertyChangeListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(PictureView.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            PictureView.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Link with sheet */
     private final Sheet sheet;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // PictureView //
     //-------------//
@@ -74,15 +73,14 @@ public class PictureView
 
         // Listen to all painting parameters
         PaintingParameters.getInstance()
-                          .addPropertyChangeListener(
-            new WeakPropertyChangeListener(this));
+                .addPropertyChangeListener(
+                new WeakPropertyChangeListener(this));
 
         // Insert view
         setView(view);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // propertyChange //
     //----------------//
@@ -93,12 +91,11 @@ public class PictureView
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // MyView //
     //--------//
     private class MyView
-        extends RubberPanel
+            extends RubberPanel
     {
         //~ Methods ------------------------------------------------------------
 
@@ -113,7 +110,7 @@ public class PictureView
             // Render the picture image
             if (painting.isInputPainting()) {
                 sheet.getPicture()
-                     .render(g);
+                        .render(g);
             } else {
                 // Use a white background
                 Color oldColor = g.getColor();
@@ -129,13 +126,13 @@ public class PictureView
             if (painting.isOutputPainting()) {
                 if (sheet.getTargetBuilder() != null) {
                     sheet.getTargetBuilder()
-                         .renderSystems(g); // TODO: Temporary 
+                            .renderSystems(g); // TODO: Temporary 
                 }
-                
+
                 boolean mixed = painting.isInputPainting();
                 sheet.getPage()
-                     .accept(
-                    new PagePhysicalPainter(
+                        .accept(
+                        new PagePhysicalPainter(
                         g,
                         mixed ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE,
                         mixed ? false : painting.isVoicePainting(),
@@ -144,7 +141,7 @@ public class PictureView
             } else {
                 if (sheet.getTargetBuilder() != null) {
                     sheet.getTargetBuilder()
-                         .renderWarpGrid(g, true);
+                            .renderWarpGrid(g, true);
                 }
             }
         }

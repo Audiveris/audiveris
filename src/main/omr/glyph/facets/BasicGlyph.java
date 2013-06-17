@@ -21,9 +21,6 @@ import omr.glyph.Shape;
 import omr.lag.Lag;
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Circle;
 import omr.math.Line;
 import omr.math.PointsCollector;
@@ -33,8 +30,6 @@ import omr.moments.GeometricMoments;
 
 import omr.run.Orientation;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.PartNode;
 import omr.score.entity.TimeRational;
 
@@ -47,8 +42,13 @@ import omr.text.TextWord;
 import omr.util.HorizontalSide;
 import omr.util.Predicate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.lang.reflect.Constructor;
@@ -280,7 +280,7 @@ public class BasicGlyph
 
     @Override
     public int getAlienPixelsFrom (Lag lag,
-                                   PixelRectangle absRoi,
+                                   Rectangle absRoi,
                                    Predicate<Section> predicate)
     {
         return environment.getAlienPixelsFrom(lag, absRoi, predicate);
@@ -299,7 +299,7 @@ public class BasicGlyph
     }
 
     @Override
-    public PixelPoint getAreaCenter ()
+    public Point getAreaCenter ()
     {
         return geometry.getAreaCenter();
     }
@@ -317,13 +317,13 @@ public class BasicGlyph
     }
 
     @Override
-    public PixelRectangle getBounds ()
+    public Rectangle getBounds ()
     {
         return geometry.getBounds();
     }
 
     @Override
-    public PixelPoint getCentroid ()
+    public Point getCentroid ()
     {
         return geometry.getCentroid();
     }
@@ -431,7 +431,7 @@ public class BasicGlyph
     }
 
     @Override
-    public PixelPoint getLocation ()
+    public Point getLocation ()
     {
         return geometry.getLocation();
     }
@@ -531,7 +531,7 @@ public class BasicGlyph
     }
 
     @Override
-    public Point2D getRectangleCentroid (PixelRectangle absRoi)
+    public Point2D getRectangleCentroid (Rectangle absRoi)
     {
         return alignment.getRectangleCentroid(absRoi);
     }
@@ -613,7 +613,7 @@ public class BasicGlyph
     }
 
     @Override
-    public PixelPoint getTextLocation ()
+    public Point getTextLocation ()
     {
         return getContent()
                 .getTextLocation();
@@ -678,7 +678,7 @@ public class BasicGlyph
     }
 
     @Override
-    public boolean intersects (PixelRectangle rectangle)
+    public boolean intersects (Rectangle rectangle)
     {
         return geometry.intersects(rectangle);
     }
@@ -841,7 +841,7 @@ public class BasicGlyph
     }
 
     @Override
-    public void setContourBox (PixelRectangle contourBox)
+    public void setContourBox (Rectangle contourBox)
     {
         geometry.setContourBox(contourBox);
     }
@@ -1000,7 +1000,7 @@ public class BasicGlyph
     }
 
     @Override
-    public void translate (PixelPoint vector)
+    public void translate (Point vector)
     {
         geometry.translate(vector);
     }

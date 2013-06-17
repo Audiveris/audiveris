@@ -14,9 +14,6 @@ package omr.glyph.ui;
 import omr.glyph.SymbolsModel;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.entity.Note;
 import omr.score.entity.TimeRational;
 
@@ -36,6 +33,9 @@ import omr.util.BrokenLine;
 import omr.util.VerticalSide;
 
 import org.jdesktop.application.Task;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.util.ArrayList;

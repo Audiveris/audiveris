@@ -11,18 +11,18 @@
 // </editor-fold>
 package omr.sheet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 
 import omr.step.Step;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Date;
 
 /**
- * Class {@code SheetBench} records all important information related to the
- * processing of a music sheet.
+ * Class {@code SheetBench} records all important information related
+ * to the processing of a music sheet.
  *
  * <p>It delegates the actual recording to the containing score bench,
  * just prefixing the records with the sheet index</p>
@@ -35,7 +35,8 @@ public class SheetBench
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(SheetBench.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SheetBench.class);
 
     /** Special key which indicates that an interruption has occurred */
     private static final String INTERRUPTION_KEY = "whole.interrupted";
@@ -142,11 +143,15 @@ public class SheetBench
         }
 
         if (scale.getMaxSecondInterline() != null) {
-            addProp("scale.maxSecondInterline", "" + scale.getMaxSecondInterline());
+            addProp(
+                    "scale.maxSecondInterline",
+                    "" + scale.getMaxSecondInterline());
         }
 
         if (scale.getMinSecondInterline() != null) {
-            addProp("scale.minSecondInterline", "" + scale.getMinSecondInterline());
+            addProp(
+                    "scale.minSecondInterline",
+                    "" + scale.getMinSecondInterline());
         }
 
         if (scale.getMainBeam() != null) {

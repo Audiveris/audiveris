@@ -19,7 +19,7 @@ import omr.glyph.Shape;
  * @author Hervé Bitteur
  */
 public class BeamHookSymbol
-    extends BeamSymbol
+        extends BeamSymbol
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -48,7 +48,6 @@ public class BeamHookSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//

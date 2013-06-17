@@ -11,9 +11,9 @@
 // </editor-fold>
 package omr.moments;
 
-
 /**
  * Interface {@code LUT} defines a lookup table.
+ *
  * @author Hervé Bitteur
  */
 public interface LUT
@@ -22,16 +22,18 @@ public interface LUT
 
     /**
      * Set the value for integer coordinates (x,y).
-     * @param x integer abscissa
-     * @param y integer ordinate
+     *
+     * @param x     integer abscissa
+     * @param y     integer ordinate
      * @param value the known value for (x,y) point
      */
-    void assign (int    x,
-                 int    y,
+    void assign (int x,
+                 int y,
                  double value);
 
     /**
      * Check whether the provided radius lies within the LUT.
+     *
      * @param radius the radius to check
      * @return true if OK
      */
@@ -40,6 +42,7 @@ public interface LUT
     /**
      * Check whether the provided coordinates lies within the LUT
      * range ([0, SIZE[).
+     *
      * @param x provided abscissa
      * @param y provided ordinate
      * @return true if OK
@@ -49,12 +52,14 @@ public interface LUT
 
     /**
      * Report the LUT radius (LUT implements (-radius,+radius).
+     *
      * @return the defined radius
      */
     int getRadius ();
 
     /**
      * Report the LUT size (typically 2*radius +1).
+     *
      * @return the LUT size
      */
     int getSize ();
@@ -62,6 +67,7 @@ public interface LUT
     /**
      * Report the value for precise point (px,yy) by interpolation
      * of values defined for integer coordinates.
+     *
      * @param px precise abscissa
      * @param py precise ordinate
      * @return the interpolated value

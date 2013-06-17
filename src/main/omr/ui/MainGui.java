@@ -44,7 +44,7 @@ import omr.ui.symbol.MusicFont;
 import omr.ui.util.ModelessOptionPane;
 import omr.ui.util.Panel;
 import omr.ui.util.SeparableMenu;
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
 
 import omr.util.OmrExecutors;
 import omr.util.WeakPropertyChangeListener;
@@ -142,6 +142,19 @@ public class MainGui
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this application.
+     *
+     * @return the SingleFrameApplication instance
+     */
+    public static SingleFrameApplication getInstance ()
+    {
+        return (SingleFrameApplication) Application.getInstance();
+    }
+
     //
     //----------//
     // clearLog //
@@ -281,19 +294,6 @@ public class MainGui
                 .getResourceMap(getClass());
 
         return resource.getString("icons.root");
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this application.
-     *
-     * @return the SingleFrameApplication instance
-     */
-    public static SingleFrameApplication getInstance ()
-    {
-        return (SingleFrameApplication) Application.getInstance();
     }
 
     //---------//
@@ -761,7 +761,7 @@ public class MainGui
         outerBar.add(gauges);
 
         // Remove useless borders
-        UIUtilities.suppressBorders(gauges);
+        UIUtil.suppressBorders(gauges);
         innerBar.setBorder(null);
         outerBar.setBorder(null);
 
@@ -790,6 +790,20 @@ public class MainGui
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
+                true,
+                "Should we preload costly packages in the background?");
+
+    }
+
     //
     //------------------//
     // BoardsScrollPane //
@@ -808,19 +822,5 @@ public class MainGui
             setViewportView(boards);
             revalidate();
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
-                true,
-                "Should we preload costly packages in the background?");
-
     }
 }

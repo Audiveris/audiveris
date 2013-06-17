@@ -34,7 +34,6 @@ public class Horizontals
     private final List<Ledger> ledgers = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new Horizontals object.
      */
@@ -43,12 +42,12 @@ public class Horizontals
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // getEndingOf //
     //-------------//
     /**
      * Report the ending which is based on the provided glyph
+     *
      * @param glyph the provided glyph
      * @return the encapsulating ending, or null if not found
      */
@@ -81,6 +80,7 @@ public class Horizontals
     //-------------//
     /**
      * Report the ledger which is based on the provided glyph
+     *
      * @param glyph the provided glyph
      * @return the encapsulating ledger, or null if not found
      */

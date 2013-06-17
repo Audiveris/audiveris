@@ -28,9 +28,6 @@ import omr.math.Histogram;
 import omr.run.Orientation;
 import static omr.run.Orientation.*;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
@@ -39,6 +36,7 @@ import omr.util.Wrapper;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -576,8 +574,8 @@ public class ClustersRetriever
                 clusterBox.grow(params.clusterXMargin, params.clusterYMargin);
             }
 
-            PixelRectangle filBox = fil.getBounds();
-            PixelPoint middle = new PixelPoint();
+            Rectangle filBox = fil.getBounds();
+            Point middle = new Point();
             middle.x = filBox.x + (filBox.width / 2);
             middle.y = (int) Math.rint(fil.getPositionAt(middle.x, HORIZONTAL));
 

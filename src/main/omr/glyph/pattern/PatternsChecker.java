@@ -13,12 +13,12 @@ package omr.glyph.pattern;
 
 import omr.glyph.Grades;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.sheet.SystemInfo;
 
 import omr.text.TextPattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code PatternsChecker} gathers for a given system a series of
@@ -59,24 +59,16 @@ public class PatternsChecker
 
         patterns = new GlyphPattern[]{
             //
-            new CaesuraPattern(system),
-            new BeamHookPattern(system),
+            new CaesuraPattern(system), new BeamHookPattern(system),
             new DotPattern(system),
             // Refresh ...
-            new RefreshPattern(system, false),
-            new DoubleBeamPattern(system),
-            new FermataDotPattern(system),
-            new FlagPattern(system),
-            new FortePattern(system),
-            new HiddenSlurPattern(system),
-            new SplitPattern(system),
-            new LedgerPattern(system),
-            new AlterPattern(system),
-            new StemPattern(system),
-            system.getSlurInspector(),
-            new BassPattern(system),
-            new ClefPattern(system),
-            new TimePattern(system),
+            new RefreshPattern(system, false), new DoubleBeamPattern(system),
+            new FermataDotPattern(system), new FlagPattern(system),
+            new FortePattern(system), new HiddenSlurPattern(system),
+            new SplitPattern(system), new LedgerPattern(system),
+            new AlterPattern(system), new StemPattern(system),
+            system.getSlurInspector(), new BassPattern(system),
+            new ClefPattern(system), new TimePattern(system),
             // Refresh ...
             new RefreshPattern(system, true),
             //
@@ -106,20 +98,19 @@ public class PatternsChecker
         StringBuilder sb = new StringBuilder();
 
         system.inspectGlyphs(Grades.symbolMinGrade, false);
-        
-//        final Step symbolsStep = Steps.valueOf(Steps.SYMBOLS);
-//
-//        // Continuing, update UI
-//        SwingUtilities.invokeLater(
-//                new Runnable()
-//                {
-//                    @Override
-//                    public void run ()
-//                    {
-//                        symbolsStep.displayUI(system.getSheet());
-//                    }
-//                });
 
+        //        final Step symbolsStep = Steps.valueOf(Steps.SYMBOLS);
+        //
+        //        // Continuing, update UI
+        //        SwingUtilities.invokeLater(
+        //                new Runnable()
+        //                {
+        //                    @Override
+        //                    public void run ()
+        //                    {
+        //                        symbolsStep.displayUI(system.getSheet());
+        //                    }
+        //                });
         for (GlyphPattern pattern : patterns) {
             logger.debug("Starting {}", pattern);
 
@@ -129,14 +120,18 @@ public class PatternsChecker
                 int modifs = pattern.runPattern();
 
                 if (logger.isDebugEnabled()) {
-                    sb.append(" ").append(pattern.name).append(":").append(
-                            modifs);
+                    sb.append(" ")
+                            .append(pattern.name)
+                            .append(":")
+                            .append(modifs);
                 }
 
                 totalModifs += modifs;
             } catch (Throwable ex) {
-                logger.warn(system.getLogPrefix()
-                               + " error running pattern " + pattern.name, ex);
+                logger.warn(
+                        system.getLogPrefix() + " error running pattern "
+                        + pattern.name,
+                        ex);
             }
         }
 
@@ -160,10 +155,11 @@ public class PatternsChecker
     private static class RefreshPattern
             extends GlyphPattern
     {
+        //~ Instance fields ----------------------------------------------------
 
         private final boolean wide;
-        //~ Constructors -------------------------------------------------------
 
+        //~ Constructors -------------------------------------------------------
         public RefreshPattern (SystemInfo system,
                                boolean wide)
         {

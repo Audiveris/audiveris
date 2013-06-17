@@ -16,9 +16,6 @@ import omr.WellKnowns;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 import omr.score.ui.ScoreController;
 import omr.score.ui.ScoreDependent;
@@ -32,6 +29,9 @@ import omr.util.Param;
 
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Task;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -191,10 +191,10 @@ public class PluginsManager
     {
         Plugin oldDefaultPlugin = this.defaultPlugin;
         this.defaultPlugin = defaultPlugin;
-        
+
         if (oldDefaultPlugin != null) {
-           PluginStep pluginStep = (PluginStep) Steps.valueOf(Steps.PLUGIN);
-           pluginStep.setPlugin(defaultPlugin);
+            PluginStep pluginStep = (PluginStep) Steps.valueOf(Steps.PLUGIN);
+            pluginStep.setPlugin(defaultPlugin);
         }
     }
 

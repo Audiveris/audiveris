@@ -11,14 +11,14 @@
 // </editor-fold>
 package omr.ui.symbol;
 
-import omr.score.common.PixelPoint;
+import omr.glyph.Shape;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Composite;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
-import omr.glyph.Shape;
 
 /**
  * Class {@code LedgerSymbol} implements a decorated ledger symbol.
@@ -31,7 +31,8 @@ public class LedgerSymbol
     //~ Static fields/initializers ---------------------------------------------
 
     // The head part
-    private static final BasicSymbol head = Symbols.getSymbol(Shape.NOTEHEAD_BLACK);
+    private static final BasicSymbol head = Symbols.getSymbol(
+            Shape.NOTEHEAD_BLACK);
 
     //~ Constructors -----------------------------------------------------------
     //--------------//
@@ -70,16 +71,16 @@ public class LedgerSymbol
      * Report the symbol reference point at ledger ordinate.
      */
     @Override
-    public PixelPoint getRefPoint (Rectangle box)
+    public Point getRefPoint (Rectangle box)
     {
-        return new PixelPoint(
+        return new Point(
                 box.x + (box.width / 2),
                 box.y + (int) Math.rint(box.height * 0.67));
     }
+
     //------------//
     // createIcon //
     //------------//
-
     @Override
     protected ShapeSymbol createIcon ()
     {
@@ -96,7 +97,7 @@ public class LedgerSymbol
 
         // Head layout
         p.layout = font.layout(head.getString());
-        
+
         // Use a ledger length twice as large as note head
         Rectangle2D hRect = p.layout.getBounds();
         p.rect = new Rectangle(
@@ -112,11 +113,13 @@ public class LedgerSymbol
     @Override
     protected void paint (Graphics2D g,
                           Params params,
-                          PixelPoint location,
+                          Point location,
                           Alignment alignment)
     {
-        PixelPoint loc = alignment.translatedPoint
-                (AREA_CENTER, params.rect, location);
+        Point loc = alignment.translatedPoint(
+                AREA_CENTER,
+                params.rect,
+                location);
 
         if (decorated) {
             // Draw a note head (using composite)
@@ -128,7 +131,9 @@ public class LedgerSymbol
 
         // Ledger
         g.drawLine(
-                loc.x - params.rect.width / 2, loc.y,
-                loc.x + params.rect.width / 2, loc.y);
+                loc.x - (params.rect.width / 2),
+                loc.y,
+                loc.x + (params.rect.width / 2),
+                loc.y);
     }
 }

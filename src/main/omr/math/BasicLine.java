@@ -28,7 +28,8 @@ public class BasicLine
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(BasicLine.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            BasicLine.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Flag to indicate that data needs to be recomputed */
@@ -336,19 +337,22 @@ public class BasicLine
                 sb.append(" ");
             }
 
-            sb.append((float) a).append("*x ");
+            sb.append((float) a)
+                    .append("*x ");
 
             if (b >= 0) {
                 sb.append("+");
             }
 
-            sb.append((float) b).append("*y ");
+            sb.append((float) b)
+                    .append("*y ");
 
             if (c >= 0) {
                 sb.append("+");
             }
 
-            sb.append((float) c).append("}");
+            sb.append((float) c)
+                    .append("}");
 
             return sb.toString();
         } catch (UndefinedLineException ex) {

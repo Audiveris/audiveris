@@ -13,13 +13,12 @@ package omr.text;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelRectangle;
 import omr.score.entity.ChordInfo;
 
 import omr.ui.symbol.TextFont;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
@@ -172,7 +171,7 @@ public class TextWord
     public static TextWord createManualWord (Glyph glyph,
                                              String value)
     {
-        PixelRectangle box = glyph.getBounds();
+        Rectangle box = glyph.getBounds();
         int fontSize = (int) Math.rint(
                 TextFont.computeFontSize(value, FontInfo.DEFAULT, box.getSize()));
         TextWord word = new TextWord(

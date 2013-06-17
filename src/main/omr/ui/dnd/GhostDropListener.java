@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.ui.dnd;
 
-
 /**
  * Interface {@code GhostDropListener} defines a listener interested in
  * {@link GhostDropEvent} instances
@@ -25,6 +24,7 @@ public interface GhostDropListener<A>
 
     /**
      * Call-back function to receive the drop event
+     *
      * @param e the handed event
      */
     public void dropped (GhostDropEvent<A> e);

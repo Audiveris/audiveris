@@ -31,10 +31,11 @@ public interface JunctionPolicy
     /**
      * Check if provided run is consistent with the section defined
      * so far.
+     *
      * @param run     the candidate run for section extension
      * @param section the to-be extended section
      * @return true is extension is compatible with the defined junction policy
      */
-    public abstract boolean consistentRun (Run     run,
+    public abstract boolean consistentRun (Run run,
                                            Section section);
 }

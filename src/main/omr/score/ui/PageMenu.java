@@ -15,7 +15,6 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolMenu;
 import omr.glyph.ui.SymbolsController;
 
-import omr.score.common.PixelPoint;
 import omr.score.entity.Chord;
 import omr.score.entity.Measure;
 import omr.score.entity.Note;
@@ -30,6 +29,7 @@ import omr.sheet.ui.BoundaryEditor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -152,7 +152,7 @@ public class PageMenu
      *
      * @param point the point designated in the page display
      */
-    public void updateMenu (PixelPoint point)
+    public void updateMenu (Point point)
     {
         // Analyze the context to retrieve designated system, measure & slot
         Sheet sheet = page.getSheet();
@@ -163,7 +163,7 @@ public class PageMenu
             if (systemInfo != null) {
                 system = systemInfo.getScoreSystem();
             }
-            
+
             slot = sheet.getSymbolsEditor().getSlotAt(point);
             if (slot != null) {
                 measure = slot.getMeasure();

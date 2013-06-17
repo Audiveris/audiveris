@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.util;
 
-
 /**
  * Class {@code Memory} is a collection of static methods to ease the
  * interaction with the memory characteristics.
@@ -25,14 +24,12 @@ public class Memory
     private static Runtime rt = Runtime.getRuntime();
 
     //~ Constructors -----------------------------------------------------------
-
     // Not meant to be instantiated
     private Memory ()
     {
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // free //
     //------//

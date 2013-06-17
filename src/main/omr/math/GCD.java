@@ -14,8 +14,8 @@ package omr.math;
 import java.util.Collection;
 
 /**
- * Class {@code GCD} gathers several functions to compute Greatest Common
- * Divisor of a ensemble of integer values.
+ * Class {@code GCD} gathers several functions to compute Greatest
+ * Common Divisor of a ensemble of integer values.
  *
  * @author Hervé Bitteur
  */
@@ -29,7 +29,6 @@ public class GCD
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----//
     // gcd //
     //-----//
@@ -110,9 +109,10 @@ public class GCD
     /**
      * Report the Least Common Multiple of 2 values, assumed to be positive
      * or zero
+     *
      * @param m
      * @param n
-     * @return  lcm(|m|, |n|)
+     * @return lcm(|m|, |n|)
      */
     public static int lcm (int m,
                            int n)

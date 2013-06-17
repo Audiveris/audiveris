@@ -46,10 +46,10 @@ public abstract class UserEvent
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(UserEvent.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            UserEvent.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The entity which created this event */
     public final Object source;
 
@@ -60,17 +60,17 @@ public abstract class UserEvent
     public MouseMovement movement;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // UserEvent //
     //-----------//
     /**
      * Creates a new UserEvent object.
-     * @param source the (non null) entity that created this event
-     * @param hint hint about the origin
+     *
+     * @param source   the (non null) entity that created this event
+     * @param hint     hint about the origin
      * @param movement the originating mouse movement
      */
-    public UserEvent (Object        source,
+    public UserEvent (Object source,
                       SelectionHint hint,
                       MouseMovement movement)
     {
@@ -87,12 +87,12 @@ public abstract class UserEvent
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // getData //
     //---------//
     /**
      * Report the data conveyed by this event.
+     *
      * @return the conveyed data (which may be null)
      */
     public abstract Object getData ();
@@ -106,20 +106,20 @@ public abstract class UserEvent
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
         sb.append(" src:")
-          .append(source);
+                .append(source);
 
         if (hint != null) {
             sb.append(" ")
-              .append(hint);
+                    .append(hint);
         }
 
         if (movement != null) {
             sb.append(" ")
-              .append(movement);
+                    .append(movement);
         }
 
         sb.append(" ")
-          .append(internalString());
+                .append(internalString());
         sb.append("}");
 
         return sb.toString();
@@ -130,13 +130,14 @@ public abstract class UserEvent
     //----------------//
     /**
      * Report a string about the internals of the specific subclass.
+     *
      * @return the (sub)class internals as a string
      */
     protected String internalString ()
     {
         if (getData() != null) {
             return getData()
-                       .toString();
+                    .toString();
         } else {
             return "";
         }

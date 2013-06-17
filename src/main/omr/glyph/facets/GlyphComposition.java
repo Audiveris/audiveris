@@ -27,27 +27,29 @@ import java.util.SortedSet;
  * @author Hervé Bitteur
  */
 public interface GlyphComposition
-    extends GlyphFacet
+        extends GlyphFacet
 {
     //~ Enumerations -----------------------------------------------------------
 
     /** Specifies whether a section must point back to a containing glyph */
-    enum Linking {
+    enum Linking
+    {
         //~ Enumeration constant initializers ----------------------------------
-
 
         /** Make the section point back to the containing glyph */
         LINK_BACK,
-        /** Do not make the section point back to the containing glyph */
+        /** Do
+         * not make the section point back to the containing glyph */
         NO_LINK_BACK;
+
     }
 
     //~ Methods ----------------------------------------------------------------
-
     /**
      * Report the top ancestor of this glyph.
      * This is this glyph itself, when it has no parent (i.e. not been included
      * into another one)
+     *
      * @return the glyph ancestor
      */
     public Glyph getAncestor ();
@@ -55,6 +57,7 @@ public interface GlyphComposition
     /**
      * Report the containing compound, if any, which has "stolen" the
      * sections of this glyph.
+     *
      * @return the containing compound if any
      */
     public Glyph getPartOf ();
@@ -62,16 +65,18 @@ public interface GlyphComposition
     /**
      * Record the link to the compound which has "stolen" the sections
      * of this glyph.
+     *
      * @param compound the containing compound, if any
      */
     public void setPartOf (Glyph compound);
 
     /**
      * Add a section as a member of this glyph.
+     *
      * @param section The section to be included
      * @param link    While adding a section to this glyph members, should we
      *                also
-     * set the link from section back to the glyph?
+     *                set the link from section back to the glyph?
      */
     void addSection (Section section,
                      Linking link);
@@ -79,6 +84,7 @@ public interface GlyphComposition
     /**
      * Debug function that returns true if this glyph contains the
      * section whose ID is provided.
+     *
      * @param id the ID of interesting section
      * @return true if such section exists among glyph sections
      */
@@ -92,6 +98,7 @@ public interface GlyphComposition
 
     /**
      * Check whether all the glyph sections belong to the same system.
+     *
      * @param system the supposed containing system
      * @return the alien system found, or null if OK
      */
@@ -99,18 +106,21 @@ public interface GlyphComposition
 
     /**
      * Report the first section in the ordered collection of members.
+     *
      * @return the first section of the glyph
      */
     Section getFirstSection ();
 
     /**
      * Report the set of member sections.
+     *
      * @return member sections
      */
     SortedSet<Section> getMembers ();
 
     /**
      * Report the result found during analysis of this glyph.
+     *
      * @return the analysis result
      */
     Result getResult ();
@@ -118,12 +128,14 @@ public interface GlyphComposition
     /**
      * Tests whether this glyph is active.
      * (all its member sections point to it)
+     *
      * @return true if glyph is active, false otherwise
      */
     boolean isActive ();
 
     /**
      * Check whether the glyph is successfully recognized.
+     *
      * @return true if the glyph is successfully recognized
      */
     boolean isSuccessful ();
@@ -135,6 +147,7 @@ public interface GlyphComposition
 
     /**
      * Remove a section from the glyph members
+     *
      * @param section the section to remove
      * @param link    should we update the link from section to glyph?
      * @return true if the section was actually found and removed
@@ -144,6 +157,7 @@ public interface GlyphComposition
 
     /**
      * Record the analysis result in the glyph itself.
+     *
      * @param result the assigned result
      */
     void setResult (Result result);
@@ -152,6 +166,7 @@ public interface GlyphComposition
      * Include the sections from another glyph into this one, and make
      * its sections point into this one.
      * Doing so, the other glyph becomes inactive.
+     *
      * @param that the glyph to swallow
      */
     void stealSections (Glyph that);

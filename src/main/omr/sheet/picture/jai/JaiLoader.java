@@ -14,14 +14,10 @@ package omr.sheet.picture.jai;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.util.OmrExecutors;
-
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 import javax.media.jai.JAI;
 
@@ -54,7 +50,6 @@ public class JaiLoader
 //            return null;
 //        }
 //    });
-
     //~ Constructors -----------------------------------------------------------
     //-----------//
     // JaiLoader //
@@ -80,7 +75,6 @@ public class JaiLoader
 //            logger.error("Cannot load JAI", ex);
 //        }
 //    }
-
     //---------//
     // preload //
     //---------//

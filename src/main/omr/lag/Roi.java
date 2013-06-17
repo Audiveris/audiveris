@@ -18,13 +18,13 @@ import omr.math.Histogram;
 import omr.run.Orientation;
 import omr.run.RunsTable;
 
-import omr.score.common.PixelRectangle;
-
+import java.awt.Rectangle;
 import java.util.Collection;
 
 /**
- * Interface {@code Roi} defines aan absolute rectangular region of interest,
- * on which histograms can be computed vertically and horizontally
+ * Interface {@code Roi} defines aan absolute rectangular region of
+ * interest, on which histograms can be computed vertically and
+ * horizontally.
  *
  * @author Hervé Bitteur
  */
@@ -34,39 +34,44 @@ public interface Roi
 
     /**
      * Report the rectangular contour, in absolute coordinates
+     *
      * @return the absolute contour
      */
-    PixelRectangle getAbsoluteContour ();
+    Rectangle getAbsoluteContour ();
 
     /**
      * Report the histogram obtained in the provided projection orientation
      * of the runs contained in the provided glyphs
+     *
      * @param projection the orientation of the projection
-     * @param glyphs the provided glyphs (which can contain sections of various
-     * orientations)
+     * @param glyphs     the provided glyphs (which can contain sections of
+     *                   various
+     *                   orientations)
      * @return the computed histogram
      */
-    Histogram<Integer> getGlyphHistogram (Orientation       projection,
+    Histogram<Integer> getGlyphHistogram (Orientation projection,
                                           Collection<Glyph> glyphs);
 
     /**
      * Report the histogram obtained in the provided projection orientation
      * of the runs contained in the provided runs table
+     *
      * @param projection the orientation of the projection
-     * @param table the runs table
+     * @param table      the runs table
      * @return the computed histogram
      */
     Histogram<Integer> getRunHistogram (Orientation projection,
-                                        RunsTable   table);
+                                        RunsTable table);
 
     /**
      * Report the histogram obtained in the provided projection orientation
      * of the runs contained in the provided sections
+     *
      * @param projection the orientation of the projection
-     * @param sections the provided sections (which can be of various
-     * orientations)
+     * @param sections   the provided sections (which can be of various
+     *                   orientations)
      * @return the computed histogram
      */
-    Histogram<Integer> getSectionHistogram (Orientation         projection,
+    Histogram<Integer> getSectionHistogram (Orientation projection,
                                             Collection<Section> sections);
 }

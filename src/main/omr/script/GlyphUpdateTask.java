@@ -27,7 +27,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 
 /**
- * Class {@code GlyphUpdateTask} is applied to a collection of existing glyphs.
+ * Class {@code GlyphUpdateTask} is applied to a collection of
+ * existing glyphs.
  *
  * <p>The glyphs are designated either by their member sections, or (for the
  * special case of virtual glyphs) simply by their location.
@@ -39,14 +40,14 @@ import javax.xml.bind.annotation.XmlElement;
  * the ids of the member sections of the related glyphs.</p>
  *
  * <h4>Glyphs and sections in a script:<br/>
- *    <img src="doc-files/script.jpg"/>
+ * <img src="doc-files/script.jpg"/>
  * </h4>
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class GlyphUpdateTask
-    extends GlyphTask
+        extends GlyphTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -55,17 +56,16 @@ public abstract class GlyphUpdateTask
     protected final SectionSets sectionSets;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // GlyphUpdateTask //
     //-----------------//
     /**
      * Creates a new GlyphUpdateTask object.
      *
-     * @param sheet the sheet impacted
+     * @param sheet  the sheet impacted
      * @param glyphs the collection of glyphs concerned by this task
      */
-    public GlyphUpdateTask (Sheet             sheet,
+    public GlyphUpdateTask (Sheet sheet,
                             Collection<Glyph> glyphs)
     {
         super(sheet, glyphs);
@@ -82,7 +82,6 @@ public abstract class GlyphUpdateTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // retrieveGlyphs //
     //----------------//
@@ -92,12 +91,12 @@ public abstract class GlyphUpdateTask
         glyphs = new TreeSet<>(Glyph.byAbscissa);
 
         for (Collection<Section> set : sectionSets.getSets(sheet)) {
-            Glyph      glyph = null;
+            Glyph glyph = null;
 
             //            if (orientation == Orientation.VERTICAL) {
             SystemInfo system = set.iterator()
-                                   .next()
-                                   .getSystem();
+                    .next()
+                    .getSystem();
             glyph = system.addGlyph(system.buildGlyph(set));
             //            } else {
             //                glyph = GlyphsBuilder.buildGlyph(sheet.getScale(), set);

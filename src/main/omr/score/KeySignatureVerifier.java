@@ -22,10 +22,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import omr.math.GeoUtil;
 
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Barline;
 import omr.score.entity.KeySignature;
 import omr.score.entity.Measure;
@@ -39,6 +37,10 @@ import omr.sheet.SystemInfo;
 import omr.util.Predicate;
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
 import java.util.Collection;
 
 /**
@@ -78,7 +80,9 @@ public class KeySignatureVerifier
     public KeySignatureVerifier (ScoreSystem system)
     {
         this.system = system;
-        staffNb = system.getInfo().getStaves().size();
+        staffNb = system.getInfo()
+                .getStaves()
+                .size();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -92,11 +96,14 @@ public class KeySignatureVerifier
      */
     public void verifyKeys ()
     {
-        logger.debug("\n------------------------------------------------------");
+        logger.debug(
+                "\n------------------------------------------------------");
         logger.debug("verifySystemKeys for {}", system);
 
         // Number of measures in the system
-        final int measureNb = system.getFirstPart().getMeasures().size();
+        final int measureNb = system.getFirstPart()
+                .getMeasures()
+                .size();
 
         // Verify each measure index on turn
         for (int im = 0; im < measureNb; im++) {
@@ -104,7 +111,8 @@ public class KeySignatureVerifier
             verifyVerticalMeasure(im);
         }
 
-        logger.debug("\n======================================================");
+        logger.debug(
+                "\n======================================================");
     }
 
     //-------------//
@@ -113,8 +121,10 @@ public class KeySignatureVerifier
     private Glyph checkKeySig (Collection<Glyph> glyphs,
                                final KeySignature bestKey)
     {
-        logger.debug("Merging {} for shape {}",
-                Glyphs.toString(glyphs), bestKey.getShape());
+        logger.debug(
+                "Merging {} for shape {}",
+                Glyphs.toString(glyphs),
+                bestKey.getShape());
 
         SystemInfo systemInfo = system.getInfo();
         Glyphs.purgeManuals(glyphs);
@@ -126,30 +136,35 @@ public class KeySignatureVerifier
         Glyph compound = systemInfo.buildTransientCompound(glyphs);
 
         // Check if a proper key sig appears in the top evaluations
-        Evaluation vote = GlyphNetwork.getInstance().rawVote(
+        Evaluation vote = GlyphNetwork.getInstance()
+                .rawVote(
                 compound,
                 Grades.keySigMinGrade,
                 new Predicate<Shape>()
-                {
-                    @Override
-                    public boolean check (Shape shape)
-                    {
-                        return shape == bestKey.getShape();
-                    }
-                });
+        {
+            @Override
+            public boolean check (Shape shape)
+            {
+                return shape == bestKey.getShape();
+            }
+        });
 
         if (vote != null) {
             // We now have a key sig!
-            logger.debug("{} built from {}",
-                    vote.shape, Glyphs.toString(glyphs));
+            logger.debug(
+                    "{} built from {}",
+                    vote.shape,
+                    Glyphs.toString(glyphs));
             compound = systemInfo.addGlyph(compound);
             compound.setShape(vote.shape, Evaluation.ALGORITHM);
 
             return compound;
         } else {
-            logger.debug("{}Could not find {} in {}",
+            logger.debug(
+                    "{}Could not find {} in {}",
                     systemInfo.getLogPrefix(),
-                    bestKey.getShape(), Glyphs.toString(glyphs));
+                    bestKey.getShape(),
+                    Glyphs.toString(glyphs));
 
             return null;
         }
@@ -162,7 +177,8 @@ public class KeySignatureVerifier
                                      int systemStaffIndex)
     {
         return system.getContextString() + "M" + (measureIndex + 1) + "F"
-               + staffOf(systemStaffIndex).getId();
+               + staffOf(systemStaffIndex)
+                .getId();
     }
 
     //--------------//
@@ -175,10 +191,12 @@ public class KeySignatureVerifier
 
         for (TreeNode node : system.getParts()) {
             SystemPart part = (SystemPart) node;
-            staffOffset += part.getStaves().size();
+            staffOffset += part.getStaves()
+                    .size();
 
             if (staffIndex < staffOffset) {
-                return (Measure) part.getMeasures().get(measureIndex);
+                return (Measure) part.getMeasures()
+                        .get(measureIndex);
             }
         }
 
@@ -194,26 +212,29 @@ public class KeySignatureVerifier
                               KeySignature[] keyVector,
                               int iMeasure)
     {
-        PixelRectangle bestBox = bestKey.getBox();
+        Rectangle bestBox = bestKey.getBox();
 
         for (int iStaff = 0; iStaff < staffNb; iStaff++) {
             KeySignature ks = keyVector[iStaff];
 
             // Is this staff OK?
-            if ((ks != null) && ks.getKey().equals(bestKey.getKey())) {
+            if ((ks != null) && ks.getKey()
+                    .equals(bestKey.getKey())) {
                 continue;
             }
 
             Staff staff = staffOf(iStaff);
             StaffInfo staffInfo = staff.getInfo();
 
-            logger.debug("{} Forcing key signature to {}",
-                    getContextString(iMeasure, iStaff), bestKey.getKey());
+            logger.debug(
+                    "{} Forcing key signature to {}",
+                    getContextString(iMeasure, iStaff),
+                    bestKey.getKey());
 
             try {
                 // Define the box to intersect keysig glyph(s)
                 int xCenter = bestBox.x + (bestBox.width / 2);
-                PixelRectangle inner = new PixelRectangle(
+                Rectangle inner = new Rectangle(
                         xCenter,
                         staffInfo.getFirstLine().yAt(xCenter)
                         + (staffInfo.getHeight() / 2),
@@ -222,7 +243,7 @@ public class KeySignatureVerifier
                 inner.grow((bestBox.width / 2), (staffInfo.getHeight() / 2));
 
                 // Draw the box, for visual debug
-                SystemPart part = system.getPartAt(inner.getCenter());
+                SystemPart part = system.getPartAt(GeoUtil.centerOf(inner));
                 Barline barline = part.getStartingBarline();
 
                 if (barline != null) {
@@ -236,15 +257,17 @@ public class KeySignatureVerifier
                 }
 
                 // We now must find a key sig out of these glyphs
-                Collection<Glyph> glyphs = system.getInfo().
-                        lookupIntersectedGlyphs(
+                Collection<Glyph> glyphs = system.getInfo()
+                        .lookupIntersectedGlyphs(
                         inner);
 
                 Glyph compound = checkKeySig(glyphs, bestKey);
 
                 if (compound != null) {
                     if (ks != null) {
-                        ks.getParent().getChildren().remove(ks);
+                        ks.getParent()
+                                .getChildren()
+                                .remove(ks);
                     }
 
                     Measure measure = getMeasureOf(iStaff, iMeasure);
@@ -269,11 +292,13 @@ public class KeySignatureVerifier
 
         for (TreeNode node : system.getParts()) {
             SystemPart part = (SystemPart) node;
-            int partStaffNb = part.getStaves().size();
+            int partStaffNb = part.getStaves()
+                    .size();
             staffOffset += partStaffNb;
 
             if (systemStaffIndex < staffOffset) {
-                return (Staff) part.getStaves().get(
+                return (Staff) part.getStaves()
+                        .get(
                         (partStaffNb + systemStaffIndex) - staffOffset);
             }
         }
@@ -295,22 +320,27 @@ public class KeySignatureVerifier
 
         for (TreeNode node : system.getParts()) {
             SystemPart part = (SystemPart) node;
-            Measure measure = (Measure) part.getMeasures().get(im);
+            Measure measure = (Measure) part.getMeasures()
+                    .get(im);
 
             for (TreeNode ksnode : measure.getKeySignatures()) {
                 KeySignature ks = (KeySignature) ksnode;
                 keyFound = true;
 
-                keyVector[ks.getStaff().getId() - 1 + staffOffset] = ks;
+                keyVector[ks.getStaff()
+                        .getId() - 1 + staffOffset] = ks;
             }
 
-            staffOffset += part.getStaves().size();
+            staffOffset += part.getStaves()
+                    .size();
         }
 
         // Some keys found in this vertical measure?
         if (keyFound) {
-            logger.debug("{} key(s) found in M{}",
-                    system.getContextString(), im);
+            logger.debug(
+                    "{} key(s) found in M{}",
+                    system.getContextString(),
+                    im);
 
             // Browse all staves for sharp/flat compatibility
             // If compatible, adjust all keysigs to the longest
@@ -326,7 +356,8 @@ public class KeySignatureVerifier
                     adjustment = true;
                 } else if (bestKey == null) {
                     bestKey = ks;
-                } else if (!bestKey.getKey().equals(ks.getKey())) {
+                } else if (!bestKey.getKey()
+                        .equals(ks.getKey())) {
                     logger.debug("Key signatures will need adjustment");
                     adjustment = true;
 

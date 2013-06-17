@@ -14,19 +14,21 @@ package omr.score.entity;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.score.visitor.ScoreVisitor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
-import omr.score.visitor.ScoreVisitor;
+import java.awt.Point;
 
 /**
- * Class {@code Fermata} represents a fermata event (upright or inverted)
+ * Class {@code Fermata} represents a fermata event (upright or
+ * inverted)
  *
  * @author Hervé Bitteur
  */
 public class Fermata
-    extends AbstractNotation
+        extends AbstractNotation
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -34,39 +36,39 @@ public class Fermata
     private static final Logger logger = LoggerFactory.getLogger(Fermata.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //---------//
     // Fermata //
     //---------//
     /**
      * Creates a new instance of Fermata event.
+     *
      * @param measure measure that contains this mark
-     * @param point location of mark
-     * @param chord the chord related to the mark
-     * @param glyph the underlying glyph
+     * @param point   location of mark
+     * @param chord   the chord related to the mark
+     * @param glyph   the underlying glyph
      */
-    public Fermata (Measure    measure,
-                    PixelPoint point,
-                    Chord      chord,
-                    Glyph      glyph)
+    public Fermata (Measure measure,
+                    Point point,
+                    Chord chord,
+                    Glyph glyph)
     {
         super(measure, point, chord, glyph);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // populate //
     //----------//
     /**
      * Used by SystemTranslator to allocate the fermata marks.
-     * @param glyph underlying glyph
+     *
+     * @param glyph   underlying glyph
      * @param measure measure where the mark is located
-     * @param point location for the mark
+     * @param point   location for the mark
      */
-    public static void populate (Glyph      glyph,
-                                 Measure    measure,
-                                 PixelPoint point)
+    public static void populate (Glyph glyph,
+                                 Measure measure,
+                                 Point point)
     {
         if (glyph.isVip()) {
             logger.info("Fermata. populate {}", glyph.idString());

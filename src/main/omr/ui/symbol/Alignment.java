@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.ui.symbol;
 
-import omr.score.common.PixelPoint;
-
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
@@ -28,99 +26,98 @@ public class Alignment
 
     /** Pre-defined alignment on top left of symbol */
     public static final Alignment TOP_LEFT = new Alignment(
-        Vertical.TOP,
-        Horizontal.LEFT);
+            Vertical.TOP,
+            Horizontal.LEFT);
 
     /** Pre-defined alignment on top center of symbol */
     public static final Alignment TOP_CENTER = new Alignment(
-        Vertical.TOP,
-        Horizontal.CENTER);
+            Vertical.TOP,
+            Horizontal.CENTER);
 
     /** Pre-defined alignment on top left of symbol */
     public static final Alignment TOP_RIGHT = new Alignment(
-        Vertical.TOP,
-        Horizontal.RIGHT);
+            Vertical.TOP,
+            Horizontal.RIGHT);
 
     /** Pre-defined alignment on middle center of symbol */
     public static final Alignment MIDDLE_LEFT = new Alignment(
-        Vertical.MIDDLE,
-        Horizontal.LEFT);
+            Vertical.MIDDLE,
+            Horizontal.LEFT);
 
     /** Pre-defined alignment on middle center of symbol */
     public static final Alignment AREA_CENTER = new Alignment(
-        Vertical.MIDDLE,
-        Horizontal.CENTER);
+            Vertical.MIDDLE,
+            Horizontal.CENTER);
 
     /** Pre-defined alignment on middle center of symbol */
     public static final Alignment MIDDLE_RIGHT = new Alignment(
-        Vertical.MIDDLE,
-        Horizontal.RIGHT);
+            Vertical.MIDDLE,
+            Horizontal.RIGHT);
 
     /** Pre-defined alignment on baseline left of symbol (for text) */
     public static final Alignment BASELINE_LEFT = new Alignment(
-        Vertical.BASELINE,
-        Horizontal.LEFT);
+            Vertical.BASELINE,
+            Horizontal.LEFT);
 
     /** Pre-defined alignment on baseline center of symbol */
     public static final Alignment BASELINE_CENTER = new Alignment(
-        Vertical.BASELINE,
-        Horizontal.CENTER);
+            Vertical.BASELINE,
+            Horizontal.CENTER);
 
     /** Pre-defined alignment on baseline right of symbol */
     public static final Alignment BASELINE_RIGHT = new Alignment(
-        Vertical.BASELINE,
-        Horizontal.RIGHT);
+            Vertical.BASELINE,
+            Horizontal.RIGHT);
 
     /** Pre-defined alignment on baseline origin of symbol (for text) */
     public static final Alignment BASELINE_XORIGIN = new Alignment(
-        Vertical.BASELINE,
-        Horizontal.XORIGIN);
+            Vertical.BASELINE,
+            Horizontal.XORIGIN);
 
     /** Pre-defined alignment on bottom left of symbol */
     public static final Alignment BOTTOM_LEFT = new Alignment(
-        Vertical.BOTTOM,
-        Horizontal.LEFT);
+            Vertical.BOTTOM,
+            Horizontal.LEFT);
 
     /** Pre-defined alignment on bottom center of symbol */
     public static final Alignment BOTTOM_CENTER = new Alignment(
-        Vertical.BOTTOM,
-        Horizontal.CENTER);
+            Vertical.BOTTOM,
+            Horizontal.CENTER);
 
     /** Pre-defined alignment on bottom right of symbol */
     public static final Alignment BOTTOM_RIGHT = new Alignment(
-        Vertical.BOTTOM,
-        Horizontal.RIGHT);
+            Vertical.BOTTOM,
+            Horizontal.RIGHT);
 
     //~ Enumerations -----------------------------------------------------------
-
     //----------//
     // Vertical //
     //----------//
     /** The reference y line for this symbol */
-    public static enum Vertical {
+    public static enum Vertical
+    {
         //~ Enumeration constant initializers ----------------------------------
 
-        TOP,MIDDLE, BOTTOM,
+        TOP, MIDDLE, BOTTOM,
         BASELINE;
 
         //~ Methods ------------------------------------------------------------
-
         //-----------//
         // dyToPoint //
         //-----------//
-        public int dyToPoint (Vertical  that,
+        public int dyToPoint (Vertical that,
                               Rectangle rect)
         {
             if (this == BASELINE) {
                 if (that == BASELINE) {
                     return 0;
                 } else {
-                    return rect.y +
-                           (((that.ordinal() - TOP.ordinal()) * rect.height) / 2);
+                    return rect.y
+                           + (((that.ordinal() - TOP.ordinal()) * rect.height) / 2);
                 }
             } else if (that == BASELINE) {
-                return -rect.y +
-                       (((TOP.ordinal() - this.ordinal()) * rect.height) / 2);
+                return -rect.y
+                       + (((TOP.ordinal() - this.ordinal()) * rect.height) / 2);
             } else {
                 return ((that.ordinal() - this.ordinal()) * rect.height) / 2;
             }
@@ -129,19 +126,19 @@ public class Alignment
         //-----------//
         // dyToPoint //
         //-----------//
-        public double dyToPoint (Vertical    that,
+        public double dyToPoint (Vertical that,
                                  Rectangle2D rect)
         {
             if (this == BASELINE) {
                 if (that == BASELINE) {
                     return 0;
                 } else {
-                    return rect.getY() +
-                           (((that.ordinal() - TOP.ordinal()) * rect.getHeight()) / 2);
+                    return rect.getY()
+                           + (((that.ordinal() - TOP.ordinal()) * rect.getHeight()) / 2);
                 }
             } else if (that == BASELINE) {
-                return -rect.getY() +
-                       (((TOP.ordinal() - this.ordinal()) * rect.getHeight()) / 2);
+                return -rect.getY()
+                       + (((TOP.ordinal() - this.ordinal()) * rect.getHeight()) / 2);
             } else {
                 return ((that.ordinal() - this.ordinal()) * rect.getHeight()) / 2;
             }
@@ -168,30 +165,30 @@ public class Alignment
     // Horizontal //
     //------------//
     /** The reference x line for this symbol */
-    public static enum Horizontal {
+    public static enum Horizontal
+    {
         //~ Enumeration constant initializers ----------------------------------
 
-        LEFT,CENTER, RIGHT,
+        LEFT, CENTER, RIGHT,
         XORIGIN;
 
         //~ Methods ------------------------------------------------------------
-
         //-----------//
         // dxToPoint //
         //-----------//
         public int dxToPoint (Horizontal that,
-                              Rectangle  rect)
+                              Rectangle rect)
         {
             if (this == XORIGIN) {
                 if (that == XORIGIN) {
                     return 0;
                 } else {
-                    return rect.x +
-                           (((that.ordinal() - LEFT.ordinal()) * rect.width) / 2);
+                    return rect.x
+                           + (((that.ordinal() - LEFT.ordinal()) * rect.width) / 2);
                 }
             } else if (that == XORIGIN) {
-                return -rect.x +
-                       (((LEFT.ordinal() - this.ordinal()) * rect.width) / 2);
+                return -rect.x
+                       + (((LEFT.ordinal() - this.ordinal()) * rect.width) / 2);
             } else {
                 return ((that.ordinal() - this.ordinal()) * rect.width) / 2;
             }
@@ -200,19 +197,19 @@ public class Alignment
         //-----------//
         // dxToPoint //
         //-----------//
-        public double dxToPoint (Horizontal  that,
+        public double dxToPoint (Horizontal that,
                                  Rectangle2D rect)
         {
             if (this == XORIGIN) {
                 if (that == XORIGIN) {
                     return 0;
                 } else {
-                    return rect.getX() +
-                           (((that.ordinal() - LEFT.ordinal()) * rect.getWidth()) / 2);
+                    return rect.getX()
+                           + (((that.ordinal() - LEFT.ordinal()) * rect.getWidth()) / 2);
                 }
             } else if (that == XORIGIN) {
-                return -rect.getX() +
-                       (((LEFT.ordinal() - this.ordinal()) * rect.getWidth()) / 2);
+                return -rect.getX()
+                       + (((LEFT.ordinal() - this.ordinal()) * rect.getWidth()) / 2);
             } else {
                 return ((that.ordinal() - this.ordinal()) * rect.getWidth()) / 2;
             }
@@ -236,7 +233,6 @@ public class Alignment
     }
 
     //~ Instance fields --------------------------------------------------------
-
     /** The vertical alignment */
     public final Vertical vertical;
 
@@ -244,21 +240,21 @@ public class Alignment
     public final Horizontal horizontal;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // Alignment //
     //-----------//
     /**
      * Create an Alignment instanc
-     * @param vertical vertical part
+     *
+     * @param vertical   vertical part
      * @param horizontal horizontal part
      */
-    public Alignment (Vertical   vertical,
+    public Alignment (Vertical vertical,
                       Horizontal horizontal)
     {
         if ((vertical == null) || (horizontal == null)) {
             throw new IllegalArgumentException(
-                "Cannot create Alignment with null members");
+                    "Cannot create Alignment with null members");
         }
 
         this.vertical = vertical;
@@ -266,7 +262,6 @@ public class Alignment
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // equals //
     //--------//
@@ -276,8 +271,8 @@ public class Alignment
         if (obj instanceof Alignment) {
             Alignment that = (Alignment) obj;
 
-            return (this.horizontal == that.horizontal) &&
-                   (this.vertical == that.vertical);
+            return (this.horizontal == that.horizontal)
+                   && (this.vertical == that.vertical);
         } else {
             return false;
         }
@@ -302,16 +297,17 @@ public class Alignment
     /**
      * Report the vector needed to translate from this alignment around a
      * rectangle to that alignment
+     *
      * @param that the desired alignment
      * @param rect the symbol bounds
      * @return the translation vector
      */
-    public PixelPoint toPoint (Alignment that,
-                               Rectangle rect)
+    public Point toPoint (Alignment that,
+                          Rectangle rect)
     {
-        return new PixelPoint(
-            horizontal.dxToPoint(that.horizontal, rect),
-            vertical.dyToPoint(that.vertical, rect));
+        return new Point(
+                horizontal.dxToPoint(that.horizontal, rect),
+                vertical.dyToPoint(that.vertical, rect));
     }
 
     //---------//
@@ -320,16 +316,17 @@ public class Alignment
     /**
      * Report the vector needed to translate from this alignment around a
      * rectangle to that alignment
+     *
      * @param that the desired alignment
      * @param rect the symbol bounds
      * @return the translation vector
      */
-    public Point2D toPoint (Alignment   that,
+    public Point2D toPoint (Alignment that,
                             Rectangle2D rect)
     {
         return new Point2D.Double(
-            horizontal.dxToPoint(that.horizontal, rect),
-            vertical.dyToPoint(that.vertical, rect));
+                horizontal.dxToPoint(that.horizontal, rect),
+                vertical.dyToPoint(that.vertical, rect));
     }
 
     //----------//
@@ -347,14 +344,15 @@ public class Alignment
     /**
      * Report the vector needed to translate from this alignment around a
      * rectangle to the text origin [BASELINE,XORIGIN]
+     *
      * @param rect the symbol bounds
      * @return the translation vector
      */
-    public PixelPoint toTextOrigin (Rectangle rect)
+    public Point toTextOrigin (Rectangle rect)
     {
-        return new PixelPoint(
-            horizontal.dxToTextOrigin(rect),
-            vertical.dyToTextOrigin(rect));
+        return new Point(
+                horizontal.dxToTextOrigin(rect),
+                vertical.dyToTextOrigin(rect));
     }
 
     //--------------//
@@ -363,14 +361,15 @@ public class Alignment
     /**
      * Report the vector needed to translate from this alignment around a
      * rectangle to the text origin [BASELINE,XORIGIN]
+     *
      * @param rect the symbol bounds
      * @return the translation vector
      */
     public Point2D toTextOrigin (Rectangle2D rect)
     {
         return new Point2D.Double(
-            horizontal.dxToTextOrigin(rect),
-            vertical.dyToTextOrigin(rect));
+                horizontal.dxToTextOrigin(rect),
+                vertical.dyToTextOrigin(rect));
     }
 
     //-----------------//
@@ -378,23 +377,22 @@ public class Alignment
     //-----------------//
     /**
      * Report the proper translated location, aligned with that alignment
-     * @param that the desired alignment
-     * @param rect the symbol bounds
+     *
+     * @param that     the desired alignment
+     * @param rect     the symbol bounds
      * @param location the provided location
      * @return the translated point
      */
-    public PixelPoint translatedPoint (Alignment that,
-                                       Rectangle rect,
-                                       Point     location)
+    public Point translatedPoint (Alignment that,
+                                  Rectangle rect,
+                                  Point location)
     {
         if (!this.equals(that)) {
-            PixelPoint toOrigin = toPoint(that, rect);
+            Point toOrigin = toPoint(that, rect);
 
-            return new PixelPoint(
-                location.x + toOrigin.x,
-                location.y + toOrigin.y);
+            return new Point(location.x + toOrigin.x, location.y + toOrigin.y);
         } else {
-            return new PixelPoint(location.x, location.y);
+            return new Point(location.x, location.y);
         }
     }
 }

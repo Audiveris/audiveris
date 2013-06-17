@@ -19,13 +19,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.Orientation;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Barline;
 import omr.score.entity.Clef;
 import omr.score.entity.Measure;
@@ -33,7 +28,6 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
-import omr.sheet.Ledger;
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -41,7 +35,16 @@ import omr.sheet.SystemInfo;
 import omr.util.HorizontalSide;
 import omr.util.Predicate;
 
-import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.List;
 
 /**
  * Class {@code ShapeChecker} gathers additional specific shape checks,
@@ -373,7 +376,7 @@ public class ShapeChecker
                     return true;
                 }
 
-                PixelRectangle glyphBox = glyph.getBounds();
+                Rectangle glyphBox = glyph.getBounds();
 
                 if (((glyphBox.x + glyphBox.width) < system.getLeft())
                     || (glyphBox.x > system.getRight())) {
@@ -449,8 +452,8 @@ public class ShapeChecker
                 Scale scale = scoreSystem.getScale();
                 double maxKeyXOffset = scale.toPixels(
                         constants.maxKeyXOffset);
-                PixelRectangle box = glyph.getBounds();
-                PixelPoint point = box.getLocation();
+                Rectangle box = glyph.getBounds();
+                Point point = box.getLocation();
                 SystemPart part = scoreSystem.getPartAt(point);
                 Measure measure = part.getMeasureAt(point);
 
@@ -492,7 +495,7 @@ public class ShapeChecker
             {
                 // COMMON_TIME shape is easily confused with CUT_TIME
                 // Check presence of a "pseudo-stem"
-                PixelRectangle box = glyph.getBounds();
+                Rectangle box = glyph.getBounds();
                 box.grow(-box.width / 4, 0);
 
                 List<Glyph> neighbors = system.lookupIntersectedGlyphs(
@@ -656,7 +659,7 @@ public class ShapeChecker
             //                    Glyph       prev = null;
             //
             //                    for (Glyph glyph : glyphs) {
-            //                        PixelRectangle box = glyph.getBounds();
+            //                        Rectangle box = glyph.getBounds();
             //
             //                        if (prev != null) {
             //                            if ((box.x - gapStart) > maxGap) {
@@ -740,7 +743,7 @@ public class ShapeChecker
                                   double[] features)
             {
                 // A note / rest / dynamic cannot be too far from a staff
-                PixelPoint center = glyph.getAreaCenter();
+                Point center = glyph.getAreaCenter();
                 StaffInfo staff = system.getStaffAt(center);
 
                 // Staff may be null when we are modifying system boundaries
@@ -768,7 +771,7 @@ public class ShapeChecker
                                   double[] features)
             {
                 // A beam / flag / stem  cannot be too far from a staff
-                PixelPoint center = glyph.getAreaCenter();
+                Point center = glyph.getAreaCenter();
                 StaffInfo staff = system.getStaffAt(center);
                 int gap = staff.getGapTo(glyph);
                 int maxGap = system.getScoreSystem().getScale().toPixels(
@@ -950,8 +953,8 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Must be centered on left of part barline
-                PixelRectangle box = glyph.getBounds();
-                PixelPoint left = new PixelPoint(
+                Rectangle box = glyph.getBounds();
+                Point left = new Point(
                         box.x,
                         box.y + (box.height / 2));
 
@@ -1001,7 +1004,7 @@ public class ShapeChecker
             {
                 // Check that whole notes are not too far from staves
                 // without ledgers
-                PixelPoint point = glyph.getAreaCenter();
+                Point point = glyph.getAreaCenter();
                 StaffInfo staff = system.getStaffAt(point);
                 double pitch = staff.pitchPositionOf(point);
 
@@ -1022,7 +1025,7 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Check that these markers are just above first staff
-                PixelPoint point = glyph.getAreaCenter();
+                Point point = glyph.getAreaCenter();
                 StaffInfo staff = system.getStaffAt(point);
 
                 if (staff != system.getFirstStaff()) {

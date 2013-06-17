@@ -14,9 +14,6 @@ package omr.step;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.ScoreChecker;
 import omr.score.ScoreCleaner;
 import omr.score.TimeSignatureFixer;
@@ -28,6 +25,9 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.util.WrappedBoolean;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
@@ -46,7 +46,8 @@ public class PagesStep
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(PagesStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            PagesStep.class);
 
     //~ Constructors -----------------------------------------------------------
     //-----------//
@@ -73,9 +74,11 @@ public class PagesStep
     public void displayUI (Sheet sheet)
     {
         // Since we may have purged slots, let's reset highlighted slot if any
-        sheet.getSymbolsEditor().highLight(null);
+        sheet.getSymbolsEditor()
+                .highLight(null);
 
-        Steps.valueOf(Steps.SYMBOLS).displayUI(sheet);
+        Steps.valueOf(Steps.SYMBOLS)
+                .displayUI(sheet);
     }
 
     //----------//
@@ -94,8 +97,10 @@ public class PagesStep
 
         for (int iter = 1; modified.isSet() && (iter <= iterMax); iter++) {
             modified.set(false);
-            logger.debug("System#{} translation iter #{}",
-                    system.getId(), iter);
+            logger.debug(
+                    "System#{} translation iter #{}",
+                    system.getId(),
+                    iter);
 
             // Clear errors for this system only (and this step)
             clearSystemErrors(system);
@@ -141,7 +146,9 @@ public class PagesStep
             }
 
             if (!systems.isEmpty()) {
-                systems.iterator().next().translateFinal();
+                systems.iterator()
+                        .next()
+                        .translateFinal();
 
                 // Finally, all actions for completed page (in proper order)
                 Page page = sheet.getPage();

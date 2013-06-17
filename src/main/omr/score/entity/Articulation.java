@@ -11,20 +11,19 @@
 // </editor-fold>
 package omr.score.entity;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
 
 /**
  * Class {@code Articulation} represents an articulation event, a
@@ -60,7 +59,8 @@ public class Articulation
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(Articulation.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Articulation.class);
 
     //~ Constructors -----------------------------------------------------------
     //--------------//
@@ -75,7 +75,7 @@ public class Articulation
      * @param glyph   the underlying glyph
      */
     public Articulation (Measure measure,
-                         PixelPoint point,
+                         Point point,
                          Chord chord,
                          Glyph glyph)
     {
@@ -83,6 +83,15 @@ public class Articulation
     }
 
     //~ Methods ----------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //----------//
     // populate //
     //----------//
@@ -95,23 +104,24 @@ public class Articulation
      */
     public static void populate (Glyph glyph,
                                  Measure measure,
-                                 PixelPoint point)
+                                 Point point)
     {
         if (glyph.isVip()) {
             logger.info("Articulation. populate {}", glyph.idString());
         }
-        
+
         // An Articulation relates to the note below or above on the same time slot
         Chord chord = measure.getEventChord(point);
 
         if (chord != null) {
             // Check vertical distance between chord and articulation
-            PixelPoint head = chord.getHeadLocation();
-            PixelPoint tail = chord.getTailLocation();
+            Point head = chord.getHeadLocation();
+            Point tail = chord.getTailLocation();
             int dy = Math.min(
                     Math.abs(head.y - point.y),
                     Math.abs(tail.y - point.y));
-            double normedDy = measure.getScale().pixelsToFrac(dy);
+            double normedDy = measure.getScale()
+                    .pixelsToFrac(dy);
 
             if (normedDy <= constants.maxArticulationDy.getValue()) {
                 glyph.setTranslation(
@@ -127,20 +137,12 @@ public class Articulation
 
         // Incorrect articulation
         if (glyph.isVip() || logger.isDebugEnabled()) {
-            logger.info("No chord close enough to articulation {}", glyph.
-                    idString());
+            logger.info(
+                    "No chord close enough to articulation {}",
+                    glyph.idString());
         }
 
         glyph.setShape(null, Evaluation.ALGORITHM);
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -158,5 +160,6 @@ public class Articulation
         Scale.Fraction maxArticulationDy = new Scale.Fraction(
                 4,
                 "Maximum dy between articulation and chord");
+
     }
 }

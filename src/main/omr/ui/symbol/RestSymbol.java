@@ -12,8 +12,6 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Composite;
@@ -30,7 +28,7 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class RestSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -38,17 +36,17 @@ public class RestSymbol
     protected static final BasicSymbol linesSymbol = Symbols.SYMBOL_STAFF_LINES;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // RestSymbol //
     //------------//
     /**
      * Create a RestSymbol (with decoration?) standard size.
-     * @param shape the precise shape
+     *
+     * @param shape     the precise shape
      * @param decorated true for a decorated image
-     * @param codes precise code for rest part
+     * @param codes     precise code for rest part
      */
-    public RestSymbol (Shape   shape,
+    public RestSymbol (Shape shape,
                        boolean decorated,
                        int... codes)
     {
@@ -60,13 +58,14 @@ public class RestSymbol
     //------------//
     /**
      * Create a RestSymbol (with decoration?).
-     * @param isIcon true for an icon
-     * @param shape the precise shape
+     *
+     * @param isIcon    true for an icon
+     * @param shape     the precise shape
      * @param decorated true for a decorated image
-     * @param codes precise code for rest part
+     * @param codes     precise code for rest part
      */
     protected RestSymbol (boolean isIcon,
-                          Shape   shape,
+                          Shape shape,
                           boolean decorated,
                           int... codes)
     {
@@ -74,7 +73,6 @@ public class RestSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -105,15 +103,15 @@ public class RestSymbol
 
             // Define specific offset
             p.offset = new Point(
-                0,
-                (int) Math.rint(rs.getY() + (rs.getHeight() / 2)));
+                    0,
+                    (int) Math.rint(rs.getY() + (rs.getHeight() / 2)));
         } else {
             r = rs;
         }
 
         p.rect = new Rectangle(
-            (int) Math.ceil(r.getWidth()),
-            (int) Math.ceil(r.getHeight()));
+                (int) Math.ceil(r.getWidth()),
+                (int) Math.ceil(r.getHeight()));
 
         return p;
     }
@@ -134,15 +132,12 @@ public class RestSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams   p = (MyParams) params;
-        PixelPoint loc = alignment.translatedPoint(
-            AREA_CENTER,
-            p.rect,
-            location);
+        MyParams p = (MyParams) params;
+        Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
 
         if (decorated) {
             Composite oldComposite = g.getComposite();
@@ -157,17 +152,17 @@ public class RestSymbol
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // Params //
     //--------//
     protected class MyParams
-        extends Params
+            extends Params
     {
         //~ Instance fields ----------------------------------------------------
 
         // layout for just rest layout
         // rect for global image (=lines if decorated, rest if not)
         TextLayout linesLayout; // For lines
+
     }
 }

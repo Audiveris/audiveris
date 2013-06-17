@@ -11,13 +11,13 @@
 // </editor-fold>
 package omr.step;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.MeasureBasicNumberer;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
@@ -28,15 +28,15 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class MeasuresStep
-    extends AbstractSystemStep
+        extends AbstractSystemStep
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(MeasuresStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            MeasuresStep.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // MeasuresStep //
     //--------------//
@@ -46,21 +46,20 @@ public class MeasuresStep
     public MeasuresStep ()
     {
         super(
-            Steps.MEASURES,
-            Level.SHEET_LEVEL,
-            Mandatory.MANDATORY,
-            DATA_TAB,
-            "Retrieve measures from bar sticks");
+                Steps.MEASURES,
+                Level.SHEET_LEVEL,
+                Mandatory.MANDATORY,
+                DATA_TAB,
+                "Retrieve measures from bar sticks");
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // doSystem //
     //----------//
     @Override
     public void doSystem (SystemInfo system)
-        throws StepException
+            throws StepException
     {
         clearSystemErrors(system);
         system.buildMeasures(); // For Measures
@@ -71,15 +70,15 @@ public class MeasuresStep
     //----------//
     @Override
     protected void doEpilog (Collection<SystemInfo> systems,
-                             Sheet                  sheet)
-        throws StepException
+                             Sheet sheet)
+            throws StepException
     {
         // Assign basic measure ids
         sheet.getPage()
-             .accept(new MeasureBasicNumberer());
+                .accept(new MeasureBasicNumberer());
 
         // Log the number of measures per system
         sheet.getPage()
-             .dumpMeasureCounts();
+                .dumpMeasureCounts();
     }
 }

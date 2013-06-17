@@ -26,9 +26,6 @@ import omr.glyph.facets.GlyphComposition;
 import omr.lag.Section;
 import omr.lag.Sections;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Line;
 import omr.math.PointsCollector;
 
@@ -37,6 +34,9 @@ import omr.run.Orientation;
 import omr.sheet.Scale;
 
 import omr.util.StopWatch;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;

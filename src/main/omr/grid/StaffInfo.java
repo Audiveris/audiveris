@@ -15,16 +15,12 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.GeoPath;
-import omr.math.LineUtilities;
+import omr.math.LineUtil;
 import omr.math.ReversePathIterator;
 
 import omr.run.Orientation;
 
-import omr.score.common.PixelPoint;
 import omr.score.entity.Staff;
 
 import omr.sheet.NotePosition;
@@ -35,7 +31,11 @@ import static omr.util.HorizontalSide.*;
 import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -440,7 +440,7 @@ public class StaffInfo
      */
     public int getGapTo (Glyph glyph)
     {
-        PixelPoint center = glyph.getAreaCenter();
+        Point center = glyph.getAreaCenter();
         int staffTop = getFirstLine().yAt(center.x);
         int staffBot = getLastLine().yAt(center.x);
         int glyphTop = glyph.getBounds().y;
@@ -485,14 +485,14 @@ public class StaffInfo
         Collections.sort(
                 slopes,
                 new Comparator<Double>()
-                {
-                    @Override
-                    public int compare (Double o1,
-                                        Double o2)
-                    {
-                        return Double.compare(Math.abs(o1), Math.abs(o2));
-                    }
-                });
+        {
+            @Override
+            public int compare (Double o1,
+                                Double o2)
+            {
+                return Double.compare(Math.abs(o1), Math.abs(o2));
+            }
+        });
 
         double sum = 0;
 
@@ -780,7 +780,7 @@ public class StaffInfo
     {
         LineInfo midLine = lines.get(lines.size() / 2);
 
-        return LineUtilities.intersection(
+        return LineUtil.intersection(
                 midLine.getEndPoint(LEFT),
                 midLine.getEndPoint(RIGHT),
                 stick.getStartPoint(Orientation.VERTICAL),

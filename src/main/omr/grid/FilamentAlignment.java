@@ -20,16 +20,16 @@ import omr.glyph.facets.GlyphComposition.Linking;
 
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.math.LineUtilities;
+import omr.math.LineUtil;
 import omr.math.NaturalSpline;
 import omr.math.Population;
 
 import omr.run.Orientation;
 
 import omr.sheet.Scale;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
@@ -88,7 +88,7 @@ public class FilamentAlignment
     public String dumpOf ()
     {
         StringBuilder sb = new StringBuilder();
-        
+
         sb.append(super.dumpOf());
         sb.append(String.format("   meanRadius:%.3f%n", getMeanCurvature()));
 
@@ -124,12 +124,12 @@ public class FilamentAlignment
 
         for (Point2D point : points) {
             if (prevPoint != null) {
-                bisector = LineUtilities.bisector(
+                bisector = LineUtil.bisector(
                         new Line2D.Double(prevPoint, point));
             }
 
             if (prevBisector != null) {
-                Point2D inter = LineUtilities.intersection(
+                Point2D inter = LineUtil.intersection(
                         prevBisector.getP1(),
                         prevBisector.getP2(),
                         bisector.getP1(),
@@ -512,7 +512,7 @@ public class FilamentAlignment
 
         for (int i = 0; i < (points.size() - 1); i++) {
             bisectors.add(
-                    LineUtilities.bisector(
+                    LineUtil.bisector(
                     new Line2D.Double(points.get(i), points.get(i + 1))));
         }
 
@@ -540,7 +540,7 @@ public class FilamentAlignment
         Point2D point = points.get(i);
         Line2D nextBisector = bisectors.get(i);
 
-        Point2D inter = LineUtilities.intersection(
+        Point2D inter = LineUtil.intersection(
                 prevBisector.getP1(),
                 prevBisector.getP2(),
                 nextBisector.getP1(),

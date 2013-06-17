@@ -22,15 +22,14 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.EnumSet;
 
 /**
@@ -47,9 +46,10 @@ public class TimePattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(TimePattern.class);
-    //~ Instance fields --------------------------------------------------------
+    private static final Logger logger = LoggerFactory.getLogger(
+            TimePattern.class);
 
+    //~ Instance fields --------------------------------------------------------
     /** Specific compound adapter. */
     private final TimeSigAdapter adapter;
 
@@ -110,77 +110,34 @@ public class TimePattern
     }
 
     //~ Inner Classes ----------------------------------------------------------
-    //----------------//
-    // TimeSigAdapter //
-    //----------------//
-    /**
-     * Compound adapter to search for a time sig shape
-     */
-    private class TimeSigAdapter
-            extends CompoundBuilder.TopRawAdapter
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Instance fields ----------------------------------------------------
 
-        public TimeSigAdapter (SystemInfo system,
-                               double minGrade,
-                               EnumSet<Shape> desiredShapes)
-        {
-            super(system, minGrade, desiredShapes);
-        }
+        Scale.Fraction xOffset = new Scale.Fraction(
+                0.25d,
+                "Core Time horizontal offset");
 
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public PixelRectangle computeReferenceBox ()
-        {
-            // Define the core box to intersect time glyph(s)
-            PixelPoint center = seed.getAreaCenter();
-            StaffInfo staff = system.getStaffAt(center);
+        Scale.Fraction yOffset = new Scale.Fraction(
+                0.25d,
+                "Core Time vertical offset");
 
-            PixelRectangle rect = seed.getBounds();
-            if (rect.width < params.timeWidth) {
-                rect.grow(params.timeWidth - rect.width, 0);
-            }
-            rect.grow(-params.xOffset, 0);
-            rect.y = staff.getFirstLine()
-                    .yAt(center.x) + params.yOffset;
-            rect.height = staff.getLastLine()
-                    .yAt(center.x) - params.yOffset - rect.y;
+        Scale.Fraction timeWidth = new Scale.Fraction(
+                1.6,
+                "Typical width of a time signature");
 
-            // Draw the time core box, for visual debug
-            seed.addAttachment("t", rect);
+        Scale.Fraction maxTimeWidth = new Scale.Fraction(
+                4,
+                "Maximum width of a time signature");
 
-            return rect;
-        }
+        Scale.Fraction maxTimeHeight = new Scale.Fraction(
+                8,
+                "Maximum height of a time signature");
 
-        @Override
-        public Evaluation getChosenEvaluation ()
-        {
-            return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
-        }
-
-        @Override
-        public boolean isCandidateSuitable (Glyph glyph)
-        {
-            return !glyph.isManualShape() && glyph.isActive();
-        }
-
-        @Override
-        public boolean isCandidateClose (Glyph glyph)
-        {
-            if (super.isCandidateClose(glyph)) {
-                // Check dimension of resulting bounds
-                PixelRectangle result = glyph.getBounds().union(box);
-                if (result.width > params.maxTimeWidth
-                    || result.height > params.maxTimeHeight) {
-                    logger.debug("Excluding too large {}", glyph);
-                    return false;
-                } else {
-                    return true;
-                }
-            } else {
-                return false;
-            }
-        }
     }
 
     //------------//
@@ -211,33 +168,81 @@ public class TimePattern
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //----------------//
+    // TimeSigAdapter //
+    //----------------//
+    /**
+     * Compound adapter to search for a time sig shape
+     */
+    private class TimeSigAdapter
+            extends CompoundBuilder.TopRawAdapter
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Constructors -------------------------------------------------------
 
-        Scale.Fraction xOffset = new Scale.Fraction(
-                0.25d,
-                "Core Time horizontal offset");
+        public TimeSigAdapter (SystemInfo system,
+                               double minGrade,
+                               EnumSet<Shape> desiredShapes)
+        {
+            super(system, minGrade, desiredShapes);
+        }
 
-        Scale.Fraction yOffset = new Scale.Fraction(
-                0.25d,
-                "Core Time vertical offset");
+        //~ Methods ------------------------------------------------------------
+        @Override
+        public Rectangle computeReferenceBox ()
+        {
+            // Define the core box to intersect time glyph(s)
+            Point center = seed.getAreaCenter();
+            StaffInfo staff = system.getStaffAt(center);
 
-        Scale.Fraction timeWidth = new Scale.Fraction(
-                1.6,
-                "Typical width of a time signature");
+            Rectangle rect = seed.getBounds();
 
-        Scale.Fraction maxTimeWidth = new Scale.Fraction(
-                4,
-                "Maximum width of a time signature");
+            if (rect.width < params.timeWidth) {
+                rect.grow(params.timeWidth - rect.width, 0);
+            }
 
-        Scale.Fraction maxTimeHeight = new Scale.Fraction(
-                8,
-                "Maximum height of a time signature");
+            rect.grow(-params.xOffset, 0);
+            rect.y = staff.getFirstLine()
+                    .yAt(center.x) + params.yOffset;
+            rect.height = staff.getLastLine()
+                    .yAt(center.x) - params.yOffset - rect.y;
 
+            // Draw the time core box, for visual debug
+            seed.addAttachment("t", rect);
+
+            return rect;
+        }
+
+        @Override
+        public Evaluation getChosenEvaluation ()
+        {
+            return new Evaluation(chosenEvaluation.shape, Evaluation.ALGORITHM);
+        }
+
+        @Override
+        public boolean isCandidateClose (Glyph glyph)
+        {
+            if (super.isCandidateClose(glyph)) {
+                // Check dimension of resulting bounds
+                Rectangle result = glyph.getBounds()
+                        .union(box);
+
+                if ((result.width > params.maxTimeWidth)
+                    || (result.height > params.maxTimeHeight)) {
+                    logger.debug("Excluding too large {}", glyph);
+
+                    return false;
+                } else {
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public boolean isCandidateSuitable (Glyph glyph)
+        {
+            return !glyph.isManualShape() && glyph.isActive();
+        }
     }
 }

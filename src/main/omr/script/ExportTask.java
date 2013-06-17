@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlAttribute;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class ExportTask
-    extends ScriptTask
+        extends ScriptTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -41,7 +41,6 @@ public class ExportTask
     private Boolean injectSignature;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // ExportTask //
     //------------//
@@ -64,7 +63,6 @@ public class ExportTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // core //
     //------//
@@ -72,10 +70,10 @@ public class ExportTask
     public void core (Sheet sheet)
     {
         ScoresManager.getInstance()
-                     .export(
-            sheet.getScore(),
-            (path != null) ? new File(path) : null,
-            injectSignature);
+                .export(
+                sheet.getScore(),
+                (path != null) ? new File(path) : null,
+                injectSignature);
     }
 
     //-----------------//

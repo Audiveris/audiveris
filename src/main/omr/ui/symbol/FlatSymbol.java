@@ -13,15 +13,14 @@ package omr.ui.symbol;
 
 import omr.glyph.Shape;
 
-import omr.score.common.PixelPoint;
-
+import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
  * Class {@code FlatSymbol} handles a flat or double-flat symbol with a refPoint
  */
 public class FlatSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -34,7 +33,7 @@ public class FlatSymbol
      * @param shape the related shape
      * @param codes the codes for MusicFont characters
      */
-    public FlatSymbol (Shape  shape,
+    public FlatSymbol (Shape shape,
                        int... codes)
     {
         this(false, shape, codes);
@@ -47,18 +46,17 @@ public class FlatSymbol
      * Creates a new FlatSymbol object.
      *
      * @param isIcon true for an icon
-     * @param shape the related shape
-     * @param codes the codes for MusicFont characters
+     * @param shape  the related shape
+     * @param codes  the codes for MusicFont characters
      */
     protected FlatSymbol (boolean isIcon,
-                          Shape   shape,
+                          Shape shape,
                           int... codes)
     {
         super(isIcon, shape, false, codes);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------//
     // getRefPoint //
     //-------------//
@@ -66,11 +64,11 @@ public class FlatSymbol
      * Report the symbol reference point which is lower than center for flats
      */
     @Override
-    public PixelPoint getRefPoint (Rectangle box)
+    public Point getRefPoint (Rectangle box)
     {
-        return new PixelPoint(
-            box.x + (box.width / 2),
-            box.y + (int) Math.rint(box.height * 0.67));
+        return new Point(
+                box.x + (box.width / 2),
+                box.y + (int) Math.rint(box.height * 0.67));
     }
 
     //------------//

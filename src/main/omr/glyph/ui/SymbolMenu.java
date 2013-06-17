@@ -19,11 +19,12 @@ import omr.glyph.facets.Glyph;
 
 import omr.sheet.SystemInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.Set;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code SymbolMenu} defines the menu which is linked to
@@ -37,7 +38,8 @@ public class SymbolMenu
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(SymbolMenu.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SymbolMenu.class);
 
     //~ Instance fields --------------------------------------------------------
     // Links to partnering entities

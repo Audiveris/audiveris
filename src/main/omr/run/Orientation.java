@@ -11,14 +11,8 @@
 // </editor-fold>
 package omr.run;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.BasicLine;
 import omr.math.Line;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -31,7 +25,9 @@ import java.awt.geom.Point2D;
  *
  * @author Hervé Bitteur
  */
-public enum Orientation {
+public enum Orientation
+{
+
     HORIZONTAL,
     VERTICAL;
 
@@ -40,16 +36,17 @@ public enum Orientation {
     //----------//
     /**
      * Report the orientation opposite to this one
+     *
      * @return the opposite orientation
      */
     public Orientation opposite ()
     {
         switch (this) {
-        case HORIZONTAL :
+        case HORIZONTAL:
             return VERTICAL;
 
-        default :
-        case VERTICAL :
+        default:
+        case VERTICAL:
             return HORIZONTAL;
         }
     }
@@ -78,7 +75,7 @@ public enum Orientation {
      * @param xy the absolute (x, y) point
      * @return the corresponding oriented (coord, pos) point
      */
-    public Point oriented (PixelPoint xy)
+    public Point oriented (Point xy)
     {
         return new Point(absolute(xy)); // Since involutive
     }
@@ -108,23 +105,23 @@ public enum Orientation {
      * @param cp the oriented (coord, pos) point
      * @return the corresponding absolute (x, y) point
      */
-    public PixelPoint absolute (Point cp)
+    public Point absolute (Point cp)
     {
         if (cp == null) {
             return null;
         }
 
         switch (this) {
-        case HORIZONTAL :
+        case HORIZONTAL:
 
             // Identity: coord->x, pos->y
-            return new PixelPoint(cp.x, cp.y);
+            return new Point(cp.x, cp.y);
 
-        default :
-        case VERTICAL :
+        default:
+        case VERTICAL:
 
             // swap: coord->y, pos->x
-            return new PixelPoint(cp.y, cp.x);
+            return new Point(cp.y, cp.x);
         }
     }
 
@@ -145,13 +142,13 @@ public enum Orientation {
         }
 
         switch (this) {
-        case HORIZONTAL :
+        case HORIZONTAL:
 
             // Identity
             return new Point2D.Double(cp.getX(), cp.getY());
 
-        default :
-        case VERTICAL :
+        default:
+        case VERTICAL:
 
             // Swap: coord->y, pos->x
             return new Point2D.Double(cp.getY(), cp.getX());
@@ -168,23 +165,23 @@ public enum Orientation {
      * @param cplt the oriented rectangle (coord, pos, length, thickness)
      * @return the corresponding absolute rectangle (x, y, width, height).
      */
-    public PixelRectangle absolute (Rectangle cplt)
+    public Rectangle absolute (Rectangle cplt)
     {
         if (cplt == null) {
             return null;
         }
 
         switch (this) {
-        case HORIZONTAL :
+        case HORIZONTAL:
 
             // coord->x, pos->y, length->width, thickness->height
-            return new PixelRectangle(cplt);
+            return new Rectangle(cplt);
 
-        default :
-        case VERTICAL :
+        default:
+        case VERTICAL:
 
             // coord->y, pos->x, length->height, thickness->width
-            return new PixelRectangle(cplt.y, cplt.x, cplt.height, cplt.width);
+            return new Rectangle(cplt.y, cplt.x, cplt.height, cplt.width);
         }
     }
 
@@ -205,15 +202,15 @@ public enum Orientation {
         }
 
         switch (this) {
-        case HORIZONTAL :
+        case HORIZONTAL:
 
             Line absLine = new BasicLine();
             absLine.includeLine(relLine);
 
             return absLine;
 
-        default :
-        case VERTICAL :
+        default:
+        case VERTICAL:
             return relLine.swappedCoordinates();
         }
     }
@@ -226,9 +223,10 @@ public enum Orientation {
      * corresponding oriented rectangle (coord, pos, length, thickness).
      *
      * @param xywh absolute rectangle (x, y, width, height).
-     * @return the corresponding oriented rectangle (coord, pos, length, thickness)
+     * @return the corresponding oriented rectangle (coord, pos, length,
+     *         thickness)
      */
-    public Rectangle oriented (PixelRectangle xywh)
+    public Rectangle oriented (Rectangle xywh)
     {
         // Use the fact that 'absolute' is involutive
         return new Rectangle(absolute(xywh));

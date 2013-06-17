@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
@@ -22,6 +19,9 @@ import omr.sheet.Sheet;
 import org.bushe.swing.event.EventSubscriber;
 
 import org.jdesktop.application.AbstractBean;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code SheetDependent} handles the dependency on sheet
@@ -36,7 +36,8 @@ public abstract class SheetDependent
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(SheetDependent.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SheetDependent.class);
 
     /** Name of property linked to sheet availability */
     public static final String SHEET_AVAILABLE = "sheetAvailable";
@@ -56,7 +57,8 @@ public abstract class SheetDependent
     {
         // Stay informed on sheet status, in order to enable or disable all
         // sheet-dependent actions accordingly
-        SheetsController.getInstance().subscribe(this);
+        SheetsController.getInstance()
+                .subscribe(this);
     }
 
     //~ Methods ----------------------------------------------------------------

@@ -21,7 +21,7 @@ import omr.ui.symbol.FlagsDownSymbol.MyParams;
  * @author Hervé Bitteur
  */
 public class FlagsUpSymbol
-    extends FlagsDownSymbol
+        extends FlagsDownSymbol
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -29,18 +29,17 @@ public class FlagsUpSymbol
      * Creates a new FlagsUpSymbol object.
      *
      * @param flagCount the number of flags
-     * @param isIcon true for an icon
-     * @param shape the related shape
+     * @param isIcon    true for an icon
+     * @param shape     the related shape
      */
-    public FlagsUpSymbol (int     flagCount,
+    public FlagsUpSymbol (int flagCount,
                           boolean isIcon,
-                          Shape   shape)
+                          Shape shape)
     {
         super(flagCount, isIcon, shape);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//

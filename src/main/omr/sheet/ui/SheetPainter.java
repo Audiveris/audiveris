@@ -15,10 +15,6 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelRectangle;
 import omr.score.entity.Measure;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
@@ -33,10 +29,14 @@ import omr.ui.symbol.Alignment;
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.ShapeSymbol;
 import omr.ui.symbol.Symbols;
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.util.ConcurrentModificationException;
 
@@ -51,14 +51,16 @@ import java.util.ConcurrentModificationException;
  * @author Hervé Bitteur
  */
 public class SheetPainter
-        extends AbstractScoreVisitor
+    extends AbstractScoreVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(SheetPainter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+        SheetPainter.class);
 
     //~ Instance fields --------------------------------------------------------
+
     /** Graphic context */
     private final Graphics2D g;
 
@@ -72,6 +74,7 @@ public class SheetPainter
     private MusicFont musicFont;
 
     //~ Constructors -----------------------------------------------------------
+
     //--------------//
     // SheetPainter //
     //--------------//
@@ -82,15 +85,16 @@ public class SheetPainter
      * @param editableBoundaries flag to draw editable boundaries
      */
     public SheetPainter (Graphics g,
-                         boolean editableBoundaries)
+                         boolean  editableBoundaries)
     {
         this.g = (Graphics2D) g;
         this.editableBoundaries = editableBoundaries;
 
-        oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
+        oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
     }
 
     //~ Methods ----------------------------------------------------------------
+
     //---------------//
     // visit Measure //
     //---------------//
@@ -101,13 +105,13 @@ public class SheetPainter
             // Render the measure ending barline
             if (measure.getBarline() != null) {
                 measure.getBarline()
-                        .renderLine(g);
+                       .renderLine(g);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + measure,
-                    ex);
+                getClass().getSimpleName() + " Error visiting " + measure,
+                ex);
         }
 
         // Nothing lower than measure
@@ -127,11 +131,12 @@ public class SheetPainter
             g.setColor(Colors.ENTITY_MINOR);
 
             if (!page.getSystems()
-                    .isEmpty()) {
+                     .isEmpty()) {
                 // Small protection about changing data...
                 if (sheet.getScale() == null) {
                     return false;
                 }
+
                 // Determine proper font
                 musicFont = MusicFont.getFont(sheet.getInterline());
                 // Normal (full) rendering of the score
@@ -139,13 +144,13 @@ public class SheetPainter
             } else {
                 // Render what we have got so far
                 sheet.getStaffManager()
-                        .render(g);
+                     .render(g);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + page,
-                    ex);
+                getClass().getSimpleName() + " Error visiting " + page,
+                ex);
         } finally {
             g.setStroke(oldStroke);
         }
@@ -163,13 +168,13 @@ public class SheetPainter
             // Render the part starting barline, if any
             if (part.getStartingBarline() != null) {
                 part.getStartingBarline()
-                        .renderLine(g);
+                    .renderLine(g);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + part,
-                    ex);
+                getClass().getSimpleName() + " Error visiting " + part,
+                ex);
         }
 
         return true;
@@ -191,8 +196,8 @@ public class SheetPainter
             return false;
         } catch (Exception ex) {
             logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + system,
-                    ex);
+                getClass().getSimpleName() + " Error visiting " + system,
+                ex);
 
             return false;
         }
@@ -204,7 +209,7 @@ public class SheetPainter
     public boolean visit (SystemInfo systemInfo)
     {
         try {
-            PixelRectangle bounds = systemInfo.getBounds();
+            Rectangle bounds = systemInfo.getBounds();
 
             if (bounds == null) {
                 return false;
@@ -216,19 +221,19 @@ public class SheetPainter
 
                 // System boundary
                 systemInfo.getBoundary()
-                        .render(g, editableBoundaries);
+                          .render(g, editableBoundaries);
 
                 // Staff lines
                 for (StaffInfo staff : systemInfo.getStaves()) {
                     staff.renderAttachments(g);
                 }
 
-//                // Stems
-//                for (Glyph glyph : systemInfo.getGlyphs()) {
-//                    if (glyph.isStem()) {
-//                        glyph.renderLine(g);
-//                    }
-//                }
+                //                // Stems
+                //                for (Glyph glyph : systemInfo.getGlyphs()) {
+                //                    if (glyph.isStem()) {
+                //                        glyph.renderLine(g);
+                //                    }
+                //                }
 
                 // Virtual glyphs
                 paintVirtualGlyphs(systemInfo);
@@ -238,8 +243,10 @@ public class SheetPainter
         } catch (ConcurrentModificationException ignored) {
             return false;
         } catch (Exception ex) {
-            logger.warn(getClass().getSimpleName()
-                           + " Error visiting " + systemInfo.idString(), ex);
+            logger.warn(
+                getClass().getSimpleName() + " Error visiting " +
+                systemInfo.idString(),
+                ex);
         }
 
         return false;
@@ -260,15 +267,18 @@ public class SheetPainter
         for (Glyph glyph : systemInfo.getGlyphs()) {
             if (glyph.isVirtual()) {
                 ShapeSymbol symbol = Symbols.getSymbol(glyph.getShape());
+
                 if (symbol == null) {
-                    systemInfo.getScoreSystem().addError(glyph,
-                            "No symbol for " + glyph.idString());
+                    systemInfo.getScoreSystem()
+                              .addError(
+                        glyph,
+                        "No symbol for " + glyph.idString());
                 } else {
                     symbol.paintSymbol(
-                            g,
-                            musicFont,
-                            glyph.getAreaCenter(),
-                            Alignment.AREA_CENTER);
+                        g,
+                        musicFont,
+                        glyph.getAreaCenter(),
+                        Alignment.AREA_CENTER);
                 }
             }
         }

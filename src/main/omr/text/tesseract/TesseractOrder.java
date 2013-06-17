@@ -21,9 +21,6 @@ import omr.text.TextChar;
 import omr.text.TextLine;
 import omr.text.TextWord;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import tesseract.TessBridge;
 
 import tesseract.TessBridge.PIX;
@@ -31,6 +28,9 @@ import tesseract.TessBridge.ResultIterator;
 import tesseract.TessBridge.ResultIterator.Level;
 import tesseract.TessBridge.TessBaseAPI;
 import tesseract.TessBridge.TessBaseAPI.SegmentationMode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;

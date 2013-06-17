@@ -16,13 +16,13 @@ import omr.glyph.facets.Glyph;
 import omr.grid.StaffInfo;
 
 /**
- * Class {@code Ending} is a physical {@link Dash} that is the horizontal
- * part of an alternate ending.
+ * Class {@code Ending} is a physical {@link Dash} that is the
+ * horizontal part of an alternate ending.
  *
  * @author Hervé Bitteur
  */
 public class Ending
-    extends Dash
+        extends Dash
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -31,10 +31,11 @@ public class Ending
     //--------//
     /**
      * Create an Ending entity, with its underlying horizontal stick.
+     *
      * @param stick the underlying stick
      * @param staff the related staff
      */
-    public Ending (Glyph     stick,
+    public Ending (Glyph stick,
                    StaffInfo staff)
     {
         super(stick, staff);

@@ -14,7 +14,7 @@ package omr.selection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelRectangle;
+import java.awt.Rectangle;
 
 /**
  * Class {@code LocationEvent} is UI Event that represents a new
@@ -24,46 +24,45 @@ import omr.score.common.PixelRectangle;
  * @author Hervé Bitteur
  */
 public class LocationEvent
-    extends UserEvent
+        extends UserEvent
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(LocationEvent.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            LocationEvent.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /**
      * The location rectangle, which can be degenerated to a point when both
      * width and height values equal zero
      */
-    private final PixelRectangle rectangle;
+    private final Rectangle rectangle;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new LocationEvent object.
-     * @param source the actual entity that created this event
-     * @param hint how the event originated
-     * @param movement the precise mouse movement
+     *
+     * @param source    the actual entity that created this event
+     * @param hint      how the event originated
+     * @param movement  the precise mouse movement
      * @param rectangle the location within the sheet space
      */
-    public LocationEvent (Object         source,
-                          SelectionHint  hint,
-                          MouseMovement  movement,
-                          PixelRectangle rectangle)
+    public LocationEvent (Object source,
+                          SelectionHint hint,
+                          MouseMovement movement,
+                          Rectangle rectangle)
     {
         super(source, hint, movement);
         this.rectangle = rectangle;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // getData //
     //---------//
     @Override
-    public PixelRectangle getData ()
+    public Rectangle getData ()
     {
         return rectangle;
     }

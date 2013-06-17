@@ -18,13 +18,13 @@ import omr.sheet.Sheet;
 import java.util.Collection;
 
 /**
- * Class {@code SegmentTask} attempts to segment a collection of glyphs (along
- * verticals for the time being)
+ * Class {@code SegmentTask} attempts to segment a collection of
+ * glyphs (along verticals for the time being).
  *
  * @author Hervé Bitteur
  */
 public class SegmentTask
-    extends GlyphUpdateTask
+        extends GlyphUpdateTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -32,16 +32,15 @@ public class SegmentTask
     private final boolean isShort;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new SegmentTask object.
      *
-     * @param sheet the sheet impacted
+     * @param sheet   the sheet impacted
      * @param isShort true if we are looking for short verticals
-     * @param glyphs the collection of glyphs to look up
+     * @param glyphs  the collection of glyphs to look up
      */
-    public SegmentTask (Sheet             sheet,
-                        boolean           isShort,
+    public SegmentTask (Sheet sheet,
+                        boolean isShort,
                         Collection<Glyph> glyphs)
     {
         super(sheet, glyphs);
@@ -58,17 +57,16 @@ public class SegmentTask
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // core //
     //------//
     @Override
     public void core (Sheet sheet)
-        throws Exception
+            throws Exception
     {
         sheet.getSymbolsController()
-             .getModel()
-             .segmentGlyphs(getInitialGlyphs(), isShort);
+                .getModel()
+                .segmentGlyphs(getInitialGlyphs(), isShort);
     }
 
     //-----------------//
@@ -82,7 +80,7 @@ public class SegmentTask
 
         if (isShort) {
             sb.append(" ")
-              .append("short");
+                    .append("short");
         }
 
         return sb.toString();

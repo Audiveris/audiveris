@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code PartInfo} is the physical gathering of StaffInfo instances
- * in a part
+ * Class {@code PartInfo} is the physical gathering of StaffInfo
+ * instances in a part.
  *
  * @author Hervé Bitteur
  */
@@ -30,7 +30,6 @@ public class PartInfo
     private List<StaffInfo> staves = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // PartInfo //
     //----------//
@@ -40,7 +39,6 @@ public class PartInfo
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // addStaff //
     //----------//

@@ -35,7 +35,8 @@ public class UILookAndFeel
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(UILookAndFeel.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            UILookAndFeel.class);
 
     static {
         if (WellKnowns.MAC_OS_X) {
@@ -43,18 +44,16 @@ public class UILookAndFeel
             //                  System.setProperty("apple.awt.brushMetalLook", "true");
             //                  System.setProperty("apple.awt.brushMetalRounded", "true");
             constants.lookAndFeel.setValue(
-                UIManager.getSystemLookAndFeelClassName());
+                    UIManager.getSystemLookAndFeelClassName());
         }
     }
 
     //~ Constructors -----------------------------------------------------------
-
     private UILookAndFeel ()
     {
     }
 
     //~ Methods ----------------------------------------------------------------
-
     // Available Themes:
     //
     // AbstractSkyTheme
@@ -77,7 +76,6 @@ public class UILookAndFeel
     // SkyPink
     // SkyRed
     // SkyYellow
-
     //         try {
     //             // Available Look & Feel:
     //             //
@@ -85,13 +83,11 @@ public class UILookAndFeel
     //             // PlasticLookAndFeel
     //             // Plastic3DLookAndFeel
     //             // PlasticXPLookAndFeel
-
     //             PlasticLookAndFeel.setMyCurrentTheme(new SkyKrupp());
     //             UIManager.setLookAndFeel(new Plastic3DLookAndFeel());
     //         } catch (Exception ex) {
     //             ex.printStackTrace();
     //         }
-
     //-------//
     // setUI //
     //-------//
@@ -120,17 +116,17 @@ public class UILookAndFeel
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.String lookAndFeel = new Constant.String(
-            "com.jgoodies.looks.plastic.Plastic3DLookAndFeel",
-            "Full class path to the desired UI Look & Feel");
+                "com.jgoodies.looks.plastic.Plastic3DLookAndFeel",
+                "Full class path to the desired UI Look & Feel");
+
     }
 }

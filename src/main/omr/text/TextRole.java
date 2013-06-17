@@ -12,13 +12,9 @@
 package omr.text;
 
 import omr.constant.ConstantSet;
+
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemNode.StaffPosition;
@@ -29,6 +25,12 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
+
 /**
  * Class {@code TextRole} describes the role of a piece of text
  * (typically a sentence).
@@ -37,7 +39,6 @@ import omr.sheet.SystemInfo;
  */
 public enum TextRole
 {
-    //~ Enum constants ---------------------------------------------------------
 
     /** No role known. */
     UnknownRole,
@@ -57,16 +58,15 @@ public enum TextRole
     Rights,
     /** Chord mark. */
     Chord;
-
-    //~ Static fields/initializers ---------------------------------------------
     //
+
     /** Specific application parameters. */
     private static final Constants constants = new Constants();
 
     /** Usual logger utility. */
-    private static final Logger logger = LoggerFactory.getLogger(TextRole.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            TextRole.class);
 
-    //~ Methods ----------------------------------------------------------------
     //
     //-----------------//
     // getStringHolder //
@@ -120,14 +120,17 @@ public enum TextRole
         }
 
         int chordCount = 0;
+
         for (TextWord word : line.getWords()) {
             // At least one word/glyph with a role manually assigned
             Glyph glyph = word.getGlyph();
+
             if (glyph != null) {
                 if (glyph.getManualRole() != null) {
                     return glyph.getManualRole();
                 }
             }
+
             // Word that could be a chord symbol?
             if (word.guessChordInfo() != null) {
                 chordCount++;
@@ -135,21 +138,25 @@ public enum TextRole
         }
 
         // Is line made entirely of potential chord symbols?
-        boolean isAllChord = chordCount == line.getWords().size();
+        boolean isAllChord = chordCount == line.getWords()
+                .size();
 
-        PixelRectangle box = line.getBounds();
+        Rectangle box = line.getBounds();
+
         if (box == null) {
             return null;
         }
 
         // Is line mainly in italic? 
-        boolean isMainlyItalic = systemInfo.getTextBuilder().isMainlyItalic(line);
+        boolean isMainlyItalic = systemInfo.getTextBuilder()
+                .isMainlyItalic(line);
 
         Sheet sheet = systemInfo.getSheet();
         ScoreSystem system = systemInfo.getScoreSystem();
         Scale scale = system.getScale();
-        PixelPoint left = new PixelPoint(box.x, box.y + (box.height / 2));
-        PixelPoint right = new PixelPoint(box.x + box.width,
+        Point left = new Point(box.x, box.y + (box.height / 2));
+        Point right = new Point(
+                box.x + box.width,
                 box.y + (box.height / 2));
 
         // First system in page?
@@ -169,8 +176,7 @@ public enum TextRole
         // Vertical distance from staff?
         Staff staff = system.getStaffAt(left);
         int staffDy = Math.abs(staff.getTopLeft().y - box.y);
-        boolean closeToStaff = staffDy
-                               <= scale.toPixels(constants.maxStaffDy);
+        boolean closeToStaff = staffDy <= scale.toPixels(constants.maxStaffDy);
 
         // Begins on left side of the part?
         boolean leftOfStaves = system.isLeftOfStaves(left);
@@ -178,14 +184,12 @@ public enum TextRole
         // At the center of page width?
         int maxCenterDx = scale.toPixels(constants.maxCenterDx);
         int pageCenter = sheet.getWidth() / 2;
-        boolean pageCentered = Math.abs((box.x + (box.width / 2))
-                                        - pageCenter) <= maxCenterDx;
+        boolean pageCentered = Math.abs((box.x + (box.width / 2)) - pageCenter) <= maxCenterDx;
 
         // Right aligned with staves?
         int maxRightDx = scale.toPixels(constants.maxRightDx);
-        boolean rightAligned = Math.abs(right.x - system.getTopLeft().x
-                                        - system.getDimension().width)
-                               <= maxRightDx;
+        boolean rightAligned = Math.abs(
+                right.x - system.getTopLeft().x - system.getDimension().width) <= maxRightDx;
 
         // Short Sentence?
         int maxShortLength = scale.toPixels(constants.maxShortLength);
@@ -199,13 +203,22 @@ public enum TextRole
         int minTitleHeight = scale.toPixels(constants.minTitleHeight);
         boolean highText = box.height >= minTitleHeight;
 
-        logger.debug("{} firstSystem={} lastSystem={} systemPosition={}"
-                     + " partPosition={} closeToStaff={} leftOfStaves={}"
-                     + " pageCentered={} rightAligned={} shortSentence={}"
-                     + " highText={10}",
-                box, firstSystem, lastSystem, systemPosition,
-                partPosition, closeToStaff, leftOfStaves, pageCentered,
-                rightAligned, shortSentence, highText);
+        logger.debug(
+                "{} firstSystem={} lastSystem={} systemPosition={}"
+                + " partPosition={} closeToStaff={} leftOfStaves={}"
+                + " pageCentered={} rightAligned={} shortSentence={}"
+                + " highText={10}",
+                box,
+                firstSystem,
+                lastSystem,
+                systemPosition,
+                partPosition,
+                closeToStaff,
+                leftOfStaves,
+                pageCentered,
+                rightAligned,
+                shortSentence,
+                highText);
 
         // Decisions ...
         switch (systemPosition) {
@@ -235,6 +248,7 @@ public enum TextRole
                         return new TextRoleInfo(TextRole.Direction);
                     }
                 } else if (pageCentered) { // Title, Number
+
                     if (highText) {
                         return new TextRoleInfo(TextRole.Title);
                     } else {
@@ -255,7 +269,7 @@ public enum TextRole
 
             if (leftOfStaves) {
                 return new TextRoleInfo(TextRole.Name);
-            } else if (partPosition == StaffPosition.BELOW_STAVES
+            } else if ((partPosition == StaffPosition.BELOW_STAVES)
                        && !isMainlyItalic) {
                 return new TextRoleInfo(TextRole.Lyrics);
             } else {
@@ -272,8 +286,9 @@ public enum TextRole
                 return new TextRoleInfo(TextRole.Rights);
             }
 
-            if (part.getStaves().size() == 1) {
-                if (partPosition == StaffPosition.BELOW_STAVES
+            if (part.getStaves()
+                    .size() == 1) {
+                if ((partPosition == StaffPosition.BELOW_STAVES)
                     && !isMainlyItalic) {
                     return new TextRoleInfo(TextRole.Lyrics);
                 }
@@ -284,14 +299,12 @@ public enum TextRole
         return new TextRoleInfo(TextRole.UnknownRole);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
 
         Scale.Fraction maxRightDx = new Scale.Fraction(
                 2,

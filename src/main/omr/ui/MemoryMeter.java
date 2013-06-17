@@ -14,7 +14,7 @@ package omr.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
 
 import omr.util.Memory;
 
@@ -163,7 +163,7 @@ public class MemoryMeter
         // Garbage collector button
         JButton button = new JButton(
                 applicationContext.getActionMap(this).get("collectGarbage"));
-        button.setBorder(UIUtilities.getToolBorder());
+        button.setBorder(UIUtil.getToolBorder());
         component.add(button, BorderLayout.EAST);
 
         // Remember the default foreground color

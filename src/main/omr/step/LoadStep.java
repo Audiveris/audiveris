@@ -11,16 +11,16 @@
 // </editor-fold>
 package omr.step;
 
-import java.awt.image.RenderedImage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.Score;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 import omr.sheet.picture.PictureLoader;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.util.Collection;
 import java.util.SortedMap;
@@ -28,7 +28,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code LoadStep} reloads the image for a sheet, 
+ * Class {@code LoadStep} reloads the image for a sheet,
  * from a provided image file.
  * <p>This is simply a RE-loading, triggered by the user. The initial loading
  * is always done in {@link Score#createPages(SortedSet)}.</p>
@@ -36,7 +36,7 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public class LoadStep
-    extends AbstractStep
+        extends AbstractStep
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -44,29 +44,27 @@ public class LoadStep
     private static final Logger logger = LoggerFactory.getLogger(LoadStep.class);
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Creates a new LoadStep object.
      */
     public LoadStep ()
     {
         super(
-            Steps.LOAD,
-            Level.SHEET_LEVEL,
-            Mandatory.MANDATORY,
-            Step.PICTURE_TAB,
-            "Reload the sheet picture");
+                Steps.LOAD,
+                Level.SHEET_LEVEL,
+                Mandatory.MANDATORY,
+                Step.PICTURE_TAB,
+                "Reload the sheet picture");
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // doit //
     //------//
     @Override
     public void doit (Collection<SystemInfo> unused,
-                      Sheet                  sheet)
-        throws StepException
+                      Sheet sheet)
+            throws StepException
     {
         final Score score = sheet.getScore();
         final File imageFile = score.getImageFile();
@@ -74,8 +72,8 @@ public class LoadStep
                 .getIndex();
         final SortedSet<Integer> set = new TreeSet<>();
         set.add(index);
-        
-        SortedMap<Integer, RenderedImage> images = 
+
+        SortedMap<Integer, RenderedImage> images =
                 PictureLoader.loadImages(imageFile, set);
         if (images != null) {
             sheet.setImage(images.get(index));

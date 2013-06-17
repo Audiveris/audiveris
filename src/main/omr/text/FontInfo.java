@@ -54,14 +54,14 @@ public class FontInfo
     /**
      * Creates a new FontInfo object.
      *
-     * @param isBold       
-     * @param isItalic     
-     * @param isUnderlined 
-     * @param isMonospace  
-     * @param isSerif      
-     * @param isSmallcaps  
-     * @param pointsize    
-     * @param fontName     
+     * @param isBold
+     * @param isItalic
+     * @param isUnderlined
+     * @param isMonospace
+     * @param isSerif
+     * @param isSmallcaps
+     * @param pointsize
+     * @param fontName
      */
     public FontInfo (boolean isBold,
                      boolean isItalic,
@@ -96,13 +96,19 @@ public class FontInfo
     public static FontInfo createDefault (int fontSize)
     {
         return new FontInfo(
-            false, false, false, false, true, false, fontSize, "Serif");
+                false,
+                false,
+                false,
+                false,
+                true,
+                false,
+                fontSize,
+                "Serif");
     }
-    
+
     //----------//
     // toString //
     //----------//
-
     @Override
     public String toString ()
     {

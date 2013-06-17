@@ -14,7 +14,6 @@ package omr.text;
 import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.List;
-import omr.score.common.PixelRectangle;
 
 /**
  * Class {@code TextItem} is an abstract basis for any Ocr entity.
@@ -26,7 +25,7 @@ public abstract class TextItem
     //~ Instance fields --------------------------------------------------------
 
     /** Item bounds. */
-    private PixelRectangle bounds;
+    private Rectangle bounds;
 
     /** Item value. */
     private String value;
@@ -46,45 +45,13 @@ public abstract class TextItem
                      String value)
     {
         if (bounds != null) {
-            this.bounds = new PixelRectangle(bounds);
+            this.bounds = new Rectangle(bounds);
         }
 
         this.value = value;
     }
 
     //~ Methods ----------------------------------------------------------------
-    //
-    //
-    //-----------//
-    // setBounds //
-    //-----------//
-    /**
-     * Set a new bounding box of the item..
-     *
-     * @param bounds the new bounding box
-     */
-    public void setBounds (PixelRectangle bounds)
-    {
-        this.bounds = bounds;
-    }
-
-    //-----------//
-    // getBounds //
-    //-----------//
-    /**
-     * Return the bounding box of the item..
-     *
-     * @return (a copy of) the box
-     */
-    public PixelRectangle getBounds ()
-    {
-        if (bounds != null) {
-            return new PixelRectangle(bounds);
-        } else {
-            return null;
-        }
-    }
-
     //----------//
     // boundsOf //
     //----------//
@@ -94,9 +61,9 @@ public abstract class TextItem
      * @param items the provided collection of TextItem instances
      * @return the global bounding box
      */
-    public static PixelRectangle boundsOf (Collection<? extends TextItem> items)
+    public static Rectangle boundsOf (Collection<? extends TextItem> items)
     {
-        PixelRectangle bounds = null;
+        Rectangle bounds = null;
 
         for (TextItem item : items) {
             if (bounds == null) {
@@ -107,6 +74,41 @@ public abstract class TextItem
         }
 
         return bounds;
+    }
+
+    //---------//
+    // valueOf //
+    //---------//
+    public static String valueOf (List<? extends TextItem> items)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (TextItem item : items) {
+            if (sb.length() > 0) {
+                sb.append(" ");
+            }
+
+            sb.append(item.getValue());
+        }
+
+        return sb.toString();
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    /**
+     * Return the bounding box of the item..
+     *
+     * @return (a copy of) the box
+     */
+    public Rectangle getBounds ()
+    {
+        if (bounds != null) {
+            return new Rectangle(bounds);
+        } else {
+            return null;
+        }
     }
 
     //----------//
@@ -122,32 +124,33 @@ public abstract class TextItem
         return value;
     }
 
-    //----------//
-    // setValue //
-    //----------//
+    //
+    //
+    //-----------//
+    // setBounds //
+    //-----------//
     /**
-     * Modify the item value.
+     * Set a new bounding box of the item..
      *
-     * @param value the new item value
+     * @param bounds the new bounding box
      */
-    protected void setValue (String value)
+    public void setBounds (Rectangle bounds)
     {
-        this.value = value;
+        this.bounds = bounds;
     }
 
-    //---------//
-    // valueOf //
-    //---------//
-    public static String valueOf (List<? extends TextItem> items)
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
     {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder("{");
+        sb.append(getClass().getSimpleName());
+        ///sb.append('@').append(Integer.toHexString(hashCode()));
+        sb.append(internalsString());
 
-        for (TextItem item : items) {
-            if (sb.length() > 0) {
-                sb.append(" ");
-            }
-            sb.append(item.getValue());
-        }
+        sb.append("}");
 
         return sb.toString();
     }
@@ -169,23 +172,6 @@ public abstract class TextItem
         }
     }
 
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
-        ///sb.append('@').append(Integer.toHexString(hashCode()));
-
-        sb.append(internalsString());
-
-        sb.append("}");
-
-        return sb.toString();
-    }
-
     //-----------------//
     // internalsString //
     //-----------------//
@@ -193,14 +179,33 @@ public abstract class TextItem
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(" \"").append(getValue()).append("\"");
+        sb.append(" \"")
+                .append(getValue())
+                .append("\"");
 
         if (getBounds() != null) {
-            sb.append(String.format(" bounds[%d,%d,%d,%d]",
-                    bounds.x, bounds.y,
-                    bounds.width, bounds.height));
+            sb.append(
+                    String.format(
+                    " bounds[%d,%d,%d,%d]",
+                    bounds.x,
+                    bounds.y,
+                    bounds.width,
+                    bounds.height));
         }
 
         return sb.toString();
+    }
+
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Modify the item value.
+     *
+     * @param value the new item value
+     */
+    protected void setValue (String value)
+    {
+        this.value = value;
     }
 }

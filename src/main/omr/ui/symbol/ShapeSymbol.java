@@ -35,23 +35,22 @@ import java.io.IOException;
  * @author Hervé Bitteur
  */
 public class ShapeSymbol
-    extends BasicSymbol
-    implements Symbol, Transferable
+        extends BasicSymbol
+        implements Symbol, Transferable
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** The symbol meta data */
     public static DataFlavor DATA_FLAVOR = new DataFlavor(
-        Symbol.class,
-        "shape-symbol");
+            Symbol.class,
+            "shape-symbol");
 
     /** Composite used for decoration */
     protected static AlphaComposite decoComposite = AlphaComposite.getInstance(
-        AlphaComposite.SRC_OVER,
-        0.15f);
+            AlphaComposite.SRC_OVER,
+            0.15f);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Related shape */
     protected final Shape shape;
 
@@ -59,19 +58,19 @@ public class ShapeSymbol
     protected final boolean decorated;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // ShapeSymbol //
     //-------------//
     /**
      * Create a ShapeSymbol with the provided shape and codes
+     *
      * @param isIcon    true for an icon
      * @param shape     the related shape
      * @param decorated true if the symbol uses decoration around the shape
      * @param codes     the codes for MusicFont characters
      */
     public ShapeSymbol (boolean isIcon,
-                        Shape   shape,
+                        Shape shape,
                         boolean decorated,
                         int... codes)
     {
@@ -86,41 +85,23 @@ public class ShapeSymbol
     /**
      * Create a non decorated standard ShapeSymbol with the provided
      * shape and codes.
+     *
      * @param shape the related shape
      * @param codes the codes for MusicFont characters
      */
-    public ShapeSymbol (Shape  shape,
+    public ShapeSymbol (Shape shape,
                         int... codes)
     {
         this(false, shape, false, codes);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //-------------//
-    // numberCodes //
-    //-------------//
-    public static int[] numberCodes (int number)
-    {
-        ShapeSymbol symbol = Symbols.getSymbol(TIME_ZERO);
-        int         base = symbol.codes[0];
-        int[]       numberCodes = (number > 9) ? new int[2] : new int[1];
-        int         index = 0;
-
-        if (number > 9) {
-            numberCodes[index++] = base + (number / 10);
-        }
-
-        numberCodes[index] = base + (number % 10);
-
-        return numberCodes;
-    }
-
     //----------//
     // getShape //
     //----------//
     /**
      * Report the shape of the symbol.
+     *
      * @return the shape
      */
     public Shape getShape ()
@@ -133,7 +114,7 @@ public class ShapeSymbol
     //-----------------//
     @Override
     public Object getTransferData (DataFlavor flavor)
-        throws UnsupportedFlavorException, IOException
+            throws UnsupportedFlavorException, IOException
     {
         if (isDataFlavorSupported(flavor)) {
             return this;
@@ -148,7 +129,7 @@ public class ShapeSymbol
     @Override
     public DataFlavor[] getTransferDataFlavors ()
     {
-        return new DataFlavor[] { DATA_FLAVOR };
+        return new DataFlavor[]{DATA_FLAVOR};
     }
 
     //-----------------------//
@@ -166,11 +147,31 @@ public class ShapeSymbol
     /**
      * Tell whether the image represents the shape with additional
      * decorations.
+     *
      * @return true if decorated
      */
     public boolean isDecorated ()
     {
         return decorated;
+    }
+
+    //-------------//
+    // numberCodes //
+    //-------------//
+    public static int[] numberCodes (int number)
+    {
+        ShapeSymbol symbol = Symbols.getSymbol(TIME_ZERO);
+        int base = symbol.codes[0];
+        int[] numberCodes = (number > 9) ? new int[2] : new int[1];
+        int index = 0;
+
+        if (number > 9) {
+            numberCodes[index++] = base + (number / 10);
+        }
+
+        numberCodes[index] = base + (number % 10);
+
+        return numberCodes;
     }
 
     //------------//
@@ -191,7 +192,7 @@ public class ShapeSymbol
         StringBuilder sb = new StringBuilder(super.internalsString());
 
         sb.append(" ")
-          .append(shape);
+                .append(shape);
 
         return sb.toString();
     }

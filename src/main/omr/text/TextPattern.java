@@ -16,10 +16,10 @@ import omr.glyph.pattern.GlyphPattern;
 
 import omr.lag.Section;
 
+import omr.sheet.SystemInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.sheet.SystemInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,7 +74,7 @@ public class TextPattern
         List<TextLine> toRemove = new ArrayList<>();
         // Check each sentence for inactive, non-text glyph, modified value
         // Use a input copy of sentences collection, since it can get modified
-        for (TextLine line : new LinkedHashSet<>(system.getSentences()) ){
+        for (TextLine line : new LinkedHashSet<>(system.getSentences())) {
             checkModifiedValue(line);
 
             purgeWords(line);
@@ -84,7 +84,7 @@ public class TextPattern
                 toRemove.add(line);
             }
         }
-        
+
         system.getSentences().removeAll(toRemove);
 
         // Look for active text glyphs left over (no word, or no line)

@@ -19,27 +19,25 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
 /**
- * Class {@code GhostMotionAdapter} is a special MouseMotion adapter meant for
- * dragging the ghost image.
+ * Class {@code GhostMotionAdapter} is a special MouseMotion adapter
+ * meant for dragging the ghost image.
  *
  * @author Hervé Bitteur (from Romain Guy's demo)
  */
 public class GhostMotionAdapter
-    extends MouseMotionAdapter
+        extends MouseMotionAdapter
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        GhostMotionAdapter.class);
+            GhostMotionAdapter.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The related glasspane */
     protected GhostGlassPane glassPane;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------------//
     // GhostMotionAdapter //
     //--------------------//
@@ -54,13 +52,13 @@ public class GhostMotionAdapter
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------------//
     // mouseDragged //
     //--------------//
     /**
      * In this default implementation, we don't modify the current image, we
      * simply tell the glassPane where to redraw the image
+     *
      * @param e the mouse event
      */
     @Override

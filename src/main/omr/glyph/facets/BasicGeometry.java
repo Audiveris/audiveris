@@ -16,9 +16,6 @@ import omr.glyph.Shape;
 
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Circle;
 import omr.math.PointsCollector;
 
@@ -27,14 +24,13 @@ import omr.moments.BasicARTExtractor;
 import omr.moments.BasicARTMoments;
 import omr.moments.GeometricMoments;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-
 import omr.ui.symbol.ShapeSymbol;
 
-import java.awt.Rectangle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 
 /**
  * Class {@code BasicGeometry} is the basic implementation of the
@@ -49,7 +45,8 @@ class BasicGeometry
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(BasicGeometry.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            BasicGeometry.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Interline of the containing staff (or sheet) */
@@ -65,10 +62,10 @@ class BasicGeometry
     private GeometricMoments geometricMoments;
 
     /** Mass center coordinates */
-    private PixelPoint centroid;
+    private Point centroid;
 
     /** Box center coordinates */
-    private PixelPoint center;
+    private Point center;
 
     /** Absolute contour box */
     private Rectangle bounds;
@@ -140,11 +137,11 @@ class BasicGeometry
     // getAreaCenter //
     //---------------//
     @Override
-    public PixelPoint getAreaCenter ()
+    public Point getAreaCenter ()
     {
         if (center == null) {
-            PixelRectangle box = glyph.getBounds();
-            center = new PixelPoint(
+            Rectangle box = glyph.getBounds();
+            center = new Point(
                     box.x + (box.width / 2),
                     box.y + (box.height / 2));
         }
@@ -156,10 +153,10 @@ class BasicGeometry
     // getBounds //
     //-----------//
     @Override
-    public PixelRectangle getBounds ()
+    public Rectangle getBounds ()
     {
         if (bounds == null) {
-            PixelRectangle box = null;
+            Rectangle box = null;
 
             for (Section section : glyph.getMembers()) {
                 if (box == null) {
@@ -173,7 +170,7 @@ class BasicGeometry
         }
 
         if (bounds != null) {
-            return new PixelRectangle(bounds); // Return a COPY
+            return new Rectangle(bounds); // Return a COPY
         } else {
             return null;
         }
@@ -183,10 +180,11 @@ class BasicGeometry
     // getCentroid //
     //-------------//
     @Override
-    public PixelPoint getCentroid ()
+    public Point getCentroid ()
     {
         if (centroid == null) {
-            centroid = getGeometricMoments().getCentroid();
+            centroid = getGeometricMoments()
+                    .getCentroid();
         }
 
         return centroid;
@@ -239,7 +237,7 @@ class BasicGeometry
     // getLocation //
     //-------------//
     @Override
-    public PixelPoint getLocation ()
+    public Point getLocation ()
     {
         Shape shape = glyph.getShape();
 
@@ -250,7 +248,8 @@ class BasicGeometry
 
         // Text shape: use specific reference
         if (shape.isText()) {
-            PixelPoint loc = glyph.getTextLocation();
+            Point loc = glyph.getTextLocation();
+
             if (loc != null) {
                 return loc;
             }
@@ -273,7 +272,8 @@ class BasicGeometry
     @Override
     public double getNormalizedHeight ()
     {
-        return getGeometricMoments().getHeight();
+        return getGeometricMoments()
+                .getHeight();
     }
 
     //---------------------//
@@ -282,7 +282,8 @@ class BasicGeometry
     @Override
     public double getNormalizedWeight ()
     {
-        return getGeometricMoments().getWeight();
+        return getGeometricMoments()
+                .getWeight();
     }
 
     //--------------------//
@@ -291,7 +292,8 @@ class BasicGeometry
     @Override
     public double getNormalizedWidth ()
     {
-        return getGeometricMoments().getWidth();
+        return getGeometricMoments()
+                .getWidth();
     }
 
     //--------------------//
@@ -354,7 +356,7 @@ class BasicGeometry
     // intersects //
     //------------//
     @Override
-    public boolean intersects (PixelRectangle rectangle)
+    public boolean intersects (Rectangle rectangle)
     {
         // First make a rough test
         if (rectangle.intersects(glyph.getBounds())) {
@@ -398,7 +400,7 @@ class BasicGeometry
     // setContourBox //
     //---------------//
     @Override
-    public void setContourBox (PixelRectangle contourBox)
+    public void setContourBox (Rectangle contourBox)
     {
         this.bounds = contourBox;
     }
@@ -416,7 +418,7 @@ class BasicGeometry
     // translate //
     //-----------//
     @Override
-    public void translate (PixelPoint vector)
+    public void translate (Point vector)
     {
         for (Section section : glyph.getMembers()) {
             section.translate(vector);

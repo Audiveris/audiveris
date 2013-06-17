@@ -13,7 +13,6 @@ package omr.ui.symbol;
 
 import omr.glyph.Shape;
 
-import java.awt.Font;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 
@@ -25,7 +24,7 @@ import java.awt.geom.AffineTransform;
  * @author Hervé Bitteur
  */
 public class ResizedSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -33,15 +32,15 @@ public class ResizedSymbol
     protected final double ratio;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
      * Create a non decorated standard ResizedSymbol with the provided
      * shape and codes.
+     *
      * @param shape the related shape
-     * @param ratio     the resizing ratio
+     * @param ratio the resizing ratio
      * @param codes the codes for MusicFont characters
      */
-    public ResizedSymbol (Shape  shape,
+    public ResizedSymbol (Shape shape,
                           double ratio,
                           int... codes)
     {
@@ -50,6 +49,7 @@ public class ResizedSymbol
 
     /**
      * Create a ResizedSymbol with the provided shape and codes
+     *
      * @param isIcon    true for an icon
      * @param shape     the related shape
      * @param ratio     the resizing ratio
@@ -57,8 +57,8 @@ public class ResizedSymbol
      * @param codes     the codes for MusicFont characters
      */
     public ResizedSymbol (boolean isIcon,
-                          Shape   shape,
-                          double  ratio,
+                          Shape shape,
+                          double ratio,
                           boolean decorated,
                           int... codes)
     {
@@ -67,7 +67,6 @@ public class ResizedSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -86,7 +85,7 @@ public class ResizedSymbol
         StringBuilder sb = new StringBuilder(super.internalsString());
 
         sb.append(" ratio:")
-          .append((float) ratio);
+                .append((float) ratio);
 
         return sb.toString();
     }
@@ -97,6 +96,7 @@ public class ResizedSymbol
     /**
      * Report a single layout, based on symbol codes if they exist.
      * This feature can work only with a single "line" of music codes.
+     *
      * @param font the specifically-scaled font to use
      * @return the layout ready to be drawn, or null
      */

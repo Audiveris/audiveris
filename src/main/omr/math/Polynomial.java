@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.math;
 
-
 /**
  * Class {@code Polynomial} is a simple polynomial implementation.
  *
@@ -30,18 +29,18 @@ public class Polynomial
     protected double[] coefficients;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // Polynomial //
     //------------//
     /**
      * Creates a new Polynomial object (actually just a monomial).
      * Example new Polynomial(3,2) = 3x^2
-     * @param c coefficient
+     *
+     * @param c      coefficient
      * @param degree degree of the monomial term
      */
     public Polynomial (double c,
-                       int    degree)
+                       int degree)
     {
         if (degree < 0) {
             throw new IllegalArgumentException("Negative polynomial degree");
@@ -53,71 +52,12 @@ public class Polynomial
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //------//
-    // main //
-    //------//
-    // test client
-    public static void main (String[] args)
-    {
-        Polynomial zero = new Polynomial(0, 0);
-
-        Polynomial p1 = new Polynomial(4, 3); // 4x^3
-        Polynomial p2 = new Polynomial(3, 2); // 3x^2
-        Polynomial p3 = new Polynomial(1, 0); // 1
-        Polynomial p4 = new Polynomial(2, 1); // 2x
-        Polynomial p = p1.plus(p2)
-                         .plus(p3)
-                         .plus(p4); // 4x^3 + 3x^2 + 2x + 1
-
-        Polynomial q1 = new Polynomial(3, 2); // 3x^2
-        Polynomial q2 = new Polynomial(5, 0); // 5
-        Polynomial q = q1.plus(q2); // 3x^2 + 5
-
-        Polynomial r = p.plus(q);
-        Polynomial s = p.times(q);
-        Polynomial t = p.compose(q);
-
-        System.out.println("zero(x) =     " + zero);
-        System.out.println("p(x) =        " + p);
-        System.out.println("q(x) =        " + q);
-        System.out.println("p(x) + q(x) = " + r);
-        System.out.println("p(x) * q(x) = " + s);
-        System.out.println("p(q(x))     = " + t);
-        System.out.println("0 - p(x)    = " + zero.minus(p));
-        System.out.println("p(3)        = " + p.evaluate(3));
-        System.out.println("p'(x)       = " + p.derivative());
-        System.out.println("p''(x)      = " + p.derivative().derivative());
-        System.out.println(
-            "p'''(x)     = " + p.derivative().derivative().derivative());
-        System.out.println(
-            "p''''(x)    = " +
-            p.derivative().derivative().derivative().derivative());
-    }
-
-    //--------//
-    // degree //
-    //--------//
-    /**
-     * Report the actual degree.
-     * @return the degree of this polynomial (0 for the zero polynomial)
-     */
-    public final int degree ()
-    {
-        for (int i = coefficients.length - 1; i >= 0; i--) {
-            if (coefficients[i] != 0) {
-                return i;
-            }
-        }
-
-        return 0;
-    }
-
     //---------//
     // compose //
     //---------//
     /**
      * Compose with that other polynomial.
+     *
      * @param that the other polynomial
      * @return a(b(x))
      */
@@ -133,11 +73,31 @@ public class Polynomial
         return result;
     }
 
+    //--------//
+    // degree //
+    //--------//
+    /**
+     * Report the actual degree.
+     *
+     * @return the degree of this polynomial (0 for the zero polynomial)
+     */
+    public final int degree ()
+    {
+        for (int i = coefficients.length - 1; i >= 0; i--) {
+            if (coefficients[i] != 0) {
+                return i;
+            }
+        }
+
+        return 0;
+    }
+
     //------------//
     // derivative //
     //------------//
     /**
      * Report the derivative of this polynomial.
+     *
      * @return the derivative
      */
     public Polynomial derivative ()
@@ -160,7 +120,8 @@ public class Polynomial
     // eq //
     //----//
     /**
-     * Check whether this  represent the same polynomial as that.
+     * Check whether this represent the same polynomial as that.
+     *
      * @param that the other polynomial
      * @return true if equal
      */
@@ -184,6 +145,7 @@ public class Polynomial
     //----------//
     /**
      * Return the evaluation of this polynomial for the provided x.
+     *
      * @param x the provided x
      * @return value at x
      */
@@ -199,19 +161,61 @@ public class Polynomial
         return result;
     }
 
+    //------//
+    // main //
+    //------//
+    // test client
+    public static void main (String[] args)
+    {
+        Polynomial zero = new Polynomial(0, 0);
+
+        Polynomial p1 = new Polynomial(4, 3); // 4x^3
+        Polynomial p2 = new Polynomial(3, 2); // 3x^2
+        Polynomial p3 = new Polynomial(1, 0); // 1
+        Polynomial p4 = new Polynomial(2, 1); // 2x
+        Polynomial p = p1.plus(p2)
+                .plus(p3)
+                .plus(p4); // 4x^3 + 3x^2 + 2x + 1
+
+        Polynomial q1 = new Polynomial(3, 2); // 3x^2
+        Polynomial q2 = new Polynomial(5, 0); // 5
+        Polynomial q = q1.plus(q2); // 3x^2 + 5
+
+        Polynomial r = p.plus(q);
+        Polynomial s = p.times(q);
+        Polynomial t = p.compose(q);
+
+        System.out.println("zero(x) =     " + zero);
+        System.out.println("p(x) =        " + p);
+        System.out.println("q(x) =        " + q);
+        System.out.println("p(x) + q(x) = " + r);
+        System.out.println("p(x) * q(x) = " + s);
+        System.out.println("p(q(x))     = " + t);
+        System.out.println("0 - p(x)    = " + zero.minus(p));
+        System.out.println("p(3)        = " + p.evaluate(3));
+        System.out.println("p'(x)       = " + p.derivative());
+        System.out.println("p''(x)      = " + p.derivative().derivative());
+        System.out.println(
+                "p'''(x)     = " + p.derivative().derivative().derivative());
+        System.out.println(
+                "p''''(x)    = "
+                + p.derivative().derivative().derivative().derivative());
+    }
+
     //-------//
     // minus //
     //-------//
     /**
      * Report this - that.
+     *
      * @param that other polynomial
      * @return this - that
      */
     public Polynomial minus (Polynomial that)
     {
         Polynomial result = new Polynomial(
-            0,
-            Math.max(this.degree, that.degree));
+                0,
+                Math.max(this.degree, that.degree));
 
         for (int i = 0; i <= this.degree; i++) {
             result.coefficients[i] += this.coefficients[i];
@@ -231,14 +235,15 @@ public class Polynomial
     //------//
     /**
      * Report this + that.
+     *
      * @param that other polynomial
      * @return this + that
      */
     public Polynomial plus (Polynomial that)
     {
         Polynomial result = new Polynomial(
-            0,
-            Math.max(this.degree, that.degree));
+                0,
+                Math.max(this.degree, that.degree));
 
         for (int i = 0; i <= this.degree; i++) {
             result.coefficients[i] += this.coefficients[i];
@@ -258,6 +263,7 @@ public class Polynomial
     //-------//
     /**
      * Report this * that.
+     *
      * @param that other polynomial
      * @return this * that
      */
@@ -281,6 +287,7 @@ public class Polynomial
     //-------//
     /**
      * Simple multiplication by a scalar
+     *
      * @param scalar the scalar multiplicator value
      * @return the new polynomial (this * scalar)
      */
@@ -302,6 +309,7 @@ public class Polynomial
     //----------//
     /**
      * Print by decreasing term degree.
+     *
      * @return the polynomial terms, presented by decreasing degree
      */
     @Override

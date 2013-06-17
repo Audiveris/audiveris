@@ -31,6 +31,13 @@ interface GlyphDisplay
     //~ Methods ----------------------------------------------------------------
 
     /**
+     * Report a basic representation of the glyph, using ascii chars.
+     *
+     * @return an ascii representation
+     */
+    String asciiDrawing ();
+
+    /**
      * Set the display color of all sections that compose this glyph.
      *
      * @param color color for the whole glyph
@@ -45,13 +52,6 @@ interface GlyphDisplay
      */
     void colorize (Collection<Section> sections,
                    Color color);
-
-    /**
-     * Report a basic representation of the glyph, using ascii chars.
-     *
-     * @return an ascii representation
-     */
-    String asciiDrawing ();
 
     /**
      * Report the color to be used to colorize the provided glyph,

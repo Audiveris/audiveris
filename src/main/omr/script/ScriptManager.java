@@ -11,14 +11,14 @@
 // </editor-fold>
 package omr.script;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.Main;
 
 import omr.score.Score;
 
 import omr.step.ProcessingCancellationException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;

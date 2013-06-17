@@ -13,14 +13,14 @@ package omr.grid;
 
 import omr.lag.Section;
 
-import omr.score.common.PixelRectangle;
+import omr.math.Line;
 
 import omr.util.HorizontalSide;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Collection;
-import omr.math.Line;
 
 /**
  * Interface {@code LineInfo} describes the handling of one staff line.
@@ -36,7 +36,7 @@ public interface LineInfo
      *
      * @return the contour box (with minimum height of 1)
      */
-    public PixelRectangle getBounds ();
+    public Rectangle getBounds ();
 
     /**
      * Selector for the left or right ending point of the line
@@ -82,6 +82,14 @@ public interface LineInfo
     public void render (Graphics2D g);
 
     /**
+     * Retrieve the precise intersection with a rather vertical line.
+     *
+     * @param vertical the rather vertical line
+     * @return the precise intersection
+     */
+    public Point2D verticalIntersection (Line vertical);
+
+    /**
      * Retrieve the staff line ordinate at given abscissa x, using int
      * values
      *
@@ -98,12 +106,4 @@ public interface LineInfo
      * @return the corresponding y value
      */
     public double yAt (double x);
-
-    /**
-     * Retrieve the precise intersection with a rather vertical line.
-     *
-     * @param vertical the rather vertical line
-     * @return the precise intersection
-     */
-    public Point2D verticalIntersection (Line vertical);
 }

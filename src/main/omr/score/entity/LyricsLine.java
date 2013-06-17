@@ -13,23 +13,24 @@ package omr.score.entity;
 
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.Population;
 
-import omr.score.common.PixelPoint;
 
 import omr.sheet.Scale;
 
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
 import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code LyricsLine} gathers one line of lyrics within a system part.
+ * Class {@code LyricsLine} gathers one line of lyrics within a system
+ * part.
  * A lyrics line is composed of instances of LyricsItem, which can be Syllables,
  * Hyphens, Extensions or Elisions
  *
@@ -286,7 +287,7 @@ public class LyricsLine
      * @param sysPt the system point to check
      * @return true if aligned
      */
-    private boolean isAlignedWith (PixelPoint sysPt)
+    private boolean isAlignedWith (Point sysPt)
     {
         return Math.abs(sysPt.y - getY()) <= getScale().toPixels(
                 constants.maxItemDy);

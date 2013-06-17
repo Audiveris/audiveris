@@ -14,17 +14,18 @@ package omr.score;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.entity.Measure;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
 import omr.score.visitor.AbstractScoreVisitor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * Class {@code ScoreCleaner} can visit the score hierarchy to get rid of
- * all measure items except barlines, ready for a new score translation.
+ * Class {@code ScoreCleaner} can visit the score hierarchy to get rid
+ * of all measure items except barlines, ready for a new score
+ * translation.
  *
  * @author Hervé Bitteur
  */
@@ -34,7 +35,8 @@ public class ScoreCleaner
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ScoreCleaner.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ScoreCleaner.class);
 
     //~ Constructors -----------------------------------------------------------
     //--------------//
@@ -58,7 +60,8 @@ public class ScoreCleaner
             logger.debug("Cleaning up {}", system);
 
             // Remove recorded translations for all system glyphs
-            for (Glyph glyph : system.getInfo().getGlyphs()) {
+            for (Glyph glyph : system.getInfo()
+                    .getGlyphs()) {
                 if (glyph.getShape() != Shape.LEDGER) {
                     glyph.clearTranslations();
                 }
@@ -82,7 +85,9 @@ public class ScoreCleaner
     {
         try {
             if (systemPart.isDummy()) {
-                systemPart.getParent().getChildren().remove(systemPart);
+                systemPart.getParent()
+                        .getChildren()
+                        .remove(systemPart);
 
                 return false;
             } else {

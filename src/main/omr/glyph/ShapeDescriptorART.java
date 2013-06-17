@@ -27,19 +27,18 @@ import java.util.Map;
  * @author Hervé Bitteur
  */
 public class ShapeDescriptorART
-    implements ShapeDescription.Descriptor
+        implements ShapeDescription.Descriptor
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Number of orthogonal moments used */
-    private static final int momentCount = -1 +
-                                           (ARTMoments.ANGULAR * ARTMoments.RADIAL);
+    private static final int momentCount = -1
+                                           + (ARTMoments.ANGULAR * ARTMoments.RADIAL);
 
-    /** Use the orthogonal moments + weight + stems  + aspect */
+    /** Use the orthogonal moments + weight + stems + aspect */
     private static final int length = momentCount + 3;
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // features //
     //----------//
@@ -47,8 +46,8 @@ public class ShapeDescriptorART
     public double[] features (Glyph glyph)
     {
         ARTMoments moments = glyph.getARTMoments();
-        double[]   ins = new double[length];
-        int        i = 0;
+        double[] ins = new double[length];
+        int i = 0;
 
         // We take the orthogonal moments
         for (int p = 0; p < ARTMoments.ANGULAR; p++) {
@@ -95,7 +94,6 @@ public class ShapeDescriptorART
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------------//
     // LabelsHolder //
     //--------------//

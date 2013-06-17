@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr;
 
-import omr.log.LogUtilities;
+import omr.log.LogUtil;
 import static omr.util.UriUtil.*;
 
 import org.slf4j.Logger;
@@ -206,7 +206,7 @@ public class WellKnowns
 
     static {
         /** Logging configuration. */
-        LogUtilities.initialize(CONFIG_FOLDER, TEMP_FOLDER);
+        LogUtil.initialize(CONFIG_FOLDER, TEMP_FOLDER);
         /** Log declared data (debug). */
         logDeclaredData();
     }

@@ -20,28 +20,26 @@ import java.awt.Rectangle;
 import javax.swing.JComponent;
 
 /**
- * Class {@code AbstractGhostDropListener} is a default implementation for the
- * {@link GhostDropListener} interface.
+ * Class {@code AbstractGhostDropListener} is a default implementation
+ * for the {@link GhostDropListener} interface.
  *
  * @param <A> The type of action carried by the drop
  * @author Hervé Bitteur (from Romain Guy's demo)
  */
 public abstract class AbstractGhostDropListener<A>
-    implements GhostDropListener<A>
+        implements GhostDropListener<A>
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        AbstractGhostDropListener.class);
+            AbstractGhostDropListener.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** The related component */
     protected JComponent component;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------------------//
     // AbstractGhostDropListener //
     //---------------------------//
@@ -56,7 +54,6 @@ public abstract class AbstractGhostDropListener<A>
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // dropped //
     //---------//
@@ -74,6 +71,7 @@ public abstract class AbstractGhostDropListener<A>
     //---------------//
     /**
      * Report the local point wrt the listener component of a screen-based point
+     *
      * @param screenPoint the screen-based point
      * @return the component-based point
      */
@@ -88,16 +86,17 @@ public abstract class AbstractGhostDropListener<A>
     /**
      * Check whether the provided local point lies within the component
      * bounds
+     *
      * @param localPoint the local point (component-based)
      * @return true if point is over the component, false otherwise
      */
     protected boolean isInTarget (Point localPoint)
     {
         Rectangle bounds = new Rectangle(
-            0,
-            0,
-            component.getWidth(),
-            component.getHeight());
+                0,
+                0,
+                component.getWidth(),
+                component.getHeight());
 
         return bounds.contains(localPoint);
     }

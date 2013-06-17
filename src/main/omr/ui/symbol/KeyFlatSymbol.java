@@ -20,7 +20,7 @@ import omr.glyph.Shape;
  *
  */
 public class KeyFlatSymbol
-    extends KeySymbol
+        extends KeySymbol
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -30,19 +30,18 @@ public class KeyFlatSymbol
     /**
      * Creates a new KeyFlatSymbol object.
      *
-     * @param key the key value: -7..-1 for flats
+     * @param key    the key value: -7..-1 for flats
      * @param isIcon true for an icon
-     * @param shape the related shape
+     * @param shape  the related shape
      */
-    public KeyFlatSymbol (int     key,
+    public KeyFlatSymbol (int key,
                           boolean isIcon,
-                          Shape   shape)
+                          Shape shape)
     {
         super(key, isIcon, shape, 98);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//

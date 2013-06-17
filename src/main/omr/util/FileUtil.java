@@ -31,17 +31,16 @@ public class FileUtil
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            FileUtil.class);
 
     //~ Constructors -----------------------------------------------------------
-
     // Not meant to be instantiated
     private FileUtil ()
     {
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // copy //
     //------//
@@ -55,7 +54,7 @@ public class FileUtil
      */
     public static void copy (File source,
                              File target)
-        throws IOException
+            throws IOException
     {
         FileChannel input = null;
         FileChannel output = null;
@@ -65,9 +64,9 @@ public class FileUtil
             output = new FileOutputStream(target).getChannel();
 
             MappedByteBuffer buffer = input.map(
-                FileChannel.MapMode.READ_ONLY,
-                0,
-                input.size());
+                    FileChannel.MapMode.READ_ONLY,
+                    0,
+                    input.size());
             output.write(buffer);
         } finally {
             if (input != null) {
@@ -112,7 +111,7 @@ public class FileUtil
      *
      * <li> "path/name.ext" -> ".ext"
      *
-     * <li> "path/name."  -> "." (just the dot)
+     * <li> "path/name." -> "." (just the dot)
      *
      * <li> "path/name" -> "" (the empty string) </ul>
      *
@@ -123,7 +122,7 @@ public class FileUtil
     public static String getExtension (File file)
     {
         String name = file.getName();
-        int    i = name.lastIndexOf('.');
+        int i = name.lastIndexOf('.');
 
         if (i >= 0) {
             return name.substring(i);
@@ -145,7 +144,7 @@ public class FileUtil
     public static String getNameSansExtension (File file)
     {
         String name = file.getName();
-        int    i = name.lastIndexOf('.');
+        int i = name.lastIndexOf('.');
 
         if (i >= 0) {
             return name.substring(0, i);

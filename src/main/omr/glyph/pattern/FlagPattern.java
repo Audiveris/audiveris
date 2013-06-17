@@ -17,15 +17,15 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
 
 /**
  * Class {@code FlagPattern} removes flags for which the related stem
@@ -42,7 +42,8 @@ public class FlagPattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(FlagPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            FlagPattern.class);
 
     //~ Constructors -----------------------------------------------------------
     //-------------//
@@ -69,7 +70,7 @@ public class FlagPattern
 
         for (Glyph flag : system.getGlyphs()) {
             if (!ShapeSet.Flags.contains(flag.getShape())
-                    || flag.isManualShape()) {
+                || flag.isManualShape()) {
                 continue;
             }
 
@@ -91,7 +92,7 @@ public class FlagPattern
             }
 
             // Look for other stuff on the stem, whatever the side
-            PixelRectangle stemBox = system.stemBoxOf(stem);
+            Rectangle stemBox = system.stemBoxOf(stem);
             boolean found = false;
 
             for (Glyph g : system.lookupIntersectedGlyphs(stemBox, stem, flag)) {
@@ -99,9 +100,8 @@ public class FlagPattern
                 Shape shape = g.getShape();
 
                 if (ShapeSet.NoteHeads.contains(shape)
-                        || ((shape == null)
-                            && (g.getNormalizedWeight() >= constants.minStuffWeight.
-                                getValue()))) {
+                    || ((shape == null)
+                        && (g.getNormalizedWeight() >= constants.minStuffWeight.getValue()))) {
                     if (flag.isVip() || logger.isDebugEnabled()) {
                         logger.info("Confirmed flag #{}", flag.getId());
                     }
@@ -139,5 +139,6 @@ public class FlagPattern
         Scale.AreaFraction minStuffWeight = new Scale.AreaFraction(
                 0.5,
                 "Minimum weight for a stem stuff");
+
     }
 }

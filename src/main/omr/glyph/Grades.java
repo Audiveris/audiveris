@@ -28,13 +28,11 @@ public class Grades
 
     // Maximum values
     //---------------
-
     /** <b>Maximum</b> grade for a glyph before being merged in a compound */
     public static final double compoundPartMaxGrade = constants.compoundPartMaxGrade.getValue();
 
     // Minimum values
     //---------------
-
     /** Minimum grade for a bass clef glyph */
     public static final double bassMinGrade = constants.bassMinGrade.getValue();
 
@@ -83,100 +81,100 @@ public class Grades
     /** No minimum grade */
     public static final double noMinGrade = 0;
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Constructors -----------------------------------------------------------
+    private Grades ()
+    {
+    }
 
+    //~ Inner Classes ----------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Evaluation.Grade compoundPartMaxGrade = new Evaluation.Grade(
-            90,
-            "*MAXIMUM* grade for a suitable compound part");
+                90,
+                "*MAXIMUM* grade for a suitable compound part");
 
         //----------------------------------------------------------------------
         // Minimum values (please keep them sorted by decreasing value)
-
         //
         Evaluation.Grade validationMinGrade = new Evaluation.Grade(
-            83,
-            "Minimum grade for a validation");
+                83,
+                "Minimum grade for a validation");
 
         //
         Evaluation.Grade symbolMinGrade = new Evaluation.Grade(
-            77,
-            "Minimum grade for a symbol");
+                77,
+                "Minimum grade for a symbol");
 
         //
         Evaluation.Grade patternsMinGrade = new Evaluation.Grade(
-            67,
-            "Minimum grade for pattern phase");
+                67,
+                "Minimum grade for pattern phase");
 
         //
         Evaluation.Grade partMinGrade = new Evaluation.Grade(
-            35,
-            "Minimum grade for a part of a split glyph");
+                35,
+                "Minimum grade for a part of a split glyph");
 
         //
         Evaluation.Grade bassMinGrade = new Evaluation.Grade(
-            33,
-            "Minimum grade for a bass clef");
+                33,
+                "Minimum grade for a bass clef");
 
         //
         Evaluation.Grade hookMinGrade = new Evaluation.Grade(
-            20,
-            "Minimum grade for beam hook verification");
+                20,
+                "Minimum grade for beam hook verification");
 
         //
         Evaluation.Grade mergedNoteMinGrade = new Evaluation.Grade(
-            20,
-            "Minimum grade for a merged note");
+                20,
+                "Minimum grade for a merged note");
 
         //
         Evaluation.Grade leftOverMinGrade = new Evaluation.Grade(
-            10,
-            "Minimum grade for a glyph left over");
+                10,
+                "Minimum grade for a glyph left over");
 
         //
         Evaluation.Grade ledgerNoteMinGrade = new Evaluation.Grade(
-            10,
-            "Minimum grade for a ledger note");
+                10,
+                "Minimum grade for a ledger note");
 
         //
         Evaluation.Grade clefMinGrade = new Evaluation.Grade(
-            0.3,
-            "Minimum grade for a clef");
+                0.3,
+                "Minimum grade for a clef");
 
         //
         Evaluation.Grade consistentNoteMinGrade = new Evaluation.Grade(
-            0.1,
-            "Minimum grade for a consistent note head");
+                0.1,
+                "Minimum grade for a consistent note head");
 
         //
         Evaluation.Grade forteMinGrade = new Evaluation.Grade(
-            0.01,
-            "Minimum grade for glyph close to Forte");
+                0.01,
+                "Minimum grade for glyph close to Forte");
 
         //
         Evaluation.Grade keySigMinGrade = new Evaluation.Grade(
-            0.01,
-            "Minimum grade for a key signature");
+                0.01,
+                "Minimum grade for a key signature");
 
         //
         Evaluation.Grade textMinGrade = new Evaluation.Grade(
-            0.01,
-            "Minimum grade for a text symbol");
+                0.01,
+                "Minimum grade for a text symbol");
 
         //
         Evaluation.Grade timeMinGrade = new Evaluation.Grade(
-            0,
-            "Minimum grade for a time sig");
-    }
+                0,
+                "Minimum grade for a time sig");
 
-    private Grades ()
-    {
     }
 }

@@ -34,21 +34,14 @@ public interface OCR
 
         /** Automatic discovery of multi block layout */
         MULTI_BLOCK,
-        /** No layout processing, a single block is assumed */
+        /** No layout
+         * processing, a single block is assumed */
         SINGLE_BLOCK;
+
     }
 
-    /**
-     * Exception used to signal that no OCR is actually available.
-     */
-    static class UnavailableOcrException
-            extends RuntimeException
-    {
-    }
-    
     //~ Methods ----------------------------------------------------------------
     //
-
     /**
      * Report the set of supported language codes
      *
@@ -83,4 +76,13 @@ public interface OCR
                               LayoutMode layoutMode,
                               SystemInfo system,
                               String label);
+
+    //~ Inner Classes ----------------------------------------------------------
+    /**
+     * Exception used to signal that no OCR is actually available.
+     */
+    static class UnavailableOcrException
+            extends RuntimeException
+    {
+    }
 }

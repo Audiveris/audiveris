@@ -13,11 +13,13 @@ package omr.score.entity;
 
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
+
+import omr.score.visitor.ScoreVisitor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
-import omr.score.visitor.ScoreVisitor;
+import java.awt.Point;
 
 /**
  * Class {@code Pedal} represents a pedal (start) or pedal up (stop) event
@@ -25,15 +27,14 @@ import omr.score.visitor.ScoreVisitor;
  * @author Hervé Bitteur
  */
 public class Pedal
-    extends AbstractDirection
+        extends AbstractDirection
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Pedal.class);
-    
-    //~ Constructors -----------------------------------------------------------
 
+    //~ Constructors -----------------------------------------------------------
     //-------//
     // Pedal //
     //-------//
@@ -41,47 +42,24 @@ public class Pedal
      * Creates a new instance of Pedal event
      *
      * @param measure measure that contains this mark
-     * @param point location of mark
-     * @param chord the chord related to the mark, if any
-     * @param glyph the underlying glyph
+     * @param point   location of mark
+     * @param chord   the chord related to the mark, if any
+     * @param glyph   the underlying glyph
      */
-    public Pedal (Measure    measure,
-                  PixelPoint point,
-                  Chord      chord,
-                  Glyph      glyph)
+    public Pedal (Measure measure,
+                  Point point,
+                  Chord chord,
+                  Glyph glyph)
     {
         super(
-            measure,
-            glyph.getShape() == Shape.PEDAL_MARK,
-            point,
-            chord,
-            glyph);
+                measure,
+                glyph.getShape() == Shape.PEDAL_MARK,
+                point,
+                chord,
+                glyph);
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Used by SystemTranslator to allocate the pedal marks
-     *
-     * @param glyph underlying glyph
-     * @param measure measure where the mark is located
-     * @param point location for the mark
-     */
-    public static void populate (Glyph      glyph,
-                                 Measure    measure,
-                                 PixelPoint point)
-    {
-        if (glyph.isVip()) {
-            logger.info("Pedal. populate {}", glyph.idString());
-        }
-        
-        glyph.setTranslation(
-            new Pedal(measure, point, findChord(measure, point), glyph));
-    }
-
     //--------//
     // accept //
     //--------//
@@ -89,5 +67,27 @@ public class Pedal
     public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
+    }
+
+    //----------//
+    // populate //
+    //----------//
+    /**
+     * Used by SystemTranslator to allocate the pedal marks
+     *
+     * @param glyph   underlying glyph
+     * @param measure measure where the mark is located
+     * @param point   location for the mark
+     */
+    public static void populate (Glyph glyph,
+                                 Measure measure,
+                                 Point point)
+    {
+        if (glyph.isVip()) {
+            logger.info("Pedal. populate {}", glyph.idString());
+        }
+
+        glyph.setTranslation(
+                new Pedal(measure, point, findChord(measure, point), glyph));
     }
 }

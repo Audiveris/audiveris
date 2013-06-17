@@ -12,11 +12,10 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
@@ -26,7 +25,7 @@ import java.awt.geom.Rectangle2D;
  * addition of an ottava (alta or bassa)
  */
 public class OttavaClefSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -34,7 +33,6 @@ public class OttavaClefSymbol
     private final boolean isAlta;
 
     //~ Constructors -----------------------------------------------------------
-
     //------------------//
     // OttavaClefSymbol //
     //------------------//
@@ -43,12 +41,12 @@ public class OttavaClefSymbol
      *
      * @param isAlta true for alta, false for bassa
      * @param isIcon true for an icon
-     * @param shape the related shape
-     * @param codes the codes for MusicFont characters
+     * @param shape  the related shape
+     * @param codes  the codes for MusicFont characters
      */
     public OttavaClefSymbol (boolean isAlta,
                              boolean isIcon,
-                             Shape   shape,
+                             Shape shape,
                              int... codes)
     {
         super(isIcon, shape, false, codes);
@@ -56,7 +54,6 @@ public class OttavaClefSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -80,15 +77,12 @@ public class OttavaClefSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     params,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params params,
+                          Point location,
+                          Alignment alignment)
     {
-        MyParams   p = (MyParams) params;
-        PixelPoint loc = alignment.translatedPoint(
-            TOP_CENTER,
-            p.rect,
-            location);
+        MyParams p = (MyParams) params;
+        Point loc = alignment.translatedPoint(TOP_CENTER, p.rect, location);
 
         if (isAlta) {
             MusicFont.paint(g, p.ottavaLayout, loc, TOP_CENTER);
@@ -102,21 +96,21 @@ public class OttavaClefSymbol
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //----------//
     // MyParams //
     //----------//
     private class MyParams
-        extends Params
+            extends Params
     {
         //~ Instance fields ----------------------------------------------------
 
-        final TextLayout  ottavaLayout;
+        final TextLayout ottavaLayout;
+
         final Rectangle2D ottavaRect;
+
         final Rectangle2D clefRect;
 
         //~ Constructors -------------------------------------------------------
-
         public MyParams (MusicFont font)
         {
             ottavaLayout = Symbols.SYMBOL_OTTAVA.layout(font);
@@ -126,8 +120,8 @@ public class OttavaClefSymbol
             clefRect = layout.getBounds();
 
             rect = new Rectangle(
-                (int) Math.ceil(clefRect.getWidth()),
-                (int) Math.ceil(ottavaRect.getHeight() + clefRect.getHeight()));
+                    (int) Math.ceil(clefRect.getWidth()),
+                    (int) Math.ceil(ottavaRect.getHeight() + clefRect.getHeight()));
         }
     }
 }

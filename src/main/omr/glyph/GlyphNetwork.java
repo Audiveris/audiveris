@@ -16,10 +16,10 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
+import omr.math.NeuralNetwork;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.math.NeuralNetwork;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

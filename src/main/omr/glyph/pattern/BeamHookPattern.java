@@ -15,14 +15,14 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
 
 /**
  * Class {@code BeamHookPattern} removes beam hooks for which the
@@ -70,8 +70,10 @@ public class BeamHookPattern
 
             if (hook.getStemNumber() != 1) {
                 if (hook.isVip() || logger.isDebugEnabled()) {
-                    logger.info("{} stem(s) for beam hook #{}",
-                            hook.getStemNumber(), hook.getId());
+                    logger.info(
+                            "{} stem(s) for beam hook #{}",
+                            hook.getStemNumber(),
+                            hook.getId());
                 }
 
                 hook.setShape(null);
@@ -93,11 +95,10 @@ public class BeamHookPattern
                     }
                 }
 
-                int hookDy = hook.getCentroid().y
-                             - stem.getCentroid().y;
+                int hookDy = hook.getCentroid().y - stem.getCentroid().y;
 
                 // Look for other stuff on the stem
-                PixelRectangle stemBox = system.stemBoxOf(stem);
+                Rectangle stemBox = system.stemBoxOf(stem);
                 boolean beamFound = false;
 
                 for (Glyph g : system.lookupIntersectedGlyphs(
@@ -111,8 +112,9 @@ public class BeamHookPattern
                         if (ShapeSet.Beams.contains(shape)
                             && (shape != Shape.BEAM_HOOK)) {
                             if (hook.isVip() || logger.isDebugEnabled()) {
-                                logger.info("Confirmed beam hook #{}", hook.
-                                        getId());
+                                logger.info(
+                                        "Confirmed beam hook #{}",
+                                        hook.getId());
                             }
 
                             beamFound = true;

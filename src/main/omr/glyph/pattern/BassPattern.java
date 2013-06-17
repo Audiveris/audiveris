@@ -23,14 +23,14 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
+import omr.sheet.Scale;
+import omr.sheet.SystemInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
-
-import omr.sheet.Scale;
-import omr.sheet.SystemInfo;
+import java.awt.Point;
+import java.awt.Rectangle;
 
 /**
  * Class {@code BassPattern} checks for segmented bass clefs, in the
@@ -47,7 +47,8 @@ public class BassPattern
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(BassPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            BassPattern.class);
 
     //~ Constructors -----------------------------------------------------------
     //-------------//
@@ -107,7 +108,10 @@ public class BassPattern
                 }
 
                 // Here we have a couple
-                logger.debug("Got bass dots #{} & #{}", top.getId(), bot.getId());
+                logger.debug(
+                        "Got bass dots #{} & #{}",
+                        top.getId(),
+                        bot.getId());
 
                 Glyph compound = system.buildCompound(
                         top,
@@ -125,6 +129,25 @@ public class BassPattern
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Scale.Fraction maxBassDotDx = new Scale.Fraction(
+                0.25,
+                "Tolerance on Bass dot abscissae");
+
+        Constant.Double maxBassDotPitchDy = new Constant.Double(
+                "pitch",
+                0.5,
+                "Ordinate tolerance on a Bass dot pitch position");
+
+    }
+
     //-------------//
     // BassAdapter //
     //-------------//
@@ -144,16 +167,16 @@ public class BassPattern
 
         //~ Methods ------------------------------------------------------------
         @Override
-        public PixelRectangle computeReferenceBox ()
+        public Rectangle computeReferenceBox ()
         {
             if (seed == null) {
                 throw new NullPointerException(
                         "Compound seed has not been set");
             }
 
-            PixelRectangle pixRect = new PixelRectangle(seed.getCentroid());
+            Rectangle pixRect = new Rectangle(seed.getCentroid());
             pixRect.add(
-                    new PixelPoint(
+                    new Point(
                     pixRect.x - (2 * scale.getInterline()),
                     pixRect.y + (3 * scale.getInterline())));
 
@@ -166,24 +189,5 @@ public class BassPattern
             return !glyph.isManualShape()
                    || ShapeSet.BassClefs.contains(glyph.getShape());
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Scale.Fraction maxBassDotDx = new Scale.Fraction(
-                0.25,
-                "Tolerance on Bass dot abscissae");
-
-        Constant.Double maxBassDotPitchDy = new Constant.Double(
-                "pitch",
-                0.5,
-                "Ordinate tolerance on a Bass dot pitch position");
-
     }
 }

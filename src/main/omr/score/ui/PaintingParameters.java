@@ -232,7 +232,8 @@ public class PaintingParameters
         PaintingLayer layer = PaintingLayer.values()[ord];
 
         // Update toolbar/menu icon
-        Icon icon = getLayerIcons().get(layer);
+        Icon icon = getLayerIcons()
+                .get(layer);
         ApplicationAction action = getLayerAction();
         action.putValue(AbstractAction.LARGE_ICON_KEY, icon); // toolbar
         action.putValue(AbstractAction.SMALL_ICON, icon); // menu

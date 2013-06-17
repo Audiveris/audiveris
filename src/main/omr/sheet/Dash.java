@@ -17,13 +17,9 @@ import omr.grid.StaffInfo;
 
 import omr.math.Line;
 
-import omr.ui.util.UIUtilities;
-
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Stroke;
 import java.util.Comparator;
 
 /**

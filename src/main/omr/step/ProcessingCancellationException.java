@@ -11,15 +11,15 @@
 // </editor-fold>
 package omr.step;
 
-
 /**
- * Class {@code ProcessingCancellationException} describes the exception raised
- * then the processing of a sheet has been cancelled (generally for time out)
+ * Class {@code ProcessingCancellationException} describes the
+ * exception raised then the processing of a sheet has been cancelled
+ * (generally for time out).
  *
  * @author Hervé Bitteur
  */
 public class ProcessingCancellationException
-    extends RuntimeException
+        extends RuntimeException
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -35,6 +35,7 @@ public class ProcessingCancellationException
     /**
      * Construct an {@code ProcessingCancellationException} with detail
      * message.
+     *
      * @param message the related message
      */
     public ProcessingCancellationException (String message)
@@ -45,6 +46,7 @@ public class ProcessingCancellationException
     /**
      * Construct an {@code ProcessingCancellationException} from an
      * existing exception.
+     *
      * @param ex the related exception
      */
     public ProcessingCancellationException (Throwable ex)

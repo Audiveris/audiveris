@@ -13,8 +13,6 @@ package omr.ui.symbol;
 
 import omr.WellKnowns;
 
-import omr.score.common.PixelPoint;
-
 import omr.util.UriUtil;
 
 import org.slf4j.Logger;
@@ -24,6 +22,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
 import java.awt.font.FontRenderContext;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
@@ -183,7 +182,7 @@ public abstract class OmrFont
      */
     public static void paint (Graphics2D g,
                               TextLayout layout,
-                              PixelPoint location,
+                              Point location,
                               Alignment alignment)
     {
         try {

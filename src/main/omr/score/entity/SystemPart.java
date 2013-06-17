@@ -15,11 +15,6 @@ import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.PartInfo;
@@ -27,7 +22,11 @@ import omr.sheet.PartInfo;
 import omr.util.Predicate;
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -349,7 +348,7 @@ public class SystemPart
             int yOffset = refPart.getBox().y - refPart.getSystem().getBox().y;
 
             dummyMeasure.setBox(
-                    new PixelRectangle(
+                    new Rectangle(
                     measure.getBox().x,
                     getSystem().getBox().y + yOffset,
                     measure.getBox().width,
@@ -656,7 +655,7 @@ public class SystemPart
      * @param point the provided page point
      * @return the nearest staff, within the part staves
      */
-    public Staff getStaffAt (PixelPoint point)
+    public Staff getStaffAt (Point point)
     {
         // This may fail 
         StaffInfo staffInfo = getSystem().getInfo().getStaffAt(point);
@@ -686,7 +685,7 @@ public class SystemPart
      * @param point the provided point
      * @return the staff just above
      */
-    public Staff getStaffJustAbove (PixelPoint point)
+    public Staff getStaffJustAbove (Point point)
     {
         Staff pointStaff = getStaffAt(point);
         double pitch = pointStaff.pitchPositionOf(point);
@@ -706,7 +705,7 @@ public class SystemPart
      * @param point the provided point
      * @return the staff just below
      */
-    public Staff getStaffJustBelow (PixelPoint point)
+    public Staff getStaffJustBelow (Point point)
     {
         Staff pointStaff = getStaffAt(point);
         double pitch = pointStaff.pitchPositionOf(point);
@@ -727,7 +726,7 @@ public class SystemPart
      * @param point the point whose ordinate is to be checked
      * @return the StaffPosition value
      */
-    public StaffPosition getStaffPosition (PixelPoint point)
+    public StaffPosition getStaffPosition (Point point)
     {
         Staff firstStaff = getFirstStaff();
 
@@ -839,7 +838,7 @@ public class SystemPart
             LyricsLine line = (LyricsLine) node;
             line.setId(lyrics.getChildren().indexOf(line) + 1);
             line.setStaff(
-                    getSystem().getStaffAbove(new PixelPoint(0, line.getY())));
+                    getSystem().getStaffAbove(new Point(0, line.getY())));
         }
     }
 
@@ -1035,7 +1034,7 @@ public class SystemPart
     protected void computeBox ()
     {
         // Use the union of staves boxes
-        PixelRectangle newBox = null;
+        Rectangle newBox = null;
 
         for (TreeNode node : getStaves()) {
             Staff staff = (Staff) node;

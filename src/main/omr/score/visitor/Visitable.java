@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.score.visitor;
 
-
 /**
  * Interface {@code Visitable} must be implemented by any node to be
  * visited in the Score hierarchy
@@ -27,8 +26,8 @@ public interface Visitable
      *
      * @param visitor concrete visitor object to define the actual processing
      * @return true if children must be visited also, false otherwise.
-     *              <b>Nota</b>: Unless there is a compelling reason, it's safer
-     *              to return true to let the visitor work normally.
+     * <b>Nota</b>: Unless there is a compelling reason, it's safer
+     * to return true to let the visitor work normally.
      */
     boolean accept (ScoreVisitor visitor);
 }

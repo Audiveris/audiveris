@@ -39,7 +39,6 @@ public class LSpinner
     protected JSpinner spinner;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // LSpinner //
     //----------//
@@ -48,7 +47,7 @@ public class LSpinner
      * characteristics.
      *
      * @param label the string to be used as label text
-     * @param tip the related tool tip text
+     * @param tip   the related tool tip text
      */
     public LSpinner (String label,
                      String tip)
@@ -63,7 +62,6 @@ public class LSpinner
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-------------------//
     // addChangeListener //
     //-------------------//

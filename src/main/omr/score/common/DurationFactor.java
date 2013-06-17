@@ -20,7 +20,7 @@ import omr.math.Rational;
  * @author Hervé Bitteur
  */
 public class DurationFactor
-    extends Rational
+        extends Rational
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -31,7 +31,6 @@ public class DurationFactor
     public final int actualDen;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------------//
     // DurationFactor //
     //----------------//
@@ -45,11 +44,12 @@ public class DurationFactor
                            int den)
     {
         super(num, den);
-        
+
         actualNum = num;
         actualDen = den;
     }
 
+    //~ Methods ----------------------------------------------------------------
     //----------//
     // toString //
     //----------//
@@ -62,5 +62,4 @@ public class DurationFactor
             return actualNum + "/" + actualDen;
         }
     }
-    
 }

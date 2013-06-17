@@ -11,14 +11,14 @@
 // </editor-fold>
 package omr.score.ui;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
 import omr.sheet.ui.SheetDependent;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code ScoreDependent} handles the dependency on score
@@ -32,7 +32,8 @@ public abstract class ScoreDependent
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ScoreDependent.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ScoreDependent.class);
 
     /** Is a Score available. */
     protected static final String SCORE_AVAILABLE = "scoreAvailable";
@@ -119,7 +120,6 @@ public abstract class ScoreDependent
             } else {
                 setScoreIdle(false);
             }
-
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }

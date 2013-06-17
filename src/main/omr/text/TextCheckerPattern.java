@@ -14,10 +14,10 @@ package omr.text;
 import omr.glyph.facets.Glyph;
 import omr.glyph.pattern.GlyphPattern;
 
+import omr.sheet.SystemInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.sheet.SystemInfo;
 
 /**
  * Class {@code TextCheckerPattern} is a debugging utility used to make
@@ -35,12 +35,12 @@ public class TextCheckerPattern
             TextCheckerPattern.class);
 
     //~ Constructors -----------------------------------------------------------
-    //
-    //--------------------//
-    // TextCheckerPattern //
-    //--------------------//
-    public TextCheckerPattern (
-            SystemInfo system)
+    /**
+     * Creates a new TextCheckerPattern object.
+     *
+     * @param system DOCUMENT ME!
+     */
+    public TextCheckerPattern (SystemInfo system)
     {
         super("textChecker", system);
     }
@@ -58,13 +58,13 @@ public class TextCheckerPattern
     @Override
     public int runPattern ()
     {
-//        if (system.getId() == 1) {
-//            logger.info("{} Sentences: {}",
-//                        system.idString(), system.getSentences().size());
-//            for (TextLine sentence : system.getSentences()) {
-//                logger.debug("   {}", sentence);
-//            }
-//        }
+        //        if (system.getId() == 1) {
+        //            logger.info("{} Sentences: {}",
+        //                        system.idString(), system.getSentences().size());
+        //            for (TextLine sentence : system.getSentences()) {
+        //                logger.debug("   {}", sentence);
+        //            }
+        //        }
         int glyphsAltered = 0;
         int glyphsTotal = 0;
 
@@ -72,6 +72,7 @@ public class TextCheckerPattern
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.isText()) {
                 glyphsTotal++;
+
                 if (!checkGlyph(glyph)) {
                     glyphsAltered++;
                 }
@@ -79,8 +80,11 @@ public class TextCheckerPattern
         }
 
         if (glyphsAltered > 0) {
-            logger.info("{} Text glyphs altered: {}/{}",
-                        system.idString(), glyphsAltered, glyphsTotal);
+            logger.info(
+                    "{} Text glyphs altered: {}/{}",
+                    system.idString(),
+                    glyphsAltered,
+                    glyphsTotal);
         }
 
         // Check sentences
@@ -91,11 +95,12 @@ public class TextCheckerPattern
 
             for (TextWord word : sentence.getWords()) {
                 Glyph glyph = word.getGlyph();
+
                 if (!checkGlyph(glyph)) {
                     modifs++;
                 }
-
             }
+
             if (modifs > 0) {
                 sentencesAltered++;
                 logger.debug("{} modifs in {}", modifs, sentence);
@@ -103,13 +108,14 @@ public class TextCheckerPattern
         }
 
         if (sentencesAltered > 0) {
-            logger.info("{} Text sentences altered: {}/{}",
-                        system.idString(),
-                        sentencesAltered, system.getSentences().size());
+            logger.info(
+                    "{} Text sentences altered: {}/{}",
+                    system.idString(),
+                    sentencesAltered,
+                    system.getSentences().size());
         }
 
         return 0; // Useless
-
     }
 
     //------------//
@@ -119,41 +125,53 @@ public class TextCheckerPattern
     {
         if (glyph == null) {
             logger.debug("No related glyph");
+
             return false;
         }
 
         if (!glyph.isActive()) {
             logger.debug("{} Not active", glyph.idString());
+
             return false;
         }
 
         if (!glyph.isText()) {
             logger.debug("{} Not a text", glyph.idString());
+
             return false;
         }
 
         TextWord word = glyph.getTextWord();
+
         if (word == null) {
             logger.debug("{} No textWord", glyph.idString());
+
             return false;
         }
 
-        if (!glyph.getTextValue().equals(word.getInternalValue())) {
-            logger.debug("{} Value modified: \"{}\" vs \"{}\"",
-                        glyph.idString(),
-                        glyph.getTextValue(),
-                        word.getInternalValue());
+        if (!glyph.getTextValue()
+                .equals(word.getInternalValue())) {
+            logger.debug(
+                    "{} Value modified: \"{}\" vs \"{}\"",
+                    glyph.idString(),
+                    glyph.getTextValue(),
+                    word.getInternalValue());
+
             return false;
         }
-        
+
         TextLine line = word.getTextLine();
-        if (!line.getWords().contains(word)) {
-            logger.debug("{} Not in containing line {}",
-                        glyph.idString(), line);
+
+        if (!line.getWords()
+                .contains(word)) {
+            logger.debug(
+                    "{} Not in containing line {}",
+                    glyph.idString(),
+                    line);
+
             return false;
         }
 
-        
         return true;
     }
 }

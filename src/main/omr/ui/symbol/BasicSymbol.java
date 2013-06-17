@@ -11,12 +11,10 @@
 // </editor-fold>
 package omr.ui.symbol;
 
+import static omr.ui.symbol.Alignment.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelDimension;
-import omr.score.common.PixelPoint;
-import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -40,49 +38,49 @@ import java.util.Arrays;
  * @author Hervé Bitteur
  */
 public class BasicSymbol
-    implements Symbol
+        implements Symbol
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    protected static final Logger logger = LoggerFactory.getLogger(BasicSymbol.class);
+    protected static final Logger logger = LoggerFactory.getLogger(
+            BasicSymbol.class);
 
     /** Painting origin for images */
-    protected static final PixelPoint ORIGIN = new PixelPoint(0, 0);
+    protected static final Point ORIGIN = new Point(0, 0);
 
     /** A transformation to flip horizontally (x' = -x) */
     protected static final AffineTransform horizontalFlip = new AffineTransform(
-        -1, // m00 (x' = -x)
-        0, //  m01
-        0, //  m02
-        1, //  m10 (y' = y)
-        0, //  m11
-        0); // m12
+            -1, // m00 (x' = -x)
+            0, //  m01
+            0, //  m02
+            1, //  m10 (y' = y)
+            0, //  m11
+            0); // m12
 
     /** A transformation to flip vertically (y' = -y) */
     protected static final AffineTransform verticalFlip = new AffineTransform(
-        1, // m00 (x' = x)
-        0, //  m01
-        0, //  m02
-        -1, //  m10 (y' = -y)
-        0, //  m11
-        0); // m12
+            1, // m00 (x' = x)
+            0, //  m01
+            0, //  m02
+            -1, //  m10 (y' = -y)
+            0, //  m11
+            0); // m12
 
-    /** A transformation to turn 1 quadrant clockwise  */
+    /** A transformation to turn 1 quadrant clockwise */
     protected static final AffineTransform quadrantRotateOne = AffineTransform.getQuadrantRotateInstance(
-        1);
+            1);
 
-    /** A transformation to turn 2 quadrants clockwise  */
+    /** A transformation to turn 2 quadrants clockwise */
     protected static final AffineTransform quadrantRotateTwo = AffineTransform.getQuadrantRotateInstance(
-        2);
+            2);
 
-    /** A transformation  for really small icon display */
+    /** A transformation for really small icon display */
     protected static AffineTransform tiny = AffineTransform.getScaleInstance(
-        0.5,
-        0.5);
+            0.5,
+            0.5);
 
     //~ Instance fields --------------------------------------------------------
-
     /** To flag an icon symbol */
     protected final boolean isIcon;
 
@@ -96,15 +94,15 @@ public class BasicSymbol
     protected BasicSymbol icon;
 
     /** Image dimension corresponding to standard interline */
-    private PixelDimension dimension;
+    private Dimension dimension;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // BasicSymbol //
     //-------------//
     /**
      * Creates a new BasicSymbol object.
+     *
      * @param isIcon true for an icon
      * @param codes  the codes for MusicFont characters
      */
@@ -120,6 +118,7 @@ public class BasicSymbol
     //-------------//
     /**
      * Creates a new BasicSymbol object, standard size.
+     *
      * @param codes the codes for MusicFont characters
      */
     public BasicSymbol (int... codes)
@@ -128,43 +127,33 @@ public class BasicSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
-    //---------------//
-    // getIconHeight //
-    //---------------//
-    /**
-     * Report the icon height.
-     * @return the height of the icon image in pixels
-     */
+    //------------//
+    // buildImage //
+    //------------//
     @Override
-    public int getIconHeight ()
+    public SymbolImage buildImage (MusicFont font)
     {
-        return getIcon()
-                   .getHeight();
-    }
+        // Params
+        Params p = getParams(font);
 
-    //--------------//
-    // getIconImage //
-    //--------------//
-    @Override
-    public BufferedImage getIconImage ()
-    {
-        return getIcon()
-                   .getImage();
-    }
+        // Allocate image of proper size
+        SymbolImage img = new SymbolImage(
+                p.rect.width,
+                p.rect.height,
+                p.offset);
 
-    //--------------//
-    // getIconWidth //
-    //--------------//
-    /**
-     * Report the width of the icon (used by swing when painting).
-     * @return the icon image width in pixels
-     */
-    @Override
-    public int getIconWidth ()
-    {
-        return getIcon()
-                   .getWidth();
+        // Paint the image
+        Graphics2D g = (Graphics2D) img.getGraphics();
+        g.setColor(OmrFont.defaultImageColor);
+
+        // Anti-aliasing
+        g.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
+        paint(g, p, ORIGIN, TOP_LEFT);
+
+        return img;
     }
 
     //-----------//
@@ -175,44 +164,53 @@ public class BasicSymbol
         return new String(codes, 0, codes.length);
     }
 
-    //------------//
-    // buildImage //
-    //------------//
+    //---------------//
+    // getIconHeight //
+    //---------------//
+    /**
+     * Report the icon height.
+     *
+     * @return the height of the icon image in pixels
+     */
     @Override
-    public SymbolImage buildImage (MusicFont font)
+    public int getIconHeight ()
     {
-        // Params
-        Params      p = getParams(font);
+        return getIcon()
+                .getHeight();
+    }
 
-        // Allocate image of proper size
-        SymbolImage img = new SymbolImage(
-            p.rect.width,
-            p.rect.height,
-            p.offset);
+    //--------------//
+    // getIconImage //
+    //--------------//
+    @Override
+    public BufferedImage getIconImage ()
+    {
+        return getIcon()
+                .getImage();
+    }
 
-        // Paint the image
-        Graphics2D g = (Graphics2D) img.getGraphics();
-        g.setColor(OmrFont.defaultImageColor);
-
-        // Anti-aliasing
-        g.setRenderingHint(
-            RenderingHints.KEY_ANTIALIASING,
-            RenderingHints.VALUE_ANTIALIAS_ON);
-
-        paint(g, p, ORIGIN, TOP_LEFT);
-
-        return img;
+    //--------------//
+    // getIconWidth //
+    //--------------//
+    /**
+     * Report the width of the icon (used by swing when painting).
+     *
+     * @return the icon image width in pixels
+     */
+    @Override
+    public int getIconWidth ()
+    {
+        return getIcon()
+                .getWidth();
     }
 
     //-------------//
     // getRefPoint //
     //-------------//
     @Override
-    public PixelPoint getRefPoint (Rectangle box)
+    public Point getRefPoint (Rectangle box)
     {
-        return new PixelPoint(
-            box.x + (box.width / 2),
-            box.y + (box.height / 2));
+        return new Point(box.x + (box.width / 2), box.y + (box.height / 2));
     }
 
     //-----------//
@@ -220,6 +218,7 @@ public class BasicSymbol
     //-----------//
     /**
      * Implements Icon interface paintIcon() method.
+     *
      * @param c containing component
      * @param g graphic context
      * @param x abscissa
@@ -227,9 +226,9 @@ public class BasicSymbol
      */
     @Override
     public void paintIcon (Component c,
-                           Graphics  g,
-                           int       x,
-                           int       y)
+                           Graphics g,
+                           int x,
+                           int y)
     {
         g.drawImage(getIconImage(), x, y, c);
     }
@@ -239,9 +238,9 @@ public class BasicSymbol
     //-------------//
     @Override
     public void paintSymbol (Graphics2D g,
-                             MusicFont  font,
-                             PixelPoint location,
-                             Alignment  alignment)
+                             MusicFont font,
+                             Point location,
+                             Alignment alignment)
     {
         paint(g, getParams(font), location, alignment);
     }
@@ -268,6 +267,7 @@ public class BasicSymbol
     /**
      * To be redefined by each subclass in order to create a icon symbol
      * using the subclass.
+     *
      * @return the icon-sized instance of proper symbol class
      */
     protected BasicSymbol createIcon ()
@@ -280,9 +280,10 @@ public class BasicSymbol
     //--------------//
     /**
      * Report the normalized bounding dimension of the symbol.
+     *
      * @return the size of the symbol
      */
-    protected PixelDimension getDimension ()
+    protected Dimension getDimension ()
     {
         if (dimension == null) {
             computeImage();
@@ -297,16 +298,17 @@ public class BasicSymbol
     /**
      * Report what would be the bounding dimension of the symbol,
      * if painted with the provided font.
+     *
      * @return the potential size of the painted symbol
      */
-    protected PixelDimension getDimension (MusicFont font)
+    protected Dimension getDimension (MusicFont font)
     {
         Dimension dim = getDimension();
-        double    ratio = font.getSize2D() / MusicFont.baseMusicFont.getSize2D();
+        double ratio = font.getSize2D() / MusicFont.baseMusicFont.getSize2D();
 
-        return new PixelDimension(
-            (int) Math.ceil(dim.width * ratio),
-            (int) Math.ceil(dim.height * ratio));
+        return new Dimension(
+                (int) Math.ceil(dim.width * ratio),
+                (int) Math.ceil(dim.height * ratio));
     }
 
     //-----------//
@@ -314,6 +316,7 @@ public class BasicSymbol
     //-----------//
     /**
      * Report the height of the symbol, for a standard interline.
+     *
      * @return the real image height in pixels
      */
     protected int getHeight ()
@@ -330,6 +333,7 @@ public class BasicSymbol
     //----------//
     /**
      * Report the underlying image, scaled for standard interline value.
+     *
      * @return the underlying image
      */
     protected BufferedImage getImage ()
@@ -353,8 +357,8 @@ public class BasicSymbol
         Rectangle2D r = p.layout.getBounds();
 
         p.rect = new Rectangle(
-            (int) Math.ceil(r.getWidth()),
-            (int) Math.ceil(r.getHeight()));
+                (int) Math.ceil(r.getWidth()),
+                (int) Math.ceil(r.getHeight()));
 
         return p;
     }
@@ -364,6 +368,7 @@ public class BasicSymbol
     //----------//
     /**
      * Report the width of the symbol, for a standard interline.
+     *
      * @return the real image width in pixels
      */
     protected int getWidth ()
@@ -393,7 +398,7 @@ public class BasicSymbol
         //
         if (codes != null) {
             sb.append(" codes:")
-              .append(Arrays.toString(codes));
+                    .append(Arrays.toString(codes));
         }
 
         return sb.toString();
@@ -405,6 +410,7 @@ public class BasicSymbol
     /**
      * Report a single layout, based on symbol codes if they exist.
      * This feature can work only with a single "line" of music codes.
+     *
      * @param font the specifically-scaled font to use
      * @return the layout ready to be drawn, or null
      */
@@ -418,15 +424,16 @@ public class BasicSymbol
     //-------//
     /**
      * Actual painting, to be redefined by subclasses if needed.
+     *
      * @param g         graphics context
      * @param p         the parameters fed by getParams()
      * @param location  where to paint
      * @param alignment relative position of provided location wrt symbol
      */
     protected void paint (Graphics2D g,
-                          Params     p,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params p,
+                          Point location,
+                          Alignment alignment)
     {
         OmrFont.paint(g, p.layout, location, alignment);
     }
@@ -437,9 +444,9 @@ public class BasicSymbol
     private void computeImage ()
     {
         image = buildImage(
-            isIcon ? MusicFont.iconMusicFont : MusicFont.baseMusicFont);
+                isIcon ? MusicFont.iconMusicFont : MusicFont.baseMusicFont);
 
-        dimension = new PixelDimension(image.getWidth(), image.getHeight());
+        dimension = new Dimension(image.getWidth(), image.getHeight());
     }
 
     //---------//
@@ -463,6 +470,7 @@ public class BasicSymbol
     //----------------//
     /**
      * Make sure the codes are above the CODE_OFFSET value.
+     *
      * @param codes raw codes
      * @return codes suitable for font display
      */
@@ -482,7 +490,6 @@ public class BasicSymbol
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // Params //
     //--------//
@@ -502,5 +509,6 @@ public class BasicSymbol
 
         /** Image bounds. */
         Rectangle rect;
+
     }
 }

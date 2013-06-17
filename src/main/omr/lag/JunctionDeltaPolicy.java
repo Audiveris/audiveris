@@ -21,7 +21,7 @@ import omr.run.Run;
  * @author Hervé Bitteur
  */
 public class JunctionDeltaPolicy
-    implements JunctionPolicy
+        implements JunctionPolicy
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -31,14 +31,14 @@ public class JunctionDeltaPolicy
     private final int maxDeltaLength;
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------------//
     // JunctionDeltaPolicy //
     //---------------------//
     /**
      * Creates an instance of policy based on delta run length.
+     *
      * @param maxDeltaLength the maximum possible length gap between two
-     * consecutive rows
+     *                       consecutive rows
      */
     public JunctionDeltaPolicy (int maxDeltaLength)
     {
@@ -46,7 +46,6 @@ public class JunctionDeltaPolicy
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // consistentRun //
     //---------------//
@@ -54,12 +53,13 @@ public class JunctionDeltaPolicy
      * Check whether the Run is consistent with the provided Section,
      * according to this junction policy, based on run length and last
      * section run length.
-     * @param run the Run candidate
+     *
+     * @param run     the Run candidate
      * @param section the potentially hosting Section
      * @return true if consistent, false otherwise
      */
     @Override
-    public boolean consistentRun (Run     run,
+    public boolean consistentRun (Run run,
                                   Section section)
     {
         // Check based on absolute differences between the two runs
@@ -74,7 +74,7 @@ public class JunctionDeltaPolicy
     @Override
     public String toString ()
     {
-        return "{JunctionDeltaPolicy" + " maxDeltaLength=" + maxDeltaLength +
-               "}";
+        return "{JunctionDeltaPolicy" + " maxDeltaLength=" + maxDeltaLength
+               + "}";
     }
 }

@@ -19,11 +19,11 @@ import omr.glyph.Grades;
 import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code LeftOverPattern} processes the significant glyphs
@@ -87,8 +87,7 @@ public class LeftOverPattern
                 glyph.setEvaluation(vote);
 
                 if (logger.isDebugEnabled() || glyph.isVip()) {
-                    logger.info("LeftOver {} vote: {}", 
-                            glyph.idString(), vote);
+                    logger.info("LeftOver {} vote: {}", glyph.idString(), vote);
                 }
 
                 successNb++;

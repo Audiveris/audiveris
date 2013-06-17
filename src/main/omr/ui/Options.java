@@ -17,11 +17,11 @@ import omr.constant.UnitManager;
 import omr.constant.UnitModel;
 import omr.constant.UnitTreeTable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -105,10 +105,12 @@ public class Options
         public void actionPerformed (ActionEvent e)
         {
             MainGui gui = Main.getGui();
+
             if (gui != null) {
                 if (true == gui.displayConfirmation(
                         "Reset all constants to their factory value?")) {
-                    UnitManager.getInstance().resetAllUnits();
+                    UnitManager.getInstance()
+                            .resetAllUnits();
                 }
             }
         }
@@ -233,13 +235,13 @@ public class Options
         // Make sure the search entry field gets the focus at creation time
         frame.addWindowListener(
                 new WindowAdapter()
-                {
-                    @Override
-                    public void windowOpened (WindowEvent e)
-                    {
-                        searchField.requestFocus();
-                    }
-                });
+        {
+            @Override
+            public void windowOpened (WindowEvent e)
+            {
+                searchField.requestFocus();
+            }
+        });
     }
 
     //~ Methods ----------------------------------------------------------------

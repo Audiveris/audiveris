@@ -19,8 +19,9 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code TimeRational} is a marshallable and non-mutable structure,
- * meant to carry the actual rational members of a TimeSignature.
+ * Class {@code TimeRational} is a marshallable and non-mutable
+ * structure, meant to carry the actual rational members of a
+ * TimeSignature.
  * <p>Note for example that (3/4) and (6/8) share the same rational value,
  * but with different actual members.
  */
@@ -39,7 +40,6 @@ public class TimeRational
     public final int num;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // TimeRational //
     //--------------//
@@ -66,7 +66,6 @@ public class TimeRational
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // equals //
     //--------//

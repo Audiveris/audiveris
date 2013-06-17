@@ -18,8 +18,7 @@ import omr.glyph.Shape;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelDimension;
-
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
@@ -60,15 +59,15 @@ public class MusicFont
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(MusicFont.class);
 
-    /** 
+    /**
      * The music font name: {@value} (no other one is used).
      * Possibilities: MusicalSymbols, Symbola, Bravura
      */
     public static final String FONT_NAME = "MusicalSymbols";
-    
-    /** 
-     * Offset for code range. 
-     *  0xf000 for MusicalSymbols
+
+    /**
+     * Offset for code range.
+     * 0xf000 for MusicalSymbols
      * 0x1d100 for Symbola or Bravura
      */
     public static final int CODE_OFFSET = 0xf000;
@@ -234,7 +233,7 @@ public class MusicFont
      * @return the adjusted TextLayout ready to be drawn
      */
     public TextLayout layout (Shape shape,
-                              PixelDimension dimension)
+                              Dimension dimension)
     {
         ShapeSymbol symbol = Symbols.getSymbol(shape);
 
@@ -257,7 +256,7 @@ public class MusicFont
      * @return the adjusted TextLayout ready to be drawn
      */
     public TextLayout layout (BasicSymbol symbol,
-                              PixelDimension dimension)
+                              Dimension dimension)
     {
         String str = symbol.getString();
         TextLayout layout = new TextLayout(str, this, frc);

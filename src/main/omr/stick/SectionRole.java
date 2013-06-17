@@ -15,12 +15,14 @@ import java.awt.Color;
 import static java.awt.Color.*;
 
 /**
- * Class {@code SectionRole} handles the role of a section in the building
- * of a stick.
+ * Class {@code SectionRole} handles the role of a section in the
+ * building of a stick.
  *
  * @author Hervé Bitteur
  */
-public enum SectionRole {
+public enum SectionRole
+{
+
     /**
      * Flags a section which represents the starting Core (the most central
      * part) of a stick
@@ -30,43 +32,44 @@ public enum SectionRole {
      * Flags a section, which has been added to a stick when filling holes,
      * typically when retrieving long staff lines
      */
-    HOLE(pink), 
+    HOLE(pink),
     /**
      * Flags an section, which is adjacent to a stick and to a crossing object
      */
-    INTERNAL(blue), 
+    INTERNAL(blue),
     /**
      * Flags a section, at the peripheral of the stick
      */
-    PERIPHERAL(yellow), 
+    PERIPHERAL(yellow),
     /**
      * Flags a section, which is adjacent to a stick
      */
-    BORDER(cyan), 
+    BORDER(cyan),
     // Below: Sections which failed the stick building
     //
     /**
      * No stick member: Section too thick to be part of a stick
      */
-    TOO_THICK(null), 
+    TOO_THICK(null),
     /**
      * No stick member: Section too far from the median line of the stick to be
      * part of it
      */
-    TOO_FAR(null), 
+    TOO_FAR(null),
     /**
      * No stick member: Section not slim enough to be considered in the building
      * of the stick
      */
-    TOO_FAT(null), 
+    TOO_FAT(null),
     /**
      * No stick member: Section discarded for various reasons
      */
-    DISCARDED(null), 
+    DISCARDED(null),
     /**
      * No stick member: Formerly internal section which has been purged
      */
     PURGED(null);
+
     /**
      * The color used when rendering the related section
      */

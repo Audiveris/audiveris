@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                           U I U t i l i t i e s                            //
+//                                 U I U t i l                                //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -42,16 +42,17 @@ import javax.swing.JToggleButton;
 import javax.swing.border.Border;
 
 /**
- * Class {@code UIUtilities} gathers utilities related to User Interface
+ * Class {@code UIUtil} gathers utilities related to User Interface
  *
  * @author Hervé Bitteur and Brenton Partridge
  */
-public class UIUtilities
+public class UIUtil
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(UIUtilities.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            UIUtil.class);
 
     /**
      * Customized border for tool buttons, to use consistently in all UI
@@ -68,6 +69,11 @@ public class UIUtilities
                     .dispose();
         }
     };
+
+    //~ Constructors -----------------------------------------------------------
+    private UIUtil ()
+    {
+    }
 
     //~ Methods ----------------------------------------------------------------
     //------------------//
@@ -307,9 +313,5 @@ public class UIUtilities
         }
 
         suppressBorders((Container) comp);
-    }
-
-    private UIUtilities ()
-    {
     }
 }

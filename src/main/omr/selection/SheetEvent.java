@@ -14,7 +14,7 @@ package omr.selection;
 import omr.sheet.Sheet;
 
 /**
- * Class {@code SheetEvent} represent a Sheet selection event, used to 
+ * Class {@code SheetEvent} represent a Sheet selection event, used to
  * call attention about a selected sheet.
  *
  * @author Hervé Bitteur

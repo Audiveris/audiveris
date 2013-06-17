@@ -13,10 +13,9 @@ package omr.ui.symbol;
 
 import omr.glyph.Shape;
 
-import omr.score.common.PixelPoint;
-
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -28,16 +27,15 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class NonDraggableSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final AffineTransform at = AffineTransform.getScaleInstance(
-        2,
-        2);
+            2,
+            2);
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------------//
     // NonDraggableSymbol //
     //--------------------//
@@ -64,7 +62,6 @@ public class NonDraggableSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -87,8 +84,8 @@ public class NonDraggableSymbol
         Rectangle2D r = p.layout.getBounds();
 
         p.rect = new Rectangle(
-            (int) Math.ceil(r.getWidth()),
-            (int) Math.ceil(r.getHeight()));
+                (int) Math.ceil(r.getWidth()),
+                (int) Math.ceil(r.getHeight()));
 
         return p;
     }
@@ -98,9 +95,9 @@ public class NonDraggableSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     p,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params p,
+                          Point location,
+                          Alignment alignment)
     {
         Color oldColor = g.getColor();
         g.setColor(Color.RED);

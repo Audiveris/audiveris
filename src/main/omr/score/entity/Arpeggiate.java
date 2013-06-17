@@ -15,15 +15,15 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.visitor.ScoreVisitor;
 
 import omr.sheet.Scale;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.List;
 
 /**
@@ -33,7 +33,7 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class Arpeggiate
-    extends AbstractNotation
+        extends AbstractNotation
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -41,10 +41,10 @@ public class Arpeggiate
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(Arpeggiate.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Arpeggiate.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //------------//
     // Arpeggiate //
     //------------//
@@ -52,44 +52,43 @@ public class Arpeggiate
      * Creates a new instance of Arpeggiate event
      *
      * @param measure measure that contains this mark
-     * @param point location of mark
-     * @param chord the chord related to the mark
-     * @param glyph the underlying glyph
+     * @param point   location of mark
+     * @param chord   the chord related to the mark
+     * @param glyph   the underlying glyph
      */
-    public Arpeggiate (Measure    measure,
-                       PixelPoint point,
-                       Chord      chord,
-                       Glyph      glyph)
+    public Arpeggiate (Measure measure,
+                       Point point,
+                       Chord chord,
+                       Glyph glyph)
     {
         super(measure, point, chord, glyph);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // populate //
     //----------//
     /**
      * Used by SystemTranslator to allocate the arpeggiate marks
      *
-     * @param glyph underlying glyph
+     * @param glyph   underlying glyph
      * @param measure measure where the mark is located
-     * @param point location for the mark
+     * @param point   location for the mark
      */
-    public static void populate (Glyph      glyph,
-                                 Measure    measure,
-                                 PixelPoint point)
+    public static void populate (Glyph glyph,
+                                 Measure measure,
+                                 Point point)
     {
         if (glyph.isVip()) {
             logger.info("Arpeggiate. populate {}", glyph.idString());
         }
-        
+
         // A Arpeggiate relates to ALL the embraced note(s)
         // We look on the right
-        int        dx = measure.getScale()
-                               .toPixels(constants.areaDx);
-        PixelPoint shiftedPoint = new PixelPoint(point.x + dx, point.y);
-        Slot       slot = measure.getClosestSlot(shiftedPoint);
+        int dx = measure.getScale()
+                .toPixels(constants.areaDx);
+        Point shiftedPoint = new Point(point.x + dx, point.y);
+        Slot slot = measure.getClosestSlot(shiftedPoint);
 
         if (slot == null) {
             measure.addError(glyph, "Suspicious arpeggiate without slots");
@@ -98,20 +97,20 @@ public class Arpeggiate
         }
 
         // We look for ALL embraced chord notes
-        PixelRectangle box = glyph.getBounds();
-        PixelPoint     top = new PixelPoint(box.x + (box.width / 2), box.y);
-        PixelPoint     bottom = new PixelPoint(
-            box.x + (box.width / 2),
-            box.y + box.height);
-        List<Chord>    chords = slot.getEmbracedChords(top, bottom);
+        Rectangle box = glyph.getBounds();
+        Point top = new Point(box.x + (box.width / 2), box.y);
+        Point bottom = new Point(
+                box.x + (box.width / 2),
+                box.y + box.height);
+        List<Chord> chords = slot.getEmbracedChords(top, bottom);
 
         if (!chords.isEmpty()) {
             // Allocate an instance with first embraced chord
             Arpeggiate arpeggiate = new Arpeggiate(
-                measure,
-                point,
-                chords.get(0),
-                glyph);
+                    measure,
+                    point,
+                    chords.get(0),
+                    glyph);
             glyph.setTranslation(arpeggiate);
 
             // Add the rest of embraced chords
@@ -134,18 +133,18 @@ public class Arpeggiate
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         /** Abscissa translate when looking for embraced notes */
         Scale.Fraction areaDx = new Scale.Fraction(
-            1.5,
-            "Abscissa shift when looking for embraced notes");
+                1.5,
+                "Abscissa shift when looking for embraced notes");
+
     }
 }

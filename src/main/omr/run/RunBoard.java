@@ -13,9 +13,6 @@ package omr.run;
 
 import omr.lag.Lag;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
 import omr.selection.UserEvent;
@@ -28,6 +25,9 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Class {@code RunBoard} is dedicated to display of Run information.
  *
@@ -39,7 +39,8 @@ public class RunBoard
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(RunBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            RunBoard.class);
 
     /** Events this entity is interested in */
     private static final Class<?>[] eventClasses = new Class<?>[]{RunEvent.class};
@@ -127,7 +128,7 @@ public class RunBoard
         super(
                 Board.RUN.name
                 + ((runsTable.getOrientation() == Orientation.VERTICAL) ? " Vert"
-                   : " Hori"),
+                : " Hori"),
                 Board.RUN.position
                 + ((runsTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
                 runsTable.getRunService(),

@@ -19,8 +19,8 @@ import java.util.Locale;
 
 /**
  * Class {@code Clock} provides various features related to the current
- * date and time, as well as the elapsed time since the beginning of the
- * application.
+ * date and time, as well as the elapsed time since the beginning of
+ * the application.
  *
  * @author Hervé Bitteur
  */
@@ -33,12 +33,12 @@ public class Clock
 
     /** General date formatting */
     private static final DateFormat dateFormatter = DateFormat.getDateTimeInstance(
-        DateFormat.FULL,
-        DateFormat.FULL,
-        Locale.US);
+            DateFormat.FULL,
+            DateFormat.FULL,
+            Locale.US);
 
-    /** General time formatting. Locale to be used, could be:  //Locale.US;
-       //Locale.FRANCE; */
+    /** General time formatting. Locale to be used, could be: //Locale.US;
+     * //Locale.FRANCE; */
     private static Locale locale = Locale.getDefault();
 
     /** Corresponding number format */
@@ -52,7 +52,6 @@ public class Clock
     }
 
     //~ Constructors -----------------------------------------------------------
-
     //-------//
     // Clock // To prevent instantiation
     //-------//
@@ -61,7 +60,6 @@ public class Clock
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // getDate //
     //---------//

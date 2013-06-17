@@ -11,16 +11,12 @@
 // </editor-fold>
 package omr.step;
 
-import omr.WellKnowns;
-
 import omr.constant.Constant;
 import omr.constant.Constant.Ratio;
 import omr.constant.ConstantSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.ui.util.UIUtilities;
 
 import java.awt.Graphics;
 
@@ -40,7 +36,8 @@ public class StepMonitor
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(StepMonitor.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            StepMonitor.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
@@ -100,13 +97,43 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        bar.setString(msg);
-                    }
-                });
+        {
+            @Override
+            public void run ()
+            {
+                bar.setString(msg);
+            }
+        });
+    }
+
+    //---------//
+    // animate //
+    //---------//
+    /**
+     * Sets the progress bar to show a percentage a certain amount above
+     * the previous percentage value (or above 0 if the bar had been
+     * indeterminate).
+     * This method is called on every message logged (see LogStepMonitorHandler)
+     */
+    void animate ()
+    {
+        SwingUtilities.invokeLater(
+                new Runnable()
+        {
+            @Override
+            public void run ()
+            {
+                int old = bar.getValue();
+
+                if (old > bar.getMinimum()) {
+                    int diff = bar.getMaximum() - old;
+                    int increment = (int) Math.round(
+                            diff * constants.ratio.getValue());
+                    bar.setIndeterminate(false);
+                    bar.setValue(old + increment);
+                }
+            }
+        });
     }
 
     //------------------//
@@ -135,36 +162,6 @@ public class StepMonitor
         }
     }
 
-    //---------//
-    // animate //
-    //---------//
-    /**
-     * Sets the progress bar to show a percentage a certain amount above
-     * the previous percentage value (or above 0 if the bar had been
-     * indeterminate).
-     * This method is called on every message logged (see LogStepMonitorHandler)
-     */
-    void animate ()
-    {
-        SwingUtilities.invokeLater(
-                new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        int old = bar.getValue();
-
-                        if (old > bar.getMinimum()) {
-                            int diff = bar.getMaximum() - old;
-                            int increment = (int) Math.round(
-                                    diff * constants.ratio.getValue());
-                            bar.setIndeterminate(false);
-                            bar.setValue(old + increment);
-                        }
-                    }
-                });
-    }
-
     //--------//
     // setBar //
     //--------//
@@ -177,18 +174,18 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-                {
-                    @Override
-                    public void run ()
-                    {
-                        bar.setIndeterminate(false);
+        {
+            @Override
+            public void run ()
+            {
+                bar.setIndeterminate(false);
 
-                        int divisions = constants.divisions.getValue();
-                        bar.setMinimum(0);
-                        bar.setMaximum(divisions);
-                        bar.setValue((int) Math.round(divisions * amount));
-                    }
-                });
+                int divisions = constants.divisions.getValue();
+                bar.setMinimum(0);
+                bar.setMaximum(divisions);
+                bar.setValue((int) Math.round(divisions * amount));
+            }
+        });
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -208,6 +205,7 @@ public class StepMonitor
         Ratio ratio = new Ratio(
                 0.1,
                 "Amount by which to increase step monitor percentage per animation, between 0 and 1");
+
     }
 
     //----------------//

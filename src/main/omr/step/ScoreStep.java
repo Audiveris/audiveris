@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.step;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.DurationRetriever;
 import omr.score.MeasureFixer;
 import omr.score.Score;
@@ -25,6 +22,9 @@ import omr.sheet.SystemInfo;
 
 import omr.util.TreeNode;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collection;
 
 /**
@@ -33,15 +33,15 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class ScoreStep
-    extends AbstractStep
+        extends AbstractStep
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ScoreStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ScoreStep.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------//
     // ScoreStep //
     //-----------//
@@ -51,15 +51,14 @@ public class ScoreStep
     public ScoreStep ()
     {
         super(
-            Steps.SCORE,
-            Level.SCORE_LEVEL,
-            Mandatory.MANDATORY,
-            DATA_TAB,
-            "Build the final score");
+                Steps.SCORE,
+                Level.SCORE_LEVEL,
+                Mandatory.MANDATORY,
+                DATA_TAB,
+                "Build the final score");
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // displayUI //
     //-----------//
@@ -67,26 +66,26 @@ public class ScoreStep
     public void displayUI (Sheet sheet)
     {
         Steps.valueOf(Steps.SYMBOLS)
-             .displayUI(sheet);
+                .displayUI(sheet);
     }
 
     //--------//
     // doStep //
     //--------//
     /**
-     * Notify the completion to ALL sheets of the merge and not just 
+     * Notify the completion to ALL sheets of the merge and not just
      * the first one.
      */
     @Override
     public void doStep (Collection<SystemInfo> systems,
-                        Sheet                  sheet)
-        throws StepException
+                        Sheet sheet)
+            throws StepException
     {
         super.doStep(systems, sheet);
 
         // Set completion for all sheets of the score
         for (TreeNode pn : sheet.getScore()
-                                .getPages()) {
+                .getPages()) {
             Page page = (Page) pn;
             done(page.getSheet());
         }
@@ -97,8 +96,8 @@ public class ScoreStep
     //------//
     @Override
     protected void doit (Collection<SystemInfo> systems,
-                         Sheet                  sheet)
-        throws StepException
+                         Sheet sheet)
+            throws StepException
     {
         Score score = sheet.getScore();
 
@@ -123,7 +122,7 @@ public class ScoreStep
 
             // Connect slurs across pages
             page.getFirstSystem()
-                .connectPageInitialSlurs();
+                    .connectPageInitialSlurs();
         }
     }
 }

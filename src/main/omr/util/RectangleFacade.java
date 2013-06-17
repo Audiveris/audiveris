@@ -19,8 +19,9 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code RectangleFacade} is a (hopefully temporary) fix to allow Xml
- * binding of standard class Rectangle that we cannot annotate
+ * Class {@code RectangleFacade} is a (hopefully temporary) fix to
+ * allow Xml binding of standard class Rectangle that we cannot
+ * annotate.
  *
  *
  * @author Hervé Bitteur
@@ -35,7 +36,6 @@ public class RectangleFacade
     private final Rectangle rectangle;
 
     //~ Constructors -----------------------------------------------------------
-
     //-----------------//
     // RectangleFacade //
     //-----------------//
@@ -61,7 +61,6 @@ public class RectangleFacade
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // getHeight //
     //-----------//

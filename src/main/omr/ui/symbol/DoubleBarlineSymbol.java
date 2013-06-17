@@ -12,11 +12,10 @@
 package omr.ui.symbol;
 
 import omr.glyph.Shape;
-
-import omr.score.common.PixelPoint;
 import static omr.ui.symbol.Alignment.*;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 
@@ -26,7 +25,7 @@ import java.awt.geom.Rectangle2D;
  * @author Hervé Bitteur
  */
 public class DoubleBarlineSymbol
-    extends ShapeSymbol
+        extends ShapeSymbol
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -34,13 +33,11 @@ public class DoubleBarlineSymbol
     private static final double WIDTH_RATIO = 4.5;
 
     //~ Instance fields --------------------------------------------------------
-
     // The thin barline symbol
     private final ShapeSymbol thinSymbol = Symbols.getSymbol(
-        Shape.THIN_BARLINE);
+            Shape.THIN_BARLINE);
 
     //~ Constructors -----------------------------------------------------------
-
     //---------------------//
     // DoubleBarlineSymbol //
     //---------------------//
@@ -55,7 +52,6 @@ public class DoubleBarlineSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // createIcon //
     //------------//
@@ -77,8 +73,8 @@ public class DoubleBarlineSymbol
 
         Rectangle2D thinRect = p.layout.getBounds();
         p.rect = new Rectangle(
-            (int) Math.ceil(thinRect.getWidth() * WIDTH_RATIO),
-            (int) Math.ceil(thinRect.getHeight()));
+                (int) Math.ceil(thinRect.getWidth() * WIDTH_RATIO),
+                (int) Math.ceil(thinRect.getHeight()));
 
         return p;
     }
@@ -88,11 +84,11 @@ public class DoubleBarlineSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params     p,
-                          PixelPoint location,
-                          Alignment  alignment)
+                          Params p,
+                          Point location,
+                          Alignment alignment)
     {
-        PixelPoint loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
+        Point loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
         MusicFont.paint(g, p.layout, loc, TOP_LEFT);
         loc.x += p.rect.width;
         MusicFont.paint(g, p.layout, loc, TOP_RIGHT);

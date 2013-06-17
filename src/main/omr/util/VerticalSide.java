@@ -11,14 +11,16 @@
 // </editor-fold>
 package omr.util;
 
-
 /**
  * Enum {@code VerticalSide} is meant to ease programmatic use of top
  * and bottom sides of staves, system boundaries, etc...
  *
  * @author Hervé Bitteur
  */
-public enum VerticalSide {
+public enum VerticalSide
+{
+
     TOP,
     BOTTOM;
+
 }

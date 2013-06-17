@@ -30,15 +30,9 @@ import omr.grid.StaffManager;
 
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.GeoPath;
 
 import omr.score.SystemTranslator;
-import omr.score.common.PixelDimension;
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
@@ -54,6 +48,12 @@ import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.VerticalSide;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -301,8 +301,8 @@ public class SystemInfo
         scoreSystem = new ScoreSystem(
                 this,
                 sheet.getPage(),
-                new PixelPoint(getLeft(), getTop()),
-                new PixelDimension(getWidth(), getDeltaY()));
+                new Point(getLeft(), getTop()),
+                new Dimension(getWidth(), getDeltaY()));
 
         // Allocate the parts in the system
         int partId = 0;
@@ -318,7 +318,7 @@ public class SystemInfo
                 new Staff(
                         staffInfo,
                         part,
-                        new PixelPoint(left, firstLine.yAt(left)),
+                        new Point(left, firstLine.yAt(left)),
                         (int) Math.rint(staffInfo.getAbscissa(RIGHT) - left),
                         lastLine.yAt(left) - firstLine.yAt(left));
             }
@@ -504,7 +504,7 @@ public class SystemInfo
      *
      * @param rect the region of interest
      */
-    public void dumpGlyphs (PixelRectangle rect)
+    public void dumpGlyphs (Rectangle rect)
     {
         for (Glyph glyph : getGlyphs()) {
             if ((rect == null) || (rect.contains(glyph.getBounds()))) {
@@ -537,7 +537,7 @@ public class SystemInfo
      *
      * @param rect the region of interest
      */
-    public void dumpSections (PixelRectangle rect)
+    public void dumpSections (Rectangle rect)
     {
         for (Section section : getVerticalSections()) {
             if ((rect == null) || (rect.contains(section.getBounds()))) {
@@ -627,10 +627,10 @@ public class SystemInfo
      *
      * @return the system rectangular bounds
      */
-    public PixelRectangle getBounds ()
+    public Rectangle getBounds ()
     {
         if (boundary != null) {
-            return new PixelRectangle(boundary.getBounds());
+            return new Rectangle(boundary.getBounds());
         } else {
             return null;
         }
@@ -851,7 +851,7 @@ public class SystemInfo
      * @param point the center of the provided note entity
      * @return the proper note position (staff & pitch)
      */
-    public NotePosition getNoteStaffAt (PixelPoint point)
+    public NotePosition getNoteStaffAt (Point point)
     {
         StaffInfo staff = getStaffAt(point);
         NotePosition pos = staff.getNotePosition(point);
@@ -1102,7 +1102,7 @@ public class SystemInfo
      * @param rect the coordinates rectangle, in pixels
      * @return the glyphs found, which may be an empty list
      */
-    public List<Glyph> lookupContainedGlyphs (PixelRectangle rect)
+    public List<Glyph> lookupContainedGlyphs (Rectangle rect)
     {
         List<Glyph> found = new ArrayList<>();
 
@@ -1126,7 +1126,7 @@ public class SystemInfo
      * @param excluded the glyphs to be excluded
      * @return the glyphs found, which may be an empty list
      */
-    public List<Glyph> lookupIntersectedGlyphs (PixelRectangle rect,
+    public List<Glyph> lookupIntersectedGlyphs (Rectangle rect,
                                                 Glyph... excluded)
     {
         List<Glyph> exc = Arrays.asList(excluded);
@@ -1383,7 +1383,7 @@ public class SystemInfo
     /**
      * We have a new (or modified) system boundary.
      * So let's update the system boundary polygon as well as the limits of
-     * the first and  last staves.
+     * the first and last staves.
      */
     public void updateBoundary ()
     {
@@ -1439,7 +1439,7 @@ public class SystemInfo
      * @param stem the stem
      * @return the enlarged stem box
      */
-    public PixelRectangle stemBoxOf (Glyph stem)
+    public Rectangle stemBoxOf (Glyph stem)
     {
         return glyphsBuilder.stemBoxOf(stem);
     }

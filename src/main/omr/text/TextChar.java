@@ -20,7 +20,7 @@ import java.awt.Rectangle;
  * @author Hervé Bitteur
  */
 public class TextChar
-    extends TextItem
+        extends TextItem
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -35,7 +35,7 @@ public class TextChar
      * @param value  the character string value
      */
     public TextChar (Rectangle bounds,
-                    String    value)
+                     String value)
     {
         super(bounds, value);
     }

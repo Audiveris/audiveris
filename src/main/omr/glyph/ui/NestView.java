@@ -22,9 +22,6 @@ import omr.glyph.facets.Glyph;
 import omr.lag.Lag;
 import omr.lag.Section;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.score.entity.PartNode;
 import omr.score.ui.PaintingParameters;
 
@@ -34,10 +31,13 @@ import omr.text.TextLine;
 import omr.text.TextWord;
 
 import omr.ui.Colors;
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
 import omr.ui.view.RubberPanel;
 
 import omr.util.WeakPropertyChangeListener;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -173,7 +173,7 @@ public class NestView
         final boolean drawBorders = ViewParameters.getInstance().isSectionMode();
 
         // Stroke for borders
-        final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
+        final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
 
         if (lags != null) {
             for (Lag lag : lags) {
@@ -234,7 +234,7 @@ public class NestView
 
         if (glyphs != null) {
             // Decorations first
-            Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
+            Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
             g.setColor(Color.blue);
 
             for (Glyph glyph : glyphs) {
@@ -317,7 +317,7 @@ public class NestView
             return;
         }
 
-        Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
+        Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
         Color oldColor = g.getColor();
         g.setColor(Colors.TRANSLATION_LINK);
 
@@ -366,7 +366,7 @@ public class NestView
         if (constants.showSentenceBaseline.isSet()) {
             // Display the whole sentence baseline
             g.setColor(Colors.SENTENCE_BASELINE);
-            Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
+            Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
 
             Path2D path = new Path2D.Double();
             TextWord prevWord = null;

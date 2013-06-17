@@ -11,20 +11,20 @@
 // </editor-fold>
 package omr.math;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Point2D;
 import static java.lang.Math.*;
 
 /**
- * Class {@code Ellipse} implements the direct algorithm of Fitzgibbon et
- * al, improved by Halir et al, to find the ellipse which best approximates a
- * collection of points. The ellipse is defined through the 6 coefficients of
- * its algebraic equation:
+ * Class {@code Ellipse} implements the direct algorithm of Fitzgibbon
+ * et al, improved by Halir et al, to find the ellipse which best
+ * approximates a collection of points.
+ * The ellipse is defined through the 6 coefficients of its algebraic equation:
  *
  * <p> A*x**2 + B*x*y + C*y**2 + D*x + E*y + F = 0
  *
@@ -43,18 +43,18 @@ public class Ellipse
     /** Contraint such that 4*A*C - B**2 = 1 */
     private static final Matrix C1 = new Matrix(
             new double[][]{
-                {0, 0, 2},
-                {0, -1, 0},
-                {2, 0, 0}
-            });
+        {0, 0, 2},
+        {0, -1, 0},
+        {2, 0, 0}
+    });
 
     /** Inverse of Constraint */
     private static final Matrix C1inv = new Matrix(
             new double[][]{
-                {0, 0, 0.5},
-                {0, -1, 0},
-                {0.5, 0, 0}
-            });
+        {0, 0, 0.5},
+        {0, -1, 0},
+        {0.5, 0, 0}
+    });
 
     /** Epsilon value for vertical or horizontal ellipses */
     private static final double EPSILON = 1.0e-15;
@@ -219,6 +219,35 @@ public class Ellipse
         }
 
         return minor;
+    }
+
+    //-------//
+    // print //
+    //-------//
+    protected static void print (Matrix m,
+                                 String title)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        if (title != null) {
+            sb.append(String.format("%s%n", title));
+        } else {
+            sb.append(String.format("%n"));
+        }
+
+        for (int row = 0; row < m.getRowDimension(); row++) {
+            sb.append("    ");
+
+            for (int col = 0; col < m.getColumnDimension(); col++) {
+                sb.append(String.format("%15g  ", m.get(row, col)));
+            }
+
+            sb.append(String.format("%n"));
+        }
+
+        sb.append(String.format("%n"));
+
+        logger.info(sb.toString());
     }
 
     //---------------------//
@@ -576,34 +605,5 @@ public class Ellipse
         }
 
         ///System.out.println("distance: " + distance);
-    }
-
-    //-------//
-    // print //
-    //-------//
-    protected static void print (Matrix m,
-                                 String title)
-    {
-        StringBuilder sb = new StringBuilder();
-
-        if (title != null) {
-            sb.append(String.format("%s%n", title));
-        } else {
-            sb.append(String.format("%n"));
-        }
-
-        for (int row = 0; row < m.getRowDimension(); row++) {
-            sb.append("    ");
-
-            for (int col = 0; col < m.getColumnDimension(); col++) {
-                sb.append(String.format("%15g  ", m.get(row, col)));
-            }
-
-            sb.append(String.format("%n"));
-        }
-
-        sb.append(String.format("%n"));
-
-        logger.info(sb.toString());
     }
 }

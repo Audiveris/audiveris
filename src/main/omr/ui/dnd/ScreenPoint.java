@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.ui.dnd;
 
-import omr.score.common.SimplePoint;
-
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -23,13 +21,10 @@ import javax.swing.SwingUtilities;
  * Class {@code ScreenPoint} encapsulates a point defined with respect
  * to the screen.
  *
- * <p> This specialization is used to take benefit of compiler checks, to
- * prevent the use of points with incorrect meaning. </p>
- *
  * @author Hervé Bitteur
  */
 public class ScreenPoint
-    extends SimplePoint
+        extends Point
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -64,23 +59,24 @@ public class ScreenPoint
     /**
      * Creates a new ScreenPoint object, using a local component-based
      * point.
-     * @param component the component to use as the base
+     *
+     * @param component  the component to use as the base
      * @param localPoint the component-based point
      */
     public ScreenPoint (Component component,
-                        Point     localPoint)
+                        Point localPoint)
     {
         this(localPoint.x, localPoint.y);
         SwingUtilities.convertPointToScreen(this, component);
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // getLocalPoint //
     //---------------//
     /**
      * Get the corresponding local point wrt a containing component
+     *
      * @param component the provided component
      * @return the local point, wrt component top left corner
      */
@@ -98,16 +94,17 @@ public class ScreenPoint
     /**
      * Check whether this screen point lies within the bound of the
      * provided component.
+     *
      * @param component the provided component
      * @return true if within the component, false otherwise
      */
     public boolean isInComponent (Component component)
     {
         Rectangle bounds = new Rectangle(
-            0,
-            0,
-            component.getWidth(),
-            component.getHeight());
+                0,
+                0,
+                component.getWidth(),
+                component.getHeight());
 
         return bounds.contains(getLocalPoint(component));
     }

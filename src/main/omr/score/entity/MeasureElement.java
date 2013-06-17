@@ -17,13 +17,12 @@ import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.sheet.Scale;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.score.common.PixelPoint;
-
-import omr.sheet.Scale;
-
+import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.util.Collections;
 import java.util.List;
@@ -45,7 +44,8 @@ public abstract class MeasureElement
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(MeasureElement.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            MeasureElement.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
@@ -72,7 +72,7 @@ public abstract class MeasureElement
      */
     public MeasureElement (Measure measure,
                            boolean start,
-                           PixelPoint referencePoint,
+                           Point referencePoint,
                            Chord chord,
                            Glyph glyph)
     {
@@ -116,14 +116,6 @@ public abstract class MeasureElement
         return shape;
     }
 
-    //---------//
-    // isStart //
-    //---------//
-    public boolean isStart ()
-    {
-        return start;
-    }
-
     //---------------------//
     // getTranslationLinks //
     //---------------------//
@@ -135,6 +127,14 @@ public abstract class MeasureElement
         } else {
             return Collections.emptyList();
         }
+    }
+
+    //---------//
+    // isStart //
+    //---------//
+    public boolean isStart ()
+    {
+        return start;
     }
 
     //----------//
@@ -199,20 +199,6 @@ public abstract class MeasureElement
         return sb.toString();
     }
 
-    //-----------//
-    // findChord //
-    //-----------//
-    protected static Chord findChord (Measure measure,
-                                      PixelPoint point)
-    {
-        // Shift on abscissa (because of left side of note heads)
-        int dx = measure.getSystem()
-                .getScale()
-                .toPixels(constants.slotShift);
-
-        return measure.getEventChord(new PixelPoint(point.x + dx, point.y));
-    }
-
     //--------------//
     // computeShape //
     //--------------//
@@ -220,6 +206,20 @@ public abstract class MeasureElement
     {
         return getGlyph()
                 .getShape();
+    }
+
+    //-----------//
+    // findChord //
+    //-----------//
+    protected static Chord findChord (Measure measure,
+                                      Point point)
+    {
+        // Shift on abscissa (because of left side of note heads)
+        int dx = measure.getSystem()
+                .getScale()
+                .toPixels(constants.slotShift);
+
+        return measure.getEventChord(new Point(point.x + dx, point.y));
     }
 
     //-----------------//

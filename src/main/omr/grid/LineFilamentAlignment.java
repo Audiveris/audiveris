@@ -15,14 +15,14 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.math.NaturalSpline;
 
 import omr.run.Orientation;
 
 import omr.sheet.Scale;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.geom.Point2D;
 import java.util.List;
@@ -100,8 +100,12 @@ public class LineFilamentAlignment
                                  - 1;
 
                     if (insert > 0) {
-                        logger.debug("Hole before ip: {} insert:{} for {}",
-                                ip, insert, this);
+                        logger.debug(
+                                "Hole before ip: {} insert:{} for {}",
+                                ip,
+                                insert,
+                                this);
+
                         double dx = holeLength / (insert + 1);
 
                         for (int i = 1; i <= insert; i++) {
@@ -235,7 +239,8 @@ public class LineFilamentAlignment
 
             for (int i = firstIdx; i != breakIdx; i += dir) {
                 LineFilament fil = subfils.get(i);
-                Point2D pt = fil.getAlignment().findPoint(
+                Point2D pt = fil.getAlignment()
+                        .findPoint(
                         x,
                         Orientation.HORIZONTAL,
                         margin);

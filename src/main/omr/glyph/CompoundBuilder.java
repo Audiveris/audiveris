@@ -13,15 +13,14 @@ package omr.glyph;
 
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import omr.score.common.PixelRectangle;
-
 import omr.sheet.SystemInfo;
 
 import omr.util.Predicate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -208,7 +207,7 @@ public class CompoundBuilder
          * @param seed the seed glyph
          * @return the computed reference box
          */
-        PixelRectangle setSeed (Glyph seed);
+        Rectangle setSeed (Glyph seed);
 
         /**
          * Should we filter the provided candidates?. (by calling
@@ -242,7 +241,7 @@ public class CompoundBuilder
         protected Glyph seed;
 
         /** Search box */
-        protected PixelRectangle box;
+        protected Rectangle box;
 
         /** The result of compound evaluation */
         protected Evaluation chosenEvaluation;
@@ -277,7 +276,7 @@ public class CompoundBuilder
         }
 
         @Override
-        public PixelRectangle setSeed (Glyph seed)
+        public Rectangle setSeed (Glyph seed)
         {
             this.seed = seed;
             box = computeReferenceBox();
@@ -296,7 +295,7 @@ public class CompoundBuilder
          * Compute the reference box.
          * This method is called when seed has just been set.
          */
-        protected abstract PixelRectangle computeReferenceBox ();
+        protected abstract Rectangle computeReferenceBox ();
     }
 
     //-----------//
@@ -347,7 +346,7 @@ public class CompoundBuilder
         }
 
         @Override
-        protected PixelRectangle computeReferenceBox ()
+        protected Rectangle computeReferenceBox ()
         {
             return null;
         }

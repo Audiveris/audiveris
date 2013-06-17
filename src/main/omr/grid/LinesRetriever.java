@@ -26,17 +26,11 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.run.Orientation;
 import static omr.run.Orientation.*;
 import omr.run.Run;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
-
-import omr.score.common.PixelPoint;
-import omr.score.common.PixelRectangle;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
@@ -44,15 +38,20 @@ import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
 
 import omr.ui.Colors;
-import omr.ui.util.UIUtilities;
+import omr.ui.util.UIUtil;
 import static omr.util.HorizontalSide.*;
 import omr.util.Predicate;
 import omr.util.StopWatch;
 import omr.util.VipUtil;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -311,7 +310,7 @@ public class LinesRetriever
     @Override
     public void renderItems (Graphics2D g)
     {
-        final Stroke oldStroke = UIUtilities.setAbsoluteStroke(g, 1f);
+        final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
         final Color oldColor = g.getColor();
         g.setColor(Colors.ENTITY_MINOR);
 
@@ -526,8 +525,8 @@ public class LinesRetriever
     private boolean canInclude (LineFilament filament,
                                 boolean isVip,
                                 String idStr,
-                                PixelRectangle box,
-                                PixelPoint center,
+                                Rectangle box,
+                                Point center,
                                 Object candidate)
     {
         // For VIP debugging
@@ -700,7 +699,7 @@ public class LinesRetriever
                 for (LineInfo l : staff.getLines()) {
                     FilamentLine line = (FilamentLine) l;
                     LineFilament filament = line.fil;
-                    PixelRectangle lineBox = filament.getBounds();
+                    Rectangle lineBox = filament.getBounds();
                     lineBox.grow(0, scale.getMainFore());
 
                     double minX = filament.getStartPoint(HORIZONTAL).getX();
@@ -727,7 +726,7 @@ public class LinesRetriever
                             break;
                         }
 
-                        PixelPoint center = fil.getCentroid();
+                        Point center = fil.getCentroid();
 
                         if ((center.x >= minX) && (center.x <= maxX)) {
                             if (canIncludeFilament(filament, fil)) {
@@ -768,7 +767,7 @@ public class LinesRetriever
                 for (LineInfo l : staff.getLines()) {
                     FilamentLine line = (FilamentLine) l;
                     LineFilament fil = line.fil;
-                    PixelRectangle lineBox = fil.getBounds();
+                    Rectangle lineBox = fil.getBounds();
                     lineBox.grow(0, scale.getMainFore());
 
                     double minX = fil.getStartPoint(HORIZONTAL).getX();
@@ -796,7 +795,7 @@ public class LinesRetriever
                             break;
                         }
 
-                        PixelPoint center = section.getCentroid();
+                        Point center = section.getCentroid();
 
                         if ((center.x >= minX) && (center.x <= maxX)) {
                             if (canIncludeSection(fil, section)) {
@@ -881,7 +880,6 @@ public class LinesRetriever
                 1.5,
                 "Maximum ratio in length for a run to be combined with an existing section");
 
-        //
         final Constant.Ratio maxLengthRatioShort = new Constant.Ratio(
                 3.0,
                 "Maximum ratio in length for a short run to be combined with an existing section");
@@ -893,7 +891,6 @@ public class LinesRetriever
                 1.2, // 2.0, 
                 "Ratio of ledger thickness vs staff line MAXIMUM thickness");
 
-        //
         final Constant.Ratio stickerThickness = new Constant.Ratio(
                 1.0, //1.2,
                 "Ratio of sticker thickness vs staff line MAXIMUM thickness");
@@ -905,12 +902,10 @@ public class LinesRetriever
                 0.5,
                 "Maximum vertical gap between sticker and closest line side");
 
-        //
         final Scale.LineFraction maxStickerExtension = new Scale.LineFraction(
                 1.2,
                 "Maximum vertical sticker extension from line");
 
-        //
         final Scale.AreaFraction maxThinStickerWeight = new Scale.AreaFraction(
                 0.06,
                 "Maximum weight for a thin sticker (w/o impact on line geometry)");
@@ -927,17 +922,14 @@ public class LinesRetriever
                 true,
                 "Should we display the horizontal lines?");
 
-        //
         final Scale.Fraction tangentLg = new Scale.Fraction(
                 1,
                 "Typical length to display tangents at ending points");
 
-        //
         final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
-        //
         final Constant.Boolean showTangents = new Constant.Boolean(
                 false,
                 "Should we show filament ending tangents?");

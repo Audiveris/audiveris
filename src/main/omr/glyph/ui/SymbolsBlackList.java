@@ -13,10 +13,10 @@ package omr.glyph.ui;
 
 import omr.WellKnowns;
 
+import omr.util.BlackList;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import omr.util.BlackList;
 
 /**
  * Class {@code SymbolsBlackList} is a special {@link BlackList} meant
@@ -25,16 +25,15 @@ import omr.util.BlackList;
  * @author Hervé Bitteur
  */
 public class SymbolsBlackList
-    extends BlackList
+        extends BlackList
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        SymbolsBlackList.class);
+            SymbolsBlackList.class);
 
     //~ Constructors -----------------------------------------------------------
-
     //------------------//
     // SymbolsBlackList //
     //------------------//

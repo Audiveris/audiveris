@@ -56,14 +56,19 @@ public class GlobalDescriptor
     }
 
     //~ Methods ----------------------------------------------------------------
-    //
-    //---------//
-    // getKind //
-    //---------//
+    //--------//
+    // equals //
+    //--------//
     @Override
-    public FilterKind getKind ()
+    public boolean equals (Object obj)
     {
-        return FilterKind.GLOBAL;
+        if ((obj instanceof GlobalDescriptor) && super.equals(obj)) {
+            GlobalDescriptor that = (GlobalDescriptor) obj;
+
+            return this.threshold == that.threshold;
+        }
+
+        return false;
     }
 
     //------------//
@@ -83,18 +88,14 @@ public class GlobalDescriptor
         return new GlobalFilter(source, threshold);
     }
 
-    //--------//
-    // equals //
-    //--------//
+    //
+    //---------//
+    // getKind //
+    //---------//
     @Override
-    public boolean equals (Object obj)
+    public FilterKind getKind ()
     {
-        if ((obj instanceof GlobalDescriptor) && super.equals(obj)) {
-            GlobalDescriptor that = (GlobalDescriptor) obj;
-            return this.threshold == that.threshold;
-        }
-
-        return false;
+        return FilterKind.GLOBAL;
     }
 
     //----------//
@@ -104,7 +105,8 @@ public class GlobalDescriptor
     public int hashCode ()
     {
         int hash = 5;
-        hash = 53 * hash + this.threshold;
+        hash = (53 * hash) + this.threshold;
+
         return hash;
     }
 
@@ -115,7 +117,8 @@ public class GlobalDescriptor
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
-        sb.append(" threshold:").append(threshold);
+        sb.append(" threshold:")
+                .append(threshold);
 
         return sb.toString();
     }

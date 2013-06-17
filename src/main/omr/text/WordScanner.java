@@ -28,7 +28,8 @@ public abstract class WordScanner
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(WordScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            WordScanner.class);
 
     //~ Instance fields --------------------------------------------------------
     private final boolean bySyllable;
@@ -125,6 +126,18 @@ public abstract class WordScanner
         return currentWord;
     }
 
+    //--------------//
+    // stringToDesc //
+    //--------------//
+    /**
+     * Knowing the char strIndex in string content, determine the
+     * related position in the sequence of TextChar instances
+     *
+     * @param strIndex strIndex in contant
+     * @return position in sequence of TextChar instances
+     */
+    protected abstract int stringToDesc (int strIndex);
+
     //-------------//
     // getNextWord //
     //-------------//
@@ -190,18 +203,6 @@ public abstract class WordScanner
     {
         nextWord = getNextWord();
     }
-
-    //--------------//
-    // stringToDesc //
-    //--------------//
-    /**
-     * Knowing the char strIndex in string content, determine the
-     * related position in the sequence of TextChar instances
-     *
-     * @param strIndex strIndex in contant
-     * @return position in sequence of TextChar instances
-     */
-    protected abstract int stringToDesc (int strIndex);
 
     //~ Inner Classes ----------------------------------------------------------
     //---------------//

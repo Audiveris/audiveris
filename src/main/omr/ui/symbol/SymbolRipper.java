@@ -11,21 +11,22 @@
 // </editor-fold>
 package omr.ui.symbol;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import omr.ui.MainGui;
 import omr.ui.field.IntegerListSpinner;
 import omr.ui.field.LDoubleField;
+import omr.ui.field.LHexaSpinner;
 import omr.ui.field.LIntegerSpinner;
 import omr.ui.field.LSpinner;
-import omr.ui.field.SpinnerUtilities;
+import omr.ui.field.SpinnerUtil;
 import omr.ui.util.Panel;
 import omr.ui.util.UILookAndFeel;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -51,7 +52,6 @@ import javax.swing.SpinnerListModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import omr.ui.field.LHexaSpinner;
 
 /**
  * Class {@code SymbolRipper} is a stand-alone utility to generate the
@@ -65,7 +65,8 @@ public class SymbolRipper
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(SymbolRipper.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SymbolRipper.class);
 
     static {
         // UI Look and Feel
@@ -106,10 +107,10 @@ public class SymbolRipper
                     // New hexa point code
                     changeHexaCode();
                 } else if ((s == xOffset.getSpinner())
-                        || (s == yOffset.getSpinner())) {
+                           || (s == yOffset.getSpinner())) {
                     // New drawing offset
                 } else if ((s == width.getSpinner())
-                        || (s == height.getSpinner())) {
+                           || (s == height.getSpinner())) {
                     // New drawing dimension
                     resizeDrawing();
                 }
@@ -200,18 +201,19 @@ public class SymbolRipper
         // Actors
         drawing = new Drawing();
 
-        fontBase.setModel(new SpinnerListModel(new Integer[]{0, 0xf000, 0x1d100}));
-        SpinnerUtilities.setRightAlignment(fontBase);
-        SpinnerUtilities.fixIntegerList(fontBase);
+        fontBase.setModel(
+                new SpinnerListModel(new Integer[]{0, 0xf000, 0x1d100}));
+        SpinnerUtil.setRightAlignment(fontBase);
+        SpinnerUtil.fixIntegerList(fontBase);
 
         fontName.setModel(
                 new SpinnerListModel(
-                GraphicsEnvironment.getLocalGraphicsEnvironment().
-                getAvailableFontFamilyNames()));
+                GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
 
         // Initial values
         ///fontName.getSpinner().setValue("MusicalSymbols");
-        fontName.getSpinner().setValue("Symbola");
+        fontName.getSpinner()
+                .setValue("Symbola");
         fontBase.setValue(0); //0);
         fontSize.setValue(200);
         pointCode.setModel(new SpinnerNumberModel(0x1d100, 0, 0x1d1ff, 1));
@@ -239,7 +241,8 @@ public class SymbolRipper
         // Frame behavior
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
-        MainGui.getInstance().show(frame);
+        MainGui.getInstance()
+                .show(frame);
 
         // Actions
         image = buildImage();
@@ -247,6 +250,17 @@ public class SymbolRipper
     }
 
     //~ Methods ----------------------------------------------------------------
+    //------//
+    // main //
+    //------//
+    /**
+     * Command line entry point, no arguments are used today.
+     */
+    public static void main (String... args)
+    {
+        new SymbolRipper();
+    }
+
     //----------//
     // getFrame //
     //----------//
@@ -258,17 +272,6 @@ public class SymbolRipper
     public JFrame getFrame ()
     {
         return frame;
-    }
-
-    //------//
-    // main //
-    //------//
-    /**
-     * Command line entry point, no arguments are used today.
-     */
-    public static void main (String... args)
-    {
-        new SymbolRipper();
     }
 
     //------------//
@@ -309,7 +312,8 @@ public class SymbolRipper
     private void changeCode ()
     {
         int base = (Integer) fontBase.getValue();
-        int code = (Integer) pointCode.getSpinner().getValue();
+        int code = (Integer) pointCode.getSpinner()
+                .getValue();
         string = new String(Character.toChars(base + code));
         hexaCode.setValue(base + code);
     }
@@ -320,7 +324,8 @@ public class SymbolRipper
     private void changeHexaCode ()
     {
         int base = (Integer) fontBase.getValue();
-        int hexa = (Integer) hexaCode.getSpinner().getValue();
+        int hexa = (Integer) hexaCode.getSpinner()
+                .getValue();
         string = new String(Character.toChars(hexa));
         pointCode.setValue(hexa - base);
     }
@@ -330,7 +335,8 @@ public class SymbolRipper
     //------------//
     private void defineFont ()
     {
-        String name = (String) fontName.getSpinner().getValue();
+        String name = (String) fontName.getSpinner()
+                .getValue();
         int val = fontSize.getValue();
         musicFont = new Font(name, Font.PLAIN, val);
     }
@@ -356,8 +362,12 @@ public class SymbolRipper
     //---------------//
     private JPanel getParamPanel ()
     {
-        FormLayout layout = Panel.makeFormLayout(13, 2, "right:", "35dlu",
-                                                 "45dlu");
+        FormLayout layout = Panel.makeFormLayout(
+                13,
+                2,
+                "right:",
+                "35dlu",
+                "45dlu");
 
         PanelBuilder builder = new PanelBuilder(layout, new Panel());
         builder.setDefaultDialogBorder();
@@ -482,8 +492,10 @@ public class SymbolRipper
 
                 // Debug
                 TextLayout layout = new TextLayout(string, musicFont, frc);
-                logger.debug("getAdvance(): {} getVisibleAdvance(): {}",
-                            layout.getAdvance(), layout.getVisibleAdvance());
+                logger.debug(
+                        "getAdvance(): {} getVisibleAdvance(): {}",
+                        layout.getAdvance(),
+                        layout.getVisibleAdvance());
             }
         }
     }
