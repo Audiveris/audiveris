@@ -34,7 +34,6 @@ import omr.step.Step;
 import omr.step.Steps;
 
 import omr.text.Language;
-import omr.text.Language.LanguageModel;
 import omr.text.OCR.UnavailableOcrException;
 
 import omr.ui.FileDropHandler;
@@ -87,7 +86,7 @@ import javax.swing.event.ListSelectionListener;
  * <ul>
  * <li>Text language specification</li>
  * <li>Binarization parameters</li>
- * <li>Step triggerred by drag and drop</li>
+ * <li>Step triggered by drag and drop</li>
  * <li>Prompt for saving script on closing</li>
  * <li>Call-stack printed on exception</li>
  * <li>Parallelism allowed or not</li>
@@ -1210,7 +1209,8 @@ public class ScoreParameters
     {
         //~ Instance fields ----------------------------------------------------
 
-        LanguageModel model = Language.getModel();
+        /** Underlying language list model. */
+        Language.ListModel model = new Language.ListModel();
 
         /** List for choosing elements of language specification. */
         private final JList<String> langList = new JList<>(model);
@@ -1390,7 +1390,7 @@ public class ScoreParameters
 // SpinData //
 //----------//
     /**
-     * A line with a labelled spinner.
+     * A line with a labeled spinner.
      */
     private class SpinData
     {
