@@ -183,9 +183,10 @@ public class UnixDescriptor
                     "whoami");
 
             if (res != 0) {
-                logger.warn(Utilities.dumpOfLines(output));
+                final String lines = Utilities.dumpOfLines(output);
+                logger.warn(lines);
                 throw new RuntimeException(
-                        "Error checking admin, exit: " + res);
+                        "Error checking admin, exit: " + res + "\n" + lines);
             } else {
                 return !output.isEmpty() && output.get(0)
                         .equals("root");
@@ -240,17 +241,35 @@ public class UnixDescriptor
         // My command line
         String cmdLine = getCommandLine();
 
-        // Relaunch as root
+        // Relaunch as root, we try gksudo then kdesudo if needed
         List<String> output = new ArrayList<String>();
-        int res = Utilities.runProcess(
-                "bash",
-                output,
-                "-c",
-                "gksudo \"" + cmdLine.replace('"', '\'') + "\"");
+        for (String cmd : new String[]{"kdesudo", "gksudo"}) {
+            output.add("Trying command: " + cmd);
+            int res = Utilities.runProcess(
+                    "bash",
+                    output,
+                    "-c",
+                    cmd + " \"" + cmdLine.replace('"', '\'') + "\"");
 
-        if (res != 0) {
-            logger.warn(Utilities.dumpOfLines(output));
-            throw new RuntimeException("Failure, exit: " + res);
+            if (res == 0) {
+                return; // Normal exit
+            } else {
+                output.add("Exit code = " + res);
+                if (res == 255) {
+                    // User cancellation
+                    final String lines = Utilities.dumpOfLines(output);
+                    logger.warn(lines);
+                    throw new RuntimeException("Action canceled by user."
+                                               + "\n" + lines);
+                } else {
+                    // Command not found or other problem
+                }
+            }
         }
+
+        // If we get here, we totally failed
+        final String lines = Utilities.dumpOfLines(output);
+        logger.warn(lines);
+        throw new RuntimeException("Failure in relaunchAsAdmin().\n" + lines);
     }
 }

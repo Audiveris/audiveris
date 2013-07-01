@@ -131,8 +131,10 @@ public class Utilities
             final int res = Utilities.runProcess(
                     exec.getAbsolutePath(), output, installOption);
             if (res != 0) {
-                logger.warn(Utilities.dumpOfLines(output));
-                throw new RuntimeException("Could not run " + exec + ", exit: " + res);
+                final String lines = Utilities.dumpOfLines(output);
+                logger.warn(lines);
+                throw new RuntimeException("Could not run " + exec
+                                           + ", exit: " + res + "\n" + lines);
             }
         } catch (IOException | InterruptedException | RuntimeException ex) {
             logger.warn("Could not install " + title, ex);

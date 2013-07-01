@@ -28,7 +28,8 @@ import java.util.regex.Pattern;
  *
  * @author Hervé Bitteur
  */
-public class Package {
+public class Package
+{
     //~ Static fields/initializers ---------------------------------------------
 
     /**
@@ -36,10 +37,12 @@ public class Package {
      */
     private static final Logger logger = LoggerFactory.getLogger(Package.class);
     //~ Instance fields --------------------------------------------------------
+
     /**
      * Name of the package.
      */
     public final String name;
+
     /**
      * Minimum version required.
      */
@@ -52,11 +55,12 @@ public class Package {
     /**
      * Create a Package instance.
      *
-     * @param name the package name
+     * @param name       the package name
      * @param minVersion the minimum required version
      */
-    public Package(String name,
-            String minVersion) {
+    public Package (String name,
+                    String minVersion)
+    {
         if ((name == null) || name.isEmpty()) {
             throw new IllegalArgumentException("Null or empty package name");
         }
@@ -79,7 +83,8 @@ public class Package {
      *
      * @return the version number, or null if not found
      */
-    public VersionNumber getInstalledVersion() {
+    public VersionNumber getInstalledVersion ()
+    {
         final String VERSION = "version";
         final Pattern versionPattern = Pattern.compile(
                 "^Version: " + RegexUtil.group(VERSION, ".*") + "$");
@@ -88,8 +93,10 @@ public class Package {
             List<String> output = new ArrayList<String>();
             int res = Utilities.runProcess("bash", output, "-c", "apt-cache show " + name);
             if (res != 0) {
-                logger.warn(Utilities.dumpOfLines(output));
-                throw new RuntimeException("Error checking package " + name + " exit: " + res);
+                final String lines = Utilities.dumpOfLines(output);
+                logger.warn(lines);
+                throw new RuntimeException("Error checking package " + name
+                                           + " exit: " + res + "\n" + lines);
             } else {
                 for (String line : output) {
                     Matcher matcher = versionPattern.matcher(line);
@@ -116,8 +123,9 @@ public class Package {
      *
      * @throws Exception
      */
-    public void install()
-            throws Exception {
+    public void install ()
+            throws Exception
+    {
         try {
             List<String> output = new ArrayList<String>();
             int res = Utilities.runProcess(
@@ -126,8 +134,10 @@ public class Package {
                     "-c",
                     "apt-get install -y " + name);
             if (res != 0) {
-                logger.warn(Utilities.dumpOfLines(output));
-                throw new RuntimeException("Error installing package " + name + " exit: " + res);
+                final String lines = Utilities.dumpOfLines(output);
+                logger.warn(lines);
+                throw new RuntimeException("Error installing package " + name
+                                           + " exit: " + res + "\n" + lines);
             }
         } catch (Exception ex) {
             logger.warn("Error in running apt-get", ex);
@@ -138,7 +148,8 @@ public class Package {
     //-------------//
     // isInstalled //
     //-------------//
-    public boolean isInstalled() {
+    public boolean isInstalled ()
+    {
         VersionNumber installedVersion = getInstalledVersion();
 
         if (installedVersion == null) {
