@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.text.tesseract;
 
+import omr.Main;
 import omr.WellKnowns;
 
 import omr.constant.Constant;
@@ -78,6 +79,11 @@ public class TesseractOCR
         if (success) {
             logger.info("All libraries loaded for {}",
                     System.getProperty("os.name"));
+        } else {
+            // Inform user of OCR installation problem
+            if (Main.getGui() != null) {
+                Main.getGui().displayError("Tesseract OCR is not installed properly");
+            }
         }
     }
 

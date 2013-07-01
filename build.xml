@@ -16,7 +16,7 @@
 <!-- the Compile on Save feature is turned off for the project. -->
 <!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
 <!-- in the project's Project Properties dialog box.-->
-<project basedir="." default="default" name="audiveris">
+<project basedir="." default="run" name="audiveris">
     <description>
         Build, test, and run the Audiveris project
     </description>
