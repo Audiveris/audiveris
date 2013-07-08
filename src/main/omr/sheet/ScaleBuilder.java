@@ -476,6 +476,14 @@ public class ScaleBuilder
                         (backPeak.getValue() + secondBackPeak.getValue()) / 2);
                 secondBackPeak = null;
                 logger.info("Merged two close background peaks");
+            } else {
+                // Check whether this second background peak can be an interline
+                // We check that p2 is not too large, compared with p1
+                if (p2.best > p1.best*constants.maxSecondRatio.getValue()) {
+                    logger.info("Second background peak too large {}, ignored",
+                            p2.best);
+                    secondBackPeak = null;
+                }
             }
         }
 
@@ -669,6 +677,10 @@ public class ScaleBuilder
         final Constant.Ratio minBeamLineRatio = new Constant.Ratio(
                 2.5,
                 "Minimum ratio between beam thickness and line thickness");
+
+        final Constant.Ratio maxSecondRatio = new Constant.Ratio(
+                2.0,
+                "Maximum ratio between second and first background peak");
 
         final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
