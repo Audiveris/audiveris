@@ -611,9 +611,6 @@ public class ScaleBuilder
             final int maxBack = height / 4;
             final int maxFore = height / 16;
 
-            boolean hugeBackFound = false;
-            boolean hugeForeFound = false;
-
             for (int x = 0; x < width; x++) {
                 List<Run> runSeq = wholeVertTable.getSequence(x);
                 // Ordinate of first pixel not yet processed
@@ -627,8 +624,6 @@ public class ScaleBuilder
                         int backLength = y - yLast;
                         if (backLength <= maxBack) {
                             back[backLength]++;
-                        } else {
-                            hugeBackFound = true;
                         }
                     }
 
@@ -636,8 +631,6 @@ public class ScaleBuilder
                     int foreLength = run.getLength();
                     if (foreLength <= maxFore) {
                         fore[foreLength]++;
-                    } else {
-                        hugeForeFound = true;
                     }
                     yLast = y + foreLength;
                 }
@@ -647,18 +640,8 @@ public class ScaleBuilder
                     int backLength = height - yLast;
                     if (backLength <= maxBack) {
                         back[backLength]++;
-                    } else {
-                        hugeBackFound = true;
                     }
                 }
-            }
-
-            if (hugeBackFound) {
-                logger.info("Long background runs ignored");
-            }
-            
-            if (hugeForeFound) {
-                logger.info("Long foreground runs ignored");
             }
 
             if (logger.isDebugEnabled()) {
