@@ -479,7 +479,7 @@ public class ScaleBuilder
             } else {
                 // Check whether this second background peak can be an interline
                 // We check that p2 is not too large, compared with p1
-                if (p2.best > p1.best*constants.maxSecondRatio.getValue()) {
+                if (p2.best > p1.best * constants.maxSecondRatio.getValue()) {
                     logger.info("Second background peak too large {}, ignored",
                             p2.best);
                     secondBackPeak = null;
@@ -607,6 +607,13 @@ public class ScaleBuilder
                                       int width,
                                       int height)
         {
+            // Upper bounds for run lengths
+            final int maxBack = height / 4;
+            final int maxFore = height / 16;
+
+            boolean hugeBackFound = false;
+            boolean hugeForeFound = false;
+
             for (int x = 0; x < width; x++) {
                 List<Run> runSeq = wholeVertTable.getSequence(x);
                 // Ordinate of first pixel not yet processed
@@ -618,20 +625,40 @@ public class ScaleBuilder
                     if (y > yLast) {
                         // Process the background run before this run
                         int backLength = y - yLast;
-                        back[backLength]++;
+                        if (backLength <= maxBack) {
+                            back[backLength]++;
+                        } else {
+                            hugeBackFound = true;
+                        }
                     }
 
                     // Process this foreground run
                     int foreLength = run.getLength();
-                    fore[foreLength]++;
+                    if (foreLength <= maxFore) {
+                        fore[foreLength]++;
+                    } else {
+                        hugeForeFound = true;
+                    }
                     yLast = y + foreLength;
                 }
 
                 // Process a last background run, if any
                 if (yLast < height) {
                     int backLength = height - yLast;
-                    back[backLength]++;
+                    if (backLength <= maxBack) {
+                        back[backLength]++;
+                    } else {
+                        hugeBackFound = true;
+                    }
                 }
+            }
+
+            if (hugeBackFound) {
+                logger.info("Long background runs ignored");
+            }
+            
+            if (hugeForeFound) {
+                logger.info("Long foreground runs ignored");
             }
 
             if (logger.isDebugEnabled()) {
