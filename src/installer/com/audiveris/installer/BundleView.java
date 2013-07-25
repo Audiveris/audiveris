@@ -155,8 +155,8 @@ public class BundleView
         panel.setLayout(new BorderLayout());
         panel.setBackground(BUTTON_BACKGROUND);
 
-        panel.add(new ButtonPanel(startAction), BorderLayout.WEST);
-        panel.add(new ButtonPanel(stopAction), BorderLayout.EAST);
+        panel.add(new ButtonPanel(stopAction), BorderLayout.WEST);
+        panel.add(new ButtonPanel(startAction), BorderLayout.EAST);
 
         return panel;
     }
@@ -265,7 +265,7 @@ public class BundleView
         pack();
 
         // Window size
-        final int width = 672;
+        final int width = 687;
         final int height = 400;
         final int gapFromBorder = 20;
         setSize(width, height);

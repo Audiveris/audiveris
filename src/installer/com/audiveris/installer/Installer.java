@@ -230,6 +230,7 @@ public class Installer
         if (isInstall) {
             logger.info("Performing install.");
 
+            ///if (isAdmin || DescriptorFactory.LINUX) {
             if (isAdmin) {
                 // We have the needed priviledges, let's go
                 INSTANCE = new Installer();

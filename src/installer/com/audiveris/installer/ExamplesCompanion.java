@@ -49,7 +49,7 @@ public class ExamplesCompanion
         need = Need.SELECTED;
 
         if (Installer.hasUI()) {
-            view = new BasicCompanionView(this, 100);
+            view = new BasicCompanionView(this, 105);
         }
     }
 

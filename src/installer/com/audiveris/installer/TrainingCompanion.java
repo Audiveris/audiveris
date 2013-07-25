@@ -54,7 +54,7 @@ public class TrainingCompanion
         need = Need.NOT_SELECTED;
 
         if (Installer.hasUI()) {
-            view = new BasicCompanionView(this, 90);
+            view = new BasicCompanionView(this, 95);
         }
     }
 

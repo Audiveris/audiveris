@@ -23,8 +23,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Class {@code Package} handles a Linux package requirement and installation,
- * using the underlying "apt" utility.
+ * Class {@code Package} handles a Linux package requirement and
+ * installation, using the underlying "apt" and dpkg" utilities.
  *
  * @author Hervé Bitteur
  */
@@ -91,12 +91,13 @@ public class Package
 
         try {
             List<String> output = new ArrayList<String>();
-            int res = Utilities.runProcess("bash", output, "-c", "apt-cache show " + name);
+            int res = Utilities.runProcess("bash", output, "-c", "dpkg -s " + name);
             if (res != 0) {
-                final String lines = Utilities.dumpOfLines(output);
-                logger.warn(lines);
-                throw new RuntimeException("Error checking package " + name
-                                           + " exit: " + res + "\n" + lines);
+                // Using command 'dpkg -s', we get a non-zero exit code
+                // when package is not installed, so let's simply return null.
+//                final String lines = Utilities.dumpOfLines(output);
+//                logger.warn(lines);
+                return null;
             } else {
                 for (String line : output) {
                     Matcher matcher = versionPattern.matcher(line);
@@ -109,7 +110,7 @@ public class Package
                 }
             }
         } catch (Exception ex) {
-            logger.warn("Error in running apt-cache", ex);
+            logger.warn("Could not get package version", ex);
         }
 
         return null;

@@ -46,7 +46,7 @@ class GhostscriptCompanion
         super("Ghostscript", DESC);
 
         if (Installer.hasUI()) {
-            view = new BasicCompanionView(this, 90);
+            view = new BasicCompanionView(this, 95);
         }
     }
 
