@@ -293,7 +293,7 @@ public class PluginsManager
         //~ Instance fields ----------------------------------------------------
 
         Constant.String defaultPlugin = new Constant.String(
-                "musescore",
+                "",
                 "Name of default plugin");
 
     }
