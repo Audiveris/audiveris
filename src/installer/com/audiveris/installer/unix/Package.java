@@ -99,6 +99,7 @@ public class Package
                     "bash",
                     output,
                     "-c",
+                    "LANG=en_US", // To avoid any non-english localized message
                     "dpkg -s " + name);
 
             if (res != 0) {
