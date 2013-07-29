@@ -36,8 +36,8 @@ public class Package
      * Usual logger utility
      */
     private static final Logger logger = LoggerFactory.getLogger(Package.class);
-    //~ Instance fields --------------------------------------------------------
 
+    //~ Instance fields --------------------------------------------------------
     /**
      * Name of the package.
      */
@@ -89,27 +89,64 @@ public class Package
         final Pattern versionPattern = Pattern.compile(
                 "^Version: " + RegexUtil.group(VERSION, ".*") + "$");
 
+        final String STATUS = "status";
+        final Pattern statusPattern = Pattern.compile(
+                "^Status: " + RegexUtil.group(STATUS, ".*") + "$");
+
         try {
             List<String> output = new ArrayList<String>();
-            int res = Utilities.runProcess("bash", output, "-c", "dpkg -s " + name);
+            int res = Utilities.runProcess(
+                    "bash",
+                    output,
+                    "-c",
+                    "dpkg -s " + name);
+
             if (res != 0) {
-                // Using command 'dpkg -s', we get a non-zero exit code
-                // when package is not installed, so let's simply return null.
-//                final String lines = Utilities.dumpOfLines(output);
-//                logger.warn(lines);
+                // If we get a non-zero exit code no info can be retrieved
+                if (!output.isEmpty()) {
+                    final String lines = Utilities.dumpOfLines(output);
+                    logger.info(lines);
+                } else {
+                    logger.debug("No command output");
+                }
+
                 return null;
             } else {
+                // Check status
+                boolean installed = false;
+
+                for (String line : output) {
+                    Matcher matcher = statusPattern.matcher(line);
+
+                    if (matcher.matches()) {
+                        String statusStr = RegexUtil.getGroup(matcher, STATUS);
+
+                        if (statusStr.equals("install ok installed")) {
+                            installed = true;
+
+                            break;
+                        }
+                    }
+                }
+
+                if (!installed) {
+                    return null;
+                }
+
+                // Return installed version
                 for (String line : output) {
                     Matcher matcher = versionPattern.matcher(line);
 
                     if (matcher.matches()) {
-                        String versionStr = RegexUtil.getGroup(matcher, VERSION);
+                        String versionStr = RegexUtil.getGroup(
+                                matcher,
+                                VERSION);
 
                         return new VersionNumber(versionStr);
                     }
                 }
             }
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             logger.warn("Could not get package version", ex);
         }
 
@@ -134,11 +171,13 @@ public class Package
                     output,
                     "-c",
                     "apt-get install -y " + name);
+
             if (res != 0) {
                 final String lines = Utilities.dumpOfLines(output);
                 logger.warn(lines);
-                throw new RuntimeException("Error installing package " + name
-                                           + " exit: " + res + "\n" + lines);
+                throw new RuntimeException(
+                        "Error installing package " + name + " exit: " + res
+                        + "\n" + lines);
             }
         } catch (Exception ex) {
             logger.warn("Error in running apt-get", ex);

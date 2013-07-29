@@ -217,7 +217,7 @@ public class Utilities
             String line;
 
             while ((line = br.readLine()) != null) {
-                logger.trace("line: {}", line);
+                logger.debug("line: {}", line);
                 output.add(line);
             }
 
