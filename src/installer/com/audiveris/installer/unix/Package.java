@@ -100,8 +100,7 @@ public class Package
                     "bash",
                     output,
                     "-c",
-                    "LANG=en_US", // To avoid any non-english localized message
-                    "dpkg -s " + name);
+                    "LANG=en_US dpkg -s " + name);
 
             if (res != 0) {
                 // If we get a non-zero exit code no info can be retrieved

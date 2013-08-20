@@ -99,7 +99,7 @@ public class UnixDescriptor
     public String getCopyCommand (String source,
                                   String target)
     {
-        return "cp -r \"" + source + "\" \"" + target + "\"";
+        return "cp -r -v \"" + source + "\" \"" + target + "\"";
     }
 
     //---------------//

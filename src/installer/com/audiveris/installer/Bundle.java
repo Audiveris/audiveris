@@ -92,10 +92,10 @@ public class Bundle
      */
     public void appendCommand (String command)
     {
-        logger.debug("Appending command: {}", command);
+        logger.info("Posting: {}", command);
         commands.add(command);
     }
-    
+
     //---------//
     // getView //
     //---------//
@@ -170,6 +170,8 @@ public class Bundle
             throws Exception
     {
         logger.debug("installBundle");
+        commands.clear();
+        
         // Compute total installation weight
         int totalWeight = 0;
 
@@ -210,7 +212,10 @@ public class Bundle
             // Second phase for commands in system mode
             if (!commands.isEmpty()) {
                 Jnlp.extensionInstallerService.setHeading("System commands");
-                logger.debug("Admin commands: {}", commands);
+                logger.info("\nFinal commands to be run at admin level:");
+                for (String command : commands) {
+                    logger.info("   {}", command);
+                }
                 if (view != null) {
                     Thread.sleep(100); // Let user see infos for a while
                 }

@@ -208,7 +208,7 @@ public class WindowsDescriptor
     public String getCopyCommand (String source,
                                   String target)
     {
-        return "XCOPY \"" + source + "\" \"" + target + "\" /E /C /I /R /Y";
+        return "XCOPY \"" + source + "\" \"" + target + "\" /E /F /C /I /R /Y";
     }
 
     //---------------//
