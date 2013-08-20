@@ -68,6 +68,14 @@
         <!-- Populate examples + docs + train to resources/ -->
         <mkdir dir="resources" />
         
+        <!-- Collection of specific files -->
+        <echo message="-- Building resources/specifics.jar"/>
+        <jar destfile="resources/specifics.jar">
+            <fileset dir="../dev" includes="windows/audiveris.bat" />
+            <fileset dir="../dev" includes="unix/audiveris.sh" />
+            <fileset dir="../dev" includes="unix/AddPlugins.sh" />
+        </jar>
+
         <echo message="-- Building resources/plugins.jar"/>
         <jar basedir="../config" destfile="resources/plugins.jar" includes="plugins/**"/>
         

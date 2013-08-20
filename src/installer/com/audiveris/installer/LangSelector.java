@@ -227,8 +227,6 @@ public class LangSelector
             scrollPane.setBorder(null);
             scrollPane.setVerticalScrollBarPolicy(
                 JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-//            scrollPane.setHorizontalScrollBarPolicy(
-//                JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
             defineLayout(null);
         }
@@ -308,41 +306,6 @@ public class LangSelector
 
             panel.revalidate();
             panel.repaint();
-
-            //            // Augment height iff horizontal scroll bar is visible
-            //            // This seems awfully complex ... Sorry for that!
-            //            final JScrollBar bar = scrollPane.getHorizontalScrollBar();
-            //            final JFrame frame = Installer.getFrame();
-            //            final Dimension largeDim = new Dimension(totalWidth, 35);
-            //
-            //            if (frame != null) {
-            //                SwingUtilities.invokeLater(
-            //                        new Runnable()
-            //                {
-            //                    @Override
-            //                    public void run ()
-            //                    {
-            //                        ///logger.warn("Bar1 visible: {}", bar.isVisible());
-            //                        panel.setPreferredSize(
-            //                                bar.isVisible() ? largeDim : null);
-            //                        panel.revalidate();
-            //                        SwingUtilities.invokeLater(
-            //                                new Runnable()
-            //                        {
-            //                            @Override
-            //                            public void run ()
-            //                            {
-            //                                ///logger.warn("Bar2 visible: {}", bar.isVisible());
-            //                                panel.setPreferredSize(
-            //                                        bar.isVisible() ? largeDim
-            //                                        : null);
-            //                                frame.revalidate();
-            //                                frame.repaint();
-            //                            }
-            //                        });
-            //                    }
-            //                });
-            //            }
         }
 
         public JComponent getComponent ()
@@ -353,7 +316,7 @@ public class LangSelector
         protected Color getBackground (final String language,
                                        final String current)
         {
-            if (language == current) {
+            if (language.equals(current)) {
                 return CompanionView.COLORS.BEING;
             }
 

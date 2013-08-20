@@ -16,13 +16,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 /**
@@ -57,6 +53,9 @@ public class Bundle
     /** Flag for cancellation. */
     private boolean cancelled = false;
 
+    /** Global list of commands to be run with admin privileges. */
+    private final List<String> commands = new ArrayList<String>();
+
     //~ Constructors -----------------------------------------------------------
     //--------//
     // Bundle //
@@ -83,6 +82,20 @@ public class Bundle
     }
 
     //~ Methods ----------------------------------------------------------------
+    //---------------//
+    // appendCommand //
+    //---------------//
+    /**
+     * Append a command to the global list of admin commands.
+     *
+     * @param command the command to append
+     */
+    public void appendCommand (String command)
+    {
+        logger.debug("Appending command: {}", command);
+        commands.add(command);
+    }
+    
     //---------//
     // getView //
     //---------//
@@ -144,6 +157,15 @@ public class Bundle
     //---------------//
     // installBundle //
     //---------------//
+    /**
+     * Install the bundle of needed companions.
+     * To avoid mixing system and user domains, the installation will proceed
+     * in two phases: first a user phase if needed (to install in proper user
+     * location using Java code) then a system phase if needed (to install
+     * system stuff using shell commands).
+     *
+     * @throws Exception
+     */
     public void installBundle ()
             throws Exception
     {
@@ -160,6 +182,7 @@ public class Bundle
         int progress = 0;
 
         if (totalWeight > 0) {
+            // First phase in user mode
             for (Companion companion : companions) {
                 if (companion.isNeeded()) {
                     // Visual information
@@ -183,6 +206,33 @@ public class Bundle
                     logger.debug("Progress: {}/{}", progress, totalWeight);
                 }
             }
+
+            // Second phase for commands in system mode
+            if (!commands.isEmpty()) {
+                Jnlp.extensionInstallerService.setHeading("System commands");
+                logger.debug("Admin commands: {}", commands);
+                if (view != null) {
+                    Thread.sleep(100); // Let user see infos for a while
+                }
+                JOptionPane.showMessageDialog(
+                        Installer.getFrame(),
+                        "To complete installation, you will now be prompted for"
+                        + " administration privileges",
+                        "Additional commands to be run",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+                // One shell for all commands
+                try {
+                    descriptor.runShell(!descriptor.isAdmin(), commands);
+                } catch (Exception ex) {
+                    // Notify failure
+                    Jnlp.extensionInstallerService.installFailed();
+                    throw ex;
+                }
+            }
+
+            // Update status for all companions
+            checkInstallations();
         }
 
         Jnlp.extensionInstallerService.updateProgress(100);
@@ -246,54 +296,30 @@ public class Bundle
         File folder = descriptor.getTempFolder();
         if (folder.exists()) {
             // Clean up everything in the folder
-            Files.walkFileTree(folder.toPath(), new FileVisitor<Path>()
-            {
-                @Override
-                public FileVisitResult preVisitDirectory (Path dir,
-                                                          BasicFileAttributes attrs)
-                        throws IOException
-                {
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult visitFile (Path file,
-                                                  BasicFileAttributes attrs)
-                        throws IOException
-                {
-                    logger.debug("Deleting file {}", file);
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult visitFileFailed (Path file,
-                                                        IOException ex)
-                        throws IOException
-                {
-                    if (ex == null) {
-                        return FileVisitResult.CONTINUE;
+            while (true) {
+                try {
+                    TreeRemover.remove(folder.toPath());
+                    break;
+                } catch (IOException ex) {
+                    if (view != null) {
+                        int opt = JOptionPane.showConfirmDialog(
+                                Installer.getFrame(),
+                                "Cannot delete installation temporary folder "
+                                + "\nlocated at " + folder
+                                + "\n"
+                                + "\nMake sure no window or process is using it"
+                                + ", then press OK",
+                                "Installation temporary folder",
+                                JOptionPane.OK_CANCEL_OPTION,
+                                JOptionPane.WARNING_MESSAGE);
+                        if (opt != JOptionPane.OK_OPTION) {
+                            throw ex;
+                        }
                     } else {
-                        // file visit failed
                         throw ex;
                     }
                 }
-
-                @Override
-                public FileVisitResult postVisitDirectory (Path dir,
-                                                           IOException ex)
-                        throws IOException
-                {
-                    if (ex == null) {
-                        logger.debug("Deleting directory {}", dir);
-                        Files.delete(dir);
-                        return FileVisitResult.CONTINUE;
-                    } else {
-                        // directory iteration failed
-                        throw ex;
-                    }
-                }
-            });
+            }
         }
     }
 

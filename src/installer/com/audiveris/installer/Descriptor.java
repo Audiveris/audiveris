@@ -12,6 +12,7 @@
 package com.audiveris.installer;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Interface {@code Descriptor} defines the features to be provided
@@ -55,6 +56,16 @@ public interface Descriptor
     File getConfigFolder ();
 
     /**
+     * Report the shell command to copy recursively source to target
+     *
+     * @param source path of source folder
+     * @param target path of target folder
+     * @return the proper shell command
+     */
+    String getCopyCommand (String source,
+                           String target);
+
+    /**
      * Report the folder to be used for read-write data.
      *
      * @return the data folder
@@ -72,6 +83,21 @@ public interface Descriptor
      * @return the parent folder of tessdata
      */
     File getDefaultTessdataPrefix ();
+
+    /**
+     * Report the shell command to delete a file
+     *
+     * @param file path of file to delete
+     * @return the proper shell command
+     */
+    String getDeleteCommand (String file);
+
+    /**
+     * Report the collection of specific files to install
+     *
+     * @return the references of specific files for the target environment
+     */
+    List<SpecificFile> getSpecificFiles ();
 
     /**
      * Report a folder which can be used for temporary files created
@@ -131,9 +157,21 @@ public interface Descriptor
     boolean isTesseractInstalled ();
 
     /**
-     * Re-launch the current process, with identical commands, but with
-     * administrator rights this time.
+     * Run a shell with admin privilege on the provided commands
+     *
+     * @param asAdmin  true for elevated
+     * @param commands the list of commands to run
+     * @return true if OK
      */
-    void relaunchAsAdmin ()
+    boolean runShell (boolean asAdmin,
+                      List<String> commands)
+            throws Exception;
+
+    /**
+     * Mark the provided file as executable.
+     *
+     * @param file the file to be set
+     */
+    void setExecutable (String file)
             throws Exception;
 }

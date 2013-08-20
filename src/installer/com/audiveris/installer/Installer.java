@@ -151,8 +151,8 @@ public class Installer
             ///installerService.hideProgressBar();
             if (hasUI) {
                 logger.info(
-                        "\n   Please:\n" + //                    "- Select Audiveris installation folder,\n" +
-                        "- Add or remove OCR-supported languages,\n"
+                        "\n   Please:\n"
+                        + "- Add or remove OCR-supported languages,\n"
                         + "- Check or uncheck optional components,\n"
                         + "- Launch installation.\n");
 
@@ -177,6 +177,7 @@ public class Installer
             }
         } catch (Throwable ex) {
             logger.error("Error encountered", ex);
+
             if (hasUI) {
                 JOptionPane.showMessageDialog(
                         Installer.getFrame(),
@@ -214,7 +215,8 @@ public class Installer
 
         // Interactive or batch mode?
         String mode = System.getProperty("installer-mode", "interactive");
-        hasUI = !mode.trim().equalsIgnoreCase("batch");
+        hasUI = !mode.trim()
+                .equalsIgnoreCase("batch");
         logger.info("Mode {}.", hasUI ? "interactive" : "batch");
 
         Descriptor descriptor = DescriptorFactory.getDescriptor();
@@ -227,53 +229,13 @@ public class Installer
             logger.info("Running as administrator.");
         }
 
+        INSTANCE = new Installer();
+
         if (isInstall) {
             logger.info("Performing install.");
-
-            ///if (isAdmin || DescriptorFactory.LINUX) {
-            if (isAdmin) {
-                // We have the needed priviledges, let's go
-                INSTANCE = new Installer();
-                INSTANCE.install();
-            } else {
-                // Relaunch with administrator priviledges
-                logger.info(
-                        "Launching a new installer at Administrator level.");
-                if (hasUI) {
-                    JOptionPane.showMessageDialog(
-                            Installer.getFrame(),
-                            "Installation requires Administrator privileges. \n"
-                            + "An elevated installer will be launched",
-                            "About to launch an elevated installer",
-                            JOptionPane.INFORMATION_MESSAGE);
-                }
-
-                try {
-                    descriptor.relaunchAsAdmin();
-                    logger.info("Back from launching Administrator installer.");
-
-                    // Notify success (needed for Ubuntu)
-                    Jnlp.extensionInstallerService.installSucceeded(false);
-                } catch (Exception ex) {
-                    logger.warn("Error in relaunchAsAdmin()", ex);
-
-                    // Let user read the java console
-                    // before the program (and console) disappear.
-                    if (hasUI) {
-                        JOptionPane.showMessageDialog(
-                                Installer.getFrame(),
-                                "Installer has failed: " + ex.getMessage(),
-                                "Elevated installer failure",
-                                JOptionPane.WARNING_MESSAGE);
-                    }
-
-                    // Notify failure
-                    Jnlp.extensionInstallerService.installFailed();
-                }
-            }
+            INSTANCE.install();
         } else if (isUninstall) {
             logger.info("Performing uninstall.");
-            INSTANCE = new Installer();
             INSTANCE.uninstall();
         } else {
             // Not a valid argument array
@@ -295,6 +257,7 @@ public class Installer
 
         try {
             bundle.uninstallBundle();
+
             if (hasUI) {
                 JOptionPane.showMessageDialog(
                         Installer.getFrame(),

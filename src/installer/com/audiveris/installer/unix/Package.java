@@ -11,6 +11,7 @@
 // </editor-fold>
 package com.audiveris.installer.unix;
 
+import com.audiveris.installer.Installer;
 import com.audiveris.installer.RegexUtil;
 import com.audiveris.installer.Utilities;
 
@@ -165,25 +166,29 @@ public class Package
     public void install ()
             throws Exception
     {
-        try {
-            List<String> output = new ArrayList<String>();
-            int res = Utilities.runProcess(
-                    "bash",
-                    output,
-                    "-c",
-                    "apt-get install -y " + name);
-
-            if (res != 0) {
-                final String lines = Utilities.dumpOfLines(output);
-                logger.warn(lines);
-                throw new RuntimeException(
-                        "Error installing package " + name + " exit: " + res
-                        + "\n" + lines);
-            }
-        } catch (Exception ex) {
-            logger.warn("Error in running apt-get", ex);
-            throw ex;
-        }
+        //        try {
+        //            List<String> output = new ArrayList<String>();
+        //
+        //            int res = Utilities.runProcess(
+        //                    "bash",
+        //                    output,
+        //                    "-c",
+        //                    "apt-get install -y " + name);
+        //
+        //            if (res != 0) {
+        //                final String lines = Utilities.dumpOfLines(output);
+        //                logger.warn(lines);
+        //                throw new RuntimeException(
+        //                        "Error installing package " + name + " exit: " + res
+        //                        + "\n" + lines);
+        //            }
+        //        } catch (Exception ex) {
+        //            logger.warn("Error in running apt-get", ex);
+        //            throw ex;
+        //        }
+        String cmd = "apt-get install -y " + name;
+        Installer.getBundle()
+                .appendCommand(cmd);
     }
 
     //-------------//

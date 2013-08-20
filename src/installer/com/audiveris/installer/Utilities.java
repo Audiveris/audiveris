@@ -104,8 +104,8 @@ public class Utilities
     // downloadExecAndInstall //
     //------------------------//
     /**
-     * Download an executable from provided url and launch the executable with
-     * the installOption.
+     * Download an executable from provided url and launch the
+     * executable with the installOption.
      *
      * @param title         A title for the software to process
      * @param url           url to download from

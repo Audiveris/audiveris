@@ -14,6 +14,10 @@ package com.audiveris.installer;
 /**
  * Interface {@code Companion} defines a companion to install as part
  * of Audiveris bundle.
+ * A companion does the maximum via Java code run in user mode.
+ * If some operation needs admin privilege then this operation (as small as
+ * possible) must be written as a command and appended to the bundle global
+ * command list which will be run at the end.
  *
  * @author Hervé Bitteur
  */

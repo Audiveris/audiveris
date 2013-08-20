@@ -14,6 +14,7 @@ package com.audiveris.installer.windows;
 import com.audiveris.installer.Descriptor;
 import com.audiveris.installer.DescriptorFactory;
 import com.audiveris.installer.Jnlp;
+import com.audiveris.installer.SpecificFile;
 import com.audiveris.installer.Utilities;
 import static com.audiveris.installer.RegexUtil.*;
 
@@ -29,13 +30,14 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Class {@code WindowsDescriptor} implements Installer descriptor for Windows
- * (32 and 64 bits).
+ * Class {@code WindowsDescriptor} implements Installer descriptor for
+ * Windows (32 and 64 bits).
  *
  * @author Hervé Bitteur
  */
@@ -199,6 +201,16 @@ public class WindowsDescriptor
         return file;
     }
 
+    //----------------//
+    // getCopyCommand //
+    //----------------//
+    @Override
+    public String getCopyCommand (String source,
+                                  String target)
+    {
+        return "XCOPY \"" + source + "\" \"" + target + "\" /E /C /I /R /Y";
+    }
+
     //---------------//
     // getDataFolder //
     //---------------//
@@ -227,6 +239,30 @@ public class WindowsDescriptor
         logger.debug("getDefaultTessdataPrefix: {}", file.getAbsolutePath());
 
         return file;
+    }
+
+    //------------------//
+    // getDeleteCommand //
+    //------------------//
+    @Override
+    public String getDeleteCommand (String file)
+    {
+        return "DEL /F \"" + file + "\"";
+    }
+
+    //------------------//
+    // getSpecificFiles //
+    //------------------//
+    @Override
+    public List<SpecificFile> getSpecificFiles ()
+    {
+        final String appdata = System.getenv("APPDATA");
+        final File root = new File(appdata + TOOL_PREFIX);
+        return Arrays.asList(
+                new SpecificFile(
+                "windows/audiveris.bat",
+                root.getAbsolutePath() + "/audiveris.bat",
+                false));
     }
 
     //---------------//
@@ -342,30 +378,46 @@ public class WindowsDescriptor
                && Files.exists(Paths.get(sysDir, TESS.DLL_TESSERACT));
     }
 
-    //-----------------//
-    // relaunchAsAdmin //
-    //-----------------//
+    //----------//
+    // runShell //
+    //----------//
     @Override
-    public void relaunchAsAdmin ()
+    public boolean runShell (boolean asAdmin,
+                             List<String> commands)
             throws Exception
     {
-        String cmdLine = WindowsUtilities.getCommandLine();
-        logger.debug("cmdLine: {}", cmdLine);
+        // Build a single compound command
+        StringBuilder sb = new StringBuilder();
 
-        String execName = WindowsUtilities.getModuleFilename();
-        logger.debug("execName: {}", execName);
+        for (String command : commands) {
+            if (sb.length() > 0) {
+                sb.append(" & ");
+            }
 
-        // Skip fileName with its enclosing quotes
-        int start = cmdLine.indexOf(execName);
-        String params = cmdLine.substring(start + execName.length() + 1);
-        logger.debug("params: {}", params);
+            sb.append(command);
+        }
 
-        logger.debug("Relaunch as administrator...");
-        WindowsUtilities.runElevated(
-                new File(execName),
-                new File("."),
-                params);
-        logger.debug("End of relaunch.");
+        final String cmdLine = sb.toString();
+        final String cmdExe = System.getenv("ComSpec");
+
+        if (asAdmin) {
+            WindowsUtilities.runElevated(
+                    new File(cmdExe),
+                    new File("."),
+                    "/S",
+                    "/C",
+                    " \"" + cmdLine + "\"");
+        } else {
+            List<String> output = new ArrayList<String>();
+            int res = Utilities.runProcess(cmdExe, output, "/c", cmdLine);
+            if (res != 0) {
+                final String lines = Utilities.dumpOfLines(output);
+                logger.warn(lines);
+                throw new RuntimeException("Failure in runShell().\n" + lines);
+            }
+        }
+
+        return true;
     }
 
 //    //--------//
@@ -392,7 +444,17 @@ public class WindowsDescriptor
 //        final String key = system ? ENV.SYSTEM_KEY : ENV.USER_KEY;
 //        WindowsUtilities.setRegistry(output, key, "/v", var, "/d", value);
 //        logger.debug("setenv output: {}", output);
-//    }
+//    }    
+    //---------------//
+    // setExecutable //
+    //---------------//
+    @Override
+    public void setExecutable (String file)
+            throws Exception
+    {
+        // Void on Windows
+    }
+
     //--------------------//
     // getGhostscriptPath //
     //--------------------//

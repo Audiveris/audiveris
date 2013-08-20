@@ -16,11 +16,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -84,26 +85,23 @@ public class OcrCompanion
         "vie"
     };
 
-    /**
-     * Collection of pre-desired languages.
-     */
+    /** Collection of pre-desired languages. */
     public static final String[] PREDESIRED_LANGUAGES = new String[]{
         "deu", "eng", "fra",
         "ita"
     };
 
+    /** Name of local temporary folder for OCR languages. */
+    private static final String LOCAL_OCR_FOLDER = "local-ocr-folder";
+
     //~ Instance fields --------------------------------------------------------
     /** Handling of tessdata directory. */
     private final Tessdata tessdata = new Tessdata();
 
-    /**
-     * The languages to be added (if not present).
-     */
+    /** The languages to be added (if not present). */
     private final Set<String> desired = buildDesiredLanguages();
 
-    /**
-     * The languages to be removed (if present).
-     */
+    /** The languages to be removed (if present). */
     private final Set<String> nonDesired = new TreeSet<String>();
 
     /** User selector, if any. */
@@ -141,6 +139,10 @@ public class OcrCompanion
             if (!descriptor.isTesseractInstalled()) {
                 installed = false;
             } else {
+                if (selector != null) {
+                    selector.update(null);
+                }
+
                 // We check if each of the desired language actually exists
                 for (String language : desired) {
                     if (!isLangInstalled(language)) {
@@ -271,6 +273,36 @@ public class OcrCompanion
                 selector.update(null);
             }
         }
+
+        // If some languages have been installed, copy them to tessdata
+        final File local = getLocalOcrFolder();
+
+        if (local.exists()
+            && local.isDirectory()
+            && (local.listFiles().length > 0)) {
+            // Try immediate copy, in user mode
+            final Path[] sources = new Path[]{local.toPath()};
+            final Path target = tessdata.get()
+                    .getParentFile()
+                    .getParentFile()
+                    .toPath();
+
+            try {
+                FileCopier fc = new FileCopier(sources, target, true);
+                fc.copy();
+            } catch (IOException ex) {
+                logger.info(
+                        "Could not directly copy language files"
+                        + ", will post a copy command at system level");
+
+                // Fallback to a posted copy command
+                Installer.getBundle()
+                        .appendCommand(
+                        descriptor.getCopyCommand(
+                        local.getAbsolutePath(),
+                        target.toAbsolutePath().toString()));
+            }
+        }
     }
 
     //-----------------------//
@@ -293,6 +325,20 @@ public class OcrCompanion
         return set;
     }
 
+    //-------------------//
+    // getLocalOcrFolder //
+    //-------------------//
+    /**
+     * Report the local (temporary) folder where OCR language data are
+     * expanded before being copied to final target location.
+     *
+     * @return the local OCR folder
+     */
+    private File getLocalOcrFolder ()
+    {
+        return new File(descriptor.getTempFolder(), LOCAL_OCR_FOLDER);
+    }
+
     //-----------------//
     // installLanguage //
     //-----------------//
@@ -312,28 +358,17 @@ public class OcrCompanion
             // Decompress the .tar.gz
             Expander.unGzip(targz, temp);
 
-            // Expand the .tar to the tesseract target
+            // Expand the .tar to LOCAL_OCR_FOLDER
             final File tar = new File(temp, tarName);
             logger.debug("tar: {}", tar);
 
-            // Make sure all directories exist
-            if (!tessdata.get()
-                    .exists()) {
-                if (tessdata.get()
-                        .mkdirs()) {
-                    logger.info(
-                            "Created folder {}",
-                            tessdata.get().getAbsolutePath());
-                }
-            }
-
-            logger.debug("tessdata: {}", tessdata.get().getAbsolutePath());
-
-            final File tessParent = tessdata.get()
-                    .getParentFile()
-                    .getParentFile();
-            logger.debug("tessParent: {}", tessParent.getAbsolutePath());
-            Expander.unTar(tar, tessParent);
+            final File local = getLocalOcrFolder();
+            final File data = new File(
+                    new File(local, Descriptor.TESSERACT_OCR),
+                    Descriptor.TESSDATA);
+            data.mkdirs();
+            logger.debug("local tessdata folder: {}", data.getAbsolutePath());
+            Expander.unTar(tar, local);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(
                     Installer.getFrame(),
@@ -358,16 +393,8 @@ public class OcrCompanion
                 tessdata.get().toPath(),
                 EnumSet.noneOf(FileVisitOption.class),
                 1,
-                new FileVisitor<Path>()
+                new SimpleFileVisitor<Path>()
         {
-            @Override
-            public FileVisitResult preVisitDirectory (Path dir,
-                                                      BasicFileAttributes attrs)
-                    throws IOException
-            {
-                return FileVisitResult.CONTINUE;
-            }
-
             @Override
             public FileVisitResult visitFile (Path file,
                                               BasicFileAttributes attrs)
@@ -379,36 +406,24 @@ public class OcrCompanion
                 if (name.toString()
                         .startsWith(lang + ".")) {
                     logger.info("Removing file {}", file);
-                    Files.delete(file);
+
+                    try {
+                        // Try immediate delete
+                        Files.delete(file);
+                    } catch (AccessDeniedException ex) {
+                        logger.info(
+                                "Cannot delete {}, will post a delete command",
+                                file);
+
+                        // Post a delete command
+                        Installer.getBundle()
+                                .appendCommand(
+                                descriptor.getDeleteCommand(
+                                file.toAbsolutePath().toString()));
+                    }
                 }
 
                 return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFileFailed (Path file,
-                                                    IOException ex)
-                    throws IOException
-            {
-                if (ex == null) {
-                    return FileVisitResult.CONTINUE;
-                } else {
-                    // file visit failed
-                    throw ex;
-                }
-            }
-
-            @Override
-            public FileVisitResult postVisitDirectory (Path dir,
-                                                       IOException ex)
-                    throws IOException
-            {
-                if (ex == null) {
-                    return FileVisitResult.CONTINUE;
-                } else {
-                    // directory iteration failed
-                    throw ex;
-                }
             }
         });
     }
@@ -423,6 +438,8 @@ public class OcrCompanion
     private static class Tessdata
     {
         //~ Instance fields ----------------------------------------------------
+
+        private File prefixDir;
 
         private File tessdataDir;
 
@@ -439,19 +456,32 @@ public class OcrCompanion
         public File get ()
         {
             if (tessdataDir == null) {
+                tessdataDir = new File(getPrefix(), Descriptor.TESSDATA);
+            }
+
+            return tessdataDir;
+        }
+
+        /**
+         * Report the parent folder of tessdata, usually the one
+         * pointed to by TESSDATA_PREFIX (there is no guarantee that
+         * the directory exists or is writable).
+         *
+         * @return the tessdata PARENT directory
+         */
+        public File getPrefix ()
+        {
+            if (prefixDir == null) {
                 final String prefix = System.getenv(Descriptor.TESSDATA_PREFIX);
-                final File prefixDir;
 
                 if (prefix == null) {
                     prefixDir = descriptor.getDefaultTessdataPrefix();
                 } else {
                     prefixDir = new File(prefix);
                 }
-
-                tessdataDir = new File(prefixDir, Descriptor.TESSDATA);
             }
 
-            return tessdataDir;
+            return prefixDir;
         }
     }
 }

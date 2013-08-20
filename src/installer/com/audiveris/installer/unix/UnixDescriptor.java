@@ -12,6 +12,7 @@
 package com.audiveris.installer.unix;
 
 import com.audiveris.installer.Descriptor;
+import com.audiveris.installer.SpecificFile;
 import com.audiveris.installer.Utilities;
 import static com.audiveris.installer.unix.UnixUtilities.*;
 
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -90,6 +92,16 @@ public class UnixDescriptor
         throw new RuntimeException("HOME environment variable is not set");
     }
 
+    //----------------//
+    // getCopyCommand //
+    //----------------//
+    @Override
+    public String getCopyCommand (String source,
+                                  String target)
+    {
+        return "cp -r \"" + source + "\" \"" + target + "\"";
+    }
+
     //---------------//
     // getDataFolder //
     //---------------//
@@ -118,6 +130,29 @@ public class UnixDescriptor
     public File getDefaultTessdataPrefix ()
     {
         return new File("/usr/share/" + Descriptor.TESSERACT_OCR + "/");
+    }
+
+    //------------------//
+    // getDeleteCommand //
+    //------------------//
+    @Override
+    public String getDeleteCommand (String file)
+    {
+        return "rm -f -v \"" + file + "\"";
+    }
+
+    //------------------//
+    // getSpecificFiles //
+    //------------------//
+    @Override
+    public List<SpecificFile> getSpecificFiles ()
+    {
+        return Arrays.asList(
+                new SpecificFile("unix/audiveris.sh", "/usr/bin/audiveris", true),
+                new SpecificFile(
+                "unix/AddPlugins.sh",
+                "/usr/share/audiveris/AddPlugins.sh",
+                true));
     }
 
     //---------------//
@@ -231,45 +266,75 @@ public class UnixDescriptor
         return tessReq.isInstalled();
     }
 
-    //-----------------//
-    // relaunchAsAdmin //
-    //-----------------//
+    //----------//
+    // runShell //
+    //----------//
     @Override
-    public void relaunchAsAdmin ()
+    public boolean runShell (boolean asAdmin,
+                             List<String> commands)
             throws Exception
     {
-        // My command line
-        String cmdLine = getCommandLine();
+        // Build a single compound command
+        StringBuilder sb = new StringBuilder();
 
-        // Relaunch as root, we try gksudo then kdesudo if needed
+        for (String command : commands) {
+            if (sb.length() > 0) {
+                sb.append(" ; ");
+            }
+
+            sb.append(command);
+        }
+
+        String cmdLine = sb.toString();
+
         List<String> output = new ArrayList<String>();
-        for (String cmd : new String[]{"kdesudo", "gksudo"}) {
-            output.add("Trying command: " + cmd);
+
+        // If asAdmin, we try gksudo then kdesudo if needed
+        String[] sudos = asAdmin ? new String[]{"kdesudo", "gksudo"}
+                : new String[]{""};
+
+        for (String sudo : sudos) {
+            if (!sudo.isEmpty()) {
+                output.add("Trying command: " + sudo);
+            }
+
             int res = Utilities.runProcess(
                     "bash",
                     output,
                     "-c",
-                    cmd + " \"" + cmdLine.replace('"', '\'') + "\"");
+                    sudo + " \"" + cmdLine.replace('"', '\'') + "\"");
 
             if (res == 0) {
-                return; // Normal exit
+                return true; // Normal exit
             } else {
                 output.add("Exit code = " + res);
-                if (res == 255) {
-                    // User cancellation
-                    final String lines = Utilities.dumpOfLines(output);
-                    logger.warn(lines);
-                    throw new RuntimeException("Action canceled by user."
-                                               + "\n" + lines);
-                } else {
-                    // Command not found or other problem
-                }
             }
         }
 
         // If we get here, we totally failed
         final String lines = Utilities.dumpOfLines(output);
         logger.warn(lines);
-        throw new RuntimeException("Failure in relaunchAsAdmin().\n" + lines);
+        throw new RuntimeException("Failure in runShell().\n" + lines);
+    }
+
+    //---------------//
+    // setExecutable //
+    //---------------//
+    @Override
+    public void setExecutable (String file)
+            throws Exception
+    {
+        List<String> output = new ArrayList<String>();
+        int res = Utilities.runProcess(
+                "bash",
+                output,
+                "-c",
+                "\"chmod a:x '" + file + "'\"");
+
+        if (res != 0) {
+            final String lines = Utilities.dumpOfLines(output);
+            logger.warn(lines);
+            throw new RuntimeException("Failure in setExecutable().\n" + lines);
+        }
     }
 }
