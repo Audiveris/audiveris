@@ -173,6 +173,15 @@
                 <include name="splash.png"/>
             </fileset>
         </copy>
+        
+        <!-- Collection of specific files -->
+        <echo message="-- Building ${dist.dir}/resources/specifics.jar"/>
+        <jar destfile="${dist.dir}/resources/specifics.jar">
+            <fileset dir="dev" includes="windows/audiveris.bat" />
+            <fileset dir="dev" includes="unix/audiveris.sh" />
+            <fileset dir="dev" includes="unix/AddPlugins.sh" />
+        </jar>
+        
         <!-- Populate plugins + examples + docs + train to dist/resources -->
         <echo message="-- Building ${dist.dir}/resources/plugins.jar"/>
         <jar basedir="config" destfile="${dist.dir}/resources/plugins.jar" includes="plugins/**"/>

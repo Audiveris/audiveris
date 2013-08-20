@@ -1,15 +1,12 @@
 #!/bin/sh
 
-# check for Java 7 and bail out if not available
-JAVA_VERSION=$(java -version 2>&1 | sed 's/java version "\(.*\)\.\(.*\)\..*"/\1\2/; 1q')
-if [ "$JAVA_VERSION" -lt 17 ]; then
-    echo "This version of Audiveris requires Java 7. Please install a Java 7 JRE and try again."
-    exit 1
-fi
+# Run Audiveris with default or specific memory parameters
+# (uncomment the chosen line and update the parameters as you wish)
+# see https://audiveris.kenai.com/docs/manual/handbook.html#jvm-arguments
 
-PROG_DIR=/usr/share/audiveris
-EXEC=$PROG_DIR/dist/audiveris.jar
+# default
+LC_ALL=C javaws https://audiveris.kenai.com/jnlp/launch.jnlp
 
-# Run Audiveris
-LC_ALL=C java -jar $EXEC "$@"
+# specific
+#LC_ALL=C javaws -J-Xms512m -J-Xmx1024m https://audiveris.kenai.com/jnlp/launch.jnlp
 

@@ -16,7 +16,7 @@ cd "$AUDIVERIS_PLUGINS_FOLDER"
 
 # Ask the user for parameters
 read -p "Please enter plugin's filename (example: musescore):" -e PLUG_NAME
-read -p "Please enter tool's exection command (example: mscore):" -e PLUG_COM
+read -p "Please enter tool's execution command (example: mscore):" -e PLUG_COM
 read -p "Please enter plugin's title (example: MuseScore):" -e PLUG_TITLE
 read -p "Please enter a short plugin description:" -e PLUG_DESC
 
