@@ -208,6 +208,15 @@ public abstract class AbstractCompanion
         }
     }
 
+    //---------------//
+    // appendCommand //
+    //---------------//
+    protected void appendCommand (String command)
+    {
+        Installer.getBundle()
+                .appendCommand(command);
+    }
+
     //-----------//
     // doInstall //
     //-----------//

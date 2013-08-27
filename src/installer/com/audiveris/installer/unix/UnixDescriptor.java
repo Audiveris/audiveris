@@ -14,12 +14,12 @@ package com.audiveris.installer.unix;
 import com.audiveris.installer.Descriptor;
 import com.audiveris.installer.SpecificFile;
 import com.audiveris.installer.Utilities;
-import static com.audiveris.installer.unix.UnixUtilities.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -96,10 +96,11 @@ public class UnixDescriptor
     // getCopyCommand //
     //----------------//
     @Override
-    public String getCopyCommand (String source,
-                                  String target)
+    public String getCopyCommand (Path source,
+                                  Path target)
     {
-        return "cp -r -v \"" + source + "\" \"" + target + "\"";
+        return "cp -r -v \"" + source.toAbsolutePath() + "\" \""
+               + target.toAbsolutePath() + "\"";
     }
 
     //---------------//
@@ -136,9 +137,27 @@ public class UnixDescriptor
     // getDeleteCommand //
     //------------------//
     @Override
-    public String getDeleteCommand (String file)
+    public String getDeleteCommand (Path file)
     {
-        return "rm -f -v \"" + file + "\"";
+        return "rm -f -v \"" + file.toAbsolutePath() + "\"";
+    }
+
+    //-----------------//
+    // getMkdirCommand //
+    //-----------------//
+    @Override
+    public String getMkdirCommand (Path dir)
+    {
+        return "mkdir -p \"" + dir.toAbsolutePath() + "\"";
+    }
+
+    //-------------------//
+    // getSetExecCommand //
+    //-------------------//
+    @Override
+    public String getSetExecCommand (Path file)
+    {
+        return "chmod a:x \"" + file.toAbsolutePath() + "\"";
     }
 
     //------------------//
@@ -321,7 +340,7 @@ public class UnixDescriptor
     // setExecutable //
     //---------------//
     @Override
-    public void setExecutable (String file)
+    public void setExecutable (Path file)
             throws Exception
     {
         List<String> output = new ArrayList<String>();
@@ -329,7 +348,7 @@ public class UnixDescriptor
                 "bash",
                 output,
                 "-c",
-                "\"chmod a:x '" + file + "'\"");
+                "\"chmod a:x '" + file.toAbsolutePath() + "'\"");
 
         if (res != 0) {
             final String lines = Utilities.dumpOfLines(output);

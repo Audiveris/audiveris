@@ -12,6 +12,7 @@
 package com.audiveris.installer;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -62,8 +63,8 @@ public interface Descriptor
      * @param target path of target folder
      * @return the proper shell command
      */
-    String getCopyCommand (String source,
-                           String target);
+    String getCopyCommand (Path source,
+                           Path target);
 
     /**
      * Report the folder to be used for read-write data.
@@ -90,7 +91,23 @@ public interface Descriptor
      * @param file path of file to delete
      * @return the proper shell command
      */
-    String getDeleteCommand (String file);
+    String getDeleteCommand (Path file);
+
+    /**
+     * Report the shell command to create directories
+     *
+     * @param dir path to final folder
+     * @return the proper shell command
+     */
+    String getMkdirCommand (Path dir);
+
+    /**
+     * Report the shell command to set the executable flag on a file
+     *
+     * @param file path of file to set
+     * @return the proper shell command
+     */
+    String getSetExecCommand (Path file);
 
     /**
      * Report the collection of specific files to install
@@ -172,6 +189,6 @@ public interface Descriptor
      *
      * @param file the file to be set
      */
-    void setExecutable (String file)
+    void setExecutable (Path file)
             throws Exception;
 }

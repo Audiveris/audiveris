@@ -21,7 +21,6 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
@@ -297,18 +296,18 @@ public class OcrCompanion
                         + ", will post a copy command at system level");
 
                 // Fallback to a posted copy command
-                // Dirty hack since XCOPY (Windows) and cp (Unix) don't treat source and target similarly
+                // Dirty hack since XCOPY (Windows) and cp (Unix) don't treat 
+                // source and target similarly when these are directories
                 Path source = null;
+
                 if (DescriptorFactory.WINDOWS) {
                     source = local.toPath();
                 } else if (DescriptorFactory.LINUX) {
                     source = new File(local, Descriptor.TESSERACT_OCR).toPath();
                 }
-                Installer.getBundle()
-                        .appendCommand(
-                        descriptor.getCopyCommand(
-                        source.toAbsolutePath().toString(),
-                        target.toAbsolutePath().toString()));
+
+                // Here, source and target are folders (not regular files)
+                appendCommand(descriptor.getCopyCommand(source, target));
             }
         }
     }
@@ -402,38 +401,35 @@ public class OcrCompanion
                 EnumSet.noneOf(FileVisitOption.class),
                 1,
                 new SimpleFileVisitor<Path>()
-                {
-                    @Override
-                    public FileVisitResult visitFile (Path file,
-                                                      BasicFileAttributes attrs)
-                            throws IOException
-                    {
-                        Path name = file.getName(file.getNameCount() - 1);
-                        logger.debug("Visiting {}, name {}", file, name);
+        {
+            @Override
+            public FileVisitResult visitFile (Path file,
+                                              BasicFileAttributes attrs)
+                    throws IOException
+            {
+                Path name = file.getName(file.getNameCount() - 1);
+                logger.debug("Visiting {}, name {}", file, name);
 
-                        if (name.toString()
-                                .startsWith(lang + ".")) {
-                            logger.info("Removing file {}", file);
+                if (name.toString()
+                        .startsWith(lang + ".")) {
+                    logger.info("Removing file {}", file);
 
-                            try {
-                                // Try immediate delete
-                                Files.delete(file);
-                            } catch (AccessDeniedException ex) {
-                                logger.info(
-                                        "Cannot delete {}, will post a delete command",
-                                        file);
+                    try {
+                        // Try immediate delete
+                        Files.delete(file);
+                    } catch (AccessDeniedException ex) {
+                        logger.info(
+                                "Cannot delete {}, will post a delete command",
+                                file);
 
-                                // Post a delete command
-                                Installer.getBundle()
-                                        .appendCommand(
-                                        descriptor.getDeleteCommand(
-                                        file.toAbsolutePath().toString()));
-                            }
-                        }
-
-                        return FileVisitResult.CONTINUE;
+                        // Post a delete command
+                        appendCommand(descriptor.getDeleteCommand(file));
                     }
-                });
+                }
+
+                return FileVisitResult.CONTINUE;
+            }
+        });
     }
 
     //~ Inner Classes ----------------------------------------------------------

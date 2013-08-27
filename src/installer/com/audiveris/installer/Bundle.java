@@ -92,8 +92,10 @@ public class Bundle
      */
     public void appendCommand (String command)
     {
-        logger.info("Posting: {}", command);
-        commands.add(command);
+        if (!command.isEmpty()) {
+            logger.info("Posting: {}", command);
+            commands.add(command);
+        }
     }
 
     //---------//
@@ -171,7 +173,7 @@ public class Bundle
     {
         logger.debug("installBundle");
         commands.clear();
-        
+
         // Compute total installation weight
         int totalWeight = 0;
 

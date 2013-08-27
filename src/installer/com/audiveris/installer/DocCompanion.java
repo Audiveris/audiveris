@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
@@ -205,22 +206,45 @@ public class DocCompanion
             final Path parent = target.getParent();
 
             if (!Files.exists(parent)) {
-                Files.createDirectories(parent);
-                logger.info("Created dir {}", parent);
+                try {
+                    Files.createDirectories(parent);
+                    logger.info("Created dir {}", parent);
+                } catch (IOException ex) {
+                    logger.debug("Could not directly create dirs {}"
+                                 + ", will post command at system level", parent);
+                    // Resort to shell
+                    appendCommand(descriptor.getMkdirCommand(parent));
+                }
             }
 
             // Copy the source entry to the target file
             ZipEntry entry = jar.getEntry(specificFile.source);
             if (entry != null) {
                 try (InputStream is = jar.getInputStream(entry)) {
+                    // May fail
                     Files.copy(is, target, StandardCopyOption.REPLACE_EXISTING);
                     logger.info("Specific {} copied", target);
                     if (specificFile.isExec) {
                         try {
-                            descriptor.setExecutable(
-                                    target.toAbsolutePath().toString());
+                            // May fail (but copy must have failed before)
+                            descriptor.setExecutable(target);
                         } catch (Exception ignored) {
                             // User already warned, proceed to next file
+                        }
+                    }
+                } catch (IOException ex) {
+                    logger.debug("Could not directly write {}"
+                                 + ", will post command at system level", target);
+                    // Resort to local copy, then shell command
+                    Path local = Paths.get(descriptor.getTempFolder().toString(),
+                            target.getFileName().toString());
+                    try (InputStream is = jar.getInputStream(entry)) {
+                        Files.copy(is, local, StandardCopyOption.REPLACE_EXISTING);
+                        logger.info("Specific {} copied locally", target);
+                        // Here local and target are regular files (not folders)
+                        appendCommand(descriptor.getCopyCommand(local, parent));
+                        if (specificFile.isExec) {
+                            appendCommand(descriptor.getSetExecCommand(target));
                         }
                     }
                 }

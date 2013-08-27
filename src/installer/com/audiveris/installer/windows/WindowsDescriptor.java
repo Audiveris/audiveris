@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -205,10 +206,11 @@ public class WindowsDescriptor
     // getCopyCommand //
     //----------------//
     @Override
-    public String getCopyCommand (String source,
-                                  String target)
+    public String getCopyCommand (Path source,
+                                  Path target)
     {
-        return "XCOPY \"" + source + "\" \"" + target + "\" /E /F /C /I /R /Y";
+        return "XCOPY \"" + source.toAbsolutePath() + "\" \""
+               + target.toAbsolutePath() + "\" /E /F /C /I /R /Y";
     }
 
     //---------------//
@@ -245,9 +247,28 @@ public class WindowsDescriptor
     // getDeleteCommand //
     //------------------//
     @Override
-    public String getDeleteCommand (String file)
+    public String getDeleteCommand (Path file)
     {
-        return "DEL /F \"" + file + "\"";
+        return "DEL /F \"" + file.toAbsolutePath() + "\"";
+    }
+
+    //-----------------//
+    // getMkdirCommand //
+    //-----------------//
+    @Override
+    public String getMkdirCommand (Path dir)
+    {
+        return "mkdir \"" + dir.toAbsolutePath() + "\"";
+    }
+
+    //-------------------//
+    // getSetExecCommand //
+    //-------------------//
+    @Override
+    public String getSetExecCommand (Path file)
+    {
+        // This is void on Windows
+        return "";
     }
 
     //------------------//
@@ -391,7 +412,7 @@ public class WindowsDescriptor
 
         for (String command : commands) {
             if (sb.length() > 0) {
-                sb.append(" & ");
+                sb.append(" && ");
             }
 
             sb.append(command);
@@ -405,6 +426,7 @@ public class WindowsDescriptor
                     new File(cmdExe),
                     new File("."),
                     "/S",
+                    "/E:ON",
                     "/C",
                     " \"" + cmdLine + "\"");
         } else {
@@ -449,7 +471,7 @@ public class WindowsDescriptor
     // setExecutable //
     //---------------//
     @Override
-    public void setExecutable (String file)
+    public void setExecutable (Path file)
             throws Exception
     {
         // Void on Windows
