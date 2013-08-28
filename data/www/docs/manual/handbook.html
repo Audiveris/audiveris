@@ -319,82 +319,6 @@
                     </p>
 
                     <br class="clear"/>
-                    <img class="right" title="Relaunching elevated installer" 
-                         src="../images/installer-relaunching.png" />
-
-                    <p>
-                        Installing software companions involves the writing of
-                        some data in system locations
-                        (such as <code>c:\Program Files</code> folder under 
-                        Windows, and similar locations for other OS'es).
-                        By default a standard user is not allowed to write to
-                        these locations, so you may be prompted for "elevation"
-                        to Administrator level.
-                    </p>
-                    <p>
-                        This elevation will not be asked if you are 
-                        already running at administrator level.
-                    </p>
-                    <ul>
-                        <li>For Windows:
-                            <ul>
-                                <li>This is the default when using Windows XP,</li>
-                                <li>Later Windows versions (Vista, 7, 8) will ask for 
-                                    elevation, unless for example the terminal window
-                                    itself was launched with administrator privileges
-                                    [To do so, use a right-click on the terminal desktop 
-                                    icon and select <code>Run as Administrator</code> 
-                                    from the pull-down menu].</li>
-                                <li>You can also lower the Windows default setting from 
-                                    Windows control panel although this is not 
-                                    recommended as a permanent setting.
-                                </li>
-                            </ul>
-                        </li>
-                        <li>For Ubuntu:
-                            <ul>
-                                <li>By default you don't run with admin 
-                                    privileges,</li>
-                                <li>But you can use for example <code>sudo</code>
-                                    to run as root temporarily.</li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <p>
-                        Assuming you are not running with administrative
-                        privileges, the elevation will be asked by the Installer.
-                    </p>
-                    <img class="right" title="User Account Control" 
-                         src="../images/installer-uac.png" />
-                    <p>On Windows you will see this typical UAC 
-                        (User Account Control) dialog that recent Windows 
-                        versions use to prompt for user agreement.
-                    </p>
-                    <p>
-                        Click <code class='button'>Yes</code> to proceed and 
-                        let the installer run.
-                    </p>
-
-                    <br class="clear"/>
-                    <img class="right" title="gksudo prompt" 
-                         src="../images/installer-gksudo.png" />
-                    <p>
-                        On Ubuntu, you will see a <code>gksudo</code>
-                        prompt for your password in order to perform this ugly 
-                        administrative task.
-                    </p>
-                    <p>
-                        Enter your password and proceed.
-                    </p>
-                    <br class="clear"/>
-                    <img class="side" title="Running installer" 
-                         src="../images/installer-running.png" />
-                    <p>
-                        After granting elevation if so asked for, you are now 
-                        actually running the Audiveris bundle Installer.
-                    </p>
-
-                    <br class="clear"/>
                     <img class="side" title="Installer User Interface" 
                          src="../images/installer-gui.png" />
                     <p>
@@ -488,6 +412,40 @@
                         So be patient, let the download proceed.
                     </p>
 
+                    <br class="clear"/>
+                    <p>
+                        Depending on your environment, the installation of 
+                        software companions may require a write-access to
+                        system locations 
+                        such as <code>c:\Program Files</code> folder under 
+                        Windows, and similar locations for other OS'es.
+                        By default a standard user is not allowed to write to
+                        these locations, so you may be prompted for "elevation"
+                        to Administrator level to complete the installation.
+                    </p>
+                    <img class="right" title="User Account Control" 
+                         src="../images/installer-uac.png" />
+                    <p>On Windows you will see this typical UAC 
+                        (User Account Control) dialog that recent Windows 
+                        versions use to prompt for user agreement.
+                    </p>
+                    <p>
+                        Click <code class='button'>Yes</code> to proceed and 
+                        let the installer run.
+                    </p>
+
+                    <br class="clear"/>
+                    <img class="right" title="gksudo prompt" 
+                         src="../images/installer-gksudo.png" />
+                    <p>
+                        On Ubuntu, you will see a <code>gksudo</code>
+                        or a <code>kdesudo</code> prompt for your password in
+                        order to perform the final administrative task.
+                    </p>
+                    <p>
+                        Enter your password and proceed.
+                    </p>                                        
+                    
                     <br class="clear"/>
                     <img class="side" title="Installation complete" 
                          src="../images/installer-complete.png" />
