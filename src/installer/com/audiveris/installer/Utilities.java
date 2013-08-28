@@ -129,7 +129,7 @@ public class Utilities
             // Install
             final List<String> output = new ArrayList<>();
             final int res = Utilities.runProcess(
-                    exec.getAbsolutePath(), output, installOption);
+                    output, exec.getAbsolutePath(), installOption);
             if (res != 0) {
                 final String lines = Utilities.dumpOfLines(output);
                 logger.warn(lines);
@@ -185,23 +185,19 @@ public class Utilities
     /**
      * Launch a process.
      *
-     * @param execPath (input) the path to the executable file
-     * @param output   (output) the output lines (stdout and stderr)
-     * @param args     (input) arguments for the executable
+     * @param output (output) the output lines (stdout and stderr)
+     * @param args   (input) executable and arguments
      * @return the process exit code
      * @throws IOException
      * @throws InterruptedException
      */
-    public static int runProcess (String execPath,
-                                  List<String> output,
+    public static int runProcess (List<String> output,
                                   String... args)
             throws IOException, InterruptedException
     {
         // Command arguments
-        List<String> cmdArgs = new ArrayList<>();
-        cmdArgs.add(execPath);
-        cmdArgs.addAll(Arrays.asList(args));
-        logger.debug("cmdArgs: {}", cmdArgs);
+        List<String> cmdArgs = Arrays.asList(args);
+        logger.debug("runProcess args: {}", cmdArgs);
 
         try {
             // Spawn process

@@ -35,9 +35,6 @@ public class UnixDescriptor
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /**
-     * Usual logger utility
-     */
     private static final Logger logger = LoggerFactory.getLogger(
             UnixDescriptor.class);
 
@@ -69,6 +66,16 @@ public class UnixDescriptor
      * Requirement for tesseract.
      */
     private static final Package tessReq = new Package("libtesseract3", "3.02");
+
+    /**
+     * KDE front-end for sudo.
+     */
+    private static final String KDESUDO = "kdesudo";
+
+    /**
+     * GTK+ front-end for sudo.
+     */
+    private static final String GKSUDO = "gksudo";
 
     //~ Methods ----------------------------------------------------------------
     //-----------------//
@@ -139,7 +146,7 @@ public class UnixDescriptor
     @Override
     public String getDeleteCommand (Path file)
     {
-        return "rm -f -v \"" + file.toAbsolutePath() + "\"";
+        return "rm -v -f \"" + file.toAbsolutePath() + "\"";
     }
 
     //-----------------//
@@ -148,7 +155,7 @@ public class UnixDescriptor
     @Override
     public String getMkdirCommand (Path dir)
     {
-        return "mkdir -p \"" + dir.toAbsolutePath() + "\"";
+        return "mkdir -v -p \"" + dir.toAbsolutePath() + "\"";
     }
 
     //-------------------//
@@ -157,7 +164,7 @@ public class UnixDescriptor
     @Override
     public String getSetExecCommand (Path file)
     {
-        return "chmod a:x \"" + file.toAbsolutePath() + "\"";
+        return "chmod -v a+x \"" + file.toAbsolutePath() + "\"";
     }
 
     //------------------//
@@ -231,8 +238,8 @@ public class UnixDescriptor
         try {
             List<String> output = new ArrayList<String>();
             int res = Utilities.runProcess(
-                    "bash",
                     output,
+                    "bash",
                     "-c",
                     "whoami");
 
@@ -240,13 +247,13 @@ public class UnixDescriptor
                 final String lines = Utilities.dumpOfLines(output);
                 logger.warn(lines);
                 throw new RuntimeException(
-                        "Error checking admin, exit: " + res + "\n" + lines);
+                        "Failure in isAdmin(). exit: " + res + "\n" + lines);
             } else {
                 return !output.isEmpty() && output.get(0)
                         .equals("root");
             }
         } catch (Exception ex) {
-            logger.warn("Error checking admin", ex);
+            logger.warn("Failure in isAdmin(). ", ex);
 
             return true; // Safer
         }
@@ -306,34 +313,92 @@ public class UnixDescriptor
 
         String cmdLine = sb.toString();
 
+        // If we have to run as Admin, pick up proper sudo front-end
+        String sudoFrontend = "";
+
+        if (asAdmin) {
+            for (String name : new String[]{GKSUDO, KDESUDO}) {
+                if (isKnown(name)) {
+                    sudoFrontend = name;
+                    logger.info("\nUsing {}", sudoFrontend);
+                    break;
+                }
+            }
+        }
+
         List<String> output = new ArrayList<String>();
 
-        // If asAdmin, we try gksudo then kdesudo if needed
-        String[] sudos = asAdmin ? new String[]{"kdesudo", "gksudo"}
-                : new String[]{""};
+        try {
+            final int res;
+            switch (sudoFrontend) {
+            case GKSUDO:
+                res = Utilities.runProcess(
+                        output,
+                        GKSUDO,
+                        "-DAudiveris installer",
+                        "bash -v -e -c '" + cmdLine + "'");
+                break;
 
-        for (String sudo : sudos) {
-            if (!sudo.isEmpty()) {
-                output.add("Trying command: " + sudo);
+            case KDESUDO:
+                res = Utilities.runProcess(
+                        output,
+                        KDESUDO,
+                        "bash -v -e -c '" + cmdLine + "'");
+                break;
+
+            default:
+                res = Utilities.runProcess(
+                        output,
+                        "bash",
+                        "-v",
+                        "-e",
+                        "-c",
+                        cmdLine);
             }
-
-            int res = Utilities.runProcess(
-                    "bash",
-                    output,
-                    "-c",
-                    sudo + " \"" + cmdLine.replace('"', '\'') + "\"");
 
             if (res == 0) {
                 return true; // Normal exit
             } else {
                 output.add("Exit code = " + res);
             }
+        } catch (Exception ex) {
+            logger.warn("Exception in runProcess", ex);
         }
 
-        // If we get here, we totally failed
+        // If we are getting here, we failed!
         final String lines = Utilities.dumpOfLines(output);
+
         logger.warn(lines);
-        throw new RuntimeException("Failure in runShell().\n" + lines);
+
+        throw new RuntimeException(
+                "Failure in runShell().\n" + lines);
+    }
+
+    //---------//
+    // isKnown //
+    //---------//
+    /**
+     * Check whether the provided command name is known
+     *
+     * @param name the command name
+     * @return true if known, false otherwise
+     */
+    private boolean isKnown (String name)
+    {
+        List<String> output = new ArrayList<String>();
+        try {
+            int res = Utilities.runProcess(
+                    output,
+                    "bash",
+                    "-c",
+                    "which " + name);
+            logger.debug(Utilities.dumpOfLines(output));
+            return res == 0;
+        } catch (Exception ex) {
+            final String lines = Utilities.dumpOfLines(output);
+            logger.warn("Failure in isKnown(). ex: " + ex + "\n" + lines);
+            return false;
+        }
     }
 
     //---------------//
@@ -345,10 +410,10 @@ public class UnixDescriptor
     {
         List<String> output = new ArrayList<String>();
         int res = Utilities.runProcess(
-                "bash",
                 output,
+                "bash",
                 "-c",
-                "\"chmod a:x '" + file.toAbsolutePath() + "'\"");
+                "chmod -v a+x \"" + file.toAbsolutePath() + "\"");
 
         if (res != 0) {
             final String lines = Utilities.dumpOfLines(output);

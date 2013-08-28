@@ -419,9 +419,9 @@ public class WindowsDescriptor
         }
 
         final String cmdLine = sb.toString();
-        final String cmdExe = System.getenv("ComSpec");
 
         if (asAdmin) {
+            final String cmdExe = System.getenv("ComSpec");
             WindowsUtilities.runElevated(
                     new File(cmdExe),
                     new File("."),
@@ -431,7 +431,7 @@ public class WindowsDescriptor
                     " \"" + cmdLine + "\"");
         } else {
             List<String> output = new ArrayList<String>();
-            int res = Utilities.runProcess(cmdExe, output, "/c", cmdLine);
+            int res = Utilities.runProcess(output, "cmd.exe", "/c", cmdLine);
             if (res != 0) {
                 final String lines = Utilities.dumpOfLines(output);
                 logger.warn(lines);

@@ -97,8 +97,8 @@ public class Package
         try {
             List<String> output = new ArrayList<String>();
             int res = Utilities.runProcess(
-                    "bash",
                     output,
+                    "bash",
                     "-c",
                     "LANG=en_US dpkg -s " + name);
 

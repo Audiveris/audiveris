@@ -128,11 +128,12 @@ public class WindowsUtilities
     {
         // Command arguments
         List<String> cmdArgs = new ArrayList<>();
+        cmdArgs.add("cmd.exe");
         cmdArgs.addAll(Arrays.asList("/c", "reg", "query"));
         cmdArgs.addAll(Arrays.asList(args));
         logger.debug("cmd query: {}", cmdArgs);
 
-        return Utilities.runProcess("cmd.exe", output,
+        return Utilities.runProcess(output, 
                 cmdArgs.toArray(new String[cmdArgs.size()]));
     }
 
@@ -145,11 +146,12 @@ public class WindowsUtilities
     {
         // Command arguments
         List<String> cmdArgs = new ArrayList<>();
+        cmdArgs.add("cmd.exe");
         cmdArgs.addAll(Arrays.asList("/c", "reg", "add"));
         cmdArgs.addAll(Arrays.asList(args));
         logger.debug("cmd add: {}", cmdArgs);
 
-        return Utilities.runProcess("cmd.exe", output,
+        return Utilities.runProcess(output,
                 cmdArgs.toArray(new String[cmdArgs.size()]));
     }
 }
