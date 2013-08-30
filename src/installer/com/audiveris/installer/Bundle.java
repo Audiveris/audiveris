@@ -225,12 +225,12 @@ public class Bundle
                         Installer.getFrame(),
                         "To complete installation, you will now be prompted for"
                         + " administration privileges",
-                        "Additional commands to be run",
+                        commands.size() + " Additional command(s) to be run",
                         JOptionPane.INFORMATION_MESSAGE);
 
                 // One shell for all commands
                 try {
-                    descriptor.runShell(!descriptor.isAdmin(), commands);
+                    descriptor.runShell(!Installer.isAdmin, commands);
                 } catch (Exception ex) {
                     // Notify failure
                     Jnlp.extensionInstallerService.installFailed();

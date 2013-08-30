@@ -317,7 +317,7 @@ public abstract class AbstractCompanion
     private void completeInstallation ()
     {
         status = Status.INSTALLED;
-        logger.info("{} completed successfully.", getTitle());
+        logger.info("{} completed.", getTitle());
     }
 
     //------------------------//
@@ -326,7 +326,7 @@ public abstract class AbstractCompanion
     private void completeUninstallation ()
     {
         status = Status.NOT_INSTALLED;
-        logger.info("{} completed successfully.", getTitle());
+        logger.info("{} completed.", getTitle());
         updateView();
     }
 

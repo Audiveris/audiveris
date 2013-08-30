@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -120,26 +121,55 @@ public class Utilities
                                                String installOption)
             throws Exception
     {
-        try {
-            // Download
-            final String fileName = new File(url).getName();
-            final File exec = new File(temp, fileName);
-            download(url, exec);
+        // Download
+        final String fileName = new File(url).getName();
+        final File exec = new File(temp, fileName);
+        download(url, exec);
 
-            // Install
-            final List<String> output = new ArrayList<>();
+        // Install
+        final List<String> output = new ArrayList<>();
+        try {
             final int res = Utilities.runProcess(
                     output, exec.getAbsolutePath(), installOption);
             if (res != 0) {
-                final String lines = Utilities.dumpOfLines(output);
-                logger.warn(lines);
-                throw new RuntimeException("Could not run " + exec
-                                           + ", exit: " + res + "\n" + lines);
+                if (Installer.isAdmin) {
+                    final String lines = Utilities.dumpOfLines(output);
+                    logger.warn(lines);
+                    throw new RuntimeException("Could not run " + exec
+                                               + ", exit: " + res + "\n" + lines);
+                } else {
+                    postExec(exec, installOption);
+                }
             }
         } catch (IOException | InterruptedException | RuntimeException ex) {
-            logger.warn("Could not install " + title, ex);
-            throw ex;
+            if (Installer.isAdmin) {
+                logger.warn("Could not install " + title, ex);
+                throw ex;
+            } else {
+                postExec(exec, installOption);
+            }
         }
+    }
+
+    //----------//
+    // postExec //
+    //----------//
+    /**
+     * Post the launching of a program
+     *
+     * @param exec    path to the executable
+     * @param options options, if any
+     */
+    private static void postExec (File exec,
+                                  String... options)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\"").append(exec.getAbsolutePath()).append("\"");
+        for (String option : options) {
+            sb.append(" ").append(option);
+        }
+
+        Installer.getBundle().appendCommand(sb.toString());
     }
 
     //----------------------//
@@ -223,7 +253,8 @@ public class Utilities
 
             return exitValue;
         } catch (Exception ex) {
-            logger.warn("Error running " + cmdArgs, ex);
+            logger.warn("[isAdmin: " + Installer.isAdmin
+                        + "] Error running " + cmdArgs, ex);
             throw ex;
         }
     }

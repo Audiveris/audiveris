@@ -578,7 +578,7 @@ public class WindowsDescriptor
             }
         }
 
-        logger.warn("Could not find suitable Ghostscript software");
+        logger.info("Could not find suitable Ghostscript software");
         return null; // Abnormal exit
     }
 

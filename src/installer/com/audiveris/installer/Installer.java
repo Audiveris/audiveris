@@ -54,7 +54,7 @@ public class Installer
     private static boolean isUninstall;
 
     /** Flag a process running as administrator. */
-    private static boolean isAdmin;
+    public static boolean isAdmin;
 
     /** Flag an interactive (vs batch) run. */
     private static boolean hasUI;
