@@ -41,9 +41,9 @@ public class SectionIdEvent
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-----------//
-    // getEntity //
-    //-----------//
+    //---------//
+    // getData //
+    //---------//
     @Override
     public Integer getData ()
     {

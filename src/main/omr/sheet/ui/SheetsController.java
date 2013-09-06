@@ -178,7 +178,7 @@ public class SheetsController
     public void dumpCurrentSheetServices ()
     {
         Sheet sheet = getSelectedSheet();
-        logger.info("Sheet:{}", sheet);
+        logger.info("Selection services of {}", sheet);
 
         if (sheet == null) {
             return;
@@ -196,7 +196,14 @@ public class SheetsController
             sheet.getVerticalLag().getRunService().dumpSubscribers();
         }
 
-        sheet.getNest().getGlyphService().dumpSubscribers();
+        if (sheet.getHorizontalFullLag() != null) {
+            sheet.getHorizontalFullLag().getSectionService().dumpSubscribers();
+            sheet.getHorizontalFullLag().getRunService().dumpSubscribers();
+        }
+
+        if (sheet.getNest() != null) {
+            sheet.getNest().getGlyphService().dumpSubscribers();
+        }
     }
 
     //--------------//
@@ -385,6 +392,15 @@ public class SheetsController
         sheetService.unsubscribe(SheetEvent.class, subscriber);
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return getClass().getSimpleName();
+    }
+
     //----------------//
     // defineTitleFor //
     //----------------//
@@ -399,7 +415,7 @@ public class SheetsController
         Page page = sheet.getPage();
         Score score = page.getScore();
         int index = page.getIndex();
-        
+
         if (score.isMultiPage()) {
             if (page == score.getFirstPage()) {
                 return score.getRadix() + "#" + index;

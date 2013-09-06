@@ -18,7 +18,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
-import omr.glyph.ui.SymbolsEditor;
 
 import omr.run.RunsTable;
 
@@ -68,9 +67,6 @@ public class GridBuilder
     /** Companion in charge of bar lines. */
     private final BarsRetriever barsRetriever;
 
-    /** For runs display, if any. */
-    private final RunsViewer runsViewer;
-
     //~ Constructors -----------------------------------------------------------
     //-------------//
     // GridBuilder //
@@ -85,10 +81,10 @@ public class GridBuilder
         this.sheet = sheet;
 
         barsRetriever = new BarsRetriever(sheet);
-        linesRetriever = new LinesRetriever(sheet, barsRetriever);
+        sheet.addItemRenderer(barsRetriever);
 
-        runsViewer = (Main.getGui() != null)
-                ? new RunsViewer(sheet, linesRetriever, barsRetriever) : null;
+        linesRetriever = new LinesRetriever(sheet, barsRetriever);
+        sheet.addItemRenderer(linesRetriever);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -148,11 +144,6 @@ public class GridBuilder
             if (constants.printWatch.isSet()) {
                 watch.print();
             }
-
-            if (Main.getGui() != null) {
-                sheet.getSymbolsEditor()
-                        .refresh();
-            }
         }
     }
 
@@ -200,16 +191,6 @@ public class GridBuilder
             // We already have all foreground pixels as vertical runs
             RunsTable wholeVertTable = sheet.getWholeVerticalTable();
 
-            // Note: from that point on, we could simply discard the sheet picture
-            // and save memory, since wholeVertTable contains all foreground pixels.
-            // For the time being, it is kept alive for display purpose, and to
-            // allow the dewarping of the initial picture.
-
-            // View on the initial runs (just for information)
-            if (showRuns) {
-                runsViewer.display(wholeVertTable);
-            }
-
             // hLag creation
             watch.start("linesRetriever.buildLag");
 
@@ -233,12 +214,6 @@ public class GridBuilder
     private void displayEditor ()
     {
         sheet.createSymbolsControllerAndEditor();
-
-        SymbolsEditor editor = sheet.getSymbolsEditor();
-
-        // Specific rendering for grid
-        editor.addItemRenderer(linesRetriever);
-        editor.addItemRenderer(barsRetriever);
     }
 
     //~ Inner Classes ----------------------------------------------------------

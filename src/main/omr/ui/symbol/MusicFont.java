@@ -188,7 +188,7 @@ public class MusicFont
         MusicFont font = sizeMap.get(interline);
 
         if (font == null) {
-            font = new MusicFont(4 * interline, interline);
+            font = new MusicFont(4 + 4 * interline, interline);
             logger.debug("Adding music font for interline {}", interline);
             sizeMap.put(interline, font);
         }

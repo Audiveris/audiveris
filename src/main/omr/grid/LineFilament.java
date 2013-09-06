@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.grid;
 
+import omr.glyph.GlyphLayer;
+
 import omr.sheet.Scale;
 
 import org.slf4j.Logger;
@@ -53,12 +55,16 @@ public class LineFilament
     //--------------//
     /**
      * Creates a new LineFilament object.
+     * Nota: this constructor is needed for FilamentFactory which calls this
+     * kind of constructor via a newInstance() method.
      *
      * @param scale scaling data
+     * @param layer the related layer
      */
-    public LineFilament (Scale scale)
+    public LineFilament (Scale scale,
+                         GlyphLayer layer)
     {
-        super(scale, LineFilamentAlignment.class);
+        super(scale, GlyphLayer.DEFAULT, LineFilamentAlignment.class);
     }
 
     //~ Methods ----------------------------------------------------------------

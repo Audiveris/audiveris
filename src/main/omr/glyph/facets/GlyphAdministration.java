@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph.facets;
 
+import omr.glyph.GlyphLayer;
 import omr.glyph.Nest;
 
 import omr.util.Vip;
@@ -47,6 +48,13 @@ interface GlyphAdministration
      * @return the glyph id
      */
     int getId ();
+
+    /**
+     * Report the layer this glyph is part of.
+     *
+     * @return the containing glyph layer.
+     */
+    GlyphLayer getLayer ();
 
     /**
      * Report the containing nest

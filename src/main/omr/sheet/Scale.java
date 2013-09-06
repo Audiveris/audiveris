@@ -400,19 +400,19 @@ public class Scale
         StringBuilder sb = new StringBuilder();
         sb.append("{Scale");
 
-        sb.append(" line:")
+        sb.append(" line: ")
                 .append(lineRange);
 
-        sb.append(" interline:")
+        sb.append(" interline: ")
                 .append(interlineRange);
 
         if (beamValue != null) {
-            sb.append(" beam:")
+            sb.append(" beam: ")
                     .append(beamValue);
         }
 
         if (secondInterlineRange != null) {
-            sb.append(" secondInterline:")
+            sb.append(" secondInterline: ")
                     .append(secondInterlineRange);
         }
 

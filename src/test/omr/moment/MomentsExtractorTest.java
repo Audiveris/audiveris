@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.*;
 
 import javax.imageio.ImageIO;
+import omr.glyph.GlyphLayer;
 import org.junit.Ignore;
 
 /**
@@ -77,6 +78,7 @@ public class MomentsExtractorTest <D extends OrthogonalMoments<D>>
                         shape,
                         symbol,
                         MusicFont.DEFAULT_INTERLINE,
+                        GlyphLayer.DEFAULT,
                         null);
                 PointsCollector collector = glyph.getPointsCollector();
                 D descriptor = classe.newInstance();

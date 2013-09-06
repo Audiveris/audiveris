@@ -47,7 +47,7 @@ public class ShapeDescriptorGeo
         double[] ins = new double[length];
 
         // We take all the first moments
-        Double[] k = glyph.getGeometricMoments()
+        double[] k = glyph.getGeometricMoments()
                 .getValues();
 
         for (int i = 0; i < momentCount; i++) {

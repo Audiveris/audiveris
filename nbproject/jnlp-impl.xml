@@ -252,6 +252,7 @@ made subject to such option by the copyright holder.
         <makeurl property="jnlp.local.codebase.url" file="${basedir}/dist" validate="false"/>
         <antcall target="generate-jnlp"/>
         <antcall target="generate-html-preview"/>
+        <antcall target="-warn-insufficient-signing"/>
     </target>
 
     <!-- JNLP archiving -->
@@ -382,6 +383,18 @@ made subject to such option by the copyright holder.
         </condition>
     </target>
     
+    <target name="-test-signing-security">
+        <condition property="is.signing.unsafe">
+            <and>
+                <istrue value="${jnlp.enabled}"/>
+                <or>
+                    <not><istrue value="${jnlp.signed}"/></not>
+                    <equals arg1="${jnlp.signing}" arg2="generated" casesensitive="false" trim="true"/>
+                </or>
+            </and>
+        </condition>
+    </target>
+    
     <!-- Generating JNLP file -->
     
     <target name="generate-jnlp" depends="sign-jars,-test-generate-task-available,-unavailable-generate-task" if="generate.task.available">
@@ -463,7 +476,7 @@ made subject to such option by the copyright holder.
         </condition>
     </target>
     
-    <target name="-jnlp-init-keystore" depends="-jnlp-init-signing,-jnlp-init-keystore1,-jnlp-init-keystore2,-check-keystore-exists" unless="jnlp.signjar.keystore.exists">
+    <target name="-jnlp-init-keystore" depends="-jnlp-init-signing,-jnlp-init-keystore1,-jnlp-init-keystore2,-check-keystore-exists" if="do.init.keystore">
         <echo message="${application.vendor}" file="${helper.file}"/>
         <loadfile property="application.vendor.filtered" srcfile="${helper.file}">
             <filterchain>
@@ -477,8 +490,14 @@ made subject to such option by the copyright holder.
             storepass="${jnlp.signjar.storepass}" keypass="${jnlp.signjar.keypass}"/>
     </target>
     
-    <target name="-check-keystore-exists">
+    <target name="-check-keystore-exists" depends="-security-props-check">
         <available property="jnlp.signjar.keystore.exists" file="${jnlp.signjar.keystore}"/>
+        <condition property="do.init.keystore">
+            <and>
+                <isset property="jnlp.signed.true"/>
+                <not><isset property="jnlp.signjar.keystore.exists"/></not>
+            </and>
+        </condition>
     </target>
 
     <target name="-jnlp-init-signing">
@@ -539,6 +558,10 @@ made subject to such option by the copyright holder.
         </sign-jars>
     </target>
     
+    <target name="-warn-insufficient-signing" depends="-test-signing-security" if="is.signing.unsafe">
+        <echo message="Warning: Unsigned and self-signed WebStart applications and Applets are deprecated from JDK7u21 onwards due to security reasons.${line.separator}         To ensure future correct functionality please sign WebStart applications and Applets using trusted certificate."/>
+    </target>
+
     <!-- Running/Debugging -->
     
     <target name="jws-run" depends="jar,-verify-jnlp-enabled,-verify-codebase,-init-platform,-check-webstart" description="Start javaws execution">

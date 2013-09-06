@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
@@ -417,11 +418,12 @@ public class BasicAlignment
 
         getLine(); // To make sure the line has been computed
 
-        g.drawLine(
-                (int) Math.rint(startPoint.getX()),
-                (int) Math.rint(startPoint.getY()),
-                (int) Math.rint(stopPoint.getX()),
-                (int) Math.rint(stopPoint.getY()));
+        Line2D line = new Line2D.Double(
+                startPoint.getX(),
+                startPoint.getY(),
+                stopPoint.getX(),
+                stopPoint.getY());
+        g.draw(line);
     }
 
     //-----------------//

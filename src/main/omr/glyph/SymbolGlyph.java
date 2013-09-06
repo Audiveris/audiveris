@@ -32,9 +32,10 @@ import org.slf4j.LoggerFactory;
 import java.awt.image.BufferedImage;
 
 /**
- * Class {@code SymbolGlyph} is an articial glyph, built from a symbol.
- * It is used to generate glyphs for training, when no real glyph (glyph
- * retrieved from scanned sheet) is available.
+ * Class {@code SymbolGlyph} is an artificial glyph, built from a
+ * symbol.
+ * It is used to generate glyph instances for training, when no real glyph
+ * (glyph retrieved from scanned sheet) is available.
  *
  * @author Hervé Bitteur
  */
@@ -66,14 +67,16 @@ public class SymbolGlyph
      * @param shape      the corresponding shape
      * @param symbol     the related drawing
      * @param interline  the related interline scaling value
+     * @param layer      the layer for glyph
      * @param descriptor additional features, if any
      */
     public SymbolGlyph (Shape shape,
                         ShapeSymbol symbol,
                         int interline,
+                        GlyphLayer layer,
                         SymbolGlyphDescriptor descriptor)
     {
-        super(interline);
+        super(interline, layer);
         this.symbol = symbol;
         image = symbol.buildImage(MusicFont.getFont(interline));
 
@@ -84,8 +87,7 @@ public class SymbolGlyph
         Lag iLag = new BasicLag("iLag", Orientation.VERTICAL);
 
         new SectionsBuilder(iLag, new JunctionAllPolicy()) // catch all
-                .createSections("symbol", symbolPicture, /* minRunLength
-                 * => */ 0);
+                .createSections("symbol", symbolPicture, 0); // minRunLength = 0
 
         // Retrieve the whole glyph made of all sections
         for (Section section : iLag.getSections()) {

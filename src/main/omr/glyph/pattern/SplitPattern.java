@@ -14,6 +14,7 @@ package omr.glyph.pattern;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
+import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.GlyphSignature;
 import omr.glyph.Grades;
@@ -184,7 +185,7 @@ public class SplitPattern
 
             for (Section s : others) {
                 if ((s.getGlyph() == master) && !s.isProcessed()) {
-                    Glyph g = new BasicGlyph(scale.getInterline());
+                    Glyph g = new BasicGlyph(scale.getInterline(), GlyphLayer.DEFAULT);
                     expand(g, s, master);
 
                     split.sigs.put(g.getSignature(), g);

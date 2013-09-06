@@ -16,6 +16,7 @@ import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
 
 import omr.math.GeoPath;
+import omr.math.GeoUtil;
 import omr.math.LineUtil;
 import omr.math.ReversePathIterator;
 
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -428,23 +430,24 @@ public class StaffInfo
         return lines.get(idx);
     }
 
-    //----------//
-    // getGapTo //
-    //----------//
+    //-------//
+    // gapTo //
+    //-------//
     /**
-     * Report the vertical gap between staff and the provided glyph.
+     * Report the vertical gap between staff and the provided 
+     * rectangle.
      *
-     * @param glyph the provided glyph
-     * @return 0 if the glyph intersects the staff, otherwise the vertical
-     *         distance from staff to closest edge of the glyph
+     * @param rect the provided rectangle
+     * @return 0 if the rectangle intersects the staff, otherwise the vertical
+     *         distance from staff to closest edge of the rectangle
      */
-    public int getGapTo (Glyph glyph)
+    public int gapTo (Rectangle rect)
     {
-        Point center = glyph.getAreaCenter();
+        Point center = GeoUtil.centerOf(rect);
         int staffTop = getFirstLine().yAt(center.x);
         int staffBot = getLastLine().yAt(center.x);
-        int glyphTop = glyph.getBounds().y;
-        int glyphBot = glyphTop + glyph.getBounds().height - 1;
+        int glyphTop = rect.y;
+        int glyphBot = glyphTop + rect.height - 1;
 
         // Check overlap
         int top = Math.max(glyphTop, staffTop);
@@ -459,7 +462,26 @@ public class StaffInfo
         dist = Math.min(dist, Math.abs(staffTop - glyphBot));
         dist = Math.min(dist, Math.abs(staffBot - glyphTop));
         dist = Math.min(dist, Math.abs(staffBot - glyphBot));
+        
         return dist;
+    }
+    
+    //------------//
+    // distanceTo //
+    //------------//
+    /**
+     * Report the vertical (algebraic) distance between staff and the 
+     * provided point. 
+     * Distance is negative if the point is within the staff and positive 
+     * outside.
+     * @param point the provided point
+     * @return algebraic distance between staff and point, specified in pixels
+     */
+    public int distanceTo (Point point)
+    {
+        final double top = getFirstLine().yAt(point.getX());
+        final double bottom = getLastLine().yAt(point.getX());
+        return (int) Math.max(top - point.getY(), point.getY() - bottom);
     }
 
     //----------------//
@@ -967,6 +989,10 @@ public class StaffInfo
     //---------------//
     // IndexedLedger //
     //---------------//
+    /**
+     * This combines the ledger glyph with the index relative to the 
+     * hosting staff.
+     */
     public static class IndexedLedger
     {
 

@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.grid;
 
+import omr.glyph.GlyphLayer;
+
 import omr.lag.BasicLag;
 import omr.lag.Lag;
 import omr.lag.Section;
@@ -55,12 +57,6 @@ public class FilamentTest
     }
 
     //~ Methods ----------------------------------------------------------------
-    @Before
-    public void setUp ()
-    {
-        System.out.println("setUp");
-    }
-
     @BeforeClass
     public static void setUpClass ()
             throws Exception
@@ -68,17 +64,23 @@ public class FilamentTest
         System.out.println("setUpClass");
     }
 
-    @After
-    public void tearDown ()
-    {
-        System.out.println("tearDown");
-    }
-
     @AfterClass
     public static void tearDownClass ()
             throws Exception
     {
         System.out.println("tearDownClass");
+    }
+
+    @Before
+    public void setUp ()
+    {
+        System.out.println("setUp");
+    }
+
+    @After
+    public void tearDown ()
+    {
+        System.out.println("tearDown");
     }
 
     /**
@@ -481,7 +483,7 @@ public class FilamentTest
     {
         lag = new BasicLag("lag", orientation);
 
-        return new Filament(scale);
+        return new Filament(scale, GlyphLayer.DEFAULT);
     }
 
     private Section createSectionOne ()

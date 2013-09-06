@@ -304,7 +304,7 @@ public class ProgramId
     <!-- ============== -->
     <!-- -javadoc-build -->
     <!-- ============== -->
-    <target depends="-uml, audiveris-impl.-javadoc-build" name="-javadoc-build"/>
+    <target depends="-uml, new-audiveris-impl.-javadoc-build" name="-javadoc-build"/>
     <!-- ========== -->
     <!-- -no-hg-tip -->
     <!-- ========== -->

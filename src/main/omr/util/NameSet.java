@@ -254,7 +254,7 @@ public class NameSet
         public MyMenu (String label,
                        ActionListener listener)
         {
-            super(label);
+            super(label, JMenu.class);
             this.listener = listener;
         }
 

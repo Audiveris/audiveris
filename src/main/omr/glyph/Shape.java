@@ -297,11 +297,19 @@ public enum Shape
     // Stems
     //
     STEM("Stem", new Color(0xccff66)),
+    VERTICAL_SEED("Vertical seed", new Color(0xccffcc)),
     //
     // Key signatures ----------------------------------------------------------
     //
     KEY_FLAT_1("One Flat"),
     KEY_SHARP_1("One Sharp"),
+    //
+    // Shapes for match templates ----------------------------------------------
+    //
+    WHOLE_ODD("Whole note on odd step (between 2 lines)"),
+    WHOLE_EVEN("Whole note on even step (crossed by a line)"),
+    VOID_ODD("Void note head on odd step (between 2 lines)"),
+    VOID_EVEN("Void note head on even step (crossed by a line)"),
     //
     // Other stuff -------------------------------------------------------------
     //
@@ -309,7 +317,8 @@ public enum Shape
     NON_DRAGGABLE("Non draggable shape"),
     GLYPH_PART("Part of a larger glyph"),
     CUSTOM_TIME("Time signature defined by user"),
-    NO_LEGAL_TIME("No Legal Time Shape");
+    NO_LEGAL_TIME("No Legal Time Shape"),
+    SPOT("Retrieved spot");
     //
     // =========================================================================
     // This is the end of shape enumeration

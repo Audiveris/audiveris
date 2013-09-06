@@ -12,6 +12,7 @@
 package omr.sheet;
 
 import omr.check.Check;
+import omr.check.CheckBoard;
 import omr.check.CheckSuite;
 import omr.check.FailureResult;
 import omr.check.SuccessResult;
@@ -19,41 +20,43 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.GlyphLayer;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.ShapeChecker;
+import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
-import omr.lag.Lag;
-import omr.lag.Section;
-import omr.lag.Sections;
+import omr.grid.FilamentsFactory;
 
-import omr.run.Orientation;
+import omr.lag.Section;
 import static omr.run.Orientation.*;
 
 import omr.selection.GlyphEvent;
+import omr.selection.MouseMovement;
+import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
+import omr.step.Step;
 import omr.step.StepException;
-
-import omr.stick.SectionsSource;
-import omr.stick.SticksBuilder;
 
 import omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
- * Class {@code VerticalsBuilder} is in charge of retrieving all the
- * vertical sticks of a dedicated system.
+ * Class {@code VerticalsBuilder} is in charge of retrieving major
+ * vertical seeds of a dedicated system.
  *
- * Bars are assumed to have been already recognized, so this accounts for stems,
- * vertical edges of endings, and potentially parts of alterations
+ * The purpose is to use these major vertical sticks as seeds for (bar-lines?),
+ * stems, vertical edges of endings, and potential parts of alteration signs
  * (sharp, natural, flat).
  *
  * @author Hervé Bitteur
@@ -70,11 +73,9 @@ public class VerticalsBuilder
             VerticalsBuilder.class);
 
     /** Events this entity is interested in */
-    private static final Collection<Class<? extends UserEvent>> eventClasses = new ArrayList<>();
-
-    static {
-        eventClasses.add(GlyphEvent.class);
-    }
+    private static final Class<?>[] eventClasses = new Class<?>[]{
+        GlyphEvent.class
+    };
 
     // Success codes
     private static final SuccessResult STEM = new SuccessResult("Stem");
@@ -105,9 +106,6 @@ public class VerticalsBuilder
     /** Dedicated system */
     private final SystemInfo system;
 
-    /** Related lag */
-    private final Lag lag;
-
     /** Global sheet scale */
     private final Scale scale;
 
@@ -125,53 +123,100 @@ public class VerticalsBuilder
         // We work with the sheet vertical lag
         this.system = system;
         this.sheet = system.getSheet();
-        this.lag = sheet.getVerticalLag();
-        scale = system.getSheet().getScale();
+        scale = system.getSheet()
+                .getScale();
     }
 
     //~ Methods ----------------------------------------------------------------
-    //----------------------//
-    // createStemCheckSuite //
-    //----------------------//
+    //---------------//
+    // addCheckBoard //
+    //---------------//
+    public void addCheckBoard ()
+    {
+        sheet.getAssembly()
+                .addBoard(
+                Step.DATA_TAB,
+                new VertCheckBoard(sheet.getNest().getGlyphService(), eventClasses));
+    }
+
+    //----------------//
+    // buildVerticals //
+    //----------------//
     /**
-     * Create a brand new check suite for stem glyph candidates
+     * Build the verticals seeds out of the dedicated system.
+     *
+     * @return the number of seeds found
+     * @throws omr.step.StepException
+     */
+    public int buildVerticals ()
+            throws StepException
+    {
+        // Get rid of former symbols
+        system.removeInactiveGlyphs(); // ????? what for ?????
+
+        // Select suitable sections
+        // Since we are looking for major seeds, we'll use only vertical sections
+        List<Section> sections = new ArrayList<Section>();
+        Predicate<Section> predicate = new MySectionPredicate();
+
+        for (Section section : system.getVerticalSections()) {
+            if (predicate.check(section)) {
+                sections.add(section);
+            }
+        }
+
+        final FilamentsFactory factory;
+
+        try {
+            // Use filament factory
+            factory = new FilamentsFactory(
+                    scale,
+                    sheet.getNest(),
+                    GlyphLayer.DEFAULT,
+                    VERTICAL,
+                    BasicGlyph.class);
+        } catch (Exception ex) {
+            logger.warn("Error creating verticals factory", ex);
+
+            return 0;
+        }
+
+        // Adjust factory parameters
+        factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
+        factory.setMaxOverlapSpace(constants.maxOverlapSpace);
+        factory.setMaxCoordGap(constants.maxCoordGap);
+
+        if (system.getId() == 1) {
+            factory.dump("VerticalsBuilder factory");
+        }
+
+        // Retrieve raw filaments
+        List<Glyph> candidates = factory.retrieveFilaments(sections, true);
+
+        // Apply seed checks
+        int seeds = checkVerticals(candidates, false);
+
+        logger.info(
+                "{}S#{} verticals: {}",
+                sheet.getLogPrefix(),
+                system.getId(),
+                seeds);
+
+        return seeds;
+    }
+
+    //------------------//
+    // createCheckSuite //
+    //------------------//
+    /**
+     * Create a brand new check suite for vertical seed candidates
      *
      * @param isShort should we look for short (vs standard) stems?
      * @return the check suite ready for use
      */
-    public CheckSuite<Glyph> createStemCheckSuite (boolean isShort)
+    public CheckSuite<Glyph> createCheckSuite (boolean isShort)
     {
-        return new StemCheckSuite(isShort);
-    }
-
-    //-------------------//
-    // retrieveVerticals //
-    //-------------------//
-    /**
-     * Actually build the new verticals glyphs out of the dedicated system
-     *
-     * @return the number of stems found
-     * @throws omr.step.StepException
-     */
-    public int retrieveVerticals ()
-            throws StepException
-    {
-        // Get rid of former symbols
-        system.removeInactiveGlyphs();
-
-        // We cannot reuse the sticks, since thick sticks are allowed for bars
-        // but not for stems.
-        SticksBuilder verticalsBuilder = new SticksBuilder(
-                Orientation.VERTICAL,
-                scale,
-                sheet.getNest(),
-                new SectionsSource(
-                system.getVerticalSections(),
-                new MySectionPredicate()),
-                false);
-        verticalsBuilder.setMaxThickness(constants.maxStemThickness);
-
-        return retrieveVerticals(verticalsBuilder.retrieveSticks(), false);
+        return new VertCheckSuite(isShort);
     }
 
     //---------------------//
@@ -186,58 +231,61 @@ public class VerticalsBuilder
     public void segmentGlyphOnStems (Glyph glyph,
                                      boolean isShort)
     {
-        // Gather all sections to be browsed
-        Collection<Section> sections = new ArrayList<>(
-                glyph.getMembers());
-
-        logger.debug("Sections browsed: {}", Sections.toString(sections));
-
-        // Retrieve vertical sticks as stem candidates
-        try {
-            SticksBuilder verticalsArea = new SticksBuilder(
-                    Orientation.VERTICAL,
-                    scale,
-                    sheet.getNest(),
-                    new SectionsSource(sections, new MySectionPredicate()),
-                    false);
-            verticalsArea.setMaxThickness(constants.maxStemThickness);
-
-            // Retrieve stems
-            int nb = retrieveVerticals(verticalsArea.retrieveSticks(), isShort);
-
-            if (nb > 0) {
-                logger.debug("{} stem{}", nb, (nb > 1) ? "s" : "");
-            } else {
-                logger.debug("No stem found");
-            }
-        } catch (StepException ex) {
-            logger.warn("stemSegment. Error in retrieving verticals");
-        }
+        //        // Gather all sections to be browsed
+        //        Collection<Section> sections = new ArrayList<Section>(
+        //                glyph.getMembers());
+        //
+        //        logger.debug("Sections browsed: {}", Sections.toString(sections));
+        //
+        //        // Retrieve vertical sticks as stem candidates
+        //        try {
+        //            SticksBuilder verticalsArea = new SticksBuilder(
+        //                    Orientation.VERTICAL,
+        //                    scale,
+        //                    sheet.getNest(),
+        //                    new SectionsSource(sections, new MySectionPredicate()),
+        //                    false);
+        //            verticalsArea.setMaxThickness(constants.maxStemThickness);
+        //
+        //            // Retrieve stems
+        //            int nb = checkVerticals(verticalsArea.retrieveSticks(), isShort);
+        //
+        //            if (nb > 0) {
+        //                logger.debug("{} stem{}", nb, (nb > 1) ? "s" : "");
+        //            } else {
+        //                logger.debug("No stem found");
+        //            }
+        //        } catch (StepException ex) {
+        //            logger.warn("stemSegment. Error in retrieving verticals");
+        //        }
     }
 
-    //-------------------//
-    // retrieveVerticals //
-    //-------------------//
+    //----------------//
+    // checkVerticals //
+    //----------------//
     /**
-     * This method retrieve compliant vertical entities (stems) within a
-     * collection of vertical sticks, and in the context of a system
+     * This method checks for compliant vertical entities (stems)
+     * within a collection of vertical sticks, and in the context of a
+     * system.
      *
      * @param sticks  the provided collection of vertical sticks
      * @param isShort true for short stems
      * @return the number of stems found
      * @throws StepException
      */
-    private int retrieveVerticals (Collection<Glyph> sticks,
-                                   boolean isShort)
+    private int checkVerticals (Collection<Glyph> sticks,
+                                boolean isShort)
             throws StepException
     {
-        /** Suite of checks for a stem glyph */
-        StemCheckSuite suite = new StemCheckSuite(isShort);
+        /** Suite of checks for a vertical seed */
+        VertCheckSuite suite = new VertCheckSuite(isShort);
         double minResult = constants.minCheckResult.getValue();
-        int stemNb = 0;
+        int seedNb = 0;
 
-        logger.debug("Searching verticals among {} sticks from {}",
-                sticks.size(), Glyphs.toString(sticks));
+        logger.debug(
+                "Searching verticals among {} sticks from {}",
+                sticks.size(),
+                Glyphs.toString(sticks));
 
         for (Glyph stick : sticks) {
             stick = system.addGlyph(stick);
@@ -246,41 +294,43 @@ public class VerticalsBuilder
                 continue;
             }
 
-            // Check stem is not too far from nearest staff
-            if (!ShapeChecker.getInstance().checkStem(system, stick)) {
-                logger.debug("Too distant stem {}", stick.idString());
+            // Check seed is not too far from nearest staff
+            if (!ShapeChecker.getInstance()
+                    .checkStem(system, stick)) {
+                logger.debug("Too distant seed {}", stick.idString());
+
                 continue;
             }
 
+            // Run the various Checks
+            double res = suite.pass(stick);
+            logger.debug("suite=> {} for {}", res, stick);
 
-            if (!stick.isShapeForbidden(Shape.STEM)) {
-                // Run the various Checks
-                double res = suite.pass(stick);
-                logger.debug("suite=> {} for {}", res, stick);
-
-                if (res >= minResult) {
-                    stick.setResult(STEM);
-                    stick.setShape(Shape.STEM);
-                    stemNb++;
-                } else {
-                    stick.setResult(TOO_LIMITED);
-                }
+            if (res >= minResult) {
+                stick.setResult(STEM);
+                stick.setShape(Shape.VERTICAL_SEED);
+                seedNb++;
+            } else {
+                stick.setResult(TOO_LIMITED);
             }
         }
 
-        logger.debug("Found {} stems", stemNb);
+        logger.debug("Found {} vertical seeds", seedNb);
 
-        return stemNb;
+        // Status of SIG
+        logger.debug("SIG {}", system.getSig());
+
+        return seedNb;
     }
 
     //~ Inner Classes ----------------------------------------------------------
     //----------------//
-    // StemCheckSuite //
+    // VertCheckSuite //
     //----------------//
     /**
-     * A suite of checks meant for stem candidates
+     * A suite of checks meant for vertical seed candidates
      */
-    public class StemCheckSuite
+    public class VertCheckSuite
             extends CheckSuite<Glyph>
     {
         //~ Constructors -------------------------------------------------------
@@ -288,17 +338,15 @@ public class VerticalsBuilder
         /**
          * Create a new instance
          *
-         * @param isShort for short stems
+         * @param isShort for short verticals
          */
-        public StemCheckSuite (boolean isShort)
+        public VertCheckSuite (boolean isShort)
         {
-            super("Stem", constants.minCheckResult.getValue());
+            super("Vert", constants.minCheckResult.getValue());
             add(1, new MinLengthCheck(isShort));
             add(1, new MinAspectCheck());
-            add(1, new FirstAdjacencyCheck());
-            add(1, new LastAdjacencyCheck());
-            add(0, new LeftCheck(system));
-            add(0, new RightCheck(system));
+            add(1, new LeftAdjacencyCheck());
+            add(1, new RightAdjacencyCheck());
             add(2, new MinDensityCheck());
 
             if (logger.isDebugEnabled()) {
@@ -322,13 +370,29 @@ public class VerticalsBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
+        Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
+                1.0,
+                "Maximum delta position between two overlapping filaments");
+
+        Scale.LineFraction maxOverlapSpace = new Scale.LineFraction(
+                0.3,
+                "Maximum space between overlapping filaments");
+
+        Scale.Fraction maxCoordGap = new Scale.Fraction(
+                0,
+                "Maximum delta coordinate for a gap between filaments");
+
+        Scale.Fraction minAbscissaGap = new Scale.Fraction(
+                1.5,
+                "Minimum abscissa gap between two stems");
+
         Constant.Ratio maxStemAdjacencyHigh = new Constant.Ratio(
                 0.75,
-                "High Maximum adjacency ratio for a stem stick");
+                "High Maximum adjacency ratio for a stem");
 
         Constant.Ratio maxStemAdjacencyLow = new Constant.Ratio(
                 0.60,
-                "Low Maximum adjacency ratio for a stem stick");
+                "Low Maximum adjacency ratio for a stem");
 
         Check.Grade minCheckResult = new Check.Grade(
                 0.4,
@@ -355,7 +419,7 @@ public class VerticalsBuilder
                 "High Minimum length for a stem");
 
         Scale.Fraction minStemLengthLow = new Scale.Fraction(
-                2.0,
+                1.5,
                 "Low Minimum length for a stem");
 
         Scale.Fraction minShortStemLengthHigh = new Scale.Fraction(
@@ -378,17 +442,22 @@ public class VerticalsBuilder
                 0,
                 "Low Minimum horizontal distance between a stem and a staff edge");
 
+        Constant.Double maxCoTangentForCheck = new Constant.Double(
+                "cotangent",
+                0.1,
+                "Maximum cotangent for interactive check of a stem candidate");
+
     }
 
-    //---------------------//
-    // FirstAdjacencyCheck //
-    //---------------------//
-    private static class FirstAdjacencyCheck
+    //--------------------//
+    // LeftAdjacencyCheck //
+    //--------------------//
+    private static class LeftAdjacencyCheck
             extends Check<Glyph>
     {
         //~ Constructors -------------------------------------------------------
 
-        protected FirstAdjacencyCheck ()
+        protected LeftAdjacencyCheck ()
         {
             super(
                     "LeftAdj",
@@ -408,88 +477,6 @@ public class VerticalsBuilder
         }
     }
 
-    //--------------------//
-    // LastAdjacencyCheck //
-    //--------------------//
-    private static class LastAdjacencyCheck
-            extends Check<Glyph>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected LastAdjacencyCheck ()
-        {
-            super(
-                    "RightAdj",
-                    "Check that stick is open on right side",
-                    constants.maxStemAdjacencyLow,
-                    constants.maxStemAdjacencyHigh,
-                    false,
-                    TOO_HIGH_ADJACENCY);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        // Retrieve the adjacency value
-        @Override
-        protected double getValue (Glyph stick)
-        {
-            return (double) stick.getLastStuck() / stick.getLength(VERTICAL);
-        }
-    }
-
-    //--------------------//
-    // MySectionPredicate //
-    //--------------------//
-    private static class MySectionPredicate
-            implements Predicate<Section>
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public boolean check (Section section)
-        {
-            // We process section for which glyph is null
-            // or GLYPH_PART, NO_LEGAL_TIME, NOISE, STRUCTURE
-            boolean result = (section.getGlyph() == null)
-                             || !section.getGlyph().isWellKnown();
-
-            return result;
-        }
-    }
-
-    //-----------//
-    // LeftCheck //
-    //-----------//
-    private class LeftCheck
-            extends Check<Glyph>
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final SystemInfo system;
-
-        //~ Constructors -------------------------------------------------------
-        protected LeftCheck (SystemInfo system)
-        {
-            super(
-                    "LeftLimit",
-                    "Check stick is on right of the system beginning bar",
-                    constants.minStaffDxLow,
-                    constants.minStaffDxHigh,
-                    true,
-                    OUTSIDE_SYSTEM);
-            this.system = system;
-        }
-
-        //~ Methods ------------------------------------------------------------
-        // Retrieve the stick abscissa
-        @Override
-        protected double getValue (Glyph stick)
-        {
-            int x = stick.getMidPos(Orientation.VERTICAL);
-
-            return scale.pixelsToFrac(x - system.getLeft());
-        }
-    }
-
     //----------------//
     // MinAspectCheck //
     //----------------//
@@ -501,7 +488,7 @@ public class VerticalsBuilder
         protected MinAspectCheck ()
         {
             super(
-                    "MinAspect",
+                    "Aspect",
                     "Check that stick aspect (length/thickness) is high enough",
                     constants.minStemAspectLow,
                     constants.minStemAspectHigh,
@@ -529,7 +516,7 @@ public class VerticalsBuilder
         protected MinDensityCheck ()
         {
             super(
-                    "MinDensity",
+                    "Density",
                     "Check that stick fills its bounding rectangle",
                     constants.minDensityLow,
                     constants.minDensityHigh,
@@ -560,7 +547,7 @@ public class VerticalsBuilder
         protected MinLengthCheck (boolean isShort)
         {
             super(
-                    "MinLength",
+                    "Length",
                     "Check that stick is long enough",
                     isShort ? constants.minShortStemLengthLow
                     : constants.minStemLengthLow,
@@ -579,37 +566,110 @@ public class VerticalsBuilder
         }
     }
 
-    //------------//
-    // RightCheck //
-    //------------//
-    private class RightCheck
+    //--------------------//
+    // MySectionPredicate //
+    //--------------------//
+    private class MySectionPredicate
+            implements Predicate<Section>
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public boolean check (Section section)
+        {
+            // We process section for which glyph is null
+            // or GLYPH_PART, NO_LEGAL_TIME, NOISE, STRUCTURE
+            boolean result = (section.getGlyph() == null)
+                             || !section.getGlyph()
+                    .isWellKnown();
+
+            if (!result) {
+                return false;
+            }
+
+            // Check section is within system left and right boundaries
+            Point center = section.getAreaCenter();
+
+            return (center.x > system.getLeft())
+                   && (center.x < system.getRight());
+        }
+    }
+
+    //---------------------//
+    // RightAdjacencyCheck //
+    //---------------------//
+    private static class RightAdjacencyCheck
             extends Check<Glyph>
     {
-        //~ Instance fields ----------------------------------------------------
-
-        private final SystemInfo system;
-
         //~ Constructors -------------------------------------------------------
-        protected RightCheck (SystemInfo system)
+
+        protected RightAdjacencyCheck ()
         {
             super(
-                    "RightLimit",
-                    "Check stick is on left of the system ending bar",
-                    constants.minStaffDxLow,
-                    constants.minStaffDxHigh,
-                    true,
-                    OUTSIDE_SYSTEM);
-            this.system = system;
+                    "RightAdj",
+                    "Check that stick is open on right side",
+                    constants.maxStemAdjacencyLow,
+                    constants.maxStemAdjacencyHigh,
+                    false,
+                    TOO_HIGH_ADJACENCY);
         }
 
         //~ Methods ------------------------------------------------------------
-        // Retrieve the stick abscissa
+        // Retrieve the adjacency value
         @Override
         protected double getValue (Glyph stick)
         {
-            return scale.pixelsToFrac(
-                    (system.getLeft() + system.getWidth())
-                    - stick.getMidPos(Orientation.VERTICAL));
+            return (double) stick.getLastStuck() / stick.getLength(VERTICAL);
+        }
+    }
+
+    //----------------//
+    // VertCheckBoard //
+    //----------------//
+    private class VertCheckBoard
+            extends CheckBoard<Glyph>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public VertCheckBoard (SelectionService eventService,
+                               Class[] eventList)
+        {
+            super("VertSeed", null, eventService, eventList);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        public void onEvent (UserEvent event)
+        {
+            try {
+                // Ignore RELEASING
+                if (event.movement == MouseMovement.RELEASING) {
+                    return;
+                }
+
+                if (event instanceof GlyphEvent) {
+                    GlyphEvent glyphEvent = (GlyphEvent) event;
+                    Glyph glyph = glyphEvent.getData();
+
+                    if (glyph instanceof Glyph) {
+                        SystemInfo system = sheet.getSystemOf(glyph);
+
+                        // Make sure this is a rather vertical stick
+                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
+                            // Get a fresh suite
+                            applySuite(
+                                    system.createStemCheckSuite(false),
+                                    glyph);
+
+                            return;
+                        }
+                    }
+
+                    tellObject(null);
+                }
+            } catch (Exception ex) {
+                logger.warn(getClass().getName() + " onEvent error", ex);
+            }
         }
     }
 }

@@ -30,16 +30,16 @@ public class GlyphSetEvent
     private final Set<Glyph> glyphs;
 
     //~ Constructors -----------------------------------------------------------
-    //------------//
-    // GlyphEvent //
-    //------------//
+    //---------------//
+    // GlyphSetEvent //
+    //---------------//
     /**
-     * Creates a new GlyphEvent object.
+     * Creates a new GlyphSetEvent object.
      *
      * @param source   the entity that created this event
      * @param hint     hint about event origin (or null)
      * @param movement the user movement
-     * @param glyphs   the selected collection of glyphs (or null)
+     * @param glyphs   the selected collection of glyph instances (or null)
      */
     public GlyphSetEvent (Object source,
                           SelectionHint hint,
@@ -51,9 +51,9 @@ public class GlyphSetEvent
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-----------//
-    // getEntity //
-    //-----------//
+    //---------//
+    // getData //
+    //---------//
     @Override
     public Set<Glyph> getData ()
     {

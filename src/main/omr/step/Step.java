@@ -33,6 +33,8 @@ public interface Step
     /** Labels for view in tabbed panel */
     public static final String PICTURE_TAB = "Picture";
 
+    public static final String BINARY_TAB = "Binary";
+
     public static final String DATA_TAB = "Data";
 
     //~ Enumerations -----------------------------------------------------------

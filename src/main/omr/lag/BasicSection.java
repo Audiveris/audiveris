@@ -17,6 +17,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.graph.BasicVertex;
 
+import omr.image.PixelBuffer;
+
 import omr.math.Barycenter;
 import omr.math.BasicLine;
 import omr.math.Line;
@@ -27,10 +29,8 @@ import omr.run.Run;
 
 import omr.sheet.SystemInfo;
 
-import omr.stick.SectionRole;
-import omr.stick.StickRelation;
-
 import omr.ui.Colors;
+import omr.ui.util.UIUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +43,6 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.geom.PathIterator;
-import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,12 +58,11 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import omr.ui.util.UIUtil;
+import omr.glyph.GlyphLayer;
 
 /**
- * Class {@code BasicSection} is a basic implementation of {@link Section}.
- *
- * <p>TODO: Get rid of StickRelation part ASAP?
+ * Class {@code BasicSection} is a basic implementation of {@link 
+ * Section}.
  *
  * @author Hervé Bitteur
  */
@@ -133,9 +130,6 @@ public class BasicSection
 
     /** (Debug) flag this section as VIP */
     private boolean vip;
-
-    /** Relation between section and stick */
-    protected StickRelation relation;
 
     /** Approximating oriented line for this section */
     protected Line orientedLine;
@@ -464,17 +458,17 @@ public class BasicSection
     // fillImage //
     //-----------//
     @Override
-    public void fillImage (BufferedImage im,
+    public void fillImage (PixelBuffer buf,
                            Rectangle box)
     {
-        final WritableRaster raster = im.getRaster();
-
+        byte BLACK = (byte) 0;
+        
         if (isVertical()) {
             int x = getFirstPos() - box.x;
 
             for (Run run : runs) {
                 for (int y = run.getStart(); y <= run.getStop(); y++) {
-                    raster.setSample(x, y - box.y, 0, 255);
+                    buf.setPixel(x, y - box.y, BLACK);
                 }
 
                 x += 1;
@@ -484,7 +478,7 @@ public class BasicSection
 
             for (Run run : runs) {
                 for (int x = run.getStart(); x <= run.getStop(); x++) {
-                    raster.setSample(x - box.x, y, 0, 255);
+                    buf.setPixel(x - box.x, y, BLACK);
                 }
 
                 y += 1;
@@ -905,15 +899,6 @@ public class BasicSection
     }
 
     //-------------//
-    // getRelation //
-    //-------------//
-    @Override
-    public StickRelation getRelation ()
-    {
-        return relation;
-    }
-
-    //-------------//
     // getRunCount //
     //-------------//
     @Override
@@ -1065,10 +1050,6 @@ public class BasicSection
     @Override
     public boolean isAggregable ()
     {
-        if ((relation == null) || !relation.isCandidate()) {
-            return false;
-        }
-
         return !isKnown();
     }
 
@@ -1365,17 +1346,20 @@ public class BasicSection
     {
         // Keep the activeMap of the containing Nest in sync!
         Nest nest = null;
+        GlyphLayer layer = null;
 
         if ((glyph != null) && (glyph.getNest() != null)) {
             nest = glyph.getNest();
+            layer = glyph.getLayer();
         } else if ((this.glyph != null) && (this.glyph.getNest() != null)) {
             nest = this.glyph.getNest();
+            layer = this.glyph.getLayer();
         }
 
         this.glyph = glyph;
 
         if (nest != null) {
-            nest.mapSection(this, glyph);
+            nest.mapSection(this, glyph, layer);
         }
 
         if (isVip()) {
@@ -1401,28 +1385,6 @@ public class BasicSection
         if (lag != null) {
             orientation = lag.getOrientation();
         }
-    }
-
-    //-----------//
-    // setParams //
-    //-----------//
-    /**
-     * Assign major parameters (kind, layer and direction), since the enclosing
-     * stick may be assigned later.
-     *
-     * @param role      the role of this section in stick elaboration
-     * @param layer     the layer from stick core
-     * @param direction the direction when departing from the stick core
-     */
-    public void setParams (SectionRole role,
-                           int layer,
-                           int direction)
-    {
-        if (relation == null) {
-            relation = new StickRelation();
-        }
-
-        relation.setParams(role, layer, direction);
     }
 
     //--------------//
@@ -1559,10 +1521,6 @@ public class BasicSection
         //          .append(foreWeight);
         if ((isFat() != null) && isFat()) {
             sb.append(" fat");
-        }
-
-        if (relation != null) {
-            sb.append(" ").append(relation);
         }
 
         if (glyph != null) {

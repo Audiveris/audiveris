@@ -22,7 +22,7 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
-import omr.sheet.picture.jai.JaiDewarper;
+import omr.image.jai.JaiDewarper;
 
 import omr.ui.Colors;
 import omr.ui.view.RubberPanel;

@@ -21,8 +21,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code NonDraggableSymbol} implements a double-sized non-draggable
- * symbol: X
+ * Class {@code NonDraggableSymbol} implements a double-size
+ * non-draggable symbol: X
  *
  * @author Hervé Bitteur
  */

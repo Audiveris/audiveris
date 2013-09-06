@@ -495,10 +495,7 @@ public class KeySignature
     {
         if (refList == null) {
             List<Integer> refs = new ArrayList<>();
-            Histogram<Integer> histo = getPage().getSheet().getNest().
-                    getHistogram(
-                    Orientation.VERTICAL,
-                    getGlyphs());
+            Histogram<Integer> histo = Glyphs.getHistogram(Orientation.VERTICAL, getGlyphs());
 
             if (logger.isDebugEnabled()) {
                 histo.print(System.out);

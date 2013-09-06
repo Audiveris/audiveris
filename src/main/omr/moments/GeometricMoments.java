@@ -74,8 +74,9 @@ public class GeometricMoments
     };
 
     //~ Instance fields --------------------------------------------------------
+    //
     /** The various moments, implemented as an array of double's. */
-    private final Double[] k = new Double[size];
+    private final double[] k = new double[size];
 
     //~ Constructors -----------------------------------------------------------
     //------------------//
@@ -292,7 +293,7 @@ public class GeometricMoments
      *
      * @return the normalized height
      */
-    public Double getHeight ()
+    public double getHeight ()
     {
         return k[2];
     }
@@ -305,7 +306,7 @@ public class GeometricMoments
      *
      * @return the n11 moment
      */
-    public Double getN11 ()
+    public double getN11 ()
     {
         return k[4];
     }
@@ -318,7 +319,7 @@ public class GeometricMoments
      *
      * @return the n12 moment
      */
-    public Double getN12 ()
+    public double getN12 ()
     {
         return k[8];
     }
@@ -331,7 +332,7 @@ public class GeometricMoments
      *
      * @return the n21 moment
      */
-    public Double getN21 ()
+    public double getN21 ()
     {
         return k[7];
     }
@@ -344,7 +345,7 @@ public class GeometricMoments
      *
      * @return the moment values
      */
-    public Double[] getValues ()
+    public double[] getValues ()
     {
         return k;
     }
@@ -357,7 +358,7 @@ public class GeometricMoments
      *
      * @return the normalized weight
      */
-    public Double getWeight ()
+    public double getWeight ()
     {
         return k[0];
     }
@@ -370,7 +371,7 @@ public class GeometricMoments
      *
      * @return the normalized width
      */
-    public Double getWidth ()
+    public double getWidth ()
     {
         return k[1];
     }
@@ -382,12 +383,10 @@ public class GeometricMoments
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{Moments");
+        sb.append("{");
 
         for (int i = 0; i < k.length; i++) {
             sb.append(" ")
-                    .append(i)
-                    .append("/")
                     .append(labels[i])
                     .append("=")
                     .append(String.format("%g", k[i]));

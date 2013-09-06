@@ -43,9 +43,9 @@ public class GlyphIdEvent
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-----------//
-    // getEntity //
-    //-----------//
+    //---------//
+    // getData //
+    //---------//
     @Override
     public Integer getData ()
     {

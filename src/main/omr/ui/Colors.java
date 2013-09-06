@@ -43,7 +43,7 @@ public class Colors
     public static final Color ENTITY = Color.black;
 
     /** Past successful entities */
-    public static final Color ENTITY_MINOR = Color.lightGray;
+    public static final Color ENTITY_MINOR = new Color(192, 192, 192);
 
     /** Virtual entities */
     public static final Color ENTITY_VIRTUAL = Color.lightGray;

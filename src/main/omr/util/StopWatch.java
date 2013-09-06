@@ -68,6 +68,7 @@ public class StopWatch
 
         final String format = "%5d %3d%% %s";
         final String dashes = "-----------------------------------";
+        out.println();
         out.println(getClass().getSimpleName() + " \"" + name + "\"");
         out.println(dashes);
         out.println("   ms    % Task");

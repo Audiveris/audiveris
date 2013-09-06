@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.ui.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.event.MenuEvent;
@@ -25,10 +28,14 @@ import javax.swing.event.MenuListener;
  */
 public abstract class DynamicMenu
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(
+            DynamicMenu.class);
+
+    //~ Instance fields --------------------------------------------------------
     /** The concrete UI menu */
-    private final JMenu menu;
+    private JMenu menu;
 
     /** Specific menu listener */
     private MenuListener listener = new MenuListener()
@@ -62,26 +69,45 @@ public abstract class DynamicMenu
      * Create the dynamic menu.
      *
      * @param menuLabel the label to be used for the menu
+     * @param menuClass the precise class for menu
      */
-    public DynamicMenu (String menuLabel)
+    public DynamicMenu (String menuLabel,
+                        Class<? extends JMenu> menuClass)
     {
-        menu = new JMenu(menuLabel);
+        try {
+            menu = menuClass.newInstance();
+            menu.setText(menuLabel);
 
-        // Listener to menu selection, to modify content on-the-fly
-        menu.addMenuListener(listener);
+            // Listener to menu selection, to modify content on-the-fly
+            menu.addMenuListener(listener);
+        } catch (Exception ex) {
+            logger.error("Could not instantiate " + menuClass, ex);
+            menu = null;
+        }
     }
 
+    //-------------//
+    // DynamicMenu //
+    //-------------//
     /**
      * Creates a new DynamicMenu object.
      *
      * @param action related action
+     * @param menuClass the precise class for menu
      */
-    public DynamicMenu (Action action)
+    public DynamicMenu (Action action,
+                        Class<? extends JMenu> menuClass)
     {
-        menu = new JMenu(action);
+        try {
+            menu = menuClass.newInstance();
+            menu.setAction(action);
 
-        // Listener to menu selection, to modify content on-the-fly
-        menu.addMenuListener(listener);
+            // Listener to menu selection, to modify content on-the-fly
+            menu.addMenuListener(listener);
+        } catch (Exception ex) {
+            logger.error("Could not instantiate " + menuClass, ex);
+            menu = null;
+        }
     }
 
     //~ Methods ----------------------------------------------------------------

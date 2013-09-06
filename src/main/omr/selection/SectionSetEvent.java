@@ -51,9 +51,9 @@ public class SectionSetEvent
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-----------//
-    // getEntity //
-    //-----------//
+    //---------//
+    // getData //
+    //---------//
     @Override
     public Set<Section> getData ()
     {

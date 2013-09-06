@@ -11,9 +11,9 @@
 // </editor-fold>
 package omr.script;
 
-import omr.run.AdaptiveDescriptor;
-import omr.run.FilterDescriptor;
-import omr.run.GlobalDescriptor;
+import omr.image.AdaptiveDescriptor;
+import omr.image.FilterDescriptor;
+import omr.image.GlobalDescriptor;
 
 import omr.score.Score;
 import omr.score.entity.Page;

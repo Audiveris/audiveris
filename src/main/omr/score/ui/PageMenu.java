@@ -42,6 +42,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import omr.sig.ui.PileMenu;
 
 /**
  * Class {@code PageMenu} defines the popup menu which is linked to the
@@ -78,6 +79,9 @@ public class PageMenu
     /** Chord submenu. */
     private final ChordMenu chordMenu = new ChordMenu();
 
+    /** Pile submenu. */
+    private final PileMenu pileMenu;
+
     /** Glyph submenu. */
     private final SymbolMenu symbolMenu;
 
@@ -101,6 +105,9 @@ public class PageMenu
     /** Number of chords referred to. */
     private int chordNb = 0;
 
+    /** Number of piled glyphs in the selection. */
+    private int pileNb = 0;
+
     /** Number of glyphs in the selection. */
     private int glyphNb = 0;
 
@@ -120,6 +127,7 @@ public class PageMenu
         this.page = page;
         this.symbolMenu = symbolMenu;
 
+        pileMenu = new PileMenu(page.getSheet());
         boundaryEditor = page.getSheet().getBoundaryEditor();
 
         popup = new JPopupMenu();
@@ -177,8 +185,11 @@ public class PageMenu
             }
         }
 
+        // Update pile menu
+        pileNb = pileMenu.updateMenu(sheet.getNest().getSelectedGlyphPile());
+
         // Update symbol menu
-        glyphNb = symbolMenu.updateMenu();
+        glyphNb = symbolMenu.updateMenu(sheet.getNest().getSelectedGlyphSet());
 
         // Update chord menu
         chordNb = chordMenu.updateMenu();
@@ -209,6 +220,11 @@ public class PageMenu
         // Related chords?
         if (chordNb > 0) {
             popup.add(chordMenu.getMenu());
+        }
+
+        // Pile
+        if (pileNb > 0) {
+            popup.add(pileMenu.getMenu());
         }
 
         // Symbol

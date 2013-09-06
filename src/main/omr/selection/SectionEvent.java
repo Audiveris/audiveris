@@ -48,9 +48,9 @@ public class SectionEvent
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-----------//
-    // getEntity //
-    //-----------//
+    //---------//
+    // getData //
+    //---------//
     @Override
     public Section getData ()
     {

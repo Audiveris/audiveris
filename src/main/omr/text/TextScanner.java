@@ -19,6 +19,8 @@ import omr.glyph.facets.Glyph;
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
 
+import omr.image.PixelBuffer;
+
 import omr.lag.Section;
 
 import omr.math.GeoPath;
@@ -39,7 +41,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -119,10 +120,8 @@ public class TextScanner
 
         // Generate an image with these glyphs
         final Rectangle bounds = system.getBounds();
-        final BufferedImage image = new BufferedImage(
-                bounds.width,
-                bounds.height,
-                BufferedImage.TYPE_BYTE_GRAY);
+        final PixelBuffer image = new PixelBuffer(
+                bounds.getSize());
 
         for (Glyph glyph : allGlyphs) {
             allSections.addAll(glyph.getMembers());
@@ -133,7 +132,7 @@ public class TextScanner
 
         // Perform OCR on image
         final List<TextLine> lines = TextBuilder.getOcr().recognize(
-                image,
+                image.toBufferedImage(),
                 bounds.getLocation(),
                 language,
                 OCR.LayoutMode.MULTI_BLOCK,

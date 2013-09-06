@@ -46,7 +46,8 @@ public class StaffManager
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(StaffManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            StaffManager.class);
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -55,7 +56,7 @@ public class StaffManager
     private final Sheet sheet;
 
     /** The sequence of staves, from top to bottom */
-    private final List<StaffInfo> staves = new ArrayList<>();
+    private final List<StaffInfo> staves = new ArrayList<StaffInfo>();
 
     /** The systems tops per staff */
     private Integer[] systemTops;
@@ -79,6 +80,46 @@ public class StaffManager
     }
 
     //~ Methods ----------------------------------------------------------------
+    //------------//
+    // getStaffAt //
+    //------------//
+    /**
+     * Report the staff, among the sequence provided, whose area
+     * contains the provided point.
+     *
+     * @param point     the provided point
+     * @param theStaves the staves sequence to search
+     * @return the containing staff, or null if none found
+     */
+    public static StaffInfo getStaffAt (Point2D point,
+                                        List<StaffInfo> theStaves)
+    {
+        for (StaffInfo staff : theStaves) {
+            Rectangle2D box = staff.getAreaBounds();
+
+            if (point.getY() > box.getMaxY()) {
+                continue;
+            }
+
+            if (point.getY() < box.getMinY()) {
+                // Point above first staff, use first staff
+                // TODO: this decision is questionable
+                return null; //staff;
+            }
+
+            // If the point is ON the area boundary, it is NOT contained.
+            // So we use a rectangle of 1x1 pixels
+            if (staff.getArea()
+                    .intersects(point.getX(), point.getY(), 1, 1)) {
+                return staff;
+            }
+        }
+
+        // Point below last staff, use last staff
+        // TODO: this decision is questionable
+        return null; //theStaves.get(theStaves.size() - 1);
+    }
+
     //
     //----------//
     // addStaff //
@@ -131,7 +172,9 @@ public class StaffManager
                 }
 
                 // Point on right side
-                middle.lineTo(width, (prevLine.yAt(width) + nextLine.yAt(width)) / 2);
+                middle.lineTo(
+                        width,
+                        (prevLine.yAt(width) + nextLine.yAt(width)) / 2);
 
                 prevStaff.setLimit(BOTTOM, middle);
                 staff.setLimit(TOP, middle);
@@ -150,10 +193,20 @@ public class StaffManager
     //------------//
     // getIndexOf //
     //------------//
-    ///TODO @Deprecated
     public int getIndexOf (StaffInfo staff)
     {
         return staves.indexOf(staff);
+    }
+
+    //-------------//
+    // getPartTops //
+    //-------------//
+    /**
+     * @return the partTops
+     */
+    public Integer[] getPartTops ()
+    {
+        return partTops;
     }
 
     //----------//
@@ -176,50 +229,37 @@ public class StaffManager
     //----------//
     // getStaff //
     //----------//
-    ///TODO @Deprecated
     public StaffInfo getStaff (int index)
     {
         return staves.get(index);
     }
 
-    //------------//
-    // getStaffAt //
-    //------------//
+    //---------------//
+    // getStaffAbove //
+    //---------------//
     /**
-     * Report the staff, among the sequence provided, whose area
-     * contains the provided point.
+     * Determine the staff which is just above the given point in the
+     * sheet, assuming the point it outside any staff.
      *
-     * @param point     the provided point
-     * @param theStaves the staves sequence to search
-     * @return the containing staff, or null if none found
+     * @param point the given point
+     * @return the staff above in the sheet, if any
      */
-    public static StaffInfo getStaffAt (Point2D point,
-                                        List<StaffInfo> theStaves)
+    public StaffInfo getStaffAbove (Point2D point)
     {
-        for (StaffInfo staff : theStaves) {
-            Rectangle2D box = staff.getAreaBounds();
+        StaffInfo nearest = getStaffAt(point);
+        double pitchPos = nearest.pitchPositionOf(point);
 
-            if (point.getY() > box.getMaxY()) {
-                continue;
-            }
-
-            if (point.getY() < box.getMinY()) {
-                // Point above first staff, use first staff
-                // TODO: this decision is questionable
-                return null; //staff;
-            }
-
-            // If the point is ON the area boundary, it is NOT contained.
-            // So we use a rectangle of 1x1 pixels
-            if (staff.getArea()
-                    .intersects(point.getX(), point.getY(), 1, 1)) {
-                return staff;
-            }
+        // Are we below the nearest staff?
+        if (pitchPos > 0) {
+            return nearest;
         }
 
-        // Point below last staff, use last staff
-        // TODO: this decision is questionable
-        return null; //theStaves.get(theStaves.size() - 1);
+        // We are above the nearest staff, so take the one before, if any
+        if (nearest.getId() > 1) {
+            return staves.get(nearest.getId() - 2);
+        } else {
+            return null;
+        }
     }
 
     //------------//
@@ -234,6 +274,34 @@ public class StaffManager
     public StaffInfo getStaffAt (Point2D point)
     {
         return getStaffAt(point, staves);
+    }
+
+    //---------------//
+    // getStaffBelow //
+    //---------------//
+    /**
+     * Determine the staff which is just below the given point in the
+     * sheet, assuming the point it outside any staff.
+     *
+     * @param point the given point
+     * @return the staff below in the sheet, if any
+     */
+    public StaffInfo getStaffBelow (Point2D point)
+    {
+        StaffInfo nearest = getStaffAt(point);
+        double pitchPos = nearest.pitchPositionOf(point);
+
+        // Are we above the nearest staff?
+        if (pitchPos < 0) {
+            return nearest;
+        }
+
+        // We are below the nearest staff, so take the one after, if any
+        if (nearest.getId() < staves.size()) {
+            return staves.get(nearest.getId());
+        } else {
+            return null;
+        }
     }
 
     //---------------//
@@ -264,6 +332,17 @@ public class StaffManager
         return Collections.unmodifiableList(staves);
     }
 
+    //---------------//
+    // getSystemTops //
+    //---------------//
+    /**
+     * @return the systemTops
+     */
+    public Integer[] getSystemTops ()
+    {
+        return systemTops;
+    }
+
     //--------//
     // render //
     //--------//
@@ -278,16 +357,16 @@ public class StaffManager
             staff.renderAttachments(g);
         }
     }
-    //-------------//
-    // getPartTops //
-    //-------------//
 
+    //-------//
+    // reset //
+    //-------//
     /**
-     * @return the partTops
+     * Empty the whole collection of staves.
      */
-    public Integer[] getPartTops ()
+    public void reset ()
     {
-        return partTops;
+        staves.clear();
     }
 
     //-------------//
@@ -302,17 +381,6 @@ public class StaffManager
     }
 
     //---------------//
-    // getSystemTops //
-    //---------------//
-    /**
-     * @return the systemTops
-     */
-    public Integer[] getSystemTops ()
-    {
-        return systemTops;
-    }
-
-    //---------------//
     // setSystemTops //
     //---------------//
     /**
@@ -321,17 +389,6 @@ public class StaffManager
     public void setSystemTops (Integer[] systemTops)
     {
         this.systemTops = systemTops;
-    }
-
-    //-------//
-    // reset //
-    //-------//
-    /**
-     * Empty the whole collection of staves.
-     */
-    public void reset ()
-    {
-        staves.clear();
     }
 
     //~ Inner Classes ----------------------------------------------------------

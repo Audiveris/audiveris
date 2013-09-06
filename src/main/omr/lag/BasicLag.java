@@ -380,10 +380,10 @@ public class BasicLag
     //-------------//
     @Override
     public void setServices (SelectionService locationService,
-                             SelectionService sceneService)
+                             SelectionService glyphService)
     {
         this.locationService = locationService;
-        this.glyphService = sceneService;
+        this.glyphService = glyphService;
 
         runsTable.setLocationService(locationService);
 
@@ -599,18 +599,6 @@ public class BasicLag
 
             logger.debug("{}. Publish section set {}", getName(), sections);
             publish(new SectionSetEvent(this, hint, movement, sections));
-        } else if (glyphService != null) {
-            // Section -> Glyph
-            if (hint.isLocation() || hint.isContext() || hint.isSection()) {
-                // Select related Glyph if any
-                Glyph glyph = (section != null) ? section.getGlyph() : null;
-
-                if (glyph != null) {
-                    logger.debug("{}. Publish glyph {}", getName(), glyph);
-                    glyphService.publish(
-                            new GlyphEvent(this, hint, movement, glyph));
-                }
-            }
         }
     }
 }

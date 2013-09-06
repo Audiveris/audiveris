@@ -26,8 +26,6 @@ import omr.selection.SectionSetEvent;
 import omr.selection.SelectionHint;
 import omr.selection.UserEvent;
 
-import omr.stick.StickRelation;
-
 import omr.ui.Board;
 import omr.ui.field.LIntegerField;
 import omr.ui.field.SpinnerUtil;
@@ -125,22 +123,6 @@ public class SectionBoard
             "Weight",
             "Number of pixels in this section");
 
-    // Additional output for StickSection (TODO: remove these fields)
-    //
-    /** Field for role in stick building */
-    private final JTextField role = new JTextField();
-
-    private final LIntegerField direction = new LIntegerField(
-            false,
-            "Dir",
-            "Direction from the stick core");
-
-    /** Field for layer number */
-    private final LIntegerField layer = new LIntegerField(
-            false,
-            "Layer",
-            "Layer number for this stick section");
-
     /** To avoid loop, indicate that selecting is being done by the spinner */
     private boolean idSelecting = false;
 
@@ -223,17 +205,6 @@ public class SectionBoard
         SpinnerUtil.setEditable(id, true);
         SpinnerUtil.setRightAlignment(id);
 
-        // Relation
-        if (constants.hideRelationFields.getValue()) {
-            direction.setVisible(false);
-            layer.setVisible(false);
-            role.setVisible(false);
-        }
-
-        role.setEditable(false);
-        role.setHorizontalAlignment(JTextField.CENTER);
-        role.setToolTipText("Role in the composition of the containing stick");
-
         // Component layout
         defineLayout();
     }
@@ -274,7 +245,7 @@ public class SectionBoard
     //--------------//
     private void defineLayout ()
     {
-        FormLayout layout = Panel.makeFormLayout(4, 3);
+        FormLayout layout = Panel.makeFormLayout(3, 3);
         PanelBuilder builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
@@ -302,15 +273,6 @@ public class SectionBoard
 
         builder.add(height.getLabel(), cst.xy(9, r));
         builder.add(height.getField(), cst.xy(11, r));
-
-        r += 2; // --------------------------------
-        builder.add(layer.getLabel(), cst.xy(1, r));
-        builder.add(layer.getField(), cst.xy(3, r));
-
-        builder.add(direction.getLabel(), cst.xy(5, r));
-        builder.add(direction.getField(), cst.xy(7, r));
-
-        builder.add(role, cst.xyw(9, r, 3));
     }
 
     //-------------//
@@ -352,12 +314,6 @@ public class SectionBoard
                 } else {
                     id.setValue(SpinnerUtil.NO_VALUE);
                 }
-
-                if (constants.hideRelationFields.getValue()) {
-                    direction.setVisible(false);
-                    layer.setVisible(false);
-                    role.setVisible(false);
-                }
             } else {
                 // We have a valid section, let's display its fields
                 id.setValue(section.getId());
@@ -368,39 +324,6 @@ public class SectionBoard
                 width.setValue(box.width);
                 height.setValue(box.height);
                 weight.setValue(section.getWeight());
-
-                // Additional relation fields for a StickSection
-                StickRelation relation = section.getRelation();
-
-                if (relation != null) {
-                    if (constants.hideRelationFields.getValue()) {
-                        layer.setVisible(true);
-                    }
-
-                    layer.setValue(relation.layer);
-
-                    if (constants.hideRelationFields.getValue()) {
-                        direction.setVisible(true);
-                    }
-
-                    direction.setValue(relation.direction);
-
-                    if (relation.role != null) {
-                        role.setText(relation.role.toString());
-
-                        if (constants.hideRelationFields.getValue()) {
-                            role.setVisible(true);
-                        }
-                    } else {
-                        if (constants.hideRelationFields.getValue()) {
-                            role.setVisible(false);
-                        }
-                    }
-                } else if (constants.hideRelationFields.getValue()) {
-                    direction.setVisible(false);
-                    layer.setVisible(false);
-                    role.setVisible(false);
-                }
             }
         } finally {
             updating = false;

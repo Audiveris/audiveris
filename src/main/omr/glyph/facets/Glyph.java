@@ -52,18 +52,20 @@ public interface Glyph
         /** For mean line */
         GlyphAlignment,
         /** For textual content */
-        GlyphContent
+        GlyphContent,
+        /** For possible interpretations */
+        GlyphInterpret
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** For comparing glyphs according to their height. */
-    public static final Comparator<Glyph> byHeight = new Comparator<Glyph>()
+    /** For comparing glyphs according to their reverse height. */
+    public static final Comparator<Glyph> byReverseHeight = new Comparator<Glyph>()
     {
         @Override
         public int compare (Glyph o1,
                             Glyph o2)
         {
-            return o1.getBounds().height - o2.getBounds().height;
+            return o2.getBounds().height - o1.getBounds().height;
         }
     };
 
@@ -127,7 +129,7 @@ public interface Glyph
 
     /** For comparing glyphs according to their ordinate,
      * then abscissa, then id. */
-    public static final Comparator<Glyph> ordinateComparator = new Comparator<Glyph>()
+    public static final Comparator<Glyph> byOrdinate = new Comparator<Glyph>()
     {
         @Override
         public int compare (Glyph o1,
@@ -144,6 +146,42 @@ public interface Glyph
 
             // Are y values different?
             int dy = ref.y - otherRef.y;
+
+            if (dy != 0) {
+                return dy;
+            }
+
+            // Horizontally aligned, so use abscissae
+            int dx = ref.x - otherRef.x;
+
+            if (dx != 0) {
+                return dx;
+            }
+
+            // Finally, use id ...
+            return o1.getId() - o2.getId();
+        }
+    };
+
+    /** For comparing glyphs according to their reverse ordinate,
+     * then abscissa, then id. */
+    public static final Comparator<Glyph> byReverseOrdinate = new Comparator<Glyph>()
+    {
+        @Override
+        public int compare (Glyph o1,
+                            Glyph o2)
+        {
+            if (o1 == o2) {
+                return 0;
+            }
+
+            Point ref = o1.getBounds()
+                    .getLocation();
+            Point otherRef = o2.getBounds()
+                    .getLocation();
+
+            // Are y values different?
+            int dy = otherRef.y - ref.y;
 
             if (dy != 0) {
                 return dy;

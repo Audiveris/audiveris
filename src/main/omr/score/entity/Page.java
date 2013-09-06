@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.score.entity;
 
-import omr.run.FilterDescriptor;
+import omr.image.FilterDescriptor;
 
 import omr.score.Score;
 import omr.score.visitor.ScoreVisitor;
@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.image.RenderedImage;
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
@@ -89,7 +89,7 @@ public class Page
      */
     public Page (Score score,
                  int index,
-                 RenderedImage image)
+                 BufferedImage image)
             throws StepException
     {
         super(score);

@@ -228,13 +228,13 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
      */
     protected String internalsString ()
     {
-        StringBuilder sb = new StringBuilder(25);
+        StringBuilder sb = new StringBuilder();
 
         sb.append("#").append(name);
 
         sb.append(" vertices=").append(getVertexCount());
 
-        if (this.getClass().getName().equals(Digraph.class.getName())) {
+        if (getClass().getName().equals(Digraph.class.getName())) {
             sb.append("}");
         }
 

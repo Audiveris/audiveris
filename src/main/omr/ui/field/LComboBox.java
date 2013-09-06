@@ -17,7 +17,7 @@ import javax.swing.JComboBox;
 
 /**
  * Class {@code LComboBox} is a logical combination of a JLabel and a
- * JComboBox, a "Labelled Combo", where the label describes
+ * JComboBox, a "Labeled Combo", where the label describes
  * the dynamic content of the combo.
  *
  * @param <E> type of combo entity
@@ -33,7 +33,7 @@ public class LComboBox<E>
     // LComboBox //
     //-----------//
     /**
-     * Create an editable labelled combo with provided
+     * Create an editable labeled combo with provided
      * characteristics.
      *
      * @param label the string to be used as label text

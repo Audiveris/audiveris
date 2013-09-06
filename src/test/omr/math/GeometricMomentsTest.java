@@ -38,7 +38,7 @@ public class GeometricMomentsTest
         GeometricMoments m = new GeometricMoments(xx, yy, xx.length, 1);
         print(m);
 
-        Double[] k = m.getValues();
+        double[] k = m.getValues();
 
         assertNears("weight", k[0], 5.00000);
         assertNears("width", k[1], 5.00000);

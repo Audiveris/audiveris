@@ -100,7 +100,7 @@ public class NotePosition
                 .append(staff.getId());
 
         sb.append(" pitch:")
-                .append((float) pitchPosition);
+                .append(String.format("%.1f", pitchPosition));
 
         if (indexedLedger != null) {
             sb.append(" ledger#")

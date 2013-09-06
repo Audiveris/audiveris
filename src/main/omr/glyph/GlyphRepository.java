@@ -706,6 +706,7 @@ public class GlyphRepository
                             shape,
                             symbol,
                             MusicFont.DEFAULT_INTERLINE,
+                            GlyphLayer.XML,
                             desc);
                 } catch (Exception ex) {
                     logger.warn("Cannot process " + file, ex);

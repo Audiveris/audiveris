@@ -114,7 +114,7 @@ public class BoundaryTask
     public void epilog (Sheet sheet)
     {
         // Resplit systems content
-        sheet.getSystemsBuilder().splitSystemEntities();
+        sheet.getSystemsBuilder().dispatchSystemEntities();
 
         // Update the following steps if any
         Stepping.reprocessSheet(

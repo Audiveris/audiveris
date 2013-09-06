@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.ui.symbol;
 
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -71,6 +72,15 @@ public interface Symbol
      * @return the image built, or null if failed
      */
     SymbolImage buildImage (MusicFont font);
+
+    /**
+     * Report the bounding dimension of this symbol for the provided
+     * font.
+     *
+     * @param font (scaled) music font
+     * @return the bounding dimension
+     */
+    Dimension getDimension (MusicFont font);
 
     /**
      * Report the icon image, suitable for icon display.

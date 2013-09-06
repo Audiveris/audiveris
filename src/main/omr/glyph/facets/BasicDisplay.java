@@ -14,15 +14,19 @@ package omr.glyph.facets;
 import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
 
+import omr.image.PixelBuffer;
+
 import omr.lag.BasicSection;
 import omr.lag.Section;
 
 import omr.ui.Colors;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -34,8 +38,8 @@ import java.util.Map;
  * @author Hervé Bitteur
  */
 class BasicDisplay
-        extends BasicFacet
-        implements GlyphDisplay
+    extends BasicFacet
+    implements GlyphDisplay
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -43,6 +47,7 @@ class BasicDisplay
     protected AttachmentHolder attachments;
 
     //~ Constructors -----------------------------------------------------------
+
     //--------------//
     // BasicDisplay //
     //--------------//
@@ -57,11 +62,12 @@ class BasicDisplay
     }
 
     //~ Methods ----------------------------------------------------------------
+
     //---------------//
     // addAttachment //
     //---------------//
     @Override
-    public void addAttachment (String id,
+    public void addAttachment (String         id,
                                java.awt.Shape attachment)
     {
         if (attachment != null) {
@@ -73,35 +79,14 @@ class BasicDisplay
         }
     }
 
-    //----------//
-    // colorize //
-    //----------//
-    @Override
-    public void colorize (Color color)
-    {
-        colorize(glyph.getMembers(), color);
-    }
-
-    //----------//
-    // colorize //
-    //----------//
-    @Override
-    public void colorize (Collection<Section> sections,
-                          Color color)
-    {
-        for (Section section : sections) {
-            section.setColor(color);
-        }
-    }
-
     //--------------//
     // asciiDrawing //
     //--------------//
     @Override
     public String asciiDrawing ()
-    {        
+    {
         StringBuilder sb = new StringBuilder();
-        
+
         sb.append(String.format("%s%n", glyph));
 
         // Determine the bounding box
@@ -121,8 +106,29 @@ class BasicDisplay
 
         // Draw the result
         sb.append(BasicSection.drawingOfTable(table, box));
-        
+
         return sb.toString();
+    }
+
+    //----------//
+    // colorize //
+    //----------//
+    @Override
+    public void colorize (Color color)
+    {
+        colorize(glyph.getMembers(), color);
+    }
+
+    //----------//
+    // colorize //
+    //----------//
+    @Override
+    public void colorize (Collection<Section> sections,
+                          Color               color)
+    {
+        for (Section section : sections) {
+            section.setColor(color);
+        }
     }
 
     //--------//
@@ -163,7 +169,7 @@ class BasicDisplay
             return Colors.SHAPE_UNKNOWN;
         } else {
             return glyph.getShape()
-                    .getColor();
+                        .getColor();
         }
     }
 
@@ -171,15 +177,13 @@ class BasicDisplay
     // getImage //
     //----------//
     @Override
-    public BufferedImage getImage ()
+    public PixelBuffer getImage ()
     {
         // Determine the bounding box
-        Rectangle box = glyph.getBounds();
-        BufferedImage image = new BufferedImage(
-                box.width,
-                box.height,
-                BufferedImage.TYPE_BYTE_GRAY);
+        final Rectangle   box = glyph.getBounds();
+        final PixelBuffer image = new PixelBuffer(box.getSize());
 
+        // Now paint each section in black foreground
         for (Section section : glyph.getMembers()) {
             section.fillImage(image, box);
         }

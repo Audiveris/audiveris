@@ -321,8 +321,7 @@ public class ShapeFocusBoard
                 System.out.println(indent + printer.getDashes());
 
                 for (DistIdPair pair : pairs) {
-                    Glyph glyph = sheet.getVerticalsController()
-                            .getGlyphById(pair.id);
+                    Glyph glyph = sheet.getNest().getGlyph(pair.id);
                     double[] gPat = ShapeDescription.features(glyph);
                     Shape shape = glyph.getShape();
                     System.out.printf(

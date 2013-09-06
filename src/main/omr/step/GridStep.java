@@ -11,6 +11,11 @@
 // </editor-fold>
 package omr.step;
 
+import omr.glyph.ui.SymbolsEditor;
+
+import omr.selection.GlyphEvent;
+import omr.selection.SelectionService;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -43,6 +48,19 @@ public class GridStep
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-----------//
+    // displayUI //
+    //-----------//
+    @Override
+    public void displayUI (Sheet sheet)
+    {
+        SymbolsEditor editor = sheet.getSymbolsEditor();
+
+        if (editor != null) {
+            editor.refresh();
+        }
+    }
+
     //------//
     // doit //
     //------//
@@ -51,7 +69,7 @@ public class GridStep
                       Sheet sheet)
             throws StepException
     {
-        sheet.reset(Steps.GRID);
+        sheet.createNest();
         sheet.getGridBuilder()
                 .buildInfo();
     }

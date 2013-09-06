@@ -58,7 +58,8 @@ public class SpinnerGlyphModel
     // SpinnerGlyphModel //
     //-------------------//
     /**
-     * Creates a new SpinnerGlyphModel object, on all nest glyphs
+     * Creates a new SpinnerGlyphModel object, on all nest glyph 
+     * instances.
      *
      * @param nest the underlying glyph nest
      */
@@ -71,7 +72,8 @@ public class SpinnerGlyphModel
     // SpinnerGlyphModel //
     //-------------------//
     /**
-     * Creates a new SpinnerGlyphModel object, with a related glyph predicate
+     * Creates a new SpinnerGlyphModel object, with a related glyph
+     * predicate.
      *
      * @param nest      the underlying glyph nest
      * @param predicate predicate of glyph, or null
@@ -95,9 +97,9 @@ public class SpinnerGlyphModel
     // getNextValue //
     //--------------//
     /**
-     * Return the next legal glyph id in the sequence that comes after the glyph
-     * id returned by {@code getValue()}. If the end of the sequence has
-     * been reached then return null.
+     * Return the next legal glyph id in the sequence that comes after
+     * the glyph id returned by {@code getValue()}.
+     * If the end of the sequence has been reached then return null.
      *
      * @return the next legal glyph id or null if one doesn't exist
      */
@@ -138,9 +140,9 @@ public class SpinnerGlyphModel
     // getPreviousValue //
     //------------------//
     /**
-     * Return the legal glyph id in the sequence that comes before the glyph id
-     * returned by {@code getValue()}. If the end of the sequence has been
-     * reached then return null.
+     * Return the legal glyph id in the sequence that comes before the
+     * glyph id returned by {@code getValue()}.
+     * If the end of the sequence has been reached then return null.
      *
      * @return the previous legal value or null if one doesn't exist
      */
@@ -190,8 +192,9 @@ public class SpinnerGlyphModel
     // setValue //
     //----------//
     /**
-     * Changes current glyph id of the model. If the glyph id is illegal then
-     * an {@code IllegalArgumentException} is thrown.
+     * Changes current glyph id of the model.
+     * If the glyph id is illegal then an {@code IllegalArgumentException} is
+     * thrown.
      *
      * @param value the value to set
      * @exception IllegalArgumentException if {@code value} isn't allowed

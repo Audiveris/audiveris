@@ -37,6 +37,8 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
+import omr.sig.SIGraph;
+
 import omr.step.StepException;
 
 import omr.text.TextBuilder;
@@ -91,6 +93,9 @@ public class SystemInfo
     @Navigable(false)
     private final Sheet sheet;
 
+    /** Symbol Interpretation Graph for this system. */
+    private final SIGraph sig;
+
     /** Dedicated measure builder */
     private final MeasuresBuilder measuresBuilder;
 
@@ -103,11 +108,20 @@ public class SystemInfo
     /** Dedicated compound builder */
     private final CompoundBuilder compoundBuilder;
 
+    /** Dedicated notes builder */
+    public final BeamsBuilder beamsBuilder;
+
+    /** Dedicated notes builder */
+    public final NotesBuilder notesBuilder;
+
     /** Dedicated verticals builder */
-    private final VerticalsBuilder verticalsBuilder;
+    public final VerticalsBuilder verticalsBuilder;
+
+    /** Dedicated stems builder */
+    public final StemsBuilder stemsBuilder;
 
     /** Dedicated horizontals builder */
-    private final HorizontalsBuilder horizontalsBuilder;
+    public final HorizontalsBuilder horizontalsBuilder;
 
     /** Dedicated glyph inspector */
     private final GlyphInspector glyphInspector;
@@ -146,16 +160,16 @@ public class SystemInfo
     /** Horizontal sections, assigned once for all to this system */
     private final List<Section> hSections = new ArrayList<>();
 
+    private final List<Section> hFullSections = new ArrayList<>();
+
     /** Unmodifiable view of the horizontal section collection */
     private final Collection<Section> hSectionsView = Collections.
             unmodifiableCollection(
             hSections);
 
-    /** Retrieved tenuto signs in this system */
-    private final List<Glyph> tenutos = new ArrayList<>();
-
-    /** Retrieved endings in this system */
-    private final List<Glyph> endings = new ArrayList<>();
+    private final Collection<Section> hFullSectionsView = Collections.
+            unmodifiableCollection(
+            hFullSections);
 
     ///   VERTICALS   //////////////////////////////////////////////////////////
     /** Vertical sections, assigned once for all to this system */
@@ -225,11 +239,15 @@ public class SystemInfo
 
         updateCoordinates();
 
+        sig = new SIGraph(this);
         measuresBuilder = new MeasuresBuilder(this);
         textBuilder = new TextBuilder(this);
         glyphsBuilder = new GlyphsBuilder(this);
         compoundBuilder = new CompoundBuilder(this);
+        beamsBuilder = new BeamsBuilder(this);
+        notesBuilder = new NotesBuilder(this);
         verticalsBuilder = new VerticalsBuilder(this);
+        stemsBuilder = new StemsBuilder(this);
         horizontalsBuilder = new HorizontalsBuilder(this);
         glyphInspector = new GlyphInspector(this);
         slurInspector = new SlurInspector(this);
@@ -470,7 +488,7 @@ public class SystemInfo
     }
 
     //----------------------//
-    // createStemCheckSuite //
+    // createCheckSuite //
     //----------------------//
     /**
      * Build a check suite for stem retrievals.
@@ -481,7 +499,7 @@ public class SystemInfo
     public CheckSuite<Glyph> createStemCheckSuite (boolean isShort)
             throws StepException
     {
-        return verticalsBuilder.createStemCheckSuite(isShort);
+        return verticalsBuilder.createCheckSuite(isShort);
     }
 
     //------------//
@@ -662,19 +680,6 @@ public class SystemInfo
         return deltaY;
     }
 
-    //------------//
-    // getEndings //
-    //------------//
-    /**
-     * Report the collection of endings found.
-     *
-     * @return the endings collection
-     */
-    public List<Glyph> getEndings ()
-    {
-        return endings;
-    }
-
     //---------------//
     // getFirstStaff //
     //---------------//
@@ -716,12 +721,18 @@ public class SystemInfo
         return hSectionsView;
     }
 
-    //-----------------------//
-    // getHorizontalsBuilder //
-    //-----------------------//
-    public HorizontalsBuilder getHorizontalsBuilder ()
+    //---------------------------//
+    // getHorizontalFullSections //
+    //---------------------------//
+    /**
+     * Report the (unmodifiable) collection of horizontal full
+     * sections in the system related area.
+     *
+     * @return the area horizontal full sections
+     */
+    public Collection<Section> getHorizontalFullSections ()
     {
-        return horizontalsBuilder;
+        return hFullSectionsView;
     }
 
     //-------//
@@ -814,6 +825,20 @@ public class SystemInfo
         return hSections;
     }
 
+    //----------------------------------//
+    // getMutableHorizontalFullSections //
+    //----------------------------------//
+    /**
+     * Report the (modifiable) collection of horizontal full sections
+     * in the system related area.
+     *
+     * @return the full horizontal sections
+     */
+    public Collection<Section> getMutableHorizontalFullSections ()
+    {
+        return hFullSections;
+    }
+
     //----------------------------//
     // getMutableVerticalSections //
     //----------------------------//
@@ -821,7 +846,7 @@ public class SystemInfo
      * Report the (modifiable) collection of vertical sections in the
      * system related area.
      *
-     * @return the area vertical sections
+     * @return the vertical sections
      */
     public Collection<Section> getMutableVerticalSections ()
     {
@@ -1007,19 +1032,6 @@ public class SystemInfo
     public List<StaffInfo> getStaves ()
     {
         return staves;
-    }
-
-    //------------//
-    // getTenutos //
-    //------------//
-    /**
-     * Report the collection of tenutos found.
-     *
-     * @return the tenutos collection
-     */
-    public List<Glyph> getTenutos ()
-    {
-        return tenutos;
     }
 
     //--------//
@@ -1237,36 +1249,6 @@ public class SystemInfo
     public void retrieveGlyphs ()
     {
         glyphsBuilder.retrieveGlyphs(true);
-    }
-
-    //---------------------//
-    // retrieveHorizontals //
-    //---------------------//
-    /**
-     * Retrieve ledgers (and tenuto, and horizontal endings).
-     */
-    public void retrieveHorizontals ()
-            throws StepException
-    {
-        try {
-            horizontalsBuilder.buildInfo();
-        } catch (Exception ex) {
-            logger.warn("Error in retrieveHorizontals", ex);
-        }
-    }
-
-    //-------------------//
-    // retrieveVerticals //
-    //-------------------//
-    /**
-     * Retrieve stems (and vertical endings).
-     *
-     * @return the number of glyphs built
-     */
-    public int retrieveVerticals ()
-            throws StepException
-    {
-        return verticalsBuilder.retrieveVerticals();
     }
 
     //-------------//
@@ -1578,5 +1560,17 @@ public class SystemInfo
     public TextBuilder getTextBuilder ()
     {
         return textBuilder;
+    }
+
+    //--------//
+    // getSig //
+    //--------//
+
+    /**
+     * @return the sig
+     */
+    public SIGraph getSig ()
+    {
+        return sig;
     }
 }

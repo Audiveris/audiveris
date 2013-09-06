@@ -121,13 +121,15 @@ public class GlyphsBuilder
      * from the sections to the glyph.
      *
      * @param scale    the context scale
+     * @param layer    the precise layer for created glyphs
      * @param sections the provided members of the future glyph
      * @return the newly built glyph
      */
     public static Glyph buildGlyph (Scale scale,
+                                    GlyphLayer layer,
                                     Collection<Section> sections)
     {
-        Glyph glyph = new BasicGlyph(scale.getInterline());
+        Glyph glyph = new BasicGlyph(scale.getInterline(), layer);
 
         for (Section section : sections) {
             glyph.addSection(section, Glyph.Linking.LINK_BACK);
@@ -144,11 +146,13 @@ public class GlyphsBuilder
      * glyphs, and build new glyphs out of connected sections.
      *
      * @param sections the sections to browse
-     * @param nest     the nest to host glyphs
+     * @param nest     the nest to host glyph instances
+     * @param layer    the precise layer
      * @param scale    the sheet scale
      */
-    public static List<Glyph> retrieveGlyphs (List<Section> sections,
+    public static List<Glyph> retrieveGlyphs (Collection<Section> sections,
                                               Nest nest,
+                                              GlyphLayer layer,
                                               Scale scale)
     {
         List<Glyph> created = new ArrayList<>();
@@ -167,10 +171,10 @@ public class GlyphsBuilder
             // Not already visited ?
             if (!section.isProcessed()) {
                 // Let's build a new glyph around this starting section
-                Glyph glyph = new BasicGlyph(scale.getInterline());
-                considerConnection(glyph, section);
+                Glyph glyph = new BasicGlyph(scale.getInterline(), layer);
+                considerConnection(glyph, section, sections);
 
-                // Insert this newly built glyph into nest (no system invloved)
+                // Insert this newly built glyph into nest (no system involved)
                 glyph = nest.addGlyph(glyph);
                 created.add(glyph);
             }
@@ -211,7 +215,7 @@ public class GlyphsBuilder
      */
     public Glyph buildGlyph (Collection<Section> sections)
     {
-        return buildGlyph(scale, sections);
+        return buildGlyph(scale, GlyphLayer.DEFAULT, sections);
     }
 
     //------------------------//
@@ -243,12 +247,12 @@ public class GlyphsBuilder
      * Make a new transient glyph out of a collection of sections.
      *
      * @param sections the collection of sections
-     * @return the brand new transientglyph
+     * @return the brand new transient glyph
      */
     public Glyph buildTransientGlyph (Collection<Section> sections)
     {
         // Build a glyph from all sections
-        Glyph compound = new BasicGlyph(scale.getInterline());
+        Glyph compound = new BasicGlyph(scale.getInterline(), GlyphLayer.DEFAULT);
 
         for (Section section : sections) {
             compound.addSection(section, Glyph.Linking.NO_LINK_BACK);
@@ -356,7 +360,8 @@ public class GlyphsBuilder
     //----------------//
     /**
      * In a given system area, browse through all sections not assigned
-     * to known glyphs, and build new glyphs out of connected sections.
+     * to known glyph instances, and build new glyph instances out of
+     * connected sections.
      *
      * @param compute if true, compute the characteristics of the created glyphs
      */
@@ -367,7 +372,8 @@ public class GlyphsBuilder
         allSections.addAll(system.getVerticalSections());
         allSections.addAll(system.getHorizontalSections());
 
-        List<Glyph> glyphs = retrieveGlyphs(allSections, nest, scale);
+        List<Glyph> glyphs = retrieveGlyphs(
+                allSections, nest, GlyphLayer.DEFAULT, scale);
 
         // Record them into the system
         for (Glyph glyph : glyphs) {
@@ -446,11 +452,13 @@ public class GlyphsBuilder
      * Consider all sections transitively connected to the provided
      * section in order to populate the provided glyph.
      *
-     * @param glyph   the provided glyph
-     * @param section the section to consider
+     * @param glyph    the provided glyph
+     * @param section  the section to consider
+     * @param sections the collection of sections allowed to be used
      */
     private static void considerConnection (Glyph glyph,
-                                            Section section)
+                                            Section section,
+                                            Collection<Section> sections)
     {
         // Check whether this section is suitable to expand the glyph
         if (!section.isProcessed()) {
@@ -462,17 +470,23 @@ public class GlyphsBuilder
 
             // Incoming ones
             for (Section source : section.getSources()) {
-                considerConnection(glyph, source);
+                if (sections.contains(source)) {
+                    considerConnection(glyph, source, sections);
+                }
             }
 
             // Outgoing ones
             for (Section target : section.getTargets()) {
-                considerConnection(glyph, target);
+                if (sections.contains(target)) {
+                    considerConnection(glyph, target, sections);
+                }
             }
 
             // Sections from other orientation
             for (Section other : section.getOppositeSections()) {
-                considerConnection(glyph, other);
+                if (sections.contains(other)) {
+                    considerConnection(glyph, other, sections);
+                }
             }
         }
     }

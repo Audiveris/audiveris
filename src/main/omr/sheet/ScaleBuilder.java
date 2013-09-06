@@ -17,11 +17,14 @@ import static omr.WellKnowns.LINE_SEPARATOR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.image.ChamferDistanceShort;
+import omr.image.FilterDescriptor;
+import omr.image.Picture;
+
 import omr.math.Histogram;
 import omr.math.Histogram.MaxEntry;
 import omr.math.Histogram.PeakEntry;
 
-import omr.run.FilterDescriptor;
 import omr.run.Orientation;
 import omr.run.Run;
 import omr.run.RunsTable;
@@ -29,7 +32,6 @@ import omr.run.RunsTableFactory;
 
 import omr.score.Score;
 
-import omr.sheet.picture.Picture;
 import omr.sheet.ui.SheetsController;
 
 import omr.step.StepException;
@@ -179,57 +181,75 @@ public class ScaleBuilder
     public void retrieveScale ()
             throws StepException
     {
-        Picture picture = sheet.getPicture();
 
-        // Binarization: Retrieve the whole table of foreground runs
-        histoKeeper = new HistoKeeper(picture.getHeight() - 1);
-        FilterDescriptor desc = sheet.getPage().getFilterParam().getTarget();
-        logger.info("{}{} {}", sheet.getLogPrefix(), "Binarization", desc);
-        sheet.getPage().getFilterParam().setActual(desc);
+        StopWatch watch = new StopWatch("Scale builder for " + sheet.getPage().getId());
+        try {
+            Picture picture = sheet.getPicture();
 
-        StopWatch watch = new StopWatch("Binarization "
-                                        + sheet.getPage().getId() + " " + desc);
-        watch.start("Vertical runs");
+            // Binarization: Retrieve the whole table of foreground runs
+            histoKeeper = new HistoKeeper(picture.getHeight() - 1);
+            FilterDescriptor desc = sheet.getPage().getFilterParam().getTarget();
+            logger.info("{}{} {}", sheet.getLogPrefix(), "Binarization", desc);
+            sheet.getPage().getFilterParam().setActual(desc);
 
-        RunsTableFactory factory = new RunsTableFactory(
-                Orientation.VERTICAL,
-                desc.getFilter(picture),
-                0);
-        RunsTable wholeVertTable = factory.createTable("whole");
-        sheet.setWholeVerticalTable(wholeVertTable);
-        factory = null; // To allow garbage collection ASAP
+            watch.start("Binarization " + desc);
 
-        if (constants.printWatch.isSet()) {
-            watch.print();
+            RunsTableFactory factory = new RunsTableFactory(
+                    Orientation.VERTICAL,
+                    desc.getFilter(picture),
+                    0);
+            RunsTable wholeVertTable = factory.createTable("Binary");
+            
+            watch.start("Global lag");
+            sheet.setWholeVerticalTable(wholeVertTable);
+            factory = null; // To allow garbage collection ASAP
+
+            // Note: from that point on, we could simply discard the sheet picture
+            // and save memory, since wholeVertTable contains all foreground pixels.
+            // For the time being, it is kept alive for display purpose, and to
+            // allow the dewarping of the initial picture.
+            if (constants.disposeImage.isSet()) {
+                picture.dispose(); // To discard image and raster
+            }
+
+            watch.start("Histograms");
+            // Build the two histograms
+            histoKeeper.buildHistograms(
+                    wholeVertTable,
+                    picture.getWidth(),
+                    picture.getHeight());
+
+            // Retrieve the various histograms peaks
+            retrievePeaks();
+
+            // Check this page looks like music staves. If not, throw StepException
+            checkStaves();
+
+            // Check we have acceptable resolution.  If not, throw StepException
+            checkResolution();
+
+            // Here, we keep going on with scale data
+            scale = new Scale(
+                    computeLine(),
+                    computeInterline(),
+                    computeBeam(),
+                    computeSecondInterline());
+
+            logger.info("{}{}", sheet.getLogPrefix(), scale);
+
+            sheet.getBench().recordScale(scale);
+
+            // Compute distance transform image
+            watch.start("Distance transform");
+            sheet.setDistanceImage(
+                    new ChamferDistanceShort().computeToFore(wholeVertTable.getBuffer()));
+
+            sheet.setScale(scale);
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
         }
-
-        // Build the two histograms
-        histoKeeper.buildHistograms(
-                wholeVertTable,
-                picture.getWidth(),
-                picture.getHeight());
-
-        // Retrieve the various histograms peaks
-        retrievePeaks();
-
-        // Check this page looks like music staves. If not, throw StepException
-        checkStaves();
-
-        // Check we have acceptable resolution.  If not, throw StepException
-        checkResolution();
-
-        // Here, we keep going on with scale data
-        scale = new Scale(
-                computeLine(),
-                computeInterline(),
-                computeBeam(),
-                computeSecondInterline());
-
-        logger.info("{}{}", sheet.getLogPrefix(), scale);
-
-        sheet.getBench().recordScale(scale);
-
-        sheet.setScale(scale);
     }
 
     //-----------------//
@@ -695,6 +715,10 @@ public class ScaleBuilder
         final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print the StopWatch on binarization?");
+
+        final Constant.Boolean disposeImage = new Constant.Boolean(
+                false,
+                "Should we dispose of original image once binarized?");
 
     }
 

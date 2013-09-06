@@ -16,6 +16,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
+import omr.glyph.GlyphLayer;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
@@ -423,7 +424,7 @@ public class SlurInspector
     {
         if (null == getInvalidity(sections, null)) {
             // Build new slur glyph with sections kept
-            Glyph newGlyph = new BasicGlyph(params.interline);
+            Glyph newGlyph = new BasicGlyph(params.interline, GlyphLayer.DEFAULT);
 
             for (Section section : sections) {
                 newGlyph.addSection(section, Glyph.Linking.LINK_BACK);

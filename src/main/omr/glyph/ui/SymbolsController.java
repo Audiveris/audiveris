@@ -45,8 +45,8 @@ import java.util.Set;
 
 /**
  * Class {@code SymbolsController} is a GlyphsController specifically
- * meant for symbol glyphs, adding handling for assigning Texts, for fixing
- * Slurs and for segmenting on Stems.
+ * meant for symbol glyphs, adding handling for assigning Texts, 
+ * for fixing Slurs and for segmenting on Stems.
  *
  * @author Hervé Bitteur
  */

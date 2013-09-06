@@ -34,7 +34,7 @@ public class LHexaSpinner
     // LHexaSpinner //
     //--------------//
     /**
-     * Create an editable labelled hexa spinner with provided
+     * Create an editable labeled hexa spinner with provided
      * characteristics.
      *
      * @param label the string to be used as label text

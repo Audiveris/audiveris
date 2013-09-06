@@ -36,7 +36,7 @@ public class LDoubleField
     // LDoubleField //
     //--------------//
     /**
-     * Create an (initially) editable double labelled field with proper
+     * Create an (initially) editable double labeled field with proper
      * characteristics
      *
      * @param label  string for the label text
@@ -54,7 +54,7 @@ public class LDoubleField
     // LDoubleField //
     //--------------//
     /**
-     * Create an (initially) editable double labelled field with proper
+     * Create an (initially) editable double labeled field with proper
      * characteristics
      *
      * @param label string for the label text
@@ -70,7 +70,7 @@ public class LDoubleField
     // LDoubleField //
     //--------------//
     /**
-     * Create a double labelled field with proper characteristics
+     * Create a double labeled field with proper characteristics
      *
      * @param editable tells whether the field must be editable
      * @param label    string for the label text
@@ -87,7 +87,7 @@ public class LDoubleField
     // LDoubleField //
     //--------------//
     /**
-     * Create a double labelled field with proper characteristics
+     * Create a double labeled field with proper characteristics
      *
      * @param editable tells whether the field must be editable
      * @param label    string for the label text

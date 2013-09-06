@@ -11,7 +11,8 @@
 // </editor-fold>
 package omr.lag;
 
-import omr.run.PixelFilter;
+import java.awt.Point;
+import omr.image.PixelFilter;
 import omr.run.Run;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
@@ -83,12 +84,15 @@ public class SectionsBuilder
     // createSections //
     //----------------//
     /**
-     * Populate a lag by creating sections from the provided table of runs
+     * Populate a lag by creating sections from the provided table of
+     * runs.
      *
      * @param runsTable the table of runs
+     * @param include   if true, include the content of runsTable into the lag
      * @return the list of created sections
      */
-    public List<Section> createSections (RunsTable runsTable)
+    public List<Section> createSections (RunsTable runsTable,
+                                         boolean include)
     {
         // Get brand new collections
         created = new ArrayList<>();
@@ -145,8 +149,10 @@ public class SectionsBuilder
             }
         }
 
-        // Store the content of runs table into the lag
-        lag.addRuns(runsTable);
+        // Store the content of runs table into the lag?
+        if (include) {
+            lag.addRuns(runsTable);
+        }
 
         return created;
     }
@@ -155,7 +161,8 @@ public class SectionsBuilder
     // createSections //
     //----------------//
     /**
-     * Populate a lag by creating sections directly out of a pixel source
+     * Populate a lag by creating sections directly out of a pixel
+     * source.
      *
      * @param name         a name assigned to the runs table
      * @param source       the source to read pixels from
@@ -176,7 +183,7 @@ public class SectionsBuilder
         RunsTable table = factory.createTable(name);
 
         // Now proceed to section extraction
-        return createSections(table);
+        return createSections(table, true);
     }
 
     //-----------------//

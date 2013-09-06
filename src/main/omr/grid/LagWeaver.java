@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.grid;
 
-import omr.glyph.GlyphsBuilder;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -152,8 +151,8 @@ public class LagWeaver
         watch.start("Hori <-> Vert");
         horiWithVert();
 
-        watch.start("buildGlyphs");
-        buildGlyphs();
+//        watch.start("buildGlyphs");
+//        buildGlyphs();
 
         // The end
         ///watch.print();
@@ -189,39 +188,38 @@ public class LagWeaver
         pointsBelow.add(new Point(x, y));
     }
 
-    //-------------//
-    // buildGlyphs //
-    //-------------//
-    private void buildGlyphs ()
-    {
-        // Group (unknown) sections into glyphs
-        // Consider all unknown vertical & horizontal sections
-        List<Section> allSections = new ArrayList<>();
-
-        for (Section section : sheet.getVerticalLag().getSections()) {
-            if (!section.isKnown()) {
-                section.setProcessed(false);
-                allSections.add(section);
-            } else {
-                section.setProcessed(true);
-            }
-        }
-
-        for (Section section : sheet.getHorizontalLag().getSections()) {
-            if (!section.isKnown()) {
-                section.setProcessed(false);
-                allSections.add(section);
-            } else {
-                section.setProcessed(true);
-            }
-        }
-
-        GlyphsBuilder.retrieveGlyphs(
-                allSections,
-                sheet.getNest(),
-                sheet.getScale());
-    }
-
+//    //-------------//
+//    // buildGlyphs //
+//    //-------------//
+//    private void buildGlyphs ()
+//    {
+//        // Group (unknown) sections into glyphs
+//        // Consider all unknown vertical & horizontal sections
+//        List<Section> allSections = new ArrayList<>();
+//
+//        for (Section section : sheet.getVerticalLag().getSections()) {
+//            if (!section.isKnown()) {
+//                section.setProcessed(false);
+//                allSections.add(section);
+//            } else {
+//                section.setProcessed(true);
+//            }
+//        }
+//
+//        for (Section section : sheet.getHorizontalLag().getSections()) {
+//            if (!section.isKnown()) {
+//                section.setProcessed(false);
+//                allSections.add(section);
+//            } else {
+//                section.setProcessed(true);
+//            }
+//        }
+//
+//        GlyphsBuilder.retrieveGlyphs(
+//                allSections,
+//                sheet.getNest(),
+//                sheet.getScale());
+//    }
     //------------------//
     // checkPointsAbove //
     //------------------//
@@ -322,8 +320,9 @@ public class LagWeaver
     // horiWithHori //
     //--------------//
     /**
-     * Connect, when appropriate, the long horizontal sections (built from long
-     * runs) with short horizontal sections (built later from shorter runs).
+     * Connect, when appropriate, the long horizontal sections (built
+     * from long runs) with short horizontal sections (built later
+     * from shorter runs).
      * Without such connections, glyph building would suffer over-segmentation.
      *
      * <p>We take each long section in turn and check for connection, above and

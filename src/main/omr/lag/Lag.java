@@ -181,8 +181,8 @@ public interface Lag
      * Inject dependency about other services for lag.
      *
      * @param locationService the location service to read & write
-     * @param sceneService    the glyphservice to write
+     * @param glyphService    the glyph service to write
      */
     void setServices (SelectionService locationService,
-                      SelectionService sceneService);
+                      SelectionService glyphService);
 }

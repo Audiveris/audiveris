@@ -18,7 +18,6 @@ import omr.glyph.Glyphs;
 import omr.glyph.Nest;
 import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
-import omr.glyph.ui.NestView.ItemRenderer;
 
 import omr.lag.Lag;
 import omr.lag.Section;
@@ -96,25 +95,25 @@ public class SymbolsEditor
     private static final Logger logger = LoggerFactory.getLogger(SymbolsEditor.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** Related instance of symbols builder */
+    /** Related instance of symbols controller. */
     private final SymbolsController symbolsController;
 
-    /** Related sheet */
+    /** Related sheet. */
     private final Sheet sheet;
 
-    /** BoundaryEditor companion */
+    /** BoundaryEditor companion. */
     private final BoundaryEditor boundaryEditor;
 
-    /** Evaluator to check for NOISE glyphs */
+    /** Evaluator to check for NOISE glyphs. */
     private final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
 
-    /** Related nest view */
+    /** Related nest view. */
     private final MyView view;
 
-    /** Popup menu related to page selection */
+    /** Popup menu related to page selection. */
     private PageMenu pageMenu;
 
-    /** The entity used for display focus */
+    /** The entity used for display focus. */
     private ShapeFocusBoard focus;
 
     //~ Constructors -----------------------------------------------------------
@@ -175,19 +174,6 @@ public class SymbolsEditor
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-----------------//
-    // addItemRenderer //
-    //-----------------//
-    /**
-     * Register an items renderer to render items.
-     *
-     * @param renderer the additional renderer
-     */
-    public void addItemRenderer (ItemRenderer renderer)
-    {
-        view.addItemRenderer(renderer);
-    }
-
     //-----------//
     // highLight //
     //-----------//
@@ -293,7 +279,8 @@ public class SymbolsEditor
             super(
                     nest,
                     symbolsController,
-                    Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()));
+                    Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()),
+                    sheet.getItemRenderers());
             setName("SymbolsEditor-MyView");
 
             // Subscribe to all lags for SectionSet events
@@ -423,11 +410,7 @@ public class SymbolsEditor
         // onEvent //
         //---------//
         /**
-         * On reception of SECTION_SET information, we build a
-         * transient compound glyph which is then dispatched.
-         * Such glyph is always generated (a null glyph if the set is null or
-         * empty, a simple glyph if the set contains just one glyph, and a true
-         * compound glyph when the set contains several glyphs)
+         * Handling of specific events: Location and SectionSet.
          *
          * @param event the notified event
          */
@@ -566,6 +549,12 @@ public class SymbolsEditor
         //-------------//
         /**
          * Interest in SectionSetEvent => transient Glyph.
+         *
+         * On reception of SECTION_SET information, we build a transient
+         * compound glyph which is then dispatched.
+         * Such glyph is always generated (a null glyph if the set is null or
+         * empty, a simple glyph if the set contains just one glyph, and a true
+         * compound glyph when the set contains several glyph instances)
          *
          * @param sectionSetEvent
          */

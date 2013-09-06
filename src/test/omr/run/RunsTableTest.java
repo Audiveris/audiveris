@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.run;
 
+import omr.image.GlobalFilter;
 import static omr.run.Orientation.*;
 
 import static org.junit.Assert.*;

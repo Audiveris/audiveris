@@ -16,9 +16,9 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.GlyphLayer;
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
-import omr.glyph.ui.NestView;
 
 import omr.lag.BasicLag;
 import omr.lag.JunctionRatioPolicy;
@@ -36,9 +36,12 @@ import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
+import omr.sheet.ui.RunsViewer;
 
 import omr.ui.Colors;
+import omr.ui.util.ItemRenderer;
 import omr.ui.util.UIUtil;
+
 import static omr.util.HorizontalSide.*;
 import omr.util.Predicate;
 import omr.util.StopWatch;
@@ -65,7 +68,7 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class LinesRetriever
-        implements NestView.ItemRenderer
+        implements ItemRenderer
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -78,7 +81,7 @@ public class LinesRetriever
     //~ Instance fields --------------------------------------------------------
     //
     /** related sheet */
-    private final Sheet sheet;
+    final Sheet sheet;
 
     /** Related scale */
     private final Scale scale;
@@ -111,13 +114,10 @@ public class LinesRetriever
     private ClustersRetriever secondClustersRetriever;
 
     /** Companion in charge of bar lines */
-    private final BarsRetriever barsRetriever;
+    final BarsRetriever barsRetriever;
 
     /** Too-short horizontal runs */
     private RunsTable shortHoriTable;
-
-    /** For runs display, if any */
-    private final RunsViewer runsViewer;
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -135,9 +135,6 @@ public class LinesRetriever
     {
         this.sheet = sheet;
         this.barsRetriever = barsRetriever;
-
-        runsViewer = (Main.getGui() != null)
-                     ? new RunsViewer(sheet, this, barsRetriever) : null;
 
         scale = sheet.getScale();
         params = new Parameters(scale);
@@ -164,8 +161,10 @@ public class LinesRetriever
             factory = new FilamentsFactory(
                     scale,
                     sheet.getNest(),
+                    GlyphLayer.DEFAULT,
                     Orientation.HORIZONTAL,
                     LineFilament.class);
+            factory.dump("LinesRetriever factory");
         } catch (Exception ex) {
             logger.warn("Cannot create lines filament factory", ex);
         }
@@ -179,16 +178,17 @@ public class LinesRetriever
         // Remove runs whose height is larger than line thickness
         RunsTable shortVertTable = wholeVertTable.copy("short-vert").purge(
                 new Predicate<Run>()
-                {
-                    @Override
-                    public final boolean check (Run run)
-                    {
-                        return run.getLength() > params.maxVerticalRunLength;
-                    }
-                },
+        {
+            @Override
+            public final boolean check (Run run)
+            {
+                return run.getLength() > params.maxVerticalRunLength;
+            }
+        },
                 longVertTable);
 
         if (showRuns) {
+            RunsViewer runsViewer = sheet.getRunsViewer();
             runsViewer.display(longVertTable);
             runsViewer.display(shortVertTable);
         }
@@ -207,16 +207,17 @@ public class LinesRetriever
 
         RunsTable longHoriTable = wholeHoriTable.copy("long-hori").purge(
                 new Predicate<Run>()
-                {
-                    @Override
-                    public final boolean check (Run run)
-                    {
-                        return run.getLength() < params.minRunLength;
-                    }
-                },
+        {
+            @Override
+            public final boolean check (Run run)
+            {
+                return run.getLength() < params.minRunLength;
+            }
+        },
                 shortHoriTable);
 
         if (showRuns) {
+            RunsViewer runsViewer = sheet.getRunsViewer();
             runsViewer.display(shortHoriTable);
             runsViewer.display(longHoriTable);
         }
@@ -225,8 +226,8 @@ public class LinesRetriever
         // (short horizontal runs will be added later)
         SectionsBuilder sectionsBuilder = new SectionsBuilder(
                 hLag,
-                new JunctionRatioPolicy(params.maxLengthRatio));
-        sectionsBuilder.createSections(longHoriTable);
+                new JunctionRatioPolicy());
+        sectionsBuilder.createSections(longHoriTable, true);
 
         sheet.setHorizontalLag(hLag);
 
@@ -409,7 +410,7 @@ public class LinesRetriever
             globalSlope = retrieveGlobalSlope();
             sheet.setSkew(new Skew(globalSlope, sheet));
             logger.info("{}Global slope: {}",
-                        sheet.getLogPrefix(), (float) globalSlope);
+                    sheet.getLogPrefix(), (float) globalSlope);
 
             // Retrieve regular patterns of filaments and pack them into clusters
             clustersRetriever = new ClustersRetriever(
@@ -428,7 +429,7 @@ public class LinesRetriever
                 secondFilaments = discardedFilaments;
                 Collections.sort(secondFilaments, Glyph.byId);
                 logger.info("{}Searching clusters with secondInterline: {}",
-                            sheet.getLogPrefix(), secondInterline);
+                        sheet.getLogPrefix(), secondInterline);
                 secondClustersRetriever = new ClustersRetriever(
                         sheet,
                         secondFilaments,
@@ -542,7 +543,7 @@ public class LinesRetriever
         if (height > params.maxStickerThickness) {
             if (logger.isDebugEnabled() || isVip) {
                 logger.info("{}SSS height:{} vs {}",
-                            vips, height, params.maxStickerThickness);
+                        vips, height, params.maxStickerThickness);
             }
 
             return false;
@@ -556,7 +557,7 @@ public class LinesRetriever
         if (gap > params.maxStickerGap) {
             if (logger.isDebugEnabled() || isVip) {
                 logger.info("{}GGG gap:{} vs {}",
-                            vips, (float) gap, (float) params.maxStickerGap);
+                        vips, (float) gap, (float) params.maxStickerGap);
             }
 
             return false;
@@ -570,7 +571,7 @@ public class LinesRetriever
         if (extension > params.maxStickerExtension) {
             if (logger.isDebugEnabled() || isVip) {
                 logger.info("{}XXX ext:{} vs {}",
-                            vips, (float) extension, params.maxStickerExtension);
+                        vips, (float) extension, params.maxStickerExtension);
             }
 
             return false;
@@ -596,7 +597,7 @@ public class LinesRetriever
         if (thickness > params.maxStickerThickness) {
             if (logger.isDebugEnabled() || isVip) {
                 logger.info("{}RRR thickness:{} vs {}",
-                            vips, (float) thickness, params.maxStickerExtension);
+                        vips, (float) thickness, params.maxStickerExtension);
             }
 
             return false;
@@ -673,7 +674,7 @@ public class LinesRetriever
                 hLag,
                 new JunctionRatioPolicy(params.maxLengthRatioShort));
         List<Section> shortSections = sectionsBuilder.createSections(
-                shortHoriTable);
+                shortHoriTable, true);
 
         setVipSections();
 
@@ -944,6 +945,7 @@ public class LinesRetriever
         final Constant.String horizontalVipSections = new Constant.String(
                 "",
                 "(Debug) Comma-separated list of VIP sections");
+
     }
 
     //------------//
@@ -962,9 +964,6 @@ public class LinesRetriever
 
         /** Minimum run length for horizontal lag */
         final int minRunLength;
-
-        /** Used for section junction policy */
-        final double maxLengthRatio;
 
         /** Used for section junction policy for short sections */
         final double maxLengthRatioShort;
@@ -1003,7 +1002,6 @@ public class LinesRetriever
 
             // Others
             minRunLength = scale.toPixels(constants.minRunLength);
-            maxLengthRatio = constants.maxLengthRatio.getValue();
             maxLengthRatioShort = constants.maxLengthRatioShort.getValue();
             topRatioForSlope = constants.topRatioForSlope.getValue();
             maxStickerGap = scale.toPixelsDouble(constants.maxStickerGap);

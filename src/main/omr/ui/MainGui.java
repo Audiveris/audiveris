@@ -32,7 +32,7 @@ import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
-import omr.sheet.picture.jai.JaiLoader;
+import omr.image.jai.JaiLoader;
 import omr.sheet.ui.SheetActions;
 import omr.sheet.ui.SheetsController;
 

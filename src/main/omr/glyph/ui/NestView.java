@@ -14,10 +14,10 @@ package omr.glyph.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.graph.DigraphView;
-
 import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
+
+import omr.graph.DigraphView;
 
 import omr.lag.Lag;
 import omr.lag.Section;
@@ -31,6 +31,7 @@ import omr.text.TextLine;
 import omr.text.TextWord;
 
 import omr.ui.Colors;
+import omr.ui.util.ItemRenderer;
 import omr.ui.util.UIUtil;
 import omr.ui.view.RubberPanel;
 
@@ -49,8 +50,7 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -70,7 +70,8 @@ public class NestView
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(NestView.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            NestView.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The underlying nest */
@@ -83,7 +84,7 @@ public class NestView
     protected final List<Lag> lags;
 
     /** Additional items rendering */
-    protected final List<ItemRenderer> itemRenderers = new ArrayList<>();
+    protected final Collection<ItemRenderer> itemRenderers;
 
     //~ Constructors -----------------------------------------------------------
     //----------//
@@ -92,17 +93,20 @@ public class NestView
     /**
      * Create a nest view.
      *
-     * @param nest       the underlying nest of glyphs
-     * @param controller the related glyphs controller
-     * @param lags       the various lags to be displayed
+     * @param nest          the underlying nest of glyphs
+     * @param controller    the related glyphs controller
+     * @param lags          the various lags to be displayed
+     * @param itemRenderers items renderers if any
      */
     public NestView (Nest nest,
                      GlyphsController controller,
-                     List<Lag> lags)
+                     List<Lag> lags,
+                     Collection<ItemRenderer> itemRenderers)
     {
         this.nest = nest;
         this.controller = controller;
         this.lags = lags;
+        this.itemRenderers = itemRenderers;
 
         setName(nest.getName() + "-View");
 
@@ -117,19 +121,6 @@ public class NestView
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-----------------//
-    // addItemRenderer //
-    //-----------------//
-    /**
-     * Register an items renderer to renderAttachments items.
-     *
-     * @param renderer the additional renderer
-     */
-    public void addItemRenderer (ItemRenderer renderer)
-    {
-        itemRenderers.add(new WeakItemRenderer(renderer));
-    }
-
     //---------------//
     // getController //
     //---------------//
@@ -170,7 +161,8 @@ public class NestView
     public void render (Graphics2D g)
     {
         // Should we draw the section borders?
-        final boolean drawBorders = ViewParameters.getInstance().isSectionMode();
+        final boolean drawBorders = ViewParameters.getInstance()
+                .isSectionMode();
 
         // Stroke for borders
         final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
@@ -225,8 +217,10 @@ public class NestView
     protected void renderItems (Graphics2D g)
     {
         // Additional renderers if any
-        for (ItemRenderer renderer : itemRenderers) {
-            renderer.renderItems(g);
+        if (itemRenderers != null) {
+            for (ItemRenderer renderer : itemRenderers) {
+                renderer.renderItems(g);
+            }
         }
 
         // Render the selected glyph(s) if any
@@ -257,7 +251,8 @@ public class NestView
                 glyph.renderAttachments(g);
 
                 // Draw glyph line?
-                if (ViewParameters.getInstance().isLinePainting()) {
+                if (ViewParameters.getInstance()
+                        .isLinePainting()) {
                     glyph.renderLine(g);
                 }
             }
@@ -266,7 +261,8 @@ public class NestView
         }
 
         // Glyph areas second, using XOR mode for the area
-        if (!ViewParameters.getInstance().isSectionMode()) {
+        if (!ViewParameters.getInstance()
+                .isSectionMode()) {
             // Glyph selection mode
             if (glyphs != null) {
                 Graphics2D g2 = (Graphics2D) g.create();
@@ -280,14 +276,16 @@ public class NestView
                 g2.dispose();
 
                 // Display words of a sentence, if any
-                if (ViewParameters.getInstance().isSentencePainting()) {
+                if (ViewParameters.getInstance()
+                        .isSentencePainting()) {
                     for (Glyph glyph : glyphs) {
                         renderGlyphSentence(glyph, g);
                     }
                 }
 
                 // Display translation links, if any
-                if (ViewParameters.getInstance().isTranslationPainting()) {
+                if (ViewParameters.getInstance()
+                        .isTranslationPainting()) {
                     for (Glyph glyph : glyphs) {
                         renderGlyphTranslations(glyph, g);
                     }
@@ -307,42 +305,6 @@ public class NestView
         }
     }
 
-    //-------------------------//
-    // renderGlyphTranslations //
-    //-------------------------//
-    private void renderGlyphTranslations (Glyph glyph,
-                                          Graphics2D g)
-    {
-        if (glyph.getTranslations().isEmpty()) {
-            return;
-        }
-
-        Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-        Color oldColor = g.getColor();
-        g.setColor(Colors.TRANSLATION_LINK);
-
-        // Compute end radius, with fixed size whatever the current zoom
-        double r = 1 / g.getTransform().getScaleX();
-
-        for (PartNode node : glyph.getTranslations()) {
-            for (Line2D line : node.getTranslationLinks(glyph)) {
-                // Draw line
-                g.draw(line);
-
-                // Draw ending points
-                Ellipse2D e1 = new Ellipse2D.Double(
-                        line.getX1() - r, line.getY1() - r, 2 * r, 2 * r);
-                g.draw(e1);
-                Ellipse2D e2 = new Ellipse2D.Double(
-                        line.getX2() - r, line.getY2() - r, 2 * r, 2 * r);
-                g.draw(e2);
-            }
-        }
-
-        g.setColor(oldColor);
-        g.setStroke(oldStroke);
-    }
-
     //---------------------//
     // renderGlyphSentence //
     //---------------------//
@@ -360,51 +322,64 @@ public class NestView
             return;
         }
 
-        TextLine sentence = glyph.getTextWord().getTextLine();
+        TextLine sentence = glyph.getTextWord()
+                .getTextLine();
         Color oldColor = g.getColor();
 
         if (constants.showSentenceBaseline.isSet()) {
             // Display the whole sentence baseline
             g.setColor(Colors.SENTENCE_BASELINE);
+
             Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
 
             Path2D path = new Path2D.Double();
             TextWord prevWord = null;
+
             for (TextWord word : sentence.getWords()) {
-                Point2D left = word.getBaseline().getP1();
+                Point2D left = word.getBaseline()
+                        .getP1();
+
                 if (prevWord == null) {
                     path.moveTo(left.getX(), left.getY());
                 } else {
                     path.lineTo(left.getX(), left.getY());
                 }
 
-                Point2D right = word.getBaseline().getP2();
+                Point2D right = word.getBaseline()
+                        .getP2();
                 path.lineTo(right.getX(), right.getY());
                 prevWord = word;
             }
+
             g.draw(path);
 
             g.setStroke(oldStroke);
         } else {
             // Display a x-height rectangle between words
             g.setColor(Colors.SENTENCE_GAPS);
+
             FontInfo font = sentence.getMeanFont();
             double height = font.pointsize * 0.4f; // TODO: Explain this 0.4
 
             TextWord prevWord = null;
+
             for (TextWord word : sentence.getWords()) {
                 if (prevWord != null) {
                     Path2D path = new Path2D.Double();
-                    Point2D from = prevWord.getBaseline().getP2();
+                    Point2D from = prevWord.getBaseline()
+                            .getP2();
                     path.moveTo(from.getX(), from.getY());
                     path.lineTo(from.getX(), from.getY() - height);
-                    Point2D to = word.getBaseline().getP1();
+
+                    Point2D to = word.getBaseline()
+                            .getP1();
                     path.lineTo(to.getX(), to.getY() - height);
                     path.lineTo(to.getX(), to.getY());
                     path.closePath();
 
                     g.fill(path);
                 }
+
                 prevWord = word;
             }
         }
@@ -412,45 +387,52 @@ public class NestView
         g.setColor(oldColor);
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
-    //--------------//
-    // ItemRenderer //
-    //--------------//
-    /**
-     * Used to plug additional items renderers to this view.
-     */
-    public static interface ItemRenderer
+    //-------------------------//
+    // renderGlyphTranslations //
+    //-------------------------//
+    private void renderGlyphTranslations (Glyph glyph,
+                                          Graphics2D g)
     {
-        //~ Methods ------------------------------------------------------------
-
-        void renderItems (Graphics2D g);
-    }
-
-    //------------------//
-    // WeakItemRenderer //
-    //------------------//
-    private static class WeakItemRenderer
-            implements ItemRenderer
-    {
-
-        protected final WeakReference<ItemRenderer> weakRenderer;
-
-        public WeakItemRenderer (ItemRenderer renderer)
-        {
-            weakRenderer = new WeakReference<>(renderer);
+        if (glyph.getTranslations()
+                .isEmpty()) {
+            return;
         }
 
-        @Override
-        public void renderItems (Graphics2D g)
-        {
-            ItemRenderer renderer = weakRenderer.get();
+        Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+        Color oldColor = g.getColor();
+        g.setColor(Colors.TRANSLATION_LINK);
 
-            if (renderer != null) {
-                renderer.renderItems(g);
+        // Compute end radius, with fixed size whatever the current zoom
+        double r = 1 / g.getTransform()
+                .getScaleX();
+
+        for (PartNode node : glyph.getTranslations()) {
+            for (Line2D line : node.getTranslationLinks(glyph)) {
+                // Draw line
+                g.draw(line);
+
+                // Draw ending points
+                Ellipse2D e1 = new Ellipse2D.Double(
+                        line.getX1() - r,
+                        line.getY1() - r,
+                        2 * r,
+                        2 * r);
+                g.draw(e1);
+
+                Ellipse2D e2 = new Ellipse2D.Double(
+                        line.getX2() - r,
+                        line.getY2() - r,
+                        2 * r,
+                        2 * r);
+                g.draw(e2);
             }
         }
+
+        g.setColor(oldColor);
+        g.setStroke(oldStroke);
     }
 
+    //~ Inner Classes ----------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//

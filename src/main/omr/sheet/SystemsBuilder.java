@@ -125,23 +125,22 @@ public class SystemsBuilder
         // Define precisely the systems boundaries
         computeBoundaries();
 
-        // Split sections & glyphs per system
-        splitSystemEntities();
+        // Dispatch sections & glyphs per system
+        dispatchSystemEntities();
     }
 
-    //---------------------//
-    // splitSystemEntities //
-    //---------------------//
+    //------------------------//
+    // dispatchSystemEntities //
+    //------------------------//
     /**
      * Split horizontals, vertical sections, glyphs per system
      */
-    public void splitSystemEntities ()
+    public void dispatchSystemEntities ()
     {
-        // Split everything, including horizontals, per system
-        ///sheet.splitHorizontals();
-        sheet.splitHorizontalSections();
-        sheet.splitVerticalSections();
-        sheet.splitGlyphs();
+        // Dispatch everything, including horizontals, per system
+        sheet.dispatchHorizontalSections();
+        sheet.dispatchVerticalSections();
+        sheet.dispatchGlyphs(null);
     }
 
     //------------------------//

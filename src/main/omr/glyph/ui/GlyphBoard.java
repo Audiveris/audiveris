@@ -13,12 +13,14 @@ package omr.glyph.ui;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.GlyphLayer;
 import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.selection.GlyphEvent;
 import omr.selection.GlyphIdEvent;
+import omr.selection.GlyphLayerEvent;
 import omr.selection.GlyphSetEvent;
 import omr.selection.MouseMovement;
 import omr.selection.SelectionHint;
@@ -56,17 +58,17 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
+import javax.swing.SpinnerListModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code GlyphBoard} defines a UI board dedicated to the display
- * of {@link Glyph} information.
+ * Class {@code GlyphBoard} defines a UI board dedicated to the
+ * display of {@link Glyph} information.
  *
- * <p>The universal <b>globalSpinner</b> addresses <i>all</i> glyphs
- * currently defined in the nest (note that glyphs can be dynamically created or
- * destroyed).
+ * <p>The universal <b>idSpinner</b> addresses <i>all</i> glyph instances
+ * currently defined in the nest.
  *
  * <p>The spinner can be used to select a glyph by directly entering the
  * glyph id value into the spinner field
@@ -86,65 +88,56 @@ public class GlyphBoard
     private static final Logger logger = LoggerFactory.getLogger(
             GlyphBoard.class);
 
-    /** Events this board is interested in */
+    /** Events this board is interested in. */
     private static final Class<?>[] eventClasses = new Class<?>[]{
         GlyphEvent.class,
-        GlyphSetEvent.class
-    };
-
-    /** Predicate for known glyphs */
-    protected static final Predicate<Glyph> knownPredicate = new Predicate<Glyph>()
-    {
-        @Override
-        public boolean check (Glyph glyph)
-        {
-            return (glyph != null) && glyph.isKnown();
-        }
+        GlyphSetEvent.class,
+        GlyphLayerEvent.class
     };
 
     //~ Instance fields --------------------------------------------------------
-    /** The related glyph model */
+    /** The related glyph model. */
     protected final GlyphsController controller;
 
-    /** An active label */
+    /** An active label. */
     protected final JLabel active = new JLabel("", SwingConstants.CENTER);
 
-    /** Input: Dump */
+    /** Input: Dump. */
     protected final JButton dump;
 
-    /** Counter of glyph selection */
+    /** Counter of glyph selection. */
     protected final JLabel count = new JLabel("");
 
-    /** Input : Deassign action */
+    /** Input : layer selection. */
+    protected final JSpinner layerSpinner;
+
+    /** Input : Deassign action. */
     protected Action deassignAction;
 
-    /** Output : glyph shape icon */
+    /** Output : glyph shape icon. */
     protected final JLabel shapeIcon = new JLabel();
 
-    /** Input / Output : spinner of all glyphs */
-    protected JSpinner globalSpinner;
+    /** Input / Output : spinner of all glyph id's. */
+    protected JSpinner idSpinner;
 
-    /** Input / Output : spinner of known glyphs */
-    protected JSpinner knownSpinner;
-
-    /** Output : shape of the glyph */
+    /** Output : shape of the glyph. */
     protected final LTextField shapeField = new LTextField(
             "",
             "Assigned shape for this glyph");
 
-    /** The JGoodies/Form constraints to be used by all subclasses */
+    /** The JGoodies/Form constraints to be used by all subclasses. */
     protected final CellConstraints cst = new CellConstraints();
 
-    /** The JGoodies/Form layout to be used by all subclasses */
+    /** The JGoodies/Form layout to be used by all subclasses. */
     protected final FormLayout layout = Panel.makeFormLayout(6, 3);
 
-    /** The JGoodies/Form builder to be used by all subclasses */
+    /** The JGoodies/Form builder to be used by all subclasses. */
     protected final PanelBuilder builder;
 
     /**
-     * We have to avoid endless loop, due to related modifications : When a
-     * GLYPH selection is notified, the id spinner is changed, and When an id
-     * spinner is changed, the GLYPH selection is notified
+     * We have to avoid endless loop, due to related modifications.
+     * When a GLYPH selection is notified, the id spinner is changed, and When
+     * an id spinner is changed, the GLYPH selection is notified
      */
     protected boolean selfUpdating = false;
 
@@ -215,21 +208,25 @@ public class GlyphBoard
         builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
+        // Layer spinner
+        layerSpinner = new JSpinner(new SpinnerListModel(GlyphLayer.values()));
+        layerSpinner.addChangeListener(this);
+        layerSpinner.setName("layerSpinner");
+        layerSpinner.setToolTipText("Selection of glyph layer");
+
         defineLayout();
 
         if (useSpinners) {
-            // Model for globalSpinner
-            globalSpinner = makeGlyphSpinner(controller.getNest(), null);
-            globalSpinner.setName("globalSpinner");
-            globalSpinner.setToolTipText("General spinner for any glyph id");
+            // Model for idSpinner
+            idSpinner = makeGlyphSpinner(controller.getNest());
+            idSpinner.setName("idSpinner");
+            idSpinner.setToolTipText("General spinner for any glyph id");
 
             // Layout
             int r = 1; // --------------------------------
 
-            if (globalSpinner != null) {
-                builder.addLabel("Id", cst.xy(1, r));
-                builder.add(globalSpinner, cst.xy(3, r));
-            }
+            builder.addLabel("Id", cst.xy(1, r));
+            builder.add(idSpinner, cst.xy(3, r));
         }
     }
 
@@ -283,6 +280,9 @@ public class GlyphBoard
             } else if (event instanceof GlyphSetEvent) {
                 // Display count of glyphs in the glyph set
                 handleEvent((GlyphSetEvent) event);
+            } else if (event instanceof GlyphLayerEvent) {
+                // Change layer
+                handleEvent((GlyphLayerEvent) event);
             }
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -303,18 +303,30 @@ public class GlyphBoard
     {
         JSpinner spinner = (JSpinner) e.getSource();
 
-        //  Nota: this method is automatically called whenever the spinner value
-        //  is changed, including when a GLYPH selection notification is
-        //  received leading to such selfUpdating. So the check.
-        if (!selfUpdating) {
-            // Notify the new glyph id
+        if (spinner == idSpinner) {
+            //  Nota: this method is automatically called whenever the spinner value
+            //  is changed, including when a GLYPH selection notification is
+            //  received leading to such selfUpdating. Hence the check.
+            if (!selfUpdating) {
+                // Notify the new glyph id
+                getSelectionService()
+                        .publish(
+                        new GlyphIdEvent(
+                        this,
+                        SelectionHint.GLYPH_INIT,
+                        null,
+                        (Integer) spinner.getValue()));
+            }
+        } else if (spinner == layerSpinner) {
             getSelectionService()
                     .publish(
-                    new GlyphIdEvent(
+                    new GlyphLayerEvent(
                     this,
                     SelectionHint.GLYPH_INIT,
                     null,
-                    (Integer) spinner.getValue()));
+                    (GlyphLayer) spinner.getValue()));
+        } else {
+            logger.error("No known spinner");
         }
     }
 
@@ -327,13 +339,11 @@ public class GlyphBoard
     protected void defineLayout ()
     {
         int r = 1; // --------------------------------
-        // Shape Icon (start, spans several rows) + count + active + Deassign button
+        // Shape Icon (start, spans several rows) + layer + Deassign button
 
         builder.add(shapeIcon, cst.xywh(1, r, 1, 5));
 
-        builder.add(count, cst.xy(5, r));
-
-        builder.add(active, cst.xy(7, r));
+        builder.add(layerSpinner, cst.xyw(5, r, 3));
 
         JButton deassignButton = new JButton(getDeassignAction());
         deassignButton.setHorizontalTextPosition(SwingConstants.LEFT);
@@ -341,7 +351,11 @@ public class GlyphBoard
         builder.add(deassignButton, cst.xyw(9, r, 3));
 
         r += 2; // --------------------------------
-        // Shape name
+        // Count + Active + Shape name
+
+        builder.add(count, cst.xy(3, r, "right, center"));
+
+        builder.add(active, cst.xy(5, r));
 
         builder.add(shapeField.getField(), cst.xyw(7, r, 5));
     }
@@ -352,15 +366,13 @@ public class GlyphBoard
     /**
      * Convenient method to allocate a glyph-based spinner
      *
-     * @param nest      the underlying glyph nest
-     * @param predicate a related glyph predicate, if any
+     * @param nest the underlying glyph nest
      * @return the spinner built
      */
-    protected JSpinner makeGlyphSpinner (Nest nest,
-                                         Predicate<Glyph> predicate)
+    protected JSpinner makeGlyphSpinner (Nest nest)
     {
         JSpinner spinner = new JSpinner();
-        spinner.setModel(new SpinnerGlyphModel(nest, predicate));
+        spinner.setModel(new SpinnerGlyphIdModel(nest));
         spinner.addChangeListener(this);
         SpinnerUtil.setRightAlignment(spinner);
         SpinnerUtil.setEditable(spinner, true);
@@ -417,22 +429,12 @@ public class GlyphBoard
             shapeIcon.setIcon(null);
         }
 
-        // Global Spinner
-        if (globalSpinner != null) {
+        // Id Spinner
+        if (idSpinner != null) {
             if (glyph != null) {
-                globalSpinner.setValue(glyph.getId());
+                idSpinner.setValue(glyph.getId());
             } else {
-                globalSpinner.setValue(NO_VALUE);
-            }
-        }
-
-        // Known Spinner
-        if (knownSpinner != null) {
-            if (glyph != null) {
-                knownSpinner.setValue(
-                        knownPredicate.check(glyph) ? glyph.getId() : NO_VALUE);
-            } else {
-                knownSpinner.setValue(NO_VALUE);
+                idSpinner.setValue(NO_VALUE);
             }
         }
     }
@@ -455,6 +457,22 @@ public class GlyphBoard
         } else {
             count.setText("");
         }
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in GlyphLayer
+     *
+     * @param LayerEvent
+     */
+    private void handleEvent (GlyphLayerEvent glyphLayerEvent)
+    {
+        // Display new layer
+        GlyphLayer layer = glyphLayerEvent.getData();
+
+        layerSpinner.setValue(layer);
     }
 
     //~ Inner Classes ----------------------------------------------------------

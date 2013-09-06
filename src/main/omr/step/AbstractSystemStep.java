@@ -112,7 +112,7 @@ public abstract class AbstractSystemStep
      * @throws StepException raised if processing failed
      */
     @Override
-    public void doit (Collection<SystemInfo> systems,
+    protected void doit (Collection<SystemInfo> systems,
                       Sheet sheet)
             throws StepException
     {

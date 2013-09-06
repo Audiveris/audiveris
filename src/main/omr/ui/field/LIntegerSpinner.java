@@ -16,7 +16,7 @@ import javax.swing.event.ChangeListener;
 
 /**
  * Class {@code LSpinner} is a logical combination of a JLabel and a
- * JSpinner, a "Labelled Spinner", where the label describes
+ * JSpinner, a "Labeled Spinner", where the label describes
  * the dynamic content of the spinner.
  *
  * @author Hervé Bitteur
@@ -30,7 +30,7 @@ public class LIntegerSpinner
     // LIntegerSpinner //
     //-----------------//
     /**
-     * Create an editable labelled spinner with provided
+     * Create an editable labeled spinner with provided
      * characteristics.
      *
      * @param label the string to be used as label text

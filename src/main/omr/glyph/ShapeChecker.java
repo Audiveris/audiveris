@@ -751,7 +751,7 @@ public class ShapeChecker
                     return false;
                 }
 
-                int gap = staff.getGapTo(glyph);
+                int gap = staff.gapTo(glyph.getBounds());
                 int maxGap = system.getScoreSystem().getScale().toPixels(
                         constants.maxGapToStaff);
                 return gap <= maxGap;
@@ -773,7 +773,11 @@ public class ShapeChecker
                 // A beam / flag / stem  cannot be too far from a staff
                 Point center = glyph.getAreaCenter();
                 StaffInfo staff = system.getStaffAt(center);
-                int gap = staff.getGapTo(glyph);
+                if (staff == null) {
+                    logger.warn("BINGO no staff for " + glyph.idString()
+                                + " in " + system.idString());
+                }
+                int gap = staff.gapTo(glyph.getBounds());
                 int maxGap = system.getScoreSystem().getScale().toPixels(
                         constants.maxStemGapToStaff);
                 return gap <= maxGap;

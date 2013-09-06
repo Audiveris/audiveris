@@ -13,9 +13,6 @@ package omr.sheet;
 
 import omr.Main;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import omr.glyph.BasicNest;
 import omr.glyph.Glyphs;
 import omr.glyph.Nest;
@@ -33,6 +30,8 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.Sections;
 
+import omr.math.TableUtil;
+
 import omr.run.RunsTable;
 
 import omr.score.Score;
@@ -44,12 +43,13 @@ import omr.selection.LocationEvent;
 import omr.selection.PixelLevelEvent;
 import omr.selection.SelectionService;
 
-import omr.sheet.picture.ImageFormatException;
-import omr.sheet.picture.Picture;
-import omr.sheet.picture.PictureView;
+import omr.image.ImageFormatException;
+import omr.image.Picture;
+import omr.image.PictureView;
 import omr.sheet.ui.BinarizationBoard;
 import omr.sheet.ui.BoundaryEditor;
 import omr.sheet.ui.PixelBoard;
+import omr.sheet.ui.RunsViewer;
 import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.SheetsController;
 
@@ -60,25 +60,25 @@ import omr.step.Steps;
 
 import omr.ui.BoardsPane;
 import omr.ui.ErrorsEditor;
+import omr.ui.util.ItemRenderer;
+import omr.ui.util.WeakItemRenderer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.image.RenderedImage;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Class {@code Sheet} is the corner stone for Sheet processing,
@@ -90,9 +90,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
 public class Sheet
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    /** Specific application parameters */
-    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Sheet.class);
@@ -143,17 +140,26 @@ public class Sheet
     /** Table of all vertical (foreground) runs */
     private RunsTable wholeVerticalTable;
 
+    /** Image of distances to foreground. */
+    private short[][] distanceImage;
+
     /** Initial skew value */
     private Skew skew;
 
-    /** Horizontal entities */
-    private Horizontals horizontals;
-
-    /** Horizontal lag */
+    /** Horizontal (partial) lag. It complements vLag. */
     private Lag hLag;
 
-    /** Vertical lag */
+    /** Vertical (partial) lag. It complements hLag. */
     private Lag vLag;
+
+    /** Horizontal out-of-staves lag. */
+    private Lag hFullLag;
+
+    /** Spot lag. */
+    private Lag spotLag;
+
+    /** Split lag. */
+    private Lag splitLag;
 
     /** Global glyph nest */
     private Nest nest;
@@ -162,6 +168,9 @@ public class Sheet
     //
     /** Scale */
     private ScaleBuilder scaleBuilder;
+
+    /** Spots */
+    private SpotsBuilder spotsBuilder;
 
     /** Staves */
     private final StaffManager staffManager;
@@ -178,9 +187,6 @@ public class Sheet
     /** Specific builder dealing with glyphs */
     private volatile SymbolsController symbolsController;
 
-    /** Related verticals model */
-    private volatile VerticalsController verticalsController;
-
     /** Related target builder */
     private volatile TargetBuilder targetBuilder;
 
@@ -196,6 +202,12 @@ public class Sheet
     /** Have systems their boundaries? */
     private boolean hasSystemBoundaries = false;
 
+    /** Registered item renderers, if any */
+    private Set<ItemRenderer> itemRenderers = new HashSet<>();
+
+    /** Display of runs tables. */
+    private RunsViewer runsViewer;
+
     //~ Constructors -----------------------------------------------------------
     //
     //-------//
@@ -203,14 +215,14 @@ public class Sheet
     //-------//
     /**
      * Create a new {@code Sheet} instance, based on a couple made of
-     * an image (the original pixel input) and a page (the score entities
-     * output).
+     * an image (the original pixel input) and a page (the score
+     * entities output).
      *
      * @param page  the related score page
      * @param image the already loaded image
      */
     public Sheet (Page page,
-                  RenderedImage image)
+                  BufferedImage image)
             throws StepException
     {
         this.page = page;
@@ -232,10 +244,61 @@ public class Sheet
 
         setImage(image);
 
+        runsViewer = (Main.getGui() != null) ? new RunsViewer(this) : null;
+
         logger.debug("Created {}", this);
     }
 
     //~ Methods ----------------------------------------------------------------
+    //---------------//
+    // getRunsViewer //
+    //---------------//
+    public RunsViewer getRunsViewer ()
+    {
+        return runsViewer;
+    }
+
+    //-----------------//
+    // addItemRenderer //
+    //-----------------//
+    /**
+     * Register an items renderer to renderAttachments items.
+     *
+     * @param renderer the additional renderer
+     */
+    public void addItemRenderer (ItemRenderer renderer)
+    {
+        itemRenderers.add(new WeakItemRenderer(renderer));
+    }
+
+    //------------------//
+    // getItemRenderers //
+    //------------------//
+    /**
+     * Report the (live) collection of item renderers
+     *
+     * @return the live set if item renderers
+     */
+    public Set<ItemRenderer> getItemRenderers ()
+    {
+        return itemRenderers;
+    }
+
+    //-------------//
+    // renderItems //
+    //-------------//
+    /**
+     * Render all the registered items
+     *
+     * @param g the graphics environment
+     */
+    public void renderItems (Graphics2D g)
+    {
+        for (ItemRenderer renderer : itemRenderers) {
+            renderer.renderItems(g);
+        }
+    }
+
     //------------//
     // getSystems //
     //------------//
@@ -299,26 +362,6 @@ public class Sheet
         }
     }
 
-    //    //----------//
-    //    // colorize //
-    //    //----------//
-    //    /**
-    //     * Set proper colors for sections of all recognized items so far, using the
-    //     * provided color
-    //     *
-    //     * @param lag       the lag to be colorized
-    //     * @param viewIndex the provided lag view index
-    //     * @param color     the color to use
-    //     */
-    //    public void colorize (Color color)
-    //    {
-    //        if (score != null) {
-    //            // Colorization of all known score items
-    //            score.accept(new ScoreColorizer(color));
-    //        } else {
-    //            // Nothing to colorize ? TODO
-    //        }
-    //    }
     //----------------------------------//
     // createSymbolsControllerAndEditor //
     //----------------------------------//
@@ -339,14 +382,6 @@ public class Sheet
     {
         page.resetSystems();
         systemsBuilder = new SystemsBuilder(this);
-    }
-
-    //---------------------------//
-    // createVerticalsController //
-    //---------------------------//
-    public void createVerticalsController ()
-    {
-        verticalsController = new VerticalsController(this);
     }
 
     //-----------------//
@@ -442,14 +477,6 @@ public class Sheet
         return currentStep;
     }
 
-    //-------------------------//
-    // getDefaultMaxForeground //
-    //-------------------------//
-    public static int getDefaultMaxForeground ()
-    {
-        return constants.maxForegroundGrayLevel.getValue();
-    }
-
     //--------------//
     // getDimension //
     //--------------//
@@ -497,17 +524,43 @@ public class Sheet
         return hLag;
     }
 
-    //----------------//
-    // getHorizontals //
-    //----------------//
+    //----------------------//
+    // getHorizontalFullLag //
+    //----------------------//
     /**
-     * Retrieve horizontals system by system
+     * Report the current horizontal FULL lag for this sheet
      *
-     * @return the horizontals found
+     * @return the current horizontal full lag
      */
-    public Horizontals getHorizontals ()
+    public Lag getHorizontalFullLag ()
     {
-        return horizontals;
+        return hFullLag;
+    }
+
+    //------------//
+    // getSpotLag //
+    //------------//
+    /**
+     * Report the current spot lag
+     *
+     * @return the current spot lag
+     */
+    public Lag getSpotLag ()
+    {
+        return spotLag;
+    }
+
+    //-------------//
+    // getSplitLag //
+    //-------------//
+    /**
+     * Report the current split lag
+     *
+     * @return the current split lag
+     */
+    public Lag getSplitLag ()
+    {
+        return splitLag;
     }
 
     //-------//
@@ -582,18 +635,24 @@ public class Sheet
     // getNest //
     //---------//
     /**
-     * Report the global nest for glyphs of this sheet
+     * Report the global nest for glyphs of this sheet, or null
      *
-     * @return the nest for glyphs
+     * @return the nest for glyphs, perhaps null
      */
     public Nest getNest ()
     {
-        if (nest == null) {
-            // Beware: Glyph nest must subscribe to location before any lag,
-            // to allow cleaning up of glyph data, before publication by a lag
-            nest = new BasicNest("gNest", this);
-            nest.setServices(locationService);
-        }
+        return nest;
+    }
+
+    //------------//
+    // createNest //
+    //------------//
+    public Nest createNest ()
+    {
+        // Beware: Glyph nest must subscribe to location before any lag,
+        // to allow cleaning up of glyph data, before publication by a lag
+        nest = new BasicNest("gNest", this);
+        nest.setServices(locationService);
 
         return nest;
     }
@@ -649,6 +708,21 @@ public class Sheet
         }
 
         return scaleBuilder;
+    }
+
+    //-----------------//
+    // getSpotsBuilder //
+    //-----------------//
+    /**
+     * @return the spotsBuilder
+     */
+    public SpotsBuilder getSpotsBuilder ()
+    {
+        if (spotsBuilder == null) {
+            spotsBuilder = new SpotsBuilder(this);
+        }
+
+        return spotsBuilder;
     }
 
     //----------------//
@@ -707,8 +781,7 @@ public class Sheet
     // getSkew //
     //---------//
     /**
-     * Report the skew information for this sheet. If not yet available,
-     * processing is launched to compute the average skew in the sheet image.
+     * Report the skew information for this sheet.
      *
      * @return the skew information
      */
@@ -810,7 +883,12 @@ public class Sheet
         if (glyph.isVirtual() || glyph.getMembers().isEmpty()) {
             return getSystemOf(glyph.getAreaCenter());
         } else {
-            return glyph.getMembers().first().getSystem();
+            SystemInfo system = glyph.getMembers().first().getSystem();
+            if (system != null) {
+                return system;
+            } else {
+                return getSystemOf(glyph.getAreaCenter());
+            }
         }
     }
 
@@ -1000,14 +1078,6 @@ public class Sheet
         return vLag;
     }
 
-    //------------------------//
-    // getVerticalsController //
-    //------------------------//
-    public VerticalsController getVerticalsController ()
-    {
-        return verticalsController;
-    }
-
     //----------//
     // getWidth //
     //----------//
@@ -1080,8 +1150,6 @@ public class Sheet
             assembly.close();
         }
 
-        picture.close();
-
         // If no sheet is left, force score closing
         if (!closing) {
             if (!score.getPages().isEmpty()) {
@@ -1128,14 +1196,6 @@ public class Sheet
         currentStep = step;
     }
 
-    //-------------------------//
-    // setDefaultMaxForeground //
-    //-------------------------//
-    public static void setDefaultMaxForeground (int level)
-    {
-        constants.maxForegroundGrayLevel.setValue(level);
-    }
-
     //------------------//
     // setHorizontalLag //
     //------------------//
@@ -1154,27 +1214,70 @@ public class Sheet
         hLag.setServices(locationService, getNest().getGlyphService());
     }
 
-    //----------------//
-    // setHorizontals //
-    //----------------//
+    //----------------------//
+    // setHorizontalFullLag //
+    //----------------------//
     /**
-     * Set horizontals system by system
+     * Assign the current horizontal FULL lag for the sheet
      *
-     * @param horizontals the horizontals found
+     * @param hFullLag the horizontal full lag at hand
      */
-    public void setHorizontals (Horizontals horizontals)
+    public void setHorizontalFullLag (Lag hFullLag)
     {
-        this.horizontals = horizontals;
+        if (this.hFullLag != null) {
+            this.hFullLag.cutServices();
+        }
+
+        this.hFullLag = hFullLag;
+        hFullLag.setServices(locationService, getNest().getGlyphService());
+
+        dispatchHorizontalHugeSections();
+    }
+
+    //------------//
+    // setSpotLag //
+    //------------//
+    /**
+     * Assign the current spot lag for the sheet
+     *
+     * @param spotLag the spot lag
+     */
+    public void setSpotLag (Lag spotLag)
+    {
+        if (this.spotLag != null) {
+            this.spotLag.cutServices();
+        }
+
+        this.spotLag = spotLag;
+        ///spotLag.setServices(locationService, getNest().getGlyphService());
+    }
+
+    //------------//
+    // setSplitLag //
+    //------------//
+    /**
+     * Assign the current split lag for the sheet
+     *
+     * @param splitLag the split lag
+     */
+    public void setSplitLag (Lag splitLag)
+    {
+        if (this.splitLag != null) {
+            this.splitLag.cutServices();
+        }
+
+        this.splitLag = splitLag;
+        ///splitLag.setServices(locationService, getNest().getGlyphService());
     }
 
     //----------//
     // setImage //
     //----------//
-    public final void setImage (RenderedImage image)
+    public final void setImage (BufferedImage image)
             throws StepException
     {
         // Reset most of members
-        reset(Steps.LOAD);
+        reset(Steps.valueOf(Steps.LOAD));
 
         try {
             picture = new Picture(image, locationService);
@@ -1194,6 +1297,8 @@ public class Sheet
             }
 
             throw new StepException(ex);
+        } catch (Throwable ex) {
+            logger.warn("Error loading image", ex);
         }
     }
 
@@ -1275,26 +1380,23 @@ public class Sheet
         vLag.setServices(locationService, getNest().getGlyphService());
     }
 
-    //-------------//
-    // splitGlyphs //
-    //-------------//
+    //----------------//
+    // dispatchGlyphs //
+    //----------------//
     /**
-     * Split the sheet glyphs among systems
+     * Dispatch the sheet glyphs among systems
      *
-     * @return the set of modified systems
+     * @param glyphs the collection of glyphs to dispatch among sheet systems.
+     *               If null, the nest glyphs are used.
      */
-    public Set<SystemInfo> splitGlyphs ()
+    public void dispatchGlyphs (Collection<Glyph> glyphs)
     {
-        Map<SystemInfo, SortedSet<Glyph>> glyphsMap = new HashMap<>();
-        for (SystemInfo system : systems) {
-            glyphsMap.put(
-                    system,
-                    new ConcurrentSkipListSet<>(system.getGlyphs()));
-            system.clearGlyphs();
+        if (glyphs == null) {
+            glyphs = nest.getActiveGlyphs();
         }
 
         // Assign the glyphs to the proper system glyphs collection
-        for (Glyph glyph : nest.getAllGlyphs()) {
+        for (Glyph glyph : glyphs) {
             if (glyph.isActive()) {
                 SystemInfo system = getSystemOf(glyph);
 
@@ -1305,34 +1407,18 @@ public class Sheet
                 }
             }
         }
-
-        Set<SystemInfo> modified = new LinkedHashSet<>();
-        for (SystemInfo system : systems) {
-            if (!(system.getGlyphs().equals(glyphsMap.get(system)))) {
-                modified.add(system);
-            }
-        }
-
-        return modified;
     }
 
-    //-------------------------//
-    // splitHorizontalSections //
-    //-------------------------//
+    //----------------------------//
+    // dispatchHorizontalSections //
+    //----------------------------//
     /**
-     * Split the various horizontal sections among systems
-     *
-     * @return the set of modified systems
+     * Dispatch the various horizontal sections among systems
      */
-    public Set<SystemInfo> splitHorizontalSections ()
+    public void dispatchHorizontalSections ()
     {
-        // Take a snapshot of sections collection per system and clear it
-        Map<SystemInfo, Collection<Section>> sections = new HashMap<>();
         for (SystemInfo system : systems) {
-            Collection<Section> systemSections = system.
-                    getMutableHorizontalSections();
-            sections.put(system, new ArrayList<>(systemSections));
-            systemSections.clear();
+            system.getMutableHorizontalSections().clear();
         }
 
         // Now dispatch the lag sections among the systems
@@ -1346,28 +1432,40 @@ public class Sheet
                 system.getMutableHorizontalSections().add(section);
             }
         }
-
-        // Detect precisely which systems have been modified
-        Set<SystemInfo> modifiedSystems = new LinkedHashSet<>();
-        for (SystemInfo system : systems) {
-            if (!(system.getMutableHorizontalSections().equals(
-                    sections.get(system)))) {
-                modifiedSystems.add(system);
-            }
-        }
-
-        return modifiedSystems;
     }
 
-    //-----------------------//
-    // splitVerticalSections //
-    //-----------------------//
+    //--------------------------------//
+    // dispatchHorizontalHugeSections //
+    //--------------------------------//
     /**
-     * Split the various vertical sections among systems
-     *
-     * @return the set of modified systems
+     * Dispatch the various horizontal huge sections among systems
      */
-    public Set<SystemInfo> splitVerticalSections ()
+    public void dispatchHorizontalHugeSections ()
+    {
+        for (SystemInfo system : systems) {
+            system.getMutableHorizontalFullSections().clear();
+        }
+
+        // Now dispatch the lag huge sections among the systems
+        for (Section section : getHorizontalFullLag().getSections()) {
+            SystemInfo system = getSystemOf(section.getCentroid());
+            // Link section -> system
+            section.setSystem(system);
+
+            if (system != null) {
+                // Link system <>-> section
+                system.getMutableHorizontalFullSections().add(section);
+            }
+        }
+    }
+
+    //--------------------------//
+    // dispatchVerticalSections //
+    //--------------------------//
+    /**
+     * Dispatch the various vertical sections among systems
+     */
+    public void dispatchVerticalSections ()
     {
         // Take a snapshot of sections collection per system and clear it
         Map<SystemInfo, Collection<Section>> sections = new HashMap<>();
@@ -1389,17 +1487,6 @@ public class Sheet
                 system.getMutableVerticalSections().add(section);
             }
         }
-
-        // Detect precisely which systems have been modified
-        Set<SystemInfo> modifiedSystems = new LinkedHashSet<>();
-        for (SystemInfo system : systems) {
-            if (!(system.getMutableVerticalSections().equals(
-                    sections.get(system)))) {
-                modifiedSystems.add(system);
-            }
-        }
-
-        return modifiedSystems;
     }
 
     //----------//
@@ -1416,20 +1503,24 @@ public class Sheet
     //-------//
     /**
      * Reinitialize the sheet members, according to step needs.
+     *
+     * @param step the starting step
      */
-    public void reset (String stepName)
+    public void reset (Step step)
     {
-        switch (stepName) {
+        switch (step.getName()) {
 
         case Steps.LOAD:
             picture = null;
             doneSteps = new HashSet<>();
             currentStep = null;
+        // Fall-through!
 
         case Steps.SCALE:
             scaleBuilder = null;
             scale = null;
             wholeVerticalTable = null;
+        // Fall-through!
 
         case Steps.GRID:
             if (nest != null) {
@@ -1438,7 +1529,6 @@ public class Sheet
             }
 
             skew = null;
-            horizontals = null;
 
             if (hLag != null) {
                 hLag.cutServices();
@@ -1456,9 +1546,20 @@ public class Sheet
             barsChecker = null;
             systemsBuilder = null;
             symbolsController = null;
-            verticalsController = null;
             targetBuilder = null;
             symbolsEditor = null;
+        // Fall-through!
+
+        case Steps.ANCHORS:
+            if (hFullLag != null) {
+                hFullLag.cutServices();
+                hFullLag = null;
+            }
+            if (spotLag != null) {
+                spotLag.cutServices();
+                spotLag = null;
+            }
+        default:
         }
     }
 
@@ -1514,19 +1615,32 @@ public class Sheet
         this.wholeVerticalTable = wholeVerticalTable;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
+    //------------------//
+    // getDistanceImage //
+    //------------------//
+    /**
+     * Get access to the distance transform image
+     *
+     * @return the image of distances (to foreground)
+     */
+    public short[][] getDistanceImage ()
     {
-        //~ Instance fields ----------------------------------------------------
+        return distanceImage;
+    }
 
-        Constant.Integer maxForegroundGrayLevel = new Constant.Integer(
-                "ByteLevel",
-                140,
-                "Maximum gray level for a pixel to be considered as foreground (black)");
+    //------------------//
+    // setDistanceImage //
+    //------------------//
+    /**
+     * Remember the distance transform image
+     *
+     * @param distanceImage the image of distances (to foreground)
+     */
+    public void setDistanceImage (short[][] distanceImage)
+    {
+        this.distanceImage = distanceImage;
 
+        // Save this distance image on disk for visual check
+        TableUtil.store(getId() + ".dist", distanceImage);
     }
 }

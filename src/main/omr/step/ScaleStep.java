@@ -13,6 +13,7 @@ package omr.step;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.ui.RunsViewer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,11 +48,24 @@ public class ScaleStep
                 Steps.SCALE,
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
-                PICTURE_TAB,
+                BINARY_TAB,
                 "Compute general scale");
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-----------//
+    // displayUI //
+    //-----------//
+    @Override
+    public void displayUI (Sheet sheet)
+    {
+        RunsViewer runsViewer = sheet.getRunsViewer();
+
+        if (runsViewer != null) {
+            runsViewer.display(sheet.getWholeVerticalTable());
+        }
+    }
+
     //------//
     // doit //
     //------//
@@ -60,7 +74,6 @@ public class ScaleStep
                       Sheet sheet)
             throws StepException
     {
-        sheet.reset(Steps.SCALE);
         sheet.getScaleBuilder()
                 .retrieveScale();
     }

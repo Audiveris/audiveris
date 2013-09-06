@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import omr.glyph.BasicNest;
 
 /**
  * Class {@code SelectionService} is an OMR customized version of an
@@ -88,10 +89,7 @@ public class SelectionService
                         (last != null) ? (" " + last) : "");
 
                 for (Object obj : subscribers) {
-                    logger.info(
-                            "      @{} {}",
-                            Integer.toHexString(obj.hashCode()),
-                            obj);
+                    logger.info(String.format("      @%8h %s", obj, obj));
                 }
             }
         }
@@ -164,6 +162,13 @@ public class SelectionService
                                       EventSubscriber es)
     {
         if (contains(allowedEvents, type)) {
+            logger.debug(
+                    "{} subscribe {} subscriber:{}@{}",
+                    this,
+                    type.getName(),
+                    es,
+                    Integer.toHexString(es.hashCode()));
+
             return super.subscribeStrongly(type, es);
         } else {
             logger.error("event class {} not available on {}", type, name);

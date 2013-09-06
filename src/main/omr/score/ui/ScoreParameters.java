@@ -13,10 +13,10 @@ package omr.score.ui;
 
 import omr.plugin.PluginsManager;
 
-import omr.run.AdaptiveDescriptor;
-import omr.run.FilterDescriptor;
-import omr.run.FilterKind;
-import omr.run.GlobalDescriptor;
+import omr.image.AdaptiveDescriptor;
+import omr.image.FilterDescriptor;
+import omr.image.FilterKind;
+import omr.image.GlobalDescriptor;
 
 import omr.score.Score;
 import omr.score.entity.Page;

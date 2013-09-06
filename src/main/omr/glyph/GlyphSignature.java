@@ -74,8 +74,8 @@ public class GlyphSignature
             return 1;
         }
 
-        final Double[] values = moments.getValues();
-        final Double[] otherValues = other.moments.getValues();
+        final double[] values = moments.getValues();
+        final double[] otherValues = other.moments.getValues();
 
         for (int i = 0; i < values.length; i++) {
             int cmp = Double.compare(values[i], otherValues[i]);

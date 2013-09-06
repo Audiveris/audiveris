@@ -65,6 +65,18 @@ public class BasicLine
     /** For regression : Number of points */
     private int n;
 
+    /** Minimum abscissa among all defining points. */
+    private double xMin = Double.MAX_VALUE;
+
+    /** Maximum abscissa among all defining points. */
+    private double xMax = Double.MIN_VALUE;
+
+    /** Minimum ordinate among all defining points. */
+    private double yMin = Double.MAX_VALUE;
+
+    /** Maximum ordinate among all defining points. */
+    private double yMax = Double.MIN_VALUE;
+
     //~ Constructors -----------------------------------------------------------
     //-----------//
     // BasicLine //
@@ -171,6 +183,28 @@ public class BasicLine
         return -b / a;
     }
 
+    //----------------//
+    // getMaxAbscissa //
+    //----------------//
+    /**
+     * @return the xMax
+     */
+    public double getMaxAbscissa ()
+    {
+        return xMax;
+    }
+
+    //----------------//
+    // getMaxOrdinate //
+    //----------------//
+    /**
+     * @return the yMax
+     */
+    public double getMaxOrdinate ()
+    {
+        return yMax;
+    }
+
     //-----------------//
     // getMeanDistance //
     //-----------------//
@@ -180,7 +214,7 @@ public class BasicLine
         // Check we have at least 2 points
         if (n < 2) {
             throw new UndefinedLineException(
-                    "Not enough defining points : " + n);
+                    "Not enough defining points: " + n);
         }
 
         checkLineParameters();
@@ -190,6 +224,28 @@ public class BasicLine
                 abs(
                 (a * a * sx2) + (b * b * sy2) + (c * c * n)
                 + (2 * a * b * sxy) + (2 * a * c * sx) + (2 * b * c * sy)) / n);
+    }
+
+    //----------------//
+    // getMinAbscissa //
+    //----------------//
+    /**
+     * @return the xMin
+     */
+    public double getMinAbscissa ()
+    {
+        return xMin;
+    }
+
+    //----------------//
+    // getMinOrdinate //
+    //----------------//
+    /**
+     * @return the yMin
+     */
+    public double getMinOrdinate ()
+    {
+        return yMin;
     }
 
     //-------------------//
@@ -220,12 +276,18 @@ public class BasicLine
     {
         if (other instanceof BasicLine) {
             BasicLine o = (BasicLine) other;
+
             n += o.n;
             sx += o.sx;
             sy += o.sy;
             sx2 += o.sx2;
             sy2 += o.sy2;
             sxy += o.sxy;
+
+            xMin = Math.min(xMin, o.xMin);
+            xMax = Math.max(xMax, o.xMax);
+            yMin = Math.min(yMin, o.yMin);
+            yMax = Math.max(yMax, o.yMax);
         } else {
             throw new RuntimeException("Combining inconsistent lines");
         }
@@ -250,6 +312,11 @@ public class BasicLine
         sx2 += (x * x);
         sy2 += (y * y);
         sxy += (x * y);
+
+        xMin = Math.min(xMin, x);
+        xMax = Math.max(xMax, x);
+        yMin = Math.min(yMin, y);
+        yMax = Math.max(yMax, y);
 
         dirty = true;
     }
@@ -285,6 +352,8 @@ public class BasicLine
         a = b = c = Double.NaN;
         n = 0;
         sx = sy = sx2 = sy2 = sxy = 0d;
+        xMin = yMin = Double.MAX_VALUE;
+        xMax = yMax = Double.MIN_VALUE;
 
         dirty = false;
     }
@@ -293,7 +362,8 @@ public class BasicLine
     // swappedCoordinates //
     //--------------------//
     /**
-     * Return a new line whose coordinates are swapped with respect to this one
+     * Return a new line whose coordinates are swapped with respect to
+     * this one.
      *
      * @return a new X/Y swapped line
      */

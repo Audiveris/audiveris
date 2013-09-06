@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import omr.glyph.GlyphLayer;
 
 /**
  * Class {@code BorderBuilder} implements a smart approach
@@ -61,6 +62,13 @@ import java.util.Set;
  * <li>Remove all unneeded intermediate points.</li>
  * </ol></p>
  *
+ * TODO: They will be cases where we cannot find a split between systems at this
+ * point (i.e. before having a better knowledge of the score entities involved)
+ * so we should aim at a simple split if possible and, if not, no split.
+ * In the "no split" case, upper systems and lower systems would for some time
+ * share the glyphs in the middle.
+ * The processing of such "coupled systems" should be sequential to avoid any
+ * race problem.
  *
  * @author Hervé Bitteur
  */
@@ -146,7 +154,8 @@ public class BorderBuilder
         box.add(botLine.getBounds());
         final Rectangle interBox = box;
 
-        Set<Glyph> glyphs = sheet.getNest().lookupIntersectedGlyphs(interBox);
+        Set<Glyph> glyphs = sheet.getNest().lookupIntersectedGlyphs(
+                interBox, GlyphLayer.DEFAULT);
 
         // Remove small glyphs and the staff lines themselves
         // Also remove glyphs that embrace the whole intersystem
@@ -209,8 +218,8 @@ public class BorderBuilder
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("Border between systems S#").append(prevSystem.getId())
-                .append(" & S#").append(system.getId());
+        sb.append("Border between systems #").append(prevSystem.getId())
+                .append(" & #").append(system.getId());
 
         return sb.toString();
     }

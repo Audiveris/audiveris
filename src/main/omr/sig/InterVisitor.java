@@ -1,0 +1,34 @@
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                            I n t e r V i s i t o r                         //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                          //
+//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
+//  This software is released under the GNU General Public License.           //
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
+//----------------------------------------------------------------------------//
+// </editor-fold>
+package omr.sig;
+
+
+/**
+ * Interface {@code InterVisitor} is meant to visit any instance of
+ * shape interpretation.
+ *
+ * @author Hervé Bitteur
+ */
+public interface InterVisitor
+{
+    //~ Methods ----------------------------------------------------------------
+
+    void visit (Inter inter);
+
+    void visit (BeamInter inter);
+
+    void visit (StemInter inter);
+
+    void visit (LedgerInter inter);
+
+    void visit (BlackHeadInter inter);
+}

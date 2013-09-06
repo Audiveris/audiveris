@@ -46,7 +46,8 @@ import java.util.Set;
 import java.util.SortedSet;
 
 /**
- * Class {@code LedgerPattern} checks the related system for invalid ledgers.
+ * Class {@code LedgerPattern} checks the related system for invalid 
+ * ledgers.
  *
  * @author Hervé Bitteur
  */
@@ -93,7 +94,7 @@ public class LedgerPattern
     public LedgerPattern (SystemInfo system)
     {
         super("Ledger", system);
-        builder = system.getHorizontalsBuilder();
+        builder = system.horizontalsBuilder;
         interChunkDx = scale.toPixels(constants.interChunkDx);
         interChunkDy = scale.toPixels(constants.interChunkDy);
     }

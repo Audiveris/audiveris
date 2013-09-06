@@ -61,10 +61,10 @@ public abstract class SystemNode
     @Navigable(false)
     private final ScoreSystem system;
 
-    /** Bounding box of this entity, WRT system top-left corner */
+    /** Bounding box of this entity, WRT page top-left corner */
     private Rectangle box;
 
-    /** Location of the center of this entity, WRT system top-left corner */
+    /** Location of the center of this entity, WRT page top-left corner */
     protected Point center;
 
     //~ Constructors -----------------------------------------------------------

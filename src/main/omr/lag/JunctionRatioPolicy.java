@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.lag;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.run.Run;
 
 /**
@@ -23,19 +26,34 @@ import omr.run.Run;
 public class JunctionRatioPolicy
         implements JunctionPolicy
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
+    /** Specific application parameters */
+    private static final Constants constants = new Constants();
+
+    //~ Instance fields --------------------------------------------------------
     /**
-     * Maximum value acceptable for length ratio, for a ratio criteria
+     * Maximum value acceptable for length ratio.
      */
     private final double maxLengthRatio;
 
     /**
-     * Minimum value acceptable for length ratio, for a ratio criteria
+     * Minimum value acceptable for length ratio.
      */
     private final double minLengthRatio;
 
     //~ Constructors -----------------------------------------------------------
+    //---------------------//
+    // JunctionRatioPolicy //
+    //---------------------//
+    /**
+     * Creates a policy based on default length ratio.
+     */
+    public JunctionRatioPolicy ()
+    {
+        this(constants.maxLengthRatio.getValue());
+    }
+
     //---------------------//
     // JunctionRatioPolicy //
     //---------------------//
@@ -83,5 +101,21 @@ public class JunctionRatioPolicy
     {
         return "{JunctionRatioPolicy" + " maxLengthRatio=" + maxLengthRatio
                + " minLengthRatio=" + minLengthRatio + "}";
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final Constant.Ratio maxLengthRatio = new Constant.Ratio(
+                1.25,
+                "Maximum ratio in length for a run to be combined with"
+                + " an existing section");
+
     }
 }

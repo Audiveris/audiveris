@@ -32,7 +32,7 @@ import java.util.Arrays;
 /**
  * Class {@code BasicSymbol} is the base for implementing instances of
  * {@link Symbol} interface.
- * It does not handle a specific Shape as its subclass ShapeSymbol,but only
+ * It does not handle a specific Shape as its subclass ShapeSymbol, but only
  * handles a sequence of MusicFont codes.
  *
  * @author Hervé Bitteur
@@ -154,6 +154,16 @@ public class BasicSymbol
         paint(g, p, ORIGIN, TOP_LEFT);
 
         return img;
+    }
+    
+    //--------------//
+    // getDimension //
+    //--------------//
+    @Override
+    public Dimension getDimension(MusicFont font)
+    {
+        Params p = getParams(font);
+        return new Dimension(p.rect.width, p.rect.height);
     }
 
     //-----------//
@@ -292,25 +302,25 @@ public class BasicSymbol
         return dimension;
     }
 
-    //--------------//
-    // getDimension //
-    //--------------//
-    /**
-     * Report what would be the bounding dimension of the symbol,
-     * if painted with the provided font.
-     *
-     * @return the potential size of the painted symbol
-     */
-    protected Dimension getDimension (MusicFont font)
-    {
-        Dimension dim = getDimension();
-        double ratio = font.getSize2D() / MusicFont.baseMusicFont.getSize2D();
-
-        return new Dimension(
-                (int) Math.ceil(dim.width * ratio),
-                (int) Math.ceil(dim.height * ratio));
-    }
-
+    //    //--------------//
+    //    // getDimension //
+    //    //--------------//
+    //    /**
+    //     * Report what would be the bounding dimension of the symbol,
+    //     * if painted with the provided font.
+    //     *
+    //     * @return the potential size of the painted symbol
+    //     */
+    //    protected Dimension getDimension (MusicFont font)
+    //    {
+    //        Dimension dim = getDimension();
+    //        double ratio = font.getSize2D() / MusicFont.baseMusicFont.getSize2D();
+    //
+    //        return new Dimension(
+    //                (int) Math.ceil(dim.width * ratio),
+    //                (int) Math.ceil(dim.height * ratio));
+    //    }
+    //
     //-----------//
     // getHeight //
     //-----------//

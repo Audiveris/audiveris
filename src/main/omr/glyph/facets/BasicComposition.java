@@ -319,19 +319,4 @@ class BasicComposition
 
         that.setPartOf(glyph);
     }
-
-    //-----------//
-    // translate //
-    //-----------//
-    /**
-     * Apply the provided translation vector to all composing sections.
-     *
-     * @param vector the provided translation vector
-     */
-    public void translate (Point vector)
-    {
-        for (Section section : glyph.getMembers()) {
-            section.translate(vector);
-        }
-    }
 }

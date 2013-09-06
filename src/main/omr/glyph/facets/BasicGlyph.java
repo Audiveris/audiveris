@@ -14,9 +14,12 @@ package omr.glyph.facets;
 import omr.check.Result;
 
 import omr.glyph.Evaluation;
+import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphSignature;
 import omr.glyph.Nest;
 import omr.glyph.Shape;
+
+import omr.image.PixelBuffer;
 
 import omr.lag.Lag;
 import omr.lag.Section;
@@ -33,7 +36,10 @@ import omr.run.Orientation;
 import omr.score.entity.PartNode;
 import omr.score.entity.TimeRational;
 
+import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
+
+import omr.sig.Inter;
 
 import omr.text.BasicContent;
 import omr.text.TextRoleInfo;
@@ -50,7 +56,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
-import java.awt.image.BufferedImage;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -73,7 +78,8 @@ public class BasicGlyph
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(BasicGlyph.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            BasicGlyph.class);
 
     //~ Instance fields --------------------------------------------------------
     /** All needed facets */
@@ -96,8 +102,10 @@ public class BasicGlyph
     // The content facet is not final to allow lazy allocation
     protected GlyphContent content;
 
+    final GlyphInterpret interpretation;
+
     // Set all facets
-    final Set<GlyphFacet> facets = new LinkedHashSet<>();
+    final Set<GlyphFacet> facets = new LinkedHashSet<GlyphFacet>();
 
     //~ Constructors -----------------------------------------------------------
     //------------//
@@ -106,17 +114,33 @@ public class BasicGlyph
     /**
      * Create a new BasicGlyph object.
      *
-     * @param interline the scaling interline value
+     * @param scale the scaling
+     * @param layer the assigned layer
      */
-    public BasicGlyph (int interline)
+    public BasicGlyph (Scale scale, GlyphLayer layer)
     {
-        addFacet(administration = new BasicAdministration(this));
+        this(scale.getInterline(), layer);
+    }
+
+    //------------//
+    // BasicGlyph //
+    //------------//
+    /**
+     * Create a new BasicGlyph object.
+     *
+     * @param interline the scaling interline value
+     * @param layer the assigned layer
+     */
+    public BasicGlyph (int interline, GlyphLayer layer)
+    {
+        addFacet(administration = new BasicAdministration(this, layer));
         addFacet(composition = new BasicComposition(this));
         addFacet(display = new BasicDisplay(this));
         addFacet(environment = new BasicEnvironment(this));
         addFacet(geometry = new BasicGeometry(this, interline));
         addFacet(recognition = new BasicRecognition(this));
         addFacet(translation = new BasicTranslation(this));
+        addFacet(interpretation = new BasicInterpret(this));
         addFacet(alignment = new BasicAlignment(this));
     }
 
@@ -125,13 +149,13 @@ public class BasicGlyph
     //------------//
     /**
      * Create a new BasicGlyph object from a GlyphValue instance
-     * (typically unmarshalled from XML).
+     * (typically un-marshalled from XML).
      *
      * @param value the GlyphValue "builder" object
      */
     public BasicGlyph (GlyphValue value)
     {
-        this(value.interline);
+        this(value.interline, GlyphLayer.XML);
 
         setId(value.id);
         setShape(value.shape);
@@ -151,18 +175,21 @@ public class BasicGlyph
      * Create a glyph with a specific alignment class.
      *
      * @param interline      the scaling information
+     * @param layer the assigned layer
      * @param alignmentClass the specific alignment class
      */
     protected BasicGlyph (int interline,
+                          GlyphLayer layer,
                           Class<? extends GlyphAlignment> alignmentClass)
     {
-        addFacet(administration = new BasicAdministration(this));
+        addFacet(administration = new BasicAdministration(this, layer));
         addFacet(composition = new BasicComposition(this));
         addFacet(display = new BasicDisplay(this));
         addFacet(environment = new BasicEnvironment(this));
         addFacet(geometry = new BasicGeometry(this, interline));
         addFacet(recognition = new BasicRecognition(this));
         addFacet(translation = new BasicTranslation(this));
+        addFacet(interpretation = new BasicInterpret(this));
 
         GlyphAlignment theAlignment = null;
 
@@ -190,6 +217,12 @@ public class BasicGlyph
     }
 
     @Override
+    public void addInterpretation (Inter inter)
+    {
+        interpretation.addInterpretation(inter);
+    }
+
+    @Override
     public void addSection (Section section,
                             Linking link)
     {
@@ -206,6 +239,12 @@ public class BasicGlyph
     public void allowShape (Shape shape)
     {
         recognition.allowShape(shape);
+    }
+
+    @Override
+    public String asciiDrawing ()
+    {
+        return display.asciiDrawing();
     }
 
     @Override
@@ -243,12 +282,6 @@ public class BasicGlyph
     public void cutSections ()
     {
         composition.cutSections();
-    }
-
-    @Override
-    public String asciiDrawing ()
-    {
-        return display.asciiDrawing();
     }
 
     //--------//
@@ -395,7 +428,7 @@ public class BasicGlyph
     }
 
     @Override
-    public BufferedImage getImage ()
+    public PixelBuffer getImage ()
     {
         return display.getImage();
     }
@@ -404,6 +437,12 @@ public class BasicGlyph
     public int getInterline ()
     {
         return geometry.getInterline();
+    }
+
+    @Override
+    public Set<Inter> getInterpretations ()
+    {
+        return interpretation.getInterpretations();
     }
 
     @Override
@@ -416,6 +455,12 @@ public class BasicGlyph
     public int getLastStuck ()
     {
         return alignment.getLastStuck();
+    }
+
+    @Override
+    public GlyphLayer getLayer ()
+    {
+        return administration.getLayer();
     }
 
     @Override

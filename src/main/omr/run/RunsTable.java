@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.run;
 
+import omr.image.PixelSource;
+import omr.image.PixelBuffer;
+
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.RunEvent;
@@ -157,7 +160,7 @@ public class RunsTable
         sb.append(String.format("%s%n", this));
 
         // Prepare output buffer
-        PixelsBuffer buffer = getBuffer();
+        PixelBuffer buffer = getBuffer();
 
         // Print the buffer
         sb.append('+');
@@ -257,10 +260,10 @@ public class RunsTable
      *
      * @return the filled buffer
      */
-    public PixelsBuffer getBuffer ()
+    public PixelBuffer getBuffer ()
     {
         // Prepare output buffer
-        PixelsBuffer buffer = new PixelsBuffer(dimension);
+        PixelBuffer buffer = new PixelBuffer(dimension);
 
         switch (orientation) {
         case HORIZONTAL:
@@ -270,7 +273,7 @@ public class RunsTable
 
                 for (Run run : seq) {
                     for (int c = run.getStart(); c <= run.getStop(); c++) {
-                        buffer.setPixel(c, row, (char) 0);
+                        buffer.setPixel(c, row, (byte) 0);
                     }
                 }
             }
@@ -285,7 +288,7 @@ public class RunsTable
                 for (Run run : seq) {
                     for (int col = run.getStart(); col <= run.getStop();
                             col++) {
-                        buffer.setPixel(row, col, (char) 0);
+                        buffer.setPixel(row, col, (byte) 0);
                     }
                 }
             }
@@ -600,13 +603,59 @@ public class RunsTable
             }
         }
 
-        for (int i = 0; i < getSize(); i++) {
+        for (int i = 0, size = getSize(); i < size; i++) {
             List<Run> seq = getSequence(i);
 
             for (Iterator<Run> it = seq.iterator(); it.hasNext();) {
                 Run run = it.next();
 
                 if (predicate.check(run)) {
+                    it.remove();
+
+                    if (removed != null) {
+                        removed.getSequence(i).add(run);
+                    }
+                }
+            }
+        }
+
+        return this;
+    }
+
+    //-------//
+    // purge //
+    //-------//
+    /**
+     * Purge a runs table of all runs that match the provided filter,
+     * and populate the provided 'removed' table with the removed runs.
+     *
+     * @param filter the filter to detect runs to remove
+     * @param removed   a table to be filled, if not null, with purged runs
+     * @return this runs table, to allow easy chaining
+     */
+    public RunsTable purge (Filter filter,
+                            RunsTable removed)
+    {
+        // Check parameters
+        if (removed != null) {
+            if (removed.orientation != orientation) {
+                throw new IllegalArgumentException(
+                        "'removed' table is of different orientation");
+            }
+
+            if (!removed.dimension.equals(dimension)) {
+                throw new IllegalArgumentException(
+                        "'removed' table is of different dimension");
+            }
+        }
+
+        for (int i = 0, size = getSize(); i < size; i++) {
+            List<Run> seq = getSequence(i);
+
+            for (Iterator<Run> it = seq.iterator(); it.hasNext();) {
+                Run run = it.next();
+
+                if (filter.check(run, i)) {
                     it.remove();
 
                     if (removed != null) {
@@ -719,5 +768,24 @@ public class RunsTable
             Run run = getRunAt(pt.x, pt.y);
             runService.publish(new RunEvent(this, hint, movement, run));
         }
+    }
+    
+    //--------//
+    // Filter //
+    //--------//
+    /**
+     * More powerful than a plain predicate, this filter is able to
+     * check a run together with its sequence index.
+     */
+    public static interface Filter
+    {
+        /**
+         * Perform the filter on the provided run within the sequence
+         * index.
+         * @param run the run to check
+         * @param sequence the index of the containing run sequence
+         * @return true if check is OK
+         */
+        boolean check(Run run, int sequence);
     }
 }

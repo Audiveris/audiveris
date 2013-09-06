@@ -16,6 +16,7 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.GlyphLayer;
 import omr.glyph.Glyphs;
 import omr.glyph.Nest;
 import omr.glyph.facets.BasicAlignment;
@@ -73,25 +74,24 @@ public class FilamentsFactory
             FilamentsFactory.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** Related scale */
+    //
+    /** Related scale. */
     private final Scale scale;
 
-    /** Where filaments are to be stored */
+    /** Where filaments are to be stored. */
     private final Nest nest;
 
-    /** Factory orientation */
+    /** Which related layer. */
+    private final GlyphLayer layer;
+
+    /** Factory orientation. */
     private final Orientation orientation;
 
-    /** Precise constructor for filaments */
-    private final Constructor<?> filamentConstructor;
+    /** Precise constructor for filaments. */
+    private final Constructor<?> glyphConstructor;
 
-    private final Object[] scaleArgs;
-
-    /** Scale-dependent constants for horizontal stuff */
+    /** Scale-dependent constants. */
     private final Parameters params;
-
-    /** Long filaments found, non sorted */
-    private final List<Glyph> filaments = new ArrayList<>();
 
     //~ Constructors -----------------------------------------------------------
     //------------------//
@@ -100,25 +100,27 @@ public class FilamentsFactory
     /**
      * Create a factory of filaments.
      *
-     * @param scale         the related scale
-     * @param nest          the nest to host created filaments
-     * @param orientation   the target orientation
-     * @param filamentClass precise Filament class to be use for creation
+     * @param scale       the related scale
+     * @param nest        the nest to host created filaments
+     * @param layer       precise glyph layer
+     * @param orientation the target orientation
+     * @param glyphClass  precise class to be use for glyph creation
      * @throws Exception
      */
     public FilamentsFactory (Scale scale,
                              Nest nest,
+                             GlyphLayer layer,
                              Orientation orientation,
-                             Class<? extends Glyph> filamentClass)
+                             Class<? extends Glyph> glyphClass)
             throws Exception
     {
         this.scale = scale;
         this.nest = nest;
+        this.layer = layer;
         this.orientation = orientation;
 
-        scaleArgs = new Object[]{scale};
-        filamentConstructor = filamentClass.getConstructor(
-                new Class<?>[]{Scale.class});
+        glyphConstructor = glyphClass.getConstructor(
+                new Class<?>[]{Scale.class, GlyphLayer.class});
 
         params = new Parameters();
         params.initialize();
@@ -128,9 +130,9 @@ public class FilamentsFactory
     //------//
     // dump //
     //------//
-    public void dump ()
+    public void dump (String title)
     {
-        params.dump();
+        params.dump(title);
     }
 
     //--------------//
@@ -177,7 +179,7 @@ public class FilamentsFactory
                     final int halfWidth = Math.min(
                             params.probeWidth / 2,
                             bounds.width / 4);
-                    oRoi.grow(halfWidth, params.maxSectionThickness);
+                    oRoi.grow(halfWidth, params.maxThickness);
 
                     PointsCollector collector = new PointsCollector(
                             orientation.absolute(oRoi));
@@ -195,10 +197,10 @@ public class FilamentsFactory
                             (double) collector.getSize() / oRoi.width);
 
                     section.setFat(
-                            (startThickness > params.maxSectionThickness)
-                            || (stopThickness > params.maxSectionThickness));
+                            (startThickness > params.maxThickness)
+                            || (stopThickness > params.maxThickness));
                 } else {
-                    section.setFat(bounds.height > params.maxSectionThickness);
+                    section.setFat(bounds.height > params.maxThickness);
                 }
             } catch (Exception ex) {
                 logger.warn("Error in checking fatness of " + section, ex);
@@ -224,27 +226,29 @@ public class FilamentsFactory
                                           boolean useExpansion)
     {
         StopWatch watch = new StopWatch("FilamentsFactory");
+        List<Glyph> filaments = new ArrayList<>();
 
         try {
+
             // Create a filament for each section long & slim
             watch.start("createFilaments");
-            createFilaments(source);
+            createFilaments(filaments, source);
 
             logger.debug("{} {} filaments created.",
                     orientation, filaments.size());
 
             // Merge filaments into larger filaments
             watch.start("mergeFilaments");
-            mergeFilaments();
+            mergeFilaments(filaments);
 
             // Expand with short sections left over?
             if (useExpansion) {
                 watch.start("expandFilaments");
-                expandFilaments(source);
+                expandFilaments(filaments, source);
 
                 // Merge filaments into larger filaments
                 watch.start("mergeFilaments #2");
-                mergeFilaments();
+                mergeFilaments(filaments);
             }
         } catch (Exception ex) {
             logger.warn("FilamentsFactory cannot retrieveFilaments", ex);
@@ -252,9 +256,9 @@ public class FilamentsFactory
             if (constants.printWatch.getValue()) {
                 watch.print();
             }
+            return filaments;
         }
 
-        return filaments;
     }
 
     //----------------//
@@ -273,20 +277,20 @@ public class FilamentsFactory
         params.maxExpansionSpace = scale.toPixels(frac);
     }
 
-    //-------------------------//
-    // setMaxFilamentThickness //
-    //-------------------------//
-    public void setMaxFilamentThickness (Scale.LineFraction lineFrac)
+    //-----------------//
+    // setMaxThickness //
+    //-----------------//
+    public void setMaxThickness (Scale.LineFraction lineFrac)
     {
-        params.maxFilamentThickness = scale.toPixels(lineFrac);
+        params.maxThickness = scale.toPixels(lineFrac);
     }
 
-    //-------------------------//
-    // setMaxFilamentThickness //
-    //-------------------------//
-    public void setMaxFilamentThickness (Scale.Fraction frac)
+    //-----------------//
+    // setMaxThickness //
+    //-----------------//
+    public void setMaxThickness (Scale.Fraction frac)
     {
-        params.maxFilamentThickness = scale.toPixels(frac);
+        params.maxThickness = scale.toPixels(frac);
     }
 
     //----------------//
@@ -345,28 +349,35 @@ public class FilamentsFactory
         params.maxPosGapForSlope = scale.toPixels(frac);
     }
 
-    //------------------------//
-    // setMaxSectionThickness //
-    //------------------------//
-    public void setMaxSectionThickness (Scale.LineFraction lineFrac)
+//    //------------------------//
+//    // setMaxSectionThickness //
+//    //------------------------//
+//    public void setMaxSectionThickness (Scale.LineFraction lineFrac)
+//    {
+//        params.maxSectionThickness = scale.toPixels(lineFrac);
+//    }
+//
+//    //------------------------//
+//    // setMaxSectionThickness //
+//    //------------------------//
+//    public void setMaxSectionThickness (Scale.Fraction frac)
+//    {
+//        params.maxSectionThickness = scale.toPixels(frac);
+//    }
+    //--------------------//
+    // setMaxOverlapSpace //
+    //--------------------//
+    public void setMaxOverlapSpace (Scale.LineFraction lfrac)
     {
-        params.maxSectionThickness = scale.toPixels(lineFrac);
+        params.maxOverlapSpace = scale.toPixels(lfrac);
     }
 
-    //------------------------//
-    // setMaxSectionThickness //
-    //------------------------//
-    public void setMaxSectionThickness (Scale.Fraction frac)
+    //--------------------//
+    // setMaxOverlapSpace //
+    //--------------------//
+    public void setMaxOverlapSpace (Scale.Fraction frac)
     {
-        params.maxSectionThickness = scale.toPixels(frac);
-    }
-
-    //-------------//
-    // setMaxSpace //
-    //-------------//
-    public void setMaxSpace (Scale.Fraction frac)
-    {
-        params.maxSpace = scale.toPixels(frac);
+        params.maxOverlapSpace = scale.toPixels(frac);
     }
 
     //-------------------------//
@@ -444,11 +455,11 @@ public class FilamentsFactory
 
             // pos gap?
             if (coordGap < 0) {
-                // Overlap between the two filaments
+                // There is an overlap between the two filaments
                 // Determine maximum consistent resulting thickness
                 double maxConsistentThickness = maxConsistentThickness(one);
                 double maxSpace = expanding ? params.maxExpansionSpace
-                        : params.maxSpace;
+                        : params.maxOverlapSpace;
 
                 // Measure thickness at various coord values of overlap
                 // Provided that the overlap is long enough
@@ -478,12 +489,12 @@ public class FilamentsFactory
                             one,
                             two);
 
-                    if (thickness > params.maxFilamentThickness) {
+                    if (thickness > params.maxThickness) {
                         if (logger.isDebugEnabled() || areVips) {
                             logger.info(
                                     "{}Too thick: {} vs {} {} {}",
                                     vips, (float) thickness,
-                                    params.maxFilamentThickness, one, two);
+                                    params.maxThickness, one, two);
                         }
 
                         return false;
@@ -585,8 +596,10 @@ public class FilamentsFactory
     private Glyph createFilament (Section section)
             throws Exception
     {
-        Filament fil = (Filament) filamentConstructor.newInstance(scaleArgs);
-        fil.addSection(section);
+        final Glyph fil = (Glyph) glyphConstructor.newInstance(
+                new Object[]{scale, layer});
+        fil.addSection(section, GlyphComposition.Linking.LINK_BACK);
+        section.setProcessed(true);
 
         return nest.addGlyph(fil);
     }
@@ -597,7 +610,8 @@ public class FilamentsFactory
     /**
      * Aggregate long sections into initial filaments.
      */
-    private void createFilaments (Collection<Section> source)
+    private void createFilaments (List<Glyph> filaments,
+                                  Collection<Section> source)
             throws Exception
     {
         // Sort sections by decreasing length in the desired orientation
@@ -607,6 +621,10 @@ public class FilamentsFactory
                 Sections.getReverseLengthComparator(orientation));
 
         for (Section section : sections) {
+            // Reset section cached data
+            section.setProcessed(false);
+            section.resetFat();
+
             // Limit to main sections
             if (section.getLength(orientation) < params.minCoreSectionLength) {
                 if (section.isVip()) {
@@ -650,14 +668,15 @@ public class FilamentsFactory
      * @param source the source of available sections
      * @return the collection of expanded filaments
      */
-    private List<Glyph> expandFilaments (Collection<Section> source)
+    private List<Glyph> expandFilaments (List<Glyph> filaments,
+                                         Collection<Section> source)
     {
         try {
             // Sort sections by first position 
             List<Section> sections = new ArrayList<>();
 
             for (Section section : source) {
-                if (!section.isGlyphMember() && !isSectionFat(section)) {
+                if (!section.isProcessed() && !isSectionFat(section)) {
                     sections.add(section);
                 }
             }
@@ -670,10 +689,11 @@ public class FilamentsFactory
             List<Glyph> glyphs = new ArrayList<>(sections.size());
 
             for (Section section : sections) {
-                Glyph glyph = new BasicGlyph(scale.getInterline());
+                Glyph glyph = new BasicGlyph(scale.getInterline(), layer);
                 glyph.addSection(
                         section,
                         GlyphComposition.Linking.NO_LINK_BACK);
+                section.setProcessed(true);
                 glyph = nest.addGlyph(glyph);
                 glyphs.add(glyph);
 
@@ -763,7 +783,7 @@ public class FilamentsFactory
      * Aggregate single-section filaments into long multi-section
      * filaments.
      */
-    private void mergeFilaments ()
+    private void mergeFilaments (List<Glyph> filaments)
     {
         // List of filaments, sorted by decreasing length
         Collections.sort(
@@ -831,13 +851,13 @@ public class FilamentsFactory
         }
 
         // Discard the merged filaments
-        removeMergedFilaments();
+        removeMergedFilaments(filaments);
     }
 
     //-----------------------//
     // removeMergedFilaments //
     //-----------------------//
-    private void removeMergedFilaments ()
+    private void removeMergedFilaments (List<Glyph> filaments)
     {
         for (Iterator<Glyph> it = filaments.iterator(); it.hasNext();) {
             Glyph fil = it.next();
@@ -878,13 +898,13 @@ public class FilamentsFactory
         // Constants specified WRT mean line thickness
         // -------------------------------------------
         //
-        Scale.LineFraction maxSectionThickness = new Scale.LineFraction(
-                1.5,
-                "Maximum horizontal section thickness WRT mean line height");
-
         Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(
                 1.5,
                 "Maximum filament thickness WRT mean line height");
+
+        Scale.LineFraction maxSectionThickness = new Scale.LineFraction(
+                1.5,
+                "Maximum section thickness WRT mean line height");
 
         Scale.LineFraction maxPosGap = new Scale.LineFraction(
                 0.75,
@@ -906,7 +926,7 @@ public class FilamentsFactory
                 1,
                 "Maximum delta coordinate for a gap between filaments");
 
-        Scale.Fraction maxSpace = new Scale.Fraction(
+        Scale.Fraction maxOverlapSpace = new Scale.Fraction(
                 0.16,
                 "Maximum space between overlapping filaments");
 
@@ -934,20 +954,11 @@ public class FilamentsFactory
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** Probe width */
-        public int probeWidth;
+        /** Maximum thickness for filaments */
+        public int maxThickness;
 
-        /** Maximum acceptable thickness for sections */
-        public int maxSectionThickness;
-
-        /** Maximum acceptable thickness for filaments */
-        public int maxFilamentThickness;
-
-        /** Minimum acceptable length for core sections */
+        /** Minimum length for core sections */
         public int minCoreSectionLength;
-
-        /** Maximum acceptable delta position */
-        public int maxOverlapDeltaPos;
 
         /** Maximum delta coordinate for real gap */
         public int maxCoordGap;
@@ -955,8 +966,11 @@ public class FilamentsFactory
         /** Maximum delta position for real gaps */
         public int maxPosGap;
 
+        /** Maximum delta position between overlapping filaments */
+        public int maxOverlapDeltaPos;
+
         /** Maximum space between overlapping filaments */
-        public int maxSpace;
+        public int maxOverlapSpace;
 
         /** Maximum space for expansion */
         public int maxExpansionSpace;
@@ -967,16 +981,19 @@ public class FilamentsFactory
         /** Maximum dy for slope check on real gap */
         public int maxPosGapForSlope;
 
-        /** Minimum acceptable aspect for sections */
+        /** Minimum aspect for sections */
         public double minSectionAspect;
 
         /** Maximum slope for real gaps */
         public double maxGapSlope;
 
+        /** Probe width */
+        public int probeWidth;
+
         //~ Methods ------------------------------------------------------------
-        public void dump ()
+        public void dump (String title)
         {
-            Main.dumping.dump(this);
+            Main.dumping.dump(this, title);
         }
 
         /**
@@ -984,12 +1001,11 @@ public class FilamentsFactory
          */
         public void initialize ()
         {
+            setMaxThickness(constants.maxFilamentThickness);
             setMinCoreSectionLength(constants.minCoreSectionLength);
-            setMaxSectionThickness(constants.maxSectionThickness);
-            setMaxFilamentThickness(constants.maxFilamentThickness);
             setMaxCoordGap(constants.maxCoordGap);
             setMaxPosGap(constants.maxPosGap);
-            setMaxSpace(constants.maxSpace);
+            setMaxOverlapSpace(constants.maxOverlapSpace);
             setMaxExpansionSpace(constants.maxExpansionSpace);
             setMaxInvolvingLength(constants.maxInvolvingLength);
             setMaxPosGapForSlope(constants.maxPosGapForSlope);
@@ -1000,7 +1016,7 @@ public class FilamentsFactory
             probeWidth = scale.toPixels(BasicAlignment.getProbeWidth());
 
             if (logger.isDebugEnabled()) {
-                dump();
+                dump(null);
             }
         }
     }

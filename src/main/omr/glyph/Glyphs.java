@@ -11,11 +11,15 @@
 // </editor-fold>
 package omr.glyph;
 
+import java.awt.Point;
 import omr.glyph.facets.BasicAlignment;
 import omr.glyph.facets.Glyph;
 
+import omr.lag.BasicRoi;
+import omr.lag.Roi;
 import omr.lag.Section;
 
+import omr.math.Histogram;
 import omr.math.PointsCollector;
 
 import omr.run.Orientation;
@@ -31,7 +35,6 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -42,7 +45,7 @@ import java.util.TreeSet;
 
 /**
  * Class {@code Glyphs} is a collection of static convenient methods,
- * providing features related to a collection of glyphs.
+ * providing features related to a collection of glyph instances.
  *
  * @author Hervé Bitteur
  */
@@ -63,7 +66,7 @@ public class Glyphs
         }
     };
 
-    /** Predicate to check for a barline shape */
+    /** Predicate to check for a bar-line shape */
     public static final Predicate<Glyph> barPredicate = new Predicate<Glyph>()
     {
         @Override
@@ -73,16 +76,13 @@ public class Glyphs
         }
     };
 
-    /** A immutable empty set of glyphs */
-    public static final Set<Glyph> NO_GLYPHS = Collections.emptySet();
-
     //~ Methods ----------------------------------------------------------------
     //----------//
     // contains //
     //----------//
     /**
-     * Check whether a collection of glyphs contains at least one glyph
-     * for which the provided predicate holds true.
+     * Check whether a collection of glyph instances contains at least
+     * one glyph for which the provided predicate holds true.
      *
      * @param glyphs    the glyph collection to check
      * @param predicate the predicate to be used
@@ -98,11 +98,11 @@ public class Glyphs
     // containsBarline //
     //-----------------//
     /**
-     * Check whether the collection of glyphs contains at least one
-     * barline.
+     * Check whether the collection of glyph instances contains at
+     * least one bar-line.
      *
      * @param glyphs the collection to check
-     * @return true if one or several glyphs are barlines components
+     * @return true if one or several glyph instances are bar-lines components
      */
     public static boolean containsBarline (Collection<Glyph> glyphs)
     {
@@ -128,8 +128,8 @@ public class Glyphs
     // containsManual //
     //----------------//
     /**
-     * Check whether a collection of glyphs contains at least one glyph
-     * with a manually assigned shape.
+     * Check whether a collection of glyph instances contains at least
+     * one glyph with a manually assigned shape.
      *
      * @param glyphs the glyph collection to check
      * @return true if there is at least one manually assigned shape
@@ -166,9 +166,10 @@ public class Glyphs
     // getBounds //
     //-----------//
     /**
-     * Return the display bounding box of a collection of glyphs.
+     * Return the display bounding box of a collection of glyph
+     * instances.
      *
-     * @param glyphs the provided collection of glyphs
+     * @param glyphs the provided collection of glyph instances
      * @return the bounding contour
      */
     public static Rectangle getBounds (Collection<Glyph> glyphs)
@@ -219,7 +220,8 @@ public class Glyphs
      *
      * @param coord       the desired coordinate
      * @param orientation the desired orientation reference
-     * @param glyphs      glyphs contributing to the resulting thickness
+     * @param glyphs      glyph instances contributing to the resulting
+     *                    thickness
      * @return the thickness measured, expressed in number of pixels.
      */
     public static double getThicknessAt (double coord,
@@ -239,7 +241,8 @@ public class Glyphs
      * @param coord       the desired coordinate
      * @param orientation the desired orientation reference
      * @param section     section contributing to the resulting thickness
-     * @param glyphs      glyphs contributing to the resulting thickness
+     * @param glyphs      glyph instances contributing to the resulting
+     *                    thickness
      * @return the thickness measured, expressed in number of pixels.
      */
     public static double getThicknessAt (double coord,
@@ -323,11 +326,11 @@ public class Glyphs
     // glyphsOf //
     //----------//
     /**
-     * Report the set of glyphs that are pointed back by the provided
-     * collection of sections.
+     * Report the set of glyph instances that are pointed back by the
+     * provided collection of sections.
      *
      * @param sections the provided sections
-     * @return the set of active containing glyphs
+     * @return the set of active containing glyph instances
      */
     public static Set<Glyph> glyphsOf (Collection<Section> sections)
     {
@@ -344,16 +347,76 @@ public class Glyphs
         return glyphs;
     }
 
+    //-------------//
+    // lookupGlyph //
+    //-------------//
+    /**
+     * Look up in a collection of glyph instances for the first glyph
+     * instance which contains the provided point.
+     *
+     * @param collection the collection of glyph instances to be browsed
+     * @param point      the provided point
+     * @return the glyph found, or null
+     */
+    public static Glyph lookupGlyph (
+            Collection<? extends Glyph> collection,
+            Point point)
+    {
+        for (Glyph glyph : collection) {
+            if (glyph.getBounds().contains(point)) {
+                // Look more precisely
+                for (Section section : glyph.getMembers()) {
+                    if (section.getPolygon().contains(point)) {
+                        return glyph;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
     //--------------//
     // lookupGlyphs //
     //--------------//
     /**
-     * Look up in a collection of glyphs for <b>all</b> glyphs
-     * contained in a provided rectangle.
+     * Look up in a collection of glyph instances for <b>all</b> glyph
+     * instances which contain the provided point.
      *
-     * @param collection the collection of glyphs to be browsed
+     * @param collection the collection of glyph instances to be browsed
+     * @param point      the provided point
+     * @return the glyph instances found, which may be empty
+     */
+    public static Set<Glyph> lookupGlyphs (
+            Collection<? extends Glyph> collection,
+            Point point)
+    {
+        Set<Glyph> set = new LinkedHashSet<>();
+
+        for (Glyph glyph : collection) {
+            if (glyph.getBounds().contains(point)) {
+                // Look more precisely
+                for (Section section : glyph.getMembers()) {
+                    if (section.getPolygon().contains(point)) {
+                        set.add(glyph);
+                    }
+                }
+            }
+        }
+
+        return set;
+    }
+
+    //--------------//
+    // lookupGlyphs //
+    //--------------//
+    /**
+     * Look up in a collection of glyph instances for <b>all</b> glyph
+     * instances contained in a provided rectangle.
+     *
+     * @param collection the collection of glyph instances to be browsed
      * @param rect       the coordinates rectangle
-     * @return the glyphs found, which may be an empty list
+     * @return the glyph instances found, which may be an empty list
      */
     public static Set<Glyph> lookupGlyphs (
             Collection<? extends Glyph> collection,
@@ -374,12 +437,12 @@ public class Glyphs
     // lookupGlyphs //
     //--------------//
     /**
-     * Look up in a collection of glyphs for <b>all</b> glyphs
-     * contained in a provided polygon.
+     * Look up in a collection of glyph instances for <b>all</b> glyph
+     * instances contained in a provided polygon.
      *
-     * @param collection the collection of glyphs to be browsed
+     * @param collection the collection of glyph instances to be browsed
      * @param polygon    the containing polygon
-     * @return the glyphs found, which may be an empty list
+     * @return the glyph instances found, which may be an empty list
      */
     public static Set<Glyph> lookupGlyphs (
             Collection<? extends Glyph> collection,
@@ -400,13 +463,13 @@ public class Glyphs
     // lookupGlyphs //
     //--------------//
     /**
-     * Look up in a collection of glyphs for <b>all</b> glyphs
-     * compatible with a provided predicate.
+     * Look up in a collection of glyph instances for <b>all</b> glyph
+     * instances compatible with a provided predicate.
      *
-     * @param collection the collection of glyphs to be browsed
+     * @param collection the collection of glyph instances to be browsed
      * @param predicate  the predicate to apply to each candidate (a null
      *                   predicate will accept all candidates)
-     * @return the glyphs found, which may be an empty list
+     * @return the glyph instances found, which may be an empty list
      */
     public static Set<Glyph> lookupGlyphs (
             Collection<? extends Glyph> collection,
@@ -427,12 +490,12 @@ public class Glyphs
     // lookupIntersectedGlyphs //
     //-------------------------//
     /**
-     * Look up in a collection of glyphs for <b>all</b> glyphs
-     * intersected by a provided rectangle.
+     * Look up in a collection of glyph instances for <b>all</b> glyph
+     * instances intersected by a provided rectangle.
      *
-     * @param collection the collection of glyphs to be browsed
+     * @param collection the collection of glyph instances to be browsed
      * @param rect       the coordinates rectangle
-     * @return the glyphs found, which may be an empty list
+     * @return the glyph instances found, which may be an empty list
      */
     public static Set<Glyph> lookupIntersectedGlyphs (
             Collection<? extends Glyph> collection,
@@ -453,11 +516,11 @@ public class Glyphs
     // purge //
     //-------//
     /**
-     * Purge a collection of glyphs of those which match the given
-     * predicate.
+     * Purge a collection of glyph instances of those which match the
+     * given predicate.
      *
      * @param glyphs    the glyph collection to purge
-     * @param predicate the predicate to detect glyphs to purge
+     * @param predicate the predicate to detect glyph instances to purge
      */
     public static void purge (Collection<Glyph> glyphs,
                               Predicate<Glyph> predicate)
@@ -479,8 +542,8 @@ public class Glyphs
     // purgeManuals //
     //--------------//
     /**
-     * Purge a collection of glyphs of those which exhibit a manually
-     * assigned shape.
+     * Purge a collection of glyph instances of those which exhibit a
+     * manually assigned shape.
      *
      * @param glyphs the glyph collection to purge
      */
@@ -500,9 +563,9 @@ public class Glyphs
     //------------//
     /**
      * Report the set of sections contained by the provided collection
-     * of glyphs.
+     * of glyph instances.
      *
-     * @param glyphs the provided glyphs
+     * @param glyphs the provided glyph instances
      * @return the set of all member sections
      */
     public static Set<Section> sectionsOf (Collection<Glyph> glyphs)
@@ -521,10 +584,10 @@ public class Glyphs
     //----------//
     /**
      * Report the set of shapes that appear in at least one of the
-     * provided glyphs.
+     * provided glyph instances.
      *
-     * @param glyphs the provided collection of glyphs
-     * @return the shapes assigned among these glyphs
+     * @param glyphs the provided collection of glyph instances
+     * @return the shapes assigned among these glyph instances
      */
     public static Set<Shape> shapesOf (Collection<Glyph> glyphs)
     {
@@ -545,9 +608,9 @@ public class Glyphs
     // sortedSet //
     //-----------//
     /**
-     * Build a mutable set with the provided glyphs.
+     * Build a mutable set with the provided glyph instances.
      *
-     * @param glyphs the provided glyphs
+     * @param glyphs the provided glyph instances
      * @return a mutable sorted set composed of these glyphs
      */
     public static SortedSet<Glyph> sortedSet (Glyph... glyphs)
@@ -565,10 +628,10 @@ public class Glyphs
     // sortedSet //
     //-----------//
     /**
-     * Build a mutable set with the provided glyphs.
+     * Build a mutable set with the provided glyph instances.
      *
-     * @param glyphs the provided glyphs
-     * @return a mutable sorted set composed of these glyphs
+     * @param glyphs the provided glyph instances
+     * @return a mutable sorted set composed of these glyph instances
      */
     public static SortedSet<Glyph> sortedSet (Collection<Glyph> glyphs)
     {
@@ -586,7 +649,7 @@ public class Glyphs
      * introduced by the provided label.
      *
      * @param label  the string that introduces the list of IDs
-     * @param glyphs the collection of glyphs
+     * @param glyphs the collection of glyph instances
      * @return the string built
      */
     public static String toString (String label,
@@ -618,7 +681,7 @@ public class Glyphs
      * by the provided label.
      *
      * @param label  the string that introduces the list of IDs
-     * @param glyphs the array of glyphs
+     * @param glyphs the array of glyph instances
      * @return the string built
      */
     public static String toString (String label,
@@ -634,7 +697,7 @@ public class Glyphs
      * Build a string with just the ids of the glyph collection,
      * introduced by the label "glyphs".
      *
-     * @param glyphs the collection of glyphs
+     * @param glyphs the collection of glyph instances
      * @return the string built
      */
     public static String toString (Collection<? extends Glyph> glyphs)
@@ -649,7 +712,7 @@ public class Glyphs
      * Build a string with just the ids of the glyph array, introduced
      * by the label "glyphs".
      *
-     * @param glyphs the array of glyphs
+     * @param glyphs the array of glyph instances
      * @return the string built
      */
     public static String toString (Glyph... glyphs)
@@ -659,5 +722,32 @@ public class Glyphs
 
     private Glyphs ()
     {
+    }
+
+    //--------------//
+    // getHistogram //
+    //--------------//
+    /**
+     * Get the pixel histogram for a collection of glyph instances,
+     * in the specified orientation.
+     *
+     * @param orientation specific orientation desired for the histogram
+     * @param glyphs      the provided collection of glyph instances
+     * @return the histogram of projected pixels
+     */
+    public static Histogram<Integer> getHistogram (Orientation orientation,
+                                                   Collection<Glyph> glyphs)
+    {
+        Histogram<Integer> histo = new Histogram<Integer>();
+
+        if (!glyphs.isEmpty()) {
+            Rectangle box = Glyphs.getBounds(glyphs);
+            Roi roi = new BasicRoi(box);
+            histo = roi.getSectionHistogram(
+                    orientation,
+                    Glyphs.sectionsOf(glyphs));
+        }
+
+        return histo;
     }
 }

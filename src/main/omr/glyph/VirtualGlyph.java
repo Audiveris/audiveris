@@ -48,7 +48,7 @@ public class VirtualGlyph
                          Point center)
     {
         // Build a glyph of proper size
-        super(shape, Symbols.getSymbol(shape), interline, null);
+        super(shape, Symbols.getSymbol(shape), interline, GlyphLayer.DROP, null);
 
         // Translation from generic center to actual center
         translate(GeoUtil.vectorOf(getAreaCenter(), center));

@@ -12,6 +12,7 @@
 package omr.util;
 
 import java.awt.Rectangle;
+import java.awt.geom.Line2D;
 
 /**
  * This class gathers static utilities related to geometry.
@@ -21,6 +22,24 @@ import java.awt.Rectangle;
 public class GeoUtil
 {
     //~ Methods ----------------------------------------------------------------
+
+    //-----------//
+    // xEmbraces //
+    //-----------//
+    /**
+     * Check whether the abscissae of the provided line embrace
+     * the provided abscissa value (assuming line points are defined
+     * in increasing abscissa order).
+     *
+     * @param line the provided line
+     * @param x    the abscissa value
+     * @return true if x is within line abscissae
+     */
+    public static boolean xEmbraces (Line2D line,
+                                     double x)
+    {
+        return (x >= line.getX1()) && (x <= line.getX2());
+    }
 
     //------//
     // xGap //
@@ -54,9 +73,26 @@ public class GeoUtil
                                 Rectangle two)
     {
         final int commonLeft = Math.max(one.x, two.x);
-        final int commonRight = Math.min(one.x + one.width, two.y + two.width);
+        final int commonRight = Math.min(one.x + one.width, two.x + two.width);
 
         return commonRight - commonLeft;
+    }
+
+    //-----------//
+    // yEmbraces //
+    //-----------//
+    /**
+     * Check whether the ordinates of the provided rectangle embrace
+     * the provided ordinate value.
+     *
+     * @param rect the provided rectangle
+     * @param y    the ordinate value
+     * @return true if y is within rectangle ordinates
+     */
+    public static boolean yEmbraces (Rectangle rect,
+                                     double y)
+    {
+        return (y >= rect.y) && (y < (rect.y + rect.height));
     }
 
     //------//

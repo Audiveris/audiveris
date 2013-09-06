@@ -11,11 +11,12 @@
 // </editor-fold>
 package omr.glyph.facets;
 
+import omr.glyph.GlyphLayer;
 import omr.glyph.Nest;
 
 /**
  * Class {@code BasicAdministration} is a basic implementation of glyph
- * administration facet
+ * administration facet.
  *
  * @author Hervé Bitteur
  */
@@ -24,6 +25,9 @@ class BasicAdministration
         implements GlyphAdministration
 {
     //~ Instance fields --------------------------------------------------------
+
+    /** The precise layer. */
+    protected final GlyphLayer layer;
 
     /** The containing glyph nest. */
     protected Nest nest;
@@ -37,7 +41,7 @@ class BasicAdministration
     /** VIP flag. */
     protected boolean vip;
 
-    /** Related id string (prebuilt once for all) */
+    /** Related id string. (pre-built once for all) */
     protected String idString;
 
     //~ Constructors -----------------------------------------------------------
@@ -49,12 +53,22 @@ class BasicAdministration
      *
      * @param glyph our glyph
      */
-    public BasicAdministration (Glyph glyph)
+    public BasicAdministration (Glyph glyph, GlyphLayer layer)
     {
         super(glyph);
+        this.layer = layer;
     }
 
     //~ Methods ----------------------------------------------------------------
+    //----------//
+    // idString //
+    //----------//
+    @Override
+    public final String idString ()
+    {
+        return idString;
+    }
+
     //--------//
     // dumpOf //
     //--------//
@@ -63,10 +77,13 @@ class BasicAdministration
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(String.format("Glyph: %s@%s%n",
+        sb.append(
+                String.format(
+                "Glyph: %s@%s%n",
                 glyph.getClass().getName(),
                 Integer.toHexString(glyph.hashCode())));
         sb.append(String.format("   id=%d%n", getId()));
+        sb.append(String.format("   layer=%s%n", getLayer()));
         sb.append(String.format("   nest=%s%n", getNest()));
 
         return sb.toString();
@@ -81,6 +98,15 @@ class BasicAdministration
         return id;
     }
 
+    //-------//
+    // getId //
+    //-------//
+    @Override
+    public GlyphLayer getLayer ()
+    {
+        return layer;
+    }
+
     //---------//
     // getNest //
     //---------//
@@ -88,15 +114,6 @@ class BasicAdministration
     public Nest getNest ()
     {
         return nest;
-    }
-
-    //----------//
-    // idString //
-    //----------//
-    @Override
-    public final String idString ()
-    {
-        return idString;
     }
 
     //-------------//

@@ -114,6 +114,9 @@ public abstract class AbstractStep
 
             clearErrors(sheet);
 
+            // Reset sheet relevant data
+            sheet.reset(this);
+
             doit(systems, sheet);
 
             done(sheet); // Full completion

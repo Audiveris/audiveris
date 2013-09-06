@@ -26,7 +26,7 @@ public class JunctionDeltaPolicy
     //~ Instance fields --------------------------------------------------------
 
     /**
-     * Maximum value acceptable for delta length, for a delta criteria
+     * Maximum value acceptable for delta length.
      */
     private final int maxDeltaLength;
 

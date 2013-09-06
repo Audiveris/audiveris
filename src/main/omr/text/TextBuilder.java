@@ -535,7 +535,7 @@ public class TextBuilder
                 .getId() + "-g" + glyph.getId();
 
         return getOcr()
-                .recognize(glyph.getImage(),
+                .recognize(glyph.getImage().toBufferedImage(),
                 glyph.getBounds().getLocation(),
                 language,
                 OCR.LayoutMode.SINGLE_BLOCK,

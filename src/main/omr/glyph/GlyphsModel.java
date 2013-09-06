@@ -117,7 +117,7 @@ public class GlyphsModel
             if (system != null) {
                 glyph = system.buildTransientCompound(glyphs);
             } else {
-                glyph = new BasicGlyph(sheet.getScale().getInterline());
+                glyph = new BasicGlyph(sheet.getScale().getInterline(), GlyphLayer.DEFAULT);
 
                 for (Glyph g : glyphs) {
                     glyph.stealSections(g);

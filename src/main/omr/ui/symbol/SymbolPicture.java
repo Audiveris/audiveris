@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.ui.symbol;
 
-import omr.run.PixelFilter;
+import omr.image.PixelFilter;
 
 import net.jcip.annotations.ThreadSafe;
 

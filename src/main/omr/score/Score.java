@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import omr.math.Rational;
 
-import omr.run.FilterDescriptor;
+import omr.image.FilterDescriptor;
 
 import omr.score.entity.MeasureId.MeasureRange;
 import omr.score.entity.Page;
@@ -38,7 +38,7 @@ import omr.script.Script;
 import omr.script.ScriptActions;
 
 import omr.sheet.Sheet;
-import omr.sheet.picture.PictureLoader;
+import omr.image.PictureLoader;
 import omr.sheet.ui.SheetActions;
 import omr.sheet.ui.SheetsController;
 
@@ -48,7 +48,7 @@ import omr.util.Param;
 import omr.util.FileUtil;
 import omr.util.TreeNode;
 
-import java.awt.image.RenderedImage;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -213,22 +213,22 @@ public class Score
      * Create as many pages (and related sheets) as there are images
      * in the input image file.
      *
-     * @param pages set of page ids (1-based) explicitly included.
-     *              if set is empty or null all pages are loaded
+     * @param pageIds set of page ids (1-based) explicitly included.
+     *                if set is empty or null all pages are loaded
      */
-    public void createPages (SortedSet<Integer> pages)
+    public void createPages (SortedSet<Integer> pageIds)
     {
-        SortedMap<Integer, RenderedImage> images = PictureLoader.loadImages(
+        SortedMap<Integer, BufferedImage> images = PictureLoader.loadImages(
                 imageFile,
-                pages);
+                pageIds);
 
         if (images != null) {
             Page firstPage = null;
             setMultiPage(images.size() > 1); // Several images in the file
 
-            for (Entry<Integer, RenderedImage> entry : images.entrySet()) {
+            for (Entry<Integer, BufferedImage> entry : images.entrySet()) {
                 int index = entry.getKey();
-                RenderedImage image = entry.getValue();
+                BufferedImage image = entry.getValue();
                 Page page = null;
 
                 try {

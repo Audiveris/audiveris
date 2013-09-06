@@ -195,8 +195,8 @@ class GlyphBrowser
     // loadGlyphNames //
     //----------------//
     /**
-     * Programmatic use of Load action in Navigator: load the glyph names as
-     * selected, and focus on first glyph.
+     * Programmatic use of Load action in Navigator: load the glyph
+     * names as selected, and focus on first glyph.
      */
     public void loadGlyphNames ()
     {
@@ -555,7 +555,7 @@ class GlyphBrowser
 
         public MyView (GlyphsController controller)
         {
-            super(tNest, controller, Arrays.asList(htLag, vtLag));
+            super(tNest, controller, Arrays.asList(htLag, vtLag), null);
             setName("GlyphBrowser-View");
             subscribe();
         }

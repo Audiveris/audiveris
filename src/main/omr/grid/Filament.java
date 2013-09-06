@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
+import omr.glyph.GlyphLayer;
 
 /**
  * Class {@code Filament} represents a long glyph that can be far from
@@ -67,10 +68,12 @@ public class Filament
      * Creates a new Filament object.
      *
      * @param scale scaling data
+     * @param layer the layer related to the glyph
      */
-    public Filament (Scale scale)
+    public Filament (Scale scale,
+                     GlyphLayer layer)
     {
-        this(scale, FilamentAlignment.class);
+        this(scale, layer, FilamentAlignment.class);
     }
 
     //----------//
@@ -80,11 +83,13 @@ public class Filament
      * Creates a new Filament object.
      *
      * @param scale scaling data
+     * @param layer the layer related to the glyph
      */
     public Filament (Scale scale,
+                     GlyphLayer layer,
                      Class<? extends FilamentAlignment> alignmentClass)
     {
-        super(scale.getInterline(), alignmentClass);
+        super(scale.getInterline(), layer, alignmentClass);
         this.scale = scale;
     }
 

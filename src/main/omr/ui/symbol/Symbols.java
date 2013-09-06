@@ -381,6 +381,12 @@ public class Symbols
         heads(3, WHOLE_NOTE_3, 119);
         sym.put(WHOLE_REST, new RestSymbol(WHOLE_REST, false, 183));
         sym.put(WEDGE_set, new CrescendoSymbol(false, CRESCENDO));
+        
+        // For template matching
+        sym.put(VOID_ODD, getSymbol(NOTEHEAD_VOID));
+        sym.put(VOID_EVEN, new EvenStepSymbol(NOTEHEAD_VOID, 250));
+        sym.put(WHOLE_ODD, getSymbol(WHOLE_NOTE));
+        sym.put(WHOLE_EVEN, new EvenStepSymbol(WHOLE_NOTE, 119));
     }
 
     //- Convenient methods -----------------------------------------------------

@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.sig.LedgerInter;
 import omr.check.Check;
 import omr.check.CheckBoard;
 import omr.check.CheckSuite;
@@ -22,6 +23,7 @@ import omr.check.SuccessResult;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.GlyphLayer;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.GlyphsController;
@@ -39,28 +41,30 @@ import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
+import omr.sig.Inter;
+import omr.sig.SIGraph;
+
 import omr.step.Step;
 import omr.step.StepException;
+
+import omr.util.GeoUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import omr.glyph.ShapeSet;
 
 /**
  * Class {@code HorizontalsBuilder} is in charge of retrieving
- * horizontal dashes (ledgers, legato signs and endings) in a system.
+ * ledgers and endings in a system.
  *
- * <p>Nota: Endings and legato signs are currently disabled.
- *
- * <p>TODO: This class is a monster, without any compelling reason!
- * Serious simplification is needed.
+ * <p>Nota: Endings are currently disabled.
  *
  * @author Hervé Bitteur
  */
@@ -100,59 +104,42 @@ public class HorizontalsBuilder
     private static final FailureResult TOO_HOLLOW = new FailureResult(
             "Hori-TooHollow");
 
-    private static final FailureResult IN_STAFF = new FailureResult(
-            "Hori-InStaff");
-
-    private static final FailureResult TOO_FAR = new FailureResult(
-            "Hori-TooFar");
-
-    private static final FailureResult TOO_ADJA = new FailureResult(
-            "Hori-TooHighAdjacency");
-
-    private static final FailureResult BI_CHUNK = new FailureResult(
-            "Hori-BiChunk");
-
     private static final FailureResult TOO_SLOPED = new FailureResult(
             "Hori-TooSloped");
 
     //~ Instance fields --------------------------------------------------------
-    /** Related sheet */
+    //
+    /** Related sheet. */
     private final Sheet sheet;
 
-    /** Dedicated system */
+    /** Dedicated system. */
     private final SystemInfo system;
 
-    /** Global sheet scale */
+    /** Global sheet scale. */
     private final Scale scale;
 
-    /** Check suite for common tests */
+    /** Check suite for common tests. */
     private CheckSuite<Glyph> commonSuite;
 
-    /** Check suite for Additional tests for endings */
+    /** Check suite for Additional tests for endings. */
     private CheckSuite<Glyph> endingSuite;
 
-    /** Check suite for Additional tests for ledgers */
+    /** Check suite for Additional tests for ledgers. */
     private CheckSuite<Glyph> ledgerSuite;
 
-    /** Total check suite for ending */
+    /** Total check suite for ending. */
     private ArrayList<CheckSuite<Glyph>> endingList;
 
-    /** Total check suite for ledger */
+    /** Total check suite for ledger. */
     private ArrayList<CheckSuite<Glyph>> ledgerList;
 
-    /** The current collection of ledger candidates */
-    private final List<GlyphContext> ledgerCandidates = new ArrayList<>();
+    /** The current collection of ledger candidates. */
+    private final List<Glyph> ledgerCandidates = new ArrayList<Glyph>();
 
-    /** Tenuto signs found */
-    private final List<Glyph> tenutos;
-
-    /** Endings found */
-    private final List<Glyph> endings;
-
-    /** Glyphs controller, if any */
+    /** Glyphs controller, if any. */
     private GlyphsController controller;
 
-    /** Minimum length for a full ledger */
+    /** Minimum length for a full ledger. */
     private final int minFullLedgerLength;
 
     //~ Constructors -----------------------------------------------------------
@@ -167,10 +154,7 @@ public class HorizontalsBuilder
         this.system = system;
 
         sheet = system.getSheet();
-        scale = system.getSheet().getScale();
-
-        tenutos = system.getTenutos();
-        endings = system.getEndings();
+        scale = sheet.getScale();
 
         minFullLedgerLength = scale.toPixels(constants.minFullLedgerLength);
     }
@@ -184,51 +168,29 @@ public class HorizontalsBuilder
         sheet.getAssembly().addBoard(Step.DATA_TAB, new LedgerCheckBoard());
     }
 
-    //    //--------------//
-    //    // assignGlyphs //
-    //    //--------------//
-    //    /**
-    //     * Assign a collection of glyphs to a Ledger or Ending shape
-    //     * @param glyphs the collection of glyphs to be assigned
-    //     * @param shape the shape to be assigned
-    //     * @param compound flag to build one compound, rather than assign each
-    //     *                 individual glyph
-    //     * @param grade the grade we have wrt the assigned shape
-    //     */
-    //    @Override
-    //    public void assignGlyphs (Collection<Glyph> glyphs,
-    //                              Shape             shape,
-    //                              boolean           compound,
-    //                              double            grade)
-    //    {
-    //        super.assignGlyphs(glyphs, shape, compound, grade);
-    //
-    //        lagView.colorizeAllSections();
-    //    }
-    //-----------//
-    // buildInfo //
-    //-----------//
+    //--------------//
+    // buildLedgers //
+    //--------------//
     /**
-     * Run the Horizontals step, searching all horizontal sticks for
-     * typical things like ledgers, endings and legato signs.
+     * Search horizontal sticks for ledgers and endings.
      *
      * @throws StepException raised if process gets stopped
      */
-    public void buildInfo ()
-            throws Exception
+    public void buildLedgers ()
     {
         try {
             // Filter which sections to provide to factory
-            List<Section> sections = getCandidateSections(
-                    system.getHorizontalSections());
-
-            /// NO: sections.addAll(system.getVerticalSections());
+            List<Section> sections = getCandidateSections();
 
             // Retrieve candidate glyphs out of candidate sections
             List<Glyph> sticks = getCandidateGlyphs(sections);
 
             // Apply basic checks for ledgers candidates, tenutos, endings
             checkHorizontals(sticks);
+
+            // Discard candidates that overlap beams
+            // We assume that such beams are reliable (this is questionable)
+            discardBeamOverlaps();
 
             // Filter ledgers more accurately
             filterLedgers();
@@ -259,6 +221,22 @@ public class HorizontalsBuilder
         return glyph.getLength(HORIZONTAL) >= minFullLedgerLength;
     }
 
+    //------------------------//
+    // getMinFullLedgerLength //
+    //------------------------//
+    public static Scale.Fraction getMinFullLedgerLength ()
+    {
+        return constants.minFullLedgerLength;
+    }
+
+    //-------------//
+    // getMaxShift //
+    //-------------//
+    public static Scale.Fraction getMaxShift ()
+    {
+        return constants.maxShift;
+    }
+
     //---------------//
     // filterLedgers //
     //---------------//
@@ -274,7 +252,7 @@ public class HorizontalsBuilder
 
             // Above staff
             for (int i = -1;; i--) {
-                int count = lookupLine(i, staff.getFirstLine());
+                int count = lookupLine(i, staff);
 
                 if (count == 0) {
                     break;
@@ -283,7 +261,7 @@ public class HorizontalsBuilder
 
             // Below staff
             for (int i = 1;; i++) {
-                int count = lookupLine(i, staff.getLastLine());
+                int count = lookupLine(i, staff);
 
                 if (count == 0) {
                     break;
@@ -295,44 +273,41 @@ public class HorizontalsBuilder
     //----------------------//
     // getCandidateSections //
     //----------------------//
-    private List<Section> getCandidateSections (Collection<Section> allSections)
+    /**
+     * Retrieve good candidate sections.
+     * These are sections from a (complete) horizontal lag that do not stand
+     * within staves.
+     *
+     * @return list of sections kept
+     */
+    private List<Section> getCandidateSections ()
     {
         List<Section> keptSections = new ArrayList<>();
-
-        for (Section section : allSections) {
-            if ((section.getGlyph() == null)
-                || !section.getGlyph().isWellKnown()) {
-                keptSections.add(section);
+        int minWidth = scale.toPixels(constants.minLedgerLengthLow);
+        
+        for (Section section : system.getHorizontalFullSections()) {
+            // Check minimum length (useless test!!! TODO)
+            if (section.getBounds().width < minWidth) {
+                continue;
             }
+            keptSections.add(section);
         }
 
+        logger.debug("S#{} keptSections: {}", system.getId(),
+                keptSections.size());
+
         return keptSections;
-    }
-
-    //---------------//
-    // staffDistance //
-    //---------------//
-    private double staffDistance (Glyph stick)
-    {
-        // Compute the (algebraic) distance from the stick to the nearest
-        // staff. Distance is negative if the stick is within the staff,
-        // positive outside.
-        final Point2D mid = new Point2D.Double(
-                (stick.getStartPoint(HORIZONTAL).getX() + stick.getStopPoint(
-                HORIZONTAL).getX()) / 2,
-                (stick.getStartPoint(HORIZONTAL).getY() + stick.getStopPoint(
-                HORIZONTAL).getY()) / 2);
-        final StaffInfo staff = system.getStaffAt(mid);
-        final double top = staff.getFirstLine().yAt(mid.getX());
-        final double bottom = staff.getLastLine().yAt(mid.getX());
-        final double dist = Math.max(top - mid.getY(), mid.getY() - bottom);
-
-        return system.getSheet().getScale().pixelsToFrac(dist);
     }
 
     //------------------//
     // checkHorizontals //
     //------------------//
+    /**
+     * Run checks on raw horizontal candidates and copy good candidates
+     * to ledgerCandidates collection (and to endingcandidates).
+     *
+     * @param sticks the raw horizontal glyph instances
+     */
     private void checkHorizontals (List<Glyph> sticks)
     {
         ledgerCandidates.clear();
@@ -344,15 +319,12 @@ public class HorizontalsBuilder
         createSuites();
 
         for (Glyph stick : sticks) {
-            // Allocate the candidate context, and pass the whole check suite
-            GlyphContext context = new GlyphContext(stick);
-
             // Run the Ledger Checks
             if (CheckSuite.passCollection(stick, ledgerList) >= minResult) {
                 //                stick.setResult(LEDGER);
                 //                stick.setShape(Shape.LEDGER);
                 //                ledgers.add(stick);
-                ledgerCandidates.add(context);
+                ledgerCandidates.add(stick);
 
                 //                if (logger.isDebugEnabled()) {
                 //                    logger.debug("Ledger candidate " + stick);
@@ -374,106 +346,6 @@ public class HorizontalsBuilder
         }
     }
 
-    //    //----------------//
-    //    // deassignGlyphs //
-    //    //----------------//
-    //    /**
-    //     * De-Assign a collection of glyphs.
-    //     *
-    //     * @param glyphs the collection of glyphs to be de-assigned
-    //     */
-    //    @Override
-    //    public void deassignGlyphs (Collection<Glyph> glyphs)
-    //    {
-    //        //        super.deassignGlyphs(glyphs);
-    //        //
-    //        //        lagView.colorizeAllSections();
-    //    }
-    //    //-------------//
-    //    // assignGlyph //
-    //    //-------------//
-    //    @Override
-    //    protected Glyph assignGlyph (Glyph  glyph,
-    //                                 Shape  shape,
-    //                                 double grade)
-    //    {
-    //        //        if (shape != null) {
-    //        //            // Assign
-    //        //            if (logger.isDebugEnabled()) {
-    //        //                logger.debug(
-    //        //                    "Assign horizontal glyph#" + glyph.getId() + " to " +
-    //        //                    shape);
-    //        //            }
-    //        //
-    //        //            Dash dash = null;
-    //        //
-    //        //            switch (shape) {
-    //        //            case LEDGER :
-    //        //                dash = new Ledger((Glyph) glyph);
-    //        //                info.getLedgers()
-    //        //                    .add((Ledger) dash);
-    //        //
-    //        //                break;
-    //        //
-    //        //            case ENDING_HORIZONTAL :
-    //        //                dash = new Ending((Glyph) glyph);
-    //        //                info.getEndings()
-    //        //                    .add((Ending) dash);
-    //        //
-    //        //                break;
-    //        //
-    //        //            default :
-    //        //                assert false;
-    //        //            }
-    //        //
-    //        //            cleanup(Collections.singletonList(dash));
-    //        //            allDashes.add(dash);
-    //        //            dashSections.addAll(glyph.getMembers());
-    //        //        } else {
-    //        //            // Deassign
-    //        //            if (logger.isDebugEnabled()) {
-    //        //                logger.debug("Deassign horizontal glyph#" + glyph.getId());
-    //        //            }
-    //        //
-    //        //            Dash dash = null;
-    //        //
-    //        //            switch (glyph.getShape()) {
-    //        //            case LEDGER :
-    //        //                dash = info.getLedgerOf(glyph);
-    //        //                info.getLedgers()
-    //        //                    .remove((Ledger) dash);
-    //        //
-    //        //                break;
-    //        //
-    //        //            case ENDING_HORIZONTAL :
-    //        //                dash = info.getEndingOf(glyph);
-    //        //                info.getEndings()
-    //        //                    .remove((Ending) dash);
-    //        //
-    //        //                break;
-    //        //
-    //        //            default :
-    //        //                assert false;
-    //        //            }
-    //        //
-    //        //            // Remove the patches and restore the glyph
-    //        //            lineCleaner.restoreStick((Glyph) glyph, dash.getPatches());
-    //        //            allDashes.remove(dash);
-    //        //            dashSections.removeAll(glyph.getMembers());
-    //        //        }
-    //        //
-    //        //        return super.assignGlyph(glyph, shape, grade);
-    //        return null;
-    //    }
-    //    //---------//
-    //    // cleanup //
-    //    //---------//
-    //    private void cleanup (List<?extends Dash> dashes)
-    //    {
-    //        for (Dash dash : dashes) {
-    //            dash.setPatches(lineCleaner.cleanupStick(dash.getStick()));
-    //        }
-    //    }
     //--------------//
     // createSuites //
     //--------------//
@@ -485,10 +357,6 @@ public class HorizontalsBuilder
                 constants.minCheckResult.getValue());
         commonSuite.add(1, new MinThicknessCheck()); // Minimum thickness
         commonSuite.add(1, new MaxThicknessCheck());
-        commonSuite.add(1, new MinDistCheck()); // Not within staves
-        commonSuite.add(1, new MaxDistCheck()); // Not too far from staves
-        commonSuite.add(1, new FirstAdjacencyCheck());
-        commonSuite.add(1, new LastAdjacencyCheck());
 
         // ledgerSuite
         ledgerSuite = new CheckSuite<>(
@@ -501,14 +369,13 @@ public class HorizontalsBuilder
                 constants.minLedgerLengthHigh)); // Minimum length
         ledgerSuite.add(1, new MaxLengthCheck()); // Maximum length
         ledgerSuite.add(1, new MinDensityCheck());
-        ///ledgerSuite.add(1, new ChunkCheck()); // At least one edge WITHOUT a chunk
 
         // Ledger collection
         ledgerList = new ArrayList<>();
         ledgerList.add(commonSuite);
         ledgerList.add(ledgerSuite);
 
-        // endingSuite
+        // EndingSuite
         endingSuite = new CheckSuite<>(
                 "Ending",
                 constants.minCheckResult.getValue());
@@ -537,13 +404,19 @@ public class HorizontalsBuilder
     private void feedback ()
     {
         int nl = 0;
+        int nt = 0;
+        int ne = 0;
+
         for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.getShape() == Shape.LEDGER) {
+            Shape shape = glyph.getShape();
+            if (shape == Shape.LEDGER) {
                 nl++;
+            } else if (shape == Shape.ENDING_HORIZONTAL) {
+                ne++;
+            } else if (shape == Shape.TENUTO) {
+                nt++;
             }
         }
-        int nt = tenutos.size();
-        int ne = endings.size();
 
         // A bit tedious
         StringBuilder sb = new StringBuilder();
@@ -551,7 +424,7 @@ public class HorizontalsBuilder
         sb.append(" ");
 
         if (nl > 0) {
-            sb.append(nl).append(" ledger").append((nl > 1) ? "s" : "");
+            sb.append("ledgers: ").append(nl);
         } else if (logger.isDebugEnabled()) {
             sb.append("No ledger");
         }
@@ -576,84 +449,20 @@ public class HorizontalsBuilder
             sb.append("No ending");
         }
 
-        logger.debug("{}{}", sheet.getLogPrefix(), sb.toString());
+        logger.info("{}{}", sheet.getLogPrefix(), sb.toString());
     }
 
-    //    //------------------//
-    //    // getAliensAtStart //
-    //    //------------------//
-    //    /**
-    //     * Count alien pixels in the following rectangle...
-    //     * <pre>
-    //     * +-------+
-    //     * |       |
-    //     * +=======+==================================+
-    //     * |       |
-    //     * +-------+
-    //     * </pre>
-    //     *
-    //     * @param glyph the glyph at stake
-    //     * @param halfHeight half rectangle size along stick thickness
-    //     * @param width rectangle size along stick length
-    //     * @return the number of alien pixels found
-    //     */
-    //    private int getAliensAtStart (Glyph glyph,
-    //                                  int   halfHeight,
-    //                                  int   width)
-    //    {
-    //        Point2D        start = glyph.getStartPoint();
-    //        Rectangle roi = new Rectangle(
-    //            (int) Math.rint(start.getX()),
-    //            (int) Math.rint(start.getY() - halfHeight),
-    //            width,
-    //            2 * halfHeight);
-    //            glyph.addAttachment("ll", roi);
-    //        
-    //        int            count = 0;
-    //        count += glyph.getAlienPixelsFrom(sheet.getHorizontalLag(), roi, null);
-    //        count += glyph.getAlienPixelsFrom(sheet.getVerticalLag(), roi, null);
-    //
-    //        return count;
-    //    }
-    //
-    //    //-----------------//
-    //    // getAliensAtStop //
-    //    //-----------------//
-    //    /**
-    //     * Count alien pixels in the following rectangle...
-    //     * <pre>
-    //     *                                    +-------+
-    //     *                                    |       |
-    //     * +==================================+=======+
-    //     *                                    |       |
-    //     *                                    +-------+
-    //     * </pre>
-    //     *
-    //     * @param glyph the glyph at stake
-    //     * @param halfHeight half rectangle size along stick thickness
-    //     * @param width rectangle size along stick length
-    //     * @return the number of alien pixels found
-    //     */
-    //    private int getAliensAtStop (Glyph glyph,
-    //                                 int   halfHeight,
-    //                                 int   width)
-    //    {
-    //        Point2D        stop = glyph.getStopPoint();
-    //        Rectangle roi = new Rectangle(
-    //            (int) Math.rint(stop.getX() - width),
-    //            (int) Math.rint(stop.getY() - halfHeight),
-    //            width,
-    //            2 * halfHeight);
-    //            glyph.addAttachment("lr", roi);
-    //        int            count = 0;
-    //        count += glyph.getAlienPixelsFrom(sheet.getHorizontalLag(), roi, null);
-    //        count += glyph.getAlienPixelsFrom(sheet.getVerticalLag(), roi, null);
-    //
-    //        return count;
-    //    }
     //--------------------//
     // getCandidateGlyphs //
     //--------------------//
+    /**
+     * Retrieve possible candidate glyph instances built from provided
+     * sections.
+     *
+     * @param sections the section population to build sticks from
+     * @return a collection of candidate glyph instances
+     * @throws Exception
+     */
     private List<Glyph> getCandidateGlyphs (List<Section> sections)
             throws Exception
     {
@@ -661,29 +470,24 @@ public class HorizontalsBuilder
         FilamentsFactory factory = new FilamentsFactory(
                 scale,
                 sheet.getNest(),
+                GlyphLayer.LEDGER,
                 HORIZONTAL,
                 Filament.class);
+
         // Adjust factory parameters
-        factory.setMaxCoordGap(constants.maxCoordGap);
-        factory.setMaxExpansionSpace(constants.maxExpansionSpace);
-        factory.setMaxFilamentThickness(constants.maxFilamentThickness);
-        factory.setMaxGapSlope(constants.maxGapSlope.getValue());
-        factory.setMaxInvolvingLength(constants.maxInvolvingLength);
-        factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
-        factory.setMaxPosGap(constants.maxPosGap);
-        factory.setMaxPosGapForSlope(constants.maxPosGapForSlope);
-        factory.setMaxSectionThickness(constants.maxSectionThickness);
-        factory.setMaxSpace(constants.maxSpace);
+        factory.setMaxThickness(constants.maxFilamentThickness);
         factory.setMinCoreSectionLength(constants.minCoreSectionLength);
-        factory.setMinSectionAspect(constants.minSectionAspect.getValue());
+        factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
+        factory.setMaxCoordGap(constants.maxCoordGap);
+        factory.setMaxPosGap(constants.maxPosGap);
+        factory.setMaxOverlapSpace(constants.maxOverlapSpace);
 
-        ///factory.dump();
+        if (system.getId() == 1) {
+            factory.dump("HorizontalsBuilder factory");
+        }
 
-        // Reset the "fat" attribute of the sections, since this depends on
-        // max thickness parameters
         for (Section section : sections) {
-            section.resetFat();
-            section.setGlyph(null);
+            section.setGlyph(null); // ???????
         }
 
         return factory.retrieveFilaments(sections, true);
@@ -696,178 +500,277 @@ public class HorizontalsBuilder
      * Look up for ledgers on a specific line above or below the
      * provided staff line.
      *
-     * @param index     index of line, above if positive, below if negative
-     * @param staffLine the staff line used as reference
+     * @param index index of line, above staff if negative, below staff if
+     *              positive
+     * @param staff the staff being checked
      * @return the number of ledgers found on this "virtual line"
      */
     private int lookupLine (int index,
-                            LineInfo staffLine)
+                            StaffInfo staff)
     {
         logger.debug("Checking line {}", index);
-
-        int ledgerMarginX = scale.toPixels(constants.ledgerMarginX);
+        final int yMargin = scale.toPixels(constants.ledgerMarginY);
+        final LineInfo staffLine = index < 0 ? staff.getFirstLine() : staff.getLastLine();
+        final SIGraph sig = system.getSig();
         int found = 0; // Number of ledgers found on this line
 
         // Define bounds for the virtual line, properly shifted and enlarged
-        Rectangle box = staffLine.getBounds();
-        box.y += (index * scale.getInterline());
-        box.grow(0, scale.toPixels(constants.ledgerMarginY));
+        Rectangle staffLineBox = staffLine.getBounds();
+        staffLineBox.y += (index * scale.getInterline());
+        staffLineBox.grow(0, scale.toPixels(constants.ledgerMarginY));
 
         // Filter enclosed candidates
-        for (GlyphContext context : ledgerCandidates) {
+        CandidateLoop:
+        for (Glyph stick : ledgerCandidates) {
             // Rough containment
-            if (!box.contains(context.mid)) {
-                continue;
-            }
-
-            // Check precise distance
-            double dist = Math.abs(index - context.dist);
-            logger.debug("{} {}", dist, context);
-
-            if (dist > constants.ledgerMarginY.getValue()) {
-                if (context.stick.isVip()) {
-                    logger.info("Ledger candidate {} dy:{} vs {}",
-                            context, dist, constants.ledgerMarginY.getValue());
-                }
-                continue;
+            if (!staffLineBox.contains(stick.getAreaCenter())) {
+                continue CandidateLoop;
             }
 
             // Check for presence of ledger on previous line
-            int prevIndex = (index > 0) ? (index - 1) : (index + 1);
+            // and definition of a reference ordinate (staff line or ledger)
+            final Rectangle box = stick.getBounds();
+            final Point2D middle = getMiddle(stick);
+            Double yRef = getYReference(staff, index, stick);
+            if (yRef == null) {
+                continue CandidateLoop;
+            }
 
-            if (prevIndex != 0) {
-                Set<Glyph> prevLedgers = context.staff.getLedgers(prevIndex);
+            // Check precise vertical distance WRT the target ordinate
+            final double yTarget = yRef + Integer.signum(index) * scale.getInterline();
+            final int delta = (int) Math.rint(Math.abs(middle.getY() - yTarget));
+            logger.debug("{} {}", delta, stick);
 
-                // Check abscissa compatibility
-                if (prevLedgers == null) {
-                    if (context.stick.isVip()) {
-                        logger.info("Ledger candidate {} orphan", context);
-                    }
-                    continue;
+            if (delta > yMargin) {
+                if (stick.isVip()) {
+                    logger.info("Ledger candidate {} dy:{} vs {}",
+                            stick, delta, yMargin);
                 }
+                continue CandidateLoop;
+            }
 
-                boolean foundPrevious = false;
-
-                for (Glyph ledger : prevLedgers) {
-                    Point mid = ledger.getAreaCenter();
-                    double dx = Math.abs(mid.x - context.mid.getX());
-
-                    if (dx <= ledgerMarginX) {
-                        foundPrevious = true;
-
-                        break;
-                    }
-                }
-
-                if (!foundPrevious) {
-                    if (context.stick.isVip()) {
-                        logger.info("Ledger candidate {} local orphan", context);
-                    }
-                    continue;
-                }
-
-                //            } else if (context.stick.getLength(HORIZONTAL) < minFullLedgerLength) {
-                //                // If ledger is short, check for presence of stem
-                //                // This test discards ledgers of whole notes!
-                //                Rectangle stickBox = context.stick.getBounds();
-                //                stickBox.grow(maxStemDx, maxStemDy);
-                //
-                //                List<Glyph> others = system.lookupIntersectedGlyphs(stickBox);
-                //                boolean     foundStem = false;
-                //
-                //                for (Glyph glyph : others) {
-                //                    if (glyph.isStem()) {
-                //                        foundStem = true;
-                //
-                //                        break;
-                //                    }
-                //                }
-                //
-                //                if (!foundStem) {
-                //                    continue;
-                //                }
+            // Check for overlapping ledger candidate at same level
+            if (!checkCollision(staff, index, stick, yTarget, delta)) {
+                continue CandidateLoop;
             }
 
             // OK!
-            Glyph glyph = system.addGlyph(context.stick);
-//            Ledger ledger = new Ledger(glyph, context.staff, index);
-//            glyph.setTranslation(ledger);
+            Glyph glyph = system.addGlyph(stick); // Useful???
             glyph.setShape(Shape.LEDGER);
-            context.staff.addLedger(glyph, index);
+            sig.addVertex(new LedgerInter(glyph, 1.0));
+            staff.addLedger(glyph, index);
             found++;
 
-            if (context.stick.isVip()) {
-                logger.info("Ledger at {}", context);
+            if (stick.isVip()) {
+                logger.info("Ledger at {} for {}", index, stick);
             } else {
-                logger.debug("Ledger at {}", context);
+                logger.debug("Ledger at {} for {}", index, stick);
             }
         }
 
         return found;
     }
 
+    //----------------//
+    // checkCollision //
+    //----------------//
+    /**
+     * Check for a potential collision with another ledger.
+     *
+     * @param staff   the staff being processed
+     * @param index   the position WRT to staff
+     * @param stick   the candidate stick to check
+     * @param yTarget the target ordinate for current stick
+     * @param delta   the gap between stick ordinate and target ordinate
+     * @return true if OK, false if not OK
+     */
+    private boolean checkCollision (StaffInfo staff,
+                                    int index,
+                                    Glyph stick,
+                                    double yTarget,
+                                    double delta)
+    {
+        final Set<Glyph> siblings = staff.getLedgers(index);
+
+        // Check for abscissa overlap
+        if (siblings != null && !siblings.isEmpty()) {
+            final List<Glyph> concurrents = new ArrayList<Glyph>();
+            final Rectangle box = stick.getBounds();
+
+            for (Glyph ledger : siblings) {
+                if (GeoUtil.xOverlap(box, ledger.getBounds()) >= 0) {
+                    concurrents.add(ledger);
+                }
+            }
+
+            for (Glyph other : concurrents) {
+                // Keep the one with smallest delta
+                final double yOther = getMiddle(other).getY();
+                final double otherDelta = Math.abs(yOther - yTarget);
+
+                if (delta >= otherDelta) {
+                    if (stick.isVip()) {
+                        logger.info("Ledger candidate {} collision",
+                                stick);
+                    }
+                    return false;
+                } else {
+                    // Remove the other
+                    if (other.isVip()) {
+                        logger.info("Ledger candidate {} collision",
+                                other.idString());
+                    }
+                    other.setShape(null);
+                    staff.removeLedger(other);
+
+                    // Remove other interpretation as well
+                    for (Iterator<Inter> it =
+                            other.getInterpretations().iterator(); it.hasNext();) {
+                        Inter inter = it.next();
+                        if (inter.getShape() == Shape.LEDGER) {
+                            system.getSig().removeVertex(inter);
+                            it.remove();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    //---------------//
+    // getYReference //
+    //---------------//
+    /**
+     * Look for an ordinate reference suitable with provided stick.
+     * This may be a ledger on the previous line or the staff line itself
+     *
+     * @param staff the staff being processed
+     * @param index the position WRT to staff
+     * @param stick the candidate stick to check
+     * @return the ordinate reference found, or null if not found
+     */
+    private Double getYReference (StaffInfo staff,
+                                  int index,
+                                  Glyph stick)
+    {
+        final int prevIndex = (index < 0) ? (index + 1) : (index - 1);
+        final LineInfo staffLine = index < 0 ? staff.getFirstLine() : staff.getLastLine();
+
+        if (prevIndex != 0) {
+            final Set<Glyph> prevLedgers = staff.getLedgers(prevIndex);
+
+            // Check abscissa compatibility
+            if (prevLedgers == null) {
+                if (stick.isVip()) {
+                    logger.info("Ledger candidate {} orphan", stick);
+                }
+                return null;
+            }
+
+            for (Glyph ledger : prevLedgers) {
+                if (GeoUtil.xOverlap(stick.getBounds(), ledger.getBounds()) >= 0) {
+                    // Use this previous ledger as ordinate reference
+                    return getMiddle(ledger).getY();
+                }
+            }
+
+            if (stick.isVip()) {
+                logger.info("Ledger candidate {} local orphan", stick);
+            }
+            return null;
+        } else {
+            // Use staff line as reference
+            return staffLine.yAt(stick.getAreaCenter().getX());
+        }
+    }
+
+    //---------------------//
+    // discardBeamOverlaps //
+    //---------------------//
+    /**
+     * Discard the ledger candidates that overlap a beam.
+     */
+    private void discardBeamOverlaps ()
+    {
+        List<Glyph> toRemove = new ArrayList<Glyph>();
+        List<Glyph> beams = getBeams();
+
+        for (Glyph stick : ledgerCandidates) {
+            // Check whether stick middle point is contained by a beam glyph
+            Point2D middle = getMiddle(stick);
+            BeamLoop:
+            for (Glyph beam : beams) {
+                if (beam.getBounds().contains(middle)) {
+                    // More precise look
+                    for (Section section : beam.getMembers()) {
+                        if (section.getPolygon().contains(middle)) {
+                            logger.debug("ledger#{} overlaps beam#{}",
+                                    stick.getId(), beam.getId());
+                            toRemove.add(stick);
+                            break BeamLoop;
+                        }
+                    }
+                } else {
+                    // Speedup, since beams are sorted by abscissa
+                    if (beam.getBounds().getLocation().x > middle.getX()) {
+                        break BeamLoop;
+                    }
+                }
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            logger.info("S#{} {} ledger/beam overlaps",
+                    system.getId(), toRemove.size());
+            ledgerCandidates.removeAll(toRemove);
+        }
+    }
+
+    //----------//
+    // getBeams //
+    //----------//
+    /**
+     * Retrieve the list of beam-shaped glyph instances in the system,
+     * ordered by abscissa.
+     *
+     * @return the sequence of system beams
+     */
+    private List<Glyph> getBeams ()
+    {
+        List<Glyph> beams = new ArrayList<Glyph>();
+
+        for (Glyph glyph : system.getGlyphs()) {
+            Shape shape = glyph.getShape();
+            if (shape != null && ShapeSet.Beams.contains(shape)) {
+                beams.add(glyph);
+            }
+        }
+
+        return beams;
+    }
+
+    //-----------//
+    // getMiddle //
+    //-----------//
+    /**
+     * Retrieve the middle point of a stick, assumed rather horizontal.
+     *
+     * @param stick the stick to process
+     * @return the middle point
+     */
+    public static Point2D getMiddle (Glyph stick)
+    {
+        final Point2D startPoint = stick.getStartPoint(HORIZONTAL);
+        final Point2D stopPoint = stick.getStopPoint(HORIZONTAL);
+        return new Point2D.Double(
+                (startPoint.getX() + stopPoint.getX()) / 2,
+                (startPoint.getY() + stopPoint.getY()) / 2);
+    }
+
     //~ Inner Classes ----------------------------------------------------------
-    //    //------------//
-    //    // ChunkCheck //
-    //    //------------//
-    //    /**
-    //     * Class {@code ChunkCheck} checks for absence of a chunk either at
-    //     * start or stop
-    //     */
-    //    private class ChunkCheck
-    //        extends Check<Glyph>
-    //    {
-    //        //~ Instance fields ----------------------------------------------------
-    //
-    //        // Half width for chunk window at top and bottom
-    //        private final int    nWidth;
-    //
-    //        // Half height for chunk window at top and bottom
-    //        private final int    nHeight;
-    //
-    //        // Total area for chunk window
-    //        private final double area;
-    //
-    //        //~ Constructors -------------------------------------------------------
-    //
-    //        protected ChunkCheck ()
-    //        {
-    //            super(
-    //                "Chunk",
-    //                "Check no chunk is stuck on either side of the stick",
-    //                constants.chunkRatioLow,
-    //                constants.chunkRatioHigh,
-    //                false,
-    //                BI_CHUNK);
-    //
-    //            // Adjust chunk window according to system scale
-    //            nWidth = scale.toPixels(constants.chunkWidth);
-    //            nHeight = scale.toPixels(constants.chunkHeight);
-    //            area = 2 * nWidth * nHeight;
-    //
-    //            if (logger.isDebugEnabled()) {
-    //                logger.debug(
-    //                    "MaxPixLow=" + getLow() + ", MaxPixHigh=" + getHigh());
-    //            }
-    //        }
-    //
-    //        //~ Methods ------------------------------------------------------------
-    //
-    //        protected double getValue (Glyph stick)
-    //        {
-    //            // Retrieve the smallest stick chunk either at top or bottom
-    //            double res = Math.min(
-    //                getAliensAtStart(stick, nHeight, nWidth),
-    //                getAliensAtStop(stick, nHeight, nWidth));
-    //            res /= area;
-    //
-    //            if (logger.isDebugEnabled()) {
-    //                logger.info("MinAliensRatio= " + res + " for " + stick);
-    //            }
-    //
-    //            return res;
-    //        }
-    //    }
     //-----------//
     // Constants //
     //-----------//
@@ -876,28 +779,14 @@ public class HorizontalsBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
-        // For factory
-        Constant.Double maxGapSlope = new Constant.Double(
-                "tangent",
-                0.5,
-                "Maximum absolute slope for a gap");
-
-        Constant.Ratio minSectionAspect = new Constant.Ratio(
-                1.0,
-                "Minimum section aspect (length / thickness)");
-
         Constant.Ratio maxConsistentRatio = new Constant.Ratio(
                 1.7,
                 "Maximum thickness ratio for consistent merge");
 
         // Constants specified WRT mean line thickness
         // -------------------------------------------
-        Scale.LineFraction maxSectionThickness = new Scale.LineFraction(
-                1.85,
-                "Maximum horizontal section thickness WRT mean line height");
-
         Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(
-                1.75,
+                1.85,
                 "Maximum filament thickness WRT mean line height");
 
         Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
@@ -907,7 +796,7 @@ public class HorizontalsBuilder
         // Constants specified WRT mean interline
         // --------------------------------------
         Scale.Fraction minCoreSectionLength = new Scale.Fraction(
-                0.25,
+                1.0,
                 "Minimum length for a section to be considered as core");
 
         Scale.Fraction maxCoordGap = new Scale.Fraction(
@@ -918,30 +807,13 @@ public class HorizontalsBuilder
                 0.2,
                 "Maximum delta position for a gap between filaments");
 
-        Scale.Fraction maxSpace = new Scale.Fraction(
+        Scale.Fraction maxOverlapSpace = new Scale.Fraction(
                 0.0,
                 "Maximum space between overlapping filaments");
 
-        Scale.Fraction maxExpansionSpace = new Scale.Fraction(
-                0.02,
-                "Maximum space when expanding filaments");
-
-        Scale.Fraction maxPosGapForSlope = new Scale.Fraction(
-                0.1,
-                "Maximum delta Y to check slope for a gap between filaments");
-
-        Scale.Fraction maxInvolvingLength = new Scale.Fraction(
-                2,
-                "Maximum filament length to apply thickness test");
-
-        ///
         Scale.Fraction ledgerMarginY = new Scale.Fraction(
-                0.4,
+                0.25,
                 "Margin on ledger ordinate");
-
-        Scale.Fraction ledgerMarginX = new Scale.Fraction(
-                2.0,
-                "Margin on ledger abscissa across lines");
 
         Scale.Fraction maxStemDx = new Scale.Fraction(
                 1.5,
@@ -955,50 +827,21 @@ public class HorizontalsBuilder
                 1.5,
                 "Minimum length for a full ledger with no stem");
 
-        ///
-        Scale.Fraction minCoreLength = new Scale.Fraction(
-                0.2,
-                "Minimum length for ledger core");
+        Scale.Fraction maxShift = new Scale.Fraction(
+                0.1,
+                "Max shift between two runs of ledger sections");
 
-        //        Scale.Fraction     chunkHeight = new Scale.Fraction(
-        //            0.33,
-        //            "Height of half area to look for chunks");
-        //        Constant.Ratio     chunkRatioHigh = new Constant.Ratio(
-        //            0.05,
-        //            "HighMaximum ratio of alien pixels to detect chunks");
-        //        Constant.Ratio     chunkRatioLow = new Constant.Ratio(
-        //            0.02,
-        //            "LowMaximum ratio of alien pixels to detect chunks");
-        //        Scale.Fraction     chunkWidth = new Scale.Fraction(
-        //            0.33,
-        //            "Width of half area to look for chunks");
         Scale.Fraction extensionMinPointNb = new Scale.Fraction(
                 0.2,
                 "Minimum number of points to compute extension of crossing objects");
 
-        Constant.Ratio maxAdjacencyHigh = new Constant.Ratio(
-                0.3,
-                "High Maximum adjacency ratio for an ending");
-
-        Constant.Ratio maxAdjacencyLow = new Constant.Ratio(
-                0.2,
-                "Low Maximum adjacency ratio for an ending");
-
         Scale.Fraction maxLengthHigh = new Scale.Fraction(
-                3.1,
-                "High Maximum length for a horizontal");
+                5,
+                "High Maximum length for a ledger");
 
         Scale.Fraction maxLengthLow = new Scale.Fraction(
-                2.2,
-                "Low Maximum length for a horizontal");
-
-        Scale.Fraction maxStaffDistanceHigh = new Scale.Fraction(
-                6,
-                "High Maximum staff distance for a horizontal");
-
-        Scale.Fraction maxStaffDistanceLow = new Scale.Fraction(
                 4,
-                "Low Maximum staff distance for a horizontal");
+                "Low Maximum length for a ledger");
 
         Scale.LineFraction maxThicknessHigh = new Scale.LineFraction(
                 1.2,
@@ -1029,20 +872,12 @@ public class HorizontalsBuilder
                 "Low Minimum length for an ending");
 
         Scale.Fraction minLedgerLengthHigh = new Scale.Fraction(
-                0.3,
+                1.5,
                 "High Minimum length for a ledger");
 
         Scale.Fraction minLedgerLengthLow = new Scale.Fraction(
-                0.2,
+                1.0,
                 "Low Minimum length for a ledger");
-
-        Scale.Fraction minStaffDistanceHigh = new Scale.Fraction(
-                0.8,
-                "High Minimum staff distance for a horizontal");
-
-        Scale.Fraction minStaffDistanceLow = new Scale.Fraction(
-                0.6,
-                "Low Minimum staff distance for a horizontal");
 
         Scale.Fraction minThicknessHigh = new Scale.Fraction(
                 0.23,
@@ -1062,72 +897,11 @@ public class HorizontalsBuilder
                 0.02,
                 "High Maximum slope for ending");
 
-        //
         Constant.Double maxSlopeForCheck = new Constant.Double(
                 "slope",
                 1.5,
                 "Maximum slope for checking a ledger candidate");
 
-    }
-
-    //---------------------//
-    // FirstAdjacencyCheck //
-    //---------------------//
-    private static class FirstAdjacencyCheck
-            extends Check<Glyph>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected FirstAdjacencyCheck ()
-        {
-            super(
-                    "TopAdj",
-                    "Check that stick is open on top side",
-                    constants.maxAdjacencyLow,
-                    constants.maxAdjacencyHigh,
-                    false,
-                    TOO_ADJA);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        // Retrieve the adjacency value
-        @Override
-        protected double getValue (Glyph stick)
-        {
-            int length = stick.getLength(HORIZONTAL);
-
-            return (double) stick.getFirstStuck() / (double) length;
-        }
-    }
-
-    //--------------------//
-    // LastAdjacencyCheck //
-    //--------------------//
-    private static class LastAdjacencyCheck
-            extends Check<Glyph>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected LastAdjacencyCheck ()
-        {
-            super(
-                    "BottomAdj",
-                    "Check that stick is open on bottom side",
-                    constants.maxAdjacencyLow,
-                    constants.maxAdjacencyHigh,
-                    false,
-                    TOO_ADJA);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        // Retrieve the adjacency value
-        @Override
-        protected double getValue (Glyph stick)
-        {
-            int length = stick.getLength(HORIZONTAL);
-
-            return (double) stick.getLastStuck() / (double) length;
-        }
     }
 
     //-----------------//
@@ -1164,52 +938,25 @@ public class HorizontalsBuilder
     //--------------//
     // GlyphContext //
     //--------------//
+    /**
+     * Class to handle the context of checks performed on a stick.
+     */
     private class GlyphContext
             implements Checkable
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** The stick being checked */
+        /** The stick being checked. */
         final Glyph stick;
 
-        /** Stick middle point */
+        /** Stick middle point. */
         final Point2D mid;
-
-        /** Nearest staff */
-        final StaffInfo staff;
-
-        /** Absolute normalized distance from staff */
-        final double absDist;
-
-        /** Algebraic normalized distance from closest staff line */
-        final double dist;
 
         //~ Constructors -------------------------------------------------------
         public GlyphContext (Glyph stick)
         {
             this.stick = stick;
-
-            mid = new Point2D.Double(
-                    (stick.getStartPoint(HORIZONTAL).getX() + stick.
-                    getStopPoint(
-                    HORIZONTAL).getX()) / 2,
-                    (stick.getStartPoint(HORIZONTAL).getY() + stick.
-                    getStopPoint(
-                    HORIZONTAL).getY()) / 2);
-            staff = system.getStaffAt(mid);
-
-            double toTop = scale.pixelsToFrac(
-                    staff.getFirstLine().yAt(mid.getX()) - mid.getY());
-            double fromBottom = scale.pixelsToFrac(
-                    mid.getY() - staff.getLastLine().yAt(mid.getX()));
-
-            if (toTop > fromBottom) {
-                absDist = toTop;
-                dist = -toTop;
-            } else {
-                absDist = fromBottom;
-                dist = fromBottom;
-            }
+            mid = getMiddle(stick);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -1234,7 +981,10 @@ public class HorizontalsBuilder
         @Override
         public String toString ()
         {
-            return "stick#" + stick.getId();
+            StringBuilder sb = new StringBuilder();
+            sb.append("stick#").append(stick.getId());
+
+            return sb.toString();
         }
     }
 
@@ -1292,35 +1042,6 @@ public class HorizontalsBuilder
         }
     }
 
-    //--------------//
-    // MaxDistCheck //
-    //--------------//
-    private class MaxDistCheck
-            extends Check<Glyph>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected MaxDistCheck ()
-        {
-            super(
-                    "MaxDist",
-                    "Check that stick is not too far from staff",
-                    constants.maxStaffDistanceLow,
-                    constants.maxStaffDistanceHigh,
-                    false,
-                    TOO_FAR);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        // Retrieve the position with respect to the various staves of the
-        // system being checked.
-        @Override
-        protected double getValue (Glyph stick)
-        {
-            return staffDistance(stick);
-        }
-    }
-
     //----------------//
     // MaxLengthCheck //
     //----------------//
@@ -1374,35 +1095,6 @@ public class HorizontalsBuilder
         protected double getValue (Glyph stick)
         {
             return sheet.getScale().pixelsToFrac(stick.getThickness(HORIZONTAL));
-        }
-    }
-
-    //--------------//
-    // MinDistCheck //
-    //--------------//
-    private class MinDistCheck
-            extends Check<Glyph>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected MinDistCheck ()
-        {
-            super(
-                    "MinDist",
-                    "Check that stick is not within staff height",
-                    constants.minStaffDistanceLow,
-                    constants.minStaffDistanceHigh,
-                    true,
-                    IN_STAFF);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        // Retrieve the position with respect to the various staves of the
-        // system being checked.
-        @Override
-        protected double getValue (Glyph stick)
-        {
-            return staffDistance(stick);
         }
     }
 

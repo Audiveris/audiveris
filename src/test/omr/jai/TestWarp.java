@@ -14,7 +14,7 @@ package omr.jai;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.sheet.picture.PictureLoader;
+import omr.image.PictureLoader;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;

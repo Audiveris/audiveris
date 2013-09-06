@@ -15,6 +15,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.graph.Vertex;
 
+import omr.image.PixelBuffer;
+
 import omr.lag.ui.SectionView;
 
 import omr.math.Barycenter;
@@ -27,15 +29,12 @@ import omr.run.Run;
 
 import omr.sheet.SystemInfo;
 
-import omr.stick.StickRelation;
-
 import omr.util.Vip;
 
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.PathIterator;
-import java.awt.image.BufferedImage;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -179,7 +178,7 @@ public interface Section
      * @param im  the image to populate with this section
      * @param box absolute bounding box (used as image coordinates reference)
      */
-    public void fillImage (BufferedImage im,
+    public void fillImage (PixelBuffer im,
                            Rectangle box);
 
     /**
@@ -389,9 +388,6 @@ public interface Section
      * @return the absolute centroid
      */
     public Point getRectangleCentroid (Rectangle absRoi);
-
-    //TODO:  REMOVE getRelation ASAP
-    public StickRelation getRelation ();
 
     /**
      * Report the number of runs this sections contains.

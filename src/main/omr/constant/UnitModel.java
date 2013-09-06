@@ -347,8 +347,10 @@ public class UnitModel
 
                         if (scale != null) {
                             if (constant instanceof Scale.Fraction) {
-                                return Integer.valueOf(
-                                        scale.toPixels((Scale.Fraction) constant));
+                                return String.format(
+                                        "%.1f",
+                                        scale.toPixelsDouble(
+                                        (Scale.Fraction) constant));
                             } else if (constant instanceof Scale.LineFraction) {
                                 return Integer.valueOf(
                                         scale.toPixels(

@@ -26,7 +26,7 @@ public class LIntegerField
     // LIntegerField //
     //---------------//
     /**
-     * Create a (constant) integer labelled field
+     * Create a (constant) integer labeled field
      *
      * @param label string to be used as label text
      * @param tip   related tool tip text
@@ -41,7 +41,7 @@ public class LIntegerField
     // LIntegerField //
     //---------------//
     /**
-     * Create an integer labelled field
+     * Create an integer labeled field
      *
      * @param editable tells whether the field is editable
      * @param label    string to be used as label text

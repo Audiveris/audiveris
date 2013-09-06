@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.run;
 
+import omr.image.PixelFilter;
+
 import net.jcip.annotations.NotThreadSafe;
 import net.jcip.annotations.ThreadSafe;
 
@@ -22,7 +24,7 @@ import java.awt.Rectangle;
 
 /**
  * Class {@code RunsTableFactory} retrieves the runs structure out of
- * a given pixel source and builds the related {@link RunsTable} 
+ * a given pixel source and builds the related {@link RunsTable}
  * structure.
  *
  * @author Hervé Bitteur
@@ -37,26 +39,26 @@ public class RunsTableFactory
 
     //~ Instance fields --------------------------------------------------------
     //
-    /** The source to read runs of pixels from */
+    /** The source to read runs of pixels from. */
     private final PixelFilter source;
 
-    /** The desired orientation */
+    /** The desired orientation. */
     private final Orientation orientation;
 
-    /** The minimum value for a run length to be considered */
+    /** The minimum value for a run length to be considered. */
     private final int minLength;
 
-    /** Remember if we have to swap x and y coordinates */
+    /** Remember if we have to swap x and y coordinates. */
     private final boolean swapNeeded;
 
-    /** The created RunsTable */
+    /** The created RunsTable. */
     private RunsTable table;
 
     //~ Constructors -----------------------------------------------------------
     //
-    // ------------------//
+    // -----------------//
     // RunsTableFactory //
-    // ------------------//
+    // -----------------//
     /**
      * Create an RunsTableFactory, with its key parameters.
      *
@@ -91,6 +93,23 @@ public class RunsTableFactory
      */
     public RunsTable createTable (String name)
     {
+        return createTable(name, null);
+    }
+
+    // ------------//
+    // createTable //
+    // ------------//
+    /**
+     * Report the RunsTable created with the runs retrieved from the
+     * provided source.
+     *
+     * @param name   the name to be assigned to the table
+     * @param filter if non-null, use this filter to check any run candidate
+     * @return a populated RunsTable
+     */
+    public RunsTable createTable (String name,
+                                  Filter filter)
+    {
         table = new RunsTable(
                 name,
                 orientation,
@@ -98,7 +117,7 @@ public class RunsTableFactory
 
         RunsRetriever retriever = new RunsRetriever(
                 orientation,
-                new MyAdapter());
+                new MyAdapter(filter));
 
         retriever.retrieveRuns(
                 new Rectangle(0, 0, source.getWidth(), source.getHeight()));
@@ -106,16 +125,50 @@ public class RunsTableFactory
         return table;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-    //
-    // -----------//
-    // MyAdapter //
-    // -----------//
-    private class MyAdapter
-            implements RunsRetriever.Adapter
+    //~ Inner Interfaces -------------------------------------------------------
+    //--------//
+    // Filter //
+    //--------//
+    /**
+     * This class is able to filter a run candidate.
+     */
+    public static interface Filter
     {
         //~ Methods ------------------------------------------------------------
 
+        /**
+         * Perform the filter on the provided run candidate.
+         *
+         * @param x      abscissa at beginning of run candidate
+         * @param y      ordinate at beginning of run candidate
+         * @param length the length of the run candidate
+         * @return true if candidate is to be kept
+         */
+        boolean check (int x,
+                       int y,
+                       int length);
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //
+    // ----------//
+    // MyAdapter //
+    // ----------//
+    private class MyAdapter
+            implements RunsRetriever.Adapter
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Potential filter on candidates. */
+        private final Filter filter;
+
+        //~ Constructors -------------------------------------------------------
+        public MyAdapter (Filter filter)
+        {
+            this.filter = filter;
+        }
+
+        //~ Methods ------------------------------------------------------------
         // --------//
         // backRun //
         // --------//
@@ -138,6 +191,15 @@ public class RunsTableFactory
         {
             // We consider only runs that are longer than minLength
             if (length >= minLength) {
+                // Run filter if any
+                if (filter != null) {
+                    final boolean ok = swapNeeded
+                            ? filter.check(pos, coord - length, length)
+                            : filter.check(coord - length, pos, length);
+                    if (!ok) {
+                        return;
+                    }
+                }
                 final int level = ((2 * cumul) + length) / (2 * length);
                 table.getSequence(pos)
                         .add(new Run(coord - length, length, level));
@@ -172,15 +234,6 @@ public class RunsTableFactory
             }
         }
 
-        // ----------//
-        // terminate //
-        // ----------//
-        @Override
-        public final void terminate ()
-        {
-            logger.debug("{} Retrieved runs: {}", table, table.getRunCount());
-        }
-
         //--------------//
         // isThreadSafe //
         //--------------//
@@ -211,6 +264,15 @@ public class RunsTableFactory
 
             // No annotation: it's safer to assume no thread safety
             return false;
+        }
+
+        // ----------//
+        // terminate //
+        // ----------//
+        @Override
+        public final void terminate ()
+        {
+            logger.debug("{} Retrieved runs: {}", table, table.getRunCount());
         }
     }
 }

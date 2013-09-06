@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet.picture;
 
+import omr.image.Ghostscript;
 import static org.junit.Assert.*;
 import org.junit.Test;
 

@@ -13,10 +13,11 @@ package omr.glyph.facets;
 
 import omr.glyph.ui.AttachmentHolder;
 
+import omr.image.PixelBuffer;
+
 import omr.lag.Section;
 
 import java.awt.Color;
-import java.awt.image.BufferedImage;
 import java.util.Collection;
 
 /**
@@ -67,7 +68,7 @@ interface GlyphDisplay
      *
      * @return a black & white image (contour box size )
      */
-    BufferedImage getImage ();
+    PixelBuffer getImage ();
 
     /**
      * Reset the display color of all sections that compose this glyph.

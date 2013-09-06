@@ -16,12 +16,11 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.GlyphLayer;
 import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
-import omr.glyph.ui.NestView;
 
 import omr.lag.BasicLag;
-import omr.lag.JunctionRatioPolicy;
 import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.SectionsBuilder;
@@ -43,6 +42,7 @@ import omr.sheet.SystemInfo;
 import omr.step.StepException;
 
 import omr.ui.Colors;
+import omr.ui.util.ItemRenderer;
 import omr.ui.util.UIUtil;
 
 import omr.util.HorizontalSide;
@@ -68,6 +68,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import omr.lag.JunctionShiftPolicy;
 
 /**
  * Class {@code BarsRetriever} focuses on the retrieval of vertical
@@ -79,7 +80,7 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 public class BarsRetriever
-        implements NestView.ItemRenderer
+        implements ItemRenderer
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -92,7 +93,7 @@ public class BarsRetriever
     //~ Instance fields --------------------------------------------------------
     //
     /** Related sheet. */
-    private final Sheet sheet;
+    final Sheet sheet;
 
     /** Scale-dependent constants for vertical stuff. */
     private final Parameters params;
@@ -157,21 +158,19 @@ public class BarsRetriever
     {
         vLag = new BasicLag("vLag", VERTICAL);
 
+
+        final int maxShift = sheet.getScale().toPixels(
+                constants.maxShift);
+
         SectionsBuilder sectionsBuilder = new SectionsBuilder(
                 vLag,
-                new JunctionRatioPolicy(params.maxLengthRatio));
-        sectionsBuilder.createSections(vertTable);
+                ///new JunctionRatioPolicy());
+                new JunctionShiftPolicy(maxShift));
+        sectionsBuilder.createSections(vertTable, true);
 
         sheet.setVerticalLag(vLag);
 
-        // Debug sections VIPs
-        for (int id : params.vipSections) {
-            Section sect = vLag.getVertexById(id);
-
-            if (sect != null) {
-                sect.setVip();
-            }
-        }
+        setVipSections();
     }
 
     //-------------//
@@ -608,16 +607,18 @@ public class BarsRetriever
         // Filaments factory
         FilamentsFactory factory = new FilamentsFactory(sheet.getScale(),
                 sheet.getNest(),
+                GlyphLayer.DEFAULT,
                 VERTICAL,
                 Filament.class);
 
         // Factory parameters adjustment
-        factory.setMaxSectionThickness(constants.maxSectionThickness);
-        factory.setMaxFilamentThickness(constants.maxFilamentThickness);
+        factory.setMaxThickness(constants.maxFilamentThickness);
         factory.setMaxCoordGap(constants.maxCoordGap);
         factory.setMaxPosGap(constants.maxPosGap);
-        factory.setMaxSpace(constants.maxSpace);
+        factory.setMaxOverlapSpace(constants.maxOverlapSpace);
         factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
+
+        factory.dump("BarsRetriever factory");
 
         // Retrieve filaments out of vertical sections
         filaments.addAll(factory.retrieveFilaments(vLag.getVertices(), true));
@@ -1574,6 +1575,22 @@ public class BarsRetriever
         return systemTops;
     }
 
+    //----------------//
+    // setVipSections //
+    //----------------//
+    private void setVipSections ()
+    {
+        // Debug sections VIPs
+        for (int id : params.vipSections) {
+            Section sect = vLag.getVertexById(id);
+
+            if (sect != null) {
+                sect.setVip();
+                logger.info("Vertical vip section: {}", sect);
+            }
+        }
+    }
+
     //--------------------//
     // tryRangeConnection //
     //--------------------//
@@ -1666,19 +1683,15 @@ public class BarsRetriever
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Ratio maxLengthRatio = new Constant.Ratio(
-                1.4,
-                "Maximum ratio in length for a run to be combined with an existing section");
-
         // Constants specified WRT mean interline
         // --------------------------------------
-        Scale.Fraction maxSectionThickness = new Scale.Fraction(
-                0.8,
-                "Maximum horizontal section thickness WRT interline");
+        Scale.Fraction maxShift = new Scale.Fraction(
+                0.05,
+                "Max shift between two runs of vertical sections");
 
         Scale.Fraction maxFilamentThickness = new Scale.Fraction(
                 0.8,
-                "Maximum horizontal filament thickness WRT interline");
+                "Maximum filament thickness WRT interline");
 
         Scale.Fraction maxOverlapDeltaPos = new Scale.Fraction(
                 0.4,
@@ -1692,7 +1705,7 @@ public class BarsRetriever
                 0.2,
                 "Maximum delta abscissa for a gap between filaments");
 
-        Scale.Fraction maxSpace = new Scale.Fraction(
+        Scale.Fraction maxOverlapSpace = new Scale.Fraction(
                 0.1,
                 "Maximum space between overlapping bar filaments");
 
@@ -1774,25 +1787,17 @@ public class BarsRetriever
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all constants related to vertical
-     * frames.
+     * Class {@code Parameters} gathers all constants related to
+     * vertical frames.
      */
     private static class Parameters
     {
-        //~ Static fields/initializers -----------------------------------------
 
-        /** Usual logger utility. */
-        private static final Logger logger = LoggerFactory.getLogger(Parameters.class);
-
-        //~ Instance fields ----------------------------------------------------
         /** Maximum delta abscissa for a gap between filaments. */
         final int maxPosGap;
 
         /** Minimum run length for vertical lag. */
         final int minRunLength;
-
-        /** Used for section junction policy. */
-        final double maxLengthRatio;
 
         /** Minimum for long vertical stick bars. */
         final int minLongLength;
@@ -1837,7 +1842,6 @@ public class BarsRetriever
         {
             maxPosGap = scale.toPixels(constants.maxPosGap);
             minRunLength = scale.toPixels(constants.minRunLength);
-            maxLengthRatio = constants.maxLengthRatio.getValue();
             minLongLength = scale.toPixels(constants.minLongLength);
             maxDistanceFromStaffSide = scale.toPixels(
                     constants.maxDistanceFromStaffSide);

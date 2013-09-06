@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.run.AdaptiveFilter;
-import omr.run.AdaptiveFilter.AdaptiveContext;
-import omr.run.FilterDescriptor;
-import omr.run.PixelFilter;
+import omr.image.AdaptiveFilter;
+import omr.image.AdaptiveFilter.AdaptiveContext;
+import omr.image.FilterDescriptor;
+import omr.image.PixelFilter;
 
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;

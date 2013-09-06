@@ -15,12 +15,12 @@ import omr.score.Score;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.picture.PictureLoader;
+import omr.image.PictureLoader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.image.RenderedImage;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Collection;
 import java.util.SortedMap;
@@ -73,7 +73,7 @@ public class LoadStep
         final SortedSet<Integer> set = new TreeSet<>();
         set.add(index);
 
-        SortedMap<Integer, RenderedImage> images =
+        SortedMap<Integer, BufferedImage> images =
                 PictureLoader.loadImages(imageFile, set);
         if (images != null) {
             sheet.setImage(images.get(index));
