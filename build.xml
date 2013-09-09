@@ -88,7 +88,7 @@
     <!-- Needed for ant-contrib tasks -->
     <taskdef classpathref="tools.classpath" resource="net/sf/antcontrib/antlib.xml"/>
     <!-- ===  Public Targets  ============================================== -->
-    <!-- 
+    <!--
         There is no more redefined public targets
         To build Audiveris on Java Web Start, simply use: 
             CLI:      ant clean jar
@@ -98,7 +98,7 @@
     <!-- installers (obsolete) -->
     <!-- ========== -->
     <target depends="jar, -installers-mac, -installers-unix, -installers-windows" description="Build installers (obsolete)" name="installers"/>
-    
+
     <!-- =============== -->
     <!-- test-regression -->
     <!-- =============== -->
@@ -304,7 +304,7 @@ public class ProgramId
     <!-- ============== -->
     <!-- -javadoc-build -->
     <!-- ============== -->
-    <target depends="-uml, new-audiveris-impl.-javadoc-build" name="-javadoc-build"/>
+    <target depends="-uml, audiveris-impl.-javadoc-build" name="-javadoc-build"/>
     <!-- ========== -->
     <!-- -no-hg-tip -->
     <!-- ========== -->

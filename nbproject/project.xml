@@ -9,10 +9,10 @@
             </extension>
         </buildExtensions>
         <data xmlns="http://www.netbeans.org/ns/j2se-project/3">
-            <name>new-audiveris</name>
+            <name>audiveris</name>
             <source-roots>
-                <root id="src.dir"/>
                 <root id="src.java.dir"/>
+                <root id="src.dir"/>
             </source-roots>
             <test-roots>
                 <root id="test.src.dir"/>
@@ -20,7 +20,7 @@
         </data>
         <references xmlns="http://www.netbeans.org/ns/ant-project-references/1">
             <reference>
-                <foreign-project>installer-1</foreign-project>
+                <foreign-project>installer</foreign-project>
                 <artifact-type>jar</artifact-type>
                 <script>build.xml</script>
                 <target>jar</target>
