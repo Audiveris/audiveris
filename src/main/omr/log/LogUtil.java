@@ -54,10 +54,8 @@ public class LogUtil
      * any logging request is sent.
      *
      * @param CONFIG_FOLDER Config folder which may contain a logback.xml file
-     * @param TEMP_FOLDER   Temporary folder where log file should be written
      */
-    public static void initialize (File CONFIG_FOLDER,
-                                   File TEMP_FOLDER)
+    public static void initialize (File CONFIG_FOLDER)
     {
         // 1/ Check if system property is set and points to a real file
         final String loggingProp = System.getProperty(LOGBACK_LOGGING_KEY);

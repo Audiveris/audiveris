@@ -206,14 +206,37 @@ public class WellKnowns
 
     static {
         /** Logging configuration. */
-        LogUtil.initialize(CONFIG_FOLDER, TEMP_FOLDER);
+        LogUtil.initialize(CONFIG_FOLDER);
+
         /** Log declared data (debug). */
         logDeclaredData();
     }
 
     static {
+        /** Make sure TEMP_FOLDER exists. */
+        createTempFolder();
+    }
+
+    static {
         /** Disable DirecDraw by default. */
         disableDirectDraw();
+    }
+
+    //------------------//
+    // createTempFolder //
+    //------------------//
+    /**
+     * Make sure TEMP_FOLDER exists.
+     */
+    private static void createTempFolder ()
+    {
+        final Logger logger = LoggerFactory.getLogger(WellKnowns.class);
+
+        if (!TEMP_FOLDER.exists()) {
+            if (TEMP_FOLDER.mkdirs()) {
+                logger.info("Created folder {}", TEMP_FOLDER);
+            }
+        }
     }
 
     //~ Constructors -----------------------------------------------------------

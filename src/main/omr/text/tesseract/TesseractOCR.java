@@ -109,10 +109,6 @@ public class TesseractOCR
      */
     private TesseractOCR ()
     {
-        // Debug
-        if (constants.keepImages.isSet()) {
-            WellKnowns.TEMP_FOLDER.mkdir();
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
