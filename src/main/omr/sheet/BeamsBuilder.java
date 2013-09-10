@@ -113,8 +113,6 @@ public class BeamsBuilder
     {
         spots = getSpots();
 
-        final int scaledBeamHeight = scale.getMainBeam();
-
         // Look for beam candidates
         List<Glyph> beams = new ArrayList<Glyph>();
         logger.info(
@@ -129,17 +127,17 @@ public class BeamsBuilder
                 logger.info("BINGO buildbeams {}", glyph);
             }
 
-            Rectangle box = glyph.getBounds();
-            Line line = glyph.getLine();
+            final Rectangle box = glyph.getBounds();
+            final Line glyphLine = glyph.getLine();
 
             // Minimum width
             if (box.width < params.minBeamWidth) {
                 continue GlyphLoop;
             }
 
-            // Maximum slope
+            // Maximum slope. Does this work OK with double beam of diff length?
             try {
-                if (Math.abs(line.getSlope()) > params.maxBeamSlope) {
+                if (Math.abs(glyphLine.getSlope()) > params.maxBeamSlope) {
                     continue GlyphLoop;
                 }
             } catch (Exception ex) {
@@ -150,7 +148,6 @@ public class BeamsBuilder
             int sumPoints = 0;
             double sumDist = 0;
 
-            final Line glyphLine = glyph.getLine();
             final Map<VerticalSide, List<BasicLine>> borders;
             borders = new TreeMap<VerticalSide, List<BasicLine>>();
 
@@ -164,12 +161,13 @@ public class BeamsBuilder
                     int dy = (int) Math.rint(
                             border.yAtX(xMid) - glyphLine.yAtX(xMid));
                     logger.debug(
-                            "Beam#{} {} dy:{} points:{} dist:{}",
+                            "Beam#{} {} dy:{} points:{} dist:{} slope:{}",
                             glyph.getId(),
                             side,
                             dy,
                             border.getNumberOfPoints(),
-                            String.format("%.2f", border.getMeanDistance()));
+                            String.format("%.2f", border.getMeanDistance()),
+                            String.format("%.2f", border.getSlope()));
                     sumPoints += border.getNumberOfPoints();
                     sumDist += (border.getMeanDistance() * border.getNumberOfPoints());
                 }
@@ -192,18 +190,47 @@ public class BeamsBuilder
 
             if (topCount != botCount) {
                 // Check cases like this one!
-                logger.warn("Strange beam(s) at glyph#{}", glyph.getId());
+                logger.info(
+                        "Strange beam(s) at glyph#{} topBorders:{} bottomBorders:{}",
+                        glyph.getId(),
+                        topCount,
+                        botCount);
 
                 continue GlyphLoop;
             }
 
-            // Evaluate beam candidate
+            // Check borders are rather parallel (similar angle)
+            double globalDeltaSlope = 0;
+
+            for (int i = 0; i < topCount; i++) {
+                double top = borders.get(VerticalSide.TOP)
+                        .get(i)
+                        .getSlope();
+                double bottom = borders.get(VerticalSide.BOTTOM)
+                        .get(i)
+                        .getSlope();
+                double deltaSlope = Math.abs(bottom - top);
+
+                if (deltaSlope > params.maxDeltaSlope) {
+                    logger.debug("Beam#{} Non parallel borders", glyph.getId());
+
+                    continue GlyphLoop;
+                }
+
+                globalDeltaSlope += deltaSlope;
+            }
+
+            globalDeltaSlope /= topCount;
+
+            // Compute grade for beam candidate
             double distImpact = 1 - (globalDist / params.maxDistanceToBorder);
             double widthImpact = Math.min(
                     1,
                     (box.width - params.minBeamWidth) / params.minLargeBeamWidth);
+            double deltaSlopeImpact = 1
+                                      - (globalDeltaSlope / params.maxDeltaSlope);
 
-            double grade = (distImpact + widthImpact) / 2;
+            double grade = (distImpact + widthImpact + deltaSlopeImpact) / 3;
 
             // Build each precise beam path
             for (int i = 0; i < topCount; i++) {
@@ -323,7 +350,8 @@ public class BeamsBuilder
                 x++;
             }
 
-            if (sectionLine.getNumberOfPoints() > 0) {
+            // Discard too narrow sections
+            if (sectionLine.getNumberOfPoints() >= 3) {
                 final Rectangle box = section.getBounds();
                 final int center = GeoUtil.centerOf(box).x;
                 final int y = sectionLine.yAtX(center);
@@ -401,6 +429,11 @@ public class BeamsBuilder
                 1.0,
                 "Maximum absolute tangent value for a beam angle");
 
+        final Constant.Double maxDeltaTangent = new Constant.Double(
+                "tangent",
+                0.05,
+                "Maximum delta slope between top and bottom of beam");
+
         final Scale.Fraction maxDistanceToBorder = new Scale.Fraction(
                 0.08,
                 "Maximum mean distance to average beam border");
@@ -423,6 +456,8 @@ public class BeamsBuilder
 
         final double maxBeamSlope;
 
+        final double maxDeltaSlope;
+
         final double maxDistanceToBorder;
 
         //~ Constructors -------------------------------------------------------
@@ -436,6 +471,7 @@ public class BeamsBuilder
             minBeamWidth = scale.toPixels(constants.minBeamWidth);
             minLargeBeamWidth = scale.toPixels(constants.minLargeBeamWidth);
             maxBeamSlope = constants.maxBeamTangent.getValue();
+            maxDeltaSlope = constants.maxDeltaTangent.getValue();
             maxDistanceToBorder = scale.toPixelsDouble(
                     constants.maxDistanceToBorder);
 

@@ -192,7 +192,9 @@ public class SpotsBuilder
         int interline = scale.getInterline();
 
         final float radius = (beam - 3) / 2f;
-        ///final float radius = (interline - 3) / 2f;
+        ///final float radius = (beam - 2) / 2f;
+        ///final float radius = (beam - 1) / 2f;
+        ///final float radius = (interline - 3) / 2f; // => head focus
         logger.info("Spots retrieval beam: {}, radius: {}", beam, radius);
 
         StructureElement se = new StructureElement(0, 1, radius, offset);

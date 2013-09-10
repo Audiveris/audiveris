@@ -221,6 +221,7 @@ public class SpotsController
         @Override
         public void renderItems (Graphics2D g)
         {
+            super.renderItems(g);
             Rectangle clip = g.getClipBounds();
 
             Color     oldColor = g.getColor();
@@ -244,7 +245,6 @@ public class SpotsController
             }
 
             g.setColor(oldColor);
-            super.renderItems(g);
         }
     }
 }

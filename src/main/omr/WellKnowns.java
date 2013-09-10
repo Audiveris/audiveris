@@ -222,23 +222,6 @@ public class WellKnowns
         disableDirectDraw();
     }
 
-    //------------------//
-    // createTempFolder //
-    //------------------//
-    /**
-     * Make sure TEMP_FOLDER exists.
-     */
-    private static void createTempFolder ()
-    {
-        final Logger logger = LoggerFactory.getLogger(WellKnowns.class);
-
-        if (!TEMP_FOLDER.exists()) {
-            if (TEMP_FOLDER.mkdirs()) {
-                logger.info("Created folder {}", TEMP_FOLDER);
-            }
-        }
-    }
-
     //~ Constructors -----------------------------------------------------------
     //
     //------------//
@@ -257,6 +240,23 @@ public class WellKnowns
      */
     public static void ensureLoaded ()
     {
+    }
+
+    //------------------//
+    // createTempFolder //
+    //------------------//
+    /**
+     * Make sure TEMP_FOLDER exists.
+     */
+    private static void createTempFolder ()
+    {
+        final Logger logger = LoggerFactory.getLogger(WellKnowns.class);
+
+        if (!TEMP_FOLDER.exists()) {
+            if (TEMP_FOLDER.mkdirs()) {
+                logger.info("Created folder {}", TEMP_FOLDER);
+            }
+        }
     }
 
     //

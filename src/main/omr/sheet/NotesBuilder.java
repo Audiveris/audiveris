@@ -33,13 +33,10 @@ import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
-import omr.math.TableUtil;
-
 import omr.run.Orientation;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
-import omr.sig.BasicInter;
 import omr.sig.BeamInter;
 import omr.sig.BlackHeadInter;
 import omr.sig.Inter;
@@ -55,6 +52,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -152,12 +150,6 @@ public class NotesBuilder
 
             if (inter != null) {
                 glyph.setShape(Shape.NOTEHEAD_BLACK);
-
-                //                if (lookForStem(inter)) {
-                //                    inter.setShape(Shape.NOTEHEAD_BLACK);
-                //                } else {
-                //                    inter.setShape(Shape.NOTEHEAD_VOID);
-                //                }
             }
         }
     }
@@ -347,9 +339,11 @@ public class NotesBuilder
                     String.format("%.2f", headCount));
 
             if (count >= 2) {
-                List<Glyph> parts = splitSpot(glyph, count);
-                toAdd.addAll(parts);
-                toRemove.add(glyph);
+                List<Glyph> parts = splitSpot(glyph);
+                if (parts.size() > 1) {
+                    toAdd.addAll(parts);
+                    toRemove.add(glyph);
+                }
             }
         }
 
@@ -361,7 +355,6 @@ public class NotesBuilder
 
             // Assign proper system to each part
             for (Glyph part : toAdd) {
-                SystemInfo system = sheet.getSystemOf(part);
                 system.addGlyph(part);
 
                 for (Section section : part.getMembers()) {
@@ -375,16 +368,19 @@ public class NotesBuilder
     // splitSpot //
     //-----------//
     /**
-     * Split a (large) spot into smaller parts.
+     * Split a (large) spot recursively into smaller parts.
+     * A part is further split only if its weight is significantly larger than
+     * the typical weight of a note head.
      *
-     * @param glyph         the spot to split
-     * @param expectedParts the expected number of smaller parts
+     * @param glyph the spot to split
      * @return the collection of parts
      */
-    private List<Glyph> splitSpot (Glyph glyph,
-                                   int expectedParts)
+    private List<Glyph> splitSpot (Glyph glyph)
     {
-        logger.debug("Splitting glyph#{}", glyph.getId());
+        if (logger.isDebugEnabled() || glyph.isVip()) {
+            logger.debug("splitSplot for glyph#{}", glyph.getId());
+        }
+        Point glyphOrigin = glyph.getBounds().getLocation();
 
         // We compute distances to background (white) pixels
         PixelBuffer img = glyph.getImage();
@@ -397,35 +393,30 @@ public class NotesBuilder
         WatershedGrayLevel instance = new WatershedGrayLevel(dists, true);
         boolean[][] result = null;
 
-        // Avoid small fragments (adjust step)
-        // Beware: the expectedParts value is not reliable!
-        // TODO: Improve this by checking the weight of each part
-        // If a part =~ 2 heads, then split this part further
-        // So, perhaps we should try from high step to low step values
-        for (int step = 1; step < 10; step++) {
+        // Try to split the glyph into at least 2 parts
+        int count = 1;
+
+        for (int step = 10; step >= 1; step--) {
             result = instance.process(step);
+            count = instance.getRegionCount();
 
-            int regionCount = instance.getRegionCount();
+            if (count > 1) {
+                logger.debug(
+                        "Split {} in {}, step {}",
+                        glyph.idString(),
+                        count,
+                        step);
 
-            if (regionCount != expectedParts) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(
-                            "Spot#{} wrong number of parts {} vs {}, step {}",
-                            glyph.getId(),
-                            regionCount,
-                            expectedParts,
-                            step);
-                    TableUtil.dump("result " + regionCount, result);
-                }
-
-                if (regionCount < expectedParts) {
-                    break;
-                }
-            } else {
                 break;
             }
         }
 
+        if (count == 1) {
+            // No split was found
+            return Arrays.asList(glyph);
+        }
+
+        // Perform the split
         merge(img, result);
 
         ///TableUtil.dump("split", img);
@@ -450,10 +441,25 @@ public class NotesBuilder
                 scale);
 
         for (Glyph part : parts) {
-            part.translate(glyph.getBounds().getLocation());
+            part.translate(glyphOrigin);
         }
 
-        return parts;
+        // Check if some parts need further split
+        List<Glyph> goodParts = new ArrayList<Glyph>();
+
+        for (Glyph part : parts) {
+            double headCount = (double) part.getWeight() / params.typicalWeight;
+            int cnt = (int) Math.rint(headCount);
+
+            if (cnt >= 2) {
+                List<Glyph> subParts = splitSpot(part);
+                goodParts.addAll(subParts);
+            } else {
+                goodParts.add(part);
+            }
+        }
+
+        return goodParts;
     }
 
     //~ Inner Classes ----------------------------------------------------------

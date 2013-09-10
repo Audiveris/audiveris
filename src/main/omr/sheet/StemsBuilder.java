@@ -364,7 +364,7 @@ public class StemsBuilder
                 "Minimum stem contribution for a section near head");
 
         final Scale.Fraction minStemExtension = new Scale.Fraction(
-                1.5,
+                1.25,
                 "Minimum length counted from head to end of stem");
 
         final Scale.Fraction minLongStemLength = new Scale.Fraction(
@@ -381,7 +381,7 @@ public class StemsBuilder
 
         // TODO: THIS SHOULD NOT BE HERE!!!!!!!!!!!!!!
         final Scale.LineFraction maxStemThickness = new Scale.LineFraction(
-                1.5,
+                1.6,
                 "Maximum thickness for a stem");
 
     }

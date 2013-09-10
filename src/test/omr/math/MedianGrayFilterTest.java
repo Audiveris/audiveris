@@ -75,7 +75,7 @@ public class MedianGrayFilterTest
 
         MedianGrayFilter instance = new MedianGrayFilter(1);
         BufferedImage    expResult = image;
-        BufferedImage    result = instance.process(image);
+        BufferedImage    result = instance.filter(image);
         dump(result, "result:");
 
         if (!areEqual(expResult, result)) {
@@ -93,7 +93,7 @@ public class MedianGrayFilterTest
 
         MedianGrayFilter instance = new MedianGrayFilter(1);
         BufferedImage    expResult = image;
-        BufferedImage    result = instance.process(image);
+        BufferedImage    result = instance.filter(image);
         dump(result, "result:");
 
         if (!areEqual(expResult, result)) {
@@ -128,7 +128,7 @@ public class MedianGrayFilterTest
         exp.setPixel(4, 3, pixel);
         dump(expResult, "Expected:");        
         
-        BufferedImage        result = instance.process(image);
+        BufferedImage        result = instance.filter(image);
         dump(result, "result:");
 
         if (!areEqual(expResult, result)) {
@@ -146,7 +146,7 @@ public class MedianGrayFilterTest
 
         MedianGrayFilter instance = new MedianGrayFilter(1);
         BufferedImage    expResult = image;
-        BufferedImage    result = instance.process(image);
+        BufferedImage    result = instance.filter(image);
         dump(result, "result:");
 
         if (!areEqual(expResult, result)) {

@@ -188,8 +188,7 @@ public class HorizontalsBuilder
             // Apply basic checks for ledgers candidates, tenutos, endings
             checkHorizontals(sticks);
 
-            // Discard candidates that overlap beams
-            // We assume that such beams are reliable (this is questionable)
+            // Discard candidates that overlap good beams
             discardBeamOverlaps();
 
             // Filter ledgers more accurately
@@ -284,7 +283,7 @@ public class HorizontalsBuilder
     {
         List<Section> keptSections = new ArrayList<>();
         int minWidth = scale.toPixels(constants.minLedgerLengthLow);
-        
+
         for (Section section : system.getHorizontalFullSections()) {
             // Check minimum length (useless test!!! TODO)
             if (section.getBounds().width < minWidth) {
@@ -691,18 +690,19 @@ public class HorizontalsBuilder
     // discardBeamOverlaps //
     //---------------------//
     /**
-     * Discard the ledger candidates that overlap a beam.
+     * Discard the ledger candidates that overlap a (good) beam.
      */
     private void discardBeamOverlaps ()
     {
         List<Glyph> toRemove = new ArrayList<Glyph>();
-        List<Glyph> beams = getBeams();
+        List<Inter> beams = getBeams();
 
         for (Glyph stick : ledgerCandidates) {
             // Check whether stick middle point is contained by a beam glyph
             Point2D middle = getMiddle(stick);
             BeamLoop:
-            for (Glyph beam : beams) {
+            for (Inter inter : beams) {
+                Glyph beam = inter.getGlyph();
                 if (beam.getBounds().contains(middle)) {
                     // More precise look
                     for (Section section : beam.getMembers()) {
@@ -738,16 +738,11 @@ public class HorizontalsBuilder
      *
      * @return the sequence of system beams
      */
-    private List<Glyph> getBeams ()
+    private List<Inter> getBeams ()
     {
-        List<Glyph> beams = new ArrayList<Glyph>();
-
-        for (Glyph glyph : system.getGlyphs()) {
-            Shape shape = glyph.getShape();
-            if (shape != null && ShapeSet.Beams.contains(shape)) {
-                beams.add(glyph);
-            }
-        }
+        SIGraph sig = system.getSig();
+        List<Inter> beams = sig.inters(Shape.BEAM);
+        sig.sortByAbscissa(beams);
 
         return beams;
     }
