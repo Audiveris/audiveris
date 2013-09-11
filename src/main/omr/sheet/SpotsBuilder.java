@@ -60,7 +60,7 @@ public class SpotsBuilder
             SpotsBuilder.class);
 
     /** Orientation chosen for spot runs. */
-    private static final Orientation SPOT_ORIENTATION = Orientation.VERTICAL;
+    public static final Orientation SPOT_ORIENTATION = Orientation.VERTICAL;
 
     //~ Instance fields --------------------------------------------------------
     /** Related sheet. */

@@ -146,8 +146,8 @@ public class GlyphsBuilder
      * glyphs, and build new glyphs out of connected sections.
      *
      * @param sections the sections to browse
-     * @param nest     the nest to host glyph instances
-     * @param layer    the precise layer
+     * @param nest     the nest to host glyph instances, if any
+     * @param layer    the precise layer, if any
      * @param scale    the sheet scale
      */
     public static List<Glyph> retrieveGlyphs (Collection<Section> sections,
@@ -175,7 +175,10 @@ public class GlyphsBuilder
                 considerConnection(glyph, section, sections);
 
                 // Insert this newly built glyph into nest (no system involved)
-                glyph = nest.addGlyph(glyph);
+                if (nest != null) {
+                    glyph = nest.addGlyph(glyph);
+                }
+
                 created.add(glyph);
             }
         }

@@ -13,17 +13,19 @@ package omr.image;
 
 import static omr.image.PixelSource.BACKGROUND;
 
+import omr.util.StopWatch;
+
 import net.jcip.annotations.ThreadSafe;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.util.Arrays;
-import omr.util.StopWatch;
 
 /**
  * Class {@code PixelBuffer} handles a plain rectangular buffer of
@@ -35,16 +37,15 @@ import omr.util.StopWatch;
  */
 @ThreadSafe
 public class PixelBuffer
-    implements PixelFilter
+        implements PixelFilter
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        PixelBuffer.class);
+            PixelBuffer.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Width of the table */
     private final int width;
 
@@ -55,7 +56,6 @@ public class PixelBuffer
     private byte[] buffer;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // PixelBuffer //
     //-------------//
@@ -89,7 +89,8 @@ public class PixelBuffer
 
         StopWatch watch = new StopWatch("PixelBuffer");
         watch.start("toBuffer");
-        int[]  pixel = new int[3];
+
+        int[] pixel = new int[3];
         Raster raster = image.getRaster();
 
         for (int y = 0; y < height; y++) {
@@ -98,11 +99,11 @@ public class PixelBuffer
                 setPixel(x, y, (byte) pixel[0]);
             }
         }
+
         watch.print();
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------------//
     // getContext //
     //------------//
@@ -149,6 +150,34 @@ public class PixelBuffer
         return width;
     }
 
+    //--------------//
+    // injectBuffer //
+    //--------------//
+    /**
+     * Inject all non-background pixels of that buffer into this buffer.
+     * That buffer is assumed to be within this buffer bounds.
+     *
+     * @param that   the buffer to inject
+     * @param origin relative location where that buffer must be injected
+     */
+    public void injectBuffer (PixelBuffer that,
+                              Point origin)
+    {
+        for (int x = 0, w = that.getWidth(); x < w; x++) {
+            for (int y = 0, h = that.getHeight(); y < h; y++) {
+                int val = that.getPixel(x, y);
+
+                if (val < 0) {
+                    val += 256;
+                }
+
+                if (val != BACKGROUND) {
+                    this.setPixel(x + origin.x, y + origin.y, (byte) val);
+                }
+            }
+        }
+    }
+
     //--------//
     // isFore //
     //--------//
@@ -168,8 +197,8 @@ public class PixelBuffer
     //----------//
     // setPixel //
     //----------//
-    public void setPixel (int  x,
-                          int  y,
+    public void setPixel (int x,
+                          int y,
                           byte val)
     {
         buffer[(y * width) + x] = val;
@@ -182,14 +211,15 @@ public class PixelBuffer
     {
         StopWatch watch = new StopWatch("PixelBuffer");
         watch.start("toImage");
-        final BufferedImage  img = new BufferedImage(
-            width,
-            height,
-            BufferedImage.TYPE_BYTE_GRAY);
+
+        final BufferedImage img = new BufferedImage(
+                width,
+                height,
+                BufferedImage.TYPE_BYTE_GRAY);
         final WritableRaster raster = img.getRaster();
 
-        final int[]          pixel = new int[1];
-        int                  val;
+        final int[] pixel = new int[1];
+        int val;
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {

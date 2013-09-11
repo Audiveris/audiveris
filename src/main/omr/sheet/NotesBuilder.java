@@ -17,6 +17,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLayer;
+import omr.glyph.Glyphs;
 import omr.glyph.GlyphsBuilder;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
@@ -28,6 +29,7 @@ import omr.image.ChamferDistanceInteger;
 import omr.image.PixelBuffer;
 import omr.image.WatershedGrayLevel;
 
+import omr.lag.BasicLag;
 import omr.lag.JunctionAllPolicy;
 import omr.lag.Lag;
 import omr.lag.Section;
@@ -313,6 +315,58 @@ public class NotesBuilder
         }
     }
 
+    //------------//
+    // regenerate //
+    //------------//
+    /**
+     * All the provided parts were built on temporary lags, this
+     * method rebuild them into the single splitLag.
+     *
+     * @param parts the temporary parts
+     * @return the new parts, with same pixels, but in splitLag
+     */
+    private List<Glyph> regenerate (List<Glyph> parts)
+    {
+        // Generate a single PixelBuffer with all parts
+        // then retrieve final glyphs out of this buffer
+        final Rectangle globalBox = Glyphs.getBounds(parts);
+        final Point globalOrg = globalBox.getLocation();
+        final PixelBuffer globalBuf = new PixelBuffer(globalBox.getSize());
+
+        for (Glyph part : parts) {
+            final Point org = part.getBounds()
+                    .getLocation();
+            globalBuf.injectBuffer(
+                    part.getImage(),
+                    new Point(org.x - globalOrg.x, org.y - globalOrg.y));
+        }
+
+        Lag splitLag = sheet.getSplitLag();
+        SectionsBuilder sectionsBuilder = new SectionsBuilder(
+                splitLag,
+                new JunctionAllPolicy());
+        RunsTable splitTable = new RunsTableFactory(
+                Orientation.VERTICAL,
+                globalBuf,
+                0).createTable("split");
+
+        List<Section> sections = sectionsBuilder.createSections(
+                splitTable,
+                false);
+
+        List<Glyph> newParts = GlyphsBuilder.retrieveGlyphs(
+                sections,
+                sheet.getNest(),
+                GlyphLayer.SPOT,
+                scale);
+
+        for (Glyph part : newParts) {
+            part.translate(globalOrg);
+        }
+
+        return newParts;
+    }
+
     //-----------------//
     // splitLargeSpots //
     //-----------------//
@@ -340,8 +394,10 @@ public class NotesBuilder
 
             if (count >= 2) {
                 List<Glyph> parts = splitSpot(glyph);
+
                 if (parts.size() > 1) {
-                    toAdd.addAll(parts);
+                    // We have to regenerate parts in the common splitLag
+                    toAdd.addAll(regenerate(parts));
                     toRemove.add(glyph);
                 }
             }
@@ -377,19 +433,13 @@ public class NotesBuilder
      */
     private List<Glyph> splitSpot (Glyph glyph)
     {
-        if (logger.isDebugEnabled() || glyph.isVip()) {
-            logger.debug("splitSplot for glyph#{}", glyph.getId());
-        }
-        Point glyphOrigin = glyph.getBounds().getLocation();
+        Point glyphOrigin = glyph.getBounds()
+                .getLocation();
 
         // We compute distances to background (white) pixels
         PixelBuffer img = glyph.getImage();
-
-        ///TableUtil.dump("glyph:", img);
         ChamferDistanceInteger chamferDistance = new ChamferDistanceInteger();
         int[][] dists = chamferDistance.computeToBack(img);
-
-        ///TableUtil.dump("Raw distances:", dists);
         WatershedGrayLevel instance = new WatershedGrayLevel(dists, true);
         boolean[][] result = null;
 
@@ -401,12 +451,6 @@ public class NotesBuilder
             count = instance.getRegionCount();
 
             if (count > 1) {
-                logger.debug(
-                        "Split {} in {}, step {}",
-                        glyph.idString(),
-                        count,
-                        step);
-
                 break;
             }
         }
@@ -416,28 +460,28 @@ public class NotesBuilder
             return Arrays.asList(glyph);
         }
 
-        // Perform the split
+        // Perform the split, using a temporary lag
         merge(img, result);
 
-        ///TableUtil.dump("split", img);
-        Lag splitLag = sheet.getSplitLag();
+        Lag tLag = new BasicLag(
+                "tLag",
+                SpotsBuilder.SPOT_ORIENTATION);
         SectionsBuilder sectionsBuilder = new SectionsBuilder(
-                splitLag,
+                tLag,
                 new JunctionAllPolicy());
         RunsTable splitTable = new RunsTableFactory(
                 Orientation.VERTICAL,
                 img,
-                0).createTable("split");
+                0).createTable("tSplit");
 
         List<Section> sections = sectionsBuilder.createSections(
                 splitTable,
                 false);
-        logger.debug("Sections: {}", sections.size());
 
         List<Glyph> parts = GlyphsBuilder.retrieveGlyphs(
                 sections,
-                sheet.getNest(),
-                GlyphLayer.SPOT,
+                null,
+                null,
                 scale);
 
         for (Glyph part : parts) {
