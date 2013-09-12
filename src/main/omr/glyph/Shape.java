@@ -318,7 +318,8 @@ public enum Shape
     GLYPH_PART("Part of a larger glyph"),
     CUSTOM_TIME("Time signature defined by user"),
     NO_LEGAL_TIME("No Legal Time Shape"),
-    SPOT("Retrieved spot");
+    BEAM_SPOT("Beam-oriented spot", new Color(0xaaaaaa)),
+    HEAD_SPOT("Head-oriented spot", new Color(0xcccccc));
     //
     // =========================================================================
     // This is the end of shape enumeration

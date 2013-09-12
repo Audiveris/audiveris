@@ -284,7 +284,7 @@ public class SymbolsEditor
             setName("SymbolsEditor-MyView");
 
             // Subscribe to all lags for SectionSet events
-            for (Lag lag : lags) {
+            for (Lag lag : getLags()) {
                 lag.getSectionService()
                         .subscribeStrongly(SectionSetEvent.class, this);
             }
@@ -452,15 +452,13 @@ public class SymbolsEditor
                 // Stroke for borders
                 final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
 
-                if (lags != null) {
-                    for (Lag lag : lags) {
-                        // Render all sections, using assigned colors
-                        for (Section section : lag.getVertices()) {
-                            Glyph glyph = section.getGlyph();
+                for (Lag lag : getLags()) {
+                    // Render all sections, using assigned colors
+                    for (Section section : lag.getVertices()) {
+                        Glyph glyph = section.getGlyph();
 
-                            if (focus.isDisplayed(glyph)) {
-                                section.render(g, drawBorders);
-                            }
+                        if (focus.isDisplayed(glyph)) {
+                            section.render(g, drawBorders);
                         }
                     }
                 }
@@ -574,7 +572,7 @@ public class SymbolsEditor
                 // Collect section sets from all lags
                 List<Section> allSections = new ArrayList<>();
 
-                for (Lag lag : lags) {
+                for (Lag lag : getLags()) {
                     Set<Section> selected = lag.getSelectedSectionSet();
 
                     if (selected != null) {

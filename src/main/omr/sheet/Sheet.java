@@ -158,6 +158,9 @@ public class Sheet
     /** Spot lag. */
     private Lag spotLag;
 
+    /** Head lag. */
+    private Lag headLag;
+
     /** Split lag. */
     private Lag splitLag;
 
@@ -207,6 +210,9 @@ public class Sheet
 
     /** Display of runs tables. */
     private RunsViewer runsViewer;
+
+    /** Display pf all spots. */
+    private SpotsController spotsController;
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -535,6 +541,19 @@ public class Sheet
     public Lag getHorizontalFullLag ()
     {
         return hFullLag;
+    }
+
+    //------------//
+    // getHeadLag //
+    //------------//
+    /**
+     * Report the current head lag
+     *
+     * @return the current head lag
+     */
+    public Lag getHeadLag ()
+    {
+        return headLag;
     }
 
     //------------//
@@ -1235,6 +1254,24 @@ public class Sheet
     }
 
     //------------//
+    // setHeadLag //
+    //------------//
+    /**
+     * Assign the current head lag for the sheet
+     *
+     * @param headLag the spot lag
+     */
+    public void setHeadLag (Lag headLag)
+    {
+        if (this.headLag != null) {
+            this.headLag.cutServices();
+        }
+
+        this.headLag = headLag;
+        ///headLag.setServices(locationService, getNest().getGlyphService());
+    }
+
+    //------------//
     // setSpotLag //
     //------------//
     /**
@@ -1642,5 +1679,27 @@ public class Sheet
 
         // Save this distance image on disk for visual check
         TableUtil.store(getId() + ".dist", distanceImage);
+    }
+
+    //--------------------//
+    // getSpotsController //
+    //--------------------//
+    /**
+     * @return the spotsController
+     */
+    public SpotsController getSpotsController ()
+    {
+        return spotsController;
+    }
+
+    //--------------------//
+    // setSpotsController //
+    //--------------------//
+    /**
+     * @param spotsController the spotsController to set
+     */
+    public void setSpotsController (SpotsController spotsController)
+    {
+        this.spotsController = spotsController;
     }
 }

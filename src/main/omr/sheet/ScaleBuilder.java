@@ -199,7 +199,7 @@ public class ScaleBuilder
                     desc.getFilter(picture),
                     0);
             RunsTable wholeVertTable = factory.createTable("Binary");
-            
+
             watch.start("Global lag");
             sheet.setWholeVerticalTable(wholeVertTable);
             factory = null; // To allow garbage collection ASAP
@@ -323,7 +323,9 @@ public class ScaleBuilder
                 logger.info("{}{}", sheet.getLogPrefix(),
                         "No beam peak found, computing a default value");
 
-                return (int) Math.rint(0.7 * backPeak.getKey().best);
+                return (int) Math.rint(
+                        constants.beamAsBackRatio.getValue()
+                        * backPeak.getKey().best);
             } else {
                 return null;
             }
@@ -719,6 +721,10 @@ public class ScaleBuilder
         final Constant.Boolean disposeImage = new Constant.Boolean(
                 false,
                 "Should we dispose of original image once binarized?");
+
+        final Constant.Ratio beamAsBackRatio = new Constant.Ratio(
+                0.8,
+                "Default beam height defined as ratio of background peak");
 
     }
 

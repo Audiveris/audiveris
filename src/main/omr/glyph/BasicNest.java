@@ -841,7 +841,7 @@ public class BasicNest
             glyph.linkAllSections();
 
             if (glyph.isVip()) {
-                logger.info("{} added", glyph.idString());
+                logger.info("glyph#{} added", glyph.getId());
             }
 
             return glyph;

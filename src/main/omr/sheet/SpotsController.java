@@ -46,57 +46,68 @@ import java.util.EnumSet;
  * @author Hervé Bitteur
  */
 public class SpotsController
-    extends GlyphsController
+        extends GlyphsController
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        SpotsController.class);
+            SpotsController.class);
 
     /** Events that can be published on internal service (TODO: Check this!) */
-    private static final Class<?>[] locEvents = new Class<?>[] {
-                                                    LocationEvent.class
-                                                };
+    private static final Class<?>[] locEvents = new Class<?>[]{
+        LocationEvent.class
+    };
 
     /** Set of shapes of interest. */
     private static final EnumSet<Shape> relevantShapes = EnumSet.of(
-        Shape.SPOT,
-        Shape.BEAM,
-        Shape.BEAM_2,
-        Shape.BEAM_3,
-        Shape.NOTEHEAD_BLACK,
-        Shape.NOTEHEAD_VOID);
+            Shape.BEAM_SPOT,
+            Shape.HEAD_SPOT,
+            Shape.BEAM,
+            Shape.BEAM_2,
+            Shape.BEAM_3,
+            Shape.NOTEHEAD_BLACK,
+            Shape.NOTEHEAD_VOID);
+
     private static final EnumSet<Shape> beamShapes = EnumSet.of(
-        Shape.BEAM,
-        Shape.BEAM_2,
-        Shape.BEAM_3);
+            Shape.BEAM,
+            Shape.BEAM_2,
+            Shape.BEAM_3);
 
     //~ Instance fields --------------------------------------------------------
-
-    private final Lag spotLag;
-    private final Lag splitLag;
+    private final Lag[] initialLags;
 
     /** Related user display if any */
     private MyView view;
 
     //~ Constructors -----------------------------------------------------------
-
+    //-----------------//
+    // SpotsController //
+    //-----------------//
     /**
      * Creates a new SpotsController object.
      *
      * @param sheet related sheet
      */
     public SpotsController (Sheet sheet,
-                           Lag   spotLag,
-                           Lag   splitLag)
+                            Lag... lags)
     {
         super(new GlyphsModel(sheet, sheet.getNest(), null));
-        this.spotLag = spotLag;
-        this.splitLag = splitLag;
+        this.initialLags = lags;
     }
 
     //~ Methods ----------------------------------------------------------------
+    //--------//
+    // addLag //
+    //--------//
+    public void addLag (Lag lag)
+    {
+        if (view == null) {
+            displayFrame();
+        }
+
+        view.addLag(lag);
+    }
 
     //---------//
     // refresh //
@@ -122,31 +133,30 @@ public class SpotsController
         view = new MyView(getNest());
 
         sheet.getAssembly()
-             .addViewTab(
-            "Spots",
-            new ScrollView(view),
-            new BoardsPane(
+                .addViewTab(
+                "Spots",
+                new ScrollView(view),
+                new BoardsPane(
                 new PixelBoard(sheet),
                 new SymbolGlyphBoard(this, true, true)));
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // MyView //
     //--------//
     private final class MyView
-        extends NestView
+            extends NestView
     {
         //~ Constructors -------------------------------------------------------
 
         public MyView (Nest nest)
         {
             super(
-                nest,
-                SpotsController.this,
-                Arrays.asList(spotLag, splitLag),
-                sheet.getItemRenderers());
+                    nest,
+                    SpotsController.this,
+                    Arrays.asList(initialLags),
+                    sheet.getItemRenderers());
 
             setLocationService(sheet.getLocationService());
 
@@ -154,7 +164,6 @@ public class SpotsController
         }
 
         //~ Methods ------------------------------------------------------------
-
         //---------//
         // onEvent //
         //---------//
@@ -222,24 +231,24 @@ public class SpotsController
         public void renderItems (Graphics2D g)
         {
             super.renderItems(g);
+
             Rectangle clip = g.getClipBounds();
 
-            Color     oldColor = g.getColor();
+            Color oldColor = g.getColor();
             g.setColor(Color.RED);
 
             for (Glyph glyph : nest.getAllGlyphs()) {
                 final Shape shape = glyph.getShape();
 
-                if (relevantShapes.contains(shape) &&
-                    clip.intersects(glyph.getBounds())) {
+                if (relevantShapes.contains(shape)
+                    && clip.intersects(glyph.getBounds())) {
                     // Draw mean line
                     glyph.renderLine(g);
 
                     if (beamShapes.contains(shape)) {
                         // Draw beam border lines
                         SystemInfo system = sheet.getSystemOf(glyph);
-                        system.beamsBuilder
-                              .drawBorders(glyph, g);
+                        system.beamsBuilder.drawBorders(glyph, g);
                     }
                 }
             }

@@ -29,7 +29,6 @@ import omr.run.Orientation;
 import omr.run.Run;
 
 import omr.sig.BasicExclusion;
-import omr.sig.BasicInter;
 import omr.sig.BeamInter;
 import omr.sig.BeamPortion;
 import omr.sig.BeamStemRelation;
@@ -305,7 +304,11 @@ public class StemsBuilder
                 }
             }
         } finally {
-            logger.info("S#{} stems: {} ex: {}", system.getId(), size, count);
+            logger.info(
+                    "S#{} stems: {} exclusions: {}",
+                    system.getId(),
+                    size,
+                    count);
         }
     }
 
@@ -447,8 +450,7 @@ public class StemsBuilder
             minHeadSectionContribution = scale.toPixels(
                     constants.minHeadSectionContribution);
             minStemExtension = scale.toPixels(constants.minStemExtension);
-            minLongStemLength = scale.toPixels(
-                    constants.minLongStemLength);
+            minLongStemLength = scale.toPixels(constants.minLongStemLength);
             minBeamHeadDistance = scale.toPixels(constants.minBeamHeadDistance);
             maxDistanceToLine = scale.toPixelsDouble(
                     constants.maxDistanceToLine);
@@ -893,9 +895,8 @@ public class StemsBuilder
                     }
                 }
 
-                if ((hRel != null)
-                    && (head.getShape() != Shape.NOTEHEAD_BLACK)) {
-                    head.setShape(Shape.NOTEHEAD_VOID); // Isolated
+                if (hRel != null) {
+                    head.setShape(Shape.NOTEHEAD_BLACK);
                 }
 
                 return hRel;

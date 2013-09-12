@@ -13,6 +13,8 @@ package omr.image;
 
 import static omr.image.PixelSource.BACKGROUND;
 
+import omr.math.TableUtil;
+
 import omr.util.StopWatch;
 
 import net.jcip.annotations.ThreadSafe;
@@ -104,6 +106,14 @@ public class PixelBuffer
     }
 
     //~ Methods ----------------------------------------------------------------
+    //------//
+    // dump //
+    //------//
+    public void dump (String title)
+    {
+        TableUtil.dump(title, this);
+    }
+
     //------------//
     // getContext //
     //------------//

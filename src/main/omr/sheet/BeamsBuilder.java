@@ -25,6 +25,7 @@ import omr.math.Barycenter;
 import omr.math.BasicLine;
 import omr.math.GeoUtil;
 import omr.math.Line;
+import omr.math.Line.NonInvertibleLineException;
 
 import omr.run.Run;
 
@@ -140,7 +141,7 @@ public class BeamsBuilder
                 if (Math.abs(glyphLine.getSlope()) > params.maxBeamSlope) {
                     continue GlyphLoop;
                 }
-            } catch (Exception ex) {
+            } catch (Exception ignored) {
                 continue GlyphLoop; // Line is vertical!
             }
 
@@ -158,16 +159,22 @@ public class BeamsBuilder
                 for (BasicLine border : lines) {
                     double xMid = (border.getMinAbscissa()
                                    + border.getMaxAbscissa()) / 2;
-                    int dy = (int) Math.rint(
-                            border.yAtX(xMid) - glyphLine.yAtX(xMid));
-                    logger.debug(
-                            "Beam#{} {} dy:{} points:{} dist:{} slope:{}",
-                            glyph.getId(),
-                            side,
-                            dy,
-                            border.getNumberOfPoints(),
-                            String.format("%.2f", border.getMeanDistance()),
-                            String.format("%.2f", border.getSlope()));
+
+                    try {
+                        int dy = (int) Math.rint(
+                                border.yAtX(xMid) - glyphLine.yAtX(xMid));
+                        logger.debug(
+                                "Beam#{} {} dy:{} points:{} dist:{} slope:{}",
+                                glyph.getId(),
+                                side,
+                                dy,
+                                border.getNumberOfPoints(),
+                                String.format("%.2f", border.getMeanDistance()),
+                                String.format("%.2f", border.getSlope()));
+                    } catch (NonInvertibleLineException ignored) {
+                        continue GlyphLoop;
+                    }
+
                     sumPoints += border.getNumberOfPoints();
                     sumDist += (border.getMeanDistance() * border.getNumberOfPoints());
                 }
@@ -190,7 +197,7 @@ public class BeamsBuilder
 
             if (topCount != botCount) {
                 // Check cases like this one!
-                logger.info(
+                logger.debug(
                         "Strange beam(s) at glyph#{} topBorders:{} bottomBorders:{}",
                         glyph.getId(),
                         topCount,
@@ -251,22 +258,6 @@ public class BeamsBuilder
                 sig.addVertex(new BeamInter(glyph, grade, north, south));
             }
 
-            //            switch (count) {
-            //            case 1:
-            //                glyph.setShape(Shape.BEAM);
-            //
-            //                break;
-            //
-            //            case 2:
-            //                glyph.setShape(Shape.BEAM_2);
-            //
-            //                break;
-            //
-            //            case 3:
-            //                glyph.setShape(Shape.BEAM_3);
-            //
-            //                break;
-            //            }
             beams.add(glyph);
         }
 
@@ -394,7 +385,7 @@ public class BeamsBuilder
         final List<Glyph> spots = new ArrayList<Glyph>();
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.getShape() == Shape.SPOT) {
+            if (glyph.getShape() == Shape.BEAM_SPOT) {
                 spots.add(glyph);
             }
         }

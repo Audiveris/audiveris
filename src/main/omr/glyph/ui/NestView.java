@@ -50,6 +50,7 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -80,8 +81,8 @@ public class NestView
     /** Related glyphs controller */
     protected final GlyphsController controller;
 
-    /** The sequence of lags */
-    protected final List<Lag> lags;
+    /** The sequence of lags (synchronized). */
+    private final List<Lag> lags = new ArrayList<Lag>();
 
     /** Additional items rendering */
     protected final Collection<ItemRenderer> itemRenderers;
@@ -95,7 +96,7 @@ public class NestView
      *
      * @param nest          the underlying nest of glyphs
      * @param controller    the related glyphs controller
-     * @param lags          the various lags to be displayed
+     * @param lags          the initial lags to be displayed
      * @param itemRenderers items renderers if any
      */
     public NestView (Nest nest,
@@ -105,8 +106,11 @@ public class NestView
     {
         this.nest = nest;
         this.controller = controller;
-        this.lags = lags;
         this.itemRenderers = itemRenderers;
+
+        synchronized (this.lags) {
+            this.lags.addAll(lags);
+        }
 
         setName(nest.getName() + "-View");
 
@@ -121,6 +125,16 @@ public class NestView
     }
 
     //~ Methods ----------------------------------------------------------------
+    //--------//
+    // addLag //
+    //--------//
+    public void addLag (Lag lag)
+    {
+        synchronized (lags) {
+            lags.add(lag);
+        }
+    }
+
     //---------------//
     // getController //
     //---------------//
@@ -167,12 +181,10 @@ public class NestView
         // Stroke for borders
         final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
 
-        if (lags != null) {
-            for (Lag lag : lags) {
-                // Render all sections, using the colors they have been assigned
-                for (Section section : lag.getVertices()) {
-                    section.render(g, drawBorders);
-                }
+        for (Lag lag : getLags()) {
+            // Render all sections, using the colors they have been assigned
+            for (Section section : lag.getVertices()) {
+                section.render(g, drawBorders);
             }
         }
 
@@ -181,6 +193,16 @@ public class NestView
 
         // Restore stroke
         g.setStroke(oldStroke);
+    }
+
+    //---------//
+    // getLags //
+    //---------//
+    protected List<Lag> getLags ()
+    {
+        synchronized (lags) {
+            return new ArrayList<Lag>(lags);
+        }
     }
 
     //-----------------//
@@ -293,7 +315,7 @@ public class NestView
             }
         } else {
             // Section selection mode
-            for (Lag lag : lags) {
+            for (Lag lag : getLags()) {
                 Set<Section> selected = lag.getSelectedSectionSet();
 
                 if ((selected != null) && !selected.isEmpty()) {

@@ -26,7 +26,6 @@ import omr.image.StructureElement;
 import omr.lag.BasicLag;
 import omr.lag.JunctionAllPolicy;
 import omr.lag.Lag;
-import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
 import omr.run.Orientation;
@@ -120,8 +119,6 @@ public class SpotsBuilder
         // Build the spotLag out of spots runs
         spotLag = new BasicLag("spotLag", SPOT_ORIENTATION);
 
-        Lag splitLag = new BasicLag("splitLag", SPOT_ORIENTATION);
-
         SectionsBuilder sectionsBuilder = new SectionsBuilder(
                 spotLag,
                 new JunctionAllPolicy());
@@ -135,7 +132,8 @@ public class SpotsBuilder
                 sheet.getScale());
 
         sheet.setSpotLag(spotLag);
-        sheet.setSplitLag(splitLag);
+        sheet.setHeadLag(new BasicLag("headLag", SPOT_ORIENTATION));
+        sheet.setSplitLag(new BasicLag("splitLag", SPOT_ORIENTATION));
 
         // Dispatch spots per system, keeping only those within system width
         dispatchSpots(glyphs);
@@ -144,7 +142,9 @@ public class SpotsBuilder
         SpotsController spotController = new SpotsController(
                 sheet,
                 spotLag,
-                splitLag);
+                sheet.getHeadLag(),
+                sheet.getSplitLag());
+        sheet.setSpotsController(spotController);
         spotController.refresh();
     }
 
@@ -164,13 +164,8 @@ public class SpotsBuilder
 
                 if ((center.x >= system.getLeft())
                     && (center.x <= system.getRight())) {
-                    glyph.setShape(Shape.SPOT);
-                    system.addGlyph(glyph);
-
-                    for (Section section : glyph.getMembers()) {
-                        section.setSystem(system);
-                    }
-
+                    glyph.setShape(Shape.BEAM_SPOT);
+                    system.addGlyphAndMembers(glyph);
                     count++;
                 }
             }
@@ -202,10 +197,8 @@ public class SpotsBuilder
         MorphoProcessor mp = new MorphoProcessor(se);
         PixelBuffer buffer = sheet.getWholeVerticalTable()
                 .getBuffer();
-
         mp.close(buffer);
 
-        //
         //        BufferedImage fromClosedBuffer = buffer.toBufferedImage();
         //
         //        // Store buffer on disk for further manual analysis if any

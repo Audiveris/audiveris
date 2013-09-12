@@ -270,13 +270,25 @@ public class SystemInfo
      * with same signature existed before this one)
      *
      * @param glyph the brand new glyph
-     * @return the original glyph as inserted in the glyph nest. Use this entity
-     *         instead of the provided one.
+     * @return the original glyph as inserted in the glyph nest.
+     *         Use the returned entity instead of the provided one.
      * @see #registerGlyph
      */
     public Glyph addGlyph (Glyph glyph)
     {
         return glyphsBuilder.addGlyph(glyph);
+    }
+
+    //--------------------//
+    // addGlyphAndMembers //
+    //--------------------//
+    public Glyph addGlyphAndMembers (Glyph glyph)
+    {
+        Glyph g = addGlyph(glyph);
+        for (Section section : g.getMembers()) {
+            section.setSystem(this);
+        }
+        return g;
     }
 
     //---------//
@@ -1280,37 +1292,6 @@ public class SystemInfo
         verticalsBuilder.segmentGlyphOnStems(glyph, isShort);
     }
 
-    //--------------//
-    // selectGlyphs //
-    //--------------//
-    /**
-     * Select glyphs out of a provided collection of glyphs,for which
-     * the provided predicate holds true.
-     *
-     * @param glyphs    the provided collection of glyphs candidates, or the
-     *                  full
-     *                  system collection if null
-     * @param predicate the condition to be fulfilled to get selected
-     * @return the sorted set of selected glyphs
-     */
-    public SortedSet<Glyph> selectGlyphs (Collection<Glyph> glyphs,
-                                          Predicate<Glyph> predicate)
-    {
-        SortedSet<Glyph> selected = new TreeSet<>();
-
-        if (glyphs == null) {
-            glyphs = getGlyphs();
-        }
-
-        for (Glyph glyph : glyphs) {
-            if (predicate.check((glyph))) {
-                selected.add(glyph);
-            }
-        }
-
-        return selected;
-    }
-
     //--------//
     // setBar //
     //--------//
@@ -1565,7 +1546,6 @@ public class SystemInfo
     //--------//
     // getSig //
     //--------//
-
     /**
      * @return the sig
      */
