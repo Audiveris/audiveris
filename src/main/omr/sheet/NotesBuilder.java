@@ -268,7 +268,7 @@ public class NotesBuilder
         // TODO
 
         // OK!
-        double grade = 1.0; // To be refined!
+        double grade = 0.5; // To be refined!
 
         BlackHeadInter inter = new BlackHeadInter(glyph, grade);
         sig.addVertex(inter);

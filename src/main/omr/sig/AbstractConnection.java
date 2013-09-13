@@ -68,10 +68,6 @@ public abstract class AbstractConnection
         setGrade(computeGrade());
     }
 
-    protected abstract double getXWeight ();
-
-    protected abstract double getYWeight ();
-
     //--------------//
     // computeGrade //
     //--------------//
@@ -97,6 +93,10 @@ public abstract class AbstractConnection
 
         return g;
     }
+
+    protected abstract double getXWeight ();
+
+    protected abstract double getYWeight ();
 
     @Override
     protected String internals ()

@@ -53,13 +53,6 @@ public class BeamStemRelation
     }
 
     //~ Methods ----------------------------------------------------------------
-    
-    @Override
-    public String getName()
-    {
-        return "Beam-Stem";
-    }
-
     /**
      * @return the beamPortion
      */
@@ -76,12 +69,27 @@ public class BeamStemRelation
         return crossPoint;
     }
 
+    @Override
+    public String getName ()
+    {
+        return "Beam-Stem";
+    }
+
     /**
      * @return the stem Portion
      */
     public StemPortion getStemPortion ()
     {
         return stemPortion;
+    }
+
+    //------------//
+    // getRatio //
+    //------------//
+    @Override
+    public Double getRatio ()
+    {
+        return 1.0 + (20.0 * grade);
     }
 
     /**

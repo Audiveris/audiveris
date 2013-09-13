@@ -22,4 +22,20 @@ package omr.sig;
 public interface Support
         extends Relation
 {
+    //~ Methods ----------------------------------------------------------------
+
+    /**
+     * Report the support ratio brought by this support relation.
+     * Q: does the value depends on relation direction?
+     *
+     * @return the support value, perhaps null
+     */
+    Double getRatio ();
+
+    /**
+     * Set the support ratio brought by this support relation.
+     *
+     * @param support the new support value
+     */
+    void setRatio (double support);
 }

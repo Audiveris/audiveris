@@ -22,6 +22,9 @@ import omr.util.Predicate;
 
 import org.jgrapht.graph.Multigraph;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
@@ -40,8 +43,11 @@ import java.util.List;
 public class SIGraph
         extends Multigraph<Inter, Relation>
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(SIGraph.class);
+
+    //~ Instance fields --------------------------------------------------------
     /** Dedicated system */
     private final SystemInfo system;
 
@@ -59,6 +65,60 @@ public class SIGraph
     }
 
     //~ Methods ----------------------------------------------------------------
+    //--------------------//
+    // getContextualGrade //
+    //--------------------//
+    /**
+     * Compute the contextual probability for a target which is
+     * supported by a collection of relations.
+     * It is assumed that all these supporting relation have the same target,
+     * if not a runtime exception is raised (perhaps we could relax this and
+     * simply ignore the relations that have a different target?)
+     *
+     * @param target   the common target
+     * @param supports the set of supporting relations
+     * @return the resulting contextual probability for the target inter.
+     */
+    public Double getContextualGrade (Inter target,
+                                      Support... supports)
+    {
+        int n = supports.length;
+        double[] ratios = new double[n];
+        double[] sources = new double[n];
+
+        // Feed arrays and check common target
+        for (int i = 0; i < n; i++) {
+            Support support = supports[i];
+
+            if (target != getEdgeTarget(support)) {
+                throw new RuntimeException("No common target");
+            }
+
+            ratios[i] = support.getRatio();
+            sources[i] = getEdgeSource(support)
+                    .getGrade();
+        }
+
+        return Grades.contextual(target.getGrade(), ratios, sources);
+    }
+
+    //--------------------//
+    // getContextualGrade //
+    //--------------------//
+    /**
+     * Compute the contextual probability brought by this relation.
+     *
+     * @param support the support relation
+     * @return the resulting contextual probability for the relation target
+     */
+    public Double getContextualGrade (Support support)
+    {
+        return contextual(
+                getEdgeTarget(support),
+                support,
+                getEdgeSource(support));
+    }
+
     //----------//
     // getInter //
     //----------//
@@ -369,5 +429,18 @@ public class SIGraph
                         i2.getGlyph());
             }
         });
+    }
+
+    //------------//
+    // contextual //
+    //------------//
+    private double contextual (Inter target,
+                               Support support,
+                               Inter source)
+    {
+        return Grades.contextual(
+                target.getGrade(),
+                support.getRatio(),
+                source.getGrade());
     }
 }

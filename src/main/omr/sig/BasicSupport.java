@@ -31,6 +31,9 @@ public class BasicSupport
     /** Quality of the geometric junction. */
     protected double grade;
 
+    /** Support ratio. */
+    protected Double ratio;
+
     //~ Constructors -----------------------------------------------------------
     /**
      * Creates a new BasicSupport object.
@@ -74,11 +77,29 @@ public class BasicSupport
     }
 
     /**
+     * @return the support ratio
+     */
+    @Override
+    public Double getRatio ()
+    {
+        return ratio;
+    }
+
+    /**
      * @param grade the grade to set
      */
     public void setGrade (double grade)
     {
         this.grade = grade;
+    }
+
+    /**
+     * @param support the support value to set
+     */
+    @Override
+    public void setRatio (double support)
+    {
+        this.ratio = support;
     }
 
     @Override

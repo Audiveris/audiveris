@@ -22,9 +22,13 @@ import omr.selection.SelectionHint;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import omr.sig.AbstractConnection;
+import omr.sig.BeamStemRelation;
+import omr.sig.HeadStemRelation;
 import omr.sig.Inter;
 import omr.sig.Relation;
 import omr.sig.SIGraph;
+import omr.sig.StemInter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,35 +181,6 @@ public class PileMenu
     }
 
     //~ Inner Classes ----------------------------------------------------------
-    //-----------------//
-    // MyMouseListener //
-    //-----------------//
-    private abstract class MyMouseListener
-            implements MouseListener
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void mouseClicked (MouseEvent e)
-        {
-        }
-
-        @Override
-        public void mouseExited (MouseEvent e)
-        {
-        }
-
-        @Override
-        public void mousePressed (MouseEvent e)
-        {
-        }
-
-        @Override
-        public void mouseReleased (MouseEvent e)
-        {
-        }
-    }
-
     //-------------//
     // GlyphAction //
     //-------------//
@@ -299,6 +274,35 @@ public class PileMenu
         }
     }
 
+    //-----------------//
+    // MyMouseListener //
+    //-----------------//
+    private abstract class MyMouseListener
+            implements MouseListener
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void mouseClicked (MouseEvent e)
+        {
+        }
+
+        @Override
+        public void mouseExited (MouseEvent e)
+        {
+        }
+
+        @Override
+        public void mousePressed (MouseEvent e)
+        {
+        }
+
+        @Override
+        public void mouseReleased (MouseEvent e)
+        {
+        }
+    }
+
     //----------------//
     // RelationAction //
     //----------------//
@@ -319,7 +323,8 @@ public class PileMenu
         //~ Constructors -------------------------------------------------------
         public RelationAction (SIGraph sig,
                                Inter inter,
-                               Relation relation)
+                               Relation relation,
+                               BeamStemRelation beamStemRel)
         {
             this.relation = relation;
 
@@ -338,6 +343,23 @@ public class PileMenu
                         .append(target);
             } else {
                 other = null;
+            }
+
+            if (relation instanceof AbstractConnection) {
+                AbstractConnection rel = (AbstractConnection) relation;
+                double cp = sig.getContextualGrade(rel);
+                sb.append(" CP:")
+                        .append(String.format("%.2f", cp));
+
+                if (rel instanceof HeadStemRelation
+                    && (beamStemRel != null)) {
+                    double cp2 = sig.getContextualGrade(
+                            inter,
+                            rel,
+                            beamStemRel);
+                    sb.append(" CP2:")
+                            .append(String.format("%.2f", cp2));
+                }
             }
 
             putValue(NAME, sb.toString());
@@ -406,10 +428,23 @@ public class PileMenu
             menu.add(gItem);
             menu.addSeparator();
 
+            // Look for a BeamStem relation around a stem
+            BeamStemRelation beamStemRel = null;
+
+            if (inter instanceof StemInter) {
+                for (Relation relation : rels) {
+                    if (relation instanceof BeamStemRelation) {
+                        beamStemRel = (BeamStemRelation) relation;
+
+                        break;
+                    }
+                }
+            }
+
             // Show each relation
             for (Relation relation : rels) {
                 JMenuItem item = new JMenuItem(
-                        new RelationAction(sig, inter, relation));
+                        new RelationAction(sig, inter, relation, beamStemRel));
                 item.addMouseListener(relationListener);
                 menu.add(item);
             }
