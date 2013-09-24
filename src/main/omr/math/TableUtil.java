@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import omr.image.Table;
 
 /**
  * Class {@code TableUtil} gathers utilities to dump basic table
@@ -141,13 +142,36 @@ public class TableUtil
             System.out.printf(yFormat, y);
 
             for (int x = 0; x < width; x++) {
-                int val = buf.getPixel(x, y);
+                System.out.printf("%4d", buf.getPixel(x, y));
+            }
 
-                if (val < 0) {
-                    val += 256;
-                }
+            System.out.println();
+        }
+    }
 
-                System.out.printf("%4d", val);
+    /**
+     * Print out a Table.
+     *
+     * @param title a title for the print
+     * @param table   the table to print
+     */
+    public static void dump (String title,
+                             Table table)
+    {
+        final int width = table.getWidth();
+        final int height = table.getHeight();
+
+        if (title != null) {
+            System.out.println(title);
+        }
+
+        final String yFormat = printAbscissae(width, height, 4);
+
+        for (int y = 0; y < height; y++) {
+            System.out.printf(yFormat, y);
+
+            for (int x = 0; x < width; x++) {
+                System.out.printf("%4d", table.getValue(x, y));
             }
 
             System.out.println();

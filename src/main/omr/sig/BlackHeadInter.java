@@ -15,7 +15,7 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 /**
- * Class {@code BlackHeadInter} represents a note black head
+ * Class {@code BlackHeadInter} represents a black note head
  * interpretation.
  *
  * @author Hervé Bitteur

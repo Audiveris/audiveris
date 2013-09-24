@@ -326,7 +326,6 @@ made subject to such option by the copyright holder.
             </customize>
         </jnlp:extend-manifest>
     </target>
-
     <target name="-add-trusted-library-attribute" depends="-set-mixed-code-properties,-init-macrodef-extend-manifest" if="mixed.code.trusted.library">
         <jnlp:extend-manifest>
             <customize>
@@ -334,6 +333,135 @@ made subject to such option by the copyright holder.
             </customize>
         </jnlp:extend-manifest>
     </target>
+    
+    <target name="-check-manifest-codebase">
+        <condition property="manifest.codebase.copy" value="${jnlp.dest.dir}">
+            <and>
+                <isset property="jnlp.codebase.type"/>
+                <equals arg1="${jnlp.codebase.type}" arg2="local"/>
+                <or>
+                    <not><isset property="manifest.custom.codebase"/></not>
+                    <equals arg1="${manifest.custom.codebase}" arg2=""/>
+                </or>
+            </and>
+        </condition>
+        <condition property="manifest.codebase.copy" value="${jnlp.codebase.user}">
+            <and>
+                <isset property="jnlp.codebase.type"/>
+                <equals arg1="${jnlp.codebase.type}" arg2="user"/>
+                <isset property="jnlp.codebase.user"/>
+                <not><equals arg1="${jnlp.codebase.type}" arg2=""/></not>
+                <or>
+                    <not><isset property="manifest.custom.codebase"/></not>
+                    <equals arg1="${manifest.custom.codebase}" arg2=""/>
+                </or>
+            </and>
+        </condition>
+        <condition property="manifest.codebase.web">
+            <and>
+                <isset property="jnlp.codebase.type"/>
+                <equals arg1="${jnlp.codebase.type}" arg2="web"/>
+                <or>
+                    <not><isset property="manifest.custom.codebase"/></not>
+                    <equals arg1="${manifest.custom.codebase}" arg2=""/>
+                </or>
+            </and>
+        </condition>
+        <condition property="manifest.codebase.other">
+            <and>
+                <not><isset property="manifest.codebase.copy"/></not>
+                <not><isset property="manifest.codebase.web"/></not>
+                <or>
+                    <not><isset property="manifest.custom.codebase"/></not>
+                    <equals arg1="${manifest.custom.codebase}" arg2=""/>
+                </or>
+            </and>
+        </condition>
+        <condition property="manifest.codebase.override">
+            <and>
+                <isset property="manifest.custom.codebase"/>
+                <not><equals arg1="${manifest.custom.codebase}" arg2=""/></not>
+            </and>
+        </condition>
+        <condition property="manifest.codebase.override.warning">
+            <and>
+                <isset property="manifest.codebase.override"/>
+                <equals arg1="${manifest.custom.codebase}" arg2="*"/>
+            </and>
+        </condition>
+        <echo message="manifest.codebase.copy = ${manifest.codebase.copy}" level="verbose"/>
+        <echo message="manifest.codebase.web = ${manifest.codebase.web}" level="verbose"/>
+        <echo message="manifest.codebase.other = ${manifest.codebase.other}" level="verbose"/>
+        <echo message="manifest.codebase.override = ${manifest.codebase.override}" level="verbose"/>
+    </target>
+    <target name="-extend-manifest-codebase-copy" depends="-check-manifest-codebase" if="manifest.codebase.copy">
+        <property name="manifest.codebase.attribute" value="${manifest.codebase.copy}"/>
+    </target>
+    <target name="-extend-manifest-codebase-web" depends="-check-manifest-codebase" if="manifest.codebase.web">
+        <property name="manifest.codebase.attribute" value="*"/>
+        <echo message="Warning: Setting Codebase manifest attribute to '*' due to current JNLP Codebase setting. Set manifest.custom.codebase property to override the non-secure value '*'." level="warning"/>
+    </target>
+    <target name="-extend-manifest-codebase-other" depends="-check-manifest-codebase" if="manifest.codebase.other">
+        <property name="manifest.codebase.attribute" value="*"/>
+        <echo message="Warning: Setting Codebase manifest attribute to '*' due to current JNLP Codebase. Set manifest.custom.codebase property to override the non-secure value '*'." level="warning"/>
+    </target>
+    <target name="-extend-manifest-codebase-override-warning" depends="-check-manifest-codebase" if="manifest.codebase.override.warning">
+        <echo message="Warning: Codebase manifest attribute should be used to restrict JAR repurposing. Preferably set manifest.custom.codebase to more specific value than the non-secure '*'" level="warning"/>
+    </target>
+    <target name="-extend-manifest-codebase-override" depends="-check-manifest-codebase,-extend-manifest-codebase-override-warning" if="manifest.codebase.override">
+        <property name="manifest.codebase.attribute" value="${manifest.custom.codebase}"/>
+    </target>
+    <target name="-check-manifest-permissions">
+        <condition property="manifest.permissions.all">
+            <and>
+                <istrue value="${jnlp.signed}"/>
+                <or>
+                    <not><isset property="manifest.custom.permissions"/></not>
+                    <equals arg1="${manifest.custom.permissions}" arg2=""/>
+                </or>
+            </and>
+        </condition>
+        <condition property="manifest.permissions.sandbox">
+            <and>
+                <not><istrue value="${jnlp.signed}"/></not>
+                <or>
+                    <not><isset property="manifest.custom.permissions"/></not>
+                    <equals arg1="${manifest.custom.permissions}" arg2=""/>
+                </or>
+            </and>
+        </condition>
+        <condition property="manifest.permissions.override">
+            <and>
+                <isset property="manifest.custom.permissions"/>
+                <not><equals arg1="${manifest.custom.permissions}" arg2=""/></not>
+            </and>
+        </condition>
+        <echo message="manifest.permissions.all = ${manifest.permissions.all}" level="verbose"/>
+        <echo message="manifest.permissions.sandbox = ${manifest.permissions.sandbox}" level="verbose"/>
+        <echo message="manifest.permissions.override = ${manifest.permissions.override}" level="verbose"/>
+    </target>    
+    <target name="-extend-manifest-permissions-sandbox" depends="-check-manifest-permissions" if="manifest.permissions.sandbox">
+        <property name="manifest.permissions.attribute" value="sandbox"/>
+    </target>
+    <target name="-extend-manifest-permissions-all" depends="-check-manifest-permissions" if="manifest.permissions.all">
+        <property name="manifest.permissions.attribute" value="all-permissions"/>
+    </target>
+    <target name="-extend-manifest-permissions-override" depends="-check-manifest-permissions" if="manifest.permissions.override">
+        <property name="manifest.permissions.attribute" value="${manifest.custom.permissions}"/>
+    </target>
+    <target name="-add-manifest-security" depends="-init-macrodef-extend-manifest,
+                    -extend-manifest-codebase-copy,-extend-manifest-codebase-web,-extend-manifest-codebase-other,-extend-manifest-codebase-override,
+                    -extend-manifest-permissions-sandbox,-extend-manifest-permissions-all,-extend-manifest-permissions-override">
+        <jnlp:extend-manifest>
+            <customize>
+                <attribute name="Codebase" value="${manifest.codebase.attribute}"/>
+                <attribute name="Permissions" value="${manifest.permissions.attribute}"/>
+            </customize>
+        </jnlp:extend-manifest>
+        <echo message="Added manifest attribute Codebase: ${manifest.codebase.attribute}" level="verbose"/>
+        <echo message="Added manifest attribute Permissions: ${manifest.permissions.attribute}" level="verbose"/>
+    </target>
+
     <target name="-do-jar-applet" depends="-test-jnlp-type,-init-macrodef-copylibs" if="is.applet+mkdist.available">
         <j2seproject3:copylibs manifest="${tmp.manifest.file}"/>
     </target>
@@ -350,7 +478,7 @@ made subject to such option by the copyright holder.
     <target name="-do-jar-jnlp-component" depends="-test-jnlp-type,-init-macrodef-copylibs" if="is.component+mkdist.available">
         <j2seproject3:copylibs manifest="${tmp.manifest.file}"/>
     </target>
-    <target name="-do-jar-jnlp" depends="-create-tmp-manifest,-copy-tmp-manifest,-add-trusted-only-attribute,-add-trusted-library-attribute,-do-jar-applet,-do-jar-jnlp-application,-do-jar-jnlp-component"/>
+    <target name="-do-jar-jnlp" depends="-create-tmp-manifest,-copy-tmp-manifest,-add-trusted-only-attribute,-add-trusted-library-attribute,-add-manifest-security,-do-jar-applet,-do-jar-jnlp-application,-do-jar-jnlp-component"/>
 
     <!-- Init jnlp filename -->
     

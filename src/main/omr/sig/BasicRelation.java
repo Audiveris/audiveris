@@ -11,14 +11,13 @@
 // </editor-fold>
 package omr.sig;
 
-
 /**
  * Class {@code BasicRelation}
  *
  * @author Hervé Bitteur
  */
 public class BasicRelation
-    implements Relation
+        implements Relation
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -30,21 +29,26 @@ public class BasicRelation
     }
 
     //~ Methods ----------------------------------------------------------------
+    @Override
+    public String getDetails ()
+    {
+        return internals();
+    }
+
+    @Override
+    public String getName ()
+    {
+        return "Relation";
+    }
 
     @Override
     public String toString ()
     {
-        return getName() + " " + internals();
+        return getName();
     }
 
     protected String internals ()
     {
         return "";
-    }
-    
-    @Override
-    public String getName()
-    {
-        return "Relation";
     }
 }

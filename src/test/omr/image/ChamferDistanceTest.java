@@ -1,15 +1,25 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-package omr.math;
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                    C h a m f e r D i s t a n c e T e s t                   //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//----------------------------------------------------------------------------//
+// </editor-fold>
+package omr.image;
 
-import omr.image.ChamferDistance;
+import omr.math.TableUtil;
+
 import org.junit.Test;
+
+import java.awt.Dimension;
 
 /**
  *
- * @author herve
+ * @author Hervé Bitteur
  */
 public class ChamferDistanceTest
 {
@@ -31,16 +41,19 @@ public class ChamferDistanceTest
     {
         System.out.println("compute");
 
-        boolean[][] input = createImage();
+        PixelBuffer input = createImage();
         TableUtil.dump("Initial:", input);
 
-        ChamferDistance instance = new ChamferDistance();
-        double[][] expResult = null;
-        double[][] result = instance.compute(input);
-        TableUtil.dump("Distances:", result);
+        ChamferDistance instance = new ChamferDistance.Integer();
+
+        Table toFore = instance.computeToFore(input);
+        TableUtil.dump("Distances to fore:", toFore);
+
+        Table toBack = instance.computeToBack(input);
+        TableUtil.dump("Distances to back:", toBack);
     }
 
-    private boolean[][] createImage ()
+    private PixelBuffer createImage ()
     {
         String[] rows = new String[]{
             "                              ",
@@ -74,12 +87,12 @@ public class ChamferDistanceTest
         };
         final int width = rows[0].length();
         final int height = rows.length;
-        final boolean[][] img = new boolean[width][height];
+        final PixelBuffer img = new PixelBuffer(new Dimension(width, height));
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 char c = rows[y].charAt(x);
-                img[x][y] = !(c == 'X');
+                img.setPixel(x, y, (c == 'X') ? 0 : 255);
             }
         }
 

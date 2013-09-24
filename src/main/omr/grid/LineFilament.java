@@ -195,7 +195,7 @@ public class LineFilament
     // getAlignment //
     //--------------//
     @Override
-    protected LineFilamentAlignment getAlignment ()
+    public LineFilamentAlignment getAlignment ()
     {
         return (LineFilamentAlignment) super.getAlignment();
     }

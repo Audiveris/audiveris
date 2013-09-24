@@ -236,7 +236,7 @@ public class ShapeSet
 
     public static final ShapeSet NoteHeads = new ShapeSet(
             NOTEHEAD_BLACK,
-            new Color(0xff9966),
+            new Color(0xffcc00),            
             shapesOf(BlackNoteHeads, VoidNoteHeads));
 
     public static final ShapeSet Markers = new ShapeSet(

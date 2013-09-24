@@ -21,20 +21,7 @@ import java.awt.image.BufferedImage;
 public class FloodFiller
 {
     //~ Instance fields --------------------------------------------------------
-
-    /*
-     * void floodFill4(int x, int y, Uint32 newColor, Uint32 oldColor)
-     * {
-     * if(x >= 0 && x < w && y >= 0 && y < h && screenBuffer[x][y] == oldColor
-     * && screenBuffer[x][y] != newColor)
-     * {
-     * screenBuffer[x][y] = newColor; //set color before starting recursion!
-     * floodFill4(x + 1, y, newColor, oldColor);
-     * floodFill4(x - 1, y, newColor, oldColor);
-     * floodFill4(x, y + 1, newColor, oldColor);
-     * floodFill4(x, y - 1, newColor, oldColor);
-     * }
-     * } */
+  
     private final BufferedImage image;
 
     private final int width;

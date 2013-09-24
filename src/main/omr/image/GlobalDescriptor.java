@@ -117,7 +117,7 @@ public class GlobalDescriptor
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
-        sb.append(" threshold:")
+        sb.append(" threshold: ")
                 .append(threshold);
 
         return sb.toString();

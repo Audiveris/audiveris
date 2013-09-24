@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import omr.constant.ConstantSet;
 
 /**
  * Class {@code StaffInfo} handles the physical informations of a staff
@@ -65,6 +66,8 @@ public class StaffInfo
         implements AttachmentHolder
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    private static final Constants constants = new Constants();
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(StaffInfo.class);
@@ -89,7 +92,7 @@ public class StaffInfo
      * Scale specific to this staff. [not used actually]
      * (since different staves in a page may exhibit different scales)
      */
-    private Scale specificScale;
+    private final Scale specificScale;
 
     /** Top limit of staff related area. (left to right) */
     private GeoPath topLimit = null;
@@ -430,11 +433,26 @@ public class StaffInfo
         return lines.get(idx);
     }
 
+    //-----------//
+    // getDmzEnd //
+    //-----------//
+    /**
+     * Report the abscissa at end of staff DMZ area (the initial zone
+     * at the beginning of the staff, dedicated to clef etc, and
+     * without notes or stems.
+     *
+     * @return DMZ right side abscissa
+     */
+    public double getDmzEnd ()
+    {
+        return left + specificScale.toPixels(constants.minDMZWidth);
+    }
+
     //-------//
     // gapTo //
     //-------//
     /**
-     * Report the vertical gap between staff and the provided 
+     * Report the vertical gap between staff and the provided
      * rectangle.
      *
      * @param rect the provided rectangle
@@ -462,18 +480,19 @@ public class StaffInfo
         dist = Math.min(dist, Math.abs(staffTop - glyphBot));
         dist = Math.min(dist, Math.abs(staffBot - glyphTop));
         dist = Math.min(dist, Math.abs(staffBot - glyphBot));
-        
+
         return dist;
     }
-    
+
     //------------//
     // distanceTo //
     //------------//
     /**
-     * Report the vertical (algebraic) distance between staff and the 
-     * provided point. 
-     * Distance is negative if the point is within the staff and positive 
+     * Report the vertical (algebraic) distance between staff and the
+     * provided point.
+     * Distance is negative if the point is within the staff and positive
      * outside.
+     *
      * @param point the provided point
      * @return algebraic distance between staff and point, specified in pixels
      */
@@ -990,7 +1009,7 @@ public class StaffInfo
     // IndexedLedger //
     //---------------//
     /**
-     * This combines the ledger glyph with the index relative to the 
+     * This combines the ledger glyph with the index relative to the
      * hosting staff.
      */
     public static class IndexedLedger
@@ -1008,5 +1027,19 @@ public class StaffInfo
             this.glyph = ledger;
             this.index = index;
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final Scale.Fraction minDMZWidth = new Scale.Fraction(
+                4.0,
+                "Minimum width of zone without notes at beginning of staff");
+
     }
 }

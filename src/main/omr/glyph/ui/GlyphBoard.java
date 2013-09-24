@@ -64,7 +64,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code GlyphBoard} defines a UI board dedicated to the
+ * Class {@literal GlyphBoard} defines a UI board dedicated to the
  * display of {@link Glyph} information.
  *
  * <p>The universal <b>idSpinner</b> addresses <i>all</i> glyph instances

@@ -158,9 +158,9 @@ public class AdaptiveDescriptor
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
-        sb.append(" meanCoeff:")
+        sb.append(" meanCoeff: ")
                 .append(meanCoeff);
-        sb.append(" stdDevCoeff:")
+        sb.append(" stdDevCoeff: ")
                 .append(stdDevCoeff);
 
         return sb.toString();

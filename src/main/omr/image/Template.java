@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.image;
 
+import omr.glyph.Shape;
+
 import omr.math.TableUtil;
 
 import omr.ui.symbol.Alignment;
@@ -22,9 +24,10 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -51,27 +54,53 @@ public class Template
 
         /**
          * Area Center.
-         * Used for WHOLE based symbols.
          */
         CENTER,
         /**
-         * X at left stem, Y at center.
-         * Used for VOID HEAD based symbols.
+         * Upper left corner.
+         */
+        TOP_LEFT,
+        /**
+         * Middle left corner.
+         */
+        MIDDLE_LEFT,
+        /**
+         * Lower left corner.
+         */
+        BOTTOM_LEFT,
+        /**
+         * X at left stem, Y at top.
+         */
+        TOP_LEFT_STEM,
+        /**
+         * X at left stem, Y at middle.
          */
         LEFT_STEM,
-        /** X at right stem, Y at center.
-         * Used for VOID HEAD based symbols.
+        /**
+         * X at left stem, Y at bottom.
          */
-        RIGHT_STEM;
+        BOTTOM_LEFT_STEM,
+        /**
+         * X at right stem, Y at top.
+         */
+        TOP_RIGHT_STEM,
+        /**
+         * X at right stem, Y at middle.
+         */
+        RIGHT_STEM,
+        /**
+         * X at right stem, Y at bottom.
+         */
+        BOTTOM_RIGHT_STEM;
 
     }
 
     //~ Instance fields --------------------------------------------------------
-    /** Template name, for debugging mainly. */
-    private final String name;
+    /** Template shape. */
+    private final Shape shape;
 
     /** Collection of key points defined for this template. */
-    private final Collection<PixDistance> keyPoints;
+    private final Collection<PixelDistance> keyPoints;
 
     /** Template width. */
     private final int width;
@@ -80,7 +109,8 @@ public class Template
     private final int height;
 
     /** Offsets to anchors, if any. */
-    private final Map<Anchor, Point> offsets = new HashMap<Anchor, Point>();
+    private final Map<Anchor, Point> offsets = new EnumMap<Anchor, Point>(
+            Anchor.class);
 
     /** Image for nice drawing, if any. */
     private final ShapeSymbol symbol;
@@ -92,28 +122,55 @@ public class Template
     /**
      * Creates a new Template object from a provided set of points.
      *
-     * @param name      the template name
+     * @param shape     the template shape
      * @param width     template width
      * @param height    template height
      * @param keyPoints the set of defining points.
      * @param symbol    the symbol to use for drawing, or null
      */
-    public Template (String name,
+    public Template (Shape shape,
                      int width,
                      int height,
-                     List<PixDistance> keyPoints,
+                     List<PixelDistance> keyPoints,
                      ShapeSymbol symbol)
     {
-        this.name = name;
-        this.keyPoints = new ArrayList<PixDistance>(keyPoints);
+        this.shape = shape;
+        this.keyPoints = new ArrayList<PixelDistance>(keyPoints);
         this.width = width;
         this.height = height;
         this.symbol = symbol;
 
-        setAnchor(Anchor.CENTER, 0.5, 0.5);
+        // Define common anchors
+        addAnchor(Anchor.CENTER, 0.5, 0.5);
+        addAnchor(Anchor.TOP_LEFT, 0, 0);
+        addAnchor(Anchor.MIDDLE_LEFT, 0, 0.5);
+        addAnchor(Anchor.BOTTOM_LEFT, 0, 1);
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-----------//
+    // addAnchor //
+    //-----------//
+    /**
+     * Assign a relative offset for an anchor type.
+     *
+     * @param anchor the anchor type
+     * @param xRatio the abscissa offset from upper left corner, specified as
+     *               ratio of template width
+     * @param yRatio the ordinate offset from upper left corner, specified as
+     *               ratio of template height
+     */
+    public final void addAnchor (Anchor anchor,
+                                 double xRatio,
+                                 double yRatio)
+    {
+        offsets.put(
+                anchor,
+                new Point(
+                (int) Math.rint(xRatio * width),
+                (int) Math.rint(yRatio * height)));
+    }
+
     //------//
     // dump //
     //------//
@@ -129,11 +186,11 @@ public class Template
             }
         }
 
-        for (PixDistance pix : keyPoints) {
+        for (PixelDistance pix : keyPoints) {
             vals[pix.x][pix.y] = (int) Math.rint(pix.d);
         }
 
-        System.out.println("Template " + name + ":");
+        System.out.println("Template " + shape + ":");
 
         final String yFormat = TableUtil.printAbscissae(width, height, 3);
 
@@ -175,11 +232,11 @@ public class Template
     public double evaluate (int x,
                             int y,
                             Anchor anchor,
-                            double[][] distances)
+                            Table distances)
     {
         // Offsets to apply to location?
         if (anchor != null) {
-            Point offset = offsets.get(anchor);
+            Point offset = getOffset(anchor);
 
             if (offset != null) {
                 x -= offset.x;
@@ -188,7 +245,7 @@ public class Template
                 logger.warn(
                         "No {} anchor defined for {} template",
                         anchor,
-                        name);
+                        shape);
             }
         }
 
@@ -196,12 +253,33 @@ public class Template
         // Compute the mean value on all distances read
         double total = 0;
 
-        for (PixDistance pix : keyPoints) {
-            double dist = distances[x + pix.x][y + pix.y] - pix.d;
+        for (PixelDistance pix : keyPoints) {
+            double dist = (distances.getValue(x + pix.x, y + pix.y) - pix.d) / 3d;
             total += (dist * dist);
         }
 
         return total / keyPoints.size();
+    }
+
+    //----------//
+    // getBoxAt //
+    //----------//
+    /**
+     * Report the template bounds when positioning template anchor at
+     * location (x,y).
+     *
+     * @param x      abscissa for anchor
+     * @param y      ordinate for anchor
+     * @param anchor chosen template anchor
+     * @return the corresponding bounds
+     */
+    public Rectangle getBoxAt (int x,
+                               int y,
+                               Anchor anchor)
+    {
+        final Point offset = getOffset(anchor);
+
+        return new Rectangle(x - offset.x, y - offset.y, width, height);
     }
 
     //-----------//
@@ -215,6 +293,34 @@ public class Template
     public int getHeight ()
     {
         return height;
+    }
+
+    //-----------//
+    // getOffset //
+    //-----------//
+    /**
+     * Report the offset from template upper left corner to the
+     * provided anchor.
+     *
+     * @param anchor the desired anchor
+     * @return the corresponding offset (vector from UL to anchor)
+     */
+    public Point getOffset (Anchor anchor)
+    {
+        return offsets.get(anchor);
+    }
+
+    //----------//
+    // getShape //
+    //----------//
+    /**
+     * Report the underlying shape of the template.
+     *
+     * @return the template shape
+     */
+    public Shape getShape ()
+    {
+        return shape;
     }
 
     //----------//
@@ -259,35 +365,12 @@ public class Template
             final int d = 1;
             final int side = 1 + (2 * d);
 
-            for (PixDistance pix : keyPoints) {
+            for (PixelDistance pix : keyPoints) {
                 if (pix.d == 0) {
                     g.fillRect((x + pix.x) - d, (y + pix.y) - d, side, side);
                 }
             }
         }
-    }
-
-    //-----------//
-    // setAnchor //
-    //-----------//
-    /**
-     * Assign a relative offset for an anchor type.
-     *
-     * @param anchor the anchor type
-     * @param xRatio the abscissa offset from upper left corner, specified as
-     *               ratio of template width
-     * @param yRatio the ordinate offset from upper left corner, specified as
-     *               ratio of template height
-     */
-    public final void setAnchor (Anchor anchor,
-                                 double xRatio,
-                                 double yRatio)
-    {
-        offsets.put(
-                anchor,
-                new Point(
-                (int) Math.rint(xRatio * width),
-                (int) Math.rint(yRatio * height)));
     }
 
     //----------//
@@ -300,7 +383,7 @@ public class Template
         sb.append(getClass().getSimpleName());
 
         sb.append(" ")
-                .append(name);
+                .append(shape);
 
         for (Entry<Anchor, Point> entry : offsets.entrySet()) {
             sb.append(" ")
@@ -312,22 +395,22 @@ public class Template
                     .append(")");
         }
 
-        sb.append(" count:")
+        sb.append(" keyPoints:")
                 .append(keyPoints.size());
 
-        for (PixDistance pix : keyPoints) {
-            sb.append(" (")
-                    .append(pix.x)
-                    .append(",")
-                    .append(pix.y);
-
-            if (pix.d != 0) {
-                sb.append(",")
-                        .append(String.format("%.1f", pix.d));
-            }
-
-            sb.append(")");
-        }
+//        for (PixelDistance pix : keyPoints) {
+//            sb.append(" (")
+//                    .append(pix.x)
+//                    .append(",")
+//                    .append(pix.y);
+//
+//            if (pix.d != 0) {
+//                sb.append(",")
+//                        .append(String.format("%.1f", pix.d));
+//            }
+//
+//            sb.append(")");
+//        }
 
         sb.append("}");
 

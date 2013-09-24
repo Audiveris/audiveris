@@ -10,8 +10,9 @@ package omr.image;
  * operation using chamfer masks.
  *
  * @author Code by Xavier Philippeau <br> Kernels by Verwer, Borgefors and Thiel
+ * @author Hervé Bitteur for interface and type-specific implementations
  */
-public class ChamferDistance
+public interface ChamferDistance
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -55,40 +56,6 @@ public class ChamferDistance
         new int[]{6, 1, 413}
     };
 
-    //~ Instance fields --------------------------------------------------------
-    /** The local distance mask to apply. */
-    private final int[][] chamfer;
-
-    /** Mask normalizer. */
-    private final int normalizer;
-
-    //~ Constructors -----------------------------------------------------------
-    //-----------------//
-    // ChamferDistance //
-    //-----------------//
-    /**
-     * Creates a new ChamferDistance object, with chamfer3 as default
-     * mask.
-     */
-    public ChamferDistance ()
-    {
-        this(ChamferDistance.chamfer3);
-    }
-
-    //-----------------//
-    // ChamferDistance //
-    //-----------------//
-    /**
-     * Creates a new ChamferDistance object, using provided mask.
-     *
-     * @param chamfer the desired chamfer mask
-     */
-    public ChamferDistance (int[][] chamfer)
-    {
-        this.chamfer = chamfer;
-        normalizer = chamfer[0][2];
-    }
-
     //~ Methods ----------------------------------------------------------------
     //---------//
     // compute //
@@ -102,169 +69,297 @@ public class ChamferDistance
      * @return the distance transform image, where each pixel value is the
      *         distance to the nearest reference pixel
      */
-    public double[][] compute (boolean[][] input)
-    {
-        final int width = input.length;
-        final int height = input[0].length;
+    public Table compute (boolean[][] input);
 
-        double[][] output = new double[width][height];
-
-        // initialize distance
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (input[x][y]) {
-                    output[x][y] = 0; // reference pixel -> distance=0
-                } else {
-                    output[x][y] = -1; // non-reference pixel -> to be computed
-                }
-            }
-        }
-
-        process(output);
-
-        return output;
-    }
-
-    //---------//
-    // compute //
-    //---------//
+    //---------------//
+    // computeToBack //
+    //---------------//
     /**
      * Apply the chamfer mask to the input image and return the
-     * distance transform.
+     * distance transform to background pixels.
+     *
+     * @param input the input image, where background pixels are taken as
+     *              reference pixels
+     * @return the distance transform image, where each pixel value is the
+     *         distance to the nearest reference pixel
+     */
+    Table computeToBack (PixelBuffer input);
+
+    //---------------//
+    // computeToFore //
+    //---------------//
+    /**
+     * Apply the chamfer mask to the input image and return the
+     * distance transform to foreground pixels.
      *
      * @param input the input image, where foreground pixels are taken as
      *              reference pixels
      * @return the distance transform image, where each pixel value is the
      *         distance to the nearest reference pixel
      */
-    public double[][] compute (PixelBuffer input)
+    Table computeToFore (PixelBuffer input);
+
+    //~ Inner Classes ----------------------------------------------------------
+    public abstract class Abstract
+            implements ChamferDistance
     {
-        final int width = input.getWidth();
-        final int height = input.getHeight();
+        //~ Instance fields ----------------------------------------------------
 
-        double[][] output = new double[width][height];
+        /** The local distance mask to apply. */
+        private final int[][] chamfer;
 
-        // initialize distance
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (input.isFore(x, y)) {
-                    output[x][y] = 0; // reference pixel -> distance=0
-                } else {
-                    output[x][y] = -1; // non-reference pixel -> to be computed
+        /** Mask normalizer. */
+        private final int normalizer;
+
+        //~ Constructors -------------------------------------------------------
+        /**
+         * Creates a new Abstract object, with chamfer3 as default mask.
+         */
+        public Abstract ()
+        {
+            this(chamfer3);
+        }
+
+        /**
+         * Creates a new ChamferDistance object, using provided mask.
+         *
+         * @param chamfer the desired chamfer mask
+         */
+        public Abstract (int[][] chamfer)
+        {
+            this.chamfer = chamfer;
+            normalizer = chamfer[0][2];
+        }
+
+        //~ Methods ------------------------------------------------------------
+        //---------//
+        // compute //
+        //---------//
+        @Override
+        public Table compute (boolean[][] input)
+        {
+            final int width = input.length;
+            final int height = input[0].length;
+            Table output = allocateOutput(width, height);
+
+            // initialize distance
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    if (input[x][y]) {
+                        output.setValue(x, y, 0); // reference pixel -> distance=0
+                    } else {
+                        output.setValue(x, y, -1); // non-reference pixel -> to be computed
+                    }
+                }
+            }
+
+            process(output);
+
+            return output;
+        }
+
+        //---------------//
+        // computeToBack //
+        //---------------//
+        @Override
+        public Table computeToBack (PixelBuffer input)
+        {
+            Table output = allocateOutput(input.getWidth(), input.getHeight());
+            initializeToBack(input, output);
+            process(output);
+
+            return output;
+        }
+
+        //---------------//
+        // computeToFore //
+        //---------------//
+        @Override
+        public Table computeToFore (PixelBuffer input)
+        {
+            Table output = allocateOutput(input.getWidth(), input.getHeight());
+            initializeToFore(input, output);
+            process(output);
+
+            return output;
+        }
+
+        /** To get a Table instance of proper type and size. */
+        protected abstract Table allocateOutput (int width,
+                                                 int height);
+
+        //------------------//
+        // initializeToBack //
+        //------------------//
+        private void initializeToBack (PixelBuffer input,
+                                       Table output)
+        {
+            for (int y = 0, h = input.getHeight(); y < h; y++) {
+                for (int x = 0, w = input.getWidth(); x < w; x++) {
+                    if (input.isFore(x, y)) {
+                        output.setValue(x, y, -1); // non-reference pixel -> to be computed
+                    } else {
+                        output.setValue(x, y, 0); // reference pixel -> distance=0
+                    }
                 }
             }
         }
 
-        process(output);
-
-        return output;
-    }
-
-    //---------//
-    // process //
-    //---------//
-    /**
-     * Run the forward and backward passes then normalize.
-     *
-     * @param output the output data to process
-     */
-    private void process (double[][] output)
-    {
-        final int width = output.length;
-        final int height = output[0].length;
-
-        // forward
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                double v = output[x][y];
-
-                if (v < 0) {
-                    continue;
+        //------------------//
+        // initializeToFore //
+        //------------------//
+        private void initializeToFore (PixelBuffer input,
+                                       Table output)
+        {
+            for (int y = 0, h = input.getHeight(); y < h; y++) {
+                for (int x = 0, w = input.getWidth(); x < w; x++) {
+                    if (input.isFore(x, y)) {
+                        output.setValue(x, y, 0); // reference pixel -> distance=0
+                    } else {
+                        output.setValue(x, y, -1); // non-reference pixel -> to be computed
+                    }
                 }
+            }
+        }
 
-                for (int k = 0; k < chamfer.length; k++) {
-                    int dx = chamfer[k][0];
-                    int dy = chamfer[k][1];
-                    int dt = chamfer[k][2];
+        //---------//
+        // process //
+        //---------//
+        /**
+         * Run the forward and backward passes then normalize.
+         *
+         * @param output the output data to process
+         */
+        private void process (Table output)
+        {
+            final int width = output.getWidth();
+            final int height = output.getHeight();
 
-                    testAndSet(output, x + dx, y + dy, v + dt);
+            // forward
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    final int v = output.getValue(x, y);
 
-                    if (dy != 0) {
-                        testAndSet(output, x - dx, y + dy, v + dt);
+                    if (v < 0) {
+                        continue;
                     }
 
-                    if (dx != dy) {
-                        testAndSet(output, x + dy, y + dx, v + dt);
+                    for (int k = 0; k < chamfer.length; k++) {
+                        int dx = chamfer[k][0];
+                        int dy = chamfer[k][1];
+                        int dt = chamfer[k][2];
+
+                        testAndSet(output, x + dx, y + dy, v + dt);
 
                         if (dy != 0) {
-                            testAndSet(output, x - dy, y + dx, v + dt);
+                            testAndSet(output, x - dx, y + dy, v + dt);
+                        }
+
+                        if (dx != dy) {
+                            testAndSet(output, x + dy, y + dx, v + dt);
+
+                            if (dy != 0) {
+                                testAndSet(output, x - dy, y + dx, v + dt);
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // backward
-        for (int y = height - 1; y >= 0; y--) {
-            for (int x = width - 1; x >= 0; x--) {
-                double v = output[x][y];
+            // backward
+            for (int y = height - 1; y >= 0; y--) {
+                for (int x = width - 1; x >= 0; x--) {
+                    final int v = output.getValue(x, y);
 
-                if (v < 0) {
-                    continue;
-                }
-
-                for (int k = 0; k < chamfer.length; k++) {
-                    int dx = chamfer[k][0];
-                    int dy = chamfer[k][1];
-                    int dt = chamfer[k][2];
-
-                    testAndSet(output, x - dx, y - dy, v + dt);
-
-                    if (dy != 0) {
-                        testAndSet(output, x + dx, y - dy, v + dt);
+                    if (v < 0) {
+                        continue;
                     }
 
-                    if (dx != dy) {
-                        testAndSet(output, x - dy, y - dx, v + dt);
+                    for (int k = 0; k < chamfer.length; k++) {
+                        int dx = chamfer[k][0];
+                        int dy = chamfer[k][1];
+                        int dt = chamfer[k][2];
+
+                        testAndSet(output, x - dx, y - dy, v + dt);
 
                         if (dy != 0) {
-                            testAndSet(output, x + dy, y - dx, v + dt);
+                            testAndSet(output, x + dx, y - dy, v + dt);
+                        }
+
+                        if (dx != dy) {
+                            testAndSet(output, x - dy, y - dx, v + dt);
+
+                            if (dy != 0) {
+                                testAndSet(output, x + dy, y - dx, v + dt);
+                            }
                         }
                     }
                 }
             }
+
+            //            // normalize (Not for integral values!)
+            //            for (int y = 0; y < height; y++) {
+            //                for (int x = 0; x < width; x++) {
+            //                    output[x][y] /= normalizer;
+            //                }
+            //            }
         }
 
-        // normalize
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                output[x][y] /= normalizer;
+        //------------//
+        // testAndSet //
+        //------------//
+        private void testAndSet (Table output,
+                                 int x,
+                                 int y,
+                                 int newvalue)
+        {
+            if ((x < 0) || (x >= output.getWidth())) {
+                return;
             }
+
+            if ((y < 0) || (y >= output.getHeight())) {
+                return;
+            }
+
+            double v = output.getValue(x, y);
+
+            if ((v >= 0) && (v < newvalue)) {
+                return;
+            }
+
+            output.setValue(x, y, newvalue);
         }
     }
 
-    //------------//
-    // testAndSet //
-    //------------//
-    private void testAndSet (double[][] output,
-                             int x,
-                             int y,
-                             double newvalue)
+    //---------//
+    // Integer //
+    //---------//
+    public class Integer
+            extends Abstract
     {
-        if ((x < 0) || (x >= output.length)) {
-            return;
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Table allocateOutput (int width,
+                                        int height)
+        {
+            return new Table.Integer(width, height);
         }
+    }
 
-        if ((y < 0) || (y >= output[0].length)) {
-            return;
+    //-------//
+    // Short //
+    //-------//
+    public class Short
+            extends Abstract
+    {
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        protected Table allocateOutput (int width,
+                                        int height)
+        {
+            return new Table.Short(width, height);
         }
-
-        double v = output[x][y];
-
-        if ((v >= 0) && (v < newvalue)) {
-            return;
-        }
-
-        output[x][y] = newvalue;
     }
 }

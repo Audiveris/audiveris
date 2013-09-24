@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                              P i x D i s t a n c e                         //
+//                          P i x e l D i s t a n c e                         //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -12,12 +12,13 @@
 package omr.image;
 
 /**
- * Class {@code PixDistance} records a distance at a given location.
+ * Class {@code PixelDistance} records a distance at a given pixel
+ * location.
  *
  * @author Hervé Bitteur
  */
-public class PixDistance
-        implements Comparable<PixDistance>
+public class PixelDistance
+        implements Comparable<PixelDistance>
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -31,17 +32,17 @@ public class PixDistance
     public final double d;
 
     //~ Constructors -----------------------------------------------------------
-    //-------------//
-    // PixDistance //
-    //-------------//
+    //---------------//
+    // PixelDistance //
+    //---------------//
     /**
-     * Creates a new PixDistance object.
+     * Creates a new PixelDistance object.
      *
      * @param x location abscissa
      * @param y location ordinate
      * @param d measured distance at this location
      */
-    public PixDistance (int x,
+    public PixelDistance (int x,
                           int y,
                           double d)
     {
@@ -55,7 +56,7 @@ public class PixDistance
     // compareTo //
     //-----------//
     @Override
-    public int compareTo (PixDistance that)
+    public int compareTo (PixelDistance that)
     {
         return Double.compare(this.d, that.d);
     }
@@ -66,6 +67,6 @@ public class PixDistance
     @Override
     public String toString ()
     {
-        return String.format("(x:%4d y:%4d dist:%f)", x, y, d);
+        return String.format("(x:%4d y:%4d dist:%.3f)", x, y, d);
     }
 }

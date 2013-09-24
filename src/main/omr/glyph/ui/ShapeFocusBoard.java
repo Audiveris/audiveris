@@ -65,7 +65,7 @@ import javax.swing.event.ChangeListener;
  * The collection may be built from glyphs of a given shape,
  * or from glyphs similar to a given glyph, etc.
  *
- * @author Hervé Bitteur
+ * @author HervÃ© Bitteur
  */
 public class ShapeFocusBoard
         extends Board

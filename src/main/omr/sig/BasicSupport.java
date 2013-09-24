@@ -105,13 +105,7 @@ public class BasicSupport
     @Override
     public String toString ()
     {
-        return String.format("%.2f~%s %s", grade, getName(), internals());
-    }
-
-    @Override
-    protected String internals ()
-    {
-        return "";
+        return String.format("%.2f~%s", grade, getName());
     }
 
     //~ Inner Classes ----------------------------------------------------------

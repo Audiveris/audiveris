@@ -52,7 +52,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code VerticalsBuilder} is in charge of retrieving major
+ * Class {@literal VerticalsBuilder} is in charge of retrieving major
  * vertical seeds of a dedicated system.
  *
  * The purpose is to use these major vertical sticks as seeds for (bar-lines?),
@@ -152,7 +152,7 @@ public class VerticalsBuilder
             throws StepException
     {
         // Get rid of former symbols
-        system.removeInactiveGlyphs(); // ????? what for ?????
+        system.removeInactiveGlyphs(); // ????? what for ????? TODO
 
         // Select suitable sections
         // Since we are looking for major seeds, we'll use only vertical sections
@@ -196,7 +196,7 @@ public class VerticalsBuilder
         // Apply seed checks
         int seeds = checkVerticals(candidates, false);
 
-        logger.info(
+        logger.debug(
                 "{}S#{} verticals: {}",
                 sheet.getLogPrefix(),
                 system.getId(),
@@ -289,12 +289,11 @@ public class VerticalsBuilder
 
         for (Glyph stick : sticks) {
             stick = system.addGlyph(stick);
-
             if (stick.isKnown()) {
                 continue;
             }
 
-            // Check seed is not too far from nearest staff
+            // Check seed is not too far from nearest staff and not in DMZ
             if (!ShapeChecker.getInstance()
                     .checkStem(system, stick)) {
                 logger.debug("Too distant seed {}", stick.idString());

@@ -34,7 +34,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * Class {@code GridBuilder} computes the grid of systems of a sheet
+ * Class {@literal GridBuilder} computes the grid of systems of a sheet
  * picture, based on the retrieval of horizontal staff lines and of
  * vertical bar lines.
  *

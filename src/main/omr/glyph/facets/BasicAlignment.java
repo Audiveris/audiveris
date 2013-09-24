@@ -36,7 +36,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code BasicAlignment} implements a basic handling of
+ * Class {@literal BasicAlignment} implements a basic handling of
  * Alignment facet
  *
  * @author Hervé Bitteur

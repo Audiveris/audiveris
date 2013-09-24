@@ -17,6 +17,10 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.math.GeoUtil;
+
+import java.awt.Rectangle;
+
 /**
  * Class {@code BasicInter} is the basis implementation for
  * Interpretation interface.
@@ -31,16 +35,25 @@ public class BasicInter
     private static final Constants constants = new Constants();
 
     //~ Instance fields --------------------------------------------------------
-    /** The related glyph. */
+    /** The underlying glyph, if any. */
     protected final Glyph glyph;
 
     /** The assigned shape. */
-    protected Shape shape; // Make it final ASAP!!!!!!
+    protected final Shape shape;
 
-    /** The quality (grade) of this possible interpretation. */
+    /** The hosting SIG. */
+    protected SIGraph sig;
+
+    /** Object bounds, perhaps different from glyph bounds. */
+    protected Rectangle box;
+
+    /** The quality of this interpretation. */
     protected double grade;
 
     //~ Constructors -----------------------------------------------------------
+    //------------//
+    // BasicInter //
+    //------------//
     /**
      * Creates a new BasicInter object.
      *
@@ -50,9 +63,12 @@ public class BasicInter
     public BasicInter (Glyph glyph,
                        Shape shape)
     {
-        this(glyph, shape, 0);
+        this(glyph, null, shape, 0);
     }
 
+    //------------//
+    // BasicInter //
+    //------------//
     /**
      * Creates a new BasicInter object.
      *
@@ -64,7 +80,44 @@ public class BasicInter
                        Shape shape,
                        double grade)
     {
+        this(glyph, null, shape, grade);
+    }
+
+    //------------//
+    // BasicInter //
+    //------------//
+    /**
+     * Creates a new BasicInter object.
+     *
+     * @param box   the object bounds
+     * @param shape the possible shape
+     * @param grade the interpretation quality
+     */
+    public BasicInter (Rectangle box,
+                       Shape shape,
+                       double grade)
+    {
+        this(null, box, shape, grade);
+    }
+
+    //------------//
+    // BasicInter //
+    //------------//
+    /**
+     * Creates a new BasicInter object.
+     *
+     * @param glyph the glyph to interpret
+     * @param box   the precise object bounds (if different from glyph bounds)
+     * @param shape the possible shape
+     * @param grade the interpretation quality
+     */
+    public BasicInter (Glyph glyph,
+                       Rectangle box,
+                       Shape shape,
+                       double grade)
+    {
         this.glyph = glyph;
+        this.box = box;
         this.shape = shape;
         this.grade = grade;
 
@@ -75,39 +128,12 @@ public class BasicInter
     }
 
     //~ Methods ----------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
-    /**
-     * @return the glyph
-     */
-    @Override
-    public Glyph getGlyph ()
-    {
-        return glyph;
-    }
-
     //--------------//
     // getGoodGrade //
     //--------------//
     public static double getGoodGrade ()
     {
         return constants.goodGrade.getValue();
-    }
-
-    /**
-     * @return the grade
-     */
-    @Override
-    public double getGrade ()
-    {
-        return grade;
     }
 
     //-------------//
@@ -118,33 +144,125 @@ public class BasicInter
         return constants.minGrade.getValue();
     }
 
-    /**
-     * @return the shape
-     */
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public void accept (InterVisitor visitor)
+    {
+        visitor.visit(this);
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public Rectangle getBounds ()
+    {
+        if (box != null) {
+            return box;
+        }
+
+        if (glyph != null) {
+            return glyph.getBounds();
+        }
+
+        return null;
+    }
+
+    //------------//
+    // getDetails //
+    //------------//
+    @Override
+    public String getDetails ()
+    {
+        if (getGlyph() != null) {
+            return glyph.idString();
+        }
+
+        return "";
+    }
+
+    //----------//
+    // getGlyph //
+    //----------//
+    @Override
+    public Glyph getGlyph ()
+    {
+        return glyph;
+    }
+
+    //----------//
+    // getGrade //
+    //----------//
+    @Override
+    public double getGrade ()
+    {
+        return grade;
+    }
+
+    //----------//
+    // getShape //
+    //----------//
     @Override
     public Shape getShape ()
     {
         return shape;
     }
 
-    /**
-     * @param grade the grade to set
-     */
+    //--------//
+    // getSig //
+    //--------//
+    @Override
+    public SIGraph getSig ()
+    {
+        return sig;
+    }
+
+    //--------//
+    // isGood //
+    //--------//
+    @Override
+    public boolean isGood ()
+    {
+        return grade >= getGoodGrade();
+    }
+
+    //----------//
+    // isSameAs //
+    //----------//
+    @Override
+    public boolean isSameAs (Inter that)
+    {
+        return ((this.getShape() == that.getShape())
+                && GeoUtil.areIdentical(this.getBounds(), that.getBounds()));
+    }
+
+    //-----------//
+    // setBounds //
+    //-----------//
+    @Override
+    public void setBounds (Rectangle box)
+    {
+        this.box = box;
+    }
+
+    //----------//
+    // setGrade //
+    //----------//
     @Override
     public void setGrade (double grade)
     {
         this.grade = grade;
     }
 
-    /**
-     * Delete this ASAP !!!!!!!!!!!!!!!!!!!!!!!
-     *
-     * @param shape
-     */
+    //--------//
+    // setSig //
+    //--------//
     @Override
-    public void setShape (Shape shape)
+    public void setSig (SIGraph sig)
     {
-        this.shape = shape;
+        this.sig = sig;
     }
 
     //----------//
@@ -160,21 +278,7 @@ public class BasicInter
         sb.append("~")
                 .append(shape);
 
-        if (getGlyph() != null) {
-            sb.append('#')
-                    .append(getGlyph().getId());
-        }
-
         return sb.toString();
-    }
-
-    //--------//
-    // isGood //
-    //--------//
-    @Override
-    public boolean isGood ()
-    {
-        return grade >= getGoodGrade();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -187,7 +291,7 @@ public class BasicInter
         //~ Instance fields ----------------------------------------------------
 
         final Constant.Ratio minGrade = new Constant.Ratio(
-                0.1,
+                0.08,
                 "Minimum interpretation grade");
 
         final Constant.Ratio goodGrade = new Constant.Ratio(

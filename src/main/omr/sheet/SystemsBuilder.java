@@ -41,7 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code SystemsBuilder} is in charge of retrieving the systems
+ * Class {@literal SystemsBuilder} is in charge of retrieving the systems
  * (SystemInfo instances) and parts (PartInfo instances) in the
  * provided sheet and to allocate the corresponding instances on the
  * Score side (the Score instance, and the various instances of
@@ -357,7 +357,7 @@ public class SystemsBuilder
 
         sheet.getBench().recordSystemCount(sysNb);
 
-        logger.info("{}{}", sheet.getLogPrefix(), sb.toString());
+        logger.info("{}{}", sheet.getLogPrefix(), sb);
     }
 
     //~ Inner Classes ----------------------------------------------------------

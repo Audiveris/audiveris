@@ -17,7 +17,6 @@ import static omr.WellKnowns.LINE_SEPARATOR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.image.ChamferDistanceShort;
 import omr.image.FilterDescriptor;
 import omr.image.Picture;
 
@@ -54,6 +53,7 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
+import omr.image.ChamferDistance;
 
 /**
  * Class {@code ScaleBuilder} encapsulates the computation of a sheet
@@ -242,7 +242,7 @@ public class ScaleBuilder
             // Compute distance transform image
             watch.start("Distance transform");
             sheet.setDistanceImage(
-                    new ChamferDistanceShort().computeToFore(wholeVertTable.getBuffer()));
+                    new ChamferDistance.Short().computeToFore(wholeVertTable.getBuffer()));
 
             sheet.setScale(scale);
         } finally {
@@ -685,6 +685,10 @@ public class ScaleBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
+        final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print the StopWatch on binarization?");
+
         final Constant.Integer minResolution = new Constant.Integer(
                 "Pixels",
                 11,
@@ -713,10 +717,6 @@ public class ScaleBuilder
         final Constant.Ratio maxSecondRatio = new Constant.Ratio(
                 2.0,
                 "Maximum ratio between second and first background peak");
-
-        final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print the StopWatch on binarization?");
 
         final Constant.Boolean disposeImage = new Constant.Boolean(
                 false,

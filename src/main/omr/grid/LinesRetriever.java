@@ -63,7 +63,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code LinesRetriever} retrieves the staff lines of a sheet.
+ * Class {@literal LinesRetriever} retrieves the staff lines of a sheet.
  *
  * @author Hervé Bitteur
  */
@@ -952,7 +952,7 @@ public class LinesRetriever
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all pre-scaled constants
+     * Class {@literal Parameters} gathers all pre-scaled constants
      * related to horizontal frames.
      */
     private static class Parameters

@@ -62,6 +62,9 @@ public class BeamInter
         path.lineTo(south.getX2() + 1, south.getY2() + 1); // Lower right
         path.lineTo(south.getX1(), south.getY1() + 1); // Lower left
         path.closePath();
+
+        // Define precise bounds based on this path
+        setBounds(north.getBounds().union(south.getBounds()));
     }
 
     //~ Methods ----------------------------------------------------------------

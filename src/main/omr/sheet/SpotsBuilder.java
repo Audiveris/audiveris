@@ -171,7 +171,7 @@ public class SpotsBuilder
             }
         }
 
-        logger.info("Spots retrieved: {}", count);
+        logger.info("{}Spots retrieved: {}", sheet.getLogPrefix(), count);
     }
 
     //---------------//
@@ -184,13 +184,15 @@ public class SpotsBuilder
         int[] offset = {0, 0};
         Scale scale = sheet.getScale();
         int beam = scale.getMainBeam();
-        int interline = scale.getInterline();
 
         final float radius = (beam - 3) / 2f;
         ///final float radius = (beam - 2) / 2f;
         ///final float radius = (beam - 1) / 2f;
-        ///final float radius = (interline - 3) / 2f; // => head focus
-        logger.info("Spots retrieval beam: {}, radius: {}", beam, radius);
+        logger.info(
+                "{}Spots retrieval beam: {}, radius: {} ...",
+                sheet.getLogPrefix(),
+                beam,
+                radius);
 
         StructureElement se = new StructureElement(0, 1, radius, offset);
 

@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code CompoundBuilder} defines a generic way to smartly
+ * Class {@literal CompoundBuilder} defines a generic way to smartly
  * build glyph compounds, and provides derived variants.
  *
  * @author Hervé Bitteur
@@ -158,7 +158,7 @@ public class CompoundBuilder
     // CompoundAdapter //
     //-----------------//
     /**
-     * Interface {@code CompoundAdapter} provides the needed features
+     * Interface {@literal CompoundAdapter} provides the needed features
      * for building compounds out of glyphs.
      */
     public static interface CompoundAdapter

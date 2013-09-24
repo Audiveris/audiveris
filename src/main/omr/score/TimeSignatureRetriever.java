@@ -51,7 +51,7 @@ import java.awt.Rectangle;
 import java.util.EnumSet;
 
 /**
- * Class {@code TimeSignatureRetriever} checks carefully the first
+ * Class {@literal TimeSignatureRetriever} checks carefully the first
  * measure of each staff for a time signature.
  *
  * @author Hervé Bitteur

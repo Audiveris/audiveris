@@ -17,7 +17,7 @@ import omr.glyph.facets.Glyph;
 import java.util.Set;
 
 /**
- * Class {@code GlyphPileEvent} represents a collection of overlapping
+ * Class {@literal GlyphPileEvent} represents a collection of overlapping
  * glyphs, one on top of the other.
  *
  * @author Hervé Bitteur

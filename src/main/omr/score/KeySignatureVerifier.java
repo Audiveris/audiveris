@@ -44,7 +44,7 @@ import java.awt.Rectangle;
 import java.util.Collection;
 
 /**
- * Class {@code KeySignatureVerifier} verifies, at system level, that all
+ * Class {@literal KeySignatureVerifier} verifies, at system level, that all
  * vertical measures exhibit the same key signature, and correct them if
  * necessary.
  *

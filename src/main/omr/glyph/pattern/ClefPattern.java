@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code ClefPattern} verifies all the initial clefs of a
+ * Class {@literal ClefPattern} verifies all the initial clefs of a
  * system, using an intersection inner rectangle and a containing
  * outer rectangle to retrieve the clef glyphs and only those ones.
  *

@@ -13,6 +13,9 @@ package omr.image;
 
 import omr.WellKnowns;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.Shape;
 
 import omr.ui.symbol.MusicFont;
@@ -21,6 +24,7 @@ import omr.ui.symbol.Symbols;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -43,16 +47,26 @@ public class TemplateFactory
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(
             TemplateFactory.class);
 
     /** Singleton. */
     private static TemplateFactory INSTANCE = new TemplateFactory();
 
+    /** Color for foreground pixels. */
+    private static final int BLACK = Color.BLACK.getRGB();
+
+    /** Color for hole pixels. */
+    private static final int GREEN = Color.GREEN.getRGB();
+
+    /** Color for background pixels (fully transparent). */
+    private static final int TRANS = new Color(0, 0, 0, 0).getRGB();
+
     //~ Instance fields --------------------------------------------------------
     //
-    /** Catalog of templates already allocated. */
+    /** Catalog of all templates already allocated. */
     private final Map<Integer, Map<Shape, Template>> allSizes;
 
     //~ Constructors -----------------------------------------------------------
@@ -80,10 +94,10 @@ public class TemplateFactory
     // getTemplate //
     //-------------//
     /**
-     * Return a template for shape at desired interline value
+     * Return a template for shape scaled at desired interline value.
      *
      * @param shape     specific shape
-     * @param interline desired interline
+     * @param interline desired interline value
      * @return the ready-to-use template
      */
     public Template getTemplate (Shape shape,
@@ -106,22 +120,52 @@ public class TemplateFactory
         return template;
     }
 
-    //----------------//
-    // createTemplate //
-    //----------------//
+    //------------//
+    // addAnchors //
+    //------------//
     /**
-     * Build a template for desired shape and size, based on MusicFont.
-     * TODO: Implement a better way to select representative key points
-     * perhaps using a skeleton for foreground and another skeleton for holes?
+     * Add specific anchors to the template.
+     * All templates get a CENTER anchor at construction time, but some may need
+     * additional anchors.
      *
-     * @param shape     desired shape
-     * @param interline desired size
-     * @return the brand new template
+     * @param template the template to populate
      */
-    private Template createTemplate (Shape shape,
-                                     int interline)
+    private void addAnchors (Template template)
     {
-        final BufferedImage img = MusicFont.buildImage(shape, interline, false);
+        switch (template.getShape()) {
+        case VOID_EVEN:
+        case VOID_ODD:
+            // Add anchors for potential stems on left and right sides
+            template.addAnchor(Template.Anchor.TOP_LEFT_STEM, 0.05, 0.0);
+            template.addAnchor(Template.Anchor.LEFT_STEM, 0.05, 0.5);
+            template.addAnchor(Template.Anchor.BOTTOM_LEFT_STEM, 0.05, 1.0);
+
+            template.addAnchor(Template.Anchor.TOP_RIGHT_STEM, 0.95, 0.0);
+            template.addAnchor(Template.Anchor.RIGHT_STEM, 0.95, 0.5);
+            template.addAnchor(Template.Anchor.BOTTOM_RIGHT_STEM, 0.95, 1.0);
+
+            break;
+
+        default:
+        }
+    }
+
+    //----------//
+    // addHoles //
+    //----------//
+    /**
+     * Background pixels inside a given shape must be recognized as
+     * such.
+     * Such pixels are marked with a specific color (green foreground) so that
+     * the template can measure their distance to (black) foreground.
+     *
+     * @param img   the source image
+     * @param shape the template shape
+     */
+    private void addHoles (BufferedImage img,
+                           Shape shape)
+    {
+        // Identify holes
         final List<Point> holeSeeds = new ArrayList<Point>();
 
         switch (shape) {
@@ -149,123 +193,186 @@ public class TemplateFactory
         default:
         }
 
-        // Fill the holes if any
+        // Fill the holes if any with green color
         FloodFiller floodFiller = new FloodFiller(img);
 
         for (Point seed : holeSeeds) {
-            floodFiller.fill(seed.x, seed.y, 0x00000000, 0xFF00FF00);
+            // Background (transparent) -> green (foreground)
+            floodFiller.fill(seed.x, seed.y, TRANS, GREEN);
         }
+    }
 
-        // Make a copy on disk for visual check
-        try {
-            ImageIO.write(
-                    img,
-                    "png",
-                    new File(WellKnowns.TEMP_FOLDER, shape + ".png"));
-        } catch (IOException ex) {
-            logger.warn("Error storing template", ex);
+    //----------//
+    // binarize //
+    //----------//
+    /**
+     * Use only fully black or fully transparent pixels
+     *
+     * @param img       the source image
+     * @param threshold alpha level to separate foreground and background
+     */
+    private void binarize (BufferedImage img,
+                           int threshold)
+    {
+        for (int y = 0, h = img.getHeight(); y < h; y++) {
+            for (int x = 0, w = img.getWidth(); x < w; x++) {
+                Color pix = new Color(img.getRGB(x, y), true);
+                img.setRGB(x, y, (pix.getAlpha() >= threshold) ? BLACK : TRANS);
+            }
         }
+    }
 
-        // Retrieve (foreground) reference points
-        int width = img.getWidth();
-        int height = img.getHeight();
-        boolean[][] refs = new boolean[width][height];
+    //------------------//
+    // computeDistances //
+    //------------------//
+    /**
+     * Compute all distances to nearest foreground pixel.
+     *
+     * @param img   the source image
+     * @param shape the template shape
+     * @return the table of distances to foreground
+     */
+    private Table computeDistances (BufferedImage img,
+                                    Shape shape)
+    {
+        // Retrieve foreground pixels (those with alpha = 255)
+        final int width = img.getWidth();
+        final int height = img.getHeight();
+        final boolean[][] fore = new boolean[width][height];
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                int pix = img.getRGB(x, y);
-                int alpha = pix >> 24;
+                Color pix = new Color(img.getRGB(x, y), true);
 
-                if (alpha < 0) {
-                    alpha += 256;
-                }
-
-                int green = (pix & 0x0000FF00) >> 8;
-
-                if (green < 0) {
-                    green += 256;
-                }
-
-                //                logger.info(
-                //                    String.format(
-                //                        "x:%2d y:%2d pix:%h alpha:%d green:%d",
-                //                        x,
-                //                        y,
-                //                        pix,
-                //                        alpha,
-                //                        green));
-                if (alpha == 255) {
-                    // Foreground?
-                    if (green == 0) {
-                        refs[x][y] = true;
-                    }
+                if (pix.getAlpha() == 255) {
+                    fore[x][y] = true;
                 }
             }
         }
 
         // Compute template distance transform
-        double[][] distances = new ChamferDistance().compute(refs);
+        final Table distances = new ChamferDistance.Short().compute(fore);
 
-        // Generate key points (both foreground and hole background)
-        List<PixDistance> keyPoints = new ArrayList<PixDistance>();
-        int fgCount = 0;
-        int bgCount = 0;
+        if (logger.isDebugEnabled()) {
+            distances.dump(shape + "  distances");
+        }
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                int pix = img.getRGB(x, y);
-                int alpha = pix >> 24;
+        return distances;
+    }
 
-                if (alpha < 0) {
-                    alpha += 256;
-                }
+    //----------------//
+    // createTemplate //
+    //----------------//
+    /**
+     * Build a template for desired shape and size, based on MusicFont.
+     * TODO: Implement a better way to select representative key points
+     * perhaps using a skeleton for foreground and another skeleton for holes?
+     *
+     * @param shape     desired shape
+     * @param interline desired size
+     * @return the brand new template
+     */
+    private Template createTemplate (Shape shape,
+                                     int interline)
+    {
+        // Get a B&W image (no gray)
+        final BufferedImage img = MusicFont.buildImage(shape, interline, false);
+        binarize(img, 100);
 
-                int green = (pix & 0x0000FF00) >> 8;
+        // Distances to foreground
+        final Table distances = computeDistances(img, shape);
 
-                if (green < 0) {
-                    green += 256;
-                }
+        // Add holes if any
+        addHoles(img, shape);
 
-                if (alpha == 255) {
-                    if (green == 0) {
-                        // Foreground
-                        if ((fgCount++ % 1) == 0) {
-                            keyPoints.add(new PixDistance(x, y, 0));
-                        }
+        // Store a copy on disk for visual check?
+        if (constants.keepTemplates.isSet()) {
+            try {
+                File file = new File(
+                        WellKnowns.TEMP_FOLDER,
+                        shape + ".tpl.png");
+                ImageIO.write(img, "png", file);
+            } catch (IOException ex) {
+                logger.warn("Error storing template", ex);
+            }
+        }
+
+        // Generate key points (for both foreground and holes)
+        final List<PixelDistance> keyPoints = getKeyPoints(img, distances);
+
+        // Generate the template instance
+        Template template = new Template(
+                shape,
+                img.getWidth(),
+                img.getHeight(),
+                keyPoints,
+                Symbols.getSymbol(shape, false));
+
+        // Add specific anchor points, if any
+        addAnchors(template);
+
+        if (logger.isDebugEnabled()) {
+            logger.info("Created {}", template);
+            template.dump();
+        }
+
+        return template;
+    }
+
+    //--------------//
+    // getKeyPoints //
+    //--------------//
+    /**
+     * Build the collection of key points to be used for matching
+     * tests.
+     * These are the locations where the image distance value will be checked
+     * against the recorded template distance value.
+     * TODO: We could carefully select a subset of these locations?
+     *
+     * @param img       the template source image
+     * @param distances the template distances
+     * @return the collection of key locations, with their corresponding
+     *         distance value
+     */
+    private List<PixelDistance> getKeyPoints (BufferedImage img,
+                                              Table distances)
+    {
+        // Generate key points (both foreground and holes background)
+        List<PixelDistance> keyPoints = new ArrayList<PixelDistance>();
+
+        for (int y = 0, h = img.getHeight(); y < h; y++) {
+            for (int x = 0, w = img.getWidth(); x < w; x++) {
+                Color pix = new Color(img.getRGB(x, y), true);
+
+                // Select only foreground pixels (black or green)
+                if (pix.getAlpha() == 255) {
+                    if (pix.getGreen() == 0) {
+                        // True foreground, so dist to nearest foreground is 0
+                        keyPoints.add(new PixelDistance(x, y, 0));
                     } else {
-                        // Hole background 
-                        if ((bgCount++ % 1) == 0) {
-                            keyPoints.add(
-                                    new PixDistance(x, y, distances[x][y]));
-                        }
+                        // Hole pixel, so use dist to nearest foreground
+                        keyPoints.add(
+                                new PixelDistance(x, y, distances.getValue(x, y)));
                     }
                 }
             }
         }
 
-        // Generate the template instance
-        Template temp = new Template(
-                shape.name(),
-                width,
-                height,
-                keyPoints,
-                Symbols.getSymbol(shape, false));
+        return keyPoints;
+    }
 
-        // Add anchor points, if any
-        switch (shape) {
-        case VOID_EVEN:
-        case VOID_ODD:
-            temp.setAnchor(Template.Anchor.LEFT_STEM, 0.05, 0.5);
-            temp.setAnchor(Template.Anchor.RIGHT_STEM, 0.95, 0.5);
+    //~ Inner Classes ----------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
 
-            break;
+        final Constant.Boolean keepTemplates = new Constant.Boolean(
+                false,
+                "Should we keep the templates images?");
 
-        default:
-        }
-
-        logger.info("Created {}", temp);
-        temp.dump();
-
-        return temp;
     }
 }

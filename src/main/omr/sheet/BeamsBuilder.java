@@ -116,7 +116,7 @@ public class BeamsBuilder
 
         // Look for beam candidates
         List<Glyph> beams = new ArrayList<Glyph>();
-        logger.info(
+        logger.debug(
                 "{}S#{} spots: {}",
                 sheet.getLogPrefix(),
                 system.getId(),
@@ -261,7 +261,7 @@ public class BeamsBuilder
             beams.add(glyph);
         }
 
-        logger.info(
+        logger.debug(
                 "{}S#{} beams: {}",
                 sheet.getLogPrefix(),
                 system.getId(),
@@ -422,7 +422,7 @@ public class BeamsBuilder
 
         final Constant.Double maxDeltaTangent = new Constant.Double(
                 "tangent",
-                0.05,
+                0.06,
                 "Maximum delta slope between top and bottom of beam");
 
         final Scale.Fraction maxDistanceToBorder = new Scale.Fraction(

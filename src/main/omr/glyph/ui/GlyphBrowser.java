@@ -80,7 +80,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code GlyphBrowser} gathers a navigator to move between
+ * Class {@literal GlyphBrowser} gathers a navigator to move between
  * selected glyphs, a glyph board for glyph details, and a display for
  * graphical glyph view.
  * This is a (package private) companion of {@link SampleVerifier}.
@@ -105,7 +105,7 @@ class GlyphBrowser
     };
 
     /**
-     * Field constant {@code NO_INDEX} is a specific value {@value} to
+     * Field constant {@literal NO_INDEX} is a specific value {@value} to
      * indicate absence of index
      */
     private static final int NO_INDEX = -1;
@@ -632,7 +632,7 @@ class GlyphBrowser
                 Glyph glyph = navigator.getGlyph(gName);
                 g.setColor(Color.black);
                 g.setXORMode(Color.darkGray);
-                renderGlyphArea(glyph, g);
+                renderBoxArea(glyph.getBounds(), g);
             }
         }
 
@@ -676,7 +676,7 @@ class GlyphBrowser
     // Navigator //
     //-----------//
     /**
-     * Class {@code Navigator} handles the navigation through the
+     * Class {@literal Navigator} handles the navigation through the
      * collection of glyphs (names).
      */
     private final class Navigator

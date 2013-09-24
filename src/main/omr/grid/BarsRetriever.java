@@ -71,7 +71,7 @@ import java.util.TreeSet;
 import omr.lag.JunctionShiftPolicy;
 
 /**
- * Class {@code BarsRetriever} focuses on the retrieval of vertical
+ * Class {@literal BarsRetriever} focuses on the retrieval of vertical
  * barlines.
  * Barlines are used to determine the side limits of staves and, most
  * importantly, the gathering of staves into systems.
@@ -1787,7 +1787,7 @@ public class BarsRetriever
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all constants related to
+     * Class {@literal Parameters} gathers all constants related to
      * vertical frames.
      */
     private static class Parameters

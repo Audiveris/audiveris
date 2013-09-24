@@ -19,6 +19,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
 
+import omr.math.GeoUtil;
 import omr.math.LineUtil;
 
 import omr.score.entity.Page;
@@ -28,7 +29,6 @@ import omr.sheet.SystemInfo;
 
 import omr.text.tesseract.TesseractOCR;
 
-import omr.util.GeoUtil;
 import omr.util.LiveParam;
 import omr.util.WrappedBoolean;
 import omr.util.XmlUtil;

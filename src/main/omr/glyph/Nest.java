@@ -28,7 +28,7 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Class {@code Nest} handles a collection of {@link Glyph} instances,
+ * Class {@literal Nest} handles a collection of {@link Glyph} instances,
  * with the ability to retrieve a Glyph based on its Id or its location,
  * and the ability to give birth to new glyph instances.
  *
@@ -212,7 +212,7 @@ public interface Nest
      * @param layer the containing glyph layer
      * @return the glyph instances found, which may be an empty list
      */
-    Set<Glyph> lookupGlyphs (Rectangle rect,
+    Set<Glyph> containedGlyphs (Rectangle rect,
                              GlyphLayer layer);
 
     /**
@@ -223,7 +223,7 @@ public interface Nest
      * @param layer the containing glyph layer
      * @return the glyph instances found, which may be an empty list
      */
-    Set<Glyph> lookupIntersectedGlyphs (Rectangle rect,
+    Set<Glyph> intersectedGlyphs (Rectangle rect,
                                         GlyphLayer layer);
 
     /**

@@ -26,11 +26,11 @@ import omr.grid.GridBuilder;
 import omr.grid.StaffManager;
 import omr.grid.TargetBuilder;
 
+import omr.image.Table;
+
 import omr.lag.Lag;
 import omr.lag.Section;
 import omr.lag.Sections;
-
-import omr.math.TableUtil;
 
 import omr.run.RunsTable;
 
@@ -39,9 +39,13 @@ import omr.score.ScoresManager;
 import omr.score.entity.Page;
 import omr.score.entity.SystemNode;
 
+import omr.selection.InterListEvent;
 import omr.selection.LocationEvent;
+import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
+import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
+import omr.selection.UserEvent;
 
 import omr.image.ImageFormatException;
 import omr.image.Picture;
@@ -53,6 +57,9 @@ import omr.sheet.ui.RunsViewer;
 import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.SheetsController;
 
+import omr.sig.Inter;
+import omr.sig.SIGraph;
+
 import omr.step.Step;
 import omr.step.StepException;
 import omr.step.Stepping;
@@ -63,12 +70,15 @@ import omr.ui.ErrorsEditor;
 import omr.ui.util.ItemRenderer;
 import omr.ui.util.WeakItemRenderer;
 
+import org.bushe.swing.event.EventSubscriber;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -81,23 +91,31 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code Sheet} is the corner stone for Sheet processing,
+ * Class {@literal Sheet} is the corner stone for Sheet processing,
  * keeping pointers to all processings related to the image, and to
  * their results.
  *
  * @author Hervé Bitteur
  */
 public class Sheet
+        implements EventSubscriber<UserEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Sheet.class);
 
-    /** Events that can be published on a sheet service */
+    /** Events that can be published on sheet location service. */
     public static final Class<?>[] allowedEvents = new Class<?>[]{
         LocationEvent.class,
-        PixelLevelEvent.class
+        PixelLevelEvent.class,
+        InterListEvent.class
+    };
+
+    /** Events read by sheet on location service. */
+    public static final Class<?>[] eventsRead = new Class<?>[]{
+        LocationEvent.class,
+        InterListEvent.class
     };
 
     //~ Instance fields --------------------------------------------------------
@@ -108,7 +126,10 @@ public class Sheet
     /** Containing score. */
     private final Score score;
 
-    /** Selections for this sheet. (SheetLocation and PixelLevel) */
+    /**
+     * Selections for this sheet.
+     * (SheetLocation, PixelLevel, InterList)
+     */
     private final SelectionService locationService;
 
     /** The recording of key processing data. */
@@ -141,7 +162,7 @@ public class Sheet
     private RunsTable wholeVerticalTable;
 
     /** Image of distances to foreground. */
-    private short[][] distanceImage;
+    private Table distanceImage;
 
     /** Initial skew value */
     private Skew skew;
@@ -220,7 +241,7 @@ public class Sheet
     // Sheet //
     //-------//
     /**
-     * Create a new {@code Sheet} instance, based on a couple made of
+     * Create a new {@literal Sheet} instance, based on a couple made of
      * an image (the original pixel input) and a page (the score
      * entities output).
      *
@@ -235,6 +256,9 @@ public class Sheet
         this.score = page.getScore();
 
         locationService = new SelectionService("sheet", allowedEvents);
+        for (Class<?> eventClass : eventsRead) {
+            locationService.subscribeStrongly(eventClass, this);
+        }
 
         staffManager = new StaffManager(this);
         bench = new SheetBench(this);
@@ -704,8 +728,8 @@ public class Sheet
     // getScale //
     //----------//
     /**
-     * Report the computed scale of this sheet. This drives several processing
-     * thresholds.
+     * Report the computed scale of this sheet.
+     * This drives several processing thresholds.
      *
      * @return the sheet scale
      */
@@ -727,6 +751,21 @@ public class Sheet
         }
 
         return scaleBuilder;
+    }
+
+    //----------------------//
+    // getSelectedInterList //
+    //----------------------//
+    /**
+     * Report the currently selected list of interpretations if any
+     *
+     * @return the current list or null
+     */
+    @SuppressWarnings("unchecked")
+    public List<Inter> getSelectedInterList ()
+    {
+        return (List<Inter>) locationService
+                .getSelection(InterListEvent.class);
     }
 
     //-----------------//
@@ -934,7 +973,7 @@ public class Sheet
      *
      * @param glyphs the collection of glyphs
      * @return the containing system
-     * @exception IllegalArgumentException raised if glyphs collection is not OK
+     * @throws IllegalArgumentException raised if glyphs collection is not OK
      */
     public SystemInfo getSystemOf (Collection<Glyph> glyphs)
     {
@@ -985,8 +1024,8 @@ public class Sheet
      *
      * @param sections the collection of sections
      * @return the containing system
-     * @exception IllegalArgumentException raised if section collection is not
-     *                                     OK
+     * @throws IllegalArgumentException raised if section collection is not
+                                     OK
      */
     public SystemInfo getSystemOfSections (Collection<Section> sections)
     {
@@ -1660,7 +1699,7 @@ public class Sheet
      *
      * @return the image of distances (to foreground)
      */
-    public short[][] getDistanceImage ()
+    public Table getDistanceImage ()
     {
         return distanceImage;
     }
@@ -1673,12 +1712,12 @@ public class Sheet
      *
      * @param distanceImage the image of distances (to foreground)
      */
-    public void setDistanceImage (short[][] distanceImage)
+    public void setDistanceImage (Table distanceImage)
     {
         this.distanceImage = distanceImage;
 
         // Save this distance image on disk for visual check
-        TableUtil.store(getId() + ".dist", distanceImage);
+        //TableUtil.store(getId() + ".dist", distanceImage);
     }
 
     //--------------------//
@@ -1701,5 +1740,98 @@ public class Sheet
     public void setSpotsController (SpotsController spotsController)
     {
         this.spotsController = spotsController;
+    }
+
+    //---------//
+    // onEvent //
+    //---------//
+    @Override
+    public void onEvent (UserEvent event)
+    {
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
+            if (event instanceof LocationEvent) {
+                // Location => InterList
+                handleEvent((LocationEvent) event);
+            } else if (event instanceof InterListEvent) {
+                // InterList => contour
+                handleEvent((InterListEvent) event);
+            }
+        } catch (Throwable ex) {
+            logger.warn(getClass().getName() + " onEvent error", ex);
+        }
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in sheet location => interpretation(s)
+     *
+     * @param locationEvent
+     */
+    private void handleEvent (LocationEvent locationEvent)
+    {
+        SelectionHint hint = locationEvent.hint;
+        MouseMovement movement = locationEvent.movement;
+        Rectangle rect = locationEvent.getData();
+
+        if (!hint.isLocation() && !hint.isContext()) {
+            return;
+        }
+
+        if (rect == null) {
+            return;
+        }
+
+        SystemInfo system = getSystemOf(rect.getLocation());
+        if (system == null) {
+            return;
+        }
+        
+        SIGraph sig = system.getSig();
+
+        final List<Inter> inters;
+        if ((rect.width > 0) && (rect.height > 0)) {
+            // This is a non-degenerated rectangle
+            // Look for contained interpretations
+            inters = sig.containedInters(rect);
+        } else {
+            // This is just a point
+            // Look for intersected interpretations
+            inters = sig.intersectedInters(rect.getLocation());
+        }
+
+        // Publish inters found (perhaps none)
+        locationService.publish(new InterListEvent(this, hint, movement, inters));
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in Inter => inter contour
+     *
+     * @param interListEvent
+     */
+    private void handleEvent (InterListEvent interListEvent)
+    {
+        SelectionHint hint = interListEvent.hint;
+        MouseMovement movement = interListEvent.movement;
+        List<Inter> inters = interListEvent.getData();
+
+        if (hint == SelectionHint.INTER_INIT) {
+            // Display (last) inter contour
+            if (inters != null && !inters.isEmpty()) {
+                Inter inter = inters.get(inters.size() - 1);
+                Rectangle box = inter.getBounds();
+                locationService.publish(new LocationEvent(this, hint, movement, box));
+            }
+        }
+
     }
 }

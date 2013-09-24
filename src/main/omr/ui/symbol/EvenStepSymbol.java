@@ -60,7 +60,7 @@ public class EvenStepSymbol
                 (int) Math.ceil(rect.getHeight()));
 
         int interline = font.getFontInterline();
-        p.line = Math.max(1, (int) Math.rint(interline * 0.25));
+        p.line = Math.max(1, (int) Math.rint(interline * 0.17));
 
         return p;
     }

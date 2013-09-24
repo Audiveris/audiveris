@@ -35,6 +35,9 @@ import omr.grid.StaffInfo;
 
 import omr.lag.Section;
 
+import omr.math.GeoOrder;
+import omr.math.GeoUtil;
+
 import static omr.run.Orientation.*;
 
 import omr.selection.GlyphEvent;
@@ -47,21 +50,19 @@ import omr.sig.SIGraph;
 import omr.step.Step;
 import omr.step.StepException;
 
-import omr.util.GeoUtil;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import omr.glyph.ShapeSet;
 
 /**
- * Class {@code HorizontalsBuilder} is in charge of retrieving
+ * Class {@literal HorizontalsBuilder} is in charge of retrieving
  * ledgers and endings in a system.
  *
  * <p>Nota: Endings are currently disabled.
@@ -448,7 +449,7 @@ public class HorizontalsBuilder
             sb.append("No ending");
         }
 
-        logger.info("{}{}", sheet.getLogPrefix(), sb.toString());
+        logger.debug("{}{}", sheet.getLogPrefix(), sb.toString());
     }
 
     //--------------------//
@@ -723,7 +724,7 @@ public class HorizontalsBuilder
         }
 
         if (!toRemove.isEmpty()) {
-            logger.info("S#{} {} ledger/beam overlaps",
+            logger.debug("S#{} {} ledger/beam overlaps",
                     system.getId(), toRemove.size());
             ledgerCandidates.removeAll(toRemove);
         }
@@ -742,7 +743,7 @@ public class HorizontalsBuilder
     {
         SIGraph sig = system.getSig();
         List<Inter> beams = sig.inters(Shape.BEAM);
-        sig.sortByAbscissa(beams);
+        Collections.sort(beams, Inter.byAbscissa);
 
         return beams;
     }

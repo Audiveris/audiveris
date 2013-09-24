@@ -23,6 +23,8 @@ import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
 
+import omr.math.GeoOrder;
+import omr.math.GeoUtil;
 import omr.math.LineUtil;
 
 import omr.run.Orientation;
@@ -32,7 +34,6 @@ import omr.sig.BasicExclusion;
 import omr.sig.BeamInter;
 import omr.sig.BeamPortion;
 import omr.sig.BeamStemRelation;
-import omr.sig.BlackHeadInter;
 import omr.sig.Exclusion;
 import omr.sig.Exclusion.Cause;
 import omr.sig.HeadStemRelation;
@@ -45,7 +46,6 @@ import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.ShapeSymbol;
 
 import omr.util.Corner;
-import omr.util.GeoUtil;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
@@ -76,10 +76,8 @@ import java.util.List;
  * connect to note heads and perhaps beams.
  * <p>
  * At this point, both black heads and beams have been identified thanks to
- * spots processing.
+ * spots processing, and void heads thanks to chamfer matching.
  * We don't have flags yet at this time.
- * Q: Perhaps we should retrieve void head candidates (via chamfer matching)
- * before running this stem builder?
  *
  * <p>
  * A stem is expected to be horizontally connected on the left or right
@@ -164,7 +162,7 @@ public class StemsBuilder
     /** Vertical seeds for this system. */
     private List<Glyph> systemSeeds;
 
-    /** Black heads for this system. */
+    /** Heads for this system. */
     private List<Inter> systemHeads;
 
     /** Beams for this system. */
@@ -218,15 +216,15 @@ public class StemsBuilder
         // The beam interpretations for this system
         systemBeams = sig.inters(Shape.BEAM);
 
-        // The sorted (black) head interpretations for this system
-        systemHeads = sig.inters(Shape.NOTEHEAD_BLACK);
-        sig.sortByAbscissa(systemHeads);
+        // The sorted head interpretations for this system
+        systemHeads = sig.inters(
+                Arrays.asList(Shape.NOTEHEAD_BLACK, Shape.NOTEHEAD_VOID));
+        Collections.sort(systemHeads, Inter.byAbscissa);
 
         // First phase, look around heads for stems (and beams if any)
         watch.start("phase #1");
 
-        for (Inter inter : systemHeads) {
-            BlackHeadInter head = (BlackHeadInter) inter;
+        for (Inter head : systemHeads) {
             new HeadLinker(head).linkAllCorners();
         }
 
@@ -234,8 +232,7 @@ public class StemsBuilder
         watch.start("phase #2");
         systemStems = sig.inters(Shape.STEM);
 
-        for (Inter inter : systemHeads) {
-            BlackHeadInter head = (BlackHeadInter) inter;
+        for (Inter head : systemHeads) {
             new HeadLinker(head).reuseAllCorners();
         }
 
@@ -243,7 +240,9 @@ public class StemsBuilder
         watch.start("exclusions");
         performMutualExclusions();
 
-        watch.print();
+        if (constants.printWatch.isSet()) {
+            watch.print();
+        }
     }
 
     //----------------//
@@ -304,7 +303,7 @@ public class StemsBuilder
                 }
             }
         } finally {
-            logger.info(
+            logger.debug(
                     "S#{} stems: {} exclusions: {}",
                     system.getId(),
                     size,
@@ -476,11 +475,10 @@ public class StemsBuilder
         //~ Instance fields ----------------------------------------------------
 
         /** The head interpretation being processed. */
-        private final BlackHeadInter head;
+        private final Inter head;
 
         /** Underlying glyph. */
-        private final Glyph headGlyph;
-
+        ///private final Glyph headGlyph;
         /** Head bounding box. */
         private final Rectangle headBox;
 
@@ -494,11 +492,11 @@ public class StemsBuilder
         private List<Inter> neighborStems;
 
         //~ Constructors -------------------------------------------------------
-        public HeadLinker (BlackHeadInter head)
+        public HeadLinker (Inter head)
         {
             this.head = head;
-            headGlyph = head.getGlyph();
-            headBox = headGlyph.getBounds();
+            ///headGlyph = head.getGlyph();
+            headBox = head.getBounds();
         }
 
         //~ Methods ------------------------------------------------------------
@@ -509,8 +507,8 @@ public class StemsBuilder
         {
             neighborBeams = getNeighboringInters(head, systemBeams);
             neighborSeeds = getNeighboringSeeds(head);
-            head.setShape(Shape.WHOLE_NOTE); // Temporarily
 
+            ///head.setShape(Shape.WHOLE_NOTE); // Temporarily
             for (Corner corner : Corner.values) {
                 new CornerLinker(corner).link();
             }
@@ -543,20 +541,18 @@ public class StemsBuilder
         private List<Inter> getNeighboringInters (Inter inter,
                                                   List<Inter> inters)
         {
-            final Glyph glyph = inter.getGlyph();
-
             // Retrieve neighboring inters, using a box of system height and
             // sufficiently wide, just to play with a limited number of inters.
-            Rectangle glyphBox = glyph.getBounds();
+            Rectangle interBox = inter.getBounds();
             Rectangle systemBox = system.getBounds();
             Rectangle fatBox = new Rectangle(
-                    glyphBox.x,
+                    interBox.x,
                     systemBox.y,
-                    glyphBox.width,
+                    interBox.width,
                     systemBox.height);
             fatBox.grow(params.xMargin, 0);
 
-            return sig.intersectedInters(inters, true, fatBox);
+            return sig.intersectedInters(inters, GeoOrder.BY_ABSCISSA, fatBox);
         }
 
         //---------------------//
@@ -571,16 +567,14 @@ public class StemsBuilder
          */
         private List<Glyph> getNeighboringSeeds (Inter inter)
         {
-            final Glyph glyph = inter.getGlyph();
-
             // Retrieve neighboring stem seeds, using a box of system height and
             // sufficiently wide, just to play with a limited number of seeds.
-            Rectangle glyphBox = glyph.getBounds();
+            Rectangle interBox = inter.getBounds();
             Rectangle systemBox = system.getBounds();
             Rectangle fatBox = new Rectangle(
-                    glyphBox.x,
+                    interBox.x,
                     systemBox.y,
-                    glyphBox.width,
+                    interBox.width,
                     systemBox.height);
             fatBox.grow(params.xMargin, 0);
 
@@ -640,10 +634,6 @@ public class StemsBuilder
              */
             public void link ()
             {
-                if (headGlyph.isVip()) {
-                    logger.info("BINGO link {} {}", headGlyph, corner);
-                }
-
                 // Compute target end of stem
                 Point2D targetPt;
 
@@ -664,7 +654,7 @@ public class StemsBuilder
                 }
 
                 Line2D line = new Line2D.Double(refPt, targetPt);
-                headGlyph.addAttachment("t" + corner.getId(), line);
+                ///headGlyph.addAttachment("t" + corner.getId(), line);
                 yRange = getYRange(targetPt.getY());
 
                 // Look for all stems seeds in the corner
@@ -723,7 +713,7 @@ public class StemsBuilder
                 // Look for stems inters that intersect the lookup area
                 List<Inter> stems = sig.intersectedInters(
                         neighborStems,
-                        true,
+                        GeoOrder.BY_ABSCISSA,
                         area);
 
                 for (Inter inter : stems) {
@@ -813,10 +803,10 @@ public class StemsBuilder
                     }
                 }
 
-                if (bRel != null) {
-                    head.setShape(Shape.NOTEHEAD_BLACK); // Temporarily
-                }
-
+                //
+                //                if (bRel != null) {
+                //                    head.setShape(Shape.NOTEHEAD_BLACK); // Temporarily
+                //                }
                 return bRel;
             }
 
@@ -895,10 +885,10 @@ public class StemsBuilder
                     }
                 }
 
-                if (hRel != null) {
-                    head.setShape(Shape.NOTEHEAD_BLACK);
-                }
-
+                //
+                //                if (hRel != null) {
+                //                    head.setShape(Shape.NOTEHEAD_BLACK);
+                //                }
                 return hRel;
             }
 
@@ -974,7 +964,6 @@ public class StemsBuilder
                             totalLength / params.minLongStemLength);
 
                     // TODO: adjacency???
-
                     // Weighted value
                     double grade = (whiteImpact + gapImpact + straightImpact
                                     + slopeImpact + lengthImpact) / 5;
@@ -1116,8 +1105,8 @@ public class StemsBuilder
                 StringBuilder sb = new StringBuilder();
                 sb.append((corner.vSide == TOP) ? "T" : "B");
                 sb.append((corner.hSide == LEFT) ? "L" : "R");
-                headGlyph.addAttachment(sb.toString(), lu);
 
+                ///headGlyph.addAttachment(sb.toString(), lu);
                 return new Area(lu);
             }
 
@@ -1152,7 +1141,8 @@ public class StemsBuilder
              */
             private Point2D getReferencePoint ()
             {
-                Point center = headGlyph.getCentroid();
+                ///Point center = headGlyph.getCentroid();
+                Point center = GeoUtil.centerOf(headBox);
 
                 final double dx = (corner.hSide == LEFT)
                         ? (-headSymbolDim.width * 0.5)
@@ -1313,7 +1303,7 @@ public class StemsBuilder
                 // Look for beams in the corner
                 List<Inter> beams = sig.intersectedInters(
                         neighborBeams,
-                        true,
+                        GeoOrder.BY_ABSCISSA,
                         area);
 
                 // Sort by distance from head

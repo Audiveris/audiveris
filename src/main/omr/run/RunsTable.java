@@ -273,7 +273,7 @@ public class RunsTable
 
                 for (Run run : seq) {
                     for (int c = run.getStart(); c <= run.getStop(); c++) {
-                        buffer.setPixel(c, row, (byte) 0);
+                        buffer.setPixel(c, row, 0);
                     }
                 }
             }
@@ -288,7 +288,7 @@ public class RunsTable
                 for (Run run : seq) {
                     for (int col = run.getStart(); col <= run.getStop();
                             col++) {
-                        buffer.setPixel(row, col, (byte) 0);
+                        buffer.setPixel(row, col, 0);
                     }
                 }
             }

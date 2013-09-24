@@ -11,33 +11,38 @@
 // </editor-fold>
 package omr.sheet;
 
-import java.awt.Graphics2D;
-import java.util.Arrays;
 import omr.glyph.GlyphsModel;
 import omr.glyph.Nest;
 import omr.glyph.ui.GlyphsController;
 import omr.glyph.ui.NestView;
 import omr.glyph.ui.SymbolGlyphBoard;
+
 import omr.lag.Lag;
+
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
+
 import omr.sheet.ui.PixelBoard;
+
 import omr.ui.BoardsPane;
 import omr.ui.view.ScrollView;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Graphics2D;
+import java.util.Arrays;
 
 /**
- * Class {@code StemController}
+ * Class {@literal StemController}
  *
  * @author Hervé Bitteur
  */
 public class StemController
     extends GlyphsController
 {
-        //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
@@ -50,12 +55,11 @@ public class StemController
 
     //~ Instance fields --------------------------------------------------------
 
-    private final Lag         lag;
+    private final Lag lag;
 
     /** Related user display if any */
     private MyView view;
-    
-    
+
     //~ Constructors -----------------------------------------------------------
 
     /**
@@ -64,9 +68,9 @@ public class StemController
      * @param sheet related sheet
      * @param nest  spot nest
      */
-    public StemController (Sheet       sheet,
-                           Nest        nest,
-                           Lag         lag)
+    public StemController (Sheet sheet,
+                           Nest  nest,
+                           Lag   lag)
     {
         super(new GlyphsModel(sheet, nest, null));
         this.lag = lag;
@@ -76,7 +80,6 @@ public class StemController
             sheet.getLocationService(),
             getNest().getGlyphService());
     }
-
 
     //~ Methods ----------------------------------------------------------------
 
@@ -124,11 +127,7 @@ public class StemController
 
         public MyView (Nest nest)
         {
-            super(
-                nest,
-                StemController.this,
-                Arrays.asList(lag),
-                sheet.getItemRenderers());
+            super(nest, StemController.this, Arrays.asList(lag), sheet);
 
             setLocationService(sheet.getLocationService());
 
@@ -206,6 +205,4 @@ public class StemController
             super.renderItems(g);
         }
     }
-
-
 }

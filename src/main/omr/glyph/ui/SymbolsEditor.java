@@ -77,7 +77,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code SymbolsEditor} defines, for a given sheet, a UI pane
+ * Class {@literal SymbolsEditor} defines, for a given sheet, a UI pane
  * from which all symbol processing actions can be launched and their
  * results checked.
  *
@@ -280,7 +280,7 @@ public class SymbolsEditor
                     nest,
                     symbolsController,
                     Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()),
-                    sheet.getItemRenderers());
+                    sheet);
             setName("SymbolsEditor-MyView");
 
             // Subscribe to all lags for SectionSet events

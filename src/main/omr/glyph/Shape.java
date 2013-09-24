@@ -161,12 +161,12 @@ public enum Shape
     //
     // Noteheads ---------------------------------------------------------------
     //
-    NOTEHEAD_VOID("Hollow node head for halves", new Color(0xffcc00)),
+    NOTEHEAD_VOID("Hollow node head for halves", new Color(0xff9966)),
     NOTEHEAD_VOID_2("Pack of two hollow node heads for halves", new Color(0xffcc00)),
     NOTEHEAD_VOID_3("Pack of three hollow node heads for halves", new Color(0xffcc00)),
-    NOTEHEAD_BLACK("Filled node head for quarters and less"),
-    NOTEHEAD_BLACK_2("Pack of two filled node heads for quarters and less"),
-    NOTEHEAD_BLACK_3("Pack of three filled node heads for quarters and less"),
+    NOTEHEAD_BLACK("Filled node head for quarters and less", new Color(0xffcc00)),
+    NOTEHEAD_BLACK_2("Pack of two filled node heads for quarters and less", new Color(0xff9966)),
+    NOTEHEAD_BLACK_3("Pack of three filled node heads for quarters and less", new Color(0xff9966)),
     //
     // Notes -------------------------------------------------------------------
     //
@@ -682,7 +682,7 @@ public enum Shape
     // getPhysicalShape //
     //------------------//
     /**
-     * Report the shape to use for training or precise drawingw.
+     * Report the shape to use for training or precise drawing.
      *
      * @return the related physical shape, if different
      */

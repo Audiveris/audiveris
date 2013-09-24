@@ -87,6 +87,7 @@ public class AnchorsStep
         system.horizontalsBuilder.buildLedgers();
         system.verticalsBuilder.buildVerticals();
         system.notesBuilder.buildBlackHeads();
+        system.voidNotesBuilder.buildVoidHeads();
         system.stemsBuilder.linkHeads();
     }
 

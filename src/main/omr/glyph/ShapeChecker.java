@@ -47,7 +47,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 /**
- * Class {@code ShapeChecker} gathers additional specific shape checks,
+ * Class {@literal ShapeChecker} gathers additional specific shape checks,
  * still working on symbols in isolation from other symbols, meant to
  * complement the work done by a shape evaluator.
  *
@@ -770,17 +770,18 @@ public class ShapeChecker
                                   Glyph glyph,
                                   double[] features)
             {
-                // A beam / flag / stem  cannot be too far from a staff
                 Point center = glyph.getAreaCenter();
                 StaffInfo staff = system.getStaffAt(center);
-                if (staff == null) {
-                    logger.warn("BINGO no staff for " + glyph.idString()
-                                + " in " + system.idString());
+                // Horizontal: not in DMZ
+                if (center.x < staff.getDmzEnd()) {
+                    return false;
                 }
-                int gap = staff.gapTo(glyph.getBounds());
-                int maxGap = system.getScoreSystem().getScale().toPixels(
+
+                // Vertical: A beam / flag / stem  cannot be too far from a staff
+                int yGap = staff.gapTo(glyph.getBounds());
+                int maxYGap = system.getScoreSystem().getScale().toPixels(
                         constants.maxStemGapToStaff);
-                return gap <= maxGap;
+                return yGap <= maxYGap;
             }
         };
 

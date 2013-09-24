@@ -80,46 +80,6 @@ public class StaffManager
     }
 
     //~ Methods ----------------------------------------------------------------
-    //------------//
-    // getStaffAt //
-    //------------//
-    /**
-     * Report the staff, among the sequence provided, whose area
-     * contains the provided point.
-     *
-     * @param point     the provided point
-     * @param theStaves the staves sequence to search
-     * @return the containing staff, or null if none found
-     */
-    public static StaffInfo getStaffAt (Point2D point,
-                                        List<StaffInfo> theStaves)
-    {
-        for (StaffInfo staff : theStaves) {
-            Rectangle2D box = staff.getAreaBounds();
-
-            if (point.getY() > box.getMaxY()) {
-                continue;
-            }
-
-            if (point.getY() < box.getMinY()) {
-                // Point above first staff, use first staff
-                // TODO: this decision is questionable
-                return null; //staff;
-            }
-
-            // If the point is ON the area boundary, it is NOT contained.
-            // So we use a rectangle of 1x1 pixels
-            if (staff.getArea()
-                    .intersects(point.getX(), point.getY(), 1, 1)) {
-                return staff;
-            }
-        }
-
-        // Point below last staff, use last staff
-        // TODO: this decision is questionable
-        return null; //theStaves.get(theStaves.size() - 1);
-    }
-
     //
     //----------//
     // addStaff //
@@ -185,9 +145,11 @@ public class StaffManager
         }
 
         // Bottom of last staff
-        prevStaff.setLimit(
-                BOTTOM,
-                new GeoPath(new Line2D.Double(0, height, width, height)));
+        if (prevStaff != null) {
+            prevStaff.setLimit(
+                    BOTTOM,
+                    new GeoPath(new Line2D.Double(0, height, width, height)));
+        }
     }
 
     //------------//
@@ -260,6 +222,46 @@ public class StaffManager
         } else {
             return null;
         }
+    }
+
+    //------------//
+    // getStaffAt //
+    //------------//
+    /**
+     * Report the staff, among the sequence provided, whose area
+     * contains the provided point.
+     *
+     * @param point     the provided point
+     * @param theStaves the staves sequence to search
+     * @return the containing staff, or null if none found
+     */
+    public static StaffInfo getStaffAt (Point2D point,
+                                        List<StaffInfo> theStaves)
+    {
+        for (StaffInfo staff : theStaves) {
+            Rectangle2D box = staff.getAreaBounds();
+
+            if (point.getY() > box.getMaxY()) {
+                continue;
+            }
+
+            if (point.getY() < box.getMinY()) {
+                // Point above first staff, use first staff
+                // TODO: this decision is questionable
+                return null; //staff;
+            }
+
+            // If the point is ON the area boundary, it is NOT contained.
+            // So we use a rectangle of 1x1 pixels
+            if (staff.getArea()
+                    .intersects(point.getX(), point.getY(), 1, 1)) {
+                return staff;
+            }
+        }
+
+        // Point below last staff, use last staff
+        // TODO: this decision is questionable
+        return null; //theStaves.get(theStaves.size() - 1);
     }
 
     //------------//

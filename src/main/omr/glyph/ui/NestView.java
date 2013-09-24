@@ -25,6 +25,8 @@ import omr.lag.Section;
 import omr.score.entity.PartNode;
 import omr.score.ui.PaintingParameters;
 
+import omr.sheet.Sheet;
+
 import omr.text.FontInfo;
 import omr.text.TextChar;
 import omr.text.TextLine;
@@ -56,7 +58,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code NestView} is a view that combines the display of
+ * Class {@literal NestView} is a view that combines the display of
  * several lags to represent a nest of glyphs.
  *
  * @author Hervé Bitteur
@@ -84,6 +86,9 @@ public class NestView
     /** The sequence of lags (synchronized). */
     private final List<Lag> lags = new ArrayList<Lag>();
 
+    /** Related sheet, if any. */
+    private final Sheet sheet;
+
     /** Additional items rendering */
     protected final Collection<ItemRenderer> itemRenderers;
 
@@ -94,19 +99,25 @@ public class NestView
     /**
      * Create a nest view.
      *
-     * @param nest          the underlying nest of glyphs
-     * @param controller    the related glyphs controller
-     * @param lags          the initial lags to be displayed
-     * @param itemRenderers items renderers if any
+     * @param nest       the underlying nest of glyphs
+     * @param controller the related glyphs controller
+     * @param lags       the initial lags to be displayed
+     * @param sheet      related sheet, if any
      */
     public NestView (Nest nest,
                      GlyphsController controller,
                      List<Lag> lags,
-                     Collection<ItemRenderer> itemRenderers)
+                     Sheet sheet)
     {
         this.nest = nest;
         this.controller = controller;
-        this.itemRenderers = itemRenderers;
+        this.sheet = sheet;
+
+        if (sheet != null) {
+            itemRenderers = sheet.getItemRenderers();
+        } else {
+            itemRenderers = null;
+        }
 
         synchronized (this.lags) {
             this.lags.addAll(lags);
@@ -205,23 +216,21 @@ public class NestView
         }
     }
 
-    //-----------------//
-    // renderGlyphArea //
-    //-----------------//
+    //---------------//
+    // renderBoxArea //
+    //---------------//
     /**
-     * Render the box area of a glyph, using inverted color.
+     * Render the box area, using inverted color.
      *
-     * @param glyph the glyph whose area is to be rendered
-     * @param g     the graphic context
+     * @param box the rectangle whose area is to be rendered
+     * @param g   the graphic context
      */
-    protected void renderGlyphArea (Glyph glyph,
-                                    Graphics2D g)
+    protected void renderBoxArea (Rectangle box,
+                                  Graphics2D g)
     {
         // Check the clipping
-        Rectangle box = glyph.getBounds();
-
         if ((box != null) && box.intersects(g.getClipBounds())) {
-            g.fillRect(box.x, box.y, box.width, box.height);
+            g.drawRect(box.x, box.y, box.width, box.height);
         }
     }
 
@@ -288,11 +297,11 @@ public class NestView
             // Glyph selection mode
             if (glyphs != null) {
                 Graphics2D g2 = (Graphics2D) g.create();
-                g2.setColor(Color.black);
-                g2.setXORMode(Color.darkGray);
+                g2.setColor(Color.gray);
+                Stroke oldStroke = UIUtil.setAbsoluteStroke(g2, 1f);
 
                 for (Glyph glyph : glyphs) {
-                    renderGlyphArea(glyph, g2);
+                    renderBoxArea(glyph.getBounds(), g2);
                 }
 
                 g2.dispose();
@@ -325,6 +334,23 @@ public class NestView
                 }
             }
         }
+
+        // Render the selected interpretations, if any
+        //        if (sheet != null) {
+        //            List<Inter> inters = sheet.getSelectedInterList();
+        //
+        //            if ((inters != null) && !inters.isEmpty()) {
+        //                Graphics2D g2 = (Graphics2D) g.create();
+        //                g2.setColor(Color.black);
+        //                g2.setXORMode(Color.darkGray);
+        //
+        //                for (Inter inter : inters) {
+        //                    renderBoxArea(inter.getBounds(), g2);
+        //                }
+        //
+        //                g2.dispose();
+        //            }
+        //        }
     }
 
     //---------------------//

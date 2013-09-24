@@ -62,7 +62,11 @@ public enum SelectionHint
      * Glyph information is for temporary display / evaluation only, with no
      * impact on other structures such as glyph set
      */
-    GLYPH_TRANSIENT;
+    GLYPH_TRANSIENT,
+    /**
+     * Designation is at Interpretation list level.
+     */
+    INTER_INIT;
     //
     //------------//
     // isLocation //

@@ -41,7 +41,7 @@ import java.util.Set;
 import omr.glyph.GlyphLayer;
 
 /**
- * Class {@code BorderBuilder} implements a smart approach
+ * Class {@literal BorderBuilder} implements a smart approach
  * to define the border between two systems.
  *
  * <p>Strategy for glyph assignment: <ol>
@@ -154,7 +154,7 @@ public class BorderBuilder
         box.add(botLine.getBounds());
         final Rectangle interBox = box;
 
-        Set<Glyph> glyphs = sheet.getNest().lookupIntersectedGlyphs(
+        Set<Glyph> glyphs = sheet.getNest().intersectedGlyphs(
                 interBox, GlyphLayer.DEFAULT);
 
         // Remove small glyphs and the staff lines themselves

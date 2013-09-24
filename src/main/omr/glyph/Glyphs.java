@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -44,7 +45,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code Glyphs} is a collection of static convenient methods,
+ * Class {@literal Glyphs} is a collection of static convenient methods,
  * providing features related to a collection of glyph instances.
  *
  * @author Hervé Bitteur
@@ -347,9 +348,9 @@ public class Glyphs
         return glyphs;
     }
 
-    //-------------//
-    // lookupGlyph //
-    //-------------//
+    //-----------------//
+    // containingGlyph //
+    //-----------------//
     /**
      * Look up in a collection of glyph instances for the first glyph
      * instance which contains the provided point.
@@ -358,7 +359,7 @@ public class Glyphs
      * @param point      the provided point
      * @return the glyph found, or null
      */
-    public static Glyph lookupGlyph (
+    public static Glyph containingGlyph (
             Collection<? extends Glyph> collection,
             Point point)
     {
@@ -376,9 +377,9 @@ public class Glyphs
         return null;
     }
 
-    //--------------//
-    // lookupGlyphs //
-    //--------------//
+    //------------------//
+    // containingGlyphs //
+    //------------------//
     /**
      * Look up in a collection of glyph instances for <b>all</b> glyph
      * instances which contain the provided point.
@@ -387,7 +388,7 @@ public class Glyphs
      * @param point      the provided point
      * @return the glyph instances found, which may be empty
      */
-    public static Set<Glyph> lookupGlyphs (
+    public static Set<Glyph> containingGlyphs (
             Collection<? extends Glyph> collection,
             Point point)
     {
@@ -408,7 +409,7 @@ public class Glyphs
     }
 
     //--------------//
-    // lookupGlyphs //
+    // containedGlyphs //
     //--------------//
     /**
      * Look up in a collection of glyph instances for <b>all</b> glyph
@@ -418,7 +419,7 @@ public class Glyphs
      * @param rect       the coordinates rectangle
      * @return the glyph instances found, which may be an empty list
      */
-    public static Set<Glyph> lookupGlyphs (
+    public static Set<Glyph> containedGlyphs (
             Collection<? extends Glyph> collection,
             Rectangle rect)
     {
@@ -433,9 +434,9 @@ public class Glyphs
         return set;
     }
 
-    //--------------//
-    // lookupGlyphs //
-    //--------------//
+    //-----------------//
+    // containedGlyphs //
+    //-----------------//
     /**
      * Look up in a collection of glyph instances for <b>all</b> glyph
      * instances contained in a provided polygon.
@@ -444,7 +445,7 @@ public class Glyphs
      * @param polygon    the containing polygon
      * @return the glyph instances found, which may be an empty list
      */
-    public static Set<Glyph> lookupGlyphs (
+    public static Set<Glyph> containedGlyphs (
             Collection<? extends Glyph> collection,
             Polygon polygon)
     {
@@ -486,9 +487,9 @@ public class Glyphs
         return set;
     }
 
-    //-------------------------//
-    // lookupIntersectedGlyphs //
-    //-------------------------//
+    //-------------------//
+    // intersectedGlyphs //
+    //-------------------//
     /**
      * Look up in a collection of glyph instances for <b>all</b> glyph
      * instances intersected by a provided rectangle.
@@ -497,7 +498,7 @@ public class Glyphs
      * @param rect       the coordinates rectangle
      * @return the glyph instances found, which may be an empty list
      */
-    public static Set<Glyph> lookupIntersectedGlyphs (
+    public static Set<Glyph> intersectedGlyphs (
             Collection<? extends Glyph> collection,
             Rectangle rect)
     {
@@ -505,6 +506,32 @@ public class Glyphs
 
         for (Glyph glyph : collection) {
             if (rect.intersects(glyph.getBounds())) {
+                set.add(glyph);
+            }
+        }
+
+        return set;
+    }
+
+    //-------------------//
+    // intersectedGlyphs //
+    //-------------------//
+    /**
+     * Look up in a collection of glyph instances for <b>all</b> glyph
+     * instances intersected by a provided area.
+     *
+     * @param collection the collection of glyph instances to be browsed
+     * @param area       the intersecting area
+     * @return the glyph instances found, which may be an empty list
+     */
+    public static Set<Glyph> intersectedGlyphs (
+            Collection<? extends Glyph> collection,
+            Area area)
+    {
+        Set<Glyph> set = new LinkedHashSet<>();
+
+        for (Glyph glyph : collection) {
+            if (area.intersects(glyph.getBounds())) {
                 set.add(glyph);
             }
         }

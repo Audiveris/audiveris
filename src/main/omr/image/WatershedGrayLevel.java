@@ -31,7 +31,7 @@ public class WatershedGrayLevel
 
     //~ Instance fields --------------------------------------------------------
     /** Original gray-level image, organized row per row. */
-    private int[][] image;
+    private Table image;
 
     /** Image width. */
     private final int width;
@@ -45,7 +45,7 @@ public class WatershedGrayLevel
      * 0 means not assigned yet
      * -1 means part of a watershed line
      */
-    private int[][] rmap;
+    private Table rmap;
 
     /** Maximum region id so far. */
     private int maxRegionId;
@@ -63,18 +63,18 @@ public class WatershedGrayLevel
      *                       Note that if isBrightOnDark is true, the original
      *                       image will be inverted in place.
      */
-    public WatershedGrayLevel (int[][] image,
+    public WatershedGrayLevel (Table image,
                                boolean isBrightOnDark)
     {
         this.image = image;
-        width = image.length;
-        height = image[0].length;
+        width = image.getWidth();
+        height = image.getHeight();
 
         // Invert image if needed
         if (isBrightOnDark) {
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    this.image[x][y] = GRAYLEVEL - 1 - this.image[x][y];
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    image.setValue(x, y, 255 - image.getValue(x, y));
                 }
             }
         }
@@ -130,7 +130,7 @@ public class WatershedGrayLevel
             if (seed != null) {
                 ///System.out.println("seed = " + seed);
                 // create and assign a new region to this seed
-                rmap[seed.x][seed.y] = (++maxRegionId);
+                rmap.setValue(seed.x, seed.y, ++maxRegionId);
                 yoffset = seed.y;
 
                 // add this seed to the list of pixel to explore
@@ -148,7 +148,7 @@ public class WatershedGrayLevel
 
         for (int y = 0; y < this.height; y++) {
             for (int x = 0; x < this.width; x++) {
-                if (rmap[x][y] == WATERSHED) {
+                if (rmap.getValue(x, y) == WATERSHED) {
                     shedmap[x][y] = true;
                 }
             }
@@ -177,7 +177,7 @@ public class WatershedGrayLevel
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                System.out.printf("%3d", rmap[x][y]);
+                System.out.printf("%3d", rmap.getValue(x, y));
             }
 
             System.out.println();
@@ -195,7 +195,7 @@ public class WatershedGrayLevel
      */
     private void extend (Pixel p)
     {
-        int region = rmap[p.x][p.y];
+        int region = rmap.getValue(p.x, p.y);
 
         // this pixel is a watershed => cannot extend it 
         if (region == WATERSHED) {
@@ -216,8 +216,8 @@ public class WatershedGrayLevel
             }
 
             // Level and region for this neighbor
-            int vk = image[xk][yk];
-            int rk = rmap[xk][yk];
+            int vk = image.getValue(xk, yk);
+            int rk = rmap.getValue(xk, yk);
 
             // Neighbor is a watershed => ignore
             if (rk == WATERSHED) {
@@ -226,7 +226,7 @@ public class WatershedGrayLevel
 
             // Neighbor has no region assigned => set it
             if (rk == 0) {
-                rmap[xk][yk] = region;
+                rmap.setValue(xk, yk, region);
                 exploreList[vk].add(new Pixel(xk, yk, vk));
 
                 continue;
@@ -238,7 +238,7 @@ public class WatershedGrayLevel
             }
 
             // Neighbor is assigned to another region => it's a watershed
-            rmap[xk][yk] = WATERSHED;
+            rmap.setValue(xk, yk, WATERSHED);
         }
     }
 
@@ -257,7 +257,8 @@ public class WatershedGrayLevel
     {
         for (int y = yoffset; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                if ((image[x][y] == level) && (rmap[x][y] == 0)) {
+                if ((image.getValue(x, y) == level)
+                    && (rmap.getValue(x, y) == 0)) {
                     return new Pixel(x, y, level);
                 }
             }
@@ -274,7 +275,7 @@ public class WatershedGrayLevel
     {
         maxRegionId = 0;
 
-        rmap = new int[width][height];
+        rmap = new Table.Short(width, height);
 
         exploreList = new ListOfPixels[GRAYLEVEL];
 

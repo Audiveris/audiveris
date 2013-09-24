@@ -65,8 +65,7 @@ public interface MouseMonitor
                         MouseMovement movement);
 
     /**
-     * Selection (by left button drag) of a rectangle when mouse is
-     * released
+     * Selection (by left or right button drag + shift) of a rectangle
      *
      * @param rect     the selected rectangle in model pixel coordinates
      * @param movement the mouse movement

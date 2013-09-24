@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.SortedSet;
 
 /**
- * Class {@code PartNode} is an abstract class that is subclassed for
+ * Class {@literal PartNode} is an abstract class that is subclassed for
  * any SystemNode that is contained in a system part.
  * So this class encapsulates a direct link to the enclosing part.
  *

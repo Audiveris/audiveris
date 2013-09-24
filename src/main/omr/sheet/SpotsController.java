@@ -40,7 +40,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 
 /**
- * Class {@code SpotsController} is a quick & dirty hack to display
+ * Class {@literal SpotsController} is a quick & dirty hack to display
  * the retrieved spots.
  *
  * @author Hervé Bitteur
@@ -156,7 +156,7 @@ public class SpotsController
                     nest,
                     SpotsController.this,
                     Arrays.asList(initialLags),
-                    sheet.getItemRenderers());
+                    sheet);
 
             setLocationService(sheet.getLocationService());
 

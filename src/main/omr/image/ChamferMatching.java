@@ -29,25 +29,9 @@ public class ChamferMatching
      * The value at each (x,y) location is the distance to nearest reference
      * point.
      */
-    private final double[][] distances;
+    private final Table distances;
 
     //~ Constructors -----------------------------------------------------------
-    //-----------------//
-    // ChamferMatching //
-    //-----------------//
-    /**
-     * Creates a new ChamferMatching object from an image of reference
-     * points.
-     *
-     * @param image the reference points (true for a reference point, false
-     *              for a non-reference point)
-     */
-    public ChamferMatching (boolean[][] image)
-    {
-        // Compute the distant transform
-        this(new ChamferDistance().compute(image));
-    }
-
     //-----------------//
     // ChamferMatching //
     //-----------------//
@@ -57,7 +41,7 @@ public class ChamferMatching
      *
      * @param distances the distance transform image
      */
-    public ChamferMatching (double[][] distances)
+    public ChamferMatching (Table distances)
     {
         this.distances = distances;
     }
@@ -74,14 +58,14 @@ public class ChamferMatching
      * @param maxDistance the maximum acceptable distance for keep a location
      * @return an (unsorted) list of locations with acceptable distance
      */
-    public List<PixDistance> matchAll (Template template,
-                                         double maxDistance)
+    public List<PixelDistance> matchAll (Template template,
+                                       double maxDistance)
     {
-        final int scanWidth = distances.length
+        final int scanWidth = distances.getWidth()
                               - template.getWidth();
-        final int scanHeight = distances[0].length
+        final int scanHeight = distances.getHeight()
                                - template.getHeight();
-        final List<PixDistance> locations = new ArrayList<PixDistance>();
+        final List<PixelDistance> locations = new ArrayList<PixelDistance>();
 
         for (int x = 0; x < scanWidth; x++) {
             for (int y = 0; y < scanHeight; y++) {
@@ -89,7 +73,7 @@ public class ChamferMatching
                 double dist = template.evaluate(x, y, null, distances);
 
                 if (dist <= maxDistance) {
-                    locations.add(new PixDistance(x, y, dist));
+                    locations.add(new PixelDistance(x, y, dist));
                 }
             }
         }

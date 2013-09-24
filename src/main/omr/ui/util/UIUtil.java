@@ -38,7 +38,10 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 
 /**
@@ -51,8 +54,7 @@ public class UIUtil
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            UIUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(UIUtil.class);
 
     /**
      * Customized border for tool buttons, to use consistently in all UI
@@ -254,6 +256,25 @@ public class UIUtil
         }
 
         return toolBorder;
+    }
+
+    //-------------//
+    // insertTitle //
+    //-------------//
+    /**
+     * Insert a pseudo-item, to be used as a menu title.
+     *
+     * @param menu the containing menu
+     * @param text the title text
+     */
+    public static void insertTitle (JMenu menu,
+                                    String text)
+    {
+        JMenuItem title = new JMenuItem(text);
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        title.setEnabled(false);
+        menu.add(title);
+        menu.addSeparator();
     }
 
     //-------------------//

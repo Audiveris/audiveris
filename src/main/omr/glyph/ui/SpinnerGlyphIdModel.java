@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.AbstractSpinnerModel;
 
 /**
- * Class {@code SpinnerGlyphIdModel} is a simple spinner model backed
+ * Class {@literal SpinnerGlyphIdModel} is a simple spinner model backed
  * by a {@link Nest} and using natural glyph id sequence.
  *
  * @author Hervé Bitteur

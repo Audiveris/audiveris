@@ -61,7 +61,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import omr.glyph.GlyphLayer;
 
 /**
- * Class {@code BasicSection} is a basic implementation of {@link 
+ * Class {@literal BasicSection} is a basic implementation of {@link 
  * Section}.
  *
  * @author Hervé Bitteur
@@ -461,14 +461,12 @@ public class BasicSection
     public void fillImage (PixelBuffer buf,
                            Rectangle box)
     {
-        byte BLACK = (byte) 0;
-        
         if (isVertical()) {
             int x = getFirstPos() - box.x;
 
             for (Run run : runs) {
                 for (int y = run.getStart(); y <= run.getStop(); y++) {
-                    buf.setPixel(x, y - box.y, BLACK);
+                    buf.setPixel(x, y - box.y, 0);
                 }
 
                 x += 1;
@@ -478,7 +476,7 @@ public class BasicSection
 
             for (Run run : runs) {
                 for (int x = run.getStart(); x <= run.getStop(); x++) {
-                    buf.setPixel(x - box.x, y, BLACK);
+                    buf.setPixel(x - box.x, y, 0);
                 }
 
                 y += 1;

@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                            N o t e s B u i l d e r                         //
+//                      B l a c k N o t e s B u i l d e r                     //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -26,10 +26,14 @@ import omr.glyph.facets.Glyph;
 import omr.grid.StaffInfo;
 import omr.grid.StaffInfo.IndexedLedger;
 
-import omr.image.ChamferDistanceInteger;
+import omr.image.ChamferDistance;
 import omr.image.MorphoProcessor;
 import omr.image.PixelBuffer;
+import omr.image.PixelSource;
 import omr.image.StructureElement;
+import omr.image.Table;
+import omr.image.Template;
+import omr.image.TemplateFactory;
 import omr.image.WatershedGrayLevel;
 
 import omr.lag.BasicLag;
@@ -63,7 +67,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code NotesBuilder} is in charge, at system level, of
+ * Class {@literal BlackNotesBuilder} is in charge, at system level, of
  * retrieving the possible interpretations of black heads.
  * <p>
  * The main difficulty is the need to split large spots that were created during
@@ -75,14 +79,14 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 @NotThreadSafe
-public class NotesBuilder
+public class BlackNotesBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(
-            NotesBuilder.class);
+            BlackNotesBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The dedicated system. */
@@ -108,16 +112,19 @@ public class NotesBuilder
     /** Scale-dependent constants. */
     private final Parameters params;
 
+    /** To use standard dimensions. */
+    private final Template headTemplate;
+
     //~ Constructors -----------------------------------------------------------
-    //--------------//
-    // NotesBuilder //
-    //--------------//
+    //-------------------//
+    // BlackNotesBuilder //
+    //-------------------//
     /**
-     * Creates a new NotesBuilder object.
+     * Creates a new BlackNotesBuilder object.
      *
      * @param system the dedicated system
      */
-    public NotesBuilder (SystemInfo system)
+    public BlackNotesBuilder (SystemInfo system)
     {
         this.system = system;
 
@@ -127,9 +134,14 @@ public class NotesBuilder
         scale = sheet.getScale();
         params = new Parameters(scale);
 
-        if (system.getId() == 1) {
+        if ((system.getId() == 1) && constants.printParameters.isSet()) {
             Main.dumping.dump(params);
         }
+
+        headTemplate = TemplateFactory.getInstance()
+                .getTemplate(
+                Shape.NOTEHEAD_BLACK,
+                scale.getInterline());
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -156,13 +168,13 @@ public class NotesBuilder
         watch.start("getSuitableSpots");
 
         Set<Glyph> beamSpots = getSuitableSpots();
-        logger.info("S#{} beamSpots: {}", system.getId(), beamSpots.size());
+        logger.debug("S#{} beamSpots: {}", system.getId(), beamSpots.size());
 
         // Extract head-focused spots
         watch.start("getHeadSpots");
 
         List<Glyph> headSpots = getHeadSpots(beamSpots);
-        logger.info("S#{} headSpots: {}", system.getId(), headSpots.size());
+        logger.debug("S#{} headSpots: {}", system.getId(), headSpots.size());
 
         // Split large spots into separate head candidates
         watch.start("splitLargeSpots");
@@ -172,7 +184,7 @@ public class NotesBuilder
         watch.start("checkHeads");
 
         int heads = checkHeads(headSpots);
-        logger.info("S#{} heads: {}", system.getId(), heads);
+        logger.debug("S#{} heads: {}", system.getId(), heads);
 
         if (constants.printWatch.isSet()) {
             watch.print();
@@ -206,7 +218,7 @@ public class NotesBuilder
 
         if (headNb != 0) {
             double headWeight = scale.pixelsToAreaFrac(totalWeight / headNb);
-            logger.info(
+            logger.debug(
                     "S#{} mean head weight: {}",
                     system.getId(),
                     String.format("%.2f", headWeight));
@@ -264,13 +276,18 @@ public class NotesBuilder
         // Check for a suitable head shape
         // TODO
 
-        // Check vertical distance to satff line or ledger
+        // Check vertical distance to staff line or ledger
         // TODO
 
         // OK!
         double grade = 0.5; // To be refined!
 
         BlackHeadInter inter = new BlackHeadInter(glyph, grade);
+        Rectangle box = headTemplate.getBoxAt(
+                centroid.x,
+                centroid.y,
+                Template.Anchor.CENTER);
+        inter.setBounds(box);
         sig.addVertex(inter);
 
         return inter;
@@ -354,7 +371,10 @@ public class NotesBuilder
         final int interline = scale.getInterline();
         final float radius = (interline - 3) / 2f; // => head focus
         final StructureElement se = new StructureElement(0, 1, radius, offset);
-        logger.info("S#{} heads retrieval, radius: {}", system.getId(), radius);
+        logger.debug(
+                "S#{} heads retrieval, radius: {}",
+                system.getId(),
+                radius);
 
         for (Glyph glyph : beamSpots) {
             MorphoProcessor mp = new MorphoProcessor(se);
@@ -423,6 +443,21 @@ public class NotesBuilder
             return false;
         }
 
+        // Notes cannot be too close to stave left side
+        final Point centroid = glyph.getCentroid();
+        final StaffInfo staff = system.getStaffAt(centroid);
+
+        if (glyphBox.getLocation().x < staff.getDmzEnd()) {
+            if (glyph.isVip() || logger.isDebugEnabled()) {
+                logger.info(
+                        "Spot#{} too close to staff left side, x:{}",
+                        glyph.getId(),
+                        glyphBox.getLocation().x);
+            }
+
+            return false;
+        }
+
         // Discard spots with good beam interpretation
         Set<Inter> inters = glyph.getInterpretations();
 
@@ -436,20 +471,6 @@ public class NotesBuilder
                     }
                 }
             }
-        }
-
-        // Notes cannot be too close to stave left side
-        int xGap = glyph.getCentroid().x - system.getLeft();
-
-        if (xGap < params.minGapFromStaffLeft) {
-            if (glyph.isVip() || logger.isDebugEnabled()) {
-                logger.info(
-                        "Spot#{} too close to staff left side, gap:{}",
-                        glyph.getId(),
-                        xGap);
-            }
-
-            return false;
         }
 
         // Avoid thick barlines (to be improved)
@@ -546,7 +567,7 @@ public class NotesBuilder
                 int y = (int) Math.rint(i * height);
 
                 for (int x = 0, w = img.getWidth(); x < w; x++) {
-                    img.setPixel(x, y, (byte) 255);
+                    img.setPixel(x, y, PixelSource.BACKGROUND);
                 }
             }
 
@@ -653,8 +674,10 @@ public class NotesBuilder
     private boolean watershedSplit (PixelBuffer img)
     {
         // We compute distances to background (white) pixels
-        ChamferDistanceInteger chamferDistance = new ChamferDistanceInteger();
-        int[][] dists = chamferDistance.computeToBack(img);
+        ChamferDistance chamferDistance = new ChamferDistance.Short();
+        Table dists = chamferDistance.computeToBack(img);
+
+        ///dists.dump("Dists for " + img.getWidth() + "x" + img.getHeight());
         WatershedGrayLevel instance = new WatershedGrayLevel(dists, true);
         boolean[][] result = null;
 
@@ -664,6 +687,7 @@ public class NotesBuilder
         for (int step = 10; step >= 1; step--) {
             result = instance.process(step);
             count = instance.getRegionCount();
+            logger.debug("watershedSplit step:{} count:{}", step, count);
 
             if (count > 1) {
                 break;
@@ -676,7 +700,7 @@ public class NotesBuilder
             for (int y = 0, h = img.getHeight(); y < h; y++) {
                 for (int x = 0, w = img.getWidth(); x < w; x++) {
                     if (result[x][y]) {
-                        img.setPixel(x, y, (byte) 255);
+                        img.setPixel(x, y, PixelSource.BACKGROUND);
                     }
                 }
             }
@@ -699,6 +723,10 @@ public class NotesBuilder
                 false,
                 "Should we print out the stop watch?");
 
+        final Constant.Boolean printParameters = new Constant.Boolean(
+                false,
+                "Should we print out the class parameters?");
+
         final Scale.AreaFraction minHeadWeight = new Scale.AreaFraction(
                 0.8,
                 "Minimum weight for a black head");
@@ -706,10 +734,6 @@ public class NotesBuilder
         final Scale.AreaFraction typicalWeight = new Scale.AreaFraction(
                 1.33,
                 "Typical weight for a black head");
-
-        final Scale.Fraction minGapFromStaffLeft = new Scale.Fraction(
-                4.0,
-                "Minimum distance from left side of the staff");
 
         final Scale.Fraction minMeanWidth = new Scale.Fraction(
                 1.0,
@@ -730,7 +754,7 @@ public class NotesBuilder
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
+     * Class {@literal Parameters} gathers all pre-scaled constants.
      */
     private static class Parameters
     {
@@ -739,8 +763,6 @@ public class NotesBuilder
         final int minHeadWeight;
 
         final int typicalWeight;
-
-        final int minGapFromStaffLeft;
 
         final int minMeanWidth;
 
@@ -758,7 +780,6 @@ public class NotesBuilder
         {
             minHeadWeight = scale.toPixels(constants.minHeadWeight);
             typicalWeight = scale.toPixels(constants.typicalWeight);
-            minGapFromStaffLeft = scale.toPixels(constants.minGapFromStaffLeft);
             minMeanWidth = scale.toPixels(constants.minMeanWidth);
             maxSpotWidth = scale.toPixels(constants.maxSpotWidth);
             maxSlopeForDirectSplit = constants.maxSlopeForDirectSplit.getValue();

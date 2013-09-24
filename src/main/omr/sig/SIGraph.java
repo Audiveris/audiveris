@@ -14,6 +14,11 @@ package omr.sig;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.math.GeoOrder;
+import static omr.math.GeoOrder.*;
+
+import omr.selection.InterListEvent;
+
 import omr.sheet.SystemInfo;
 
 import omr.sig.Exclusion.Cause;
@@ -25,10 +30,12 @@ import org.jgrapht.graph.Multigraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -65,6 +72,49 @@ public class SIGraph
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-----------//
+    // addVertex //
+    //-----------//
+    /**
+     * {@inheritDoc}
+     * Overridden so that all interpretations keep a pointer to their
+     * hosting sig.
+     *
+     * @param inter the brand new interpretation
+     * @return true if the inter was actually added, false if it existed before
+     */
+    @Override
+    public boolean addVertex (Inter inter)
+    {
+        boolean res = super.addVertex(inter);
+        inter.setSig(this);
+
+        return res;
+    }
+
+    //-----------------//
+    // containedInters //
+    //-----------------//
+    /**
+     * Lookup the sig collection of interpretations for those which
+     * are contained in the provided rectangle.
+     *
+     * @param rect the containing rectangle
+     * @return the contained interpretations
+     */
+    public List<Inter> containedInters (Rectangle rect)
+    {
+        List<Inter> found = new ArrayList<Inter>();
+
+        for (Inter inter : vertexSet()) {
+            if (rect.contains(inter.getBounds())) {
+                found.add(inter);
+            }
+        }
+
+        return found;
+    }
+
     //--------------------//
     // getContextualGrade //
     //--------------------//
@@ -169,6 +219,17 @@ public class SIGraph
         return null;
     }
 
+    //--------//
+    // system //
+    //--------//
+    /**
+     * @return the related system
+     */
+    public SystemInfo getSystem ()
+    {
+        return system;
+    }
+
     //-----------------//
     // insertExclusion //
     //-----------------//
@@ -271,6 +332,28 @@ public class SIGraph
         });
     }
 
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations of the provided collection of shapes
+     *
+     * @param shapes the shapes to check for
+     * @return the interpretations of desired shapes
+     */
+    public List<Inter> inters (final Collection<Shape> shapes)
+    {
+        return inters(
+                new Predicate<Inter>()
+        {
+            @Override
+            public boolean check (Inter inter)
+            {
+                return shapes.contains(inter.getShape());
+            }
+        });
+    }
+
     //-------------------//
     // intersectedGlyphs //
     //-------------------//
@@ -344,25 +427,28 @@ public class SIGraph
      * Lookup the provided list of interpretations for those whose
      * related glyph intersect the given box.
      *
-     * @param inters           the list of interpretations to search for
-     * @param sortedByAbscissa true if the list is already sorted by abscissa,
-     *                         in order to speedup the search
-     * @param box              the intersecting box
+     * @param inters the list of interpretations to search for
+     * @param order  if the list is already sorted by some order, this may
+     *               speedup the search
+     * @param box    the intersecting box
      * @return the intersected interpretations found
      */
     public List<Inter> intersectedInters (List<Inter> inters,
-                                          boolean sortedByAbscissa,
+                                          GeoOrder order,
                                           Rectangle box)
     {
         List<Inter> found = new ArrayList<Inter>();
+        int xMax = (box.x + box.width) - 1;
+        int yMax = (box.y + box.height) - 1;
 
         for (Inter inter : inters) {
-            Rectangle glyphBox = inter.getGlyph()
-                    .getBounds();
+            Rectangle iBox = inter.getBounds();
 
-            if (box.intersects(glyphBox)) {
+            if (box.intersects(iBox)) {
                 found.add(inter);
-            } else if (sortedByAbscissa && (glyphBox.x >= (box.x + box.width))) {
+            } else if ((order == BY_ABSCISSA) && (iBox.x > xMax)) {
+                break;
+            } else if ((order == BY_ORDINATE) && (iBox.y > yMax)) {
                 break;
             }
         }
@@ -377,27 +463,29 @@ public class SIGraph
      * Lookup the provided list of interpretations for those whose
      * related glyph intersect the given area.
      *
-     * @param inters           the list of interpretations to search for
-     * @param sortedByAbscissa true if the list is already sorted by abscissa,
-     *                         in order to speedup the search
-     * @param area             the intersecting area
+     * @param inters the list of interpretations to search for
+     * @param order  if the list is already sorted by some order, this may
+     *               speedup the search
+     * @param area   the intersecting area
      * @return the intersected interpretations found
      */
     public List<Inter> intersectedInters (List<Inter> inters,
-                                          boolean sortedByAbscissa,
+                                          GeoOrder order,
                                           Area area)
     {
         List<Inter> found = new ArrayList<Inter>();
-        double xMax = area.getBounds()
-                .getMaxX();
+        Rectangle bounds = area.getBounds();
+        double xMax = bounds.getMaxX();
+        double yMax = bounds.getMaxY();
 
         for (Inter inter : inters) {
-            Rectangle glyphBox = inter.getGlyph()
-                    .getBounds();
+            Rectangle iBox = inter.getBounds();
 
-            if (area.intersects(glyphBox)) {
+            if (area.intersects(iBox)) {
                 found.add(inter);
-            } else if (sortedByAbscissa && (glyphBox.x > xMax)) {
+            } else if ((order == BY_ABSCISSA) && (iBox.x > xMax)) {
+                break;
+            } else if ((order == BY_ORDINATE) && (iBox.y > yMax)) {
                 break;
             }
         }
@@ -405,30 +493,38 @@ public class SIGraph
         return found;
     }
 
-    //----------------//
-    // sortByAbscissa //
-    //----------------//
+    //-------------------//
+    // intersectedInters //
+    //-------------------//
     /**
-     * Sort a list of interpretation according to the abscissa of the
-     * related glyph.
+     * Lookup the sig collection of interpretations for those which
+     * contain the provided point.
      *
-     * @param inters the list to sort
+     * @param point provided point
+     * @return the containing interpretations
      */
-    public void sortByAbscissa (List<Inter> inters)
+    public List<Inter> intersectedInters (Point point)
     {
-        Collections.sort(
-                inters,
-                new Comparator<Inter>()
-        {
-            @Override
-            public int compare (Inter i1,
-                                Inter i2)
-            {
-                return Glyph.byAbscissa.compare(
-                        i1.getGlyph(),
-                        i2.getGlyph());
+        List<Inter> found = new ArrayList<Inter>();
+
+        for (Inter inter : vertexSet()) {
+            if (inter.getBounds()
+                    .contains(point)) {
+                found.add(inter);
             }
-        });
+        }
+
+        return found;
+    }
+
+    //---------//
+    // publish //
+    //---------//
+    public void publish (InterListEvent event)
+    {
+        system.getSheet()
+                .getLocationService()
+                .publish(event);
     }
 
     //------------//

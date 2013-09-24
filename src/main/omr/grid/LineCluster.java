@@ -17,7 +17,7 @@ import omr.lag.Section;
 
 import omr.run.Orientation;
 
-import omr.util.GeoUtil;
+import omr.math.GeoUtil;
 import omr.util.Vip;
 
 import org.slf4j.Logger;
@@ -36,7 +36,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code LineCluster} is meant to aggregate instances of
+ * Class {@literal LineCluster} is meant to aggregate instances of
  * {@link Filament} that are linked by {@link FilamentComb} instances
  * and thus a cluster represents a staff candidate.
  *

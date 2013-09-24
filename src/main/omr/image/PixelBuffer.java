@@ -33,7 +33,6 @@ import java.util.Arrays;
  * Class {@code PixelBuffer} handles a plain rectangular buffer of
  * bytes.
  * It is an efficient {@link PixelFilter} both for writing and for reading.
- * Each byte is signed so value is either 0 (foreground) or -1 (background).
  *
  * @author Hervé Bitteur
  */
@@ -55,7 +54,7 @@ public class PixelBuffer
     private final int height;
 
     /** Underlying buffer */
-    private byte[] buffer;
+    private final byte[] buffer;
 
     //~ Constructors -----------------------------------------------------------
     //-------------//
@@ -98,7 +97,7 @@ public class PixelBuffer
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 raster.getPixel(x, y, pixel);
-                setPixel(x, y, (byte) pixel[0]);
+                setPixel(x, y, pixel[0]);
             }
         }
 
@@ -140,7 +139,14 @@ public class PixelBuffer
     public int getPixel (int x,
                          int y)
     {
-        return buffer[(y * width) + x];
+        int val = buffer[(y * width) + x];
+
+        // Byte is signed, so...
+        if (val < 0) {
+            val += 256;
+        }
+
+        return val;
     }
 
     //-----------//
@@ -165,7 +171,7 @@ public class PixelBuffer
     //--------------//
     /**
      * Inject all non-background pixels of that buffer into this buffer.
-     * That buffer is assumed to be within this buffer bounds.
+     * That buffer bounds are assumed to be within this buffer bounds.
      *
      * @param that   the buffer to inject
      * @param origin relative location where that buffer must be injected
@@ -177,12 +183,8 @@ public class PixelBuffer
             for (int y = 0, h = that.getHeight(); y < h; y++) {
                 int val = that.getPixel(x, y);
 
-                if (val < 0) {
-                    val += 256;
-                }
-
                 if (val != BACKGROUND) {
-                    this.setPixel(x + origin.x, y + origin.y, (byte) val);
+                    this.setPixel(x + origin.x, y + origin.y, val);
                 }
             }
         }
@@ -195,13 +197,7 @@ public class PixelBuffer
     public boolean isFore (int x,
                            int y)
     {
-        int val = getPixel(x, y);
-
-        if (val < 0) {
-            val += 256;
-        }
-
-        return val < 150;
+        return getPixel(x, y) < 128;
     }
 
     //----------//
@@ -209,9 +205,9 @@ public class PixelBuffer
     //----------//
     public void setPixel (int x,
                           int y,
-                          byte val)
+                          int val)
     {
-        buffer[(y * width) + x] = val;
+        buffer[(y * width) + x] = (byte) val;
     }
 
     //-----------------//
@@ -233,14 +229,7 @@ public class PixelBuffer
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                val = getPixel(x, y);
-
-                if (val < 0) {
-                    val += 256;
-                }
-
-                pixel[0] = val;
-
+                pixel[0] = getPixel(x, y);
                 raster.setPixel(x, y, pixel);
             }
         }

@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code FermataDotPattern} looks for FERMATA & FERMATA_BELOW
+ * Class {@literal FermataDotPattern} looks for FERMATA & FERMATA_BELOW
  * shaped-glyphs to make sure that the "associated" dot is not
  * assigned anything else (such as staccato).
  *

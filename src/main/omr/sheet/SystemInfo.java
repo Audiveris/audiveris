@@ -69,7 +69,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * Class {@code SystemInfo} gathers information from the original
+ * Class {@literal SystemInfo} gathers information from the original
  * picture about a retrieved system.
  * Most of the physical processing is done in parallel at system level, and
  * thus is handled from this SystemInfo object.
@@ -108,11 +108,14 @@ public class SystemInfo
     /** Dedicated compound builder */
     private final CompoundBuilder compoundBuilder;
 
-    /** Dedicated notes builder */
+    /** Dedicated beams builder */
     public final BeamsBuilder beamsBuilder;
 
     /** Dedicated notes builder */
-    public final NotesBuilder notesBuilder;
+    public final BlackNotesBuilder notesBuilder;
+
+    /** Dedicated void notes builder */
+    public final VoidNotesBuilder voidNotesBuilder;
 
     /** Dedicated verticals builder */
     public final VerticalsBuilder verticalsBuilder;
@@ -245,7 +248,8 @@ public class SystemInfo
         glyphsBuilder = new GlyphsBuilder(this);
         compoundBuilder = new CompoundBuilder(this);
         beamsBuilder = new BeamsBuilder(this);
-        notesBuilder = new NotesBuilder(this);
+        notesBuilder = new BlackNotesBuilder(this);
+        voidNotesBuilder = new VoidNotesBuilder(this);
         verticalsBuilder = new VerticalsBuilder(this);
         stemsBuilder = new StemsBuilder(this);
         horizontalsBuilder = new HorizontalsBuilder(this);
@@ -1140,7 +1144,7 @@ public class SystemInfo
     }
 
     //-------------------------//
-    // lookupIntersectedGlyphs //
+    // intersectedGlyphs //
     //-------------------------//
     /**
      * Look up in system glyphs for <b>all</b> glyphs, apart from the

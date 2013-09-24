@@ -62,6 +62,50 @@ public class NaturalSpline
     }
 
     //~ Methods ----------------------------------------------------------------
+    @Override
+    public double distanceOf (double x,
+                              double y)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public double getInvertedSlope ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public double getMeanDistance ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public int getNumberOfPoints ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public double getSlope ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Line includeLine (Line other)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void includePoint (double x,
+                              double y)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
     //-------------//
     // interpolate //
     //-------------//
@@ -162,50 +206,6 @@ public class NaturalSpline
 
             return new NaturalSpline(curves);
         }
-    }
-
-    @Override
-    public double distanceOf (double x,
-                              double y)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public double getInvertedSlope ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public double getMeanDistance ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public int getNumberOfPoints ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public double getSlope ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public Line includeLine (Line other)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public void includePoint (double x,
-                              double y)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -318,10 +318,13 @@ public class NaturalSpline
         }
     }
 
+    //------//
+    // yAtX //
+    //------//
     @Override
     public int yAtX (int x)
     {
-        return (int) Math.rint((double) x);
+        return (int) Math.rint(yAtX((double) x));
     }
 
     //----------------//

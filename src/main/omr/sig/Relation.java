@@ -21,5 +21,9 @@ public interface Relation
 {
     //~ Methods ----------------------------------------------------------------
 
+    /** Short name. */
     String getName ();
+    
+    /** Details for tip. */
+    String getDetails();
 }

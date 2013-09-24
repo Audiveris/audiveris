@@ -11,10 +11,11 @@
 // </editor-fold>
 package omr.sheet.ui;
 
-import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
+
+import omr.math.GeoUtil;
 
 import omr.score.entity.Measure;
 import omr.score.entity.Page;
@@ -48,6 +49,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.util.ConcurrentModificationException;
@@ -272,13 +274,8 @@ public class SheetPainter
                 g.setComposite(composite);
 
                 for (Inter inter : sig.vertexSet()) {
-                    Glyph glyph = inter.getGlyph();
-                    if (glyph != null) {
-                        if (clip.intersects(glyph.getBounds())) {
-                            inter.accept(this);
-                        }
-                    } else {
-                        logger.info("*** No glyph for {}", inter);
+                    if (clip.intersects(inter.getBounds())) {
+                        inter.accept(this);
                     }
                 }
 
@@ -307,7 +304,13 @@ public class SheetPainter
     @Override
     public void visit (Inter inter)
     {
-        logger.warn("SheetPainter. No specific visit for {}", inter);
+        setColor(inter);
+
+        ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
+        Glyph glyph = inter.getGlyph();
+        Point center = (glyph != null) ? glyph.getCentroid()
+                : GeoUtil.centerOf(inter.getBounds());
+        symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
     }
 
     //-------//

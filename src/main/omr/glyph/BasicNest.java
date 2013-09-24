@@ -59,7 +59,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Class {@code BasicNest} implements a {@link Nest}.
+ * Class {@literal BasicNest} implements a {@link Nest}.
  *
  * @author Hervé Bitteur
  */
@@ -165,6 +165,18 @@ public class BasicNest
     {
         return byLayer.get(glyph.getLayer())
                 .addGlyph(glyph);
+    }
+
+    //-----------------//
+    // containedGlyphs //
+    //-----------------//
+    @Override
+    public Set<Glyph> containedGlyphs (Rectangle rect,
+                                       GlyphLayer layer)
+    {
+        return Glyphs.containedGlyphs(
+                byLayer.get(layer).getActiveGlyphs(),
+                rect);
     }
 
     //-------------//
@@ -341,6 +353,18 @@ public class BasicNest
                 .getSelection(GlyphSetEvent.class);
     }
 
+    //-------------------//
+    // intersectedGlyphs //
+    //-------------------//
+    @Override
+    public Set<Glyph> intersectedGlyphs (Rectangle rect,
+                                         GlyphLayer layer)
+    {
+        return Glyphs.intersectedGlyphs(
+                byLayer.get(layer).getActiveGlyphs(),
+                rect);
+    }
+
     //-------//
     // isVip //
     //-------//
@@ -348,28 +372,6 @@ public class BasicNest
     public boolean isVip (Glyph glyph)
     {
         return params.vipGlyphs.contains(glyph.getId());
-    }
-
-    //--------------//
-    // lookupGlyphs //
-    //--------------//
-    @Override
-    public Set<Glyph> lookupGlyphs (Rectangle rect,
-                                    GlyphLayer layer)
-    {
-        return Glyphs.lookupGlyphs(byLayer.get(layer).getActiveGlyphs(), rect);
-    }
-
-    //-------------------------//
-    // lookupIntersectedGlyphs //
-    //-------------------------//
-    @Override
-    public Set<Glyph> lookupIntersectedGlyphs (Rectangle rect,
-                                               GlyphLayer layer)
-    {
-        return Glyphs.lookupIntersectedGlyphs(
-                byLayer.get(layer).getActiveGlyphs(),
-                rect);
     }
 
     //--------------------//
@@ -588,7 +590,7 @@ public class BasicNest
         if ((rect.width > 0) && (rect.height > 0)) {
             // This is a non-degenerated rectangle
             // Look for set of enclosed active glyphs in the current layer
-            Set<Glyph> glyphsFound = lookupGlyphs(rect, layer);
+            Set<Glyph> glyphsFound = containedGlyphs(rect, layer);
 
             // Publish first Glyph of the set
             Glyph glyph = glyphsFound.isEmpty() ? null
@@ -601,7 +603,7 @@ public class BasicNest
         } else {
             // This is just a point
             // Look for containing glyph in current layer
-            Glyph glyph = Glyphs.lookupGlyph(
+            Glyph glyph = Glyphs.containingGlyph(
                     byLayer.get(layer).getActiveGlyphs(),
                     rect.getLocation());
 
@@ -613,7 +615,7 @@ public class BasicNest
 
             for (LayerNest layerNest : byLayer.values()) {
                 pile.addAll(
-                        Glyphs.lookupGlyphs(
+                        Glyphs.containingGlyphs(
                         layerNest.getOriginals(),
                         rect.getLocation()));
             }
@@ -784,6 +786,33 @@ public class BasicNest
                 "",
                 "(Debug) Comma-separated list of VIP glyphs");
 
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@literal Parameters} gathers all constants related to nest
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final List<Integer> vipGlyphs; // List of IDs for VIP glyphs
+
+        //~ Constructors -------------------------------------------------------
+        public Parameters ()
+        {
+            vipGlyphs = VipUtil.decodeIds(constants.vipGlyphs.getValue());
+
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
+            }
+
+            if (!vipGlyphs.isEmpty()) {
+                logger.info("VIP glyphs: {}", vipGlyphs);
+            }
+        }
     }
 
     //-----------//
@@ -994,33 +1023,6 @@ public class BasicNest
             allGlyphs.remove(glyph.getId(), glyph);
             ///virtualGlyphs.remove(glyph); // ????????????????
             activeGlyphs = null;
-        }
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all constants related to nest
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final List<Integer> vipGlyphs; // List of IDs for VIP glyphs
-
-        //~ Constructors -------------------------------------------------------
-        public Parameters ()
-        {
-            vipGlyphs = VipUtil.decodeIds(constants.vipGlyphs.getValue());
-
-            if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
-            }
-
-            if (!vipGlyphs.isEmpty()) {
-                logger.info("VIP glyphs: {}", vipGlyphs);
-            }
         }
     }
 }

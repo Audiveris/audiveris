@@ -42,10 +42,11 @@ import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import omr.sig.ui.PileMenu;
+import omr.sig.ui.InterMenu;
+import omr.sig.ui.GlyphMenu;
 
 /**
- * Class {@code PageMenu} defines the popup menu which is linked to the
+ * Class {@literal PageMenu} defines the popup menu which is linked to the
  * current selection in page editor view.
  * <p>It points to several sub-menus: measure, slot, chords, glyphs, boundaries
  * </p>
@@ -79,8 +80,11 @@ public class PageMenu
     /** Chord submenu. */
     private final ChordMenu chordMenu = new ChordMenu();
 
+    /** Inter submenu. */
+    private final InterMenu interMenu;
+
     /** Pile submenu. */
-    private final PileMenu pileMenu;
+    private final GlyphMenu glyphMenu;
 
     /** Glyph submenu. */
     private final SymbolMenu symbolMenu;
@@ -105,11 +109,14 @@ public class PageMenu
     /** Number of chords referred to. */
     private int chordNb = 0;
 
-    /** Number of piled glyphs in the selection. */
-    private int pileNb = 0;
+    /** Number of inter in the selection. */
+    private int interNb = 0;
 
-    /** Number of glyphs in the selection. */
+    /** Number of piled glyphs in the selection. */
     private int glyphNb = 0;
+
+    /** Number of symbols in the selection. */
+    private int symbolNb = 0;
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -127,7 +134,8 @@ public class PageMenu
         this.page = page;
         this.symbolMenu = symbolMenu;
 
-        pileMenu = new PileMenu(page.getSheet());
+        interMenu = new InterMenu();
+        glyphMenu = new GlyphMenu();
         boundaryEditor = page.getSheet().getBoundaryEditor();
 
         popup = new JPopupMenu();
@@ -186,10 +194,13 @@ public class PageMenu
         }
 
         // Update pile menu
-        pileNb = pileMenu.updateMenu(sheet.getNest().getSelectedGlyphPile());
+        interNb = interMenu.updateMenu(sheet.getSelectedInterList());
+
+        // Update pile menu
+        glyphNb = glyphMenu.updateMenu(sheet.getNest().getSelectedGlyphPile());
 
         // Update symbol menu
-        glyphNb = symbolMenu.updateMenu(sheet.getNest().getSelectedGlyphSet());
+        symbolNb = symbolMenu.updateMenu(sheet.getNest().getSelectedGlyphSet());
 
         // Update chord menu
         chordNb = chordMenu.updateMenu();
@@ -222,13 +233,18 @@ public class PageMenu
             popup.add(chordMenu.getMenu());
         }
 
-        // Pile
-        if (pileNb > 0) {
-            popup.add(pileMenu.getMenu());
+        // Inter
+        if (interNb > 0) {
+            popup.add(interMenu.getMenu());
+        }
+
+        // Glyph
+        if (glyphNb > 0) {
+            popup.add(glyphMenu.getMenu());
         }
 
         // Symbol
-        if (glyphNb > 0) {
+        if (symbolNb > 0) {
             popup.add(symbolMenu.getMenu());
         }
 

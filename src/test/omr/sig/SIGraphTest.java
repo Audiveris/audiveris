@@ -1,10 +1,18 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+//----------------------------------------------------------------------------//
+//                                                                            //
+//                            S I G r a p h T e s t                           //
+//                                                                            //
+//----------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//----------------------------------------------------------------------------//
+// </editor-fold>
 package omr.sig;
 
 import omr.glyph.Shape;
+import omr.glyph.facets.Glyph;
 
 import omr.sig.Exclusion.Cause;
 
@@ -31,8 +39,9 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
 /**
+ * Class {@code SIGraphTest}
  *
- * @author herve
+ * @author Hervé Bitteur
  */
 public class SIGraphTest
 {
@@ -76,28 +85,19 @@ public class SIGraphTest
         frame.setSize(600, 600);
         frame.setVisible(true);
 
-        Inter blanche = new BasicInter(
-                null,
-                Shape.NOTEHEAD_VOID,
-                0.5);
+        Inter blanche = new BasicInter((Glyph) null, Shape.NOTEHEAD_VOID, 0.5);
         sig.addVertex(blanche);
 
-        Inter head = new BasicInter(
-                null,
-                Shape.NOTEHEAD_BLACK,
-                0.6);
+        Inter head = new BasicInter((Glyph) null, Shape.NOTEHEAD_BLACK, 0.6);
         sig.addVertex(head);
 
-        Inter beam = new BasicInter(null, Shape.BEAM, 0.8);
+        Inter beam = new BasicInter((Glyph) null, Shape.BEAM, 0.8);
         sig.addVertex(beam);
 
-        Inter hook = new BasicInter(
-                null,
-                Shape.BEAM_HOOK,
-                0.7);
+        Inter hook = new BasicInter((Glyph) null, Shape.BEAM_HOOK, 0.7);
         sig.addVertex(hook);
 
-        Inter stem = new BasicInter(null, Shape.STEM, 0.3);
+        Inter stem = new BasicInter((Glyph) null, Shape.STEM, 0.3);
         sig.addVertex(stem);
 
         //        RelationFactory factory = new RelationFactory();
@@ -119,7 +119,7 @@ public class SIGraphTest
         sig.addEdge(beam, stem, new BasicSupport(0.2));
         sig.addEdge(hook, stem, new BasicSupport(0.4));
 
-        Inter stem2 = new BasicInter(null, Shape.STEM, 0.5);
+        Inter stem2 = new BasicInter((Glyph) null, Shape.STEM, 0.5);
         sig.addVertex(stem2);
         sig.addEdge(beam, stem2);
 
@@ -186,8 +186,7 @@ public class SIGraphTest
         //~ Constructors -------------------------------------------------------
         ListenableGraph ()
         {
-            super(
-                    new Multigraph<Inter, Relation>(new RelationFactory()));
+            super(new Multigraph<Inter, Relation>(new RelationFactory()));
         }
     }
 }

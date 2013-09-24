@@ -49,7 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code FilamentsFactory} builds filaments (long series of
+ * Class {@literal FilamentsFactory} builds filaments (long series of
  * sections) out of a collection of sections.
  *
  * <p>These filaments are meant to represent good candidates for (horizontal)
@@ -132,7 +132,9 @@ public class FilamentsFactory
     //------//
     public void dump (String title)
     {
-        params.dump(title);
+        if (constants.printParameters.isSet()) {
+            params.dump(title);
+        }
     }
 
     //--------------//
@@ -877,14 +879,18 @@ public class FilamentsFactory
     {
         //~ Instance fields ----------------------------------------------------
 
+        Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        final Constant.Boolean printParameters = new Constant.Boolean(
+                false,
+                "Should we print out the factory parameters?");
+
         Constant.Double maxGapSlope = new Constant.Double(
                 "tangent",
                 0.5,
                 "Maximum absolute slope for a gap");
-
-        Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
 
         Constant.Ratio minSectionAspect = new Constant.Ratio(
                 3,
@@ -948,7 +954,7 @@ public class FilamentsFactory
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all scale-dependent parameters.
+     * Class {@literal Parameters} gathers all scale-dependent parameters.
      */
     private class Parameters
     {

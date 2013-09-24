@@ -38,7 +38,7 @@ import java.util.Collections;
 import java.util.Set;
 
 /**
- * Class {@code DotPattern} filters the dot glyphs to remove those
+ * Class {@literal DotPattern} filters the dot glyphs to remove those
  * which are actually text dashes ('-') within sentences.
  *
  * @author Hervé Bitteur

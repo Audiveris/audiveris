@@ -149,7 +149,8 @@ public class BasicSymbol
         // Anti-aliasing
         g.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
+                RenderingHints.VALUE_ANTIALIAS_OFF);
+                ///RenderingHints.VALUE_ANTIALIAS_ON);
 
         paint(g, p, ORIGIN, TOP_LEFT);
 
