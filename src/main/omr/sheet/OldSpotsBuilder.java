@@ -34,7 +34,7 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.image.ImageView;
 import omr.image.MorphoProcessor;
-import omr.image.PixDistance;
+import omr.image.PixelDistance;
 import omr.image.PixelBuffer;
 import omr.image.StructureElement;
 import omr.image.Template;
@@ -98,7 +98,7 @@ public class OldSpotsBuilder {
 
     private boolean[][] splits;
 
-    private List<PixDistance> locations;
+    private List<PixelDistance> locations;
 
     private Template template;
 
@@ -380,7 +380,7 @@ public class OldSpotsBuilder {
                 final Color oldColor = g.getColor();
                 g.setColor(new Color(255, 0, 0, 150));
 
-                for (PixDistance loc : locations) {
+                for (PixelDistance loc : locations) {
                     Rectangle tBox = new Rectangle(
                             loc.x,
                             loc.y,
@@ -400,7 +400,7 @@ public class OldSpotsBuilder {
     //---------------//
     // filterMatches //
     //---------------//
-    private List<PixDistance> filterMatches (List<PixDistance> rawLocs)
+    private List<PixelDistance> filterMatches (List<PixelDistance> rawLocs)
     {
         System.out.println();
         System.out.println("Best matches:");
@@ -412,7 +412,7 @@ public class OldSpotsBuilder {
         // Avoid duplicate locations
         List<Aggregate> aggregates = new ArrayList<Aggregate>();
 
-        for (PixDistance loc : rawLocs) {
+        for (PixelDistance loc : rawLocs) {
             // Check among already filtered locations for similar location
             Aggregate aggregate = null;
 
@@ -439,13 +439,13 @@ public class OldSpotsBuilder {
 
         logger.info("Aggregates: {}", aggregates.size());
 
-        List<PixDistance> filtered = new ArrayList<PixDistance>();
+        List<PixelDistance> filtered = new ArrayList<PixelDistance>();
 
         for (Aggregate ag : aggregates) {
             filtered.add(ag.getMeanLocation());
         }
 
-        for (PixDistance loc : filtered) {
+        for (PixelDistance loc : filtered) {
             logger.info(loc.toString());
         }
 
@@ -655,10 +655,10 @@ public class OldSpotsBuilder {
 
         Point point;
 
-        List<PixDistance> matches = new ArrayList<PixDistance>();
+        List<PixelDistance> matches = new ArrayList<PixelDistance>();
 
         //~ Methods ------------------------------------------------------------
-        public void add (PixDistance match)
+        public void add (PixelDistance match)
         {
             if (point == null) {
                 point = new Point(match.x, match.y);
@@ -672,13 +672,13 @@ public class OldSpotsBuilder {
          *
          * @return a mean location
          */
-        public PixDistance getMeanLocation ()
+        public PixelDistance getMeanLocation ()
         {
             double xx = 0;
             double yy = 0;
             double dd = 0;
 
-            for (PixDistance match : matches) {
+            for (PixelDistance match : matches) {
                 xx += match.x;
                 yy += match.y;
                 dd += match.d;
@@ -686,7 +686,7 @@ public class OldSpotsBuilder {
 
             int n = matches.size();
 
-            PixDistance mean = new PixDistance(
+            PixelDistance mean = new PixelDistance(
                     (int) Math.rint(xx / n),
                     (int) Math.rint(yy / n),
                     dd / n);
@@ -713,7 +713,7 @@ public class OldSpotsBuilder {
                     .append(matches.size())
                     .append(" matches: ");
 
-            for (PixDistance match : matches) {
+            for (PixelDistance match : matches) {
                 sb.append(match);
             }
 
