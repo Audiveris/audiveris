@@ -42,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@literal KeySignature} encapsulates a key signature, which may be
+ * Class {@code KeySignature} encapsulates a key signature, which may be
  * composed of one or several glyphs (all sharp-based or all flat-based).
  *
  * @author Hervé Bitteur

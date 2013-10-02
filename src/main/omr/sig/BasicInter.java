@@ -35,6 +35,15 @@ public class BasicInter
     private static final Constants constants = new Constants();
 
     //~ Instance fields --------------------------------------------------------
+    /** The interpretation id, if identified. */
+    private int id;
+
+    /** Deleted flag, if any. */
+    private boolean deleted;
+
+    /** VIP flag. */
+    private boolean vip;
+
     /** The underlying glyph, if any. */
     protected final Glyph glyph;
 
@@ -124,6 +133,10 @@ public class BasicInter
         // Cross-linking
         if (glyph != null) {
             glyph.addInterpretation(this);
+
+            if (glyph.isVip()) {
+                setVip();
+            }
         }
     }
 
@@ -151,6 +164,44 @@ public class BasicInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //--------//
+    // delete //
+    //--------//
+    @Override
+    public void delete ()
+    {
+        if (!deleted) {
+            deleted = true;
+
+            if (sig != null) {
+                sig.removeVertex(this);
+            }
+            
+            if (glyph != null) {
+                glyph.getInterpretations().remove(this);
+            }
+        }
+    }
+
+    //--------//
+    // dumpOf //
+    //--------//
+    @Override
+    public String dumpOf ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(
+                String.format(
+                "Inter: %s@%s%n",
+                getClass().getSimpleName(),
+                Integer.toHexString(this.hashCode())));
+        sb.append(String.format("   %s%n", this));
+        sb.append(String.format("   %s%n", getDetails()));
+
+        return sb.toString();
     }
 
     //-----------//
@@ -201,6 +252,15 @@ public class BasicInter
         return grade;
     }
 
+    //-------//
+    // getId //
+    //-------//
+    @Override
+    public int getId ()
+    {
+        return id;
+    }
+
     //----------//
     // getShape //
     //----------//
@@ -217,6 +277,12 @@ public class BasicInter
     public SIGraph getSig ()
     {
         return sig;
+    }
+
+    @Override
+    public boolean isDeleted ()
+    {
+        return deleted;
     }
 
     //--------//
@@ -238,6 +304,15 @@ public class BasicInter
                 && GeoUtil.areIdentical(this.getBounds(), that.getBounds()));
     }
 
+    //-------//
+    // isVip //
+    //-------//
+    @Override
+    public boolean isVip ()
+    {
+        return vip;
+    }
+
     //-----------//
     // setBounds //
     //-----------//
@@ -256,6 +331,18 @@ public class BasicInter
         this.grade = grade;
     }
 
+    //-------//
+    // setId //
+    //-------//
+    @Override
+    public void setId (int id)
+    {
+        assert this.id == 0 : "Reassigning inter id";
+        assert id != 0 : "Assigning zero inter id";
+
+        this.id = id;
+    }
+
     //--------//
     // setSig //
     //--------//
@@ -263,6 +350,15 @@ public class BasicInter
     public void setSig (SIGraph sig)
     {
         this.sig = sig;
+    }
+
+    //--------//
+    // setVip //
+    //--------//
+    @Override
+    public void setVip ()
+    {
+        vip = true;
     }
 
     //----------//
@@ -277,6 +373,11 @@ public class BasicInter
 
         sb.append("~")
                 .append(shape);
+
+        if (getId() != 0) {
+            sb.append("#")
+                    .append(getId());
+        }
 
         return sb.toString();
     }

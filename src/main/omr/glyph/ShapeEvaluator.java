@@ -68,6 +68,16 @@ public interface ShapeEvaluator
                            Predicate<Shape> predicate);
 
     /**
+     * Report the evaluation of a glyph regarding a specific shape.
+     *
+     * @param glyph the glyph to evaluate
+     * @param shape the specific shape to evaluate
+     * @return the evaluation
+     */
+    Evaluation evaluateAs (Glyph glyph,
+                           Shape shape);
+
+    /**
      * Report the name of this evaluator.
      *
      * @return the evaluator declared name

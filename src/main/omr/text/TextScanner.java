@@ -48,7 +48,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class {@literal TextScanner} retrieves the text lines by using OCR on
+ * Class {@code TextScanner} retrieves the text lines by using OCR on
  * the whole system area, ignoring internal staves areas.
  *
  * @author Hervé Bitteur

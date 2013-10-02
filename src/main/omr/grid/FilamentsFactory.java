@@ -49,7 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@literal FilamentsFactory} builds filaments (long series of
+ * Class {@code FilamentsFactory} builds filaments (long series of
  * sections) out of a collection of sections.
  *
  * <p>These filaments are meant to represent good candidates for (horizontal)
@@ -252,13 +252,16 @@ public class FilamentsFactory
                 watch.start("mergeFilaments #2");
                 mergeFilaments(filaments);
             }
+
+            // Re-register every filament with its (updated) signature
+            return reRegisterFilaments(filaments);
         } catch (Exception ex) {
             logger.warn("FilamentsFactory cannot retrieveFilaments", ex);
+            return null;
         } finally {
             if (constants.printWatch.getValue()) {
                 watch.print();
             }
-            return filaments;
         }
 
     }
@@ -603,7 +606,8 @@ public class FilamentsFactory
         fil.addSection(section, GlyphComposition.Linking.LINK_BACK);
         section.setProcessed(true);
 
-        return nest.addGlyph(fil);
+        return nest.addGlyph(fil); // Not really useful
+        ///return fil;
     }
 
     //-----------------//
@@ -688,20 +692,22 @@ public class FilamentsFactory
 
             Collections.sort(sections, Section.posComparator);
 
-            List<Glyph> glyphs = new ArrayList<>(sections.size());
+            // We allocate one glyph per candidate section
+            // (simply to be able to reuse the canMerge() method)
+            List<Glyph> sectionGlyphs = new ArrayList<>(sections.size());
 
             for (Section section : sections) {
-                Glyph glyph = new BasicGlyph(scale.getInterline(), layer);
-                glyph.addSection(
+                Glyph sectionGlyph = new BasicGlyph(scale.getInterline(), layer);
+                sectionGlyph.addSection(
                         section,
                         GlyphComposition.Linking.NO_LINK_BACK);
                 section.setProcessed(true);
-                glyph = nest.addGlyph(glyph);
-                glyphs.add(glyph);
+                sectionGlyph = nest.addGlyph(sectionGlyph); // Not really useful
+                sectionGlyphs.add(sectionGlyph);
 
-                if (section.isVip() || nest.isVip(glyph)) {
-                    logger.info("VIP created {} from {}", glyph, section);
-                    glyph.setVip();
+                if (section.isVip() || nest.isVip(sectionGlyph)) {
+                    logger.info("VIP created {} from {}", sectionGlyph, section);
+                    sectionGlyph.setVip();
                 }
             }
 
@@ -722,36 +728,36 @@ public class FilamentsFactory
                 do {
                     expanding = false;
 
-                    for (Iterator<Glyph> it = glyphs.iterator(); it.hasNext();) {
-                        Glyph glyph = it.next();
+                    for (Iterator<Glyph> it = sectionGlyphs.iterator(); it.hasNext();) {
+                        Glyph sectionGlyph = it.next();
                         Rectangle glyphBounds = orientation.oriented(
-                                glyph.getBounds());
+                                sectionGlyph.getBounds());
 
                         if (filBounds.intersects(glyphBounds)) {
                             // Check more closely
-                            if (canMerge(fil, glyph, true)) {
+                            if (canMerge(fil, sectionGlyph, true)) {
                                 if (logger.isDebugEnabled()
                                     || fil.isVip()
-                                    || glyph.isVip()) {
+                                    || sectionGlyph.isVip()) {
                                     logger.info("Merging {} w/ {}",
                                             fil,
-                                            Sections.toString(glyph.getMembers()));
+                                            Sections.toString(sectionGlyph.getMembers()));
 
-                                    if (glyph.isVip()) {
+                                    if (sectionGlyph.isVip()) {
                                         fil.setVip();
                                     }
                                 }
 
-                                fil.stealSections(glyph);
+                                fil.stealSections(sectionGlyph);
                                 it.remove();
                                 expanding = true;
 
                                 break;
                             }
                         } else {
-                            if (fil.isVip() && glyph.isVip()) {
+                            if (fil.isVip() && sectionGlyph.isVip()) {
                                 logger.info("No intersection between {} and {}",
-                                        fil, glyph);
+                                        fil, sectionGlyph);
                             }
                         }
                     }
@@ -843,7 +849,7 @@ public class FilamentsFactory
                         } else {
                             if (head.isVip() && candidate.isVip()) {
                                 logger.info(
-                                        "No intersection between {} and {}",
+                                        "No fat intersection between {} and {}",
                                         candidate, head);
                             }
                         }
@@ -868,6 +874,24 @@ public class FilamentsFactory
                 it.remove();
             }
         }
+    }
+
+    //---------------------//
+    // reRegisterFilaments //
+    //---------------------//
+    private List<Glyph> reRegisterFilaments (List<Glyph> filaments)
+    {
+        List<Glyph> updated = new ArrayList<>(filaments.size());
+
+        for (Glyph fil : filaments) {
+//            if (fil.isVip()) {
+//                logger.warn("About to re-register {}", fil);
+//            }
+            Glyph regGlyph = nest.addGlyph(fil); // Really useful
+            updated.add(regGlyph);
+        }
+
+        return updated;
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -954,7 +978,7 @@ public class FilamentsFactory
     // Parameters //
     //------------//
     /**
-     * Class {@literal Parameters} gathers all scale-dependent parameters.
+     * Class {@code Parameters} gathers all scale-dependent parameters.
      */
     private class Parameters
     {

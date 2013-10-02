@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 
 /**
- * Class {@literal GlyphTask} handles a collection of glyphs.
+ * Class {@code GlyphTask} handles a collection of glyphs.
  * These glyphs may already exist (as in a plain {@link GlyphUpdateTask})
  * or remain to be created (as in {@link InsertTask})</p>
  *

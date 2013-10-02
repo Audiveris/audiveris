@@ -51,7 +51,7 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 /**
- * Class {@literal ClustersRetriever} performs vertical samplings of the
+ * Class {@code ClustersRetriever} performs vertical samplings of the
  * horizontal filaments in order to detect regular patterns of a
  * preferred interline value and aggregate the filaments into clusters
  * of lines.
@@ -1149,7 +1149,7 @@ public class ClustersRetriever
     // Parameters //
     //------------//
     /**
-     * Class {@literal Parameters} gathers all constants related to
+     * Class {@code Parameters} gathers all constants related to
      * horizontal frames.
      */
     private static class Parameters

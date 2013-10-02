@@ -36,8 +36,6 @@ import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -88,6 +86,9 @@ public class SIGraph
     {
         boolean res = super.addVertex(inter);
         inter.setSig(this);
+        system.getSheet()
+                .getSigManager()
+                .register(inter);
 
         return res;
     }
@@ -525,6 +526,17 @@ public class SIGraph
         system.getSheet()
                 .getLocationService()
                 .publish(event);
+    }
+
+    //--------------//
+    // removeVertex //
+    //--------------//
+    @Override
+    public boolean removeVertex (Inter inter)
+    {
+        inter.delete();
+
+        return super.removeVertex(inter);
     }
 
     //------------//

@@ -38,6 +38,7 @@ import omr.score.entity.Staff;
 import omr.score.entity.SystemPart;
 
 import omr.sig.SIGraph;
+import omr.sig.SigSolver;
 
 import omr.step.StepException;
 
@@ -47,7 +48,6 @@ import omr.text.TextLine;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
-import omr.util.Predicate;
 import omr.util.VerticalSide;
 
 import org.slf4j.Logger;
@@ -65,11 +65,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * Class {@literal SystemInfo} gathers information from the original
+ * Class {@code SystemInfo} gathers information from the original
  * picture about a retrieved system.
  * Most of the physical processing is done in parallel at system level, and
  * thus is handled from this SystemInfo object.
@@ -112,7 +111,7 @@ public class SystemInfo
     public final BeamsBuilder beamsBuilder;
 
     /** Dedicated notes builder */
-    public final BlackNotesBuilder notesBuilder;
+    public final BlackNotesBuilder blackNotesBuilder;
 
     /** Dedicated void notes builder */
     public final VoidNotesBuilder voidNotesBuilder;
@@ -125,6 +124,9 @@ public class SystemInfo
 
     /** Dedicated horizontals builder */
     public final HorizontalsBuilder horizontalsBuilder;
+
+    /** Dedicated SIG processor */
+    public final SigSolver sigResolver;
 
     /** Dedicated glyph inspector */
     private final GlyphInspector glyphInspector;
@@ -243,12 +245,13 @@ public class SystemInfo
         updateCoordinates();
 
         sig = new SIGraph(this);
+        sigResolver = new SigSolver(this, sig);
         measuresBuilder = new MeasuresBuilder(this);
         textBuilder = new TextBuilder(this);
         glyphsBuilder = new GlyphsBuilder(this);
         compoundBuilder = new CompoundBuilder(this);
         beamsBuilder = new BeamsBuilder(this);
-        notesBuilder = new BlackNotesBuilder(this);
+        blackNotesBuilder = new BlackNotesBuilder(this);
         voidNotesBuilder = new VoidNotesBuilder(this);
         verticalsBuilder = new VerticalsBuilder(this);
         stemsBuilder = new StemsBuilder(this);

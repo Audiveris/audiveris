@@ -21,6 +21,7 @@ import omr.grid.StaffManager;
 import omr.lag.BasicLag;
 import omr.lag.JunctionShiftPolicy;
 import omr.lag.Lag;
+import omr.lag.Lags;
 import omr.lag.SectionsBuilder;
 
 import omr.run.Orientation;
@@ -123,7 +124,8 @@ public class HorizontalsFilter
 
         sectionsBuilder.createSections(hugeHoriTable, true);
 
-        sheet.setHorizontalFullLag(lag);
+        sheet.setLag(Lags.FULL_HLAG, lag);
+        sheet.dispatchHorizontalHugeSections();
     }
 
     //~ Inner Classes ----------------------------------------------------------

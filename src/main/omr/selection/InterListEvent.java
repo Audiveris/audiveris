@@ -14,7 +14,6 @@ package omr.selection;
 import omr.sig.Inter;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Class {@code InterListEvent} represents an Inter list event

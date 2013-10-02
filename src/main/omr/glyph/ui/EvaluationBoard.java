@@ -55,8 +55,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 /**
- * Class {@literal EvaluationBoard} is a board dedicated to the display of
- * evaluation results performed by an evaluator.
+ * Class {@code EvaluationBoard} is a board dedicated to the 
+ * display of evaluation results performed by an evaluator.
  * It also provides through buttons the ability to manually assign a shape to
  * the glyph at hand.
  *
@@ -143,7 +143,7 @@ class EvaluationBoard
 
         selector = new Selector();
         defineLayout();
-        useAnnotations = true;
+        useAnnotations = false; //true; 
     }
 
     //~ Methods ----------------------------------------------------------------

@@ -64,7 +64,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 
 /**
- * Class {@literal ShapeBoard} hosts a palette of shapes for insertion and
+ * Class {@code ShapeBoard} hosts a palette of shapes for insertion and
  * assignment of glyph.
  * <ul>
  * <li>Direct insertion is performed by drag and drop to the target score

@@ -20,6 +20,7 @@ import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.Lag;
+import omr.lag.Lags;
 import omr.lag.Section;
 import omr.lag.Sections;
 import omr.lag.ui.SectionBoard;
@@ -77,7 +78,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@literal SymbolsEditor} defines, for a given sheet, a UI pane
+ * Class {@code SymbolsEditor} defines, for a given sheet, a UI pane
  * from which all symbol processing actions can be launched and their
  * results checked.
  *
@@ -156,12 +157,15 @@ public class SymbolsEditor
                 sheet.getPage(),
                 new SymbolMenu(symbolsController, evaluator, focus));
 
+        Lag hLag = sheet.getLag(Lags.HLAG);
+        Lag vLag = sheet.getLag(Lags.VLAG);
+
         BoardsPane boardsPane = new BoardsPane(
                 new PixelBoard(sheet),
-                new RunBoard(sheet.getHorizontalLag(), false),
-                new SectionBoard(sheet.getHorizontalLag(), false),
-                new RunBoard(sheet.getVerticalLag(), false),
-                new SectionBoard(sheet.getVerticalLag(), false),
+                new RunBoard(hLag, false),
+                new SectionBoard(hLag, false),
+                new RunBoard(vLag, false),
+                new SectionBoard(vLag, false),
                 new SymbolGlyphBoard(symbolsController, true, true),
                 focus,
                 new EvaluationBoard(sheet, symbolsController, true),
@@ -279,7 +283,7 @@ public class SymbolsEditor
             super(
                     nest,
                     symbolsController,
-                    Arrays.asList(sheet.getHorizontalLag(), sheet.getVerticalLag()),
+                    Arrays.asList(sheet.getLag(Lags.HLAG), sheet.getLag(Lags.VLAG)),
                     sheet);
             setName("SymbolsEditor-MyView");
 

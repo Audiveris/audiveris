@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.Set;
 
 /**
- * Class {@literal DoubleBeamPattern} looks for BEAM_2 shape as compound
+ * Class {@code DoubleBeamPattern} looks for BEAM_2 shape as compound
  * for beams with just one stem.
  *
  * @author Hervé Bitteur

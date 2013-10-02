@@ -34,7 +34,6 @@ import static omr.ui.field.SpinnerUtil.*;
 import omr.ui.util.Panel;
 
 import omr.util.BasicTask;
-import omr.util.Predicate;
 
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
@@ -64,7 +63,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@literal GlyphBoard} defines a UI board dedicated to the
+ * Class {@code GlyphBoard} defines a UI board dedicated to the
  * display of {@link Glyph} information.
  *
  * <p>The universal <b>idSpinner</b> addresses <i>all</i> glyph instances
@@ -507,7 +506,7 @@ public class GlyphBoard
         public DeassignAction ()
         {
             super("Deassign");
-            this.putValue(Action.SHORT_DESCRIPTION, "Deassign shape");
+            putValue(Action.SHORT_DESCRIPTION, "Deassign shape");
         }
 
         //~ Methods ------------------------------------------------------------

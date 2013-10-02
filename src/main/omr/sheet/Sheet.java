@@ -29,6 +29,7 @@ import omr.grid.TargetBuilder;
 import omr.image.Table;
 
 import omr.lag.Lag;
+import omr.lag.Lags;
 import omr.lag.Section;
 import omr.lag.Sections;
 
@@ -40,6 +41,7 @@ import omr.score.entity.Page;
 import omr.score.entity.SystemNode;
 
 import omr.selection.InterListEvent;
+import omr.selection.InterIdEvent;
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
@@ -58,6 +60,7 @@ import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.SheetsController;
 
 import omr.sig.Inter;
+import omr.sig.SigManager;
 import omr.sig.SIGraph;
 
 import omr.step.Step;
@@ -81,6 +84,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -89,9 +93,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
- * Class {@literal Sheet} is the corner stone for Sheet processing,
+ * Class {@code Sheet} is the central hub for Sheet processing,
  * keeping pointers to all processings related to the image, and to
  * their results.
  *
@@ -109,13 +114,15 @@ public class Sheet
     public static final Class<?>[] allowedEvents = new Class<?>[]{
         LocationEvent.class,
         PixelLevelEvent.class,
-        InterListEvent.class
+        InterListEvent.class,
+        InterIdEvent.class
     };
 
     /** Events read by sheet on location service. */
     public static final Class<?>[] eventsRead = new Class<?>[]{
         LocationEvent.class,
-        InterListEvent.class
+        InterListEvent.class,
+        InterIdEvent.class
     };
 
     //~ Instance fields --------------------------------------------------------
@@ -144,6 +151,9 @@ public class Sheet
     /** Retrieved systems. */
     private final List<SystemInfo> systems = new ArrayList<>();
 
+    /** SIG manager for all systems. */
+    private final SigManager sigManager = new SigManager();
+
     //-- resettable members ----------------------------------------------------
     //
     /** The related picture */
@@ -167,23 +177,8 @@ public class Sheet
     /** Initial skew value */
     private Skew skew;
 
-    /** Horizontal (partial) lag. It complements vLag. */
-    private Lag hLag;
-
-    /** Vertical (partial) lag. It complements hLag. */
-    private Lag vLag;
-
-    /** Horizontal out-of-staves lag. */
-    private Lag hFullLag;
-
-    /** Spot lag. */
-    private Lag spotLag;
-
-    /** Head lag. */
-    private Lag headLag;
-
-    /** Split lag. */
-    private Lag splitLag;
+    /** Map of all public lags. */
+    Map<String, Lag> lagMap = new TreeMap<String, Lag>();
 
     /** Global glyph nest */
     private Nest nest;
@@ -232,7 +227,7 @@ public class Sheet
     /** Display of runs tables. */
     private RunsViewer runsViewer;
 
-    /** Display pf all spots. */
+    /** Display of all spots. */
     private SpotsController spotsController;
 
     //~ Constructors -----------------------------------------------------------
@@ -241,7 +236,7 @@ public class Sheet
     // Sheet //
     //-------//
     /**
-     * Create a new {@literal Sheet} instance, based on a couple made of
+     * Create a new {@code Sheet} instance, based on a couple made of
      * an image (the original pixel input) and a page (the score
      * entities output).
      *
@@ -541,69 +536,55 @@ public class Sheet
         return picture.getHeight();
     }
 
-    //------------------//
-    // getHorizontalLag //
-    //------------------//
+    //--------//
+    // getLag //
+    //--------//
     /**
-     * Report the current horizontal lag for this sheet
+     * Report the desired lag.
      *
-     * @return the current horizontal lag
+     * @param key the lag name
+     * @return the lag if already registered, null otherwise
      */
-    public Lag getHorizontalLag ()
+    public Lag getLag (String key)
     {
-        return hLag;
-    }
-
-    //----------------------//
-    // getHorizontalFullLag //
-    //----------------------//
-    /**
-     * Report the current horizontal FULL lag for this sheet
-     *
-     * @return the current horizontal full lag
-     */
-    public Lag getHorizontalFullLag ()
-    {
-        return hFullLag;
+        return lagMap.get(key);
     }
 
     //------------//
-    // getHeadLag //
+    // getAllLags //
     //------------//
     /**
-     * Report the current head lag
+     * Report all currently registered lags at this sheet instance.
      *
-     * @return the current head lag
+     * @return the collection of all registered lags, some of which may be null
      */
-    public Lag getHeadLag ()
+    public Collection<Lag> getAllLags ()
     {
-        return headLag;
+        return lagMap.values();
     }
 
-    //------------//
-    // getSpotLag //
-    //------------//
+    //--------//
+    // setLag //
+    //--------//
     /**
-     * Report the current spot lag
+     * Register the provided lag.
      *
-     * @return the current spot lag
+     * @param key the registered key for the lag
+     * @param lag the lag to register, perhaps null
      */
-    public Lag getSpotLag ()
+    public void setLag (String key,
+                        Lag lag)
     {
-        return spotLag;
-    }
+        Lag oldLag = getLag(key);
+        if (oldLag != null) {
+            oldLag.cutServices();
+        }
 
-    //-------------//
-    // getSplitLag //
-    //-------------//
-    /**
-     * Report the current split lag
-     *
-     * @return the current split lag
-     */
-    public Lag getSplitLag ()
-    {
-        return splitLag;
+        lagMap.put(key, lag);
+
+        if (lag != null) {
+            lag.setServices(locationService);
+        }
     }
 
     //-------//
@@ -835,9 +816,22 @@ public class Sheet
         return found;
     }
 
+    //---------------//
+    // getSigManager //
+    //---------------//
+    /**
+     * Report the SIG manager for this sheet
+     *
+     * @return the sheet SIG's manager
+     */
+    public SigManager getSigManager ()
+    {
+        return sigManager;
+    }
     //---------//
     // getSkew //
     //---------//
+
     /**
      * Report the skew information for this sheet.
      *
@@ -1025,7 +1019,7 @@ public class Sheet
      * @param sections the collection of sections
      * @return the containing system
      * @throws IllegalArgumentException raised if section collection is not
-                                     OK
+     *                                  OK
      */
     public SystemInfo getSystemOfSections (Collection<Section> sections)
     {
@@ -1121,19 +1115,6 @@ public class Sheet
     public TargetBuilder getTargetBuilder ()
     {
         return targetBuilder;
-    }
-
-    //----------------//
-    // getVerticalLag //
-    //----------------//
-    /**
-     * Report the current vertical lag of the sheet
-     *
-     * @return the current vertical lag
-     */
-    public Lag getVerticalLag ()
-    {
-        return vLag;
     }
 
     //----------//
@@ -1254,98 +1235,6 @@ public class Sheet
         currentStep = step;
     }
 
-    //------------------//
-    // setHorizontalLag //
-    //------------------//
-    /**
-     * Assign the current horizontal lag for the sheet
-     *
-     * @param hLag the horizontal lag at hand
-     */
-    public void setHorizontalLag (Lag hLag)
-    {
-        if (this.hLag != null) {
-            this.hLag.cutServices();
-        }
-
-        this.hLag = hLag;
-        hLag.setServices(locationService, getNest().getGlyphService());
-    }
-
-    //----------------------//
-    // setHorizontalFullLag //
-    //----------------------//
-    /**
-     * Assign the current horizontal FULL lag for the sheet
-     *
-     * @param hFullLag the horizontal full lag at hand
-     */
-    public void setHorizontalFullLag (Lag hFullLag)
-    {
-        if (this.hFullLag != null) {
-            this.hFullLag.cutServices();
-        }
-
-        this.hFullLag = hFullLag;
-        hFullLag.setServices(locationService, getNest().getGlyphService());
-
-        dispatchHorizontalHugeSections();
-    }
-
-    //------------//
-    // setHeadLag //
-    //------------//
-    /**
-     * Assign the current head lag for the sheet
-     *
-     * @param headLag the spot lag
-     */
-    public void setHeadLag (Lag headLag)
-    {
-        if (this.headLag != null) {
-            this.headLag.cutServices();
-        }
-
-        this.headLag = headLag;
-        ///headLag.setServices(locationService, getNest().getGlyphService());
-    }
-
-    //------------//
-    // setSpotLag //
-    //------------//
-    /**
-     * Assign the current spot lag for the sheet
-     *
-     * @param spotLag the spot lag
-     */
-    public void setSpotLag (Lag spotLag)
-    {
-        if (this.spotLag != null) {
-            this.spotLag.cutServices();
-        }
-
-        this.spotLag = spotLag;
-        ///spotLag.setServices(locationService, getNest().getGlyphService());
-    }
-
-    //------------//
-    // setSplitLag //
-    //------------//
-    /**
-     * Assign the current split lag for the sheet
-     *
-     * @param splitLag the split lag
-     */
-    public void setSplitLag (Lag splitLag)
-    {
-        if (this.splitLag != null) {
-            this.splitLag.cutServices();
-        }
-
-        this.splitLag = splitLag;
-        ///splitLag.setServices(locationService, getNest().getGlyphService());
-    }
-
     //----------//
     // setImage //
     //----------//
@@ -1356,7 +1245,7 @@ public class Sheet
         reset(Steps.valueOf(Steps.LOAD));
 
         try {
-            picture = new Picture(image, locationService);
+            picture = new Picture(this, image, locationService);
             setPicture(picture);
             getBench().recordImageDimension(picture.getWidth(), picture.
                     getHeight());
@@ -1443,20 +1332,6 @@ public class Sheet
     }
 
     //----------------//
-    // setVerticalLag //
-    //----------------//
-    /**
-     * Assign the current vertical lag for the sheet
-     *
-     * @param vLag the current vertical lag
-     */
-    public void setVerticalLag (Lag vLag)
-    {
-        this.vLag = vLag;
-        vLag.setServices(locationService, getNest().getGlyphService());
-    }
-
-    //----------------//
     // dispatchGlyphs //
     //----------------//
     /**
@@ -1498,7 +1373,7 @@ public class Sheet
         }
 
         // Now dispatch the lag sections among the systems
-        for (Section section : getHorizontalLag().getSections()) {
+        for (Section section : getLag(Lags.HLAG).getSections()) {
             SystemInfo system = getSystemOf(section.getCentroid());
             // Link section -> system
             section.setSystem(system);
@@ -1523,7 +1398,7 @@ public class Sheet
         }
 
         // Now dispatch the lag huge sections among the systems
-        for (Section section : getHorizontalFullLag().getSections()) {
+        for (Section section : getLag(Lags.FULL_HLAG).getSections()) {
             SystemInfo system = getSystemOf(section.getCentroid());
             // Link section -> system
             section.setSystem(system);
@@ -1553,7 +1428,7 @@ public class Sheet
         }
 
         // Now dispatch the lag sections among the systems
-        for (Section section : getVerticalLag().getSections()) {
+        for (Section section : getLag(Lags.VLAG).getSections()) {
             SystemInfo system = getSystemOf(section.getCentroid());
             // Link section -> system
             section.setSystem(system);
@@ -1606,14 +1481,8 @@ public class Sheet
 
             skew = null;
 
-            if (hLag != null) {
-                hLag.cutServices();
-                hLag = null;
-            }
-            if (vLag != null) {
-                vLag.cutServices();
-                vLag = null;
-            }
+            setLag(Lags.HLAG, null);
+            setLag(Lags.VLAG, null);
 
             systems.clear();
             gridBuilder = null;
@@ -1627,14 +1496,8 @@ public class Sheet
         // Fall-through!
 
         case Steps.ANCHORS:
-            if (hFullLag != null) {
-                hFullLag.cutServices();
-                hFullLag = null;
-            }
-            if (spotLag != null) {
-                spotLag.cutServices();
-                spotLag = null;
-            }
+            setLag(Lags.FULL_HLAG, null);
+            setLag(Lags.SPOT_LAG, null);
         default:
         }
     }
@@ -1760,6 +1623,9 @@ public class Sheet
             } else if (event instanceof InterListEvent) {
                 // InterList => contour
                 handleEvent((InterListEvent) event);
+            } else if (event instanceof InterIdEvent) {
+                // InterId => inter
+                handleEvent((InterIdEvent) event);
             }
         } catch (Throwable ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
@@ -1792,7 +1658,7 @@ public class Sheet
         if (system == null) {
             return;
         }
-        
+
         SIGraph sig = system.getSig();
 
         final List<Inter> inters;
@@ -1832,6 +1698,26 @@ public class Sheet
                 locationService.publish(new LocationEvent(this, hint, movement, box));
             }
         }
+
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in InterId => inter
+     *
+     * @param interIdEvent
+     */
+    private void handleEvent (InterIdEvent interIdEvent)
+    {
+        SelectionHint hint = interIdEvent.hint;
+        MouseMovement movement = interIdEvent.movement;
+        int id = interIdEvent.getData();
+
+        Inter inter = sigManager.getInter(id);
+        locationService.publish(new InterListEvent(this, hint, movement,
+                inter != null ? Arrays.asList(inter) : null));
 
     }
 }

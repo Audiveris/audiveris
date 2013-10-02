@@ -15,9 +15,6 @@ import omr.constant.Constant;
 import omr.constant.Constant.Ratio;
 import omr.constant.ConstantSet;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.awt.Graphics;
 
 import javax.swing.JProgressBar;
@@ -34,10 +31,6 @@ import javax.swing.SwingUtilities;
 public class StepMonitor
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            StepMonitor.class);
 
     /** Specific application parameters */
     private static final Constants constants = new Constants();
@@ -123,14 +116,16 @@ public class StepMonitor
             @Override
             public void run ()
             {
-                int old = bar.getValue();
+                if (!constants.useIndeterminate.isSet()) {
+                    int old = bar.getValue();
 
-                if (old > bar.getMinimum()) {
-                    int diff = bar.getMaximum() - old;
-                    int increment = (int) Math.round(
-                            diff * constants.ratio.getValue());
-                    bar.setIndeterminate(false);
-                    bar.setValue(old + increment);
+                    if (old > bar.getMinimum()) {
+                        int diff = bar.getMaximum() - old;
+                        int increment = (int) Math.round(
+                                diff * constants.ratio.getValue());
+
+                        bar.setValue(old + increment);
+                    }
                 }
             }
         });
@@ -151,6 +146,10 @@ public class StepMonitor
         if (animating) {
             actives++;
             setBar(constants.ratio.getValue());
+
+            if (constants.useIndeterminate.isSet()) {
+                bar.setIndeterminate(true);
+            }
         } else {
             if (actives > 0) {
                 actives--;
@@ -158,6 +157,7 @@ public class StepMonitor
 
             if (actives <= 0) {
                 setBar(0);
+                bar.setIndeterminate(false);
             }
         }
     }
@@ -178,12 +178,12 @@ public class StepMonitor
             @Override
             public void run ()
             {
-                bar.setIndeterminate(false);
-
                 int divisions = constants.divisions.getValue();
                 bar.setMinimum(0);
                 bar.setMaximum(divisions);
-                bar.setValue((int) Math.round(divisions * amount));
+
+                int val = (int) Math.round(divisions * amount);
+                bar.setValue(val);
             }
         });
     }
@@ -206,6 +206,10 @@ public class StepMonitor
                 0.1,
                 "Amount by which to increase step monitor percentage per animation, between 0 and 1");
 
+        Constant.Boolean useIndeterminate = new Constant.Boolean(
+                true,
+                "Should we use an indeterminate step progress bar?");
+
     }
 
     //----------------//
@@ -223,7 +227,6 @@ public class StepMonitor
                 super.paintComponent(g);
             } catch (Exception ex) {
                 // Nearly ignored
-                logger.warn("StepMonitor. Ignored: {}", ex);
                 repaint(); // To trigger another painting
             }
         }

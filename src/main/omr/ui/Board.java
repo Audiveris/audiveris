@@ -82,6 +82,8 @@ public abstract class Board
 
     public static final Desc GLYPH = new Desc("Glyph", 500);
 
+    public static final Desc INTER = new Desc("Inter", 550);
+
     public static final Desc FOCUS = new Desc("Focus", 600);
 
     public static final Desc EVAL = new Desc("Eval", 700);

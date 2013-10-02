@@ -34,6 +34,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
+import static omr.glyph.AbstractEvaluationEngine.shapeCount;
+
 /**
  * Class {@code GlyphNetwork} encapsulates a neural network customized
  * for glyph recognition.
@@ -198,7 +200,7 @@ public class GlyphNetwork
     // getListEpochs //
     //---------------//
     /**
-     * Selector on the maximum numner of training iterations.
+     * Selector on the maximum number of training iterations.
      *
      * @return the upper limit on iteration counter
      */
@@ -445,34 +447,26 @@ public class GlyphNetwork
         return FILE_NAME;
     }
 
-    //-------------------//
-    // getRawEvaluations //
-    //-------------------//
+    //-----------------------//
+    // getNaturalEvaluations //
+    //-----------------------//
     @Override
-    protected Evaluation[] getRawEvaluations (Glyph glyph)
+    protected Evaluation[] getNaturalEvaluations (Glyph glyph)
     {
-        // If too small, it's just NOISE
-        if (!isBigEnough(glyph)) {
-            return noiseEvaluations;
-        } else {
-            double[] ins = ShapeDescription.features(glyph);
-            double[] outs = new double[shapeCount];
-            Evaluation[] evals = new Evaluation[shapeCount];
-            Shape[] values = Shape.values();
+        double[] ins = ShapeDescription.features(glyph);
+        double[] outs = new double[shapeCount];
+        Evaluation[] evals = new Evaluation[shapeCount];
+        Shape[] values = Shape.values();
 
-            engine.run(ins, null, outs);
+        engine.run(ins, null, outs);
 
-            for (int s = 0; s < shapeCount; s++) {
-                Shape shape = values[s];
-                // Use a grade in 0 .. 100 range
-                evals[s] = new Evaluation(shape, 100 * outs[s]);
-            }
-
-            // Order the evals from best to worst
-            Arrays.sort(evals);
-
-            return evals;
+        for (int s = 0; s < shapeCount; s++) {
+            Shape shape = values[s];
+            // Use a grade in 0 .. 100 range
+            evals[s] = new Evaluation(shape, 100 * outs[s]);
         }
+
+        return evals;
     }
 
     //---------//

@@ -23,8 +23,8 @@ public abstract class ShapeDescription
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    ///private static final Descriptor INSTANCE = new ShapeDescriptorGeo();
-    private static final Descriptor INSTANCE = new ShapeDescriptorART();
+    private static final Descriptor INSTANCE = new ShapeDescriptorGeo();
+    ///private static final Descriptor INSTANCE = new ShapeDescriptorART();
 
     //~ Constructors -----------------------------------------------------------
     private ShapeDescription ()

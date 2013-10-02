@@ -26,6 +26,7 @@ import omr.image.StructureElement;
 import omr.lag.BasicLag;
 import omr.lag.JunctionAllPolicy;
 import omr.lag.Lag;
+import omr.lag.Lags;
 import omr.lag.SectionsBuilder;
 
 import omr.run.Orientation;
@@ -117,7 +118,7 @@ public class SpotsBuilder
         logger.debug("Run sequences: {}", spotTable.getSize());
 
         // Build the spotLag out of spots runs
-        spotLag = new BasicLag("spotLag", SPOT_ORIENTATION);
+        spotLag = new BasicLag(Lags.SPOT_LAG, SPOT_ORIENTATION);
 
         SectionsBuilder sectionsBuilder = new SectionsBuilder(
                 spotLag,
@@ -131,9 +132,13 @@ public class SpotsBuilder
                 GlyphLayer.SPOT,
                 sheet.getScale());
 
-        sheet.setSpotLag(spotLag);
-        sheet.setHeadLag(new BasicLag("headLag", SPOT_ORIENTATION));
-        sheet.setSplitLag(new BasicLag("splitLag", SPOT_ORIENTATION));
+        sheet.setLag(Lags.SPOT_LAG, spotLag);
+
+        Lag headLag = new BasicLag(Lags.HEAD_LAG, SPOT_ORIENTATION);
+        sheet.setLag(Lags.HEAD_LAG, headLag);
+
+        Lag splitLag = new BasicLag(Lags.SPLIT_LAG, SPOT_ORIENTATION);
+        sheet.setLag(Lags.SPLIT_LAG, splitLag);
 
         // Dispatch spots per system, keeping only those within system width
         dispatchSpots(glyphs);
@@ -142,8 +147,8 @@ public class SpotsBuilder
         SpotsController spotController = new SpotsController(
                 sheet,
                 spotLag,
-                sheet.getHeadLag(),
-                sheet.getSplitLag());
+                headLag,
+                splitLag);
         sheet.setSpotsController(spotController);
         spotController.refresh();
     }
@@ -185,9 +190,8 @@ public class SpotsBuilder
         Scale scale = sheet.getScale();
         int beam = scale.getMainBeam();
 
-        final float radius = (beam - 3) / 2f;
-        ///final float radius = (beam - 2) / 2f;
-        ///final float radius = (beam - 1) / 2f;
+        final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
+        final float radius = (float) (diameter - 1) / 2;
         logger.info(
                 "{}Spots retrieval beam: {}, radius: {} ...",
                 sheet.getLogPrefix(),
@@ -247,6 +251,10 @@ public class SpotsBuilder
         final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
+
+        final Constant.Ratio beamCircleDiameterRatio = new Constant.Ratio(
+                0.75,
+                "Diameter of circle used to close beam spots, as ratio of beam height");
 
     }
 }

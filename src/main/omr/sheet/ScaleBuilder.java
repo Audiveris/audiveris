@@ -54,6 +54,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 import omr.image.ChamferDistance;
+import omr.image.PixelBuffer;
 
 /**
  * Class {@code ScaleBuilder} encapsulates the computation of a sheet
@@ -106,6 +107,8 @@ public class ScaleBuilder
 
     /** Keeper of run length histograms, for foreground & background. */
     private HistoKeeper histoKeeper;
+
+    private HoriHistoKeeper horiHistoKeeper;
 
     /** Histogram on foreground runs. */
     private Histogram<Integer> foreHisto;
@@ -162,6 +165,9 @@ public class ScaleBuilder
     {
         if (histoKeeper != null) {
             histoKeeper.writePlot();
+            if (horiHistoKeeper != null) {
+                horiHistoKeeper.writePlot();
+            }
         } else {
             logger.warn("No scale data available");
         }
@@ -236,15 +242,27 @@ public class ScaleBuilder
                     computeSecondInterline());
 
             logger.info("{}{}", sheet.getLogPrefix(), scale);
-
+            sheet.setScale(scale);
             sheet.getBench().recordScale(scale);
 
             // Compute distance transform image
             watch.start("Distance transform");
+            PixelBuffer buffer = wholeVertTable.getBuffer();
             sheet.setDistanceImage(
-                    new ChamferDistance.Short().computeToFore(wholeVertTable.getBuffer()));
+                    new ChamferDistance.Short().computeToFore(buffer));
 
-            sheet.setScale(scale);
+            // Prototype: look at horizontal histo for stem thickness
+            RunsTableFactory horiFactory = new RunsTableFactory(
+                    Orientation.HORIZONTAL,
+                    buffer,
+                    0);
+            RunsTable horiTable = horiFactory.createTable("hori Binary");
+            horiHistoKeeper = new HoriHistoKeeper(picture.getWidth() - 1);
+            horiHistoKeeper.buildHistograms(
+                    horiTable,
+                    picture.getWidth(),
+                    picture.getHeight());
+
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -660,6 +678,139 @@ public class ScaleBuilder
                 // Process a last background run, if any
                 if (yLast < height) {
                     int backLength = height - yLast;
+                    if (backLength <= maxBack) {
+                        back[backLength]++;
+                    }
+                }
+            }
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("fore values: {}", Arrays.toString(fore));
+                logger.debug("back values: {}", Arrays.toString(back));
+            }
+
+            // Create foreground & background histograms
+            foreHisto = createHistogram(fore);
+            backHisto = createHistogram(back);
+        }
+    }
+
+    //-----------------//
+    // HoriHistoKeeper //
+    //-----------------//
+    /**
+     * Just a prototype, for histogram of *horizontal* runs.
+     */
+    private class HoriHistoKeeper
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final int[] fore; // (black) foreground runs
+
+        private final int[] back; // (white) background runs
+
+        //~ Constructors -------------------------------------------------------
+        //
+        //-------------//
+        // HistoKeeper //
+        //-------------//
+        /**
+         * Create an instance of histoKeeper.
+         *
+         * @param wMax the maximum possible run length
+         */
+        public HoriHistoKeeper (int wMax)
+        {
+            // Allocate histogram counters
+            fore = new int[wMax + 2];
+            back = new int[wMax + 2];
+
+            // Useful?
+            Arrays.fill(fore, 0);
+            Arrays.fill(back, 0);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        //
+        //-----------//
+        // writePlot //
+        //-----------//
+        public void writePlot ()
+        {
+            int upper = (int) Math.min(
+                    fore.length,
+                    ((backPeak != null) ? ((backPeak.getKey().best * 3) / 2) : 20));
+
+            new Plotter(
+                    "hori-black",
+                    fore,
+                    foreHisto,
+                    foreSpreadRatio,
+                    forePeak,
+                    null,
+                    upper).plot(new Point(0, 0));
+            new Plotter(
+                    "hori-white",
+                    back,
+                    backHisto,
+                    backSpreadRatio,
+                    backPeak,
+                    secondBackPeak,
+                    upper).plot(new Point(20, 20));
+        }
+
+        //-----------------//
+        // createHistogram //
+        //-----------------//
+        private Histogram<Integer> createHistogram (int... vals)
+        {
+            Histogram<Integer> histo = new Histogram<>();
+
+            for (int i = 0; i < vals.length; i++) {
+                histo.increaseCount(i, vals[i]);
+            }
+
+            return histo;
+        }
+
+        //-----------------//
+        // buildHistograms //
+        //-----------------//
+        private void buildHistograms (RunsTable horiTable,
+                                      int width,
+                                      int height)
+        {
+            // Upper bounds for run lengths
+            final int maxBack = width;
+            final int maxFore = 20; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            for (int y = 0; y < height; y++) {
+                List<Run> runSeq = horiTable.getSequence(y);
+                // Abscissa of first pixel not yet processed
+                int xLast = 0;
+
+                for (Run run : runSeq) {
+                    int x = run.getStart();
+
+                    if (x > xLast) {
+                        // Process the background run before this run
+                        int backLength = x - xLast;
+                        if (backLength <= maxBack) {
+                            back[backLength]++;
+                        }
+                    }
+
+                    // Process this foreground run
+                    int foreLength = run.getLength();
+                    if (foreLength <= maxFore) {
+                        fore[foreLength]++;
+                    }
+                    xLast = x + foreLength;
+                }
+
+                // Process a last background run, if any
+                if (xLast < width) {
+                    int backLength = width - xLast;
                     if (backLength <= maxBack) {
                         back[backLength]++;
                     }

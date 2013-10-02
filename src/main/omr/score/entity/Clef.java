@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 
 /**
- * Class {@literal Clef} encapsulates a clef.
+ * Class {@code Clef} encapsulates a clef.
  *
  * <p>The following image, directly pulled from wikipedia, explains the most
  * popular clefs today (Treble, Alto, Tenor and Bass) and for each presents

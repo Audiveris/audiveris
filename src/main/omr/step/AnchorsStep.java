@@ -15,6 +15,8 @@ import omr.sheet.HorizontalsFilter;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import omr.sig.ui.InterBoard;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,10 +66,14 @@ public class AnchorsStep
     @Override
     public void displayUI (Sheet sheet)
     {
+        // Inter board
+        sheet.getAssembly()
+                .addBoard(Step.DATA_TAB, new InterBoard(sheet));
+
         // We need a system of this sheet (any one)
         SystemInfo aSystem = sheet.getSystems()
                 .get(0);
-        
+
         // Add stem checkboard
         aSystem.verticalsBuilder.addCheckBoard();
 
@@ -86,7 +92,7 @@ public class AnchorsStep
         system.beamsBuilder.buildBeams();
         system.horizontalsBuilder.buildLedgers();
         system.verticalsBuilder.buildVerticals();
-        system.notesBuilder.buildBlackHeads();
+        system.blackNotesBuilder.buildBlackHeads();
         system.voidNotesBuilder.buildVoidHeads();
         system.stemsBuilder.linkHeads();
     }

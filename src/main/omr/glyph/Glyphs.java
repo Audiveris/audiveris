@@ -45,7 +45,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@literal Glyphs} is a collection of static convenient methods,
+ * Class {@code Glyphs} is a collection of static convenient methods,
  * providing features related to a collection of glyph instances.
  *
  * @author Hervé Bitteur

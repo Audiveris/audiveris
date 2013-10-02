@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -91,7 +92,7 @@ public abstract class AbstractEvaluationEngine
                                   Predicate<Shape> predicate)
     {
         List<Evaluation> best = new ArrayList<>();
-        Evaluation[] evals = getRawEvaluations(glyph);
+        Evaluation[] evals = getSortedEvaluations(glyph);
 
         EvalsLoop:
         for (Evaluation eval : evals) {
@@ -143,6 +144,24 @@ public abstract class AbstractEvaluationEngine
         return best.toArray(new Evaluation[0]);
     }
 
+    //------------//
+    // evaluateAs //
+    //------------//
+    @Override
+    public Evaluation evaluateAs (Glyph glyph,
+                                  Shape shape)
+    {
+        final Evaluation[] evals = getNaturalEvaluations(glyph);
+        final int ordinal = shape.ordinal();
+
+        if (ordinal < evals.length) {
+            return evals[ordinal];
+        } else {
+            logger.error("Shape {} cannot be evaluated directly", shape);
+            return null;
+        }
+    }
+
     //-------------//
     // isBigEnough //
     //-------------//
@@ -161,6 +180,12 @@ public abstract class AbstractEvaluationEngine
     @Override
     public void marshal ()
     {
+        if (!WellKnowns.EVAL_FOLDER.exists()) {
+            if (WellKnowns.EVAL_FOLDER.mkdirs()) {
+                logger.info("Created directory {}", WellKnowns.EVAL_FOLDER);
+            }
+        }
+
         final File file = new File(WellKnowns.EVAL_FOLDER, getFileName());
         OutputStream os = null;
 
@@ -282,9 +307,9 @@ public abstract class AbstractEvaluationEngine
      */
     protected abstract String getFileName ();
 
-    //-------------------//
-    // getRawEvaluations //
-    //-------------------//
+    //----------------------//
+    // getSortedEvaluations //
+    //----------------------//
     /**
      * Run the evaluator with the specified glyph, and return a
      * sequence of interpretations (ordered from best to worst) with
@@ -293,7 +318,32 @@ public abstract class AbstractEvaluationEngine
      * @param glyph the glyph to be examined
      * @return the ordered best evaluations
      */
-    protected abstract Evaluation[] getRawEvaluations (Glyph glyph);
+    protected Evaluation[] getSortedEvaluations (Glyph glyph)
+    {
+        // If too small, it's just NOISE
+        if (!isBigEnough(glyph)) {
+            return noiseEvaluations;
+        } else {
+            Evaluation[] evals = getNaturalEvaluations(glyph);
+            // Order the evals from best to worst
+            Arrays.sort(evals);
+
+            return evals;
+        }
+    }
+
+    //-----------------------//
+    // getNaturalEvaluations //
+    //-----------------------//
+    /**
+     * Run the evaluator with the specified glyph, and return the
+     * natural sequence of interpretations (ordered by Shape ordinal)
+     * with no additional check.
+     *
+     * @param glyph the glyph to be examined
+     * @return all shape-ordered evaluations
+     */
+    protected abstract Evaluation[] getNaturalEvaluations (Glyph glyph);
 
     //---------//
     // marshal //

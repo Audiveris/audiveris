@@ -35,7 +35,9 @@ public class ShapeDescriptorGeo
     private static final int momentCount = 10;
 
     /** Use the 10 first geometric moments + legder + stems + aspect */
-    private static final int length = momentCount + 3;
+    ///private static final int length = momentCount + 3;
+    /** Use the 10 first geometric moments */
+    private static final int length = momentCount;
 
     //~ Methods ----------------------------------------------------------------
     //----------//
@@ -54,11 +56,11 @@ public class ShapeDescriptorGeo
             ins[i] = k[i];
         }
 
-        // We append ledger presence, stem count and aspect
-        int i = momentCount;
-        /* 10 */ ins[i++] = ShapeDescription.boolAsDouble(glyph.isWithLedger());
-        /* 11 */ ins[i++] = glyph.getStemNumber();
-        /* 12 */ ins[i++] = glyph.getAspect(Orientation.VERTICAL);
+//        // We append ledger presence, stem count and aspect
+//        int i = momentCount;
+//        /* 10 */ ins[i++] = ShapeDescription.boolAsDouble(glyph.isWithLedger());
+//        /* 11 */ ins[i++] = glyph.getStemNumber();
+//        /* 12 */ ins[i++] = glyph.getAspect(Orientation.VERTICAL);
 
         return ins;
     }
@@ -115,13 +117,13 @@ public class ShapeDescriptorGeo
                 labels[i] = GeometricMoments.getLabel(i);
             }
 
-            // We append flags and step position
-            int i = momentCount;
-            /* 10 */ labels[i++] = "ledger";
-            /* 11 */ labels[i++] = "stemNb";
-            /* 12 */ labels[i++] = "aspect";
-
-            ////* 13 */ labels[i++] = "pitch";
+//            // We append flags and step position
+//            int i = momentCount;
+//            /* 10 */ labels[i++] = "ledger";
+//            /* 11 */ labels[i++] = "stemNb";
+//            /* 12 */ labels[i++] = "aspect";
+//
+//            ////* 13 */ labels[i++] = "pitch";
 
             //
             for (int j = 0; j < labels.length; j++) {

@@ -11,8 +11,9 @@
 // </editor-fold>
 package omr.sig;
 
-import java.awt.Rectangle;
 import omr.glyph.Shape;
+
+import java.awt.Rectangle;
 
 /**
  * Class {@code VoidHeadInter} represents a void note head
@@ -23,21 +24,28 @@ import omr.glyph.Shape;
 public class VoidHeadInter
         extends BasicInter
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
+    /** Pitch step. */
+    private final int pitch;
+
+    //~ Constructors -----------------------------------------------------------
     //---------------//
     // VoidHeadInter //
     //---------------//
     /**
      * Creates a new VoidHeadInter object.
      *
-     * @param box the object bounds
+     * @param box   the object bounds
      * @param grade the assignment quality
+     * @param pitch the note pitch
      */
     public VoidHeadInter (Rectangle box,
-                          double grade)
+                          double grade,
+                          int pitch)
     {
         super(box, Shape.NOTEHEAD_VOID, grade);
+        this.pitch = pitch;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -48,5 +56,16 @@ public class VoidHeadInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //----------//
+    // getPitch //
+    //----------//
+    /**
+     * @return the pitch
+     */
+    public int getPitch ()
+    {
+        return pitch;
     }
 }

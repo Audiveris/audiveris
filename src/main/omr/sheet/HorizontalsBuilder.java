@@ -35,7 +35,6 @@ import omr.grid.StaffInfo;
 
 import omr.lag.Section;
 
-import omr.math.GeoOrder;
 import omr.math.GeoUtil;
 
 import static omr.run.Orientation.*;
@@ -62,7 +61,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@literal HorizontalsBuilder} is in charge of retrieving
+ * Class {@code HorizontalsBuilder} is in charge of retrieving
  * ledgers and endings in a system.
  *
  * <p>Nota: Endings are currently disabled.
@@ -517,7 +516,7 @@ public class HorizontalsBuilder
         // Define bounds for the virtual line, properly shifted and enlarged
         Rectangle staffLineBox = staffLine.getBounds();
         staffLineBox.y += (index * scale.getInterline());
-        staffLineBox.grow(0, scale.toPixels(constants.ledgerMarginY));
+        staffLineBox.grow(0, 2 * yMargin); // Roughly
 
         // Filter enclosed candidates
         CandidateLoop:
@@ -529,9 +528,8 @@ public class HorizontalsBuilder
 
             // Check for presence of ledger on previous line
             // and definition of a reference ordinate (staff line or ledger)
-            final Rectangle box = stick.getBounds();
             final Point2D middle = getMiddle(stick);
-            Double yRef = getYReference(staff, index, stick);
+            final Double yRef = getYReference(staff, index, stick);
             if (yRef == null) {
                 continue CandidateLoop;
             }
@@ -557,7 +555,7 @@ public class HorizontalsBuilder
             // OK!
             Glyph glyph = system.addGlyph(stick); // Useful???
             glyph.setShape(Shape.LEDGER);
-            sig.addVertex(new LedgerInter(glyph, 1.0));
+            sig.addVertex(new LedgerInter(glyph, 1.0)); // TODO: grade computation
             staff.addLedger(glyph, index);
             found++;
 
@@ -610,8 +608,7 @@ public class HorizontalsBuilder
 
                 if (delta >= otherDelta) {
                     if (stick.isVip()) {
-                        logger.info("Ledger candidate {} collision",
-                                stick);
+                        logger.info("Ledger candidate {} collision", stick);
                     }
                     return false;
                 } else {

@@ -37,6 +37,8 @@ import omr.selection.MouseMovement;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
+import omr.sheet.Scale.LineFraction;
+
 import omr.step.Step;
 import omr.step.StepException;
 
@@ -52,7 +54,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@literal VerticalsBuilder} is in charge of retrieving major
+ * Class {@code VerticalsBuilder} is in charge of retrieving major
  * vertical seeds of a dedicated system.
  *
  * The purpose is to use these major vertical sticks as seeds for (bar-lines?),
@@ -128,6 +130,19 @@ public class VerticalsBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
+    //---------------------//
+    // getMaxStemThickness //
+    //---------------------//
+    /**
+     * The single definition of maximum thickness for a stem
+     *
+     * @return max stem thickness, specified WRT staff line fraction
+     */
+    public static LineFraction getMaxStemThickness ()
+    {
+        return constants.maxStemThickness;
+    }
+
     //---------------//
     // addCheckBoard //
     //---------------//
@@ -182,6 +197,7 @@ public class VerticalsBuilder
         }
 
         // Adjust factory parameters
+        factory.setMaxThickness(constants.maxStemThickness);
         factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
         factory.setMaxOverlapSpace(constants.maxOverlapSpace);
         factory.setMaxCoordGap(constants.maxCoordGap);
@@ -195,6 +211,9 @@ public class VerticalsBuilder
 
         // Apply seed checks
         int seeds = checkVerticals(candidates, false);
+        
+        //TODO: what is the "average" stick (stem?) thickness
+        //
 
         logger.debug(
                 "{}S#{} verticals: {}",
@@ -289,6 +308,7 @@ public class VerticalsBuilder
 
         for (Glyph stick : sticks) {
             stick = system.addGlyph(stick);
+
             if (stick.isKnown()) {
                 continue;
             }
@@ -369,6 +389,10 @@ public class VerticalsBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
+        Scale.LineFraction maxStemThickness = new Scale.LineFraction(
+                1.6,
+                "Maximum thickness of an interesting vertical stick");
+
         Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
                 1.0,
                 "Maximum delta position between two overlapping filaments");
@@ -428,10 +452,6 @@ public class VerticalsBuilder
         Scale.Fraction minShortStemLengthLow = new Scale.Fraction(
                 2.0,
                 "Low Minimum length for a short stem");
-
-        Scale.Fraction maxStemThickness = new Scale.Fraction(
-                0.3,
-                "Maximum thickness of an interesting vertical stick");
 
         Scale.Fraction minStaffDxHigh = new Scale.Fraction(
                 0,
@@ -535,6 +555,34 @@ public class VerticalsBuilder
         }
     }
 
+    //---------------------//
+    // RightAdjacencyCheck //
+    //---------------------//
+    private static class RightAdjacencyCheck
+            extends Check<Glyph>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected RightAdjacencyCheck ()
+        {
+            super(
+                    "RightAdj",
+                    "Check that stick is open on right side",
+                    constants.maxStemAdjacencyLow,
+                    constants.maxStemAdjacencyHigh,
+                    false,
+                    TOO_HIGH_ADJACENCY);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        // Retrieve the adjacency value
+        @Override
+        protected double getValue (Glyph stick)
+        {
+            return (double) stick.getLastStuck() / stick.getLength(VERTICAL);
+        }
+    }
+
     //----------------//
     // MinLengthCheck //
     //----------------//
@@ -591,34 +639,6 @@ public class VerticalsBuilder
 
             return (center.x > system.getLeft())
                    && (center.x < system.getRight());
-        }
-    }
-
-    //---------------------//
-    // RightAdjacencyCheck //
-    //---------------------//
-    private static class RightAdjacencyCheck
-            extends Check<Glyph>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected RightAdjacencyCheck ()
-        {
-            super(
-                    "RightAdj",
-                    "Check that stick is open on right side",
-                    constants.maxStemAdjacencyLow,
-                    constants.maxStemAdjacencyHigh,
-                    false,
-                    TOO_HIGH_ADJACENCY);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        // Retrieve the adjacency value
-        @Override
-        protected double getValue (Glyph stick)
-        {
-            return (double) stick.getLastStuck() / stick.getLength(VERTICAL);
         }
     }
 

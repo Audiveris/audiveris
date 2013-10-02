@@ -21,7 +21,9 @@ import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.BasicLag;
+import omr.lag.JunctionShiftPolicy;
 import omr.lag.Lag;
+import omr.lag.Lags;
 import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
@@ -68,10 +70,9 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import omr.lag.JunctionShiftPolicy;
 
 /**
- * Class {@literal BarsRetriever} focuses on the retrieval of vertical
+ * Class {@code BarsRetriever} focuses on the retrieval of vertical
  * barlines.
  * Barlines are used to determine the side limits of staves and, most
  * importantly, the gathering of staves into systems.
@@ -156,7 +157,7 @@ public class BarsRetriever
      */
     public void buildLag (RunsTable vertTable)
     {
-        vLag = new BasicLag("vLag", VERTICAL);
+        vLag = new BasicLag(Lags.VLAG, VERTICAL);
 
 
         final int maxShift = sheet.getScale().toPixels(
@@ -168,7 +169,7 @@ public class BarsRetriever
                 new JunctionShiftPolicy(maxShift));
         sectionsBuilder.createSections(vertTable, true);
 
-        sheet.setVerticalLag(vLag);
+        sheet.setLag(Lags.VLAG,vLag);
 
         setVipSections();
     }
@@ -1698,7 +1699,7 @@ public class BarsRetriever
                 "Maximum delta position between two overlapping filaments");
 
         Scale.Fraction maxCoordGap = new Scale.Fraction(
-                0.5,
+                1.0,
                 "Maximum delta coordinate for a gap between filaments");
 
         Scale.Fraction maxPosGap = new Scale.Fraction(
@@ -1779,7 +1780,7 @@ public class BarsRetriever
         //
         Constant.String verticalVipSections = new Constant.String(
                 "",
-                "(Debug) Comma-separated list of VIP sections");
+                "(Debug) Comma-separated list of VIP vertical sections");
 
     }
 
@@ -1787,7 +1788,7 @@ public class BarsRetriever
     // Parameters //
     //------------//
     /**
-     * Class {@literal Parameters} gathers all constants related to
+     * Class {@code Parameters} gathers all constants related to
      * vertical frames.
      */
     private static class Parameters

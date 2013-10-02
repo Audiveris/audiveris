@@ -125,7 +125,7 @@ class BasicEnvironment
         final int posMax = (oRoi.y + oRoi.height) - 1;
         int count = 0;
 
-        for (Section section : lag.lookupIntersectedSections(absRoi)) {
+        for (Section section : lag.intersectedSections(absRoi)) {
             // Exclude sections that are part of the glyph
             if (section.getGlyph() == glyph) {
                 continue;

@@ -36,7 +36,7 @@ import java.awt.Rectangle;
 import java.util.List;
 
 /**
- * Class {@literal ArticulationPattern} verifies that any articulation
+ * Class {@code ArticulationPattern} verifies that any articulation
  * glyph has corresponding note(s) below or above in the staff.
  *
  * @author Hervé Bitteur

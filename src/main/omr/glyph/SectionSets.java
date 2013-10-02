@@ -33,6 +33,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import omr.lag.Lags;
 
 /**
  * Class {@code SectionSets} handles a collection of section sets,
@@ -137,9 +138,9 @@ public class SectionSets
                 List<Section> sectionSet = new ArrayList<>();
 
                 for (SectionDesc sectionId : idSet.sections) {
-                    Lag lag = (sectionId.orientation == Orientation.VERTICAL)
-                            ? sheet.getVerticalLag()
-                            : sheet.getHorizontalLag();
+                    Lag lag = sheet.getLag(sectionId.orientation == Orientation.VERTICAL
+                            ? Lags.VLAG
+                            : Lags.HLAG);
                     Section section = lag.getVertexById(sectionId.id);
 
                     if (section == null) {

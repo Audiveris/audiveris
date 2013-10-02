@@ -41,7 +41,7 @@ import java.util.Set;
 import omr.glyph.GlyphLayer;
 
 /**
- * Class {@literal BorderBuilder} implements a smart approach
+ * Class {@code BorderBuilder} implements a smart approach
  * to define the border between two systems.
  *
  * <p>Strategy for glyph assignment: <ol>

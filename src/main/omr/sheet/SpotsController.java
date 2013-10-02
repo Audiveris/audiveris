@@ -40,7 +40,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 
 /**
- * Class {@literal SpotsController} is a quick & dirty hack to display
+ * Class {@code SpotsController} is a quick & dirty hack to display
  * the retrieved spots.
  *
  * @author Hervé Bitteur

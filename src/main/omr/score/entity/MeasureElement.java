@@ -28,7 +28,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@literal MeasureElement} is the basis for measure elements
+ * Class {@code MeasureElement} is the basis for measure elements
  * (directions, notations, etc.)
  *
  * <p>For some elements (such as wedge, dashes, pedal, slur, tuplet), we may

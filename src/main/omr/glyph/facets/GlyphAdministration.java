@@ -33,6 +33,7 @@ interface GlyphAdministration
      *
      * @return the processed flag value
      */
+    @Deprecated
     public boolean isProcessed ();
 
     /**
@@ -40,6 +41,7 @@ interface GlyphAdministration
      *
      * @param processed the processed to set
      */
+    @Deprecated
     public void setProcessed (boolean processed);
 
     /**

@@ -39,7 +39,7 @@ import java.util.HashSet;
 import java.util.List;
 
 /**
- * Class {@literal GlyphsBuilder} is, at a system level, in charge of
+ * Class {@code GlyphsBuilder} is, at a system level, in charge of
  * building (and removing) glyphs and of updating accordingly the
  * containing entities (Nest and SystemInfo).
  *

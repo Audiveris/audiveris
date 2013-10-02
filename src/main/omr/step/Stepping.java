@@ -40,6 +40,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import javax.swing.SwingUtilities;
+import omr.glyph.Nest;
 
 /**
  * Class {@code Stepping} handles the scheduling of step(s) on a score
@@ -250,14 +251,14 @@ public class Stepping
             if (score.getPages().isEmpty()) {
                 // Create score pages if not yet done
                 score.createPages(pages);
-                start = first;
-                stop = orderedSteps.isEmpty() ? first : orderedSteps.last();
+                start = FIRST_STEP;
+                stop = orderedSteps.isEmpty() ? start : orderedSteps.last();
             } else {
                 // Use a score sheet to retrieve the latest mandatory step
                 Sheet sheet = score.getFirstPage().getSheet();
                 Step latest = getLatestMandatoryStep(sheet);
                 Step firstDesired = orderedSteps.first();
-                start = (latest == null) ? first
+                start = (latest == null) ? FIRST_STEP
                         : ((latest == firstDesired) ? firstDesired : next(
                         latest));
                 stop = (Steps.compare(latest, orderedSteps.last()) >= 0)
@@ -518,6 +519,10 @@ public class Stepping
             for (Step step : stepSet) {
                 notifyMsg(sheet.getLogPrefix() + step);
                 doOneSheetStep(step, sheet, systems);
+//                Nest nest = sheet.getNest();
+//                if (nest != null) {
+//                    logger.info("{} {}", step, nest);
+//                }
             }
         } catch (StepException se) {
             logger.info("{}Processing stopped. {}",

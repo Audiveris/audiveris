@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.lag;
 
-import omr.glyph.facets.Glyph;
 import omr.glyph.ui.ViewParameters;
 
 import omr.graph.BasicDigraph;
@@ -20,7 +19,6 @@ import omr.run.Orientation;
 import omr.run.Run;
 import omr.run.RunsTable;
 
-import omr.selection.GlyphEvent;
 import omr.selection.LagEvent;
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
@@ -86,9 +84,6 @@ public class BasicLag
 
     /** Hosted section service */
     protected final SelectionService lagService;
-
-    /** Scene service */
-    private SelectionService glyphService;
 
     //~ Constructors -----------------------------------------------------------
     //----------//
@@ -246,21 +241,21 @@ public class BasicLag
     }
 
     //---------------------------//
-    // lookupIntersectedSections //
+    // intersectedSections //
     //---------------------------//
     @Override
-    public Set<Section> lookupIntersectedSections (Rectangle rect)
+    public Set<Section> intersectedSections (Rectangle rect)
     {
         return Sections.lookupIntersectedSections(rect, getSections());
     }
 
-    //----------------//
-    // lookupSections //
-    //----------------//
+    //-------------------//
+    // containedSections //
+    //-------------------//
     @Override
-    public Set<Section> lookupSections (Rectangle rect)
+    public Set<Section> containedSections (Rectangle rect)
     {
-        return Sections.lookupSections(rect, getSections());
+        return Sections.containedSections(rect, getSections());
     }
 
     //---------//
@@ -379,20 +374,19 @@ public class BasicLag
     // setServices //
     //-------------//
     @Override
-    public void setServices (SelectionService locationService,
-                             SelectionService glyphService)
+    public void setServices (SelectionService locationService)
     {
         this.locationService = locationService;
-        this.glyphService = glyphService;
 
-        runsTable.setLocationService(locationService);
+        if (runsTable != null) {
+            runsTable.setLocationService(locationService);
+            for (Class<?> eventClass : runEventsRead) {
+                getRunService().subscribeStrongly(eventClass, this);
+            }
+        }
 
         for (Class<?> eventClass : locEventsRead) {
             locationService.subscribeStrongly(eventClass, this);
-        }
-
-        for (Class<?> eventClass : runEventsRead) {
-            getRunService().subscribeStrongly(eventClass, this);
         }
 
         for (Class<?> eventClass : sctEventsRead) {
@@ -406,14 +400,15 @@ public class BasicLag
     @Override
     public void cutServices ()
     {
-        runsTable.cutLocationService(locationService);
-
+        if (runsTable != null) {
+            runsTable.cutLocationService(locationService);
+            for (Class<?> eventClass : runEventsRead) {
+                getRunService().unsubscribe(eventClass, this);
+            }
+        }
+        
         for (Class<?> eventClass : locEventsRead) {
             locationService.unsubscribe(eventClass, this);
-        }
-
-        for (Class<?> eventClass : runEventsRead) {
-            getRunService().unsubscribe(eventClass, this);
         }
 
         for (Class<?> eventClass : sctEventsRead) {
@@ -432,11 +427,6 @@ public class BasicLag
         // Orientation
         sb.append(" ").append(orientation);
 
-        //        // Runs
-        //        if (runsTable != null) {
-        //            sb.append((" runs:"))
-        //              .append(runsTable.getRunCount());
-        //        }
         return sb.toString();
     }
 
@@ -470,7 +460,7 @@ public class BasicLag
             // Non-degenerated rectangle? 
             if ((rect.width > 0) && (rect.height > 0)) {
                 // Look for enclosed sections
-                Set<Section> sectionsFound = lookupSections(rect);
+                Set<Section> sectionsFound = containedSections(rect);
 
                 // Publish (first) Section found
                 Section section = sectionsFound.isEmpty() ? null

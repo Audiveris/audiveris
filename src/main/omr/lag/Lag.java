@@ -150,7 +150,7 @@ public interface Lag
      * @param rect the given rectangle
      * @return the set of lag sections intersected, which may be empty
      */
-    Set<Section> lookupIntersectedSections (Rectangle rect);
+    Set<Section> intersectedSections (Rectangle rect);
 
     /**
      * Lookup for lag sections that are <b>contained</b> in the
@@ -160,7 +160,7 @@ public interface Lag
      * @param rect the given rectangle
      * @return the set of lag sections contained, which may be empty
      */
-    Set<Section> lookupSections (Rectangle rect);
+    Set<Section> containedSections (Rectangle rect);
 
     /**
      * Purge the lag of all sections for which provided predicate holds.
@@ -181,8 +181,6 @@ public interface Lag
      * Inject dependency about other services for lag.
      *
      * @param locationService the location service to read & write
-     * @param glyphService    the glyph service to write
      */
-    void setServices (SelectionService locationService,
-                      SelectionService glyphService);
+    void setServices (SelectionService locationService);
 }

@@ -15,6 +15,7 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.Lag;
+import omr.lag.Lags;
 import omr.lag.Section;
 import omr.lag.Sections;
 
@@ -125,8 +126,8 @@ public class LagWeaver
     {
         this.sheet = sheet;
 
-        vLag = sheet.getVerticalLag();
-        hLag = sheet.getHorizontalLag();
+        vLag = sheet.getLag(Lags.VLAG);
+        hLag = sheet.getLag(Lags.HLAG);
     }
 
     //~ Methods ----------------------------------------------------------------

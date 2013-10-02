@@ -47,7 +47,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 /**
- * Class {@literal ShapeChecker} gathers additional specific shape checks,
+ * Class {@code ShapeChecker} gathers additional specific shape checks,
  * still working on symbols in isolation from other symbols, meant to
  * complement the work done by a shape evaluator.
  *

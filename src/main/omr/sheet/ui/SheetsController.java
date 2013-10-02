@@ -35,9 +35,10 @@ import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import omr.lag.Lag;
 
 /**
- * Class {@literal SheetsController} is the UI Controller in charge of
+ * Class {@code SheetsController} is the UI Controller in charge of
  * user interactions with the sheets.
  *
  * <p>Multiple sheets are handled by means of a tabbed pane. For each tab, and
@@ -186,19 +187,11 @@ public class SheetsController
 
         sheet.getLocationService().dumpSubscribers();
 
-        if (sheet.getHorizontalLag() != null) {
-            sheet.getHorizontalLag().getSectionService().dumpSubscribers();
-            sheet.getHorizontalLag().getRunService().dumpSubscribers();
-        }
-
-        if (sheet.getVerticalLag() != null) {
-            sheet.getVerticalLag().getSectionService().dumpSubscribers();
-            sheet.getVerticalLag().getRunService().dumpSubscribers();
-        }
-
-        if (sheet.getHorizontalFullLag() != null) {
-            sheet.getHorizontalFullLag().getSectionService().dumpSubscribers();
-            sheet.getHorizontalFullLag().getRunService().dumpSubscribers();
+        for (Lag lag : sheet.getAllLags()) {
+            if (lag != null) {
+                lag.getSectionService().dumpSubscribers();
+                lag.getRunService().dumpSubscribers();
+            }
         }
 
         if (sheet.getNest() != null) {

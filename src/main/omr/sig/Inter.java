@@ -14,6 +14,8 @@ package omr.sig;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.util.Vip;
+
 import java.awt.Rectangle;
 import java.util.Comparator;
 
@@ -23,7 +25,7 @@ import java.util.Comparator;
  * @author Hervé Bitteur
  */
 public interface Inter
-        extends VisitableInter
+        extends VisitableInter, Vip
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -55,6 +57,18 @@ public interface Inter
 
     //~ Methods ----------------------------------------------------------------
     /**
+     * Delete this instance, and remove it from its containing SIG.
+     */
+    void delete ();
+
+    /**
+     * Report a complete dump for this interpretation.
+     *
+     * @return a complete string dump
+     */
+    String dumpOf ();
+
+    /**
      * Report the bounding box for this interpretation.
      *
      * @return the bounding box
@@ -83,6 +97,13 @@ public interface Inter
     double getGrade ();
 
     /**
+     * Report the interpretation id (for debugging)
+     *
+     * @return the id or 0 if not yet identified
+     */
+    int getId ();
+
+    /**
      * Report the shape related to interpretation.
      *
      * @return the shape
@@ -95,6 +116,13 @@ public interface Inter
      * @return the containing sig
      */
     SIGraph getSig ();
+
+    /**
+     * Report whether this instance has been deleted.
+     *
+     * @return true if deleted
+     */
+    boolean isDeleted ();
 
     /**
      * Report whether the interpretation has a good grade.
@@ -126,6 +154,13 @@ public interface Inter
      * @param grade the grade to set
      */
     void setGrade (double grade);
+
+    /**
+     * Assign an id to the interpretation
+     *
+     * @param id the inter id
+     */
+    void setId (int id);
 
     /**
      * Assign the containing SIG

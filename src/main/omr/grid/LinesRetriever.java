@@ -23,6 +23,7 @@ import omr.glyph.facets.Glyph;
 import omr.lag.BasicLag;
 import omr.lag.JunctionRatioPolicy;
 import omr.lag.Lag;
+import omr.lag.Lags;
 import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
@@ -63,7 +64,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@literal LinesRetriever} retrieves the staff lines of a sheet.
+ * Class {@code LinesRetriever} retrieves the staff lines of a sheet.
  *
  * @author Hervé Bitteur
  */
@@ -154,7 +155,7 @@ public class LinesRetriever
     public RunsTable buildLag (RunsTable wholeVertTable,
                                boolean showRuns)
     {
-        hLag = new BasicLag("hLag", Orientation.HORIZONTAL);
+        hLag = new BasicLag(Lags.HLAG, Orientation.HORIZONTAL);
 
         // Create filament factory
         try {
@@ -229,7 +230,7 @@ public class LinesRetriever
                 new JunctionRatioPolicy());
         sectionsBuilder.createSections(longHoriTable, true);
 
-        sheet.setHorizontalLag(hLag);
+        sheet.setLag(Lags.HLAG, hLag);
 
         setVipSections();
 
@@ -944,7 +945,7 @@ public class LinesRetriever
         // -----------------------
         final Constant.String horizontalVipSections = new Constant.String(
                 "",
-                "(Debug) Comma-separated list of VIP sections");
+                "(Debug) Comma-separated list of VIP horizontal sections");
 
     }
 
@@ -952,7 +953,7 @@ public class LinesRetriever
     // Parameters //
     //------------//
     /**
-     * Class {@literal Parameters} gathers all pre-scaled constants
+     * Class {@code Parameters} gathers all pre-scaled constants
      * related to horizontal frames.
      */
     private static class Parameters

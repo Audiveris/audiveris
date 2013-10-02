@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@literal BasicRoi} implements an Roi
+ * Class {@code BasicRoi} implements an Roi
  *
  * @author Hervé Bitteur
  */

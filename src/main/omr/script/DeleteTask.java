@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
 /**
- * Class {@literal DeleteTask} deletes a set of (virtual) glyphs from the
+ * Class {@code DeleteTask} deletes a set of (virtual) glyphs from the
  * sheet environment
  *
  * @author Hervé Bitteur

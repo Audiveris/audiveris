@@ -14,6 +14,8 @@ package omr.sig;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.util.HorizontalSide;
+
 /**
  * Class {@code StemInter} represents instances of Stem
  * interpretations.
@@ -38,6 +40,14 @@ public class StemInter
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    public static double getMinGrade ()
+    {
+        return BasicInter.getMinGrade();
+    }
+
     //--------//
     // accept //
     //--------//
@@ -46,12 +56,47 @@ public class StemInter
     {
         visitor.visit(this);
     }
-    
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    public static double getMinGrade ()
+
+    //------------//
+    // lookupHead //
+    //------------//
+    /**
+     * Lookup a head connected to this stem, with proper head side and
+     * pitch values.
+     * Beware side is defined WRT head, not WRT stem.
+     *
+     * @param side  desired head side
+     * @param pitch desired pitch position
+     * @return the head instance if found, null otherwise
+     */
+    public Inter lookupHead (HorizontalSide side,
+                             int pitch)
     {
-        return BasicInter.getMinGrade();
-    }
+        for (Relation rel : sig.edgesOf(this)) {
+            if (rel instanceof HeadStemRelation) {
+                Inter head = sig.getEdgeSource(rel);
+
+                // Check side
+                HorizontalSide headSide = ((HeadStemRelation) rel).getHeadSide();
+
+                if (headSide != side) {
+                    continue;
+                }
+
+                // Check pitch
+                int headPitch = (head instanceof BlackHeadInter)
+                        ? ((BlackHeadInter) head).getPitch()
+                        : ((VoidHeadInter) head).getPitch();
+
+                if (headPitch != pitch) {
+                    continue;
+                }
+
+                // Got it!
+                return head;
+            }
+        }
+        
+        return null;
+    }    
 }

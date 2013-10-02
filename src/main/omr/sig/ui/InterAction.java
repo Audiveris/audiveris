@@ -75,10 +75,7 @@ public class InterAction
         this.inter = inter;
 
         Shape shape = inter.getShape();
-        putValue(
-                NAME,
-                (text != null) ? text
-                : String.format("%.2f %s", inter.getGrade(), shape));
+        putValue(NAME, (text != null) ? text : inter.toString());
         putValue(SMALL_ICON, shape.getDecoratedSymbol());
 
         final String details = inter.getDetails();

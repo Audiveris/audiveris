@@ -58,7 +58,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@literal NestView} is a view that combines the display of
+ * Class {@code NestView} is a view that combines the display of
  * several lags to represent a nest of glyphs.
  *
  * @author Hervé Bitteur

@@ -15,7 +15,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.Kernel;
-import java.awt.image.ConvolveOp;
 
 /**
  * A filter which applies a convolution kernel to an image.

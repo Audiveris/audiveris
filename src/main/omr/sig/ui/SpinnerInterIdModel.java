@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                    S p i n n e r G l y p h I d M o d e l                   //
+//                    S p i n n e r I n t e r I d M o d e l                   //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -9,11 +9,11 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.glyph.ui;
+package omr.sig.ui;
 
-import omr.glyph.Nest;
-import omr.glyph.facets.Glyph;
-import static omr.ui.field.SpinnerUtil.*;
+import omr.sig.Inter;
+import omr.sig.SigManager;
+import static omr.ui.field.SpinnerUtil.NO_VALUE;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,45 +21,45 @@ import org.slf4j.LoggerFactory;
 import javax.swing.AbstractSpinnerModel;
 
 /**
- * Class {@code SpinnerGlyphIdModel} is a simple spinner model backed
- * by a {@link Nest} and using natural glyph id sequence.
+ * Class {@code SpinnerInterIdModel} is a spinner model backed by a
+ * {@link SigManager} instance.
  *
  * @author Hervé Bitteur
  */
-public class SpinnerGlyphIdModel
+public class SpinnerInterIdModel
         extends AbstractSpinnerModel
 {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(
-            SpinnerGlyphIdModel.class);
+            SpinnerInterIdModel.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** Underlying glyph nest */
-    private final Nest nest;
+    /** Underlying SIG manager. */
+    private final SigManager sigManager;
 
-    /** Current glyph id */
+    /** Current inter id. */
     private int currentId = NO_VALUE;
 
     //~ Constructors -----------------------------------------------------------
     /**
-     * Creates a new SpinnerGlyphIdModel object.
+     * Creates a new SpinnerInterIdModel object.
      *
-     * @param nest the underlying glyph nest
+     * @param sigManager underlying SIG manager
      */
-    public SpinnerGlyphIdModel (Nest nest)
+    public SpinnerInterIdModel (SigManager sigManager)
     {
-        this.nest = nest;
+        this.sigManager = sigManager;
     }
 
     //~ Methods ----------------------------------------------------------------
     @Override
     public Object getNextValue ()
     {
-        Glyph glyph = nest.getGlyph(currentId + 1);
+        Inter inter = sigManager.getInter(currentId + 1);
 
-        if (glyph != null) {
-            return glyph.getId();
+        if (inter != null) {
+            return inter.getId();
         } else {
             return null;
         }
@@ -71,10 +71,10 @@ public class SpinnerGlyphIdModel
         if (currentId == NO_VALUE) {
             return NO_VALUE;
         } else {
-            Glyph glyph = nest.getGlyph(currentId - 1);
+            Inter inter = sigManager.getInter(currentId - 1);
 
-            if (glyph != null) {
-                return glyph.getId();
+            if (inter != null) {
+                return inter.getId();
             } else {
                 return null;
             }
@@ -96,9 +96,9 @@ public class SpinnerGlyphIdModel
         if (id == NO_VALUE) {
             ok = true;
         } else {
-            Glyph glyph = nest.getGlyph(id);
+            Inter inter = sigManager.getInter(id);
 
-            if (glyph != null) {
+            if (inter != null) {
                 ok = true;
             }
         }
@@ -107,7 +107,7 @@ public class SpinnerGlyphIdModel
             currentId = id;
             fireStateChanged();
         } else {
-            logger.warn("Invalid glyph id: {}", id);
+            logger.warn("Invalid inter id: {}", id);
         }
     }
 }

@@ -41,7 +41,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
 /**
- * Class {@literal InsertTask} inserts a set of (virtual) glyphs into the
+ * Class {@code InsertTask} inserts a set of (virtual) glyphs into the
  * sheet environment.
  *
  * @author Hervé Bitteur

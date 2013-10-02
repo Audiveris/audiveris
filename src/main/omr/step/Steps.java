@@ -49,6 +49,8 @@ public class Steps
 
     public static final String ANCHORS = "ANCHORS";
 
+    public static final String RESOLUTION = "RESOLUTION";
+
     public static final String TEXTS = "TEXTS";
 
     public static final String SYMBOLS = "SYMBOLS";
@@ -67,10 +69,10 @@ public class Steps
     public static final String PLUGIN = "PLUGIN";
 
     /** Ordered sequence of steps */
-    private static final List<Step> steps = new ArrayList<>();
+    private static final List<Step> steps = new ArrayList<Step>();
 
     /** Map of defined steps */
-    private static final Map<String, Step> stepMap = new HashMap<>();
+    private static final Map<String, Step> stepMap = new HashMap<String, Step>();
 
     static {
         // Mandatory steps in proper order
@@ -80,6 +82,7 @@ public class Steps
         addStep(new GridStep());
         addStep(new SystemsStep());
         addStep(new AnchorsStep());
+        addStep(new ResolutionStep());
         addStep(new TextsStep());
         addStep(new SymbolsStep());
         addStep(new MeasuresStep());
@@ -113,13 +116,9 @@ public class Steps
 
     //--------------------------------------------------------------------------
     /** First step */
-    public static final Step first = steps.iterator()
-            .next();
+    public static final Step FIRST_STEP = steps.get(0);
 
-    /** Last step */
-    public static final Step last = steps.listIterator(steps.size())
-            .previous();
-
+    //~ Constructors -----------------------------------------------------------
     //-------//
     // Steps // Not meant to be instantiated
     //-------//
@@ -220,6 +219,7 @@ public class Steps
             if (s == step) {
                 return prev;
             }
+
             prev = s;
         }
 
@@ -239,7 +239,7 @@ public class Steps
     static SortedSet<Step> range (Step left,
                                   Step right)
     {
-        List<Step> stepList = new ArrayList<>();
+        List<Step> stepList = new ArrayList<Step>();
         boolean started = false;
 
         for (Step step : steps) {
@@ -256,7 +256,7 @@ public class Steps
             }
         }
 
-        SortedSet<Step> sorted = new TreeSet<>(comparator);
+        SortedSet<Step> sorted = new TreeSet<Step>(comparator);
         sorted.addAll(stepList);
 
         return sorted;

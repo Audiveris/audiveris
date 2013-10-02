@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                         G l y p h P i l e E v e n t                        //
+//                           I n t e r I d E v e n t                          //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -11,44 +11,35 @@
 // </editor-fold>
 package omr.selection;
 
-import omr.glyph.Glyphs;
-import omr.glyph.facets.Glyph;
-
-import java.util.Set;
-
 /**
- * Class {@code GlyphPileEvent} represents a collection of overlapping
- * glyphs, one on top of the other.
+ * Class {@code InterIdEvent} represents an Inter Id selection.
  *
  * @author Hervé Bitteur
  */
-public class GlyphPileEvent
-        extends NestEvent
+public class InterIdEvent
+        extends UserEvent
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The selected pile of glyphs, which may be null. */
-    private final Set<Glyph> glyphs;
+    /** The selected glyph id, which may be null */
+    private final Integer id;
 
     //~ Constructors -----------------------------------------------------------
-    //---------------//
-    // GlyphPileEvent //
-    //---------------//
     /**
-     * Creates a new GlyphPileEvent object.
+     * Creates a new InterIdEvent object.
      *
      * @param source   the entity that created this event
      * @param hint     hint about event origin (or null)
-     * @param movement the user movement
-     * @param glyphs   the selected pile of glyph instances (or null)
+     * @param movement the precise mouse movement
+     * @param id       the glyph id
      */
-    public GlyphPileEvent (Object source,
-                           SelectionHint hint,
-                           MouseMovement movement,
-                           Set<Glyph> glyphs)
+    public InterIdEvent (Object source,
+                         SelectionHint hint,
+                         MouseMovement movement,
+                         Integer id)
     {
-        super(source, hint, movement);
-        this.glyphs = glyphs;
+        super(source, hint, null);
+        this.id = id;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -56,21 +47,8 @@ public class GlyphPileEvent
     // getData //
     //---------//
     @Override
-    public Set<Glyph> getData ()
+    public Integer getData ()
     {
-        return glyphs;
-    }
-
-    //----------------//
-    // internalString //
-    //----------------//
-    @Override
-    protected String internalString ()
-    {
-        if (glyphs != null) {
-            return Glyphs.toString(glyphs);
-        } else {
-            return "";
-        }
+        return id;
     }
 }

@@ -226,7 +226,7 @@ public class CheckSuite<C extends Checkable>
      */
     public double pass (C object)
     {
-        boolean debug = logger.isDebugEnabled() || object.isVip();
+        final boolean debug = logger.isDebugEnabled() || object.isVip();
         double grade = 0.0d;
         CheckResult result = new CheckResult();
         StringBuilder sb = null;

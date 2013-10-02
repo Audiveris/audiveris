@@ -41,12 +41,16 @@ import java.util.List;
  * and rotation (and to symmetry as well).
  * Shapes that exhibit some symmetry (like FERMATA vs FERMATA_BELOW) would
  * be considered as the same shape by the ART evaluator.
- * Therefore, the strategy is to define a single shape (FERMATA_SET) for the
+ * Therefore, the strategy is to define a single shape (FERMATA_set) for the
  * evaluator, leaving the final disambiguation between FERMATA_BELOW and
  * FERMATA to tests performed beyond the ART evaluator.
- * FERMATA_SET belongs to the physical shapes, while FERMATA_BELOW and
+ * FERMATA_set belongs to the physical shapes, while FERMATA_BELOW and
  * FERMATA belong to the logical shapes.
  * All shapes whose name ends with "_set" are in this case.</p>
+ *
+ * <p>TODO: Perhaps we could simply combine the ART moments and some of the GEO
+ * moments (at least n11, n12, n21), plus perhaps aspect, for a more
+ * comprehensive set of features but a simpler approach.
  *
  * <p>As far as possible, a symbol should be generated for every shape.</p>
  *
@@ -552,7 +556,7 @@ public enum Shape
      *
      * @return the related color, or null
      */
-    public java.awt.Color getColor ()
+    public Color getColor ()
     {
         return color;
     }
@@ -565,7 +569,7 @@ public enum Shape
      *
      * @param color the display color
      */
-    public void setColor (java.awt.Color color)
+    public void setColor (Color color)
     {
         this.color = color;
     }

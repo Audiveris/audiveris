@@ -258,6 +258,7 @@ public class BeamsBuilder
                 sig.addVertex(new BeamInter(glyph, grade, north, south));
             }
 
+            glyph.setShape(Shape.BEAM); // For visual check
             beams.add(glyph);
         }
 

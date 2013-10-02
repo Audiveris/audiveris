@@ -398,7 +398,7 @@ public class Scale
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{Scale");
+        sb.append("Scale");
 
         sb.append(" line: ")
                 .append(lineRange);
@@ -415,8 +415,6 @@ public class Scale
             sb.append(" secondInterline: ")
                     .append(secondInterlineRange);
         }
-
-        sb.append("}");
 
         return sb.toString();
     }

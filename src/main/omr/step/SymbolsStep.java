@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Iterator;
 
 /**
- * Class {@literal SymbolsStep} builds symbols glyphs and
+ * Class {@code SymbolsStep} builds symbols glyphs and
  * performs specific patterns at symbol level
  * (clefs, sharps, naturals, stems, slurs, etc).
  *

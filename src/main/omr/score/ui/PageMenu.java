@@ -46,7 +46,7 @@ import omr.sig.ui.InterMenu;
 import omr.sig.ui.GlyphMenu;
 
 /**
- * Class {@literal PageMenu} defines the popup menu which is linked to the
+ * Class {@code PageMenu} defines the popup menu which is linked to the
  * current selection in page editor view.
  * <p>It points to several sub-menus: measure, slot, chords, glyphs, boundaries
  * </p>

@@ -23,21 +23,35 @@ import omr.glyph.facets.Glyph;
 public class BlackHeadInter
         extends BasicInter
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
+    /** Pitch step. */
+    private final int pitch;
+
+    //~ Constructors -----------------------------------------------------------
     /**
      * Creates a new BlackHeadInter object.
      *
      * @param glyph the underlying glyph
      * @param grade the assignment quality
+     * @param pitch the note pitch
      */
     public BlackHeadInter (Glyph glyph,
-                           double grade)
+                           double grade, int pitch)
     {
         super(glyph, Shape.NOTEHEAD_BLACK, grade);
+        this.pitch = pitch;
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    public static double getMinGrade ()
+    {
+        return BasicInter.getMinGrade();
+    }
+
     //--------//
     // accept //
     //--------//
@@ -45,5 +59,16 @@ public class BlackHeadInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //----------//
+    // getPitch //
+    //----------//
+    /**
+     * @return the pitch
+     */
+    public int getPitch ()
+    {
+        return pitch;
     }
 }

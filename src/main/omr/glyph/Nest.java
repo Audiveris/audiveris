@@ -28,17 +28,21 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Class {@literal Nest} handles a collection of {@link Glyph} instances,
+ * Interface {@code Nest} handles a collection of {@link Glyph} instances,
  * with the ability to retrieve a Glyph based on its Id or its location,
  * and the ability to give birth to new glyph instances.
  *
  * <p>A nest has no orientation, nor any of its glyph instances since a glyph is
- * a
- * collection of sections that can be differently oriented.</p>
+ * a collection of sections that can be differently oriented.</p>
  *
  * <p>A glyph is made of member sections and always keeps a collection of its
  * member sections. Sections are made of runs of pixels and thus sections do not
- * overlap. Different glyph instances can have sections in common, and in that
+ * overlap.
+ *
+ * <p>TODO: Following paragraphs are obsolete, due to the advent of notion of
+ * layers.
+ *
+ * <p>Different glyph instances can have sections in common, and in that
  * case they overlap, however only one of these glyph instances is the current
  * "owner" of these common sections. It is known as being "active" while the
  * others are inactive.
@@ -79,8 +83,20 @@ public interface Nest
      *
      * @param glyph the glyph to add to the nest
      * @return the actual glyph (already existing or brand new)
+     * @see #registerGlyph
      */
     Glyph addGlyph (Glyph glyph);
+
+    /**
+     * Look up for <b>all</b> active glyph instances in the provided
+     * layer that are contained in a provided rectangle.
+     *
+     * @param rect  the coordinates rectangle
+     * @param layer the containing glyph layer
+     * @return the glyph instances found, which may be an empty list
+     */
+    Set<Glyph> containedGlyphs (Rectangle rect,
+                                GlyphLayer layer);
 
     /**
      * Remove link and subscription to locationService
@@ -148,7 +164,7 @@ public interface Nest
 
     /**
      * Return the original glyph, if any, that the provided glyph
-     * duplicates for the binary layer.
+     * duplicates in its layer.
      *
      * @param glyph the provided glyph
      * @return the original for this glyph, if any, otherwise null
@@ -157,7 +173,7 @@ public interface Nest
 
     /**
      * Return the original glyph, if any, that corresponds to the
-     * provided signature for the binary layer.
+     * provided signature for its layer.
      *
      * @param signature the provided signature
      * @return the original glyph for this signature, if any, otherwise null
@@ -166,7 +182,7 @@ public interface Nest
 
     /**
      * Return the original glyph, if any, that corresponds to the
-     * provided signature.
+     * provided signature for the provided layer.
      *
      * @param signature the provided signature
      * @param layer     the containing glyph layer
@@ -197,25 +213,6 @@ public interface Nest
     Set<Glyph> getSelectedGlyphSet ();
 
     /**
-     * Check whether the provided glyph is among the VIP ones
-     *
-     * @param glyph the glyph (ID) to check
-     * @return true if this is a vip glyph
-     */
-    boolean isVip (Glyph glyph);
-
-    /**
-     * Look up for <b>all</b> active glyph instances in the provided
-     * layer that are contained in a provided rectangle.
-     *
-     * @param rect  the coordinates rectangle
-     * @param layer the containing glyph layer
-     * @return the glyph instances found, which may be an empty list
-     */
-    Set<Glyph> containedGlyphs (Rectangle rect,
-                             GlyphLayer layer);
-
-    /**
      * Look up for <b>all</b> active glyph instances intersected by a
      * provided rectangle.
      *
@@ -224,7 +221,15 @@ public interface Nest
      * @return the glyph instances found, which may be an empty list
      */
     Set<Glyph> intersectedGlyphs (Rectangle rect,
-                                        GlyphLayer layer);
+                                  GlyphLayer layer);
+
+    /**
+     * Check whether the provided glyph is among the VIP ones
+     *
+     * @param glyph the glyph (ID) to check
+     * @return true if this is a vip glyph
+     */
+    boolean isVip (Glyph glyph);
 
     /**
      * Look for a glyph whose box contains the designated point
@@ -253,6 +258,7 @@ public interface Nest
      *
      * @param glyph the glyph to add to the nest
      * @return the actual glyph (already existing or brand new)
+     * @see #addGlyph
      */
     Glyph registerGlyph (Glyph glyph);
 

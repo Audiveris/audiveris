@@ -14,7 +14,7 @@ package omr.sig;
 
 /**
  * Interface {@code Exclusion} is a relation that indicates exclusion
- * between two possible interpretations (of the same glyph?).
+ * between two possible interpretations.
  *
  * @author Hervé Bitteur
  */
@@ -24,6 +24,7 @@ public interface Exclusion
     public enum Cause
     {
         OVERLAP,
-        TOO_CLOSE;
+        TOO_CLOSE,
+        INCOMPATIBLE;
     }
 }

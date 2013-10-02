@@ -349,14 +349,14 @@ public class LagTest
 
         Set<Section> founds = null;
 
-        founds = hLag.lookupIntersectedSections(new Rectangle(0, 0, 0, 0));
+        founds = hLag.intersectedSections(new Rectangle(0, 0, 0, 0));
         assertEquals("No section.", 0, founds.size());
 
-        founds = hLag.lookupIntersectedSections(
+        founds = hLag.intersectedSections(
             new Rectangle(100, 180, 1, 1));
         assertEquals("One section.", 1, founds.size());
 
-        founds = hLag.lookupIntersectedSections(
+        founds = hLag.intersectedSections(
             new Rectangle(0, 180, 200, 21));
         assertEquals("Two sections.", 2, founds.size());
     }
@@ -375,13 +375,13 @@ public class LagTest
 
         Set<Section> founds = null;
 
-        founds = hLag.lookupSections(new Rectangle(0, 0, 0, 0));
+        founds = hLag.containedSections(new Rectangle(0, 0, 0, 0));
         assertEquals("No section.", 0, founds.size());
 
-        founds = hLag.lookupSections(new Rectangle(100, 180, 21, 2));
+        founds = hLag.containedSections(new Rectangle(100, 180, 21, 2));
         assertEquals("One section.", 1, founds.size());
 
-        founds = hLag.lookupSections(new Rectangle(100, 180, 85, 23));
+        founds = hLag.containedSections(new Rectangle(100, 180, 85, 23));
         assertEquals("Two sections.", 2, founds.size());
     }
 
@@ -399,13 +399,13 @@ public class LagTest
 
         Set<Section> founds = null;
 
-        founds = vLag.lookupSections(new Rectangle(0, 0, 0, 0));
+        founds = vLag.containedSections(new Rectangle(0, 0, 0, 0));
         assertEquals("No section.", 0, founds.size());
 
-        founds = vLag.lookupSections(new Rectangle(180, 100, 2, 21));
+        founds = vLag.containedSections(new Rectangle(180, 100, 2, 21));
         assertEquals("One section.", 1, founds.size());
 
-        founds = vLag.lookupSections(new Rectangle(180, 100, 23, 85));
+        founds = vLag.containedSections(new Rectangle(180, 100, 23, 85));
         assertEquals("Two sections.", 2, founds.size());
     }
 

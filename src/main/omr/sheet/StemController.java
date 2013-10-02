@@ -35,7 +35,7 @@ import java.awt.Graphics2D;
 import java.util.Arrays;
 
 /**
- * Class {@literal StemController}
+ * Class {@code StemController}
  *
  * @author Hervé Bitteur
  */
@@ -77,8 +77,7 @@ public class StemController
 
         nest.setServices(sheet.getLocationService());
         lag.setServices(
-            sheet.getLocationService(),
-            getNest().getGlyphService());
+            sheet.getLocationService());
     }
 
     //~ Methods ----------------------------------------------------------------

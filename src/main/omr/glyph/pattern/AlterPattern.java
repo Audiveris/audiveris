@@ -40,7 +40,7 @@ import java.util.Set;
 import java.util.SortedSet;
 
 /**
- * Class {@literal AlterPattern} implements a pattern for alteration
+ * Class {@code AlterPattern} implements a pattern for alteration
  * glyphs which have been "oversegmented" into stem(s) + other stuff.
  * <p>This applies for sharp, natural and flat signs.
  * We use the fact that the stem(s) are rather short and, for the case of sharp

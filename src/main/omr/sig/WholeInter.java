@@ -23,8 +23,12 @@ import java.awt.Rectangle;
 public class WholeInter
         extends BasicInter
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
+    /** Pitch step. */
+    private final int pitch;
+
+    //~ Constructors -----------------------------------------------------------
     //------------//
     // WholeInter //
     //------------//
@@ -33,11 +37,14 @@ public class WholeInter
      *
      * @param box   the object bounds
      * @param grade the assignment quality
+     * @param pitch the note pitch
      */
     public WholeInter (Rectangle box,
-                       double grade)
+                       double grade,
+                       int pitch)
     {
         super(box, Shape.WHOLE_NOTE, grade);
+        this.pitch = pitch;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -48,5 +55,16 @@ public class WholeInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //----------//
+    // getPitch //
+    //----------//
+    /**
+     * @return the pitch
+     */
+    public int getPitch ()
+    {
+        return pitch;
     }
 }

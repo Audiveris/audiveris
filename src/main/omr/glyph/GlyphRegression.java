@@ -39,6 +39,8 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
+import static omr.glyph.AbstractEvaluationEngine.shapeCount;
+
 /**
  * Class {@code GlyphRegression} is a glyph evaluator that encapsulates
  * a {@link LinearEvaluator} working on glyph parameters.
@@ -540,16 +542,12 @@ public class GlyphRegression
         return BACKUP_FILE_NAME;
     }
 
-    //-------------------//
-    // getRawEvaluations //
-    //-------------------//
+    //-----------------------//
+    // getNaturalEvaluations //
+    //-----------------------//
     @Override
-    protected Evaluation[] getRawEvaluations (Glyph glyph)
+    protected Evaluation[] getNaturalEvaluations (Glyph glyph)
     {
-        // If too small, it's just NOISE
-        if (!isBigEnough(glyph)) {
-            return noiseEvaluations;
-        } else {
             double[] ins = ShapeDescription.features(glyph);
             Evaluation[] evals = new Evaluation[shapeCount];
             Shape[] values = Shape.values();
@@ -561,11 +559,7 @@ public class GlyphRegression
                         1d / measureDistance(ins, shape));
             }
 
-            // Order the evals from best to worst
-            Arrays.sort(evals);
-
             return evals;
-        }
     }
 
     //---------//

@@ -52,13 +52,15 @@ import net.jcip.annotations.NotThreadSafe;
 
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import omr.lag.Lags;
 
 /**
- * Class {@literal BarsChecker} is dedicated to physical checks of vertical
- * sticks that are candidates for barlines.
+ * Class {@code BarsChecker} is dedicated to physical checks of
+ * vertical sticks that are candidates for bar lines.
  *
  * @author Hervé Bitteur
  */
@@ -295,14 +297,12 @@ public class BarsChecker
         };
 
         int total = 0;
-        total += glyph.getAlienPixelsFrom(
-                sheet.getVerticalLag(),
-                absRoi,
-                predicate);
-        total += glyph.getAlienPixelsFrom(
-                sheet.getHorizontalLag(),
-                absRoi,
-                predicate);
+        for (String key : Arrays.asList(Lags.VLAG, Lags.HLAG)) {
+            total += glyph.getAlienPixelsFrom(
+                    sheet.getLag(key),
+                    absRoi,
+                    predicate);
+        }
 
         return total;
     }

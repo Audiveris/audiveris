@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -119,7 +120,7 @@ public class StaffInfo
     private GeoPath area;
 
     /** Map of ledgers nearby. */
-    private final Map<Integer, SortedSet<Glyph>> ledgerMap = new TreeMap<>();
+    private final SortedMap<Integer, SortedSet<Glyph>> ledgerMap = new TreeMap<>();
 
     /** Corresponding staff entity in the score hierarchy. */
     private Staff scoreStaff;
@@ -178,9 +179,7 @@ public class StaffInfo
     public void addLedger (Glyph ledger,
                            int index)
     {
-        if (ledger == null) {
-            throw new IllegalArgumentException("Cannot register a null ledger");
-        }
+        assert ledger != null : "Cannot add a null ledger";
 
         SortedSet<Glyph> ledgerSet = ledgerMap.get(index);
 
@@ -203,9 +202,7 @@ public class StaffInfo
      */
     public void addLedger (Glyph ledger)
     {
-        if (ledger == null) {
-            throw new IllegalArgumentException("Cannot register a null ledger");
-        }
+        assert ledger != null : "Cannot add a null ledger";
 
         addLedger(ledger,
                 getLedgerLineIndex(pitchPositionOf(ledger.getCentroid())));
@@ -222,9 +219,7 @@ public class StaffInfo
      */
     public boolean removeLedger (Glyph ledger)
     {
-        if (ledger == null) {
-            throw new IllegalArgumentException("Cannot remove a null ledger");
-        }
+        assert ledger != null : "Cannot remove a null ledger";
 
         // Browse all staff ledger indices
         for (SortedSet<Glyph> ledgerSet : ledgerMap.values()) {
@@ -599,7 +594,7 @@ public class StaffInfo
     //--------------//
     // getLedgerMap //
     //--------------//
-    public Map<Integer, SortedSet<Glyph>> getLedgerMap ()
+    public SortedMap<Integer, SortedSet<Glyph>> getLedgerMap ()
     {
         return ledgerMap;
     }
@@ -1005,9 +1000,22 @@ public class StaffInfo
         return sb.toString();
     }
 
+    //--------------//
+    // getLineCount //
+    //--------------//
+    /**
+     * Report the number of lines in this staff.
+     *
+     * @return the number of lines (6, 4, ...)
+     */
+    public int getLineCount ()
+    {
+        return lines.size();
+    }
     //---------------//
     // IndexedLedger //
     //---------------//
+
     /**
      * This combines the ledger glyph with the index relative to the
      * hosting staff.

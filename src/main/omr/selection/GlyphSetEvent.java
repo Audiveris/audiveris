@@ -17,7 +17,7 @@ import omr.glyph.facets.Glyph;
 import java.util.Set;
 
 /**
- * Class {@literal GlyphSetEvent} represents a Glyph Set selection.
+ * Class {@code GlyphSetEvent} represents a Glyph Set selection.
  *
  * @author Hervé Bitteur
  */

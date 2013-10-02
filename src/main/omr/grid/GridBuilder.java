@@ -34,7 +34,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * Class {@literal GridBuilder} computes the grid of systems of a sheet
+ * Class {@code GridBuilder} computes the grid of systems of a sheet
  * picture, based on the retrieval of horizontal staff lines and of
  * vertical bar lines.
  *
@@ -225,13 +225,13 @@ public class GridBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
-        Constant.Boolean showRuns = new Constant.Boolean(
-                false,
-                "Should we show view on runs?");
-
         Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
+
+        Constant.Boolean showRuns = new Constant.Boolean(
+                false,
+                "Should we show view on runs?");
 
         Constant.Boolean buildDewarpedTarget = new Constant.Boolean(
                 false,

@@ -36,7 +36,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@literal SymbolMenu} defines the menu which is linked to
+ * Class {@code SymbolMenu} defines the menu which is linked to
  * the current selection of one or several glyphs.
  *
  * @author Hervé Bitteur

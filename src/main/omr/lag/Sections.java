@@ -110,9 +110,9 @@ public class Sections
         return found;
     }
 
-    //----------------//
-    // lookupSections //
-    //----------------//
+    //-------------------//
+    // containedSections //
+    //-------------------//
     /**
      * Convenient method to look for sections contained by the provided
      * rectangle
@@ -121,8 +121,8 @@ public class Sections
      * @param sections the collection of sections to browse
      * @return the set of contained sections
      */
-    public static Set<Section> lookupSections (Rectangle rect,
-                                               Collection<? extends Section> sections)
+    public static Set<Section> containedSections (Rectangle rect,
+                                                  Collection<? extends Section> sections)
     {
         Set<Section> found = new LinkedHashSet<>();
 

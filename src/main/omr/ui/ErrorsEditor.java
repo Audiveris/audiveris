@@ -45,7 +45,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * Class {@literal ErrorsEditor} handles the set of error messages
+ * Class {@code ErrorsEditor} handles the set of error messages
  * recorded during the translation from sheet to score, allowing the
  * user to interactively browse the errors and go to the related
  * location in the sheet view.

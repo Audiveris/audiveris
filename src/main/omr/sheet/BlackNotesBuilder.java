@@ -16,7 +16,9 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Evaluation;
 import omr.glyph.GlyphLayer;
+import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.GlyphsBuilder;
 import omr.glyph.Nest;
@@ -39,6 +41,7 @@ import omr.image.WatershedGrayLevel;
 import omr.lag.BasicLag;
 import omr.lag.JunctionAllPolicy;
 import omr.lag.Lag;
+import omr.lag.Lags;
 import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
@@ -67,7 +70,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@literal BlackNotesBuilder} is in charge, at system level, of
+ * Class {@code BlackNotesBuilder} is in charge, at system level, of
  * retrieving the possible interpretations of black heads.
  * <p>
  * The main difficulty is the need to split large spots that were created during
@@ -109,6 +112,9 @@ public class BlackNotesBuilder
     @Navigable(false)
     private final Scale scale;
 
+    /** Shape classifier. */
+    private final GlyphNetwork classifier;
+
     /** Scale-dependent constants. */
     private final Parameters params;
 
@@ -132,6 +138,7 @@ public class BlackNotesBuilder
         sheet = system.getSheet();
         nest = sheet.getNest();
         scale = sheet.getScale();
+        classifier = GlyphNetwork.getInstance();
         params = new Parameters(scale);
 
         if ((system.getId() == 1) && constants.printParameters.isSet()) {
@@ -210,7 +217,7 @@ public class BlackNotesBuilder
             BlackHeadInter inter = checkSingleHead(glyph);
 
             if (inter != null) {
-                glyph.setShape(Shape.NOTEHEAD_BLACK); // Useful?
+                glyph.setShape(Shape.NOTEHEAD_BLACK); // For visual check
                 headNb++;
                 totalWeight += glyph.getWeight();
             }
@@ -250,6 +257,12 @@ public class BlackNotesBuilder
             return null;
         }
 
+        // Check for a suitable head shape (using classifier)
+        Evaluation eval = classifier.evaluateAs(
+                glyph,
+                Shape.NOTEHEAD_BLACK);
+        double shapeImpact = eval.grade / 100; // Since eval is in range 0..100
+
         // Pitch position for single-head spots
         final Point centroid = glyph.getCentroid();
         final StaffInfo staff = system.getStaffAt(centroid);
@@ -257,8 +270,8 @@ public class BlackNotesBuilder
         final double pitchPosition = pos.getPitchPosition();
         logger.debug("Head#{} {}", glyph.getId(), pos);
 
-        // Notes outside staves need a ledger
-        if (Math.abs(pitchPosition) > 5.5) {
+        // Notes outside staves need a ledger nearby
+        if (Math.abs(pitchPosition) >= (0.5 + staff.getLineCount())) {
             // Nearby ledger, if any
             IndexedLedger ledger = pos.getLedger();
 
@@ -273,24 +286,46 @@ public class BlackNotesBuilder
             }
         }
 
-        // Check for a suitable head shape
-        // TODO
-
         // Check vertical distance to staff line or ledger
-        // TODO
+        final int pitch = (int) Math.rint(pitchPosition);
+        final double pitchOffset = Math.abs(pitchPosition - pitch);
 
-        // OK!
-        double grade = 0.5; // To be refined!
+        if (logger.isDebugEnabled()) {
+            logger.debug(
+                    "Glyph#{} pitch: {} offset: {}",
+                    glyph.getId(),
+                    String.format("%5.2f", pitchPosition),
+                    String.format("%.2f", pitchOffset));
+        }
 
-        BlackHeadInter inter = new BlackHeadInter(glyph, grade);
-        Rectangle box = headTemplate.getBoxAt(
-                centroid.x,
-                centroid.y,
-                Template.Anchor.CENTER);
-        inter.setBounds(box);
-        sig.addVertex(inter);
+        double pitchImpact = Math.max(
+                0,
+                1.0 - (pitchOffset / params.maxPitchOffset));
 
-        return inter;
+        final double grade = (shapeImpact + pitchImpact) / 2;
+
+        if (grade >= BlackHeadInter.getMinGrade()) {
+            BlackHeadInter inter = new BlackHeadInter(glyph, grade, pitch);
+            Rectangle box = headTemplate.getBoxAt(
+                    centroid.x,
+                    centroid.y,
+                    Template.Anchor.CENTER);
+            inter.setBounds(box);
+            sig.addVertex(inter);
+
+            return inter;
+        } else {
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "Too weak black head#{} grade: {} shape: {} pitch: {}",
+                        glyph.getId(),
+                        String.format("%.3f", grade),
+                        String.format("%.2f", shapeImpact),
+                        String.format("%.2f", pitchImpact));
+            }
+
+            return null;
+        }
     }
 
     //---------------//
@@ -344,7 +379,18 @@ public class BlackNotesBuilder
             List<Glyph> newGlyphs = new ArrayList<Glyph>(glyphs.size());
 
             for (Glyph glyph : glyphs) {
-                newGlyphs.add(system.addGlyphAndMembers(glyph));
+                Glyph newGlyph = system.addGlyphAndMembers(glyph);
+
+                if (newGlyph != glyph) {
+                    logger.debug("Reuse old beamSpot {}", newGlyph);
+
+                    // Get rid of headSpot sections which would hide display
+                    for (Section section : glyph.getMembers()) {
+                        section.delete();
+                    }
+                }
+
+                newGlyphs.add(newGlyph);
             }
 
             glyphs = newGlyphs;
@@ -365,11 +411,10 @@ public class BlackNotesBuilder
      */
     private List<Glyph> getHeadSpots (Set<Glyph> beamSpots)
     {
-        final Lag headLag = sheet.getHeadLag();
+        final Lag headLag = sheet.getLag(Lags.HEAD_LAG);
         final List<Glyph> headSpots = new ArrayList<Glyph>();
         final int[] offset = {0, 0};
-        final int interline = scale.getInterline();
-        final float radius = (interline - 3) / 2f; // => head focus
+        final float radius = (float) (params.circleDiameter - 1) / 2;
         final StructureElement se = new StructureElement(0, 1, radius, offset);
         logger.debug(
                 "S#{} heads retrieval, radius: {}",
@@ -377,6 +422,10 @@ public class BlackNotesBuilder
                 radius);
 
         for (Glyph glyph : beamSpots) {
+            if (glyph.isVip()) {
+                logger.info("Bingo getHeadSpots {}", glyph);
+            }
+
             MorphoProcessor mp = new MorphoProcessor(se);
             PixelBuffer img = glyph.getImage();
             mp.close(img);
@@ -388,6 +437,10 @@ public class BlackNotesBuilder
             for (Glyph g : glyphs) {
                 g.setShape(Shape.HEAD_SPOT);
                 headSpots.add(g);
+
+                if (glyph.isVip()) {
+                    g.setVip();
+                }
             }
         }
 
@@ -520,7 +573,11 @@ public class BlackNotesBuilder
         }
 
         // Retrieve all glyphs out of the global buffer
-        return extractGlyphs(globalBuf, globalOrg, sheet.getSplitLag(), nest);
+        return extractGlyphs(
+                globalBuf,
+                globalOrg,
+                sheet.getLag(Lags.SPLIT_LAG),
+                nest);
     }
 
     //-------//
@@ -728,12 +785,16 @@ public class BlackNotesBuilder
                 "Should we print out the class parameters?");
 
         final Scale.AreaFraction minHeadWeight = new Scale.AreaFraction(
-                0.8,
+                0.75,
                 "Minimum weight for a black head");
 
         final Scale.AreaFraction typicalWeight = new Scale.AreaFraction(
                 1.33,
                 "Typical weight for a black head");
+
+        final Scale.Fraction circleDiameter = new Scale.Fraction(
+                0.75,
+                "Diameter of circle used to close note heads");
 
         final Scale.Fraction minMeanWidth = new Scale.Fraction(
                 1.0,
@@ -748,17 +809,24 @@ public class BlackNotesBuilder
                 0.2,
                 "Maximum vertical slope to use a direct split");
 
+        final Constant.Double maxPitchOffset = new Constant.Double(
+                "pitch",
+                0.25,
+                "Maximum offset from round pitch");
+
     }
 
     //------------//
     // Parameters //
     //------------//
     /**
-     * Class {@literal Parameters} gathers all pre-scaled constants.
+     * Class {@code Parameters} gathers all pre-scaled constants.
      */
     private static class Parameters
     {
         //~ Instance fields ----------------------------------------------------
+
+        final double circleDiameter;
 
         final int minHeadWeight;
 
@@ -770,6 +838,8 @@ public class BlackNotesBuilder
 
         final double maxSlopeForDirectSplit;
 
+        final double maxPitchOffset;
+
         //~ Constructors -------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -778,11 +848,13 @@ public class BlackNotesBuilder
          */
         public Parameters (Scale scale)
         {
+            circleDiameter = scale.toPixelsDouble(constants.circleDiameter);
             minHeadWeight = scale.toPixels(constants.minHeadWeight);
             typicalWeight = scale.toPixels(constants.typicalWeight);
             minMeanWidth = scale.toPixels(constants.minMeanWidth);
             maxSpotWidth = scale.toPixels(constants.maxSpotWidth);
             maxSlopeForDirectSplit = constants.maxSlopeForDirectSplit.getValue();
+            maxPitchOffset = constants.maxPitchOffset.getValue();
 
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);

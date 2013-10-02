@@ -36,7 +36,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@literal LineCluster} is meant to aggregate instances of
+ * Class {@code LineCluster} is meant to aggregate instances of
  * {@link Filament} that are linked by {@link FilamentComb} instances
  * and thus a cluster represents a staff candidate.
  *

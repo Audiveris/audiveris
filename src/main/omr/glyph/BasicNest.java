@@ -59,7 +59,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Class {@literal BasicNest} implements a {@link Nest}.
+ * Class {@code BasicNest} implements a {@link Nest}.
  *
  * @author Hervé Bitteur
  */
@@ -792,7 +792,7 @@ public class BasicNest
     // Parameters //
     //------------//
     /**
-     * Class {@literal Parameters} gathers all constants related to nest
+     * Class {@code Parameters} gathers all constants related to nest
      */
     private static class Parameters
     {
@@ -995,9 +995,8 @@ public class BasicNest
 
                         if (oldGlyph != null) {
                             logger.debug(
-                                    "Updating registration of {} oldGlyph:{}",
-                                    glyph.idString(),
-                                    oldGlyph.getId());
+                                    "Updating registration of glyph#{}",
+                                    glyph.getId());
                         }
                     }
                 }

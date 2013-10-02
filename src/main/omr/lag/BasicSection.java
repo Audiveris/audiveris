@@ -61,7 +61,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import omr.glyph.GlyphLayer;
 
 /**
- * Class {@literal BasicSection} is a basic implementation of {@link 
+ * Class {@code BasicSection} is a basic implementation of {@link 
  * Section}.
  *
  * @author Hervé Bitteur

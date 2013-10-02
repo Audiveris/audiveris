@@ -14,13 +14,12 @@ package omr.image;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.image.MedianGrayFilter;
-import omr.image.PixelSource;
-
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
 import omr.selection.SelectionService;
+
+import omr.sheet.Sheet;
 
 import omr.util.StopWatch;
 
@@ -76,6 +75,9 @@ public class Picture
 
     //~ Instance fields --------------------------------------------------------
     //
+    /** Related sheet. */
+    private final Sheet sheet;
+
     /** Dimension of current image. */
     private Dimension dimension;
 
@@ -102,14 +104,17 @@ public class Picture
     /**
      * Build a picture instance from a given image.
      *
+     * @param sheet        the related sheet
      * @param image        the provided image
      * @param levelService service where pixel events are to be written
      * @throws ImageFormatException
      */
-    public Picture (BufferedImage image,
+    public Picture (Sheet sheet,
+                    BufferedImage image,
                     SelectionService levelService)
             throws ImageFormatException
     {
+        this.sheet = sheet;
         this.levelService = levelService;
 
         // Make sure format, colors, etc are OK for us
@@ -130,45 +135,20 @@ public class Picture
     }
 
     //~ Methods ----------------------------------------------------------------
-    //--------//
-    // invert //
-    //--------//
-    public static BufferedImage invert (BufferedImage image)
+    //-----------//
+    // printInfo //
+    //-----------//
+    public static void printInfo (BufferedImage img,
+                                  String title)
     {
-        return JAI.create(
-                "Invert",
-                new ParameterBlock().addSource(image).add(null),
-                null)
-                .getAsBufferedImage();
-    }
-
-    //----------//
-    // getPixel //
-    //----------//
-    /**
-     * Report the pixel element read at location (x, y) in the picture.
-     *
-     * @param x abscissa value
-     * @param y ordinate value
-     * @return the pixel value
-     */
-    @Override
-    public final int getPixel (int x,
-                               int y)
-    {
-        // Safer
-        if (raster == null) {
-            return 0;
-        }
-
-        int[] pixel = raster.getPixel(x, y, (int[]) null); // Allocates pixel!
-
-        if (grayFactor == 1) {
-            // Speed up the normal case
-            return pixel[0];
-        } else {
-            return (grayFactor / 2) + (grayFactor * pixel[0]);
-        }
+        int type = img.getType();
+        ColorModel colorModel = img.getColorModel();
+        logger.info(
+                "{} type={}:{} {}",
+                (title != null) ? title : "",
+                type,
+                typeOf(type),
+                colorModel);
     }
 
     //---------//
@@ -303,6 +283,35 @@ public class Picture
     }
 
     //----------//
+    // getPixel //
+    //----------//
+    /**
+     * Report the pixel element read at location (x, y) in the picture.
+     *
+     * @param x abscissa value
+     * @param y ordinate value
+     * @return the pixel value
+     */
+    @Override
+    public final int getPixel (int x,
+                               int y)
+    {
+        // Safer
+        if (raster == null) {
+            return 0;
+        }
+
+        int[] pixel = raster.getPixel(x, y, (int[]) null); // Allocates pixel!
+
+        if (grayFactor == 1) {
+            // Speed up the normal case
+            return pixel[0];
+        } else {
+            return (grayFactor / 2) + (grayFactor * pixel[0]);
+        }
+    }
+
+    //----------//
     // getWidth //
     //----------//
     /**
@@ -315,6 +324,18 @@ public class Picture
     public int getWidth ()
     {
         return dimension.width;
+    }
+
+    //--------//
+    // invert //
+    //--------//
+    public static BufferedImage invert (BufferedImage image)
+    {
+        return JAI.create(
+                "Invert",
+                new ParameterBlock().addSource(image).add(null),
+                null)
+                .getAsBufferedImage();
     }
 
     //---------//
@@ -363,22 +384,6 @@ public class Picture
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
-    }
-
-    //-----------//
-    // printInfo //
-    //-----------//
-    public static void printInfo (BufferedImage img,
-                                  String title)
-    {
-        int type = img.getType();
-        ColorModel colorModel = img.getColorModel();
-        logger.info(
-                "{} type={}:{} {}",
-                (title != null) ? title : "",
-                type,
-                typeOf(type),
-                colorModel);
     }
 
     //--------//
@@ -462,59 +467,6 @@ public class Picture
                     new ParameterBlock().addSource(image).add(matrix),
                     null)
                     .getAsBufferedImage();
-        }
-    }
-
-    //--------//
-    // typeOf //
-    //--------//
-    private static String typeOf (int type)
-    {
-        switch (type) {
-        case BufferedImage.TYPE_CUSTOM:
-            return "TYPE_CUSTOM";
-
-        case BufferedImage.TYPE_INT_RGB:
-            return "TYPE_INT_RGB";
-
-        case BufferedImage.TYPE_INT_ARGB:
-            return "TYPE_INT_ARGB";
-
-        case BufferedImage.TYPE_INT_ARGB_PRE:
-            return "TYPE_INT_ARGB_PRE";
-
-        case BufferedImage.TYPE_INT_BGR:
-            return "TYPE_INT_BGR";
-
-        case BufferedImage.TYPE_3BYTE_BGR:
-            return "TYPE_3BYTE_BGR";
-
-        case BufferedImage.TYPE_4BYTE_ABGR:
-            return "TYPE_4BYTE_ABGR";
-
-        case BufferedImage.TYPE_4BYTE_ABGR_PRE:
-            return "TYPE_4BYTE_ABGR_PRE";
-
-        case BufferedImage.TYPE_USHORT_565_RGB:
-            return "TYPE_USHORT_565_RGB";
-
-        case BufferedImage.TYPE_USHORT_555_RGB:
-            return "TYPE_USHORT_555_RGB";
-
-        case BufferedImage.TYPE_BYTE_GRAY:
-            return "TYPE_BYTE_GRAY";
-
-        case BufferedImage.TYPE_USHORT_GRAY:
-            return "TYPE_USHORT_GRAY";
-
-        case BufferedImage.TYPE_BYTE_BINARY:
-            return "TYPE_BYTE_BINARY";
-
-        case BufferedImage.TYPE_BYTE_INDEXED:
-            return "TYPE_BYTE_INDEXED";
-
-        default:
-            return "?";
         }
     }
 
@@ -604,41 +556,93 @@ public class Picture
      */
     private BufferedImage filterImage (BufferedImage img)
     {
-        if (img.getType() != BufferedImage.TYPE_BYTE_GRAY) {
-            return img; // No filtering
-            //            StopWatch watch = new StopWatch("Gaussian filter");
-            //
-            //            try {
-            //                watch.start("Image " + img.getWidth() + "x" + img.getHeight());
-            //
-            //                final int radius = constants.filterRadius.getValue();
-            //                logger.info(
-            //                        "Image blurred with gaussian kernel radius {}",
-            //                        radius);
-            //
-            //                GaussianFilter gaussianFilter = new GaussianFilter(radius);
-            //
-            //                return gaussianFilter.filter(img, null);
-            //            } finally {
-            //                watch.print();
-            //            }
-        } else {
-            StopWatch watch = new StopWatch("Median filter");
+        StopWatch watch = new StopWatch("Image filter");
 
-            try {
-                watch.start("Image " + img.getWidth() + "x" + img.getHeight());
+        try {
+            if (img.getType() != BufferedImage.TYPE_BYTE_GRAY) {
+                //return img; // No filtering
+                watch.start(
+                        "Gaussian " + img.getWidth() + "x" + img.getHeight());
 
                 final int radius = constants.filterRadius.getValue();
                 logger.info(
-                        "Image filtered with median kernel radius {}",
+                        "{}Image blurred with gaussian kernel radius: {}",
+                        sheet.getLogPrefix(),
+                        radius);
+
+                GaussianFilter gaussianFilter = new GaussianFilter(radius);
+
+                return gaussianFilter.filter(img, null);
+            } else {
+                watch.start("Median " + img.getWidth() + "x" + img.getHeight());
+
+                final int radius = constants.filterRadius.getValue();
+                logger.info(
+                        "{}Image filtered with median kernel radius: {}",
+                        sheet.getLogPrefix(),
                         radius);
 
                 MedianGrayFilter medianFilter = new MedianGrayFilter(radius);
 
                 return medianFilter.filter(img);
-            } finally {
+            }
+        } finally {
+            if (constants.printWatch.isSet()) {
                 watch.print();
             }
+        }
+    }
+
+    //--------//
+    // typeOf //
+    //--------//
+    private static String typeOf (int type)
+    {
+        switch (type) {
+        case BufferedImage.TYPE_CUSTOM:
+            return "TYPE_CUSTOM";
+
+        case BufferedImage.TYPE_INT_RGB:
+            return "TYPE_INT_RGB";
+
+        case BufferedImage.TYPE_INT_ARGB:
+            return "TYPE_INT_ARGB";
+
+        case BufferedImage.TYPE_INT_ARGB_PRE:
+            return "TYPE_INT_ARGB_PRE";
+
+        case BufferedImage.TYPE_INT_BGR:
+            return "TYPE_INT_BGR";
+
+        case BufferedImage.TYPE_3BYTE_BGR:
+            return "TYPE_3BYTE_BGR";
+
+        case BufferedImage.TYPE_4BYTE_ABGR:
+            return "TYPE_4BYTE_ABGR";
+
+        case BufferedImage.TYPE_4BYTE_ABGR_PRE:
+            return "TYPE_4BYTE_ABGR_PRE";
+
+        case BufferedImage.TYPE_USHORT_565_RGB:
+            return "TYPE_USHORT_565_RGB";
+
+        case BufferedImage.TYPE_USHORT_555_RGB:
+            return "TYPE_USHORT_555_RGB";
+
+        case BufferedImage.TYPE_BYTE_GRAY:
+            return "TYPE_BYTE_GRAY";
+
+        case BufferedImage.TYPE_USHORT_GRAY:
+            return "TYPE_USHORT_GRAY";
+
+        case BufferedImage.TYPE_BYTE_BINARY:
+            return "TYPE_BYTE_BINARY";
+
+        case BufferedImage.TYPE_BYTE_INDEXED:
+            return "TYPE_BYTE_INDEXED";
+
+        default:
+            return "?";
         }
     }
 
@@ -650,6 +654,10 @@ public class Picture
             extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
+
+        Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
         Constant.Boolean useMaxChannelInColorToGray = new Constant.Boolean(
                 true,

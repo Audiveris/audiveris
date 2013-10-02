@@ -73,6 +73,14 @@ public class InterMenu
     }
 
     //~ Methods ----------------------------------------------------------------
+    //---------//
+    // getMenu //
+    //---------//
+    public JMenu getMenu ()
+    {
+        return menu;
+    }
+
     //------------//
     // updateMenu //
     //------------//
@@ -82,7 +90,7 @@ public class InterMenu
         // is brand new. 
         menu.removeAll();
 
-        if (!inters.isEmpty()) {
+        if ((inters != null) && !inters.isEmpty()) {
             UIUtil.insertTitle(menu, "Interpretations:");
 
             for (Inter inter : inters) {
@@ -101,17 +109,11 @@ public class InterMenu
                     menu.add(relMenu);
                 }
             }
+
+            return inters.size();
         }
 
-        return inters.size();
-    }
-
-    //---------//
-    // getMenu //
-    //---------//
-    public JMenu getMenu ()
-    {
-        return menu;
+        return 0;
     }
 
     //~ Inner Classes ----------------------------------------------------------
