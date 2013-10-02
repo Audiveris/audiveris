@@ -16,6 +16,9 @@ import omr.glyph.facets.Glyph;
 
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
+import java.util.EnumMap;
+import java.util.Map;
+import omr.util.VerticalSide;
 
 /**
  * Class {@code BeamInter} represents a beam interpretation.
@@ -26,12 +29,9 @@ public class BeamInter
         extends BasicInter
 {
     //~ Instance fields --------------------------------------------------------
-
-    /** North border. */
-    private final Line2D north;
-
-    /** South border. */
-    private final Line2D south;
+    
+    /** Top and bottom borders. */
+    private final Map<VerticalSide, Line2D> borders = new EnumMap<VerticalSide,Line2D>(VerticalSide.class);
 
     /** Beam path, meant for drawing. */
     private final Path2D path;
@@ -52,8 +52,8 @@ public class BeamInter
     {
         super(glyph, Shape.BEAM, grade);
 
-        this.north = north;
-        this.south = south;
+        borders.put(VerticalSide.TOP, north);
+        borders.put(VerticalSide.BOTTOM, south);
 
         // Build drawing path
         path = new Path2D.Double();
@@ -82,7 +82,7 @@ public class BeamInter
      */
     public Line2D getNorth ()
     {
-        return north;
+        return borders.get(VerticalSide.TOP);
     }
 
     //---------//
@@ -98,6 +98,19 @@ public class BeamInter
      */
     public Line2D getSouth ()
     {
-        return south;
+        return borders.get(VerticalSide.BOTTOM);
+    }
+    
+    //-----------//
+    // getBorder //
+    //-----------//
+    /**
+     * Report the border on desired side
+     * @param side the desired side
+     * @return the border on this side
+     */
+    public Line2D getBorder(VerticalSide side)
+    {
+        return borders.get(side);
     }
 }

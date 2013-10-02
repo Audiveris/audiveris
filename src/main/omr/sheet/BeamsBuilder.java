@@ -243,18 +243,25 @@ public class BeamsBuilder
             for (int i = 0; i < topCount; i++) {
                 BasicLine top = borders.get(VerticalSide.TOP)
                         .get(i);
-                Line2D north = new Line2D.Double(
-                        top.getMinAbscissa(),
-                        top.yAtX(top.getMinAbscissa()),
-                        top.getMaxAbscissa(),
-                        top.yAtX(top.getMaxAbscissa()));
                 BasicLine bottom = borders.get(VerticalSide.BOTTOM)
                         .get(i);
+                double xMin = Math.min(
+                        top.getMinAbscissa(),
+                        bottom.getMinAbscissa());
+                double xMax = Math.max(
+                        top.getMaxAbscissa(),
+                        bottom.getMaxAbscissa());
+
+                Line2D north = new Line2D.Double(
+                        xMin,
+                        top.yAtX(xMin),
+                        xMax,
+                        top.yAtX(xMax));
                 Line2D south = new Line2D.Double(
-                        bottom.getMinAbscissa(),
-                        bottom.yAtX(bottom.getMinAbscissa()),
-                        bottom.getMaxAbscissa(),
-                        bottom.yAtX(bottom.getMaxAbscissa()));
+                        xMin,
+                        bottom.yAtX(xMin),
+                        xMax,
+                        bottom.yAtX(xMax));
                 sig.addVertex(new BeamInter(glyph, grade, north, south));
             }
 
