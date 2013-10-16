@@ -72,8 +72,8 @@ public class PictureLoader
     // loadFile //
     //----------//
     /**
-     * Loads a sequence of RenderedImage instances from a file.
-     *
+     * Loads a sequence of BufferedImage instances from a file.
+     * <p>
      * If ImageIO can read the file, it is used preferentially.
      * If not, or if ImageIO has an error, a PDF loader is used for files
      * ending with ".pdf" and JAI is used for all other files.

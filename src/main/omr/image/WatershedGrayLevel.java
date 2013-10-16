@@ -248,9 +248,9 @@ public class WatershedGrayLevel
     /**
      * Find a seed ( = unassigned pixel ) at the specified level.
      *
-     * @param level
-     * @param yoffset
-     * @return
+     * @param level the specified level
+     * @param yoffset offset on ordinate
+     * @return the first seed found, or null
      */
     private Pixel findSeed (int level,
                             int yoffset)

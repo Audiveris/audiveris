@@ -324,13 +324,13 @@ public class SIGraph
     {
         return inters(
                 new Predicate<Inter>()
-        {
-            @Override
-            public boolean check (Inter inter)
-            {
-                return inter.getShape() == shape;
-            }
-        });
+                {
+                    @Override
+                    public boolean check (Inter inter)
+                    {
+                        return inter.getShape() == shape;
+                    }
+                });
     }
 
     //--------//
@@ -346,13 +346,13 @@ public class SIGraph
     {
         return inters(
                 new Predicate<Inter>()
-        {
-            @Override
-            public boolean check (Inter inter)
-            {
-                return shapes.contains(inter.getShape());
-            }
-        });
+                {
+                    @Override
+                    public boolean check (Inter inter)
+                    {
+                        return shapes.contains(inter.getShape());
+                    }
+                });
     }
 
     //-------------------//
@@ -443,6 +443,10 @@ public class SIGraph
         int yMax = (box.y + box.height) - 1;
 
         for (Inter inter : inters) {
+            if (inter.isDeleted()) {
+                continue;
+            }
+
             Rectangle iBox = inter.getBounds();
 
             if (box.intersects(iBox)) {
@@ -480,14 +484,34 @@ public class SIGraph
         double yMax = bounds.getMaxY();
 
         for (Inter inter : inters) {
+            if (inter.isDeleted()) {
+                continue;
+            }
+
             Rectangle iBox = inter.getBounds();
 
             if (area.intersects(iBox)) {
                 found.add(inter);
-            } else if ((order == BY_ABSCISSA) && (iBox.x > xMax)) {
-                break;
-            } else if ((order == BY_ORDINATE) && (iBox.y > yMax)) {
-                break;
+            } else {
+                switch (order) {
+                case BY_ABSCISSA:
+
+                    if (iBox.x > xMax) {
+                        return found;
+                    }
+
+                    break;
+
+                case BY_ORDINATE:
+
+                    if (iBox.y > yMax) {
+                        return found;
+                    }
+
+                    break;
+
+                case NONE:
+                }
             }
         }
 

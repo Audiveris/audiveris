@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                         C h a m f e r M a t c h i n g                      //
+//                       D i s t a n c e M a t c h i n g                      //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -15,12 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code ChamferMatching} is a basic implementation of image
- * matching based on chamfer distances.
+ * Class {@code DistanceMatching} is a basic implementation of image
+ * matching based on distances.
  *
  * @author Hervé Bitteur
  */
-public class ChamferMatching
+public class DistanceMatching
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -33,15 +33,15 @@ public class ChamferMatching
 
     //~ Constructors -----------------------------------------------------------
     //-----------------//
-    // ChamferMatching //
+    // DistanceMatching //
     //-----------------//
     /**
-     * Creates a new ChamferMatching object from a distant transform
+     * Creates a new DistanceMatching object from a distant transform
      * image.
      *
      * @param distances the distance transform image
      */
-    public ChamferMatching (Table distances)
+    public DistanceMatching (Table distances)
     {
         this.distances = distances;
     }

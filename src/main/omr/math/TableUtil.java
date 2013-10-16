@@ -14,6 +14,7 @@ package omr.math;
 import omr.WellKnowns;
 
 import omr.image.PixelBuffer;
+import omr.image.Table;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -21,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
-import omr.image.Table;
 
 /**
  * Class {@code TableUtil} gathers utilities to dump basic table
@@ -153,7 +153,7 @@ public class TableUtil
      * Print out a Table.
      *
      * @param title a title for the print
-     * @param table   the table to print
+     * @param table the table to print
      */
     public static void dump (String title,
                              Table table)
@@ -191,8 +191,11 @@ public class TableUtil
                                          int height,
                                          int cell)
     {
-        final int wn = (int) Math.ceil(Math.log10(width)); // # of x digits
-        final int hn = (int) Math.ceil(Math.log10(height)); // # of y digits
+        // # of x digits
+        final int wn = Math.max(1, (int) Math.ceil(Math.log10(width)));
+
+        // # of y digits
+        final int hn = Math.max(1, (int) Math.ceil(Math.log10(height)));
         final String margin = "%" + hn + "s ";
         final String dFormat = "%" + cell + "d";
         final String sFormat = "%" + cell + "s";

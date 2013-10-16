@@ -24,22 +24,22 @@ public class FilamentComb
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Column index where sample was taken */
+    /** Column index where sample was taken. */
     private final int col;
 
-    /** Series of filaments involved */
+    /** Series of filaments involved. */
     private final List<LineFilament> filaments;
 
-    /** Ordinate value for each filament */
+    /** Ordinate value for each filament. */
     private final List<Double> ys;
 
-    /** To save processing */
+    /** To save processing. */
     private boolean processed = false;
 
     //~ Constructors -----------------------------------------------------------
-    //-----------------//
+    //--------------//
     // FilamentComb //
-    //-----------------//
+    //--------------//
     /**
      * Creates a new FilamentComb object.
      *

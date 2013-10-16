@@ -19,7 +19,6 @@ import omr.sig.SIGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -39,7 +38,7 @@ public class BasicInterpret
     //~ Instance fields --------------------------------------------------------
 
     /** Set of interpretation(s) for this glyph . */
-    private Set<Inter> interpretations = new HashSet<>();
+    private final Set<Inter> interpretations = new HashSet<>();
 
     //----------------//
     // BasicInterpret //

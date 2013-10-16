@@ -170,6 +170,7 @@ public class LineFilament
     public void include (LineFilament that)
     {
         super.stealSections(that);
+        getCombs().putAll(that.getCombs());
 
         that.cluster = this.cluster;
         that.clusterPos = this.clusterPos;
@@ -207,6 +208,10 @@ public class LineFilament
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
+        
+        if (combs != null) {
+            sb.append(" combs:").append(combs.size());
+        }
 
         if (cluster != null) {
             sb.append(" cluster:")

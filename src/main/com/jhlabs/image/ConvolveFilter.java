@@ -78,7 +78,7 @@ public class ConvolveFilter
     /**
      * Construct a filter with the given 3x3 kernel.
      *
-     * @param matrix an array of 9 floats containing the kernel
+     * @param kernel the specified kernel
      */
     public ConvolveFilter (Kernel kernel)
     {

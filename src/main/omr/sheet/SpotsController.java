@@ -244,12 +244,6 @@ public class SpotsController
                     && clip.intersects(glyph.getBounds())) {
                     // Draw mean line
                     glyph.renderLine(g);
-
-                    if (beamShapes.contains(shape)) {
-                        // Draw beam border lines
-                        SystemInfo system = sheet.getSystemOf(glyph);
-                        system.beamsBuilder.drawBorders(glyph, g);
-                    }
                 }
             }
 

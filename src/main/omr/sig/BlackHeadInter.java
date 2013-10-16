@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sig;
 
+import java.awt.Rectangle;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -29,29 +30,45 @@ public class BlackHeadInter
     private final int pitch;
 
     //~ Constructors -----------------------------------------------------------
+    //----------------//
+    // BlackHeadInter //
+    //----------------//
     /**
-     * Creates a new BlackHeadInter object.
+     * Creates a new BlackHeadInter object from a closing-based 
+     * retrieval.
      *
-     * @param glyph the underlying glyph
+     * @param glyph   the underlying glyph
+     * @param impacts the grade details
+     * @param pitch   the note pitch
+     */
+    public BlackHeadInter (Glyph glyph,
+                           Impacts impacts,
+                           int pitch)
+    {
+        super(glyph, Shape.NOTEHEAD_BLACK, impacts.computeGrade());
+        this.setImpacts(impacts);
+        this.pitch = pitch;
+    }
+    //----------------//
+    // BlackHeadInter //
+    //----------------//
+    /**
+     * Creates a new BlackHeadInter object from a distance-matching
+     * retrieval.
+     *
+     * @param box   the object bounds
      * @param grade the assignment quality
      * @param pitch the note pitch
      */
-    public BlackHeadInter (Glyph glyph,
-                           double grade, int pitch)
+    public BlackHeadInter (Rectangle box,
+                          double grade,
+                          int pitch)
     {
-        super(glyph, Shape.NOTEHEAD_BLACK, grade);
+        super(box, Shape.NOTEHEAD_BLACK, grade);
         this.pitch = pitch;
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    public static double getMinGrade ()
-    {
-        return BasicInter.getMinGrade();
-    }
-
     //--------//
     // accept //
     //--------//
@@ -59,6 +76,14 @@ public class BlackHeadInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    public static double getMinGrade ()
+    {
+        return BasicInter.getMinGrade();
     }
 
     //----------//
@@ -70,5 +95,40 @@ public class BlackHeadInter
     public int getPitch ()
     {
         return pitch;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //---------//
+    // Impacts //
+    //---------//
+    public static class Impacts
+            implements GradeImpacts
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final double shape;
+
+        final double pitch;
+
+        //~ Constructors -------------------------------------------------------
+        public Impacts (double shape,
+                        double pitch)
+        {
+            this.shape = shape;
+            this.pitch = pitch;
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        public double computeGrade ()
+        {
+            return (shape + pitch) / 2;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return String.format("shape:%.2f pitch:%.2f", shape, pitch);
+        }
     }
 }

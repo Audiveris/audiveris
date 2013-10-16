@@ -918,18 +918,11 @@ public class ClustersRetriever
      */
     private void retrieveCombs ()
     {
-        //        /** Minimum acceptable delta y */
-        //        int dMin = (int) Math.floor(
-        //            interline * (1 - constants.maxJitter.getValue()));
-        //
-        //        /** Maximum acceptable delta y */
-        //        int dMax = (int) Math.ceil(
-        //            interline * (1 + constants.maxJitter.getValue()));
         /** Minimum acceptable delta y */
-        int dMin = (int) Math.floor(scale.getMinInterline());
+        int dMin = scale.getMinInterline();
 
         /** Maximum acceptable delta y */
-        int dMax = (int) Math.ceil(scale.getMaxInterline());
+        int dMax = scale.getMaxInterline();
 
         /** Number of vertical samples to collect */
         int sampleCount = -1

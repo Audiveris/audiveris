@@ -37,6 +37,7 @@ import omr.sig.BeamPortion;
 import omr.sig.BeamStemRelation;
 import omr.sig.Exclusion;
 import omr.sig.Exclusion.Cause;
+import omr.sig.Grades;
 import omr.sig.HeadStemRelation;
 import omr.sig.Inter;
 import omr.sig.Relation;
@@ -75,7 +76,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code StemsBuilder} processes a system to build stems that
+ * Class {@literal StemsBuilder} processes a system to build stems that
  * connect to note heads and perhaps beams.
  * <p>
  * At this point, both black heads and beams have been identified thanks to
@@ -193,7 +194,7 @@ public class StemsBuilder
         Sheet sheet = system.getSheet();
         scale = sheet.getScale();
         skew = sheet.getSkew();
-        params = new Parameters(scale);
+        params = new Parameters(system, scale);
 
         ShapeSymbol symbol = Shape.NOTEHEAD_BLACK.getSymbol();
         headSymbolDim = symbol.getDimension(
@@ -203,13 +204,12 @@ public class StemsBuilder
     //~ Methods ----------------------------------------------------------------
     //
     //-----------//
-    // linkHeads //
+    // linkStems //
     //-----------//
     /**
-     * Process every black head in the system, looking for acceptable
-     * attached stems.
+     * Link stems to suitable heads and beams in the system.
      */
-    public void linkHeads ()
+    public void linkStems ()
     {
         StopWatch watch = new StopWatch("StemsBuilder S#" + system.getId());
         watch.start("collections");
@@ -218,6 +218,7 @@ public class StemsBuilder
 
         // The beam interpretations for this system
         systemBeams = sig.inters(Shape.BEAM);
+        Collections.sort(systemBeams, Inter.byAbscissa);
 
         // The sorted head interpretations for this system
         systemHeads = sig.inters(
@@ -323,8 +324,8 @@ public class StemsBuilder
     {
         List<Inter> notes = sig.inters(
                 ShapeSet.shapesOf(
-                ShapeSet.NoteHeads.getShapes(),
-                Arrays.asList(Shape.WHOLE_NOTE)));
+                        ShapeSet.NoteHeads.getShapes(),
+                        Arrays.asList(Shape.WHOLE_NOTE)));
 
         for (Inter inter : stems) {
             StemInter stem = (StemInter) inter;
@@ -380,21 +381,13 @@ public class StemsBuilder
                 0.02,
                 "Margin around slope");
 
-        final Scale.Fraction maxHeadXGap = new Scale.Fraction(
+        final Scale.Fraction maxStemHeadGapX = new Scale.Fraction(
                 0.2,
                 "Maximum horizontal gap between head and nearest stem segment");
 
-        final Scale.Fraction maxHeadYGap = new Scale.Fraction(
+        final Scale.Fraction maxStemHeadGapY = new Scale.Fraction(
                 0.8,
                 "Maximum vertical gap between head and nearest stem segment");
-
-        final Scale.Fraction maxBeamXGap = new Scale.Fraction(
-                0.2,
-                "Maximum horizontal gap between beam and nearest stem segment");
-
-        final Scale.Fraction maxBeamYGap = new Scale.Fraction(
-                0.8,
-                "Maximum vertical gap between beam and nearest stem segment");
 
         final Scale.Fraction maxYGap = new Scale.Fraction(
                 2.0,
@@ -420,79 +413,6 @@ public class StemsBuilder
                 1.0,
                 "Maximum vertical gap between two consecutive beams of the same group");
 
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final int maxOutDx;
-
-        final int maxInDx;
-
-        final int xMargin;
-
-        final double slopeMargin;
-
-        final int maxHeadXGap;
-
-        final int maxHeadYGap;
-
-        final int maxBeamXGap;
-
-        final int maxBeamYGap;
-
-        final int maxYGap;
-
-        final int maxStemThickness;
-
-        final int minHeadSectionContribution;
-
-        final int minStemExtension;
-
-        final int minLongStemLength;
-
-        final double maxDistanceToLine;
-
-        final int maxInterBeamGap;
-
-        //~ Constructors -------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
-        {
-            maxOutDx = scale.toPixels(constants.maxOutDx);
-            maxInDx = scale.toPixels(constants.maxInDx);
-            xMargin = scale.toPixels(constants.xMargin);
-            slopeMargin = constants.slopeMargin.getValue();
-            maxHeadXGap = scale.toPixels(constants.maxHeadXGap);
-            maxHeadYGap = scale.toPixels(constants.maxHeadYGap);
-            maxBeamXGap = scale.toPixels(constants.maxBeamXGap);
-            maxBeamYGap = scale.toPixels(constants.maxBeamYGap);
-            maxYGap = scale.toPixels(constants.maxYGap);
-            maxStemThickness = scale.toPixels(
-                    VerticalsBuilder.getMaxStemThickness());
-            minHeadSectionContribution = scale.toPixels(
-                    constants.minHeadSectionContribution);
-            minStemExtension = scale.toPixels(constants.minStemExtension);
-            minLongStemLength = scale.toPixels(constants.minLongStemLength);
-            maxDistanceToLine = scale.toPixelsDouble(
-                    constants.maxDistanceToLine);
-            maxInterBeamGap = scale.toPixels(constants.maxInterBeamGap);
-
-            if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
-            }
-        }
     }
 
     //------------//
@@ -744,11 +664,18 @@ public class StemsBuilder
                                 for (BeamInter next : beams.subList(
                                         goodIndex + 1,
                                         beams.size())) {
-                                    BeamStemRelation r = new BeamStemRelation();
-                                    r.setStemPortion(rel.getStemPortion());
-                                    r.setBeamPortion(rel.getBeamPortion());
-                                    r.setGrade(rel.getGrade());
-                                    sig.addEdge(next, stem, r);
+                                    BeamStemRelation r = (BeamStemRelation) sig.getRelation(
+                                            next,
+                                            stem,
+                                            BeamStemRelation.class);
+
+                                    if (r == null) {
+                                        r = new BeamStemRelation();
+                                        r.setStemPortion(rel.getStemPortion());
+                                        r.setBeamPortion(rel.getBeamPortion());
+                                        r.setGrade(rel.getGrade());
+                                        sig.addEdge(next, stem, r);
+                                    }
                                 }
                             }
                         }
@@ -797,15 +724,12 @@ public class StemsBuilder
                                            BeamInter two)
             {
                 // Vertical gap?
-                Line2D oneLimit = (dir > 0) ? one.getSouth()
-                        : one.getNorth();
-                Point2D onePt = getTargetPt(oneLimit);
-                Line2D twoLimit = (dir > 0) ? two.getNorth()
-                        : two.getSouth();
-                Point2D twoPt = getTargetPt(twoLimit);
-                final double dy = Math.abs(onePt.getY() - twoPt.getY());
+                Point2D onePt = getTargetPt(one.getMedian());
+                Point2D twoPt = getTargetPt(two.getMedian());
+                final double yGap = Math.abs(onePt.getY() - twoPt.getY())
+                                    - ((one.getHeight() + two.getHeight()) / 2);
 
-                if (dy > params.maxInterBeamGap) {
+                if (yGap > params.maxInterBeamGap) {
                     logger.debug("{} & {} are too distant", one, two);
 
                     return false;
@@ -873,11 +797,11 @@ public class StemsBuilder
                     // Ordinate
                     final double yGap = (dir > 0)
                             ? Math.max(
-                            0,
-                            crossPt.getY() - stop.getY())
+                                    0,
+                                    crossPt.getY() - stop.getY())
                             : Math.max(
-                            0,
-                            start.getY() - crossPt.getY());
+                                    0,
+                                    start.getY() - crossPt.getY());
 
                     bRel.setDistances(
                             scale.pixelsToFrac(xGap),
@@ -996,7 +920,7 @@ public class StemsBuilder
                         ? system.buildCompound(items) : items.get(0);
 
                 if (stem.isVip()) {
-                    logger.info("BINGO createStemInter {}", stem);
+                    logger.info("VIP createStemInter {}", stem);
                 }
 
                 // Stem interpretation (if not yet present)
@@ -1028,18 +952,15 @@ public class StemsBuilder
                     }
 
                     // Impact of white ratio
-                    double whiteImpact = Math.max(
-                            0,
+                    double whiteImpact = Grades.clamp(
                             1 - (totalGap / totalLength));
 
                     // Impact of largest gap
-                    double gapImpact = Math.max(
-                            0,
+                    double gapImpact = Grades.clamp(
                             1 - (largestGap / params.maxYGap));
 
                     // Impact of straightness: mean distance to straight line
-                    double straightImpact = Math.max(
-                            0,
+                    double straightImpact = Grades.clamp(
                             1
                             - (stem.getMeanDistance() / params.maxDistanceToLine));
 
@@ -1047,16 +968,15 @@ public class StemsBuilder
                     double vertSlope = -skew.getSlope();
                     double stemSlope = stem.getInvertedSlope();
                     double deltaSlope = Math.abs(stemSlope - vertSlope);
-                    double slopeImpact = Math.max(
-                            0,
+                    double slopeImpact = Grades.clamp(
                             1 - (deltaSlope / params.slopeMargin));
 
                     // Impact of length
-                    double lengthImpact = Math.min(
-                            1,
-                            totalLength / params.minLongStemLength);
+                    double lengthImpact = Grades.clamp(
+                            (totalLength - params.minStemExtension) / (params.minLongStemLength
+                                                                       - params.minStemExtension));
 
-                    // TODO: adjacency???
+                    // TODO: adjacency??? (belt ratio)
                     // Weighted value
                     double grade = (whiteImpact + gapImpact + straightImpact
                                     + slopeImpact + lengthImpact) / 5;
@@ -1119,7 +1039,7 @@ public class StemsBuilder
              */
             private Line2D getLimit (BeamInter beam)
             {
-                return (dir > 0) ? beam.getNorth() : beam.getSouth();
+                return beam.getBorder(corner.vSide.opposite());
             }
 
             //-----------//
@@ -1320,7 +1240,7 @@ public class StemsBuilder
                         break; // Too large gap
                     }
 
-                    if ((i == 0) && (yGap > params.maxHeadYGap)) {
+                    if ((i == 0) && (yGap > params.maxStemHeadGapY)) {
                         break; // Initial item too far from head
                     }
 
@@ -1370,21 +1290,21 @@ public class StemsBuilder
                 Collections.sort(
                         allbeams,
                         new Comparator<Inter>()
-                {
-                    @Override
-                    public int compare (Inter b1,
-                                        Inter b2)
-                    {
-                        double d1 = Math.abs(
-                                refPt.getY()
-                                - getTargetPt(getLimit((BeamInter) b1)).getY());
-                        double d2 = Math.abs(
-                                refPt.getY()
-                                - getTargetPt(getLimit((BeamInter) b2)).getY());
+                        {
+                            @Override
+                            public int compare (Inter b1,
+                                                Inter b2)
+                            {
+                                double d1 = Math.abs(
+                                        refPt.getY()
+                                        - getTargetPt(getLimit((BeamInter) b1)).getY());
+                                double d2 = Math.abs(
+                                        refPt.getY()
+                                        - getTargetPt(getLimit((BeamInter) b2)).getY());
 
-                        return Double.compare(d1, d2);
-                    }
-                });
+                                return Double.compare(d1, d2);
+                            }
+                        });
 
                 // Build the list of beams
                 BeamInter goodBeam = null;
@@ -1683,18 +1603,18 @@ public class StemsBuilder
                 Collections.sort(
                         stems,
                         new Comparator<Glyph>()
-                {
-                    @Override
-                    public int compare (Glyph o1,
-                                        Glyph o2)
-                    {
-                        // Sort by decreasing contribution
-                        int c1 = getContrib(o1.getBounds());
-                        int c2 = getContrib(o2.getBounds());
+                        {
+                            @Override
+                            public int compare (Glyph o1,
+                                                Glyph o2)
+                            {
+                                // Sort by decreasing contribution
+                                int c1 = getContrib(o1.getBounds());
+                                int c2 = getContrib(o2.getBounds());
 
-                        return Integer.signum(c2 - c1);
-                    }
-                });
+                                return Integer.signum(c2 - c1);
+                            }
+                        });
 
                 List<Glyph> kept = new ArrayList<Glyph>();
 
@@ -1732,6 +1652,80 @@ public class StemsBuilder
                 Collections.sort(
                         glyphs,
                         (dir > 0) ? Glyph.byOrdinate : Glyph.byReverseOrdinate);
+            }
+        }
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@literal Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final int maxOutDx;
+
+        final int maxInDx;
+
+        final int xMargin;
+
+        final double slopeMargin;
+
+        final int maxStemHeadGapX;
+
+        final int maxStemHeadGapY;
+
+        final int maxStemBeamGapX;
+
+        final int maxStemBeamGapY;
+
+        final int maxYGap;
+
+        final int maxStemThickness;
+
+        final int minHeadSectionContribution;
+
+        final int minStemExtension;
+
+        final int minLongStemLength;
+
+        final double maxDistanceToLine;
+
+        final int maxInterBeamGap;
+
+        //~ Constructors -------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (SystemInfo system,
+                           Scale scale)
+        {
+            maxOutDx = scale.toPixels(constants.maxOutDx);
+            maxInDx = scale.toPixels(constants.maxInDx);
+            xMargin = scale.toPixels(constants.xMargin);
+            slopeMargin = constants.slopeMargin.getValue();
+            maxStemHeadGapX = scale.toPixels(constants.maxStemHeadGapX);
+            maxStemHeadGapY = scale.toPixels(constants.maxStemHeadGapY);
+            maxStemBeamGapX = system.beamsBuilder.maxStemBeamGapX();
+            maxStemBeamGapY = system.beamsBuilder.maxStemBeamGapY();
+            maxYGap = scale.toPixels(constants.maxYGap);
+            maxStemThickness = scale.toPixels(
+                    VerticalsBuilder.getMaxStemThickness());
+            minHeadSectionContribution = scale.toPixels(
+                    constants.minHeadSectionContribution);
+            minStemExtension = scale.toPixels(constants.minStemExtension);
+            minLongStemLength = scale.toPixels(constants.minLongStemLength);
+            maxDistanceToLine = scale.toPixelsDouble(
+                    constants.maxDistanceToLine);
+            maxInterBeamGap = scale.toPixels(constants.maxInterBeamGap);
+
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
             }
         }
     }

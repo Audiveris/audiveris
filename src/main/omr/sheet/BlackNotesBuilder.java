@@ -50,6 +50,7 @@ import omr.run.RunsTableFactory;
 
 import omr.sig.BeamInter;
 import omr.sig.BlackHeadInter;
+import omr.sig.Grades;
 import omr.sig.Inter;
 import omr.sig.SIGraph;
 
@@ -248,8 +249,10 @@ public class BlackNotesBuilder
      */
     private BlackHeadInter checkSingleHead (Glyph glyph)
     {
+        final boolean logging = logger.isDebugEnabled() || glyph.isVip();
+
         if (glyph.isVip()) {
-            logger.info("BINGO checkSingleHead");
+            logger.info("VIP checkSingleHead {}", glyph);
         }
 
         // Minimum weight
@@ -268,7 +271,10 @@ public class BlackNotesBuilder
         final StaffInfo staff = system.getStaffAt(centroid);
         final NotePosition pos = staff.getNotePosition(centroid);
         final double pitchPosition = pos.getPitchPosition();
-        logger.debug("Head#{} {}", glyph.getId(), pos);
+
+        if (logging) {
+            logger.info("Head#{} {}", glyph.getId(), pos);
+        }
 
         // Notes outside staves need a ledger nearby
         if (Math.abs(pitchPosition) >= (0.5 + staff.getLineCount())) {
@@ -278,9 +284,11 @@ public class BlackNotesBuilder
             if ((ledger == null)
                 || (Math.abs(
                     pitchPosition - StaffInfo.getLedgerPitchPosition(ledger.index)) > 1.5)) {
-                logger.debug(
-                        "Head#{} too far from staff w/o ledger",
-                        glyph.getId());
+                if (logging) {
+                    logger.info(
+                            "Head#{} too far from staff w/o ledger",
+                            glyph.getId());
+                }
 
                 return null;
             }
@@ -290,23 +298,25 @@ public class BlackNotesBuilder
         final int pitch = (int) Math.rint(pitchPosition);
         final double pitchOffset = Math.abs(pitchPosition - pitch);
 
-        if (logger.isDebugEnabled()) {
-            logger.debug(
+        if (logging) {
+            logger.info(
                     "Glyph#{} pitch: {} offset: {}",
                     glyph.getId(),
                     String.format("%5.2f", pitchPosition),
                     String.format("%.2f", pitchOffset));
         }
 
-        double pitchImpact = Math.max(
-                0,
-                1.0 - (pitchOffset / params.maxPitchOffset));
+        double pitchImpact = Grades.clamp(
+                1 - (pitchOffset / params.maxPitchOffset));
+        BlackHeadInter.Impacts impacts = new BlackHeadInter.Impacts(
+                shapeImpact,
+                pitchImpact);
 
-        final double grade = (shapeImpact + pitchImpact) / 2;
+        final double grade = impacts.computeGrade();
 
         if (grade >= BlackHeadInter.getMinGrade()) {
-            BlackHeadInter inter = new BlackHeadInter(glyph, grade, pitch);
-            Rectangle box = headTemplate.getBoxAt(
+            BlackHeadInter inter = new BlackHeadInter(glyph, impacts, pitch);
+            Rectangle box = headTemplate.getBoundsAt(
                     centroid.x,
                     centroid.y,
                     Template.Anchor.CENTER);
@@ -315,13 +325,12 @@ public class BlackNotesBuilder
 
             return inter;
         } else {
-            if (logger.isDebugEnabled()) {
-                logger.debug(
-                        "Too weak black head#{} grade: {} shape: {} pitch: {}",
+            if (logging) {
+                logger.info(
+                        "Too weak black head#{} grade: {} {}",
                         glyph.getId(),
                         String.format("%.3f", grade),
-                        String.format("%.2f", shapeImpact),
-                        String.format("%.2f", pitchImpact));
+                        impacts);
             }
 
             return null;
@@ -423,7 +432,7 @@ public class BlackNotesBuilder
 
         for (Glyph glyph : beamSpots) {
             if (glyph.isVip()) {
-                logger.info("Bingo getHeadSpots {}", glyph);
+                logger.info("VIP getHeadSpots {}", glyph);
             }
 
             MorphoProcessor mp = new MorphoProcessor(se);
@@ -476,11 +485,12 @@ public class BlackNotesBuilder
     private boolean isSuitable (Glyph glyph)
     {
         if (glyph.isVip()) {
-            logger.info("isSuitable for {}", glyph);
+            logger.info("VIP isSuitable for {}", glyph);
         }
 
         // Only SPOT-shaped glyphs
-        if (glyph.getShape() != Shape.BEAM_SPOT) {
+        if ((glyph.getShape() != Shape.BEAM_SPOT)
+            && (glyph.getShape() != Shape.BEAM)) {
             return false;
         }
 
@@ -647,7 +657,7 @@ public class BlackNotesBuilder
 
         for (Glyph glyph : spots) {
             if (glyph.isVip()) {
-                logger.info("BINGO splitLargeSpots spot#{}", glyph.getId());
+                logger.info("VIP splitLargeSpots spot#{}", glyph.getId());
             }
 
             // Rough number of heads
@@ -700,7 +710,7 @@ public class BlackNotesBuilder
 
         // Split attempt
         if (!split(glyph, img)) {
-            logger.warn("*** Could not split {}", glyph);
+            logger.debug("Could not split {}", glyph);
 
             return Arrays.asList(glyph);
         }

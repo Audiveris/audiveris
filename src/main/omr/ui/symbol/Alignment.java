@@ -18,7 +18,8 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code Alignment} defines how a location is to be understood
- * (vertically and horizontally) with respect to symbol bounds.
+ * (vertically and horizontally) with respect to symbol rectangular 
+ * bounds.
  */
 public class Alignment
 {
@@ -244,7 +245,7 @@ public class Alignment
     // Alignment //
     //-----------//
     /**
-     * Create an Alignment instanc
+     * Create an Alignment instance
      *
      * @param vertical   vertical part
      * @param horizontal horizontal part
@@ -295,8 +296,8 @@ public class Alignment
     // toPoint //
     //---------//
     /**
-     * Report the vector needed to translate from this alignment around a
-     * rectangle to that alignment
+     * Report the vector needed to translate from this alignment around
+     * a rectangle to that alignment
      *
      * @param that the desired alignment
      * @param rect the symbol bounds
@@ -314,8 +315,8 @@ public class Alignment
     // toPoint //
     //---------//
     /**
-     * Report the vector needed to translate from this alignment around a
-     * rectangle to that alignment
+     * Report the vector needed to translate from this alignment around
+     * a rectangle to that alignment
      *
      * @param that the desired alignment
      * @param rect the symbol bounds
@@ -342,8 +343,8 @@ public class Alignment
     // toTextOrigin //
     //--------------//
     /**
-     * Report the vector needed to translate from this alignment around a
-     * rectangle to the text origin [BASELINE,XORIGIN]
+     * Report the vector needed to translate from this alignment around
+     * a rectangle to the text origin [BASELINE,XORIGIN]
      *
      * @param rect the symbol bounds
      * @return the translation vector
@@ -359,8 +360,8 @@ public class Alignment
     // toTextOrigin //
     //--------------//
     /**
-     * Report the vector needed to translate from this alignment around a
-     * rectangle to the text origin [BASELINE,XORIGIN]
+     * Report the vector needed to translate from this alignment around
+     * a rectangle to the text origin [BASELINE,XORIGIN]
      *
      * @param rect the symbol bounds
      * @return the translation vector

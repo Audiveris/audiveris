@@ -31,8 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
@@ -41,29 +39,40 @@ import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.awt.image.renderable.ParameterBlock;
+import java.util.EnumMap;
+import java.util.Map;
 
 import javax.media.jai.JAI;
 
 /**
- * Class {@code Picture} encapsulates an image, allowing modifications
- * and rendering.
+ * Class {@code Picture} handles the sheet initial gray-level image,
+ * as well as the images derived from it (such as by filtering).
+ * <p>
+ * The {@code Picture} constructor takes a provided original image, whatever its
+ * format and color model, and converts it if necessary to come up with a usable
+ * gray-level image (of type TYPE_BYTE_GRAY): the INITIAL BufferedImage.
+ * <p>
+ * Besides the INITIAL image, this class handles a collection of images, all of
+ * the same dimension, with the ability to retrieve them on demand or dispose
+ * them, via {@link #getImage} and {@link #disposeImage} methods.
+ * <p>
+ * Any instance of this class is registered on the related Sheet location
+ * service, so that each time a location event is received, the corresponding
+ * pixel gray value of the INITIAL image is published.
  *
- * <p> Operations allow : <ul>
- * <li> To <b>render</b> the (original) image in a graphic context </li>
- * <li> To report current image <b>dimension</b> parameters</li>
- * <li> To <b>read</b> a pixel knowing its location in the current image </li>
- * </ul> </p>
- *
- * <p>TODO: Rather than the custom grayfactor trick, consider using the standard
- * normalized form of ColorModel.
- * <p>TODO: When an alpha channel is involved, perform the alpha multiplication
+ * <p>
+ * TODO: When an alpha channel is involved, perform the alpha multiplication
  * if the components are not yet premultiplied.
+ *
+ * <h4>Overview of transforms:<br/>
+ * <img src="doc-files/transforms.jpg"/>
+ * </h4>
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
  */
 public class Picture
-        implements PixelSource, EventSubscriber<LocationEvent>
+        implements EventSubscriber<LocationEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -73,16 +82,28 @@ public class Picture
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Picture.class);
 
+    //~ Enumerations -----------------------------------------------------------
+    /** Set of known images, to be extended as needed. */
+    public static enum Key
+    {
+        //~ Enumeration constant initializers ----------------------------------
+
+        /** The initial gray-level image. */
+        INITIAL,
+        /** The Gaussian-filtered image. */
+        GAUSSIAN,
+        /** The Median-filtered image. */
+        MEDIAN;
+
+    }
+
     //~ Instance fields --------------------------------------------------------
     //
     /** Related sheet. */
     private final Sheet sheet;
 
-    /** Dimension of current image. */
+    /** Image dimension. */
     private Dimension dimension;
-
-    /** Current image. */
-    private BufferedImage image;
 
     /**
      * Service object where gray level of pixel is to be written to
@@ -90,11 +111,12 @@ public class Picture
      */
     private final SelectionService levelService;
 
-    /** The image (read-only) raster. */
-    private Raster raster;
+    /** Map of all handled images. */
+    private final Map<Key, BufferedImage> images = new EnumMap<Key, BufferedImage>(
+            Key.class);
 
-    /** The factor to apply to raw pixel value to get gray level on 0..255 */
-    private int grayFactor = 1;
+    /** A wrapping around the initial (default) image. */
+    private BufferedSource initialSource;
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -102,10 +124,10 @@ public class Picture
     // Picture //
     //---------//
     /**
-     * Build a picture instance from a given image.
+     * Build a picture instance from a given original image.
      *
      * @param sheet        the related sheet
-     * @param image        the provided image
+     * @param image        the provided original image
      * @param levelService service where pixel events are to be written
      * @throws ImageFormatException
      */
@@ -118,50 +140,61 @@ public class Picture
         this.levelService = levelService;
 
         // Make sure format, colors, etc are OK for us
+        printInfo(image, "Original image");
         image = checkImage(image);
-
-        // Slightly filter the picture image?
-        if (constants.filterImage.isSet()) {
-            image = filterImage(image);
-        }
-
-        // cache results
-        this.image = image;
+        printInfo(image, "Initial  image");
+        images.put(Key.INITIAL, image);
         dimension = new Dimension(image.getWidth(), image.getHeight());
-        raster = Raster.createRaster(
-                image.getData().getSampleModel(),
-                image.getData().getDataBuffer(),
-                null);
+
+        //        // Cache results
+        //        this.image = image;
+        //        raster = Raster.createRaster(
+        //                image.getData().getSampleModel(),
+        //                image.getData().getDataBuffer(),
+        //                null);
+
+        // Wrap the initial image
+        initialSource = new BufferedSource(image);
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-----------//
-    // printInfo //
-    //-----------//
-    public static void printInfo (BufferedImage img,
-                                  String title)
+    //--------//
+    // invert //
+    //--------//
+    /**
+     * Convenient method on invert an image.
+     *
+     * @param image the image to process
+     * @return the invert of provided image
+     */
+    public static BufferedImage invert (BufferedImage image)
     {
-        int type = img.getType();
-        ColorModel colorModel = img.getColorModel();
-        logger.info(
-                "{} type={}:{} {}",
-                (title != null) ? title : "",
-                type,
-                typeOf(type),
-                colorModel);
+        return JAI.create(
+                "Invert",
+                new ParameterBlock().addSource(image).add(null),
+                null)
+                .getAsBufferedImage();
     }
 
-    //---------//
-    // dispose //
-    //---------//
-    /**
-     * Dispose of the underlying image and raster to save memory.
-     */
-    public void dispose ()
+    //--------------//
+    // disposeImage //
+    //--------------//
+    public void disposeImage (Key key)
     {
-        image = null;
-        raster = null;
-        logger.info("Image and raster disposed.");
+        BufferedImage img = images.get(key);
+
+        if (img != null) {
+            synchronized (images) {
+                images.put(key, null);
+
+                // Nullify cached data, if needed
+                if (key == Key.INITIAL) {
+                    initialSource = null;
+                }
+
+                logger.info("{} image disposed.", key);
+            }
+        }
     }
 
     //---------------//
@@ -169,25 +202,28 @@ public class Picture
     //---------------//
     /**
      * Debugging routine, that prints a basic representation of a
-     * rectangular portion of the picture.
+     * rectangular portion of the selected image.
      *
+     * @param key   the selected image key
      * @param title an optional title for this image dump
-     * @param xMin  x first coord
-     * @param xMax  x last coord
-     * @param yMin  y first coord
-     * @param yMax  y last coord
+     * @param xMin  x first abscissa
+     * @param xMax  x last abscissa
+     * @param yMin  y first ordinate
+     * @param yMax  y last ordinate
      */
-    public void dumpRectangle (String title,
+    public void dumpRectangle (Key key,
+                               String title,
                                int xMin,
                                int xMax,
                                int yMin,
                                int yMax)
     {
+        PixelSource source = new BufferedSource(getImage(key));
         StringBuilder sb = new StringBuilder();
 
         sb.append(String.format("%n"));
 
-        if (title != null) {
+        if (title != null) {;
             sb.append(String.format("%s%n", title));
         }
 
@@ -212,9 +248,9 @@ public class Picture
             sb.append("|");
 
             for (int x = xMin; x <= xMax; x++) {
-                int pix = getPixel(x, y);
+                int pix = source.getPixel(x, y);
 
-                if (pix == 255) {
+                if (pix == 255) { // White background
                     sb.append("   .");
                 } else {
                     sb.append(String.format("%4d", pix));
@@ -250,7 +286,6 @@ public class Picture
      *
      * @return the height value
      */
-    @Override
     public int getHeight ()
     {
         return dimension.height;
@@ -260,13 +295,38 @@ public class Picture
     // getImage //
     //----------//
     /**
-     * Report the underlying image.
+     * Report the desired image, creating it if necessary.
      *
-     * @return the image
+     * @param key the key of desired image
+     * @return the image ready to use
      */
-    public BufferedImage getImage ()
+    public BufferedImage getImage (Key key)
     {
-        return image;
+        BufferedImage img = images.get(key);
+
+        if (img == null) {
+            synchronized (images) {
+                img = images.get(key);
+
+                if (img == null) {
+                    switch (key) {
+                    case GAUSSIAN:
+                        img = gaussianFiltered(images.get(Key.INITIAL));
+                        images.put(key, img);
+
+                        break;
+
+                    case MEDIAN:
+                        img = medianFiltered(images.get(Key.INITIAL));
+                        images.put(key, img);
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        return img;
     }
 
     //---------//
@@ -283,35 +343,6 @@ public class Picture
     }
 
     //----------//
-    // getPixel //
-    //----------//
-    /**
-     * Report the pixel element read at location (x, y) in the picture.
-     *
-     * @param x abscissa value
-     * @param y ordinate value
-     * @return the pixel value
-     */
-    @Override
-    public final int getPixel (int x,
-                               int y)
-    {
-        // Safer
-        if (raster == null) {
-            return 0;
-        }
-
-        int[] pixel = raster.getPixel(x, y, (int[]) null); // Allocates pixel!
-
-        if (grayFactor == 1) {
-            // Speed up the normal case
-            return pixel[0];
-        } else {
-            return (grayFactor / 2) + (grayFactor * pixel[0]);
-        }
-    }
-
-    //----------//
     // getWidth //
     //----------//
     /**
@@ -320,22 +351,9 @@ public class Picture
      *
      * @return the current width value, in pixels.
      */
-    @Override
     public int getWidth ()
     {
         return dimension.width;
-    }
-
-    //--------//
-    // invert //
-    //--------//
-    public static BufferedImage invert (BufferedImage image)
-    {
-        return JAI.create(
-                "Invert",
-                new ParameterBlock().addSource(image).add(null),
-                null)
-                .getAsBufferedImage();
     }
 
     //---------//
@@ -343,16 +361,15 @@ public class Picture
     //---------//
     /**
      * Call-back triggered when sheet location has been modified.
-     * Based on sheet location, we forward the pixel gray level to whoever is
-     * interested in it.
+     * Based on sheet location, we forward the INITIAL pixel gray level to
+     * whoever is interested in it.
      *
      * @param event the (sheet) location event
      */
     @Override
     public void onEvent (LocationEvent event)
     {
-        // Safer, since no pixel is available without the raster
-        if (raster == null) {
+        if (initialSource == null) {
             return;
         }
 
@@ -375,7 +392,7 @@ public class Picture
                     && (pt.x < getWidth())
                     && (pt.y >= 0)
                     && (pt.y < getHeight())) {
-                    level = Integer.valueOf(getPixel(pt.x, pt.y));
+                    level = Integer.valueOf(initialSource.getPixel(pt.x, pt.y));
                 }
             }
 
@@ -386,18 +403,27 @@ public class Picture
         }
     }
 
-    //--------//
-    // render //
-    //--------//
+    //-----------//
+    // printInfo //
+    //-----------//
     /**
-     * Paint the picture image in the provided graphic context.
+     * Convenient method to print some characteristics of the provided
+     * image.
      *
-     * @param g the Graphics context
+     * @param img   the image to query
+     * @param title a title to be printed
      */
-    public void render (Graphics g)
+    public static void printInfo (BufferedImage img,
+                                  String title)
     {
-        Graphics2D g2 = (Graphics2D) g;
-        g2.drawRenderedImage(image, null);
+        int type = img.getType();
+        ColorModel colorModel = img.getColorModel();
+        logger.info(
+                "{} type: {}={} {}",
+                (title != null) ? title : "",
+                type,
+                typeOf(type),
+                colorModel);
     }
 
     //----------//
@@ -470,129 +496,6 @@ public class Picture
         }
     }
 
-    //------------//
-    // checkImage //
-    //------------//
-    private BufferedImage checkImage (BufferedImage img)
-            throws ImageFormatException
-    {
-        // Check that the whole image has been loaded
-        if ((img.getWidth() == -1) || (img.getHeight() == -1)) {
-            throw new RuntimeException("Unusable image for Picture");
-        }
-
-        // Check image format
-        img = checkImageFormat(img);
-
-        // Check pixel size and compute grayFactor accordingly
-        ColorModel colorModel = img.getColorModel();
-        int pixelSize = colorModel.getPixelSize();
-        logger.debug("colorModel={} pixelSize={}", colorModel, pixelSize);
-
-        if (pixelSize == 1) {
-            grayFactor = 1;
-        } else if (pixelSize <= 8) {
-            grayFactor = (int) Math.rint(128 / Math.pow(2, pixelSize - 1));
-        } else if (pixelSize <= 16) {
-            grayFactor = (int) Math.rint(32768 / Math.pow(2, pixelSize - 1));
-        } else {
-            throw new RuntimeException("Unsupported pixel size: " + pixelSize);
-        }
-
-        logger.debug("grayFactor={}", grayFactor);
-
-        return img;
-    }
-
-    //------------------//
-    // checkImageFormat //
-    //------------------//
-    /**
-     * Check if the image format (and especially its color model) is
-     * properly handled by Audiveris.
-     *
-     * @throws ImageFormatException is the format is not supported
-     */
-    private BufferedImage checkImageFormat (BufferedImage img)
-            throws ImageFormatException
-    {
-        ColorModel colorModel = img.getColorModel();
-        boolean hasAlpha = colorModel.hasAlpha();
-        logger.debug("{}", colorModel);
-
-        // Check nb of bands
-        SampleModel sampleModel = img.getSampleModel();
-        int numBands = sampleModel.getNumBands();
-        logger.debug("numBands={}", numBands);
-
-        if (numBands == 1) {
-            // Pixel gray value. Nothing to do
-            return img;
-        } else if ((numBands == 2) && hasAlpha) {
-            // Pixel + alpha
-            // Discard alpha (TODO: check if premultiplied!!!)
-            return JAI.create("bandselect", img, new int[]{})
-                    .getAsBufferedImage();
-        } else if ((numBands == 3) && !hasAlpha) {
-            // RGB
-            return RGBToGray(img);
-        } else if ((numBands == 4) && hasAlpha) {
-            // RGB + alpha
-            return RGBAToGray(img);
-        } else {
-            throw new ImageFormatException(
-                    "Unsupported sample model numBands=" + numBands);
-        }
-    }
-
-    //-------------//
-    // filterImage //
-    //-------------//
-    /**
-     * Apply a Gaussian or Median filter on provided image.
-     *
-     * @param img the source image
-     * @return the filtered image
-     */
-    private BufferedImage filterImage (BufferedImage img)
-    {
-        StopWatch watch = new StopWatch("Image filter");
-
-        try {
-            if (img.getType() != BufferedImage.TYPE_BYTE_GRAY) {
-                //return img; // No filtering
-                watch.start(
-                        "Gaussian " + img.getWidth() + "x" + img.getHeight());
-
-                final int radius = constants.filterRadius.getValue();
-                logger.info(
-                        "{}Image blurred with gaussian kernel radius: {}",
-                        sheet.getLogPrefix(),
-                        radius);
-
-                GaussianFilter gaussianFilter = new GaussianFilter(radius);
-
-                return gaussianFilter.filter(img, null);
-            } else {
-                watch.start("Median " + img.getWidth() + "x" + img.getHeight());
-
-                final int radius = constants.filterRadius.getValue();
-                logger.info(
-                        "{}Image filtered with median kernel radius: {}",
-                        sheet.getLogPrefix(),
-                        radius);
-
-                MedianGrayFilter medianFilter = new MedianGrayFilter(radius);
-
-                return medianFilter.filter(img);
-            }
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-        }
-    }
-
     //--------//
     // typeOf //
     //--------//
@@ -646,6 +549,132 @@ public class Picture
         }
     }
 
+    //------------//
+    // checkImage //
+    //------------//
+    private BufferedImage checkImage (BufferedImage img)
+            throws ImageFormatException
+    {
+        // Check that the whole image has been loaded
+        if ((img.getWidth() == -1) || (img.getHeight() == -1)) {
+            throw new RuntimeException("Unusable image for Picture");
+        }
+
+        // Check image format
+        img = checkImageFormat(img);
+
+        // Check pixel size and compute grayFactor accordingly
+        ColorModel colorModel = img.getColorModel();
+        int pixelSize = colorModel.getPixelSize();
+        logger.debug("colorModel={} pixelSize={}", colorModel, pixelSize);
+
+        //        if (pixelSize == 1) {
+        //            grayFactor = 1;
+        //        } else if (pixelSize <= 8) {
+        //            grayFactor = (int) Math.rint(128 / Math.pow(2, pixelSize - 1));
+        //        } else if (pixelSize <= 16) {
+        //            grayFactor = (int) Math.rint(32768 / Math.pow(2, pixelSize - 1));
+        //        } else {
+        //            throw new RuntimeException("Unsupported pixel size: " + pixelSize);
+        //        }
+        //
+        //        logger.debug("grayFactor={}", grayFactor);
+        return img;
+    }
+
+    //------------------//
+    // checkImageFormat //
+    //------------------//
+    /**
+     * Check if the image format (and especially its color model) is
+     * properly handled by Audiveris.
+     *
+     * @throws ImageFormatException is the format is not supported
+     */
+    private BufferedImage checkImageFormat (BufferedImage img)
+            throws ImageFormatException
+    {
+        ColorModel colorModel = img.getColorModel();
+        boolean hasAlpha = colorModel.hasAlpha();
+        logger.debug("{}", colorModel);
+
+        // Check nb of bands
+        SampleModel sampleModel = img.getSampleModel();
+        int numBands = sampleModel.getNumBands();
+        logger.debug("numBands={}", numBands);
+
+        if (numBands == 1) {
+            // Pixel gray value. Nothing to do
+            return img;
+        } else if ((numBands == 2) && hasAlpha) {
+            // Pixel + alpha
+            // Discard alpha (TODO: check if premultiplied!!!)
+            return JAI.create("bandselect", img, new int[]{})
+                    .getAsBufferedImage();
+        } else if ((numBands == 3) && !hasAlpha) {
+            // RGB
+            return RGBToGray(img);
+        } else if ((numBands == 4) && hasAlpha) {
+            // RGB + alpha
+            return RGBAToGray(img);
+        } else {
+            throw new ImageFormatException(
+                    "Unsupported sample model numBands=" + numBands);
+        }
+    }
+
+    //------------------//
+    // gaussianFiltered //
+    //------------------//
+    private BufferedImage gaussianFiltered (BufferedImage img)
+    {
+        StopWatch watch = new StopWatch("Gaussian");
+
+        try {
+            watch.start("Filter " + img.getWidth() + "x" + img.getHeight());
+
+            final int radius = constants.gaussianRadius.getValue();
+            logger.info(
+                    "{}Image blurred with gaussian kernel radius: {}",
+                    sheet.getLogPrefix(),
+                    radius);
+
+            GaussianFilter gaussianFilter = new GaussianFilter(radius);
+
+            return gaussianFilter.filter(img, null);
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+    }
+
+    //----------------//
+    // medianFiltered //
+    //----------------//
+    private BufferedImage medianFiltered (BufferedImage img)
+    {
+        StopWatch watch = new StopWatch("Median");
+
+        try {
+            watch.start("Filter " + img.getWidth() + "x" + img.getHeight());
+
+            final int radius = constants.medianRadius.getValue();
+            logger.info(
+                    "{}Image filtered with median kernel radius: {}",
+                    sheet.getLogPrefix(),
+                    radius);
+
+            MedianGrayFilter medianFilter = new MedianGrayFilter(radius);
+
+            return medianFilter.filter(img);
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+    }
+
     //~ Inner Classes ----------------------------------------------------------
     //-----------//
     // Constants //
@@ -667,10 +696,15 @@ public class Picture
                 true,
                 "Should we slightly filter the source image?");
 
-        Constant.Integer filterRadius = new Constant.Integer(
+        Constant.Integer gaussianRadius = new Constant.Integer(
                 "pixels",
                 1,
-                "Radius of filtering kernel (1 for 3x3, 2 for 5x5)");
+                "Radius of Gaussian filtering kernel (1 for 3x3, 2 for 5x5)");
+
+        Constant.Integer medianRadius = new Constant.Integer(
+                "pixels",
+                1,
+                "Radius of Median filtering kernel (1 for 3x3, 2 for 5x5)");
 
     }
 }

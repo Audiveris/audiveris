@@ -62,6 +62,23 @@ public class LineUtil
     // intersection //
     //--------------//
     /**
+     * Return the intersection point between the two infinite lines
+     * provided.
+     *
+     * @param l1 first line
+     * @param l2 second line
+     * @return the intersection point
+     */
+    public static Point2D.Double intersection (Line2D l1,
+                                               Line2D l2)
+    {
+        return intersection(l1.getP1(), l1.getP2(), l2.getP1(), l2.getP2());
+    }
+
+    //--------------//
+    // intersection //
+    //--------------//
+    /**
      * Return the intersection point between infinite line A defined by
      * points p1 & p2 and infinite line B defined by points p3 & p4.
      *
@@ -119,6 +136,26 @@ public class LineUtil
     }
 
     //-----------------//
+    // intersectionAtX //
+    //-----------------//
+    /**
+     * Return the intersection point between provided infinite line
+     * and infinite vertical line at provided abscissa.
+     *
+     * @param line provided line
+     * @param x    provided abscissa
+     * @return the intersection point
+     */
+    public static Point2D.Double intersectionAtX (Line2D line,
+                                                  double x)
+    {
+        Point2D p3 = new Point2D.Double(x, 0);
+        Point2D p4 = new Point2D.Double(x, 1000);
+
+        return intersection(line.getP1(), line.getP2(), p3, p4);
+    }
+
+    //-----------------//
     // intersectionAtY //
     //-----------------//
     /**
@@ -138,5 +175,25 @@ public class LineUtil
         Point2D p4 = new Point2D.Double(1000, y);
 
         return intersection(p1, p2, p3, p4);
+    }
+
+    //-----------------//
+    // intersectionAtY //
+    //-----------------//
+    /**
+     * Return the intersection point between provided infinite line
+     * and infinite horizontal line at provided ordinate.
+     *
+     * @param line provided line
+     * @param y    provided ordinate
+     * @return the intersection point
+     */
+    public static Point2D.Double intersectionAtY (Line2D line,
+                                                  double y)
+    {
+        Point2D p3 = new Point2D.Double(0, y);
+        Point2D p4 = new Point2D.Double(1000, y);
+
+        return intersection(line.getP1(), line.getP2(), p3, p4);
     }
 }

@@ -11,16 +11,34 @@
 // </editor-fold>
 package omr.sig;
 
-import java.util.Arrays;
-
 /**
- * Class {@code Grades}
+ * Class {@code Grades} gathers utility methods dealing with grade
+ * values.
  *
  * @author Hervé Bitteur
  */
 public class Grades
 {
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * Constraint the provided value to lie within [0..1] range.
+     *
+     * @param value the value to check
+     * @return the adjusted value
+     */
+    public static double clamp (double value)
+    {
+        if (value < 0) {
+            value = 0;
+        }
+
+        if (value > 1) {
+            value = 1;
+        }
+
+        return value;
+    }
 
     public static double contextual (double target,
                                      double ratio,
@@ -52,7 +70,7 @@ public class Grades
         final int n = sources.length; // Nb of supporting sources
         final int combNb = (int) Math.pow(2, n);
         final boolean[] trueFalse = new boolean[]{true, false};
-        
+
         // Define all combinations
         final boolean[][] bools = new boolean[combNb][n];
 

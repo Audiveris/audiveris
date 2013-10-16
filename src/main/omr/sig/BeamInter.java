@@ -14,11 +14,15 @@ package omr.sig;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import java.awt.geom.Line2D;
-import java.awt.geom.Path2D;
-import java.util.EnumMap;
-import java.util.Map;
+import omr.math.AreaUtil;
+
 import omr.util.VerticalSide;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.geom.Area;
+import java.awt.geom.Line2D;
 
 /**
  * Class {@code BeamInter} represents a beam interpretation.
@@ -28,46 +32,57 @@ import omr.util.VerticalSide;
 public class BeamInter
         extends BasicInter
 {
-    //~ Instance fields --------------------------------------------------------
-    
-    /** Top and bottom borders. */
-    private final Map<VerticalSide, Line2D> borders = new EnumMap<VerticalSide,Line2D>(VerticalSide.class);
+    //~ Static fields/initializers ---------------------------------------------
 
-    /** Beam path, meant for drawing. */
-    private final Path2D path;
+    private static final Logger logger = LoggerFactory.getLogger(
+            BeamInter.class);
+
+    //~ Instance fields --------------------------------------------------------
+    /** Median line. */
+    private final Line2D median;
+
+    /** Beam height. */
+    private final double height;
+
+    /** Beam precise area. */
+    private final Area area;
 
     //~ Constructors -----------------------------------------------------------
     /**
      * Creates a new BeamInter object.
      *
-     * @param glyph the underlying glyph
-     * @param grade the assignment quality
-     * @param north northern border of the beam
-     * @param south southern border of the beam
+     * @param glyph   the underlying glyph
+     * @param impacts the grade details
+     * @param median  median beam line
+     * @param height  beam height
      */
     public BeamInter (Glyph glyph,
-                      double grade,
-                      Line2D north,
-                      Line2D south)
+                      Impacts impacts,
+                      Line2D median,
+                      double height)
     {
-        super(glyph, Shape.BEAM, grade);
+        super(glyph, Shape.BEAM, impacts.computeGrade());
+        setImpacts(impacts);
 
-        borders.put(VerticalSide.TOP, north);
-        borders.put(VerticalSide.BOTTOM, south);
+        this.median = median;
+        this.height = height;
 
-        // Build drawing path
-        path = new Path2D.Double();
-        path.moveTo(north.getX1(), north.getY1()); // Upper left
-        path.lineTo(north.getX2() + 1, north.getY2()); // Upper right
-        path.lineTo(south.getX2() + 1, south.getY2() + 1); // Lower right
-        path.lineTo(south.getX1(), south.getY1() + 1); // Lower left
-        path.closePath();
+        area = AreaUtil.horizontalParallelogram(
+                median.getP1(),
+                median.getP2(),
+                height);
 
         // Define precise bounds based on this path
-        setBounds(north.getBounds().union(south.getBounds()));
+        setBounds(area.getBounds());
     }
 
     //~ Methods ----------------------------------------------------------------
+    @Override
+    public boolean isGood ()
+    {
+        return grade >= 0.5; //TODO: use constant
+    }
+    
     //--------//
     // accept //
     //--------//
@@ -77,40 +92,106 @@ public class BeamInter
         visitor.visit(this);
     }
 
+    //---------//
+    // getArea //
+    //---------//
     /**
-     * @return the north
+     * Report the precise defining area.
+     *
+     * @return the inter area
      */
-    public Line2D getNorth ()
+    public Area getArea ()
     {
-        return borders.get(VerticalSide.TOP);
+        return area;
     }
 
-    //---------//
-    // getPath //
-    //---------//
-    public Path2D getPath ()
-    {
-        return path;
-    }
-
-    /**
-     * @return the south
-     */
-    public Line2D getSouth ()
-    {
-        return borders.get(VerticalSide.BOTTOM);
-    }
-    
     //-----------//
     // getBorder //
     //-----------//
     /**
-     * Report the border on desired side
+     * Report the beam border line on desired side
+     *
      * @param side the desired side
-     * @return the border on this side
+     * @return the beam border line on desired side
      */
-    public Line2D getBorder(VerticalSide side)
+    public Line2D getBorder (VerticalSide side)
     {
-        return borders.get(side);
+        final double dy = (side == VerticalSide.TOP) ? (-height / 2) : (height / 2);
+
+        return new Line2D.Double(
+                median.getX1(),
+                median.getY1() + dy,
+                median.getX2(),
+                median.getY2() + dy);
+    }
+
+    //-----------//
+    // getHeight //
+    //-----------//
+    /**
+     * @return the height
+     */
+    public double getHeight ()
+    {
+        return height;
+    }
+
+    //-----------//
+    // getMedian //
+    //-----------//
+    /**
+     * Report the median line
+     *
+     * @return the beam median line
+     */
+    public Line2D getMedian ()
+    {
+        return median;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //---------//
+    // Impacts //
+    //---------//
+    public static class Impacts
+            implements GradeImpacts
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** width impact. */
+        final double width;
+
+        /** core ratio impact. */
+        final double core;
+
+        /** belt ratio impact. */
+        final double belt;
+
+        //~ Constructors -------------------------------------------------------
+        public Impacts (double width,
+                        double core,
+                        double belt)
+        {
+            this.width = width;
+            this.core = core;
+            this.belt = belt;
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        public double computeGrade ()
+        {
+            return (width + core + belt) / 3;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return String.format(
+                    "width:%.2f core:%.2f belt:%.2f",
+                    width,
+                    core,
+                    belt);
+        }
     }
 }

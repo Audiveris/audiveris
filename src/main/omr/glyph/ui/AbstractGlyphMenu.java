@@ -25,8 +25,7 @@ import java.util.Set;
 
 /**
  * Abstract class {@code AbstractGlyphMenu} is the base for
- * glyph-based menus such as {@link SymbolMenu} and {@link
- * omr.sig.ui.PileMenu}.
+ * glyph-based menus such as {@link SymbolMenu}.
  *
  * @author Hervé Bitteur
  */
@@ -67,7 +66,6 @@ public abstract class AbstractGlyphMenu
      *
      * @param sheet     the related sheet
      * @param text      the menu text
-     * @param menuClass the precise class to use for menu
      */
     public AbstractGlyphMenu (Sheet sheet,
                               String text)

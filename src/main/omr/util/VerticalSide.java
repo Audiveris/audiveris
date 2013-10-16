@@ -23,4 +23,13 @@ public enum VerticalSide
     TOP,
     BOTTOM;
 
+    /**
+     * Report the opposite of this side
+     *
+     * @return the opposite side
+     */
+    public VerticalSide opposite ()
+    {
+        return (this == TOP) ? BOTTOM : TOP;
+    }
 }

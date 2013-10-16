@@ -17,8 +17,13 @@ import static omr.WellKnowns.LINE_SEPARATOR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.image.BufferedSource;
+import omr.image.ChamferDistance;
 import omr.image.FilterDescriptor;
 import omr.image.Picture;
+import omr.image.Picture.Key;
+import omr.image.PixelBuffer;
+import omr.image.PixelSource;
 
 import omr.math.Histogram;
 import omr.math.Histogram.MaxEntry;
@@ -53,8 +58,6 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
-import omr.image.ChamferDistance;
-import omr.image.PixelBuffer;
 
 /**
  * Class {@code ScaleBuilder} encapsulates the computation of a sheet
@@ -62,19 +65,23 @@ import omr.image.PixelBuffer;
  * frequent background run length, since this gives the average
  * interline value.
  *
- * <p>A second foreground peak usually gives the average beam thickness.
+ * <p>
+ * A second foreground peak usually gives the average beam thickness.
  * And similarly, a second background peak may indicate a series of staves
  * with a different interline than the main series.</p>
  *
- * <p>Internally, additional validity checks are performed:<ol>
+ * <p>
+ * Internally, additional validity checks are performed:<ol>
  * <li>Method {@link #checkStaves} looks at foreground and background
  * peak populations.
- * <p>If these counts are below quorum values (see constants.quorumRatio),
+ * <p>
+ * If these counts are below quorum values (see constants.quorumRatio),
  * we can suspect that the page does not contain regularly spaced staff lines.
  * </p></li>
  * <li>Method {@link #checkResolution} looks at foreground and background
  * peak keys.
- * <p>If we have not been able to retrieve the main run length for background
+ * <p>
+ * If we have not been able to retrieve the main run length for background
  * or for foreground, then we suspect a wrong image format. In that case,
  * the safe action is to stop the processing, by throwing a StepException.
  * If the main interline value is below a certain threshold
@@ -82,7 +89,8 @@ import omr.image.PixelBuffer;
  * a music sheet (it may rather be an image, a page of text, ...).</p></li>
  * </ol>
  *
- * <p>If we have doubts about the page at hand and if this page is part of a
+ * <p>
+ * If we have doubts about the page at hand and if this page is part of a
  * multi-page score, we propose to simply discard this sheet. In batch, the
  * page is discarded without asking for confirmation.</p>
  *
@@ -200,9 +208,10 @@ public class ScaleBuilder
 
             watch.start("Binarization " + desc);
 
+            PixelSource initialSource = new BufferedSource(picture.getImage(Key.INITIAL));
             RunsTableFactory factory = new RunsTableFactory(
                     Orientation.VERTICAL,
-                    desc.getFilter(picture),
+                    desc.getFilter(initialSource),
                     0);
             RunsTable wholeVertTable = factory.createTable("Binary");
 
@@ -215,7 +224,7 @@ public class ScaleBuilder
             // For the time being, it is kept alive for display purpose, and to
             // allow the dewarping of the initial picture.
             if (constants.disposeImage.isSet()) {
-                picture.dispose(); // To discard image and raster
+                picture.disposeImage(Key.INITIAL); // To discard image
             }
 
             watch.start("Histograms");
@@ -510,9 +519,9 @@ public class ScaleBuilder
             if (Math.abs(p1.best - p2.best) <= forePeak.getKey().best) {
                 backPeak = new PeakEntry(
                         new Histogram.Peak<>(
-                        Math.min(p1.first, p2.first),
-                        (p1.best + p2.best) / 2,
-                        Math.max(p1.second, p2.second)),
+                                Math.min(p1.first, p2.first),
+                                (p1.best + p2.best) / 2,
+                                Math.max(p1.second, p2.second)),
                         (backPeak.getValue() + secondBackPeak.getValue()) / 2);
                 secondBackPeak = null;
                 logger.info("Merged two close background peaks");
@@ -946,7 +955,7 @@ public class ScaleBuilder
                     true, // Show legend
                     false, // Show tool tips
                     false // urls
-                    );
+            );
 
             // Hosting frame
             ChartFrame frame = new ChartFrame(

@@ -84,7 +84,7 @@ public class ChamferMatchingTest
 
     //~ Methods ----------------------------------------------------------------
     /**
-     * Test of matchAll method, of class ChamferMatching.
+     * Test of matchAll method, of class DistanceMatching.
      */
     @Test
     public void testMatch ()
@@ -101,7 +101,7 @@ public class ChamferMatchingTest
         Table distances = new ChamferDistance.Short().computeToFore(image);
         TableUtil.dump("Distances:", distances);
 
-        ChamferMatching instance = new ChamferMatching(distances);
+        DistanceMatching instance = new DistanceMatching(distances);
         List<PixelDistance> locs = instance.matchAll(
                 template,
                 Double.MAX_VALUE);

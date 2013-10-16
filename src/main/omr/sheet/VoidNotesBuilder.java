@@ -24,11 +24,11 @@ import omr.grid.FilamentLine;
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
 
+import omr.image.Anchored.Anchor;
+import static omr.image.Anchored.Anchor.*;
 import omr.image.PixelDistance;
 import omr.image.Table;
 import omr.image.Template;
-import omr.image.Template.Anchor;
-import static omr.image.Template.Anchor.*;
 import omr.image.TemplateFactory;
 
 import omr.math.GeoOrder;
@@ -41,7 +41,9 @@ import omr.math.ReversePathIterator;
 import omr.run.Orientation;
 
 import omr.sig.BasicInter;
+import omr.sig.BlackHeadInter;
 import omr.sig.Exclusion;
+import omr.sig.Grades;
 import omr.sig.Inter;
 import omr.sig.SIGraph;
 import omr.sig.VoidHeadInter;
@@ -65,13 +67,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 
 /**
  * Class {@code VoidNotesBuilder} retrieves the void note heads and
  * the whole notes for a system.
+ * <p>
+ * It uses a distance matching approach which works well for such symbols that
+ * exhibit a fixed shape, with a combination of foreground and background
+ * information.
+ * Besides void heads, this approach is used to complement the retrieval of
+ * black note heads, since it can address black heads even if those lack many
+ * foreground pixels.
  * <p>
  * We don't need to check each and every location in the system, but only the
  * locations where such note kind is possible:<ul>
@@ -94,15 +105,28 @@ public class VoidNotesBuilder
     private static final Logger logger = LoggerFactory.getLogger(
             VoidNotesBuilder.class);
 
-    /** Shapes that occur right on staff lines or ledgers. */
-    private static final Shape[] evens = new Shape[]{
-        Shape.VOID_EVEN, Shape.WHOLE_EVEN
-    };
+    /**
+     * Shapes that occur right on staff lines or ledgers.
+     * Pitch value is even, they are crossed by a horizontal line.
+     */
+    private static final List<Shape> evens = Arrays.asList(
+            Shape.VOID_EVEN,
+            Shape.WHOLE_EVEN,
+            Shape.NOTEHEAD_BLACK);
 
-    /** Shapes that occur between staff lines or ledgers. */
-    private static final Shape[] odds = new Shape[]{
-        Shape.VOID_ODD, Shape.WHOLE_ODD
-    };
+    /**
+     * Shapes that occur between staff lines or ledgers.
+     * Pitch value is odd, they are not crossed by any horizontal line.
+     */
+    private static final List<Shape> odds = Arrays.asList(
+            Shape.VOID_ODD,
+            Shape.WHOLE_ODD,
+            Shape.NOTEHEAD_BLACK);
+
+    /** Shapes that cannot occur near stem. */
+    private static final List<Shape> noStems = Arrays.asList(
+            Shape.WHOLE_ODD,
+            Shape.WHOLE_EVEN);
 
     /** Shapes of competitors. */
     private static final List<Shape> competingShapes = Arrays.asList(
@@ -135,7 +159,7 @@ public class VoidNotesBuilder
     /** Minimum width of templates. */
     private final int minTemplateWidth;
 
-    /** The scaled templates to use. */
+    /** The <b>properly scaled</b> templates to use. */
     private final Map<Shape, Template> templates = new HashMap<Shape, Template>();
 
     /** The distance table to use. */
@@ -177,6 +201,10 @@ public class VoidNotesBuilder
     //----------------//
     // buildVoidHeads //
     //----------------//
+    /**
+     * Retrieve all void heads and whole notes in the system, as well
+     * as additional black heads.
+     */
     public void buildVoidHeads ()
     {
         StopWatch watch = new StopWatch("buildVoidHeads S#" + system.getId());
@@ -210,19 +238,22 @@ public class VoidNotesBuilder
     //----------------//
     // buildTemplates //
     //----------------//
+    /**
+     * Populate the map of desired templates, scaled at proper value.
+     *
+     * @return the map to use for template matching
+     */
     private int buildTemplates ()
     {
         final int interline = scale.getInterline();
         int minWidth = Integer.MAX_VALUE;
 
-        for (Shape shape : evens) {
-            Template tpl = factory.getTemplate(shape, interline);
-            minWidth = Math.min(minWidth, tpl.getWidth());
-            templates.put(shape, tpl);
-        }
+        final Set<Shape> allShapes = new HashSet<Shape>();
+        allShapes.addAll(evens);
+        allShapes.addAll(odds);
 
-        for (Shape shape : odds) {
-            Template tpl = factory.getTemplate(shape, scale.getInterline());
+        for (Shape shape : allShapes) {
+            Template tpl = factory.getTemplate(shape, interline);
             minWidth = Math.min(minWidth, tpl.getWidth());
             templates.put(shape, tpl);
         }
@@ -248,9 +279,8 @@ public class VoidNotesBuilder
                                int pitch)
     {
         final Template tpl = templates.get(shape);
-        final Rectangle box = tpl.getBoxAt(loc.x, loc.y, anchor);
-        final double grade = Math.max(
-                0,
+        final Rectangle box = tpl.getBoundsAt(loc.x, loc.y, anchor);
+        final double grade = Grades.clamp(
                 1 - (loc.d / params.maxMatchingDistance));
 
         // Is grade acceptable?
@@ -328,10 +358,10 @@ public class VoidNotesBuilder
     // flagOverlaps //
     //--------------//
     /**
-     * In the provided list of interpretations, detect and flag the
-     * overlapping ones.
+     * In the provided list of interpretations, detect and flag as
+     * such the overlapping ones.
      *
-     * @param inters the provided inters (for a staff)
+     * @param inters the provided interpretations (for a staff)
      */
     private void flagOverlaps (List<Inter> inters)
     {
@@ -419,13 +449,13 @@ public class VoidNotesBuilder
     {
         List<Inter> comps = sig.inters(
                 new Predicate<Inter>()
-        {
-            @Override
-            public boolean check (Inter inter)
-            {
-                return competingShapes.contains(inter.getShape());
-            }
-        });
+                {
+                    @Override
+                    public boolean check (Inter inter)
+                    {
+                        return competingShapes.contains(inter.getShape());
+                    }
+                });
 
         Collections.sort(comps, Inter.byOrdinate);
 
@@ -473,6 +503,9 @@ public class VoidNotesBuilder
                            int pitch)
     {
         switch (shape) {
+        case NOTEHEAD_BLACK:
+            return new BlackHeadInter(box, grade, pitch);
+
         case VOID_ODD:
         case VOID_EVEN:
             return new VoidHeadInter(box, grade, pitch);
@@ -492,10 +525,12 @@ public class VoidNotesBuilder
     /**
      * Lookup a line in the provided direction for note candidates,
      * skipping the location already used by (good) competitors.
+     * <p>
      * Abscissae tied to stem seeds are tried on left and right sides for void
-     * heads only.
-     * All abscissae within line range are tried for void heads and whole notes,
-     * but seed-tied locations are given priority over these ones.
+     * and black heads only (no whole notes).
+     * All abscissae within line range are tried for all symbols (void and black
+     * heads, whole notes), but seed-tied locations are given priority over
+     * these ones.
      *
      * @param prefix   a prefix used to avoid name collision between ledgers
      * @param staff    the containing staff
@@ -511,12 +546,15 @@ public class VoidNotesBuilder
     {
         StaffInfo staff = line.getStaff();
 
-        // Competitors for this horizontal band
+        // Competitors for this horizontal slice
         final double ratio = params.shrinkVertRatio;
         final double above = (scale.getInterline() * (dir - ratio)) / 2;
         final double below = (scale.getInterline() * (dir + ratio)) / 2;
         final Area area = line.getArea(above, below);
-        staff.addAttachment(line.getPrefix() + "#" + pitch, area);
+
+        if (constants.allowAttachments.isSet()) {
+            staff.addAttachment(line.getPrefix() + "#" + pitch, area);
+        }
 
         List<Inter> competitors = getCompetitorsSlice(area);
         logger.debug("lookup step: {} comps: {}", pitch, competitors.size());
@@ -539,6 +577,17 @@ public class VoidNotesBuilder
     //-------------//
     // lookupRange //
     //-------------//
+    /**
+     * Lookup an area, using all abscissae in line range.
+     *
+     * @param area        the slice to browse
+     * @param line        adapter to the underlying line (staff line or ledger)
+     * @param dir         direction from the line
+     * @param pitch       pitch position
+     * @param competitors collection of existing competing symbols
+     * @return the list of created interpretations
+     * @see #lookupSeeds
+     */
     private List<Inter> lookupRange (LineAdapter line,
                                      int dir,
                                      int pitch,
@@ -547,7 +596,7 @@ public class VoidNotesBuilder
         final List<Inter> createdInters = new ArrayList<Inter>();
 
         /** Shapes to look for */
-        final Shape[] shapes = (dir == 0) ? evens : odds;
+        final List<Shape> shapes = (dir == 0) ? evens : odds;
 
         /** Template anchor to use */
         final Anchor anchor = (dir == 0) ? MIDDLE_LEFT
@@ -573,7 +622,7 @@ public class VoidNotesBuilder
 
             for (Shape shape : shapes) {
                 final Template tpl = templates.get(shape);
-                final Rectangle tplBox = tpl.getBoxAt(x, y, anchor);
+                final Rectangle tplBox = tpl.getBoundsAt(x, y, anchor);
                 final Rectangle2D smallBox = shrink(tplBox);
 
                 // Skip if location already used by good object (beam, black head)
@@ -612,6 +661,18 @@ public class VoidNotesBuilder
     //-------------//
     // lookupSeeds //
     //-------------//
+    /**
+     * Lookup an area, only at abscissae tied to existing stem seeds.
+     * Whole notes cannot be searched for at these locations.
+     *
+     * @param area        the slice to browse
+     * @param line        adapter to the underlying line (staff line or ledger)
+     * @param dir         direction from the line
+     * @param pitch       pitch position
+     * @param competitors collection of existing competing symbols
+     * @return the list of created interpretations
+     * @see #lookupRange
+     */
     private List<Inter> lookupSeeds (Area area,
                                      LineAdapter line,
                                      int dir,
@@ -620,45 +681,57 @@ public class VoidNotesBuilder
     {
         final List<Inter> createdInters = new ArrayList<Inter>();
 
-        // Shape to look for
-        final Shape shape = (dir == 0) ? Shape.VOID_EVEN : Shape.VOID_ODD;
-        final Template tpl = templates.get(shape);
+        // Shapes to look for
+        final List<Shape> shapes = new ArrayList<Shape>(
+                (dir == 0) ? evens : odds);
+        shapes.removeAll(noStems);
 
         // Intersected seeds in the area
         final List<Glyph> seeds = getSeedsSlice(area);
 
         // Use one anchor for each horizontal side of the stem seed
         final Anchor[] anchors = new Anchor[]{
+            // On left of stem
             (dir == 0) ? LEFT_STEM
             : ((dir < 0) ? BOTTOM_LEFT_STEM
             : TOP_LEFT_STEM),
+            // On right of stem
             (dir == 0) ? RIGHT_STEM
             : ((dir < 0) ? BOTTOM_RIGHT_STEM
             : TOP_RIGHT_STEM)
         };
 
         for (Glyph seed : seeds) {
+            // Compute precise stem link point
             // x value is imposed by seed alignment, y value by line
             int x = GeoUtil.centerOf(seed.getBounds()).x; // Rough x value
-            int y = line.yAt(x); // Precise y value
-            Point2D top = seed.getStartPoint(Orientation.VERTICAL);
-            Point2D bot = seed.getStopPoint(Orientation.VERTICAL);
-            Point2D pt = LineUtil.intersectionAtY(top, bot, y);
+            final int y = line.yAt(x); // Precise y value
+            final Point2D top = seed.getStartPoint(Orientation.VERTICAL);
+            final Point2D bot = seed.getStopPoint(Orientation.VERTICAL);
+            final Point2D pt = LineUtil.intersectionAtY(top, bot, y);
             x = (int) Math.rint(pt.getX()); // Precise x value
 
             for (Anchor anchor : anchors) {
-                final Rectangle2D smallBox = shrink(tpl.getBoxAt(x, y, anchor));
+                for (Shape shape : shapes) {
+                    final Template tpl = templates.get(shape);
+                    final Rectangle tplBox = tpl.getBoundsAt(x, y, anchor);
+                    final Rectangle2D smallBox = shrink(tplBox);
 
-                // Skip if location already used by good object (beam, black head)
-                if (!overlap(smallBox, competitors)) {
-                    final double dist = tpl.evaluate(x, y, anchor, distances);
+                    // Skip if location already used by good object (beam, black head)
+                    if (!overlap(smallBox, competitors)) {
+                        final double dist = tpl.evaluate(x, y, anchor, distances);
 
-                    if (dist <= params.maxMatchingDistance) {
-                        PixelDistance loc = new PixelDistance(x, y, dist);
-                        Inter inter = createInter(loc, anchor, shape, pitch);
+                        if (dist <= params.maxMatchingDistance) {
+                            PixelDistance loc = new PixelDistance(x, y, dist);
+                            Inter inter = createInter(
+                                    loc,
+                                    anchor,
+                                    shape,
+                                    pitch);
 
-                        if (inter != null) {
-                            createdInters.add(inter);
+                            if (inter != null) {
+                                createdInters.add(inter);
+                            }
                         }
                     }
                 }
@@ -699,6 +772,13 @@ public class VoidNotesBuilder
     //--------------//
     // processStaff //
     //--------------//
+    /**
+     * Retrieve notes along the provided staff.
+     *
+     * @param staff the staff to process
+     * @param seeds should we stick to stem seeds or not?
+     * @return the list of created interpretations
+     */
     private List<Inter> processStaff (StaffInfo staff,
                                       boolean seeds)
     {
@@ -811,7 +891,8 @@ public class VoidNotesBuilder
     // LineAdapter //
     //-------------//
     /**
-     * Needed to adapt to staff LineInfo or ledger glyph line.
+     * Such adapter is needed to interact with staff LineInfo or ledger
+     * glyph line in a consistent way.
      */
     private abstract static class LineAdapter
     {
@@ -850,6 +931,7 @@ public class VoidNotesBuilder
         /** Report the ordinate at provided abscissa. */
         public abstract int yAt (int x);
 
+        /** Needed to allow various attachments on the same staff. */
         public String getPrefix ()
         {
             return prefix;
@@ -877,9 +959,13 @@ public class VoidNotesBuilder
                 false,
                 "Should we print out the class parameters?");
 
+        final Constant.Boolean allowAttachments = new Constant.Boolean(
+                false,
+                "Should we allow staff attachments for created areas?");
+
         final Constant.Double maxMatchingDistance = new Constant.Double(
                 "distance**2",
-                1.5, //0.8,
+                1.5,
                 "Maximum (square) matching distance");
 
         final Scale.Fraction maxTemplateDelta = new Scale.Fraction(
@@ -927,27 +1013,6 @@ public class VoidNotesBuilder
          */
         public PixelDistance getMeanLocation ()
         {
-            //            double xx = 0;
-            //            double yy = 0;
-            //            double dd = 0;
-            //
-            //            for (PixelDistance match : matches) {
-            //                xx += match.x;
-            //                yy += match.y;
-            //                dd += match.d;
-            //            }
-            //
-            //            int n = matches.size();
-            //
-            //            final int x = (int) Math.rint(xx / n);
-            //            final int y = (int) Math.rint(yy / n);
-            //            PixelDistance mean = new PixelDistance(
-            //                    x,
-            //                    y,
-            //                    dd / n);
-            //
-            //            ///logger.debug("Mean {} details: {}", mean, this);
-            //            return mean;
             return matches.get(0);
         }
 
@@ -992,6 +1057,10 @@ public class VoidNotesBuilder
 
         private final Glyph ledger;
 
+        private final Point2D left;
+
+        private final Point2D right;
+
         //~ Constructors -------------------------------------------------------
         public LedgerAdapter (StaffInfo staff,
                               String prefix,
@@ -999,6 +1068,8 @@ public class VoidNotesBuilder
         {
             super(staff, prefix);
             this.ledger = ledger;
+            left = ledger.getStartPoint(Orientation.HORIZONTAL);
+            right = ledger.getStopPoint(Orientation.HORIZONTAL);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -1006,13 +1077,11 @@ public class VoidNotesBuilder
         public Area getArea (double above,
                              double below)
         {
-            Point2D left = ledger.getStartPoint(Orientation.HORIZONTAL);
-            Point2D right = ledger.getStopPoint(Orientation.HORIZONTAL);
             Path2D path = new Path2D.Double();
             path.moveTo(left.getX(), left.getY() + above);
             path.lineTo(right.getX(), right.getY() + above);
-            path.lineTo(right.getX(), right.getY() + below);
-            path.lineTo(left.getX(), left.getY() + below);
+            path.lineTo(right.getX(), right.getY() + below + 1);
+            path.lineTo(left.getX(), left.getY() + below + 1);
             path.closePath();
 
             return new Area(path);
@@ -1021,22 +1090,20 @@ public class VoidNotesBuilder
         @Override
         public int getLeftAbscissa ()
         {
-            return (int) Math.floor(
-                    ledger.getStartPoint(Orientation.HORIZONTAL).getX());
+            return (int) Math.ceil(left.getX());
         }
 
         @Override
         public int getRightAbscissa ()
         {
-            return (int) Math.floor(
-                    ledger.getStopPoint(Orientation.HORIZONTAL).getX());
+            return (int) Math.floor(right.getX());
         }
 
         @Override
         public int yAt (int x)
         {
-            return ledger.getLine()
-                    .yAtX(x);
+            return (int) Math.rint(
+                    LineUtil.intersectionAtX(left, right, x).getY());
         }
     }
 
@@ -1112,7 +1179,7 @@ public class VoidNotesBuilder
             path.append(spline.getPathIterator(at), false);
 
             // Bottom line (reversed)
-            at = AffineTransform.getTranslateInstance(0, below);
+            at = AffineTransform.getTranslateInstance(0, below + 1);
             path.append(
                     ReversePathIterator.getReversePathIterator(spline, at),
                     true);

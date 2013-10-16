@@ -28,6 +28,8 @@ import java.util.TreeSet;
 
 /**
  * Class {@code Steps} handles the (ordered) set of all defined steps
+ * <p>
+ * <img src="doc-files/Activities.jpg" />
  *
  * @author Hervé Bitteur
  */
@@ -47,7 +49,17 @@ public class Steps
 
     public static final String SYSTEMS = "SYSTEMS";
 
-    public static final String ANCHORS = "ANCHORS";
+    public static final String STEM_SEEDS = "STEM_SEEDS";
+
+    public static final String BEAMS = "BEAMS";
+
+    public static final String LEDGERS = "LEDGERS";
+
+    public static final String BLACK_NOTES = "BLACK_NOTES";
+
+    public static final String VOID_NOTES = "VOID_NOTES";
+
+    public static final String STEM_LINKS = "STEM_LINKS";
 
     public static final String RESOLUTION = "RESOLUTION";
 
@@ -80,9 +92,17 @@ public class Steps
         addStep(new LoadStep());
         addStep(new ScaleStep());
         addStep(new GridStep());
+
         addStep(new SystemsStep());
-        addStep(new AnchorsStep());
+
+        addStep(new StemSeedsStep());
+        addStep(new BeamsStep());
+        addStep(new LedgersStep());
+        addStep(new BlackNotesStep());
+        addStep(new VoidNotesStep());
+        addStep(new StemLinksStep());
         addStep(new ResolutionStep());
+
         addStep(new TextsStep());
         addStep(new SymbolsStep());
         addStep(new MeasuresStep());

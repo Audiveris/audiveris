@@ -47,6 +47,7 @@ public abstract class AbstractSystemStep
     /**
      * Creates a new AbstractSystemStep object.
      *
+     * @param name        step name
      * @param level       score level only or sheet level
      * @param mandatory   step must be done before any output
      * @param label       The title of the related (or most relevant) view tab
@@ -113,7 +114,7 @@ public abstract class AbstractSystemStep
      */
     @Override
     protected void doit (Collection<SystemInfo> systems,
-                      Sheet sheet)
+                         Sheet sheet)
             throws StepException
     {
         // Preliminary actions
@@ -134,6 +135,7 @@ public abstract class AbstractSystemStep
      * processed.
      *
      * @param systems the systems which have been updated
+     * @param sheet   the containing sheet
      * @throws StepException raised if processing failed
      */
     protected void doEpilog (Collection<SystemInfo> systems,
@@ -151,6 +153,7 @@ public abstract class AbstractSystemStep
      * launched in parallel.
      *
      * @param systems the systems which will be updated
+     * @param sheet   the containing sheet
      * @throws StepException raised if processing failed
      */
     protected void doProlog (Collection<SystemInfo> systems,
@@ -183,27 +186,27 @@ public abstract class AbstractSystemStep
                 final SystemInfo system = info;
                 tasks.add(
                         new Callable<Void>()
-                {
-                    @Override
-                    public Void call ()
+                        {
+                            @Override
+                            public Void call ()
                             throws Exception
-                    {
-                        try {
-                            logger.debug("{} doSystem #{}",
-                                    AbstractSystemStep.this,
-                                    system.idString());
+                            {
+                                try {
+                                    logger.debug("{} doSystem #{}",
+                                            AbstractSystemStep.this,
+                                            system.idString());
 
-                            doSystem(system);
-                        } catch (Exception ex) {
-                            logger.warn(sheet.getLogPrefix()
-                                        + "Interrupt on "
-                                        + system.idString(),
-                                    ex);
-                        }
+                                    doSystem(system);
+                                } catch (Exception ex) {
+                                    logger.warn(sheet.getLogPrefix()
+                                                + "Interrupt on "
+                                                + system.idString(),
+                                            ex);
+                                }
 
-                        return null;
-                    }
-                });
+                                return null;
+                            }
+                        });
             }
 
             // Launch all system tasks in parallel and wait for their completion

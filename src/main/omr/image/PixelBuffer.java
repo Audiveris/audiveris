@@ -80,7 +80,7 @@ public class PixelBuffer
     // PixelBuffer //
     //-------------//
     /**
-     * Creates a PixelBuffer from a BufferedImage.
+     * Creates a PixelBuffer from (the first band of) a BufferedImage.
      *
      * @param image the provided BufferedImage
      */
@@ -88,15 +88,18 @@ public class PixelBuffer
     {
         this(new Dimension(image.getWidth(), image.getHeight()));
 
-        StopWatch watch = new StopWatch("PixelBuffer");
+        final StopWatch watch = new StopWatch("PixelBuffer");
         watch.start("toBuffer");
 
-        int[] pixel = new int[3];
-        Raster raster = image.getRaster();
+        final int numBands = image.getSampleModel()
+                .getNumBands();
+        final int[] pixel = new int[numBands];
+        final Raster raster = image.getRaster();
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 raster.getPixel(x, y, pixel);
+                // We use just the first band
                 setPixel(x, y, pixel[0]);
             }
         }
@@ -197,15 +200,15 @@ public class PixelBuffer
     public boolean isFore (int x,
                            int y)
     {
-        return getPixel(x, y) < 128;
+        return getPixel(x, y) < 225;
     }
 
     //----------//
     // setPixel //
     //----------//
-    public void setPixel (int x,
-                          int y,
-                          int val)
+    public final void setPixel (int x,
+                                int y,
+                                int val)
     {
         buffer[(y * width) + x] = (byte) val;
     }
@@ -223,9 +226,7 @@ public class PixelBuffer
                 height,
                 BufferedImage.TYPE_BYTE_GRAY);
         final WritableRaster raster = img.getRaster();
-
         final int[] pixel = new int[1];
-        int val;
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {

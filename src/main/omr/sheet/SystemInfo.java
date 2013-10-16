@@ -68,7 +68,7 @@ import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * Class {@code SystemInfo} gathers information from the original
+ * Class {@literal SystemInfo} gathers information from the original
  * picture about a retrieved system.
  * Most of the physical processing is done in parallel at system level, and
  * thus is handled from this SystemInfo object.

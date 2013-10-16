@@ -5,6 +5,7 @@ syntax: glob
 src/**/*.jpg
 src/**/*.pdf
 dev/material/*.jpg
+dev/material/tasks-graph.pdf
 
 .hgignore
 *.exe

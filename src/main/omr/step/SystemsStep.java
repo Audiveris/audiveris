@@ -16,6 +16,8 @@ import omr.grid.LagWeaver;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import omr.sig.ui.InterBoard;
+
 import java.util.Collection;
 
 /**
@@ -54,6 +56,9 @@ public class SystemsStep
     {
         sheet.getAssembly()
                 .addBoard(Step.DATA_TAB, sheet.getBarsChecker().getCheckBoard());
+        // Inter board
+        sheet.getAssembly()
+                .addBoard(Step.DATA_TAB, new InterBoard(sheet));
     }
 
     //------//

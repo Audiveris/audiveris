@@ -72,7 +72,7 @@ import java.util.Arrays;
  * @author ryo/twitter &#64;xiaot_Tag
  * @author Hervé Bitteur
  */
-public class AdaptiveFilter
+public abstract class AdaptiveFilter
         extends SourceWrapper
         implements PixelFilter
 {
@@ -123,6 +123,38 @@ public class AdaptiveFilter
     }
 
     //~ Methods ----------------------------------------------------------------
+    //---------------------//
+    // getDefaultMeanCoeff //
+    //---------------------//
+    public static double getDefaultMeanCoeff ()
+    {
+        return constants.meanCoeff.getValue();
+    }
+
+    //-----------------------//
+    // getDefaultStdDevCoeff //
+    //-----------------------//
+    public static double getDefaultStdDevCoeff ()
+    {
+        return constants.stdDevCoeff.getValue();
+    }
+
+    //---------------------//
+    // setDefaultMeanCoeff //
+    //---------------------//
+    public static void setDefaultMeanCoeff (double meanCoeff)
+    {
+        constants.meanCoeff.setValue(meanCoeff);
+    }
+
+    //-----------------------//
+    // setDefaultStdDevCoeff //
+    //-----------------------//
+    public static void setDefaultStdDevCoeff (double stdDevCoeff)
+    {
+        constants.stdDevCoeff.setValue(stdDevCoeff);
+    }
+
     //------------//
     // getContext //
     //------------//
@@ -159,22 +191,6 @@ public class AdaptiveFilter
         }
     }
 
-    //---------------------//
-    // getDefaultMeanCoeff //
-    //---------------------//
-    public static double getDefaultMeanCoeff ()
-    {
-        return constants.meanCoeff.getValue();
-    }
-
-    //-----------------------//
-    // getDefaultStdDevCoeff //
-    //-----------------------//
-    public static double getDefaultStdDevCoeff ()
-    {
-        return constants.stdDevCoeff.getValue();
-    }
-
     //
     // -------//
     // isFore //
@@ -194,22 +210,6 @@ public class AdaptiveFilter
         boolean isFore = pixValue <= threshold;
 
         return isFore;
-    }
-
-    //---------------------//
-    // setDefaultMeanCoeff //
-    //---------------------//
-    public static void setDefaultMeanCoeff (double meanCoeff)
-    {
-        constants.meanCoeff.setValue(meanCoeff);
-    }
-
-    //-----------------------//
-    // setDefaultStdDevCoeff //
-    //-----------------------//
-    public static void setDefaultStdDevCoeff (double stdDevCoeff)
-    {
-        constants.stdDevCoeff.setValue(stdDevCoeff);
     }
 
     //------------------//

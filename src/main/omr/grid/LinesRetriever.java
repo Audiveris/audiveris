@@ -457,7 +457,7 @@ public class LinesRetriever
     // buildStaves //
     //-------------//
     /**
-     * Register line clusters as staves
+     * Register line clusters as staves.
      */
     private void buildStaves ()
     {

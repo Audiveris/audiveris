@@ -58,10 +58,10 @@ public class RunsTable
     public static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class};
 
     //~ Instance fields --------------------------------------------------------
-    /** (Debugging) name of this runs table */
+    /** (Debugging) name of this runs table. */
     private final String name;
 
-    /** Orientation, the same for this table and all contained runs */
+    /** Orientation, the same for this table and all contained runs. */
     private final Orientation orientation;
 
     /** Absolute dimension of the table */
@@ -70,7 +70,7 @@ public class RunsTable
     /** List of Runs found in each row. This is a list of lists of Runs */
     private final List<List<Run>> runs;
 
-    /** Hosted event service for UI events related to this table (Runs) */
+    /** Hosted event service for UI events related to this table (Runs). */
     private final SelectionService runService;
 
     //~ Constructors -----------------------------------------------------------

@@ -26,7 +26,7 @@ public interface Table
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Dump the table content, witha title.
+     * Dump the table content, with a title.
      *
      * @param title a title for the dump
      */
@@ -76,59 +76,12 @@ public interface Table
                    int val);
 
     //~ Inner Classes ----------------------------------------------------------
-    //----------//
-    // Abstract //
-    //----------//
-    public abstract class Abstract
-            implements Table
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Width of the table. */
-        protected final int width;
-
-        /** Height of the table. */
-        protected final int height;
-
-        //~ Constructors -------------------------------------------------------
-        /**
-         * Creates a new Table object.
-         *
-         * @param width  the table width
-         * @param height the table height
-         */
-        protected Abstract (int width,
-                            int height)
-        {
-            this.width = width;
-            this.height = height;
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public void dump (String title)
-        {
-            TableUtil.dump(title, this);
-        }
-
-        @Override
-        public int getHeight ()
-        {
-            return height;
-        }
-
-        @Override
-        public int getWidth ()
-        {
-            return width;
-        }
-    }
 
     //---------//
     // Integer //
     //---------//
     public static class Integer
-            extends Abstract
+        extends Abstract
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -136,6 +89,7 @@ public interface Table
         private final int[] table;
 
         //~ Constructors -------------------------------------------------------
+
         public Integer (int width,
                         int height)
         {
@@ -144,6 +98,7 @@ public interface Table
         }
 
         //~ Methods ------------------------------------------------------------
+
         @Override
         public void fill (int val)
         {
@@ -170,7 +125,7 @@ public interface Table
     // Short //
     //-------//
     public static class Short
-            extends Abstract
+        extends Abstract
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -178,6 +133,7 @@ public interface Table
         private final short[] table;
 
         //~ Constructors -------------------------------------------------------
+
         public Short (int width,
                       int height)
         {
@@ -186,6 +142,7 @@ public interface Table
         }
 
         //~ Methods ------------------------------------------------------------
+
         @Override
         public void fill (int val)
         {
@@ -212,7 +169,7 @@ public interface Table
     // UnsignedByte //
     //--------------//
     public static class UnsignedByte
-            extends Abstract
+        extends Abstract
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -220,6 +177,7 @@ public interface Table
         private final byte[] table;
 
         //~ Constructors -------------------------------------------------------
+
         public UnsignedByte (int width,
                              int height)
         {
@@ -228,6 +186,7 @@ public interface Table
         }
 
         //~ Methods ------------------------------------------------------------
+
         @Override
         public void fill (int val)
         {
@@ -238,13 +197,7 @@ public interface Table
         public int getValue (int x,
                              int y)
         {
-            int val = table[(y * width) + x];
-
-            if (val < 0) {
-                val += 256;
-            }
-
-            return val;
+            return table[(y * width) + x] & 0xff;
         }
 
         @Override
@@ -253,6 +206,56 @@ public interface Table
                               int val)
         {
             table[(y * width) + x] = (byte) val;
+        }
+    }
+
+    //----------//
+    // Abstract //
+    //----------//
+    public abstract class Abstract
+        implements Table
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Width of the table. */
+        protected final int width;
+
+        /** Height of the table. */
+        protected final int height;
+
+        //~ Constructors -------------------------------------------------------
+
+        /**
+         * Creates a new Table object.
+         *
+         * @param width  the table width
+         * @param height the table height
+         */
+        protected Abstract (int width,
+                            int height)
+        {
+            this.width = width;
+            this.height = height;
+        }
+
+        //~ Methods ------------------------------------------------------------
+
+        @Override
+        public void dump (String title)
+        {
+            TableUtil.dump(title, this);
+        }
+
+        @Override
+        public int getHeight ()
+        {
+            return height;
+        }
+
+        @Override
+        public int getWidth ()
+        {
+            return width;
         }
     }
 }

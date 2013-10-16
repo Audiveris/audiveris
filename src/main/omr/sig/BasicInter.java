@@ -35,6 +35,18 @@ public class BasicInter
     private static final Constants constants = new Constants();
 
     //~ Instance fields --------------------------------------------------------
+    /** The underlying glyph, if any. */
+    protected final Glyph glyph;
+
+    /** The assigned shape. */
+    protected final Shape shape;
+
+    /** The quality of this interpretation. */
+    protected final double grade;
+
+    /** The hosting SIG. */
+    protected SIGraph sig;
+
     /** The interpretation id, if identified. */
     private int id;
 
@@ -44,37 +56,13 @@ public class BasicInter
     /** VIP flag. */
     private boolean vip;
 
-    /** The underlying glyph, if any. */
-    protected final Glyph glyph;
-
-    /** The assigned shape. */
-    protected final Shape shape;
-
-    /** The hosting SIG. */
-    protected SIGraph sig;
-
     /** Object bounds, perhaps different from glyph bounds. */
     protected Rectangle box;
 
-    /** The quality of this interpretation. */
-    protected double grade;
+    /** Details about grade (for debugging). */
+    protected GradeImpacts impacts;
 
     //~ Constructors -----------------------------------------------------------
-    //------------//
-    // BasicInter //
-    //------------//
-    /**
-     * Creates a new BasicInter object.
-     *
-     * @param glyph the glyph to interpret
-     * @param shape the possible shape
-     */
-    public BasicInter (Glyph glyph,
-                       Shape shape)
-    {
-        this(glyph, null, shape, 0);
-    }
-
     //------------//
     // BasicInter //
     //------------//
@@ -178,9 +166,10 @@ public class BasicInter
             if (sig != null) {
                 sig.removeVertex(this);
             }
-            
+
             if (glyph != null) {
-                glyph.getInterpretations().remove(this);
+                glyph.getInterpretations()
+                        .remove(this);
             }
         }
     }
@@ -227,11 +216,21 @@ public class BasicInter
     @Override
     public String getDetails ()
     {
+        StringBuilder sb = new StringBuilder();
+
         if (getGlyph() != null) {
-            return glyph.idString();
+            sb.append(glyph.idString());
         }
 
-        return "";
+        if (impacts != null) {
+            if (sb.length() != 0) {
+                sb.append(" ");
+            }
+
+            sb.append(impacts);
+        }
+
+        return sb.toString();
     }
 
     //----------//
@@ -261,6 +260,15 @@ public class BasicInter
         return id;
     }
 
+    //------------//
+    // getImpacts //
+    //------------//
+    @Override
+    public GradeImpacts getImpacts ()
+    {
+        return impacts;
+    }
+
     //----------//
     // getShape //
     //----------//
@@ -279,6 +287,9 @@ public class BasicInter
         return sig;
     }
 
+    //-----------//
+    // isDeleted //
+    //-----------//
     @Override
     public boolean isDeleted ()
     {
@@ -322,15 +333,6 @@ public class BasicInter
         this.box = box;
     }
 
-    //----------//
-    // setGrade //
-    //----------//
-    @Override
-    public void setGrade (double grade)
-    {
-        this.grade = grade;
-    }
-
     //-------//
     // setId //
     //-------//
@@ -341,6 +343,15 @@ public class BasicInter
         assert id != 0 : "Assigning zero inter id";
 
         this.id = id;
+    }
+
+    //------------//
+    // setImpacts //
+    //------------//
+    @Override
+    public void setImpacts (GradeImpacts impacts)
+    {
+        this.impacts = impacts;
     }
 
     //--------//

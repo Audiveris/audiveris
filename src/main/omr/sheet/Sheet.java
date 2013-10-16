@@ -49,7 +49,9 @@ import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
+import omr.image.DistanceFilter;
 import omr.image.ImageFormatException;
+import omr.image.PixelFilter;
 import omr.image.Picture;
 import omr.image.PictureView;
 import omr.sheet.ui.BinarizationBoard;
@@ -173,6 +175,9 @@ public class Sheet
 
     /** Image of distances to foreground. */
     private Table distanceImage;
+
+    /** A PixelFilter based upon distanceImage. */
+    private PixelFilter distanceFilter;
 
     /** Initial skew value */
     private Skew skew;
@@ -1089,19 +1094,19 @@ public class Sheet
         Collections.sort(
                 neighbors,
                 new Comparator<SystemInfo>()
-        {
-            @Override
-            public int compare (SystemInfo s1,
-                                SystemInfo s2)
-            {
-                int y1 = (s1.getTop() + s1.getBottom()) / 2;
-                int d1 = Math.abs(point.y - y1);
-                int y2 = (s2.getTop() + s2.getBottom()) / 2;
-                int d2 = Math.abs(point.y - y2);
+                {
+                    @Override
+                    public int compare (SystemInfo s1,
+                                        SystemInfo s2)
+                    {
+                        int y1 = (s1.getTop() + s1.getBottom()) / 2;
+                        int d1 = Math.abs(point.y - y1);
+                        int y2 = (s2.getTop() + s2.getBottom()) / 2;
+                        int d2 = Math.abs(point.y - y2);
 
-                return Integer.signum(d1 - d2);
-            }
-        });
+                        return Integer.signum(d1 - d2);
+                    }
+                });
 
         return neighbors;
     }
@@ -1495,9 +1500,13 @@ public class Sheet
             symbolsEditor = null;
         // Fall-through!
 
-        case Steps.ANCHORS:
+        case Steps.LEDGERS:
             setLag(Lags.FULL_HLAG, null);
+        // Fall-through!
+            
+        case Steps.BEAMS:
             setLag(Lags.SPOT_LAG, null);
+            
         default:
         }
     }
@@ -1523,8 +1532,8 @@ public class Sheet
                     Step.PICTURE_TAB,
                     pictureView,
                     new BoardsPane(
-                    new PixelBoard(this),
-                    new BinarizationBoard(this)));
+                            new PixelBoard(this),
+                            new BinarizationBoard(this)));
         }
     }
 
@@ -1567,6 +1576,14 @@ public class Sheet
         return distanceImage;
     }
 
+    //-------------------//
+    // getDistanceFilter //
+    //-------------------//
+    public PixelFilter getDistanceFilter ()
+    {
+        return distanceFilter;
+    }
+
     //------------------//
     // setDistanceImage //
     //------------------//
@@ -1581,6 +1598,7 @@ public class Sheet
 
         // Save this distance image on disk for visual check
         //TableUtil.store(getId() + ".dist", distanceImage);
+        distanceFilter = new DistanceFilter(distanceImage);
     }
 
     //--------------------//

@@ -29,6 +29,4 @@ public interface InterVisitor
     void visit (StemInter inter);
 
     void visit (LedgerInter inter);
-
-    void visit (BlackHeadInter inter);
 }

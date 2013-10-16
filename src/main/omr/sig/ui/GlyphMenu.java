@@ -50,8 +50,6 @@ public class GlyphMenu
     //----------//
     /**
      * Creates a new GlyphMenu object.
-     *
-     * @param sheet the related sheet
      */
     public GlyphMenu ()
     {

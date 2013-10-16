@@ -10,6 +10,7 @@ package com.jhlabs.image;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.Kernel;
+import java.awt.image.WritableRaster;
 
 /**
  * A filter which applies Gaussian blur to an image.
@@ -45,7 +46,7 @@ public class GaussianFilter
     // GaussianFilter //
     //----------------//
     /**
-     * Construct a Gaussian filter.
+     * Construct a Gaussian filter wth a specified radius value.
      *
      * @param radius blur radius in pixels
      */
@@ -124,9 +125,23 @@ public class GaussianFilter
         convolveAndTranspose(inPixels, outPixels, width, height);
         convolveAndTranspose(outPixels, inPixels, height, width);
 
-        setRGB(dst, 0, 0, width, height, inPixels);
+        final BufferedImage img = new BufferedImage(
+                width,
+                height,
+                BufferedImage.TYPE_BYTE_GRAY);
+        final WritableRaster raster = img.getRaster();
+        final int[] pixel = new int[1];
 
-        return dst;
+        for (int y = 0; y < height; y++) {
+            final int offset = y*width;
+            for (int x = 0; x < width; x++) {
+                pixel[0] = inPixels[offset + x];
+                raster.setPixel(x, y, pixel);
+            }
+        }
+        
+
+        return img;
     }
 
     //-----------//

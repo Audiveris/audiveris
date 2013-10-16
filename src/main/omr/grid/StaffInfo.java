@@ -607,7 +607,7 @@ public class StaffInfo
      *
      * @param lineIndex the precise line index that specifies algebraic
      *                  distance from staff
-     * @return the proper set of ledgers, or null
+     * @return the proper abscissa-ordered set of ledgers, or null
      */
     public SortedSet<Glyph> getLedgers (int lineIndex)
     {

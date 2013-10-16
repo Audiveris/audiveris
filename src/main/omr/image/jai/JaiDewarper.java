@@ -11,8 +11,10 @@
 // </editor-fold>
 package omr.image.jai;
 
-import omr.sheet.Sheet;
 import omr.image.Picture;
+import omr.image.Picture.Key;
+
+import omr.sheet.Sheet;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
@@ -79,7 +81,7 @@ public class JaiDewarper
     public BufferedImage dewarpImage ()
     {
         ParameterBlock pb = new ParameterBlock();
-        pb.addSource(Picture.invert(sheet.getPicture().getImage()));
+        pb.addSource(Picture.invert(sheet.getPicture().getImage(Key.INITIAL)));
         pb.add(dewarpGrid);
         pb.add(new InterpolationBilinear());
 

@@ -13,8 +13,12 @@ package omr.sheet.ui;
 
 import omr.image.AdaptiveFilter;
 import omr.image.AdaptiveFilter.AdaptiveContext;
+import omr.image.BufferedSource;
 import omr.image.FilterDescriptor;
+import omr.image.Picture;
 import omr.image.PixelFilter;
+import omr.image.PixelSource;
+import omr.image.RandomFilter;
 
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
@@ -130,17 +134,18 @@ public class BinarizationBoard
                     FilterDescriptor desc = sheet.getPage()
                             .getFilterParam()
                             .getTarget();
-                    PixelFilter source = desc.getFilter(
-                            sheet.getPicture());
+                    PixelSource source = new BufferedSource(
+                            sheet.getPicture().getImage(Picture.Key.INITIAL));
+                    PixelFilter filter = desc.getFilter(source);
 
-                    if (source == null) {
-                        source = new AdaptiveFilter(
-                                sheet.getPicture(),
+                    if (filter == null) {
+                        filter = new RandomFilter(
+                                source,
                                 AdaptiveFilter.getDefaultMeanCoeff(),
                                 AdaptiveFilter.getDefaultStdDevCoeff());
                     }
 
-                    PixelFilter.Context context = source.getContext(
+                    PixelFilter.Context context = filter.getContext(
                             rect.x,
                             rect.y);
 

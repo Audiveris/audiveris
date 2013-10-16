@@ -39,61 +39,13 @@ import java.util.Map.Entry;
  * @author Hervé Bitteur
  */
 public class Template
+        implements Anchored
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             Template.class);
-
-    //~ Enumerations -----------------------------------------------------------
-    /** Specifies a reference location within template. */
-    public enum Anchor
-    {
-        //~ Enumeration constant initializers ----------------------------------
-
-        /**
-         * Area Center.
-         */
-        CENTER,
-        /**
-         * Upper left corner.
-         */
-        TOP_LEFT,
-        /**
-         * Middle left corner.
-         */
-        MIDDLE_LEFT,
-        /**
-         * Lower left corner.
-         */
-        BOTTOM_LEFT,
-        /**
-         * X at left stem, Y at top.
-         */
-        TOP_LEFT_STEM,
-        /**
-         * X at left stem, Y at middle.
-         */
-        LEFT_STEM,
-        /**
-         * X at left stem, Y at bottom.
-         */
-        BOTTOM_LEFT_STEM,
-        /**
-         * X at right stem, Y at top.
-         */
-        TOP_RIGHT_STEM,
-        /**
-         * X at right stem, Y at middle.
-         */
-        RIGHT_STEM,
-        /**
-         * X at right stem, Y at bottom.
-         */
-        BOTTOM_RIGHT_STEM;
-
-    }
 
     //~ Instance fields --------------------------------------------------------
     /** Template shape. */
@@ -140,7 +92,7 @@ public class Template
         this.height = height;
         this.symbol = symbol;
 
-        // Define common anchors
+        // Define common basic anchors
         addAnchor(Anchor.CENTER, 0.5, 0.5);
         addAnchor(Anchor.TOP_LEFT, 0, 0);
         addAnchor(Anchor.MIDDLE_LEFT, 0, 0.5);
@@ -151,15 +103,7 @@ public class Template
     //-----------//
     // addAnchor //
     //-----------//
-    /**
-     * Assign a relative offset for an anchor type.
-     *
-     * @param anchor the anchor type
-     * @param xRatio the abscissa offset from upper left corner, specified as
-     *               ratio of template width
-     * @param yRatio the ordinate offset from upper left corner, specified as
-     *               ratio of template height
-     */
+    @Override
     public final void addAnchor (Anchor anchor,
                                  double xRatio,
                                  double yRatio)
@@ -167,8 +111,8 @@ public class Template
         offsets.put(
                 anchor,
                 new Point(
-                (int) Math.rint(xRatio * width),
-                (int) Math.rint(yRatio * height)));
+                        (int) Math.rint(xRatio * width),
+                        (int) Math.rint(yRatio * height)));
     }
 
     //------//
@@ -261,21 +205,13 @@ public class Template
         return total / keyPoints.size();
     }
 
-    //----------//
-    // getBoxAt //
-    //----------//
-    /**
-     * Report the template bounds when positioning template anchor at
-     * location (x,y).
-     *
-     * @param x      abscissa for anchor
-     * @param y      ordinate for anchor
-     * @param anchor chosen template anchor
-     * @return the corresponding bounds
-     */
-    public Rectangle getBoxAt (int x,
-                               int y,
-                               Anchor anchor)
+    //-------------//
+    // getBoundsAt //
+    //-------------//
+    @Override
+    public Rectangle getBoundsAt (int x,
+                                  int y,
+                                  Anchor anchor)
     {
         final Point offset = getOffset(anchor);
 
@@ -285,11 +221,7 @@ public class Template
     //-----------//
     // getHeight //
     //-----------//
-    /**
-     * Report the template height
-     *
-     * @return the maximum ordinate of key points
-     */
+    @Override
     public int getHeight ()
     {
         return height;
@@ -298,16 +230,19 @@ public class Template
     //-----------//
     // getOffset //
     //-----------//
-    /**
-     * Report the offset from template upper left corner to the
-     * provided anchor.
-     *
-     * @param anchor the desired anchor
-     * @return the corresponding offset (vector from UL to anchor)
-     */
+    @Override
     public Point getOffset (Anchor anchor)
     {
-        return offsets.get(anchor);
+        Point offset = offsets.get(anchor);
+
+        if (offset == null) {
+            logger.error(
+                    "No offset defined for anchor {} in template {}",
+                    anchor,
+                    shape);
+        }
+
+        return offset;
     }
 
     //----------//
@@ -326,11 +261,7 @@ public class Template
     //----------//
     // getWidth //
     //----------//
-    /**
-     * Report the template width
-     *
-     * @return the maximum abscissa of key points
-     */
+    @Override
     public int getWidth ()
     {
         return width;
@@ -398,20 +329,19 @@ public class Template
         sb.append(" keyPoints:")
                 .append(keyPoints.size());
 
-//        for (PixelDistance pix : keyPoints) {
-//            sb.append(" (")
-//                    .append(pix.x)
-//                    .append(",")
-//                    .append(pix.y);
-//
-//            if (pix.d != 0) {
-//                sb.append(",")
-//                        .append(String.format("%.1f", pix.d));
-//            }
-//
-//            sb.append(")");
-//        }
-
+        //        for (PixelDistance pix : keyPoints) {
+        //            sb.append(" (")
+        //                    .append(pix.x)
+        //                    .append(",")
+        //                    .append(pix.y);
+        //
+        //            if (pix.d != 0) {
+        //                sb.append(",")
+        //                        .append(String.format("%.1f", pix.d));
+        //            }
+        //
+        //            sb.append(")");
+        //        }
         sb.append("}");
 
         return sb.toString();

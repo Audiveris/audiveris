@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.Main;
+import omr.WellKnowns;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -19,12 +22,16 @@ import omr.glyph.GlyphsBuilder;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.image.ImageView;
 import omr.image.MorphoProcessor;
+import omr.image.Picture;
 import omr.image.PixelBuffer;
+import omr.image.PixelFilter;
 import omr.image.StructureElement;
+import omr.image.VerticalFilter;
 
 import omr.lag.BasicLag;
-import omr.lag.JunctionAllPolicy;
+import omr.lag.JunctionRatioPolicy;
 import omr.lag.Lag;
 import omr.lag.Lags;
 import omr.lag.SectionsBuilder;
@@ -33,13 +40,22 @@ import omr.run.Orientation;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
+import omr.sheet.ui.PixelBoard;
+
+import omr.ui.BoardsPane;
+
 import omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+
+import javax.imageio.ImageIO;
 
 /**
  * Class {@code SpotsBuilder} performs morphology analysis on original
@@ -122,7 +138,7 @@ public class SpotsBuilder
 
         SectionsBuilder sectionsBuilder = new SectionsBuilder(
                 spotLag,
-                new JunctionAllPolicy());
+                new JunctionRatioPolicy());
         sectionsBuilder.createSections(spotTable, false);
         logger.debug("Sections: {}", spotLag.getSections().size());
 
@@ -184,6 +200,9 @@ public class SpotsBuilder
     //---------------//
     private RunsTable retrieveSpots ()
     {
+        PixelBuffer buffer = new PixelBuffer(
+                sheet.getPicture().getImage(Picture.Key.GAUSSIAN));
+
         watch.start("spots");
 
         int[] offset = {0, 0};
@@ -199,38 +218,42 @@ public class SpotsBuilder
                 radius);
 
         StructureElement se = new StructureElement(0, 1, radius, offset);
-
         MorphoProcessor mp = new MorphoProcessor(se);
-        PixelBuffer buffer = sheet.getWholeVerticalTable()
-                .getBuffer();
+
         mp.close(buffer);
 
-        //        BufferedImage fromClosedBuffer = buffer.toBufferedImage();
-        //
-        //        // Store buffer on disk for further manual analysis if any
-        //        try {
-        //            ImageIO.write(
-        //                    fromClosedBuffer,
-        //                    "png",
-        //                    new File(
-        //                    WellKnowns.TEMP_FOLDER,
-        //                    sheet.getPage().getId() + ".spot.png"));
-        //        } catch (IOException ex) {
-        //            logger.warn("Error storing spotTable", ex);
-        //        }
-        //
-        //        // Display the gray-level view of all spots
-        //        if (Main.getGui() != null) {
-        //            ImageView imageView = new ImageView(sheet, fromClosedBuffer);
-        //            sheet.getAssembly()
-        //                    .addViewTab(
-        //                    "SpotView",
-        //                    imageView,
-        //                    new BoardsPane(new PixelBoard(sheet)));
-        //        }
+        BufferedImage fromClosedBuffer = buffer.toBufferedImage();
+
+        // Store buffer on disk for further manual analysis if any
+        try {
+            ImageIO.write(
+                    fromClosedBuffer,
+                    "png",
+                    new File(
+                            WellKnowns.TEMP_FOLDER,
+                            sheet.getPage().getId() + ".spot.png"));
+        } catch (IOException ex) {
+            logger.warn("Error storing spotTable", ex);
+        }
+
+        // Display the gray-level view of all spots
+        if (Main.getGui() != null) {
+            ImageView imageView = new ImageView(sheet, fromClosedBuffer);
+            sheet.getAssembly()
+                    .addViewTab(
+                            "SpotView",
+                            imageView,
+                            new BoardsPane(new PixelBoard(sheet)));
+        }
+
+        // Binarize the spots, with rather low thresholds
+        final PixelFilter source = new VerticalFilter(
+                buffer,
+                constants.meanCoeff.getValue(),
+                constants.stdDevCoeff.getValue());
 
         // Get and display thresholded spots
-        RunsTable table = new RunsTableFactory(SPOT_ORIENTATION, buffer, 0).createTable(
+        RunsTable table = new RunsTableFactory(SPOT_ORIENTATION, source, 0).createTable(
                 "spot");
 
         //        sheet.getRunsViewer()
@@ -255,6 +278,14 @@ public class SpotsBuilder
         final Constant.Ratio beamCircleDiameterRatio = new Constant.Ratio(
                 0.75,
                 "Diameter of circle used to close beam spots, as ratio of beam height");
+
+        Constant.Ratio meanCoeff = new Constant.Ratio(
+                0.4,
+                "Specific adaptive meanCoeff value for spots image");
+
+        Constant.Ratio stdDevCoeff = new Constant.Ratio(
+                0.6,
+                "Specific adaptive stdDevCoeff value for spots image");
 
     }
 }

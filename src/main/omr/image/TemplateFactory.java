@@ -125,7 +125,7 @@ public class TemplateFactory
     //------------//
     /**
      * Add specific anchors to the template.
-     * All templates get a CENTER anchor at construction time, but some may need
+     * All templates get basic anchors at construction time, but some may need
      * additional anchors.
      *
      * @param template the template to populate
@@ -135,6 +135,7 @@ public class TemplateFactory
         switch (template.getShape()) {
         case VOID_EVEN:
         case VOID_ODD:
+        case NOTEHEAD_BLACK:
             // Add anchors for potential stems on left and right sides
             template.addAnchor(Template.Anchor.TOP_LEFT_STEM, 0.05, 0.0);
             template.addAnchor(Template.Anchor.LEFT_STEM, 0.05, 0.5);
@@ -145,6 +146,7 @@ public class TemplateFactory
             template.addAnchor(Template.Anchor.BOTTOM_RIGHT_STEM, 0.95, 1.0);
 
             break;
+            
 
         default:
         }

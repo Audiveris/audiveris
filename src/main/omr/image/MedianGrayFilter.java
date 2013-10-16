@@ -121,14 +121,6 @@ public class MedianGrayFilter
                     median--;
                 }
 
-                //
-                //                // Reset histogram
-                //                for (int i = x - rad; i <= (x + rad); i++) {
-                //                    for (int j = y - rad; j <= (y + rad); j++) {
-                //                        in.getPixel(i, j, inPixel);
-                //                        histogram[inPixel[0]] = 0;
-                //                    }
-                //                }
                 outPixel[0] = median + 1;
                 out.setPixel(x, y, outPixel);
             }
@@ -136,80 +128,4 @@ public class MedianGrayFilter
 
         return filtered;
     }
-
-//    //-----------//
-//    // getMedian //
-//    //-----------//
-//    /**
-//     * Compute the median value for pixel centered at provided (x,y)
-//     * location, using the values of all pixels covered by the filter.
-//     *
-//     * @param x  pixel abscissa, counted from 0
-//     * @param y  pixel ordinate, counted from 0
-//     * @param in image raster to pick pixels values from
-//     */
-//    private int getMedian (final int x,
-//                           final int y,
-//                           final Raster in)
-//    {
-//        // To address specific behavior at image boundaries, reduce radius
-//        // in order to not use pixels outside the image.
-//        int rad = radius;
-//
-//        if ((x - rad) < 0) {
-//            rad = x;
-//        }
-//
-//        if ((y - rad) < 0) {
-//            rad = y;
-//        }
-//
-//        if ((x + rad) >= in.getWidth()) {
-//            rad = in.getWidth() - 1 - x;
-//        }
-//
-//        if ((y + rad) >= in.getHeight()) {
-//            rad = in.getHeight() - 1 - y;
-//        }
-//
-//        /** Half of filter pixels count. */
-//        int side = (2 * rad) + 1;
-//        final int medianCount = ((side * side) + 1) / 2;
-//
-//        int[] iArray = new int[1];
-//        int[] histogram = new int[256];
-//        Arrays.fill(histogram, 0);
-//
-//        for (int i = x - rad; i <= (x + rad); i++) {
-//            for (int j = y - rad; j <= (y + rad); j++) {
-//                in.getPixel(i, j, iArray);
-//
-//                int val = iArray[0];
-//                histogram[val]++;
-//            }
-//        }
-//
-//        // Pick up the median value
-//        int index = 255;
-//        int sum = 0;
-//
-//        while (sum < medianCount) {
-//            sum += histogram[index];
-//            index--;
-//        }
-//
-//        int median = index + 1;
-//
-//        // Reset histogram
-//        for (int i = x - rad; i <= (x + rad); i++) {
-//            for (int j = y - rad; j <= (y + rad); j++) {
-//                in.getPixel(i, j, iArray);
-//
-//                int val = iArray[0];
-//                histogram[val] = 0;
-//            }
-//        }
-//
-//        return median;
-//    }
 }

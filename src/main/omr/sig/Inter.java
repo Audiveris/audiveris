@@ -104,6 +104,13 @@ public interface Inter
     int getId ();
 
     /**
+     * Report details about the final grade
+     *
+     * @return the grade details
+     */
+    GradeImpacts getImpacts ();
+
+    /**
      * Report the shape related to interpretation.
      *
      * @return the shape
@@ -149,18 +156,18 @@ public interface Inter
     void setBounds (Rectangle box);
 
     /**
-     * Assign the interpretation quality value.
-     *
-     * @param grade the grade to set
-     */
-    void setGrade (double grade);
-
-    /**
      * Assign an id to the interpretation
      *
      * @param id the inter id
      */
     void setId (int id);
+
+    /**
+     * Assign details about the final grade
+     *
+     * @param impacts the grade impacts
+     */
+    void setImpacts (GradeImpacts impacts);
 
     /**
      * Assign the containing SIG

@@ -63,25 +63,25 @@ public class LineCluster
     };
 
     //~ Instance fields --------------------------------------------------------
-    /** Id for debug */
+    /** Id for debug. */
     private final int id;
 
-    /** Interline for this cluster */
+    /** Interline for this cluster. */
     private final int interline;
 
-    /** Reference to cluster this one has been included into, if any */
+    /** Reference to cluster this one has been included into, if any. */
     private LineCluster parent;
 
-    /** Composing lines, ordered by their relative position (ordinate) */
+    /** Composing lines, ordered by their relative position (ordinate). */
     private SortedMap<Integer, FilamentLine> lines;
 
-    /** (Cached) bounding box of this cluster */
+    /** (Cached) bounding box of this cluster. */
     private Rectangle contourBox;
 
-    /** CLuster true length */
+    /** Cluster true length. */
     private Integer trueLength;
 
-    /** For debugging */
+    /** For debugging. */
     private boolean vip = false;
 
     //~ Constructors -----------------------------------------------------------
@@ -91,7 +91,8 @@ public class LineCluster
     /**
      * Creates a new LineCluster object.
      *
-     * @param seed the first filament of the cluster
+     * @param interline the scaling information
+     * @param seed      the first filament of the cluster
      */
     public LineCluster (int interline,
                         LineFilament seed)
@@ -523,18 +524,6 @@ public class LineCluster
         invalidateCache();
     }
 
-    //    //-----------//
-    //    // Constants //
-    //    //-----------//
-    //    private static final class Constants
-    //        extends ConstantSet
-    //    {
-    //        //~ Instance fields ----------------------------------------------------
-    //
-    //        final Constant.Ratio minTrueLength = new Constant.Ratio(
-    //            0.4,
-    //            "Minimum true length ratio to keep a line in a cluster");
-    //    }
     //--------//
     // setVip //
     //--------//
@@ -570,7 +559,15 @@ public class LineCluster
     // trim //
     //------//
     /**
-     * Remove lines in excess.
+     * Remove lines in excess, often due to aligned ledgers.
+     * <p>
+     * We prune the cluster incrementally, choosing either the top line or the
+     * bottom line of the cluster.
+     * First criteria is the higher number of combs the filament is part of.
+     * Second criteria is the lower "true length", since ledgers are generally
+     * thicker than staff lines.
+     * We could also use the presence of long segments (much longer than typical
+     * ledger length) to differentiate staff lines from sequences of ledgers.
      *
      * @param count the target line count
      */
@@ -578,44 +575,34 @@ public class LineCluster
     {
         logger.debug("Trim {}", this);
 
-        //        // Determine max true line length in this cluster
-        //        int maxTrueLength = 0;
-        //
-        //        for (FilamentLine line : lines.values()) {
-        //            maxTrueLength = Math.max(maxTrueLength, line.fil.trueLength());
-        //        }
-        //
-        //        int minTrueLength = (int) Math.rint(
-        //            maxTrueLength * constants.minTrueLength.getValue());
-        //
-        //        // Pruning
-        //        for (Iterator<Integer> it = lines.keySet()
-        //                                         .iterator(); it.hasNext();) {
-        //            Integer      key = it.next();
-        //            FilamentLine line = lines.get(key);
-        //
-        //            if (line.fil.trueLength() < minTrueLength) {
-        //                it.remove();
-        //                line.fil.setCluster(null, 0);
-        //                line.fil.getCombs()
-        //                        .clear();
-        //            }
-        //        }
-
         // Pruning
         while (lines.size() > count) {
             // Remove the top or bottom line
-            FilamentLine top = lines.get(lines.firstKey());
+            final FilamentLine top = lines.get(lines.firstKey());
+            int topCount = top.fil.getCombs().size();
             int topWL = top.fil.trueLength();
-            FilamentLine bot = lines.get(lines.lastKey());
-            int botWL = bot.fil.trueLength();
-            FilamentLine line = null;
 
-            if (topWL < botWL) {
+            final FilamentLine bot = lines.get(lines.lastKey());
+            int botCount = bot.fil.getCombs().size();
+            int botWL = bot.fil.trueLength();
+
+            final FilamentLine line; // Which line to remove?
+            if (topCount == botCount) {
+                // Use reverse true length
+                if (topWL > botWL) {
+                    line = top;
+                } else {
+                    line = bot;
+                }
+            } else if (topCount < botCount) {
                 line = top;
-                lines.remove(lines.firstKey());
             } else {
                 line = bot;
+            }
+
+            if (line == top) {
+                lines.remove(lines.firstKey());
+            } else {
                 lines.remove(lines.lastKey());
             }
 
@@ -668,7 +655,9 @@ public class LineCluster
         LineFilament ancestor = (LineFilament) pivot.getAncestor();
 
         // Loop on all combs that involve this filament
-        for (FilamentComb comb : pivot.getCombs().values()) {
+        // Use a copy to avoid concurrent modification error
+        List<FilamentComb> combs = new ArrayList<FilamentComb>(pivot.getCombs().values());
+        for (FilamentComb comb : combs) {
             if (comb.isProcessed()) {
                 continue;
             }

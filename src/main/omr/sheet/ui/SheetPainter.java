@@ -350,23 +350,7 @@ public class SheetPainter
     public void visit (BeamInter beam)
     {
         setColor(beam);
-        g.fill(beam.getPath());
-    }
-
-    //-------//
-    // visit //
-    //-------//
-    @Override
-    public void visit (BlackHeadInter head)
-    {
-        setColor(head);
-
-        ShapeSymbol symbol = Symbols.getSymbol(head.getShape());
-        symbol.paintSymbol(
-                g,
-                musicFont,
-                head.getGlyph().getCentroid(),
-                Alignment.AREA_CENTER);
+        g.fill(beam.getArea());
     }
 
     //--------------------//
