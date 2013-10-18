@@ -148,8 +148,8 @@ public class BlackNotesBuilder
 
         headTemplate = TemplateFactory.getInstance()
                 .getTemplate(
-                Shape.NOTEHEAD_BLACK,
-                scale.getInterline());
+                        Shape.NOTEHEAD_BLACK,
+                        scale.getInterline());
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -160,7 +160,8 @@ public class BlackNotesBuilder
      * Find possible interpretations of black heads among system spots.
      * This assumes we already have stem candidates and ledger candidates
      * as well as staff lines.
-     * <p>We browse through all spots of minimum weight and which cannot be
+     * <p>
+     * We browse through all spots of minimum weight and which cannot be
      * beams.
      * Spots that could be packs of heads (because of their global weight) are
      * split into separate head candidates using a watershed algorithm.
@@ -470,13 +471,13 @@ public class BlackNotesBuilder
         return Glyphs.lookupGlyphs(
                 system.getGlyphs(),
                 new Predicate<Glyph>()
-        {
-            @Override
-            public boolean check (Glyph glyph)
-            {
-                return isSuitable(glyph);
-            }
-        });
+                {
+                    @Override
+                    public boolean check (Glyph glyph)
+                    {
+                        return isSuitable(glyph);
+                    }
+                });
     }
 
     //------------//
@@ -664,10 +665,12 @@ public class BlackNotesBuilder
             final double headCount = (double) glyph.getWeight() / params.typicalWeight;
             final int count = (int) Math.rint(headCount);
 
-            logger.debug(
-                    "Head#{} count:{}",
-                    glyph.getId(),
-                    String.format("%.2f", headCount));
+            if (glyph.isVip() || logger.isDebugEnabled()) {
+                logger.info(
+                        "Head#{} count:{}",
+                        glyph.getId(),
+                        String.format("%.2f", headCount));
+            }
 
             if (count >= 2) {
                 List<Glyph> parts = splitSpot(glyph);
@@ -678,6 +681,10 @@ public class BlackNotesBuilder
 
                     // Assign proper system to each part
                     for (Glyph part : newParts) {
+                        if (glyph.isVip()) {
+                            part.setVip();
+                        }
+
                         part = system.addGlyphAndMembers(part);
                         part.setShape(Shape.HEAD_SPOT);
                         kept.add(part);
@@ -721,6 +728,10 @@ public class BlackNotesBuilder
         List<Glyph> goodParts = new ArrayList<Glyph>();
 
         for (Glyph part : parts) {
+            if (glyph.isVip()) {
+                part.setVip();
+            }
+
             double headCount = (double) part.getWeight() / params.typicalWeight;
             int cnt = (int) Math.rint(headCount);
 

@@ -17,7 +17,9 @@ import omr.sheet.SystemInfo;
 import java.util.Collection;
 
 /**
- * Class {@code BeamsStep} implements BEAMS step.
+ * Class {@code BeamsStep} implements <b>BEAMS</b> step, which uses
+ * the spots produced by an image closing operation to retrieve all
+ * possible beam interpretations.
  *
  * @author Hervé Bitteur
  */

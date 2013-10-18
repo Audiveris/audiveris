@@ -76,7 +76,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@literal StemsBuilder} processes a system to build stems that
+ * Class {@code StemsBuilder} processes a system to build stems that
  * connect to note heads and perhaps beams.
  * <p>
  * At this point, both black heads and beams have been identified thanks to
@@ -400,6 +400,10 @@ public class StemsBuilder
         final Scale.Fraction minStemExtension = new Scale.Fraction(
                 0.8,
                 "Minimum length counted from head to end of stem");
+
+        final Scale.Fraction minHeadBeamDistance = new Scale.Fraction(
+                0.5,
+                "Minimum vertical distance between head and beam");
 
         final Scale.Fraction minLongStemLength = new Scale.Fraction(
                 3,
@@ -1319,7 +1323,7 @@ public class StemsBuilder
                         final double distToBeam = dir * (pt.getY()
                                                          - refPt.getY());
 
-                        if (distToBeam < params.minStemExtension) {
+                        if (distToBeam < params.minHeadBeamDistance) {
                             if (beam.isVip() || logger.isDebugEnabled()) {
                                 logger.info(
                                         "Beam {} too close to {}",
@@ -1660,7 +1664,7 @@ public class StemsBuilder
     // Parameters //
     //------------//
     /**
-     * Class {@literal Parameters} gathers all pre-scaled constants.
+     * Class {@code Parameters} gathers all pre-scaled constants.
      */
     private static class Parameters
     {
@@ -1689,6 +1693,8 @@ public class StemsBuilder
         final int minHeadSectionContribution;
 
         final int minStemExtension;
+
+        final int minHeadBeamDistance;
 
         final int minLongStemLength;
 
@@ -1719,6 +1725,7 @@ public class StemsBuilder
             minHeadSectionContribution = scale.toPixels(
                     constants.minHeadSectionContribution);
             minStemExtension = scale.toPixels(constants.minStemExtension);
+            minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
             minLongStemLength = scale.toPixels(constants.minLongStemLength);
             maxDistanceToLine = scale.toPixelsDouble(
                     constants.maxDistanceToLine);

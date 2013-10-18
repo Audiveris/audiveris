@@ -11,14 +11,10 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.image.AreaMask;
-import omr.image.PixelFilter;
-
 import omr.math.AreaUtil;
 import omr.math.LineUtil;
 
 import omr.util.Vip;
-import omr.util.Wrapper;
 
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
@@ -57,27 +53,6 @@ public class BeamItem
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-----------//
-    // applyMask //
-    //-----------//
-    public int applyMask (AreaMask mask,
-                          final Wrapper<Integer> fore,
-                          final PixelFilter filter)
-    {
-        return mask.apply(
-                new AreaMask.Adapter()
-                {
-                    @Override
-                    public void process (int x,
-                                         int y)
-                    {
-                        if (filter.isFore(x, y)) {
-                            fore.value++;
-                        }
-                    }
-                });
-    }
-
     //-------------//
     // getBeltArea //
     //-------------//

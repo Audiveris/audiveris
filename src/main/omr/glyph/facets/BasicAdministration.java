@@ -53,22 +53,14 @@ class BasicAdministration
      *
      * @param glyph our glyph
      */
-    public BasicAdministration (Glyph glyph, GlyphLayer layer)
+    public BasicAdministration (Glyph glyph,
+                                GlyphLayer layer)
     {
         super(glyph);
         this.layer = layer;
     }
 
     //~ Methods ----------------------------------------------------------------
-    //----------//
-    // idString //
-    //----------//
-    @Override
-    public final String idString ()
-    {
-        return idString;
-    }
-
     //--------//
     // dumpOf //
     //--------//
@@ -79,10 +71,15 @@ class BasicAdministration
 
         sb.append(
                 String.format(
-                "Glyph: %s@%s%n",
-                glyph.getClass().getName(),
-                Integer.toHexString(glyph.hashCode())));
+                        "Glyph: %s@%s%n",
+                        glyph.getClass().getName(),
+                        Integer.toHexString(glyph.hashCode())));
         sb.append(String.format("   id=%d%n", getId()));
+
+        if (isVip()) {
+            sb.append(String.format("   vip%n", getId()));
+        }
+
         sb.append(String.format("   layer=%s%n", getLayer()));
         sb.append(String.format("   nest=%s%n", getNest()));
 
@@ -114,6 +111,15 @@ class BasicAdministration
     public Nest getNest ()
     {
         return nest;
+    }
+
+    //----------//
+    // idString //
+    //----------//
+    @Override
+    public final String idString ()
+    {
+        return idString;
     }
 
     //-------------//

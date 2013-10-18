@@ -49,7 +49,6 @@ import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
-import omr.image.DistanceFilter;
 import omr.image.ImageFormatException;
 import omr.image.PixelFilter;
 import omr.image.Picture;
@@ -170,14 +169,11 @@ public class Sheet
     /** Global scale for this sheet */
     private Scale scale;
 
-    /** Table of all vertical (foreground) runs */
+    /** Table of all vertical (foreground) runs. */
     private RunsTable wholeVerticalTable;
 
     /** Image of distances to foreground. */
     private Table distanceImage;
-
-    /** A PixelFilter based upon distanceImage. */
-    private PixelFilter distanceFilter;
 
     /** Initial skew value */
     private Skew skew;
@@ -247,6 +243,7 @@ public class Sheet
      *
      * @param page  the related score page
      * @param image the already loaded image
+     * @throws omr.step.StepException
      */
     public Sheet (Page page,
                   BufferedImage image)
@@ -1472,6 +1469,7 @@ public class Sheet
             currentStep = null;
         // Fall-through!
 
+        case Steps.BINARY:
         case Steps.SCALE:
             scaleBuilder = null;
             scale = null;
@@ -1576,14 +1574,6 @@ public class Sheet
         return distanceImage;
     }
 
-    //-------------------//
-    // getDistanceFilter //
-    //-------------------//
-    public PixelFilter getDistanceFilter ()
-    {
-        return distanceFilter;
-    }
-
     //------------------//
     // setDistanceImage //
     //------------------//
@@ -1598,7 +1588,6 @@ public class Sheet
 
         // Save this distance image on disk for visual check
         //TableUtil.store(getId() + ".dist", distanceImage);
-        distanceFilter = new DistanceFilter(distanceImage);
     }
 
     //--------------------//

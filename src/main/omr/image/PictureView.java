@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.image;
 
-import omr.image.Picture.Key;
+import omr.image.Picture.ImageKey;
 
 import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
@@ -113,7 +113,7 @@ public class PictureView
             if (painting.isInputPainting()) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.drawRenderedImage(
-                        sheet.getPicture().getImage(Key.INITIAL),
+                        sheet.getPicture().getImage(ImageKey.INITIAL),
                         null);
             } else {
                 // Use a white background

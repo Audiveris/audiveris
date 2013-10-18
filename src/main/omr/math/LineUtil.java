@@ -58,6 +58,36 @@ public class LineUtil
         return new Line2D.Double(x3, y3, x4, y4);
     }
 
+    //------------------//
+    // getInvertedSlope //
+    //------------------//
+    /**
+     * Report the inverted slope of provided line.
+     * Line is expected not to be horizontal
+     *
+     * @param line the provided line
+     * @return tangent of angle with vertical
+     */
+    public static double getInvertedSlope (Line2D line)
+    {
+        return (line.getX2() - line.getX1()) / (line.getY2() - line.getY1());
+    }
+
+    //----------//
+    // getSlope //
+    //----------//
+    /**
+     * Report the slope of provided line.
+     * Line is expected not to be vertical
+     *
+     * @param line the provided line
+     * @return tangent of angle with horizontal
+     */
+    public static double getSlope (Line2D line)
+    {
+        return (line.getY2() - line.getY1()) / (line.getX2() - line.getX1());
+    }
+
     //--------------//
     // intersection //
     //--------------//

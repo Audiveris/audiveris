@@ -23,7 +23,7 @@ import java.util.Collection;
 
 /**
  * Abstract class {@code AbstractStep} provides a convenient basis for
- * {@link Step} implementation.
+ * any {@link Step} implementation.
  *
  * @author Hervé Bitteur
  */

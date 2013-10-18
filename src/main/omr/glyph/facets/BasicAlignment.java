@@ -79,6 +79,43 @@ public class BasicAlignment
     }
 
     //~ Methods ----------------------------------------------------------------
+    //--------//
+    // dumpOf //
+    //--------//
+    /**
+     * Report glyph internal data
+     */
+    @Override
+    public String dumpOf ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        if (startPoint != null) {
+            sb.append(String.format("   start=%s%n", startPoint));
+        }
+
+        if (stopPoint != null) {
+            sb.append(String.format("   stop=%s%n", stopPoint));
+        }
+
+        sb.append(String.format("   line=%s%n", getLine()));
+
+        return sb.toString();
+    }
+
+    //---------------//
+    // getProbeWidth //
+    //---------------//
+    /**
+     * Report the width of the window used to determine filament ordinate
+     *
+     * @return the scale-independent probe width
+     */
+    public static Scale.Fraction getProbeWidth ()
+    {
+        return constants.probeWidth;
+    }
+
     //-----------//
     // getAspect //
     //-----------//
@@ -91,6 +128,36 @@ public class BasicAlignment
             return (double) box.width / (double) box.height;
         } else {
             return (double) box.height / (double) box.width;
+        }
+    }
+
+    //-----------//
+    // getLength //
+    //-----------//
+    @Override
+    public final int getLength (Orientation orientation)
+    {
+        Rectangle box = glyph.getBounds();
+
+        if (orientation == HORIZONTAL) {
+            return box.width;
+        } else {
+            return box.height;
+        }
+    }
+
+    //--------------//
+    // getThickness //
+    //--------------//
+    @Override
+    public final int getThickness (Orientation orientation)
+    {
+        Rectangle box = glyph.getBounds();
+
+        if (orientation == HORIZONTAL) {
+            return box.height;
+        } else {
+            return box.width;
         }
     }
 
@@ -155,21 +222,6 @@ public class BasicAlignment
         }
 
         return stuck;
-    }
-
-    //-----------//
-    // getLength //
-    //-----------//
-    @Override
-    public final int getLength (Orientation orientation)
-    {
-        Rectangle box = glyph.getBounds();
-
-        if (orientation == HORIZONTAL) {
-            return box.width;
-        } else {
-            return box.height;
-        }
     }
 
     //---------//
@@ -266,6 +318,22 @@ public class BasicAlignment
         }
     }
 
+    //----------//
+    // getSlope //
+    //----------//
+    @Override
+    public double getSlope ()
+    {
+        if (slope == null) {
+            checkLine();
+
+            slope = (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX()
+                                                              - startPoint.getX());
+        }
+
+        return slope;
+    }
+
     //---------------//
     // getStartPoint //
     //---------------//
@@ -316,74 +384,6 @@ public class BasicAlignment
         }
     }
 
-    //--------------//
-    // getThickness //
-    //--------------//
-    @Override
-    public final int getThickness (Orientation orientation)
-    {
-        Rectangle box = glyph.getBounds();
-
-        if (orientation == HORIZONTAL) {
-            return box.height;
-        } else {
-            return box.width;
-        }
-    }
-
-    //---------------//
-    // getProbeWidth //
-    //---------------//
-    /**
-     * Report the width of the window used to determine filament ordinate
-     *
-     * @return the scale-independent probe width
-     */
-    public static Scale.Fraction getProbeWidth ()
-    {
-        return constants.probeWidth;
-    }
-
-    //--------//
-    // dumpOf //
-    //--------//
-    /**
-     * Report glyph internal data
-     */
-    @Override
-    public String dumpOf ()
-    {
-        StringBuilder sb = new StringBuilder();
-
-        if (startPoint != null) {
-            sb.append(String.format("   start=%s%n", startPoint));
-        }
-
-        if (stopPoint != null) {
-            sb.append(String.format("   stop=%s%n", stopPoint));
-        }
-
-        sb.append(String.format("   line=%s%n", getLine()));
-
-        return sb.toString();
-    }
-
-    //----------//
-    // getSlope //
-    //----------//
-    @Override
-    public double getSlope ()
-    {
-        if (slope == null) {
-            checkLine();
-
-            slope = (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX()
-                                                              - startPoint.getX());
-        }
-
-        return slope;
-    }
-
     //----------------//
     // getThicknessAt //
     //----------------//
@@ -418,12 +418,14 @@ public class BasicAlignment
 
         getLine(); // To make sure the line has been computed
 
-        Line2D line = new Line2D.Double(
-                startPoint.getX(),
-                startPoint.getY(),
-                stopPoint.getX(),
-                stopPoint.getY());
-        g.draw(line);
+        if (startPoint != null) {
+            Line2D line = new Line2D.Double(
+                    startPoint.getX(),
+                    startPoint.getY(),
+                    stopPoint.getX(),
+                    stopPoint.getY());
+            g.draw(line);
+        }
     }
 
     //-----------------//

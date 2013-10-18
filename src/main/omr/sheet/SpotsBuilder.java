@@ -200,8 +200,9 @@ public class SpotsBuilder
     //---------------//
     private RunsTable retrieveSpots ()
     {
+        // We need a working copy of binary buffer 
         PixelBuffer buffer = new PixelBuffer(
-                sheet.getPicture().getImage(Picture.Key.GAUSSIAN));
+                sheet.getPicture().getBuffer(Picture.BufferKey.BINARY));
 
         watch.start("spots");
 

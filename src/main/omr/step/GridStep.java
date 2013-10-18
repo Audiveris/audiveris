@@ -13,16 +13,14 @@ package omr.step;
 
 import omr.glyph.ui.SymbolsEditor;
 
-import omr.selection.GlyphEvent;
-import omr.selection.SelectionService;
-
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import java.util.Collection;
 
 /**
- * Class {@code GridStep} determine the systems frames of a sheet.
+ * Class {@code GridStep} implements <b>GRID</b> step, which
+ * retrieves all staves and systems of a sheet.
  *
  * @author Hervé Bitteur
  */

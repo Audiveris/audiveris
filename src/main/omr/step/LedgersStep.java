@@ -11,13 +11,15 @@
 // </editor-fold>
 package omr.step;
 
-import java.util.Collection;
 import omr.sheet.HorizontalsFilter;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import java.util.Collection;
+
 /**
- * Class {@code LedgersStep} implements LEDGERS step.
+ * Class {@code LedgersStep} implements <b>LEDGERS</b> step, which
+ * retrieves all possible ledger interpretations.
  *
  * @author Hervé Bitteur
  */
@@ -49,12 +51,19 @@ public class LedgersStep
     @Override
     public void displayUI (Sheet sheet)
     {
-        // We need a system of this sheet (any one)
-        SystemInfo aSystem = sheet.getSystems()
-                .get(0);
+        // Add ledger checkboard
+        sheet.getSystems()
+                .get(0).horizontalsBuilder.addCheckBoard();
+    }
 
-        // Retrieve long horizontal runs outside staves for ledgers/endings
-        new HorizontalsFilter(sheet).process();
+    //----------//
+    // doSystem //
+    //----------//
+    @Override
+    public void doSystem (SystemInfo system)
+            throws StepException
+    {
+        system.horizontalsBuilder.buildLedgers(); // -> Ledgers
     }
 
     //----------//
@@ -71,15 +80,5 @@ public class LedgersStep
     {
         // Retrieve long horizontal runs outside staves for ledgers/endings
         new HorizontalsFilter(sheet).process();
-    }
-
-    //----------//
-    // doSystem //
-    //----------//
-    @Override
-    public void doSystem (SystemInfo system)
-            throws StepException
-    {
-        system.horizontalsBuilder.buildLedgers(); // -> Ledgers
     }
 }

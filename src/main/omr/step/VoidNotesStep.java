@@ -11,18 +11,36 @@
 // </editor-fold>
 package omr.step;
 
+import omr.image.ChamferDistance;
+import omr.image.Picture;
+import omr.image.PixelBuffer;
+import omr.image.Table;
+
+import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+
 /**
- * Class {@code VoidNotesStep} implements VOID_NOTES step.
+ * Class {@code VoidNotesStep} implements <b>VOID_NOTES</b> step,
+ * which use distance matching technique to retrieve all possible
+ * interpretations of void note heads or whole notes, as well as
+ * black heads left over by {@link BlackNotesStep}.
  *
  * @author Hervé Bitteur
  */
 public class VoidNotesStep
         extends AbstractSystemStep
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
+    private static final Logger logger = LoggerFactory.getLogger(
+            VoidNotesStep.class);
+
+    //~ Constructors -----------------------------------------------------------
     //---------------//
     // VoidNotesStep //
     //---------------//
@@ -31,7 +49,7 @@ public class VoidNotesStep
      */
     public VoidNotesStep ()
     {
-         super(
+        super(
                 Steps.VOID_NOTES,
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
@@ -39,6 +57,7 @@ public class VoidNotesStep
                 "Retrieve void note heads & whole notes");
     }
 
+    //~ Methods ----------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -47,5 +66,23 @@ public class VoidNotesStep
             throws StepException
     {
         system.voidNotesBuilder.buildVoidHeads(); // -> Void heads
+    }
+
+    //----------//
+    // doProlog //
+    //----------//
+    /**
+     * {@inheritDoc}
+     * Compute the distance-to-foreground transform image.
+     */
+    @Override
+    protected void doProlog (Collection<SystemInfo> systems,
+                             Sheet sheet)
+            throws StepException
+    {
+        PixelBuffer buffer = sheet.getPicture()
+                .getBuffer(Picture.BufferKey.BINARY);
+        Table table = new ChamferDistance.Short().computeToFore(buffer);
+        sheet.setDistanceImage(table);
     }
 }

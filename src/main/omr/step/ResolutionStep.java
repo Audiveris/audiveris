@@ -14,7 +14,8 @@ package omr.step;
 import omr.sheet.SystemInfo;
 
 /**
- * Class {@code ResolutionStep}
+ * Class {@code ResolutionStep} implements <b>RESOLUTION</b> step, 
+ * which tries to reduce the SIG incrementally.
  *
  * @author Hervé Bitteur
  */

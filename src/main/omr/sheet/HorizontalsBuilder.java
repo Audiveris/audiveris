@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
+import java.awt.Point;
 import omr.sig.LedgerInter;
 import omr.check.Check;
 import omr.check.CheckBoard;
@@ -322,6 +323,10 @@ public class HorizontalsBuilder
         createSuites();
 
         for (Glyph stick : sticks) {
+            if (stick.isVip()) {
+                logger.info("VIP checkHorizontals for {}", stick);
+            }
+
             // Run the Ledger Checks
             if (CheckSuite.passCollection(stick, ledgerList) >= minResult) {
                 //                stick.setResult(LEDGER);
@@ -539,13 +544,8 @@ public class HorizontalsBuilder
             // Check precise vertical distance WRT the target ordinate
             final double yTarget = yRef + Integer.signum(index) * scale.getInterline();
             final int delta = (int) Math.rint(Math.abs(middle.getY() - yTarget));
-            logger.debug("{} {}", delta, stick);
 
             if (delta > yMargin) {
-                if (stick.isVip()) {
-                    logger.info("Ledger candidate {} dy:{} vs {}",
-                            stick, delta, yMargin);
-                }
                 continue;
             }
 
@@ -561,10 +561,8 @@ public class HorizontalsBuilder
             staff.addLedger(glyph, index);
             found++;
 
-            if (stick.isVip()) {
-                logger.info("Ledger at {} for {}", index, stick);
-            } else {
-                logger.debug("Ledger at {} for {}", index, stick);
+            if (stick.isVip() || logger.isDebugEnabled()) {
+                logger.info("Ledger at {} for {}", index, stick);           
             }
         }
 
@@ -595,6 +593,9 @@ public class HorizontalsBuilder
         final Set<Glyph> siblings = staff.getLedgers(index);
 
         if (siblings != null && !siblings.isEmpty()) {
+            if (stick.isVip()) {
+                logger.info("VIP checkCollision for {}", stick);
+            }
             final List<Glyph> concurrents = new ArrayList<Glyph>();
             final Rectangle box = stick.getBounds();
 
@@ -644,15 +645,17 @@ public class HorizontalsBuilder
                 final double otherDelta = Math.abs(yOther - yTarget);
 
                 if (delta >= otherDelta) {
+                    // Discard this candidate ledger
                     if (stick.isVip()) {
-                        logger.info("Ledger candidate {} collision", stick);
+                        logger.info("Candidate ledger {} collides with {}",
+                                stick, other);
                     }
                     return false;
                 } else {
                     // Remove the other ledger
                     if (other.isVip()) {
-                        logger.info("Ledger candidate {} collision",
-                                other.idString());
+                        logger.info("Ledger {} collides with candidate {}",
+                                other, stick);
                     }
                     other.setShape(null);
                     staff.removeLedger(other);
@@ -735,8 +738,10 @@ public class HorizontalsBuilder
             for (Inter inter : beams) {
                 BeamInter beam = (BeamInter) inter;
                 if (beam.getArea().contains(middle)) {
-                    logger.debug("ledger#{} overlaps beam#{}",
-                            stick.getId(), beam.getId());
+                    if (stick.isVip() || logger.isDebugEnabled()) {
+                        logger.info("ledger#{} overlaps beam#{}",
+                                stick.getId(), beam.getId());
+                    }
                     toRemove.add(stick);
                     break;
                 } else {
@@ -866,11 +871,11 @@ public class HorizontalsBuilder
                 "Minimum number of points to compute extension of crossing objects");
 
         Scale.Fraction maxLengthHigh = new Scale.Fraction(
-                5,
+                20,
                 "High Maximum length for a ledger");
 
         Scale.Fraction maxLengthLow = new Scale.Fraction(
-                4,
+                5,
                 "Low Maximum length for a ledger");
 
         Scale.LineFraction maxThicknessHigh = new Scale.LineFraction(
@@ -937,7 +942,7 @@ public class HorizontalsBuilder
                 "Maximum inter-ledger abscissa gap for ordinate compatibility test");
 
         Scale.Fraction maxInterLedgerDy = new Scale.Fraction(
-                0.125,
+                0.2,
                 "Maximum inter-ledger ordinate gap");
 
     }

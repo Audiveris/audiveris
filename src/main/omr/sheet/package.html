@@ -1,18 +1,11 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
     <head>
-        <!--  $Id$  -->
         <title>
             Package omr.sheet
         </title>
-        <style type="text/css">
-/*<![CDATA[*/
-        table.c4 {width: 100%;}
-        td.c2 {text-align: center; vertical-align: middle;}
-        td.c1 {text-align: center; vertical-align: middle; font-weight: bold;}
-        /*]]>*/
-        </style>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width">
     </head>
     <body>
         <p>
@@ -20,127 +13,5 @@
             sheet, starting with the image picture, and going through the
             sequence of processing steps.
         </p>
-        <table cellpadding="2" cellspacing="2" border="1" class="c4">
-            <tbody>
-                <tr>
-                    <td class="c1">
-                        omr.score
-                    </td>
-                    <td class="c1">
-                        omr.sheet (model)
-                    </td>
-                    <td class="c1">
-                        omr.sheet (builder)
-                    </td>
-                </tr>
-                <tr>
-                    <td class="c2">
-                        Score
-                    </td>
-                    <td class="c2"></td>
-                    <td class="c3"></td>
-
-                </tr>
-                <tr>
-                    <td class="c2">
-                        Page
-                    </td>
-                    <td class="c2">
-                        Sheet
-                    </td>
-                    <td class="c3"></td>
-                </tr>
-                <tr>
-                    <td class="c2">
-                        System
-                    </td>
-                    <td class="c2">
-                        SystemInfo
-                    </td>
-                    <td class="c3">
-                        BarsBuilder
-                    </td>
-                </tr>
-                <tr>
-                    <td class="c2">
-                        Stave
-                    </td>
-                    <td class="c2">
-                        StaveInfo
-                    </td>
-                    <td class="c3">
-                        StaveBuilder : Processes the (five) line areas,
-                        according to the peaks found previously.
-                    </td>
-                </tr>
-                <tr>
-                    <td class="c2"></td>
-                    <td class="c2">
-                        LineInfo
-                    </td>
-                    <td class="c3">
-                        LineBuilder : Processes the horizontal area that
-                        corresponds to one histogram peak, and thus one stave
-                        line.
-                    </td>
-                </tr>
-                <tr>
-                    <td class="c2">
-                        Measure
-                    </td>
-                    <td class="c2">
-                        BarInfo
-                    </td>
-                    <td class="c3">
-                        BarsBuilder : Processes the vertical lines that are
-                        recognized as bar lines
-                    </td>
-                </tr>
-                <tr>
-                    <td class="c2"></td>
-                    <td class="c2">
-                        Ledger
-                    </td>
-                    <td class="c3">
-                        Horizontals : Retrieves horizontal dashes in the given
-                        sheet. We use it for all horizontal glyphs (ledgers of
-                        course, but also legato signs or alternate endings)
-                    </td>
-                </tr>
-                <tr>
-                    <td class="c2"></td>
-                    <td class="c2">
-                        Ending
-                    </td>
-                    <td class="c3">
-                        Horizontals
-                    </td>
-                </tr>
-                <tr>
-                    <td class="c2"></td>
-                    <td class="c2">
-                        Stem
-                    </td>
-                    <td class="c3">
-                        Verticals : Retrieves all the vertical sticks of all
-                        systems in the sheet at hand. Bars are assumed to have
-                        been already recognized, to this accounts for stems,
-                        vertical edges of endings, and parts of alterations
-                        (sharp, natural, flat)
-                    </td>
-                </tr>
-                <tr>
-                    <td class="c2"></td>
-                    <td class="c2">
-                        Glyph
-                    </td>
-                    <td class="c3">
-                        GlyphBuilder : Gathers of remaining glyphs out of a
-                        sheet
-                    </td>
-                </tr>
-            </tbody>
-        </table>
     </body>
-
 </html>

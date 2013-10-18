@@ -203,7 +203,7 @@ public class ParametersTask
     public void epilog (Sheet sheet)
     {
 
-        final Step scaleStep = Steps.valueOf(Steps.SCALE);
+        final Step binaryStep = Steps.valueOf(Steps.BINARY);
         final Step textsStep = Steps.valueOf(Steps.TEXTS);
         final Step symbolsStep = Steps.valueOf(Steps.SYMBOLS);
         final Step scoreStep = Steps.valueOf(Steps.SCORE);
@@ -232,13 +232,13 @@ public class ParametersTask
             }
 
             // Binarization
-            if (Steps.compare(latestStep, scaleStep) >= 0) {
+            if (Steps.compare(latestStep, binaryStep) >= 0) {
                 LiveParam<FilterDescriptor> param = page.getFilterParam();
                 if (param.needsUpdate()) {
-                    logger.debug("Page {} needs SCALE with {}",
+                    logger.debug("Page {} needs BINARY with {}",
                             page.getId(), param.getTarget());
-                    //  Reprocess this page from SCALE step
-                    from = scaleStep;
+                    //  Reprocess this page from BINARY step
+                    from = binaryStep;
                 }
 
             }

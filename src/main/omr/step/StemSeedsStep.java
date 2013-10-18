@@ -15,7 +15,9 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 /**
- * Class {@code StemSeedsStep} implements STEM_SEEDS step.
+ * Class {@code StemSeedsStep} implements <b>STEM_SEEDS</b> step,
+ * which retrieves all vertical sticks that may constitute <i>seeds</i>
+ * of future stems.
  *
  * @author Hervé Bitteur
  */

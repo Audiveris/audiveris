@@ -28,7 +28,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code ScoreStep} merges all pages into one score.
+ * Class {@code ScoreStep} implements the <b>SCORE</b> step, which
+ * merges all pages into one score.
  *
  * @author Hervé Bitteur
  */

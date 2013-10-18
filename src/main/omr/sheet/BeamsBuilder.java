@@ -20,6 +20,7 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.image.AreaMask;
+import omr.image.Picture;
 import omr.image.PixelFilter;
 
 import omr.math.AreaUtil;
@@ -90,6 +91,9 @@ public class BeamsBuilder
     @Navigable(false)
     private final SystemInfo system;
 
+    /** Binarized image. */
+    private PixelFilter pixelFilter;
+
     //~ Constructors -----------------------------------------------------------
     //--------------//
     // BeamsBuilder //
@@ -113,6 +117,26 @@ public class BeamsBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
+    //    //-----------//
+    //    // applyMask //
+    //    //-----------//
+    //    public int applyMask (AreaMask mask,
+    //                          final Wrapper<Integer> fore,
+    //                          final PixelFilter filter)
+    //    {
+    //        return mask.apply(
+    //                new AreaMask.Adapter()
+    //                {
+    //                    @Override
+    //                    public void process (int x,
+    //                                         int y)
+    //                    {
+    //                        if (filter.isFore(x, y)) {
+    //                            fore.value++;
+    //                        }
+    //                    }
+    //                });
+    //    }
     //------------//
     // buildBeams //
     //------------//
@@ -121,6 +145,10 @@ public class BeamsBuilder
      */
     public void buildBeams ()
     {
+        // Cache binarized image
+        pixelFilter = sheet.getPicture()
+                .getBuffer(Picture.BufferKey.BINARY);
+
         // First, retrieve beams from spots
         for (Glyph glyph : getSpots()) {
             final String failure = checkBeamGlyph(glyph);
@@ -300,11 +328,10 @@ public class BeamsBuilder
                                     boolean above,
                                     boolean below)
     {
-        PixelFilter distances = sheet.getDistanceFilter();
         Area coreArea = item.getCoreArea();
         AreaMask coreMask = new AreaMask(coreArea);
         WrappedInteger core = new WrappedInteger(0);
-        int coreCount = item.applyMask(coreMask, core, distances);
+        int coreCount = coreMask.fore(core, pixelFilter);
         double coreRatio = (double) core.value / coreCount;
 
         int dx = params.beltMarginDx;
@@ -314,7 +341,7 @@ public class BeamsBuilder
         Area beltArea = item.getBeltArea(coreArea, dx, topDy, botDy);
         AreaMask beltMask = new AreaMask(beltArea);
         WrappedInteger belt = new WrappedInteger(0);
-        int beltCount = item.applyMask(beltMask, belt, distances);
+        int beltCount = beltMask.fore(belt, pixelFilter);
         double beltRatio = (double) belt.value / beltCount;
         int width = (int) Math.rint(
                 item.median.getX2() - item.median.getX1() + 1);
@@ -396,7 +423,8 @@ public class BeamsBuilder
      * improve beam geometry (merge, extension) and detect beam groups.
      * Check whether both beam ends have a stem (seed) nearby.
      * If not, this may indicate a broken beam, so try to extend it to either
-     * another beam (merge) or a stem seed (extension).
+     * another beam (merge) or a stem seed (extension) or in parallel with a
+     * sibling beam (extension).
      */
     private void extendBeams ()
     {
@@ -417,17 +445,108 @@ public class BeamsBuilder
 
             final BeamInter beam = (BeamInter) inter;
 
+            if (beam.isVip()) {
+                logger.info("VIP extendBeams for {}", beam);
+            }
+
             for (HorizontalSide side : HorizontalSide.values()) {
                 if (noStem(beam, side)) {
-                    logger.debug("Orphan {} on {}", beam, side);
+                    if (beam.isVip() || logger.isDebugEnabled()) {
+                        logger.info("{} has no stem on {}", beam, side);
+                    }
 
                     // This may create new beam instance.
-                    if (extendToBeam(beam, side) || extendToStem(beam, side)) {
+                    if (extendToBeam(beam, side)
+                        || extendToStem(beam, side)
+                        || extendInParallel(beam, side)) {
                         break;
                     }
                 }
             }
         }
+    }
+
+    //------------------//
+    // extendInParallel //
+    //------------------//
+    /**
+     * Try to extend the provided beam in parallel with a sibling
+     * beam (in the same group of beams).
+     *
+     * @param beam the beam to extend
+     * @param side the horizontal side
+     * @return true if extension was done, false otherwise
+     */
+    private boolean extendInParallel (BeamInter beam,
+                                      HorizontalSide side)
+    {
+        final boolean logging = beam.isVip() || logger.isDebugEnabled();
+
+        // Look for a parallel beam just above or below
+        final Line2D median = beam.getMedian();
+        final double height = beam.getHeight();
+        final double slope = LineUtil.getSlope(median);
+
+        Area luArea = AreaUtil.horizontalParallelogram(
+                median.getP1(),
+                median.getP2(),
+                3 * height);
+        List<Inter> others = sig.intersectedInters(
+                rawSystemBeams,
+                GeoOrder.NONE,
+                luArea);
+
+        if (!others.isEmpty()) {
+            others.remove(beam); // Safer
+        }
+
+        if (!others.isEmpty()) {
+            // Use a closer look
+            final Point2D endPt = (side == LEFT) ? median.getP1() : median.getP2();
+
+            for (Inter ib : others) {
+                BeamInter other = (BeamInter) ib;
+
+                if (logging) {
+                    logger.info("{} found parallel {}", beam, other);
+                }
+
+                // Check they are really parallel?
+                final Line2D otherMedian = other.getMedian();
+                final double otherSlope = LineUtil.getSlope(otherMedian);
+
+                if (Math.abs(otherSlope - slope) > params.maxBeamSlopeGap) {
+                    if (logging) {
+                        logger.info("{} not parallel with {}", beam, other);
+                    }
+
+                    continue;
+                }
+
+                // Check the other beam can really extend current beam
+                final Point2D otherEndPt = (side == LEFT) ? otherMedian.getP1()
+                        : otherMedian.getP2();
+                double extDx = (side == LEFT)
+                        ? (endPt.getX() - otherEndPt.getX())
+                        : (otherEndPt.getX() - endPt.getX());
+
+                if (extDx < (2 * params.maxStemBeamGapX)) {
+                    if (logging) {
+                        logger.info("{} no increment with {}", beam, other);
+                    }
+
+                    continue;
+                }
+
+                Point2D extPt = LineUtil.intersectionAtX(
+                        median,
+                        otherEndPt.getX());
+
+                return extendToPoint(beam, side, extPt);
+            }
+        }
+
+        return false;
     }
 
     //--------------//
@@ -465,8 +584,6 @@ public class BeamsBuilder
                         .ptLineDist(endPt);
 
                 if (dt <= params.maxBeamsGapY) {
-                    logger.debug("{} continues with {} dt:{}", beam, other, dt);
-
                     BeamInter newBeam = mergeOf(beam, other);
 
                     if (newBeam != null) {
@@ -475,6 +592,18 @@ public class BeamsBuilder
                         beam.delete();
                         other.delete();
 
+                        if (beam.isVip() || other.isVip()) {
+                            newBeam.setVip();
+                        }
+
+                        if (newBeam.isVip() || logger.isDebugEnabled()) {
+                            logger.info(
+                                    "Merged {} & {} into {}",
+                                    beam,
+                                    other,
+                                    newBeam);
+                        }
+
                         return true;
                     }
                 }
@@ -482,6 +611,95 @@ public class BeamsBuilder
         }
 
         return false;
+    }
+
+    //---------------//
+    // extendToPoint //
+    //---------------//
+    /**
+     * Try to extend the beam on provided side until the target
+     * extension point.
+     *
+     * @param beam  the beam to extend
+     * @param side  the horizontal side
+     * @param extPt the targeted extension point
+     * @return true if extension was done, false otherwise
+     */
+    private boolean extendToPoint (BeamInter beam,
+                                   HorizontalSide side,
+                                   Point2D extPt)
+    {
+        final boolean logging = beam.isVip() || logger.isDebugEnabled();
+
+        if (logging) {
+            logger.info("VIP extendToPoint for {}", beam);
+        }
+
+        final Line2D median = beam.getMedian();
+        final double height = beam.getHeight();
+
+        // Check we have enough pixels in the extension zone
+        Point2D endPt = (side == LEFT) ? median.getP1() : median.getP2();
+        double extDx = Math.abs(extPt.getX() - endPt.getX());
+        Area extArea = sideAreaOf(beam, side, 0, extDx, 0);
+        AreaMask extMask = new AreaMask(extArea);
+        WrappedInteger extCore = new WrappedInteger(0);
+        int extCoreCount = extMask.fore(extCore, pixelFilter);
+        double extCoreRatio = (double) extCore.value / extCoreCount;
+
+        if (extCoreRatio < params.minCoreBlackRatio) {
+            if (logging) {
+                logger.info("{} lacks pixels in stem extension", beam);
+            }
+
+            return false;
+        }
+
+        // Resulting median
+        final Line2D newMedian;
+
+        if (side == LEFT) {
+            newMedian = new Line2D.Double(extPt, median.getP2());
+        } else {
+            newMedian = new Line2D.Double(median.getP1(), extPt);
+        }
+
+        // Impacts
+        BeamItem newItem = new BeamItem(newMedian, height);
+
+        if (beam.isVip()) {
+            newItem.setVip();
+        }
+
+        Impacts impacts = computeImpacts(newItem, true, true);
+
+        if (impacts != null) {
+            BeamInter newBeam = new BeamInter(null, impacts, newMedian, height);
+
+            if (beam.isVip()) {
+                newBeam.setVip();
+            }
+
+            sig.addVertex(newBeam);
+            rawSystemBeams.add(newBeam);
+            beam.delete();
+
+            if (logging) {
+                logger.info(
+                        "{} extended as {} {}",
+                        beam,
+                        newBeam,
+                        newBeam.getImpacts());
+            }
+
+            return true;
+        } else {
+            if (logging) {
+                logger.info("{} extension failed", beam);
+            }
+
+            return false;
+        }
     }
 
     //--------------//
@@ -498,7 +716,10 @@ public class BeamsBuilder
     private boolean extendToStem (BeamInter beam,
                                   HorizontalSide side)
     {
-        Area area = sideAreaOf(
+        final boolean logging = beam.isVip() || logger.isDebugEnabled();
+
+        // Lookup area for stem seed
+        Area luArea = sideAreaOf(
                 beam,
                 side,
                 params.maxStemBeamGapY, // dy
@@ -508,61 +729,25 @@ public class BeamsBuilder
         List<Glyph> seeds = sig.intersectedGlyphs(
                 sortedSystemSeeds,
                 true,
-                area);
+                luArea);
 
         if (!seeds.isEmpty()) {
             // Pick up the nearest stem seed
             Glyph seed = (side == LEFT) ? seeds.get(seeds.size() - 1)
                     : seeds.get(0);
-            logger.debug(
-                    "{} {} found stem#{} on {}",
-                    beam,
-                    beam.getImpacts(),
-                    seed.getId(),
-                    side);
+
+            if (logging) {
+                logger.info("{} found stem#{} on {}", beam, seed.getId(), side);
+            }
 
             // Try to extend the beam to this stem seed
             Line2D median = beam.getMedian();
-            double height = beam.getHeight();
             Line2D seedLine = new Line2D.Double(
                     seed.getStartPoint(Orientation.VERTICAL),
                     seed.getStopPoint(Orientation.VERTICAL));
             Point2D extPt = LineUtil.intersection(median, seedLine);
-            final Line2D newMedian;
 
-            if (side == LEFT) {
-                newMedian = new Line2D.Double(extPt, median.getP2());
-            } else {
-                newMedian = new Line2D.Double(median.getP1(), extPt);
-            }
-
-            // Impacts
-            BeamItem newItem = new BeamItem(newMedian, height);
-
-            if (beam.isVip()) {
-                newItem.setVip();
-            }
-
-            Impacts impacts = computeImpacts(newItem, true, true);
-
-            if (impacts != null) {
-                BeamInter newBeam = new BeamInter(
-                        null,
-                        impacts,
-                        newMedian,
-                        height);
-
-                if (beam.isVip()) {
-                    newBeam.setVip();
-                }
-
-                sig.addVertex(newBeam);
-                rawSystemBeams.add(newBeam);
-                beam.delete();
-                logger.debug("{} {} created", newBeam, newBeam.getImpacts());
-
-                return true;
-            }
+            return extendToPoint(beam, side, extPt);
         }
 
         return false;

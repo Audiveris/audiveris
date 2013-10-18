@@ -43,6 +43,8 @@ public class Steps
     // Mandatory step names
     public static final String LOAD = "LOAD";
 
+    public static final String BINARY = "BINARY";
+
     public static final String SCALE = "SCALE";
 
     public static final String GRID = "GRID";
@@ -90,6 +92,7 @@ public class Steps
         // Mandatory steps in proper order
         // -------------------------------
         addStep(new LoadStep());
+        addStep(new BinaryStep());
         addStep(new ScaleStep());
         addStep(new GridStep());
 

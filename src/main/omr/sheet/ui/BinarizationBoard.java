@@ -135,7 +135,7 @@ public class BinarizationBoard
                             .getFilterParam()
                             .getTarget();
                     PixelSource source = new BufferedSource(
-                            sheet.getPicture().getImage(Picture.Key.INITIAL));
+                            sheet.getPicture().getImage(Picture.ImageKey.INITIAL));
                     PixelFilter filter = desc.getFilter(source);
 
                     if (filter == null) {

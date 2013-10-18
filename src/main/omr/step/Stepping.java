@@ -603,16 +603,19 @@ public class Stepping
         notifyStart();
 
         try {
-            // SCALE step, if present, is always the first step
+            // SCALE step, if present, is one of the first steps
             // We perform this step on all sheets, to allow early filtering
+            Step binaryStep = Steps.valueOf(Steps.BINARY);
             Step scaleStep = Steps.valueOf(Steps.SCALE);
 
             if (stepSet.contains(scaleStep)) {
-                SortedSet<Step> single = new TreeSet<>(comparator);
-                single.add(scaleStep);
+                SortedSet<Step> toScale = new TreeSet<>(comparator);
+                toScale.add(binaryStep);
+                toScale.add(scaleStep);
+                stepSet.remove(binaryStep);
                 stepSet.remove(scaleStep);
 
-                doScoreStepSet(single, score);
+                doScoreStepSet(toScale, score);
 
                 if (!score.isMultiPage()
                     && (score.getFirstPage().getSheet().getScale() == null)) {

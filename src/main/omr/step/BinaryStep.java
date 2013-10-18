@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                         B l a c k N o t e s S t e p                        //
+//                             B i n a r y S t e p                            //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -11,46 +11,52 @@
 // </editor-fold>
 package omr.step;
 
+import omr.image.Picture;
+import omr.image.PixelBuffer;
+
+import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import java.util.Collection;
+
 /**
- * Class {@code BlackNotesStep} implements <b>BLACK_NOTES</b> step,
- * which further transforms the spots produced for beams to retrieve
- * almost all possible black heads interpretations.
- * <p>
- * Additional black heads may be retrieved through {@link VoidNotesStep}
- * which uses distance matching technique.
+ * Class {@code BinaryStep} implements <b>BINARY</b> step,
+ * which binarizes the initial sheet image, using proper filter,
+ * to come up with a black & white image.
  *
  * @author Hervé Bitteur
  */
-public class BlackNotesStep
-        extends AbstractSystemStep
+public class BinaryStep
+        extends AbstractStep
 {
     //~ Constructors -----------------------------------------------------------
 
-    //----------------//
-    // BlackNotesStep //
-    //----------------//
+    //------------//
+    // BinaryStep //
+    //------------//
     /**
-     * Creates a new BlackNotesStep object.
+     * Creates a new BinaryStep object.
      */
-    public BlackNotesStep ()
+    public BinaryStep ()
     {
         super(
-                Steps.BLACK_NOTES,
+                Steps.BINARY,
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
-                DATA_TAB,
-                "Retrieve black note heads");
+                BINARY_TAB,
+                "Binarize the initial sheet image");
     }
 
-    //----------//
-    // doSystem //
-    //----------//
+    //~ Methods ----------------------------------------------------------------
+    //------//
+    // doit //
+    //------//
     @Override
-    public void doSystem (SystemInfo system)
+    public void doit (Collection<SystemInfo> unused,
+                      Sheet sheet)
             throws StepException
     {
-        system.blackNotesBuilder.buildBlackHeads(); // -> Black heads
+        sheet.getPicture()
+                .getBuffer(Picture.BufferKey.BINARY);
     }
 }

@@ -18,6 +18,8 @@ import omr.constant.ConstantSet;
 import omr.grid.StaffInfo;
 import omr.grid.StaffManager;
 
+import omr.image.Picture;
+
 import omr.lag.BasicLag;
 import omr.lag.JunctionShiftPolicy;
 import omr.lag.Lag;
@@ -75,8 +77,8 @@ public class HorizontalsFilter
     // process //
     //---------//
     /**
-     * Start from the original binarized image and build the runs and
-     * sections that could compose ledgers or endings.
+     * Start from the binarized image and build the runs and sections 
+     * that could compose ledgers or endings.
      */
     public void process ()
     {
@@ -103,7 +105,7 @@ public class HorizontalsFilter
 
         final RunsTable hugeHoriTable = new RunsTableFactory(
                 HORIZONTAL,
-                sheet.getWholeVerticalTable().getBuffer(),
+                sheet.getPicture().getBuffer(Picture.BufferKey.BINARY),
                 minLength).createTable("huge-hori", filter);
 
         if (Main.getGui() != null) {

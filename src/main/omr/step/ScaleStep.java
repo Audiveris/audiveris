@@ -21,8 +21,9 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code ScaleStep} determines the general scale of the sheet,
- * based on the mean distance between staff lines.
+ * Class {@code ScaleStep} implements <b>SCALE</b> step, which
+ * determines the general scaling informations of a sheet, based 
+ * essentially on the mean distance between staff lines.
  *
  * @author Hervé Bitteur
  */

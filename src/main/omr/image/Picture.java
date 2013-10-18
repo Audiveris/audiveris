@@ -83,8 +83,10 @@ public class Picture
     private static final Logger logger = LoggerFactory.getLogger(Picture.class);
 
     //~ Enumerations -----------------------------------------------------------
-    /** Set of known images, to be extended as needed. */
-    public static enum Key
+    /**
+     * Set of known images, to be extended as needed.
+     */
+    public static enum ImageKey
     {
         //~ Enumeration constant initializers ----------------------------------
 
@@ -94,6 +96,18 @@ public class Picture
         GAUSSIAN,
         /** The Median-filtered image. */
         MEDIAN;
+
+    }
+
+    /**
+     * Set of known buffers, to be extended as needed.
+     */
+    public static enum BufferKey
+    {
+        //~ Enumeration constant initializers ----------------------------------
+
+        /** The binarized image. */
+        BINARY;
 
     }
 
@@ -112,8 +126,12 @@ public class Picture
     private final SelectionService levelService;
 
     /** Map of all handled images. */
-    private final Map<Key, BufferedImage> images = new EnumMap<Key, BufferedImage>(
-            Key.class);
+    private final Map<ImageKey, BufferedImage> images = new EnumMap<ImageKey, BufferedImage>(
+            ImageKey.class);
+
+    /** Map of all handled buffers. */
+    private final Map<BufferKey, PixelBuffer> buffers = new EnumMap<BufferKey, PixelBuffer>(
+            BufferKey.class);
 
     /** A wrapping around the initial (default) image. */
     private BufferedSource initialSource;
@@ -143,7 +161,7 @@ public class Picture
         printInfo(image, "Original image");
         image = checkImage(image);
         printInfo(image, "Initial  image");
-        images.put(Key.INITIAL, image);
+        images.put(ImageKey.INITIAL, image);
         dimension = new Dimension(image.getWidth(), image.getHeight());
 
         //        // Cache results
@@ -152,34 +170,38 @@ public class Picture
         //                image.getData().getSampleModel(),
         //                image.getData().getDataBuffer(),
         //                null);
-
         // Wrap the initial image
         initialSource = new BufferedSource(image);
     }
 
     //~ Methods ----------------------------------------------------------------
-    //--------//
-    // invert //
-    //--------//
+    //-----------//
+    // printInfo //
+    //-----------//
     /**
-     * Convenient method on invert an image.
+     * Convenient method to print some characteristics of the provided
+     * image.
      *
-     * @param image the image to process
-     * @return the invert of provided image
+     * @param img   the image to query
+     * @param title a title to be printed
      */
-    public static BufferedImage invert (BufferedImage image)
+    public static void printInfo (BufferedImage img,
+                                  String title)
     {
-        return JAI.create(
-                "Invert",
-                new ParameterBlock().addSource(image).add(null),
-                null)
-                .getAsBufferedImage();
+        int type = img.getType();
+        ColorModel colorModel = img.getColorModel();
+        logger.info(
+                "{} type: {}={} {}",
+                (title != null) ? title : "",
+                type,
+                typeOf(type),
+                colorModel);
     }
 
     //--------------//
     // disposeImage //
     //--------------//
-    public void disposeImage (Key key)
+    public void disposeImage (ImageKey key)
     {
         BufferedImage img = images.get(key);
 
@@ -188,11 +210,26 @@ public class Picture
                 images.put(key, null);
 
                 // Nullify cached data, if needed
-                if (key == Key.INITIAL) {
+                if (key == ImageKey.INITIAL) {
                     initialSource = null;
                 }
 
                 logger.info("{} image disposed.", key);
+            }
+        }
+    }
+
+    //---------------//
+    // disposeBuffer //
+    //---------------//
+    public void disposeImage (BufferKey key)
+    {
+        PixelBuffer buf = buffers.get(key);
+
+        if (buf != null) {
+            synchronized (buffers) {
+                buffers.put(key, null);
+                logger.info("{} buffer disposed.", key);
             }
         }
     }
@@ -211,7 +248,7 @@ public class Picture
      * @param yMin  y first ordinate
      * @param yMax  y last ordinate
      */
-    public void dumpRectangle (Key key,
+    public void dumpRectangle (ImageKey key,
                                String title,
                                int xMin,
                                int xMax,
@@ -223,7 +260,7 @@ public class Picture
 
         sb.append(String.format("%n"));
 
-        if (title != null) {;
+        if (title != null) {
             sb.append(String.format("%s%n", title));
         }
 
@@ -265,6 +302,38 @@ public class Picture
         logger.info(sb.toString());
     }
 
+    //-----------//
+    // getBuffer //
+    //-----------//
+    /**
+     * Report the desired buffer, creating it if necessary.
+     *
+     * @param key the key of desired buffer
+     * @return the buffer ready to use
+     */
+    public PixelBuffer getBuffer (BufferKey key)
+    {
+        PixelBuffer buf = buffers.get(key);
+
+        if (buf == null) {
+            synchronized (buffers) {
+                buf = buffers.get(key);
+
+                if (buf == null) {
+                    switch (key) {
+                    case BINARY:
+                        buf = binarized(images.get(ImageKey.INITIAL));
+                        buffers.put(key, buf);
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        return buf;
+    }
+
     //--------------//
     // getDimension //
     //--------------//
@@ -300,7 +369,7 @@ public class Picture
      * @param key the key of desired image
      * @return the image ready to use
      */
-    public BufferedImage getImage (Key key)
+    public BufferedImage getImage (ImageKey key)
     {
         BufferedImage img = images.get(key);
 
@@ -311,13 +380,13 @@ public class Picture
                 if (img == null) {
                     switch (key) {
                     case GAUSSIAN:
-                        img = gaussianFiltered(images.get(Key.INITIAL));
+                        img = gaussianFiltered(images.get(ImageKey.INITIAL));
                         images.put(key, img);
 
                         break;
 
                     case MEDIAN:
-                        img = medianFiltered(images.get(Key.INITIAL));
+                        img = medianFiltered(images.get(ImageKey.INITIAL));
                         images.put(key, img);
 
                         break;
@@ -354,6 +423,24 @@ public class Picture
     public int getWidth ()
     {
         return dimension.width;
+    }
+
+    //--------//
+    // invert //
+    //--------//
+    /**
+     * Convenient method on invert an image.
+     *
+     * @param image the image to process
+     * @return the invert of provided image
+     */
+    public static BufferedImage invert (BufferedImage image)
+    {
+        return JAI.create(
+                "Invert",
+                new ParameterBlock().addSource(image).add(null),
+                null)
+                .getAsBufferedImage();
     }
 
     //---------//
@@ -401,29 +488,6 @@ public class Picture
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
-    }
-
-    //-----------//
-    // printInfo //
-    //-----------//
-    /**
-     * Convenient method to print some characteristics of the provided
-     * image.
-     *
-     * @param img   the image to query
-     * @param title a title to be printed
-     */
-    public static void printInfo (BufferedImage img,
-                                  String title)
-    {
-        int type = img.getType();
-        ColorModel colorModel = img.getColorModel();
-        logger.info(
-                "{} type: {}={} {}",
-                (title != null) ? title : "",
-                type,
-                typeOf(type),
-                colorModel);
     }
 
     //----------//
@@ -493,59 +557,6 @@ public class Picture
                     new ParameterBlock().addSource(image).add(matrix),
                     null)
                     .getAsBufferedImage();
-        }
-    }
-
-    //--------//
-    // typeOf //
-    //--------//
-    private static String typeOf (int type)
-    {
-        switch (type) {
-        case BufferedImage.TYPE_CUSTOM:
-            return "TYPE_CUSTOM";
-
-        case BufferedImage.TYPE_INT_RGB:
-            return "TYPE_INT_RGB";
-
-        case BufferedImage.TYPE_INT_ARGB:
-            return "TYPE_INT_ARGB";
-
-        case BufferedImage.TYPE_INT_ARGB_PRE:
-            return "TYPE_INT_ARGB_PRE";
-
-        case BufferedImage.TYPE_INT_BGR:
-            return "TYPE_INT_BGR";
-
-        case BufferedImage.TYPE_3BYTE_BGR:
-            return "TYPE_3BYTE_BGR";
-
-        case BufferedImage.TYPE_4BYTE_ABGR:
-            return "TYPE_4BYTE_ABGR";
-
-        case BufferedImage.TYPE_4BYTE_ABGR_PRE:
-            return "TYPE_4BYTE_ABGR_PRE";
-
-        case BufferedImage.TYPE_USHORT_565_RGB:
-            return "TYPE_USHORT_565_RGB";
-
-        case BufferedImage.TYPE_USHORT_555_RGB:
-            return "TYPE_USHORT_555_RGB";
-
-        case BufferedImage.TYPE_BYTE_GRAY:
-            return "TYPE_BYTE_GRAY";
-
-        case BufferedImage.TYPE_USHORT_GRAY:
-            return "TYPE_USHORT_GRAY";
-
-        case BufferedImage.TYPE_BYTE_BINARY:
-            return "TYPE_BYTE_BINARY";
-
-        case BufferedImage.TYPE_BYTE_INDEXED:
-            return "TYPE_BYTE_INDEXED";
-
-        default:
-            return "?";
         }
     }
 
@@ -673,6 +684,77 @@ public class Picture
                 watch.print();
             }
         }
+    }
+
+    //--------//
+    // typeOf //
+    //--------//
+    private static String typeOf (int type)
+    {
+        switch (type) {
+        case BufferedImage.TYPE_CUSTOM:
+            return "TYPE_CUSTOM";
+
+        case BufferedImage.TYPE_INT_RGB:
+            return "TYPE_INT_RGB";
+
+        case BufferedImage.TYPE_INT_ARGB:
+            return "TYPE_INT_ARGB";
+
+        case BufferedImage.TYPE_INT_ARGB_PRE:
+            return "TYPE_INT_ARGB_PRE";
+
+        case BufferedImage.TYPE_INT_BGR:
+            return "TYPE_INT_BGR";
+
+        case BufferedImage.TYPE_3BYTE_BGR:
+            return "TYPE_3BYTE_BGR";
+
+        case BufferedImage.TYPE_4BYTE_ABGR:
+            return "TYPE_4BYTE_ABGR";
+
+        case BufferedImage.TYPE_4BYTE_ABGR_PRE:
+            return "TYPE_4BYTE_ABGR_PRE";
+
+        case BufferedImage.TYPE_USHORT_565_RGB:
+            return "TYPE_USHORT_565_RGB";
+
+        case BufferedImage.TYPE_USHORT_555_RGB:
+            return "TYPE_USHORT_555_RGB";
+
+        case BufferedImage.TYPE_BYTE_GRAY:
+            return "TYPE_BYTE_GRAY";
+
+        case BufferedImage.TYPE_USHORT_GRAY:
+            return "TYPE_USHORT_GRAY";
+
+        case BufferedImage.TYPE_BYTE_BINARY:
+            return "TYPE_BYTE_BINARY";
+
+        case BufferedImage.TYPE_BYTE_INDEXED:
+            return "TYPE_BYTE_INDEXED";
+
+        default:
+            return "?";
+        }
+    }
+
+    //-----------//
+    // binarized //
+    //-----------//
+    private PixelBuffer binarized (BufferedImage img)
+    {
+        FilterDescriptor desc = sheet.getPage()
+                .getFilterParam()
+                .getTarget();
+        logger.info("{}{} {}", sheet.getLogPrefix(), "Binarization", desc);
+        sheet.getPage()
+                .getFilterParam()
+                .setActual(desc);
+
+        PixelFilter filter = desc.getFilter(new BufferedSource(img));
+
+        return new PixelBuffer(filter);
     }
 
     //~ Inner Classes ----------------------------------------------------------

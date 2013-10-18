@@ -89,15 +89,15 @@ public class PixelBuffer
         this(new Dimension(image.getWidth(), image.getHeight()));
 
         final StopWatch watch = new StopWatch("PixelBuffer");
-        watch.start("toBuffer");
+        watch.start("image->buffer");
 
         final int numBands = image.getSampleModel()
                 .getNumBands();
         final int[] pixel = new int[numBands];
         final Raster raster = image.getRaster();
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
                 raster.getPixel(x, y, pixel);
                 // We use just the first band
                 setPixel(x, y, pixel[0]);
@@ -107,7 +107,63 @@ public class PixelBuffer
         watch.print();
     }
 
+    //-------------//
+    // PixelBuffer //
+    //-------------//
+    /**
+     * Creates a new PixelBuffer object from a PixelFilter.
+     *
+     * @param filter a filter to deliver foreground/background pixels
+     */
+    public PixelBuffer (PixelFilter filter)
+    {
+        this(new Dimension(filter.getWidth(), filter.getHeight()));
+
+        final StopWatch watch = new StopWatch("PixelBuffer");
+        watch.start("filter->buffer");
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                if (filter.isFore(x, y)) {
+                    setPixel(x, y, 0);
+                }
+            }
+        }
+
+        watch.print();
+    }
+
+    //-------------//
+    // PixelBuffer //
+    //-------------//
+    /**
+     * Clone a PixelBuffer.
+     *
+     * @param buf the buffer to clone
+     */
+    public PixelBuffer (PixelBuffer buf)
+    {
+        this(new Dimension(buf.getWidth(), buf.getHeight()));
+
+        final StopWatch watch = new StopWatch("PixelBuffer");
+        watch.start("copy");
+
+        System.arraycopy(buf.buffer, 0, buffer, 0, buffer.length);
+
+        watch.print();
+    }
+
     //~ Methods ----------------------------------------------------------------
+    //----------//
+    // setPixel //
+    //----------//
+    public final void setPixel (int x,
+                                int y,
+                                int val)
+    {
+        buffer[(y * width) + x] = (byte) val;
+    }
+
     //------//
     // dump //
     //------//
@@ -201,16 +257,6 @@ public class PixelBuffer
                            int y)
     {
         return getPixel(x, y) < 225;
-    }
-
-    //----------//
-    // setPixel //
-    //----------//
-    public final void setPixel (int x,
-                                int y,
-                                int val)
-    {
-        buffer[(y * width) + x] = (byte) val;
     }
 
     //-----------------//

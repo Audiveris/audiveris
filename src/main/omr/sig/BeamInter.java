@@ -80,7 +80,7 @@ public class BeamInter
     @Override
     public boolean isGood ()
     {
-        return grade >= 0.5; //TODO: use constant
+        return grade >= 0.6; //TODO: use constant
     }
     
     //--------//

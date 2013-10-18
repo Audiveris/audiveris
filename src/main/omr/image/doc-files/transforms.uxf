@@ -41,7 +41,7 @@ run factory</panel_attributes>
   <element>
     <type>com.umlet.element.Class</type>
     <coordinates>
-      <x>670</x>
+      <x>690</x>
       <y>50</y>
       <w>90</w>
       <h>100</h>
@@ -60,23 +60,25 @@ stem</panel_attributes>
     <type>com.umlet.element.Relation</type>
     <coordinates>
       <x>560</x>
-      <y>110</y>
-      <w>130</w>
-      <h>50</h>
+      <y>90</y>
+      <w>150</w>
+      <h>70</h>
     </coordinates>
-    <panel_attributes>lt=-&gt;</panel_attributes>
-    <additional_attributes>30;30;110;30</additional_attributes>
+    <panel_attributes>lt=-&gt;
+histogram</panel_attributes>
+    <additional_attributes>30;50;130;50</additional_attributes>
   </element>
   <element>
     <type>com.umlet.element.Relation</type>
     <coordinates>
       <x>560</x>
-      <y>50</y>
-      <w>130</w>
-      <h>50</h>
+      <y>30</y>
+      <w>150</w>
+      <h>70</h>
     </coordinates>
-    <panel_attributes>lt=-&gt;</panel_attributes>
-    <additional_attributes>30;30;110;30</additional_attributes>
+    <panel_attributes>lt=-&gt;
+histogram</panel_attributes>
+    <additional_attributes>30;50;130;50</additional_attributes>
   </element>
   <element>
     <type>com.umlet.element.Relation</type>
@@ -110,9 +112,10 @@ closing</panel_attributes>
       <x>390</x>
       <y>350</y>
       <w>160</w>
-      <h>70</h>
+      <h>94</h>
     </coordinates>
     <panel_attributes>lt=-&gt;
+adaptive
 binarization</panel_attributes>
     <additional_attributes>30;50;140;50</additional_attributes>
   </element>
@@ -205,10 +208,10 @@ Runs</panel_attributes>
       <w>60</w>
       <h>80</h>
     </coordinates>
-    <panel_attributes>Initial
+    <panel_attributes>BI
+--
 Gray
 Image
-valign=center
 halign=center
 lth=4
 bg=gray</panel_attributes>
@@ -222,9 +225,10 @@ bg=gray</panel_attributes>
       <w>60</w>
       <h>80</h>
     </coordinates>
-    <panel_attributes>Blurred
+    <panel_attributes>BI
+--
+Blurred
 Image
-valign=center
 halign=center
 lth=2.5
 bg=light_gray</panel_attributes>
@@ -238,9 +242,10 @@ bg=light_gray</panel_attributes>
       <w>60</w>
       <h>80</h>
     </coordinates>
-    <panel_attributes>B&amp;W
+    <panel_attributes>PB
+--
+B&amp;W
 Image
-valign=center
 halign=center
 lth=2.5
 bg=white</panel_attributes>
@@ -254,10 +259,11 @@ bg=white</panel_attributes>
       <w>60</w>
       <h>80</h>
     </coordinates>
-    <panel_attributes>Gray
+    <panel_attributes>PB
+--
+Gray
 Spots
 Image
-valign=center
 halign=center
 lth=2.5
 bg=gray</panel_attributes>
@@ -271,10 +277,11 @@ bg=gray</panel_attributes>
       <w>60</w>
       <h>80</h>
     </coordinates>
-    <panel_attributes>Beam
+    <panel_attributes>PB
+--
+Beam
 Spots
 Image
-valign=center
 halign=center
 lth=2.5
 bg=#33ffff</panel_attributes>
@@ -288,10 +295,11 @@ bg=#33ffff</panel_attributes>
       <w>60</w>
       <h>80</h>
     </coordinates>
-    <panel_attributes>Head
+    <panel_attributes>PB
+--
+Head
 Spots
 Image
-valign=center
 halign=center
 lth=2.5
 bg=#ffcc00</panel_attributes>
@@ -316,9 +324,10 @@ bg=#ffcc00</panel_attributes>
       <w>60</w>
       <h>80</h>
     </coordinates>
-    <panel_attributes>Distance
+    <panel_attributes>T
+--
+Distance
 Image
-valign=center
 halign=center
 lth=2.5
 bg=#88ff88</panel_attributes>
@@ -396,7 +405,6 @@ bg=#33ffff</panel_attributes>
       <h>40</h>
     </coordinates>
     <panel_attributes>Black Heads
-(today)
 valign=center
 halign=center
 bg=#ffcc00</panel_attributes>
@@ -411,7 +419,7 @@ bg=#ffcc00</panel_attributes>
       <h>40</h>
     </coordinates>
     <panel_attributes>Black Heads
-(perhaps)
+(additional)
 valign=center
 halign=center
 bg=#ffcc00</panel_attributes>
@@ -464,10 +472,11 @@ bg=#ff9966</panel_attributes>
       <w>60</w>
       <h>80</h>
     </coordinates>
-    <panel_attributes>Original
+    <panel_attributes>BI
+--
+Original
 RGB?
 Image
-valign=center
 halign=center
 lth=4
 bg=red</panel_attributes>
@@ -484,5 +493,66 @@ bg=red</panel_attributes>
     <panel_attributes>lt=-&gt;
 to gray</panel_attributes>
     <additional_attributes>30;50;140;50</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.custom.Text</type>
+    <coordinates>
+      <x>140</x>
+      <y>150</y>
+      <w>70</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>"INITIAL"</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.custom.Text</type>
+    <coordinates>
+      <x>130</x>
+      <y>440</y>
+      <w>90</w>
+      <h>30</h>
+    </coordinates>
+    <panel_attributes>"GAUSSIAN"</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>670</x>
+      <y>440</y>
+      <w>90</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>Beam Hooks
+valign=center
+halign=center
+bg=#33ffff</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>560</x>
+      <y>390</y>
+      <w>130</w>
+      <h>90</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>30;30;110;70</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.custom.Text</type>
+    <coordinates>
+      <x>20</x>
+      <y>510</y>
+      <w>140</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>*Legend*
+BI = BufferedImage
+PB = PixelBuffer
+T = Table</panel_attributes>
+    <additional_attributes/>
   </element>
 </diagram>

@@ -14,6 +14,7 @@ package omr.sheet;
 import omr.glyph.facets.Glyph;
 
 import omr.image.AreaMask;
+import omr.image.Picture;
 import omr.image.PixelFilter;
 
 import omr.lag.Section;
@@ -154,8 +155,10 @@ public class BeamItems
     public void checkMasks (Wrapper<Double> meanCoreRatio,
                             Wrapper<Double> meanBeltRatio)
     {
-        final PixelFilter distances = system.getSheet()
-                .getDistanceFilter();
+        final PixelFilter pixelFilter = system.getSheet()
+                .getPicture()
+                .getBuffer(
+                        Picture.BufferKey.BINARY);
         int sumCoreCount = 0;
         int sumCoreFore = 0;
         int sumBeltCount = 0;
@@ -168,10 +171,7 @@ public class BeamItems
 
             final AreaMask coreMask = new AreaMask(coreArea);
             final WrappedInteger core = new WrappedInteger(0);
-            final int coreCount = item.applyMask(
-                    coreMask,
-                    core,
-                    distances);
+            final int coreCount = coreMask.fore(core, pixelFilter);
 
             sumCoreCount += coreCount;
             sumCoreFore += core.value;
@@ -191,10 +191,7 @@ public class BeamItems
 
             final AreaMask beltMask = new AreaMask(beltArea);
             final WrappedInteger belt = new WrappedInteger(0);
-            final int beltCount = item.applyMask(
-                    beltMask,
-                    belt,
-                    distances);
+            final int beltCount = beltMask.fore(belt, pixelFilter);
 
             sumBeltCount += beltCount;
             sumBeltFore += belt.value;
@@ -219,8 +216,7 @@ public class BeamItems
 
         for (BeamItem item : items) {
             Line2D median = item.median;
-            double itemSlope = (median.getY2() - median.getY1()) / (median.getX2()
-                                                                    - median.getX1());
+            double itemSlope = LineUtil.getSlope(median);
 
             if (prevItemSlope != null) {
                 double beamSlopeGap = Math.abs(itemSlope - prevItemSlope);

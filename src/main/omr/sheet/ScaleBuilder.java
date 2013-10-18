@@ -17,13 +17,9 @@ import static omr.WellKnowns.LINE_SEPARATOR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.image.BufferedSource;
-import omr.image.ChamferDistance;
-import omr.image.FilterDescriptor;
 import omr.image.Picture;
-import omr.image.Picture.Key;
+import omr.image.Picture.ImageKey;
 import omr.image.PixelBuffer;
-import omr.image.PixelSource;
 
 import omr.math.Histogram;
 import omr.math.Histogram.MaxEntry;
@@ -64,12 +60,10 @@ import javax.swing.WindowConstants;
  * scale, by adding the most frequent foreground run length to the most
  * frequent background run length, since this gives the average
  * interline value.
- *
  * <p>
  * A second foreground peak usually gives the average beam thickness.
  * And similarly, a second background peak may indicate a series of staves
  * with a different interline than the main series.</p>
- *
  * <p>
  * Internally, additional validity checks are performed:<ol>
  * <li>Method {@link #checkStaves} looks at foreground and background
@@ -88,7 +82,6 @@ import javax.swing.WindowConstants;
  * (see constants.minResolution), then we suspect that the picture is not
  * a music sheet (it may rather be an image, a page of text, ...).</p></li>
  * </ol>
- *
  * <p>
  * If we have doubts about the page at hand and if this page is part of a
  * multi-page score, we propose to simply discard this sheet. In batch, the
@@ -111,7 +104,7 @@ public class ScaleBuilder
     //~ Instance fields --------------------------------------------------------
     //
     /** Related sheet. */
-    private Sheet sheet;
+    private final Sheet sheet;
 
     /** Keeper of run length histograms, for foreground & background. */
     private HistoKeeper histoKeeper;
@@ -200,22 +193,16 @@ public class ScaleBuilder
         try {
             Picture picture = sheet.getPicture();
 
-            // Binarization: Retrieve the whole table of foreground runs
-            histoKeeper = new HistoKeeper(picture.getHeight() - 1);
-            FilterDescriptor desc = sheet.getPage().getFilterParam().getTarget();
-            logger.info("{}{} {}", sheet.getLogPrefix(), "Binarization", desc);
-            sheet.getPage().getFilterParam().setActual(desc);
-
-            watch.start("Binarization " + desc);
-
-            PixelSource initialSource = new BufferedSource(picture.getImage(Key.INITIAL));
+            // Retrieve the whole table of foreground runs
+            watch.start("Binarization");
+            PixelBuffer binaryBuffer = picture.getBuffer(Picture.BufferKey.BINARY);
             RunsTableFactory factory = new RunsTableFactory(
                     Orientation.VERTICAL,
-                    desc.getFilter(initialSource),
+                    binaryBuffer,
                     0);
-            RunsTable wholeVertTable = factory.createTable("Binary");
 
-            watch.start("Global lag");
+            watch.start("Global vertical lag");
+            RunsTable wholeVertTable = factory.createTable("Binary");
             sheet.setWholeVerticalTable(wholeVertTable);
             factory = null; // To allow garbage collection ASAP
 
@@ -224,11 +211,12 @@ public class ScaleBuilder
             // For the time being, it is kept alive for display purpose, and to
             // allow the dewarping of the initial picture.
             if (constants.disposeImage.isSet()) {
-                picture.disposeImage(Key.INITIAL); // To discard image
+                picture.disposeImage(ImageKey.INITIAL); // To discard image
             }
 
             watch.start("Histograms");
             // Build the two histograms
+            histoKeeper = new HistoKeeper(picture.getHeight() - 1);
             histoKeeper.buildHistograms(
                     wholeVertTable,
                     picture.getWidth(),
@@ -254,16 +242,10 @@ public class ScaleBuilder
             sheet.setScale(scale);
             sheet.getBench().recordScale(scale);
 
-            // Compute distance transform image
-            watch.start("Distance transform");
-            PixelBuffer buffer = wholeVertTable.getBuffer();
-            sheet.setDistanceImage(
-                    new ChamferDistance.Short().computeToFore(buffer));
-
             // Prototype: look at horizontal histo for stem thickness
             RunsTableFactory horiFactory = new RunsTableFactory(
                     Orientation.HORIZONTAL,
-                    buffer,
+                    binaryBuffer,
                     0);
             RunsTable horiTable = horiFactory.createTable("hori Binary");
             horiHistoKeeper = new HoriHistoKeeper(picture.getWidth() - 1);

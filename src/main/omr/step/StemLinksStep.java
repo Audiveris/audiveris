@@ -14,7 +14,9 @@ package omr.step;
 import omr.sheet.SystemInfo;
 
 /**
- * Class {@code StemLinksStep}
+ * Class {@code StemLinksStep} implements <b>STEM_LINKS</b> step,
+ * which establishes all possible relations between stems and note
+ * heads or beams.
  *
  * @author Hervé Bitteur
  */
@@ -39,6 +41,7 @@ public class StemLinksStep
                 "Link stems to heads & beams");
     }
 
+    //~ Methods ----------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//

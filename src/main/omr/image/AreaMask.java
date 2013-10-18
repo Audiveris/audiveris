@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.image;
 
+import omr.util.Wrapper;
+
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 
@@ -67,6 +69,35 @@ public class AreaMask
         }
 
         return count;
+    }
+
+    //-------//
+    // fore //
+    //-------//
+    /**
+     * Count the number of foreground pixels in the mask area.
+     *
+     * @param fore   (output) to receive the number of foreground pixels
+     * @param filter the pixel filter which provides pixel status
+     * @return the total number of points in the mask area
+     */
+    public int fore (final Wrapper<Integer> fore,
+                     final PixelFilter filter)
+    {
+        fore.value = 0;
+
+        return apply(
+                new AreaMask.Adapter()
+                {
+                    @Override
+                    public void process (int x,
+                                         int y)
+                    {
+                        if (filter.isFore(x, y)) {
+                            fore.value++;
+                        }
+                    }
+                });
     }
 
     //~ Inner Interfaces -------------------------------------------------------
