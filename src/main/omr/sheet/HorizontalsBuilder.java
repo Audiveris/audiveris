@@ -45,7 +45,7 @@ import omr.selection.GlyphEvent;
 import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
-import omr.sig.BeamInter;
+import omr.sig.FullBeamInter;
 import omr.sig.Inter;
 import omr.sig.SIGraph;
 
@@ -736,7 +736,7 @@ public class HorizontalsBuilder
             // Check whether stick middle point is contained by a beam glyph
             Point2D middle = getMiddle(stick);
             for (Inter inter : beams) {
-                BeamInter beam = (BeamInter) inter;
+                FullBeamInter beam = (FullBeamInter) inter;
                 if (beam.getArea().contains(middle)) {
                     if (stick.isVip() || logger.isDebugEnabled()) {
                         logger.info("ledger#{} overlaps beam#{}",

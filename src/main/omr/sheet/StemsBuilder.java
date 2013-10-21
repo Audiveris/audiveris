@@ -169,7 +169,7 @@ public class StemsBuilder
     /** Heads for this system. */
     private List<Inter> systemHeads;
 
-    /** Beams for this system. */
+    /** Beams and beam hooks for this system. */
     private List<Inter> systemBeams;
 
     /** Stems interpretations for this system. */
@@ -216,8 +216,8 @@ public class StemsBuilder
         // The sorted stem seeds for this system
         systemSeeds = getSystemSeeds();
 
-        // The beam interpretations for this system
-        systemBeams = sig.inters(Shape.BEAM);
+        // The beam and beam hook interpretations for this system
+        systemBeams = sig.inters(BeamInter.class);
         Collections.sort(systemBeams, Inter.byAbscissa);
 
         // The sorted head interpretations for this system
@@ -420,6 +420,83 @@ public class StemsBuilder
     }
 
     //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final int maxOutDx;
+
+        final int maxInDx;
+
+        final int xMargin;
+
+        final double slopeMargin;
+
+        final int maxStemHeadGapX;
+
+        final int maxStemHeadGapY;
+
+        final int maxStemBeamGapX;
+
+        final int maxStemBeamGapY;
+
+        final int maxYGap;
+
+        final int maxStemThickness;
+
+        final int minHeadSectionContribution;
+
+        final int minStemExtension;
+
+        final int minHeadBeamDistance;
+
+        final int minLongStemLength;
+
+        final double maxDistanceToLine;
+
+        final int maxInterBeamGap;
+
+        //~ Constructors -------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (SystemInfo system,
+                           Scale scale)
+        {
+            maxOutDx = scale.toPixels(constants.maxOutDx);
+            maxInDx = scale.toPixels(constants.maxInDx);
+            xMargin = scale.toPixels(constants.xMargin);
+            slopeMargin = constants.slopeMargin.getValue();
+            maxStemHeadGapX = scale.toPixels(constants.maxStemHeadGapX);
+            maxStemHeadGapY = scale.toPixels(constants.maxStemHeadGapY);
+            maxStemBeamGapX = system.beamsBuilder.maxStemBeamGapX();
+            maxStemBeamGapY = system.beamsBuilder.maxStemBeamGapY();
+            maxYGap = scale.toPixels(constants.maxYGap);
+            maxStemThickness = scale.toPixels(
+                    VerticalsBuilder.getMaxStemThickness());
+            minHeadSectionContribution = scale.toPixels(
+                    constants.minHeadSectionContribution);
+            minStemExtension = scale.toPixels(constants.minStemExtension);
+            minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
+            minLongStemLength = scale.toPixels(constants.minLongStemLength);
+            maxDistanceToLine = scale.toPixelsDouble(
+                    constants.maxDistanceToLine);
+            maxInterBeamGap = scale.toPixels(constants.maxInterBeamGap);
+
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
+            }
+        }
+    }
+
+    //------------//
     // HeadLinker //
     //------------//
     /**
@@ -442,7 +519,7 @@ public class StemsBuilder
         /** Head bounding box. */
         private final Rectangle headBox;
 
-        /** All beams interpretations in head vicinity. */
+        /** All beams and hooks interpretations in head vicinity. */
         private List<Inter> neighborBeams;
 
         /** All stems seeds in head vicinity. */
@@ -748,7 +825,7 @@ public class StemsBuilder
             /**
              * (Try to) connect beam and stem.
              *
-             * @param beam      the beam interpretation
+             * @param beam      the beam or hook interpretation
              * @param stemInter the stem interpretation
              * @return the beam stem relation if successful, null otherwise
              */
@@ -1038,7 +1115,7 @@ public class StemsBuilder
             /**
              * Report proper beam limit, according to corner direction
              *
-             * @param beam the beam of interest
+             * @param beam the beam or hook of interest
              * @return the top or bottom beam limit, according to dir
              */
             private Line2D getLimit (BeamInter beam)
@@ -1284,7 +1361,7 @@ public class StemsBuilder
              */
             private int lookupBeams (List<BeamInter> beams)
             {
-                // Look for beams in the corner
+                // Look for beams and beam hooks in the corner
                 List<Inter> allbeams = sig.intersectedInters(
                         neighborBeams,
                         GeoOrder.BY_ABSCISSA,
@@ -1656,83 +1733,6 @@ public class StemsBuilder
                 Collections.sort(
                         glyphs,
                         (dir > 0) ? Glyph.byOrdinate : Glyph.byReverseOrdinate);
-            }
-        }
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final int maxOutDx;
-
-        final int maxInDx;
-
-        final int xMargin;
-
-        final double slopeMargin;
-
-        final int maxStemHeadGapX;
-
-        final int maxStemHeadGapY;
-
-        final int maxStemBeamGapX;
-
-        final int maxStemBeamGapY;
-
-        final int maxYGap;
-
-        final int maxStemThickness;
-
-        final int minHeadSectionContribution;
-
-        final int minStemExtension;
-
-        final int minHeadBeamDistance;
-
-        final int minLongStemLength;
-
-        final double maxDistanceToLine;
-
-        final int maxInterBeamGap;
-
-        //~ Constructors -------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (SystemInfo system,
-                           Scale scale)
-        {
-            maxOutDx = scale.toPixels(constants.maxOutDx);
-            maxInDx = scale.toPixels(constants.maxInDx);
-            xMargin = scale.toPixels(constants.xMargin);
-            slopeMargin = constants.slopeMargin.getValue();
-            maxStemHeadGapX = scale.toPixels(constants.maxStemHeadGapX);
-            maxStemHeadGapY = scale.toPixels(constants.maxStemHeadGapY);
-            maxStemBeamGapX = system.beamsBuilder.maxStemBeamGapX();
-            maxStemBeamGapY = system.beamsBuilder.maxStemBeamGapY();
-            maxYGap = scale.toPixels(constants.maxYGap);
-            maxStemThickness = scale.toPixels(
-                    VerticalsBuilder.getMaxStemThickness());
-            minHeadSectionContribution = scale.toPixels(
-                    constants.minHeadSectionContribution);
-            minStemExtension = scale.toPixels(constants.minStemExtension);
-            minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
-            minLongStemLength = scale.toPixels(constants.minLongStemLength);
-            maxDistanceToLine = scale.toPixelsDouble(
-                    constants.maxDistanceToLine);
-            maxInterBeamGap = scale.toPixels(constants.maxInterBeamGap);
-
-            if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
             }
         }
     }

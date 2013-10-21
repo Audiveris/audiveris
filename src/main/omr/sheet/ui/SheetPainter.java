@@ -27,7 +27,6 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.sig.BeamInter;
-import omr.sig.BlackHeadInter;
 import omr.sig.Inter;
 import omr.sig.InterVisitor;
 import omr.sig.LedgerInter;
@@ -59,7 +58,8 @@ import java.util.ConcurrentModificationException;
  * the rendering of related sections (with preset colors) in the
  * dedicated <b>Sheet</b> display.
  *
- * <p>Nota: It has been extended to deal with rendering of initial sheet
+ * <p>
+ * Nota: It has been extended to deal with rendering of initial sheet
  * elements.
  *
  * @author Hervé Bitteur
@@ -373,8 +373,8 @@ public class SheetPainter
                 if (symbol == null) {
                     systemInfo.getScoreSystem()
                             .addError(
-                            glyph,
-                            "No symbol for " + glyph.idString());
+                                    glyph,
+                                    "No symbol for " + glyph.idString());
                 } else {
                     symbol.paintSymbol(
                             g,

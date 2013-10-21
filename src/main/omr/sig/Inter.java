@@ -17,6 +17,7 @@ import omr.glyph.facets.Glyph;
 import omr.util.Vip;
 
 import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.util.Comparator;
 
 /**
@@ -67,6 +68,13 @@ public interface Inter
      * @return a complete string dump
      */
     String dumpOf ();
+
+    /**
+     * Report the precise defining area
+     *
+     * @return the inter area, if any
+     */
+    Area getArea ();
 
     /**
      * Report the bounding box for this interpretation.

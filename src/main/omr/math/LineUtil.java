@@ -24,6 +24,7 @@ public class LineUtil
 {
     //~ Constructors -----------------------------------------------------------
 
+    /** Not meant to be instantiated. */
     private LineUtil ()
     {
     }
@@ -186,6 +187,32 @@ public class LineUtil
     }
 
     //-----------------//
+    // intersectionAtX //
+    //-----------------//
+    /**
+     * Return the intersection point between infinite line defined by
+     * provided point and slope and infinite vertical line at
+     * provided abscissa.
+     *
+     * @param p1    provided line point
+     * @param slope provided line slope
+     * @param x     provided abscissa
+     * @return the intersection point
+     */
+    public static Point2D.Double intersectionAtX (Point2D p1,
+                                                  double slope,
+                                                  double x)
+    {
+        Point2D p2 = new Point2D.Double(
+                p1.getX() + 1000,
+                p1.getY() + (1000 * slope));
+        Point2D p3 = new Point2D.Double(x, 0);
+        Point2D p4 = new Point2D.Double(x, 1000);
+
+        return intersection(p1, p2, p3, p4);
+    }
+
+    //-----------------//
     // intersectionAtY //
     //-----------------//
     /**
@@ -201,6 +228,32 @@ public class LineUtil
                                                   Point2D p2,
                                                   double y)
     {
+        Point2D p3 = new Point2D.Double(0, y);
+        Point2D p4 = new Point2D.Double(1000, y);
+
+        return intersection(p1, p2, p3, p4);
+    }
+
+    //-----------------//
+    // intersectionAtY //
+    //-----------------//
+    /**
+     * Return the intersection point between line defined by provided
+     * point and <b>inverted</> slope and infinite horizontal line at
+     * provided ordinate.
+     *
+     * @param p1            point of line A
+     * @param invertedSlope inverted slope of line A (slope WRT vertical line)
+     * @param y             provided ordinate
+     * @return the intersection point
+     */
+    public static Point2D.Double intersectionAtY (Point2D p1,
+                                                  double invertedSlope,
+                                                  double y)
+    {
+        Point2D p2 = new Point2D.Double(
+                p1.getX() + (1000 * invertedSlope),
+                p1.getY() + 1000);
         Point2D p3 = new Point2D.Double(0, y);
         Point2D p4 = new Point2D.Double(1000, y);
 

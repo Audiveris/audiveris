@@ -116,6 +116,35 @@ public class SIGraph
         return found;
     }
 
+    //------------------//
+    // containingInters //
+    //------------------//
+    /**
+     * Lookup the sig collection of interpretations for those which
+     * contain the provided point.
+     *
+     * @param point provided point
+     * @return the containing interpretations
+     */
+    public List<Inter> containingInters (Point point)
+    {
+        List<Inter> found = new ArrayList<Inter>();
+
+        for (Inter inter : vertexSet()) {
+            if (inter.getBounds()
+                    .contains(point)) {
+                // More precise test if we know inter area
+                Area area = inter.getArea();
+
+                if ((area == null) || area.contains(point)) {
+                    found.add(inter);
+                }
+            }
+        }
+
+        return found;
+    }
+
     //--------------------//
     // getContextualGrade //
     //--------------------//
@@ -185,8 +214,7 @@ public class SIGraph
                            Class classe)
     {
         for (Inter inter : glyph.getInterpretations()) {
-            if (inter.getClass()
-                    .isAssignableFrom(classe)) {
+            if (classe.isAssignableFrom(inter.getClass())) {
                 return inter;
             }
         }
@@ -328,7 +356,31 @@ public class SIGraph
                     @Override
                     public boolean check (Inter inter)
                     {
-                        return inter.getShape() == shape;
+                        return !inter.isDeleted()
+                               && (inter.getShape() == shape);
+                    }
+                });
+    }
+
+    //--------//
+    // inters //
+    //--------//
+    /**
+     * Lookup for interpretations of the provided class
+     *
+     * @param classe the class to search for
+     * @return the interpretations of desired class
+     */
+    public List<Inter> inters (final Class classe)
+    {
+        return inters(
+                new Predicate<Inter>()
+                {
+                    @Override
+                    public boolean check (Inter inter)
+                    {
+                        return !inter.isDeleted()
+                               && (classe.isAssignableFrom(inter.getClass()));
                     }
                 });
     }
@@ -350,7 +402,8 @@ public class SIGraph
                     @Override
                     public boolean check (Inter inter)
                     {
-                        return shapes.contains(inter.getShape());
+                        return !inter.isDeleted()
+                               && shapes.contains(inter.getShape());
                     }
                 });
     }
@@ -512,30 +565,6 @@ public class SIGraph
 
                 case NONE:
                 }
-            }
-        }
-
-        return found;
-    }
-
-    //-------------------//
-    // intersectedInters //
-    //-------------------//
-    /**
-     * Lookup the sig collection of interpretations for those which
-     * contain the provided point.
-     *
-     * @param point provided point
-     * @return the containing interpretations
-     */
-    public List<Inter> intersectedInters (Point point)
-    {
-        List<Inter> found = new ArrayList<Inter>();
-
-        for (Inter inter : vertexSet()) {
-            if (inter.getBounds()
-                    .contains(point)) {
-                found.add(inter);
             }
         }
 

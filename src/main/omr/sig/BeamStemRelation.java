@@ -20,7 +20,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code BeamStemRelation}
+ * Class {@code BeamStemRelation} implements the geographic link
+ * between a beam (or beam hook) and a stem.
  *
  * @author Hervé Bitteur
  */
@@ -83,9 +84,9 @@ public class BeamStemRelation
         return stemPortion;
     }
 
-    //------------//
+    //----------//
     // getRatio //
-    //------------//
+    //----------//
     @Override
     public Double getRatio ()
     {

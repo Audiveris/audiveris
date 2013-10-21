@@ -48,8 +48,8 @@ import omr.lag.SectionsBuilder;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
-import omr.sig.BeamInter;
 import omr.sig.BlackHeadInter;
+import omr.sig.FullBeamInter;
 import omr.sig.Grades;
 import omr.sig.Inter;
 import omr.sig.SIGraph;
@@ -527,8 +527,8 @@ public class BlackNotesBuilder
 
         if (!inters.isEmpty()) {
             for (Inter inter : inters) {
-                if (inter instanceof BeamInter) {
-                    BeamInter beam = (BeamInter) inter;
+                if (inter instanceof FullBeamInter) {
+                    FullBeamInter beam = (FullBeamInter) inter;
 
                     if (beam.isGood()) {
                         return false;

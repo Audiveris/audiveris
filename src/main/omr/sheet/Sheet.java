@@ -1676,7 +1676,7 @@ public class Sheet
         } else {
             // This is just a point
             // Look for intersected interpretations
-            inters = sig.intersectedInters(rect.getLocation());
+            inters = sig.containingInters(rect.getLocation());
         }
 
         // Publish inters found (perhaps none)

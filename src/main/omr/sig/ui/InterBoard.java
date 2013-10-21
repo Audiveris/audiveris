@@ -28,6 +28,7 @@ import omr.sig.SigManager;
 
 import omr.ui.Board;
 import omr.ui.PixelCount;
+import omr.ui.field.LCheckBox;
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LTextField;
 import omr.ui.field.SpinnerUtil;
@@ -49,6 +50,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.SwingConstants;
@@ -63,7 +65,7 @@ import javax.swing.event.ChangeListener;
  */
 public class InterBoard
         extends Board
-        implements ChangeListener // For all spinners
+        implements ChangeListener, ActionListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -91,22 +93,32 @@ public class InterBoard
     private JSpinner idSpinner;
 
     /** Output : grade. */
-    private LDoubleField grade = new LDoubleField(
+    private final LDoubleField grade = new LDoubleField(
             false,
             "Grade",
             "Probability",
             "%.2f");
+
+    /** Input / Output : VIP flag. */
+    private final LCheckBox vip = new LCheckBox(
+            "Vip",
+            "Is this glyph flagged as VIP?");
 
     /** Output : shape. */
     private final LTextField shapeField = new LTextField(
             "",
             "Shape for this interpretation");
 
+    /** Output : grade details. */
+    private final LTextField details = new LTextField(
+            "Impacts",
+            "Grade details");
+
     /** The JGoodies/Form constraints to be used by all subclasses. */
     protected final CellConstraints cst = new CellConstraints();
 
     /** The JGoodies/Form layout to be used by all subclasses. */
-    protected final FormLayout layout = Panel.makeFormLayout(3, 3);
+    protected final FormLayout layout = Panel.makeFormLayout(4, 3);
 
     /** The JGoodies/Form builder to be used by all subclasses. */
     protected final PanelBuilder builder;
@@ -145,24 +157,27 @@ public class InterBoard
         dump.setToolTipText("Dump this interpretation");
         dump.addActionListener(
                 new ActionListener()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                // Retrieve current inter selection
-                InterListEvent interListEvent = (InterListEvent) getSelectionService()
+                {
+                    @Override
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        // Retrieve current inter selection
+                        InterListEvent interListEvent = (InterListEvent) getSelectionService()
                         .getLastEvent(
-                        InterListEvent.class);
-                List<Inter> interList = interListEvent.getData();
+                                InterListEvent.class);
+                        List<Inter> interList = interListEvent.getData();
 
-                if ((interList != null) && !interList.isEmpty()) {
-                    Inter inter = interList.get(interList.size() - 1);
-                    logger.info(inter.dumpOf());
-                }
-            }
-        });
+                        if ((interList != null) && !interList.isEmpty()) {
+                            Inter inter = interList.get(interList.size() - 1);
+                            logger.info(inter.dumpOf());
+                        }
+                    }
+                });
         // Until a glyph selection is made
         dump.setEnabled(false);
+
+        // Listener for VIP
+        vip.addActionListener(this);
 
         // Force a constant height for the shapeIcon field, despite the
         // variation in size of the icon
@@ -176,10 +191,39 @@ public class InterBoard
         builder = new PanelBuilder(layout, getBody());
         builder.setDefaultDialogBorder();
 
+        // Initial status
         defineLayout();
+        vip.setEnabled(false);
+        grade.setEnabled(false);
+        details.setEnabled(false);
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-----------------//
+    // actionPerformed //
+    //-----------------//
+    /**
+     * Triggered by VIP check box.
+     *
+     * @param e
+     */
+    @Override
+    public void actionPerformed (ActionEvent e)
+    {
+        if (vip.getField() == e.getSource()) {
+            final JCheckBox box = vip.getField();
+            final Inter inter = getSelectedInter();
+
+            if (inter != null) {
+                if (!inter.isVip()) {
+                    inter.setVip();
+                    box.setEnabled(false);
+                    logger.info("{} flagged as VIP", inter);
+                }
+            }
+        }
+    }
+
     //---------//
     // onEvent //
     //---------//
@@ -232,11 +276,11 @@ public class InterBoard
                 // Notify the new inter id
                 getSelectionService()
                         .publish(
-                        new InterIdEvent(
-                        this,
-                        SelectionHint.INTER_INIT,
-                        null,
-                        (Integer) spinner.getValue()));
+                                new InterIdEvent(
+                                        this,
+                                        SelectionHint.INTER_INIT,
+                                        null,
+                                        (Integer) spinner.getValue()));
             }
         } else {
             logger.error("No known spinner");
@@ -280,7 +324,15 @@ public class InterBoard
         //        builder.add(count, cst.xy(3, r, "right, center"));
         //
         //        builder.add(active, cst.xy(5, r));
+        builder.add(vip.getLabel(), cst.xy(1, r));
+        builder.add(vip.getField(), cst.xy(3, r));
+
         builder.add(shapeField.getField(), cst.xyw(7, r, 5));
+
+        r += 2; // --------------------------------
+
+        builder.add(details.getLabel(), cst.xy(1, r));
+        builder.add(details.getField(), cst.xyw(3, r, 9));
     }
 
     //------------------//
@@ -301,6 +353,22 @@ public class InterBoard
         SpinnerUtil.setEditable(spinner, true);
 
         return spinner;
+    }
+
+    //------------------//
+    // getSelectedInter //
+    //------------------//
+    private Inter getSelectedInter ()
+    {
+        final List<Inter> interList = (List<Inter>) getSelectionService()
+                .getSelection(
+                        InterListEvent.class);
+
+        if ((interList != null) && !interList.isEmpty()) {
+            return interList.get(interList.size() - 1);
+        } else {
+            return null;
+        }
     }
 
     //-------------//
@@ -349,14 +417,30 @@ public class InterBoard
 
         // Inter characteristics
         if (inter != null) {
+            vip.getLabel()
+                    .setEnabled(true);
+            vip.getField()
+                    .setEnabled(!inter.isVip());
+            vip.getField()
+                    .setSelected(inter.isVip());
+
             grade.setValue(inter.getGrade());
+            details.setText(inter.getDetails());
             deassignAction.putValue(
                     Action.NAME,
                     inter.isDeleted() ? "deleted" : "Deassign");
         } else {
+            vip.setEnabled(false);
+            vip.getField()
+                    .setSelected(false);
+
             grade.setText("");
+            details.setText("");
             deassignAction.putValue(Action.NAME, " ");
         }
+
+        grade.setEnabled(inter != null);
+        details.setEnabled(inter != null);
     }
 
     //~ Inner Classes ----------------------------------------------------------

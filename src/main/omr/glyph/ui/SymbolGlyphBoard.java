@@ -39,13 +39,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import omr.ui.field.LCheckBox;
 
 /**
  * Class {@code SymbolGlyphBoard} defines an extended glyph board,
@@ -66,6 +69,7 @@ import javax.swing.KeyStroke;
  */
 public class SymbolGlyphBoard
         extends GlyphBoard
+        implements ActionListener
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -75,16 +79,16 @@ public class SymbolGlyphBoard
 
     //~ Instance fields --------------------------------------------------------
     /** Numerator of time signature */
-    private LIntegerField timeNum;
+    private final LIntegerField timeNum;
 
     /** Denominator of time signature */
-    private LIntegerField timeDen;
+    private final LIntegerField timeDen;
 
     /** ComboBox for text role */
-    private LComboBox<TextRole> roleCombo;
+    private final LComboBox<TextRole> roleCombo;
 
     /** ComboBox for text role type */
-    private LComboBox<CreatorType> typeCombo;
+    private final LComboBox<CreatorType> typeCombo;
 
     /** Output : textual confidence */
     protected LIntegerField confField;
@@ -93,40 +97,33 @@ public class SymbolGlyphBoard
     protected LTextField textField;
 
     /** Glyph characteristics : position wrt staff */
-    private LDoubleField pitchPosition = new LDoubleField(
+    private final LDoubleField pitchPosition = new LDoubleField(
             false,
             "Pitch",
             "Logical pitch position",
             "%.3f");
 
-    /** Glyph characteristics : is there a ledger */
-    private LTextField ledger = new LTextField(
-            false,
-            "Ledger",
-            "Does this glyph intersect a ledger?");
-
-    /** Glyph characteristics : how many stems */
-    private LIntegerField stems = new LIntegerField(
-            false,
-            "Stems",
-            "Number of stems connected to this glyph");
+    /** Glyph characteristics : vip */
+    private final LCheckBox vip = new LCheckBox(
+            "Vip",
+            "Is this glyph flagged as VIP?");
 
     /** Glyph characteristics : normalized weight */
-    private LDoubleField weight = new LDoubleField(
+    private final LDoubleField weight = new LDoubleField(
             false,
             "Weight",
             "Normalized weight",
             "%.3f");
 
     /** Glyph characteristics : normalized width */
-    private LDoubleField width = new LDoubleField(
+    private final LDoubleField width = new LDoubleField(
             false,
             "Width",
             "Normalized width",
             "%.3f");
 
     /** Glyph characteristics : normalized height */
-    private LDoubleField height = new LDoubleField(
+    private final LDoubleField height = new LDoubleField(
             false,
             "Height",
             "Normalized height",
@@ -155,6 +152,16 @@ public class SymbolGlyphBoard
     {
         // For all glyphs
         super(glyphsController, useSpinners, true);
+
+        // Listener for VIP
+        vip.addActionListener(this);
+
+        // Initial status
+        vip.setEnabled(false);
+        width.setEnabled(false);
+        height.setEnabled(false);
+        pitchPosition.setEnabled(false);
+        weight.setEnabled(false);
 
         // Additional combo for text role
         paramAction = new ParamAction();
@@ -190,6 +197,32 @@ public class SymbolGlyphBoard
         getComponent().getActionMap().put("TextAction", paramAction);
     }
 
+    //-----------------//
+    // actionPerformed //
+    //-----------------//
+    /**
+     * Triggered by VIP check box.
+     *
+     * @param e
+     */
+    @Override
+    public void actionPerformed (ActionEvent e)
+    {
+        if (vip.getField() == e.getSource()) {
+            final JCheckBox box = vip.getField();
+            final Glyph glyph = (Glyph) getSelectionService()
+                    .getSelection(GlyphEvent.class);
+
+            if (glyph != null) {
+                if (!glyph.isVip()) {
+                    glyph.setVip();
+                    box.setEnabled(false);
+                    logger.info("{} flagged as VIP", glyph.idString());
+                }
+            }
+        }
+    }
+
     //~ Methods ----------------------------------------------------------------
     //---------//
     // onEvent //
@@ -219,22 +252,29 @@ public class SymbolGlyphBoard
 
                 // Fill symbol characteristics
                 if (glyph != null) {
+                    vip.getLabel()
+                            .setEnabled(true);
+                    vip.getField()
+                            .setEnabled(!glyph.isVip());
+                    vip.getField()
+                            .setSelected(glyph.isVip());
                     pitchPosition.setValue(glyph.getPitchPosition());
-                    ledger.setText(Boolean.toString(glyph.isWithLedger()));
-                    stems.setValue(glyph.getStemNumber());
-
                     weight.setValue(glyph.getNormalizedWeight());
                     width.setValue(glyph.getNormalizedWidth());
                     height.setValue(glyph.getNormalizedHeight());
                 } else {
-                    ledger.setText("");
+                    vip.setEnabled(false);
+                    vip.getField().setSelected(false);
                     pitchPosition.setText("");
-                    stems.setText("");
-
                     weight.setText("");
                     width.setText("");
                     height.setText("");
                 }
+
+                width.setEnabled(glyph != null);
+                height.setEnabled(glyph != null);
+                pitchPosition.setEnabled(glyph != null);
+                weight.setEnabled(glyph != null);
 
                 // Text info
                 if (roleCombo != null) {
@@ -259,7 +299,6 @@ public class SymbolGlyphBoard
                         } else {
                             textField.setText("");
                         }
-
 
                         if (glyph.getTextRole() != null) {
                             roleCombo.setSelectedItem(glyph.getTextRole().role);
@@ -296,7 +335,7 @@ public class SymbolGlyphBoard
                         TimeRational timeRational = (shape == Shape.CUSTOM_TIME)
                                 ? glyph.getTimeRational()
                                 : TimeSignature.rationalOf(
-                                shape);
+                                        shape);
 
                         if (timeRational != null) {
                             timeNum.setValue(timeRational.num);
@@ -330,31 +369,27 @@ public class SymbolGlyphBoard
         // Glyph ---
 
         r += 2; // --------------------------------
+        builder.add(vip.getLabel(), cst.xy(1, r));
+        builder.add(vip.getField(), cst.xy(3, r));
         // shape
 
         r += 2; // --------------------------------
         // Glyph characteristics, first line
 
-        builder.add(pitchPosition.getLabel(), cst.xy(1, r));
-        builder.add(pitchPosition.getField(), cst.xy(3, r));
+        builder.add(width.getLabel(), cst.xy(5, r));
+        builder.add(width.getField(), cst.xy(7, r));
 
-        builder.add(ledger.getLabel(), cst.xy(5, r));
-        builder.add(ledger.getField(), cst.xy(7, r));
-
-        builder.add(stems.getLabel(), cst.xy(9, r));
-        builder.add(stems.getField(), cst.xy(11, r));
+        builder.add(pitchPosition.getLabel(), cst.xy(9, r));
+        builder.add(pitchPosition.getField(), cst.xy(11, r));
 
         r += 2; // --------------------------------
         // Glyph characteristics, second line
 
-        builder.add(weight.getLabel(), cst.xy(1, r));
-        builder.add(weight.getField(), cst.xy(3, r));
+        builder.add(height.getLabel(), cst.xy(5, r));
+        builder.add(height.getField(), cst.xy(7, r));
 
-        builder.add(width.getLabel(), cst.xy(5, r));
-        builder.add(width.getField(), cst.xy(7, r));
-
-        builder.add(height.getLabel(), cst.xy(9, r));
-        builder.add(height.getField(), cst.xy(11, r));
+        builder.add(weight.getLabel(), cst.xy(9, r));
+        builder.add(weight.getField(), cst.xy(11, r));
 
         r += 2; // --------------------------------
         // Text information, first line
@@ -415,7 +450,7 @@ public class SymbolGlyphBoard
             // Get current glyph set
             GlyphSetEvent glyphsEvent = (GlyphSetEvent) getSelectionService().
                     getLastEvent(
-                    GlyphSetEvent.class);
+                            GlyphSetEvent.class);
             Set<Glyph> glyphs = (glyphsEvent != null)
                     ? glyphsEvent.getData() : null;
 
@@ -443,9 +478,9 @@ public class SymbolGlyphBoard
                     TextRoleInfo roleInfo = new TextRoleInfo(role, type);
                     SheetsController.getCurrentSheet().getSymbolsController().
                             asyncAssignTexts(
-                            glyphs,
-                            roleInfo,
-                            textField.getText());
+                                    glyphs,
+                                    roleInfo,
+                                    textField.getText());
                 } else // Custom time sig?
                 if (shape == Shape.CUSTOM_TIME) {
                     int num = timeNum.getValue();
@@ -454,8 +489,8 @@ public class SymbolGlyphBoard
                     if ((num != 0) && (den != 0)) {
                         SheetsController.getCurrentSheet().
                                 getSymbolsController().asyncAssignRationals(
-                                glyphs,
-                                new TimeRational(num, den));
+                                        glyphs,
+                                        new TimeRational(num, den));
                     } else {
                         logger.warn("Invalid time signature parameters");
                     }

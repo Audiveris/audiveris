@@ -96,6 +96,7 @@ public class SigSolver
             // Detect lack of mandatory support relation for certain inters
             modifs += checkHeads();
             modifs += checkBeams();
+            modifs += checkHooks();
             modifs += checkStems();
             modifs += checkLedgers();
             logger.debug("S#{} modifs: {}", system.getId(), modifs);
@@ -108,7 +109,7 @@ public class SigSolver
     /**
      * Check if a beam has a stem at both ends.
      */
-    private boolean beamHasBothStems (BeamInter beam)
+    private boolean beamHasBothStems (FullBeamInter beam)
     {
         boolean hasLeft = false;
         boolean hasRight = false;
@@ -133,6 +134,37 @@ public class SigSolver
         return hasLeft && hasRight;
     }
 
+    //-------------//
+    // hookHasStem //
+    //-------------//
+    /**
+     * Check if a beam hook has a stem.
+     */
+    private boolean hookHasStem (BeamHookInter hook)
+    {
+        boolean hasLeft = false;
+        boolean hasRight = false;
+
+        if (hook.isVip()) {
+            logger.info("VIP hookHasStem for {}", hook);
+        }
+
+        for (Relation rel : sig.edgesOf(hook)) {
+            if (rel instanceof BeamStemRelation) {
+                BeamStemRelation bsRel = (BeamStemRelation) rel;
+                BeamPortion portion = bsRel.getBeamPortion();
+
+                if (portion == BeamPortion.LEFT) {
+                    hasLeft = true;
+                } else if (portion == BeamPortion.RIGHT) {
+                    hasRight = true;
+                }
+            }
+        }
+
+        return hasLeft || hasRight;
+    }
+
     //------------//
     // checkBeams //
     //------------//
@@ -144,10 +176,10 @@ public class SigSolver
     private int checkBeams ()
     {
         int modifs = 0;
-        List<Inter> beams = sig.inters(Shape.BEAM);
+        List<Inter> beams = sig.inters(FullBeamInter.class);
 
         for (Iterator<Inter> it = beams.iterator(); it.hasNext();) {
-            BeamInter beam = (BeamInter) it.next();
+            FullBeamInter beam = (FullBeamInter) it.next();
 
             if (!beamHasBothStems(beam)) {
                 if (beam.isVip() || logger.isDebugEnabled()) {
@@ -155,6 +187,36 @@ public class SigSolver
                 }
 
                 sig.removeVertex(beam);
+                it.remove();
+                modifs++;
+            }
+        }
+
+        return modifs;
+    }
+
+    //------------//
+    // checkHooks //
+    //------------//
+    /**
+     * Perform checks on beam hooks.
+     *
+     * @return the count of modifications done
+     */
+    private int checkHooks ()
+    {
+        int modifs = 0;
+        List<Inter> hooks = sig.inters(BeamHookInter.class);
+
+        for (Iterator<Inter> it = hooks.iterator(); it.hasNext();) {
+            BeamHookInter hook = (BeamHookInter) it.next();
+
+            if (!hookHasStem(hook)) {
+                if (hook.isVip() || logger.isDebugEnabled()) {
+                    logger.info("Deleting beam hook lacking stem {}", hook);
+                }
+
+                sig.removeVertex(hook);
                 it.remove();
                 modifs++;
             }

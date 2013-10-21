@@ -20,6 +20,7 @@ import omr.glyph.facets.Glyph;
 import omr.math.GeoUtil;
 
 import java.awt.Rectangle;
+import java.awt.geom.Area;
 
 /**
  * Class {@code BasicInter} is the basis implementation for
@@ -58,6 +59,9 @@ public class BasicInter
 
     /** Object bounds, perhaps different from glyph bounds. */
     protected Rectangle box;
+
+    /** Object precise area, if any. */
+    protected Area area;
 
     /** Details about grade (for debugging). */
     protected GradeImpacts impacts;
@@ -184,13 +188,25 @@ public class BasicInter
 
         sb.append(
                 String.format(
-                "Inter: %s@%s%n",
-                getClass().getSimpleName(),
-                Integer.toHexString(this.hashCode())));
+                        "Inter: %s@%s%n",
+                        getClass().getSimpleName(),
+                        Integer.toHexString(this.hashCode())));
         sb.append(String.format("   %s%n", this));
         sb.append(String.format("   %s%n", getDetails()));
 
         return sb.toString();
+    }
+
+    //---------//
+    // getArea //
+    //---------//
+    /**
+     * @return the area
+     */
+    @Override
+    public Area getArea ()
+    {
+        return area;
     }
 
     //-----------//
@@ -322,6 +338,17 @@ public class BasicInter
     public boolean isVip ()
     {
         return vip;
+    }
+
+    //---------//
+    // setArea //
+    //---------//
+    /**
+     * @param area the area to set
+     */
+    public void setArea (Area area)
+    {
+        this.area = area;
     }
 
     //-----------//
