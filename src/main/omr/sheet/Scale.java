@@ -26,23 +26,51 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Class {@code Scale} encapsulates what drives the scale of a sheet,
  * namely the main lengths of foreground and background vertical runs
  * (which are staff line thickness and white interval between staff
- * lines respectively), and the sum of these lengths which represents
- * the main interline value.
- *
- * <p>This class also provides methods for converting values based on what the
+ * lines respectively), and the sum of these two lengths which
+ * represents the main interline value.
+ * <p>
+ * Primary informations: This data is always detected, otherwise the current
+ * page is detected as not being a music page.<ul>
+ * <li><b>Staff line thickness</b> (fore): main, max.</li>
+ * <li><b>Staff interline</b>: min, main, max.</li>
+ * </ul>
+ * <p>
+ * Secondary informations: This data is always made available, either based on
+ * detected value or derived from other information.<ul>
+ * <li><b>Beam thickness</b>: main. A second peak in the histogram of vertical
+ * foreground runs signals the presence of beams.
+ * Otherwise it is computed as a ratio of interline.</li>
+ * <li><b>Stem thickness</b>: main. A suitable peak in the histogram of
+ * horizontal foreground runs signals the presence of stems.
+ * Otherwise it is computed as a ratio of line thickness.</li>
+ * </ul>
+ * <p>
+ * Optional informations: Some of this data may be detected, according to the
+ * page at hand.<ul>
+ * <li><b>Staff 2nd interline</b>: min, main, max. A second peak in the
+ * histogram of vertical background runs signals the presence of staves with a
+ * different interline value.</li>
+ * </ul>
+ * <p>
+ * This class also provides methods for converting values based on what the
  * interline and the line thickness are actually worth.
- * There are two different measurements, pixels and fractions :
+ * There are two different measurements, pixels and fractions:
  *
- * <dl> <dt> <b>pixel</b> </dt> <dd> This is simply an absolute number of
- * pixels, so generally an integer. One pixel is worth 1 pixel (sic) </dd>
- *
- * <dt> <b>(interline) fraction</b> </dt> <dd> This is a number of interlines,
- * so generally a fraction which is implemented as a double. One interline is
- * worth whatever the scale is, generally something around 20 pixels </dd>
- *
- * <dt> <b>line fraction</b> </dt> <dd> This is a number of line thickness,
- * so generally a line fraction which is implemented as a double. One line is
- * worth whatever the scale is, generally something around 4 pixels </dd>
+ * <dl>
+ * <dt><b>pixel</b></dt>
+ * <dd> This is simply an absolute number of pixels, so generally an
+ * integer.</dd>
+ * <dt><b>(interline) Fraction</b></dt>
+ * <dd> This is a number (or fraction) of interlines.
+ * Typical unit value for interline is around 20 pixels.</dd>
+ * <dt><b>(interline) AreaFraction</b></dt>
+ * <dd> This is a number (or fraction) of square interlines, meant to measure
+ * glyph area or weight.
+ * Typical unit value for interline area is around 400 pixels.</dd>
+ * <dt> <b>LineFraction</b></dt>
+ * <dd> This is a number (or fraction) of line thickness.
+ * Typical unit value for line is around 4 pixels.</dd>
+ * </dl>
  *
  * @author Hervé Bitteur
  */
@@ -56,16 +84,19 @@ public class Scale
     private static final Logger logger = LoggerFactory.getLogger(Scale.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** Line thickness range */
+    /** Line thickness range. */
     private final Range lineRange;
 
-    /** Main interline range */
+    /** Main interline range. */
     private final Range interlineRange;
 
-    /** Beam thickness, if any */
-    private final Integer beamValue;
+    /** Beam thickness (detected or computed). */
+    private final int beamValue;
 
-    /** Second interline range, if any */
+    /** Stem thickness (detected or computed). */
+    private final int stemValue;
+
+    /** Second interline range, if any. */
     private final Range secondInterlineRange;
 
     //~ Constructors -----------------------------------------------------------
@@ -98,7 +129,8 @@ public class Scale
         this(
                 new Range(-1, mainFore, -1),
                 new Range(-1, interline, -1),
-                null,
+                -1,
+                -1,
                 null);
     }
 
@@ -111,16 +143,19 @@ public class Scale
      * @param lineRange            range of line thickness
      * @param interlineRange       range of interline
      * @param beamValue            beam thickness
+     * @param stemValue            stem thickness
      * @param secondInterlineRange range of secondInterline
      */
     public Scale (Range lineRange,
                   Range interlineRange,
-                  Integer beamValue,
+                  int beamValue,
+                  int stemValue,
                   Range secondInterlineRange)
     {
         this.lineRange = lineRange;
         this.interlineRange = interlineRange;
         this.beamValue = beamValue;
+        this.stemValue = stemValue;
         this.secondInterlineRange = secondInterlineRange;
     }
 
@@ -130,7 +165,7 @@ public class Scale
     /** No-arg constructor, needed by JAXB. */
     private Scale ()
     {
-        this(null, null, null, null);
+        this(null, null, -1, -1, null);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -165,11 +200,13 @@ public class Scale
     // getMainBeam //
     //-------------//
     /**
-     * Report the main beam thickness, if any.
+     * Report the main beam thickness.
      *
-     * @return the main beam thickness, or null
+     * @return the main beam thickness, either the detected value if any or a
+     *         default value computed from interline value if no beam value was
+     *         detected.
      */
-    public Integer getMainBeam ()
+    public int getMainBeam ()
     {
         return beamValue;
     }
@@ -187,6 +224,21 @@ public class Scale
         return lineRange.best;
     }
 
+    //-------------//
+    // getMainStem //
+    //-------------//
+    /**
+     * Report the main stem thickness.
+     *
+     * @return the main stem thickness, either the detected value if any or a
+     *         default value computed from line value if no stem value was
+     *         detected.
+     */
+    public int getMainStem ()
+    {
+        return stemValue;
+    }
+
     //------------//
     // getMaxFore //
     //------------//
@@ -195,7 +247,7 @@ public class Scale
      *
      * @return the maxFore value
      */
-    public Integer getMaxFore ()
+    public int getMaxFore ()
     {
         return lineRange.max;
     }
@@ -208,7 +260,7 @@ public class Scale
      *
      * @return the maxInterline
      */
-    public Integer getMaxInterline ()
+    public int getMaxInterline ()
     {
         return interlineRange.max;
     }
@@ -219,7 +271,7 @@ public class Scale
     /**
      * Report the maximum second interline (using standard percentile).
      *
-     * @return the maxSecondInterline
+     * @return the maxSecondInterline if any, otherwise null
      */
     public Integer getMaxSecondInterline ()
     {
@@ -238,7 +290,7 @@ public class Scale
      *
      * @return the minInterline
      */
-    public Integer getMinInterline ()
+    public int getMinInterline ()
     {
         return interlineRange.min;
     }
@@ -249,7 +301,7 @@ public class Scale
     /**
      * Report the minimum second interline (using standard percentile).
      *
-     * @return the minSecondInterline
+     * @return the minSecondInterline if any, otherwise null
      */
     public Integer getMinSecondInterline ()
     {
@@ -406,10 +458,11 @@ public class Scale
         sb.append(" interline: ")
                 .append(interlineRange);
 
-        if (beamValue != null) {
-            sb.append(" beam: ")
-                    .append(beamValue);
-        }
+        sb.append(" beam: ")
+                .append(beamValue);
+
+        sb.append(" stem: ")
+                .append(stemValue);
 
         if (secondInterlineRange != null) {
             sb.append(" secondInterline: ")
@@ -555,6 +608,9 @@ public class Scale
     //-------//
     // Range //
     //-------//
+    /**
+     * Handles a range of values using a (min, best, max) triplet.
+     */
     public static class Range
     {
         //~ Instance fields ----------------------------------------------------

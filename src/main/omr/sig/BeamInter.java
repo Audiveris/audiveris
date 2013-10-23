@@ -25,7 +25,7 @@ import java.awt.geom.Line2D;
 
 /**
  * Abstract class {@code BeamInter} is the basis for {@link
- * FullBeamInter} and {@link HookInter} classes.
+ * FullBeamInter} and {@link BeamHookInter} classes.
  *
  * @author Hervé Bitteur
  */

@@ -139,10 +139,10 @@ public class Histogram<K extends Number>
         for (Map.Entry<K, Integer> entry : entrySet()) {
             sb.append(
                     String.format(
-                    "%s%s:%d",
-                    first ? "" : " ",
-                    entry.getKey().toString(),
-                    entry.getValue()));
+                            "%s%s:%d",
+                            first ? "" : " ",
+                            entry.getKey().toString(),
+                            entry.getValue()));
             first = false;
         }
 
@@ -223,8 +223,8 @@ public class Histogram<K extends Number>
                 if (isAbove) { // Above -> Below
                     peaks.add(
                             new PeakEntry<>(
-                            createDoublePeak(start, best, stop, minCount),
-                            (double) bestCount / totalCount));
+                                    createDoublePeak(start, best, stop, minCount),
+                                    (double) bestCount / totalCount));
                     stop = start = best = null;
                     bestCount = null;
                     isAbove = false;
@@ -237,8 +237,8 @@ public class Histogram<K extends Number>
         if (isAbove) {
             peaks.add(
                     new PeakEntry<>(
-                    createDoublePeak(start, best, stop, minCount),
-                    (double) bestCount / totalCount));
+                            createDoublePeak(start, best, stop, minCount),
+                            (double) bestCount / totalCount));
         }
 
         // Sort by decreasing count values
@@ -274,8 +274,8 @@ public class Histogram<K extends Number>
                         // End of a local max
                         maxima.add(
                                 new MaxEntry<>(
-                                prevKey,
-                                prevValue / (double) totalCount));
+                                        prevKey,
+                                        prevValue / (double) totalCount));
                     }
 
                     growing = false;
@@ -399,8 +399,8 @@ public class Histogram<K extends Number>
                 if (isAbove) { // Above -> Below
                     peaks.add(
                             new PeakEntry<>(
-                            new Peak<>(start, best, stop),
-                            absolute ? bestCount : ((double) bestCount / totalCount)));
+                                    new Peak<>(start, best, stop),
+                                    absolute ? bestCount : ((double) bestCount / totalCount)));
                     stop = start = best = null;
                     bestCount = null;
                     isAbove = false;
@@ -413,8 +413,8 @@ public class Histogram<K extends Number>
         if (isAbove) {
             peaks.add(
                     new PeakEntry<>(
-                    new Peak<>(start, best, stop),
-                    absolute ? bestCount : ((double) bestCount / totalCount)));
+                            new Peak<>(start, best, stop),
+                            absolute ? bestCount : ((double) bestCount / totalCount)));
         }
 
         // Sort by decreasing count values?
@@ -429,8 +429,8 @@ public class Histogram<K extends Number>
     // getQuorumValue //
     //----------------//
     /**
-     * Based on the current population, report the quorum value coresponding
-     * to the provided quorum ratio
+     * Based on the current population, report the quorum value
+     * corresponding to the provided quorum ratio
      *
      * @param quorumRatio quorum specified as a percentage of total count
      * @return the quorum value
@@ -509,9 +509,9 @@ public class Histogram<K extends Number>
         sb.append(getClass().getSimpleName());
         sb.append(
                 String.format(
-                " %s-%s",
-                (firstBucket() != null) ? firstBucket().toString() : "",
-                (lastBucket() != null) ? lastBucket().toString() : ""));
+                        " %s-%s",
+                        (firstBucket() != null) ? firstBucket().toString() : "",
+                        (lastBucket() != null) ? lastBucket().toString() : ""));
         sb.append(" size:")
                 .append(size());
 
@@ -629,7 +629,13 @@ public class Histogram<K extends Number>
     //----------//
     // MaxEntry //
     //----------//
+    /**
+     * A counted maximum value.
+     *
+     * @param <K>
+     */
     public static class MaxEntry<K extends Number>
+            implements HistoEntry<K>
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -659,6 +665,7 @@ public class Histogram<K extends Number>
         /**
          * @return the value
          */
+        @Override
         public double getValue ()
         {
             return value;
@@ -669,11 +676,22 @@ public class Histogram<K extends Number>
         {
             return getKey() + "=" + (float) getValue();
         }
+
+        @Override
+        public K getBest ()
+        {
+            return getKey();
+        }
     }
 
     //------//
     // Peak //
     //------//
+    /**
+     * We are interested in the triplet: first, best, second.
+     *
+     * @param <K>
+     */
     public static class Peak<K extends Number>
     {
         //~ Instance fields ----------------------------------------------------
@@ -709,7 +727,13 @@ public class Histogram<K extends Number>
     //-----------//
     // PeakEntry //
     //-----------//
+    /**
+     * A counted peak.
+     *
+     * @param <K>
+     */
     public static class PeakEntry<K extends Number>
+            implements HistoEntry<K>
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -743,6 +767,7 @@ public class Histogram<K extends Number>
          *
          * @return the value associated with the key
          */
+        @Override
         public double getValue ()
         {
             return value;
@@ -753,5 +778,22 @@ public class Histogram<K extends Number>
         {
             return key + "=" + (float) value;
         }
+
+        @Override
+        public K getBest ()
+        {
+            return key.best;
+        }
+    }
+
+    //------------//
+    // HistoEntry //
+    //------------//
+    public static interface HistoEntry<K extends Number>
+    {
+
+        double getValue ();
+
+        K getBest ();
     }
 }

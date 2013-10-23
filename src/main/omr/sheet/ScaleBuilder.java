@@ -22,6 +22,7 @@ import omr.image.Picture.ImageKey;
 import omr.image.PixelBuffer;
 
 import omr.math.Histogram;
+import omr.math.Histogram.HistoEntry;
 import omr.math.Histogram.MaxEntry;
 import omr.math.Histogram.PeakEntry;
 
@@ -99,23 +100,28 @@ public class ScaleBuilder
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ScaleBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ScaleBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
     //
     /** Related sheet. */
     private final Sheet sheet;
 
-    /** Keeper of run length histograms, for foreground & background. */
-    private HistoKeeper histoKeeper;
+    /** Keeper of vertical run length histograms, for foreground & background. */
+    private VertHistoKeeper vertHistoKeeper;
 
+    /** Keeper of horizontal run length histogram. */
     private HoriHistoKeeper horiHistoKeeper;
 
-    /** Histogram on foreground runs. */
+    /** Histogram on vertical foreground runs. */
     private Histogram<Integer> foreHisto;
 
-    /** Histogram on background runs. */
+    /** Histogram on vertical background runs. */
     private Histogram<Integer> backHisto;
+
+    /** Histogram on horizontal foreground runs. */
+    private Histogram<Integer> horiHisto;
 
     /** Absolute population percentage for validating an extremum. */
     private final double quorumRatio = constants.quorumRatio.getValue();
@@ -126,19 +132,22 @@ public class ScaleBuilder
     /** Relative population percentage for reading background spread. */
     private final double backSpreadRatio = constants.backSpreadRatio.getValue();
 
-    /** Foreground peak. */
+    /** Most frequent length of vertical foreground runs found. */
     private PeakEntry<Double> forePeak;
 
-    /** Second frequent length of foreground runs found, if any. */
-    private MaxEntry<Integer> beamEntry;
-
-    /** Most frequent length of background runs found. */
+    /** Most frequent length of vertical background runs found. */
     private PeakEntry<Double> backPeak;
 
-    /** Second frequent length of background runs found, if any. */
+    /** Second frequent length of vertical foreground runs found, if any. */
+    private MaxEntry<Integer> beamEntry;
+
+    /** Most frequent length of horizontal foreground runs found, if any. */
+    private MaxEntry<Integer> stemEntry;
+
+    /** Second frequent length of vertical background runs found, if any. */
     private PeakEntry<Double> secondBackPeak;
 
-    /** Resulting scale, if any. */
+    /** Resulting scale, if everything goes well. */
     private Scale scale;
 
     //~ Constructors -----------------------------------------------------------
@@ -164,8 +173,9 @@ public class ScaleBuilder
      */
     public void displayChart ()
     {
-        if (histoKeeper != null) {
-            histoKeeper.writePlot();
+        if (vertHistoKeeper != null) {
+            vertHistoKeeper.writePlot();
+
             if (horiHistoKeeper != null) {
                 horiHistoKeeper.writePlot();
             }
@@ -188,23 +198,26 @@ public class ScaleBuilder
     public void retrieveScale ()
             throws StepException
     {
+        StopWatch watch = new StopWatch(
+                "Scale builder for " + sheet.getPage().getId());
 
-        StopWatch watch = new StopWatch("Scale builder for " + sheet.getPage().getId());
         try {
             Picture picture = sheet.getPicture();
 
             // Retrieve the whole table of foreground runs
-            watch.start("Binarization");
-            PixelBuffer binaryBuffer = picture.getBuffer(Picture.BufferKey.BINARY);
-            RunsTableFactory factory = new RunsTableFactory(
+            PixelBuffer binaryBuffer = picture.getBuffer(
+                    Picture.BufferKey.BINARY);
+
+            watch.start("Global vertical lag");
+
+            RunsTableFactory vertFactory = new RunsTableFactory(
                     Orientation.VERTICAL,
                     binaryBuffer,
                     0);
-
-            watch.start("Global vertical lag");
-            RunsTable wholeVertTable = factory.createTable("Binary");
+            RunsTable wholeVertTable = vertFactory.createTable(
+                    "vertBinary");
             sheet.setWholeVerticalTable(wholeVertTable);
-            factory = null; // To allow garbage collection ASAP
+            vertFactory = null; // To allow garbage collection ASAP
 
             // Note: from that point on, we could simply discard the sheet picture
             // and save memory, since wholeVertTable contains all foreground pixels.
@@ -214,16 +227,16 @@ public class ScaleBuilder
                 picture.disposeImage(ImageKey.INITIAL); // To discard image
             }
 
-            watch.start("Histograms");
             // Build the two histograms
-            histoKeeper = new HistoKeeper(picture.getHeight() - 1);
-            histoKeeper.buildHistograms(
+            watch.start("Vertical histograms");
+            vertHistoKeeper = new VertHistoKeeper(picture.getHeight() - 1);
+            vertHistoKeeper.buildHistograms(
                     wholeVertTable,
                     picture.getWidth(),
                     picture.getHeight());
 
             // Retrieve the various histograms peaks
-            retrievePeaks();
+            retrieveVertPeaks();
 
             // Check this page looks like music staves. If not, throw StepException
             checkStaves();
@@ -231,29 +244,29 @@ public class ScaleBuilder
             // Check we have acceptable resolution.  If not, throw StepException
             checkResolution();
 
+            // Look at horizontal histo for stem thickness
+            RunsTableFactory horiFactory = new RunsTableFactory(
+                    Orientation.HORIZONTAL,
+                    binaryBuffer,
+                    0);
+            RunsTable horiTable = horiFactory.createTable("horiBinary");
+            horiFactory = null; // To allow garbage collection ASAP
+            horiHistoKeeper = new HoriHistoKeeper(picture.getWidth() - 1);
+            horiHistoKeeper.buildHistograms(horiTable, picture.getHeight());
+            retrieveHoriPeak();
+
             // Here, we keep going on with scale data
             scale = new Scale(
                     computeLine(),
                     computeInterline(),
                     computeBeam(),
+                    computeStem(),
                     computeSecondInterline());
 
             logger.info("{}{}", sheet.getLogPrefix(), scale);
             sheet.setScale(scale);
-            sheet.getBench().recordScale(scale);
-
-            // Prototype: look at horizontal histo for stem thickness
-            RunsTableFactory horiFactory = new RunsTableFactory(
-                    Orientation.HORIZONTAL,
-                    binaryBuffer,
-                    0);
-            RunsTable horiTable = horiFactory.createTable("hori Binary");
-            horiHistoKeeper = new HoriHistoKeeper(picture.getWidth() - 1);
-            horiHistoKeeper.buildHistograms(
-                    horiTable,
-                    picture.getWidth(),
-                    picture.getHeight());
-
+            sheet.getBench()
+                    .recordScale(scale);
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -323,22 +336,22 @@ public class ScaleBuilder
     //-------------//
     // computeBeam //
     //-------------//
-    private Integer computeBeam ()
+    private int computeBeam ()
     {
         if (beamEntry != null) {
             return beamEntry.getKey();
-        } else {
-            if (backPeak != null) {
-                logger.info("{}{}", sheet.getLogPrefix(),
-                        "No beam peak found, computing a default value");
-
-                return (int) Math.rint(
-                        constants.beamAsBackRatio.getValue()
-                        * backPeak.getKey().best);
-            } else {
-                return null;
-            }
         }
+
+        if (backPeak != null) {
+            logger.info(
+                    "{}No beam peak found, computing a default value",
+                    sheet.getLogPrefix());
+
+            return (int) Math.rint(
+                    constants.beamAsBackRatio.getValue() * backPeak.getKey().best);
+        }
+
+        return -1;
     }
 
     //------------------//
@@ -402,11 +415,32 @@ public class ScaleBuilder
         }
     }
 
+    //-------------//
+    // computeStem //
+    //-------------//
+    private int computeStem ()
+    {
+        if (stemEntry != null) {
+            return stemEntry.getKey();
+        }
+
+        if (forePeak != null) {
+            logger.info(
+                    "{}No stem peak found, computing a default value",
+                    sheet.getLogPrefix());
+
+            return (int) Math.rint(
+                    constants.stemAsForeRatio.getValue() * forePeak.getKey().best);
+        }
+
+        return -1;
+    }
+
     //---------//
     // getPeak //
     //---------//
     private PeakEntry<Double> getPeak (Histogram<?> histo,
-                                       double spreadRatio,
+                                       Double spreadRatio,
                                        int index)
     {
         PeakEntry<Double> peak = null;
@@ -418,12 +452,14 @@ public class ScaleBuilder
         if (index < peaks.size()) {
             peak = peaks.get(index);
 
-            // Refine peak using spread threshold
-            peaks = histo.getDoublePeaks(
-                    histo.getQuorumValue(peak.getValue() * spreadRatio));
+            // Refine peak using spread threshold?
+            if (spreadRatio != null) {
+                peaks = histo.getDoublePeaks(
+                        histo.getQuorumValue(peak.getValue() * spreadRatio));
 
-            if (index < peaks.size()) {
-                peak = peaks.get(index);
+                if (index < peaks.size()) {
+                    peak = peaks.get(index);
+                }
             }
         }
 
@@ -449,12 +485,14 @@ public class ScaleBuilder
 
         if (Main.getGui() != null) {
             // Make sheet visible to the user
-            SheetsController.getInstance().showAssembly(sheet);
+            SheetsController.getInstance()
+                    .showAssembly(sheet);
         }
 
         if ((Main.getGui() == null)
-            || (Main.getGui().displayModelessConfirm(
-                msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
+            || (Main.getGui()
+                .displayModelessConfirm(
+                        msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
             if (score.isMultiPage()) {
                 sheet.remove(false);
                 throw new StepException("Sheet removed");
@@ -464,16 +502,36 @@ public class ScaleBuilder
         }
     }
 
-    //---------------//
-    // retrievePeaks //
-    //---------------//
-    private void retrievePeaks ()
+    //------------------//
+    // retrieveHoriPeak //
+    //------------------//
+    private void retrieveHoriPeak ()
+            throws StepException
+    {
+        List<MaxEntry<Integer>> horiMaxima = horiHisto.getLocalMaxima();
+
+        if (!horiMaxima.isEmpty()) {
+            MaxEntry<Integer> max = horiMaxima.get(0);
+
+            if (max.getValue() >= quorumRatio) {
+                stemEntry = max;
+                logger.debug(" stem: {}", stemEntry);
+            }
+        }
+    }
+
+    //-------------------//
+    // retrieveVertPeaks //
+    //-------------------//
+    private void retrieveVertPeaks ()
             throws StepException
     {
         StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
         // Foreground peak
         forePeak = getPeak(foreHisto, foreSpreadRatio, 0);
-        sb.append("fore:").append(forePeak);
+        sb.append("fore:")
+                .append(forePeak);
+
         if (forePeak.getValue() == 1d) {
             String msg = "All image pixels are foreground."
                          + " Check binarization parameters";
@@ -483,6 +541,7 @@ public class ScaleBuilder
 
         // Background peak
         backPeak = getPeak(backHisto, backSpreadRatio, 0);
+
         if (backPeak.getValue() == 1d) {
             String msg = "All image pixels are background."
                          + " Check binarization parameters";
@@ -498,9 +557,10 @@ public class ScaleBuilder
             // Test: Delta between peaks <= line thickness
             Histogram.Peak<Double> p1 = backPeak.getKey();
             Histogram.Peak<Double> p2 = secondBackPeak.getKey();
+
             if (Math.abs(p1.best - p2.best) <= forePeak.getKey().best) {
                 backPeak = new PeakEntry(
-                        new Histogram.Peak<>(
+                        new Histogram.Peak<Double>(
                                 Math.min(p1.first, p2.first),
                                 (p1.best + p2.best) / 2,
                                 Math.max(p1.second, p2.second)),
@@ -510,24 +570,27 @@ public class ScaleBuilder
             } else {
                 // Check whether this second background peak can be an interline
                 // We check that p2 is not too large, compared with p1
-                if (p2.best > p1.best * constants.maxSecondRatio.getValue()) {
-                    logger.info("Second background peak too large {}, ignored",
+                if (p2.best > (p1.best * constants.maxSecondRatio.getValue())) {
+                    logger.info(
+                            "Second background peak too large {}, ignored",
                             p2.best);
                     secondBackPeak = null;
                 }
             }
         }
 
-        sb.append(" back:").append(backPeak);
+        sb.append(" back:")
+                .append(backPeak);
 
         if (secondBackPeak != null) {
-            sb.append(" secondBack:").append(secondBackPeak);
+            sb.append(" secondBack:")
+                    .append(secondBackPeak);
         }
 
         // Second foreground peak (beam)?
         if ((forePeak != null) && (backPeak != null)) {
             // Take most frequent local max for which key (beam thickness) is 
-            // larger than twice the mean line thickness and smaller than
+            // larger than about twice the mean line thickness and smaller than
             // mean white gap between staff lines.
             List<MaxEntry<Integer>> foreMaxima = foreHisto.getLocalMaxima();
             double minBeamLineRatio = constants.minBeamLineRatio.getValue();
@@ -535,9 +598,10 @@ public class ScaleBuilder
             double maxHeight = backPeak.getKey().best;
 
             for (MaxEntry<Integer> max : foreMaxima) {
-                if (max.getKey() >= minHeight && max.getKey() <= maxHeight) {
+                if ((max.getKey() >= minHeight) && (max.getKey() <= maxHeight)) {
                     beamEntry = max;
-                    sb.append(" beam:").append(beamEntry);
+                    sb.append(" beam:")
+                            .append(beamEntry);
 
                     break;
                 }
@@ -548,277 +612,6 @@ public class ScaleBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
-    //
-    //-------------//
-    // HistoKeeper //
-    //-------------//
-    /**
-     * This class builds the precise foreground and background run
-     * lengths, it retrieves the various peaks and is able to display a
-     * chart on the related populations if so asked by the user.
-     * It first builds the whole table of foreground vertical runs, which will
-     * be reused in following step (GRID).
-     */
-    private class HistoKeeper
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final int[] fore; // (black) foreground runs
-
-        private final int[] back; // (white) background runs
-
-        //~ Constructors -------------------------------------------------------
-        //
-        //-------------//
-        // HistoKeeper //
-        //-------------//
-        /**
-         * Create an instance of histoKeeper.
-         *
-         * @param hMax the maximum possible run length
-         */
-        public HistoKeeper (int hMax)
-        {
-            // Allocate histogram counters
-            fore = new int[hMax + 2];
-            back = new int[hMax + 2];
-
-            // Useful?
-            Arrays.fill(fore, 0);
-            Arrays.fill(back, 0);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        //
-        //-----------//
-        // writePlot //
-        //-----------//
-        public void writePlot ()
-        {
-            int upper = (int) Math.min(
-                    fore.length,
-                    ((backPeak != null) ? ((backPeak.getKey().best * 3) / 2) : 20));
-
-            new Plotter(
-                    "black",
-                    fore,
-                    foreHisto,
-                    foreSpreadRatio,
-                    forePeak,
-                    null,
-                    upper).plot(new Point(0, 0));
-            new Plotter(
-                    "white",
-                    back,
-                    backHisto,
-                    backSpreadRatio,
-                    backPeak,
-                    secondBackPeak,
-                    upper).plot(new Point(20, 20));
-        }
-
-        //-----------------//
-        // createHistogram //
-        //-----------------//
-        private Histogram<Integer> createHistogram (int... vals)
-        {
-            Histogram<Integer> histo = new Histogram<>();
-
-            for (int i = 0; i < vals.length; i++) {
-                histo.increaseCount(i, vals[i]);
-            }
-
-            return histo;
-        }
-
-        //-----------------//
-        // buildHistograms //
-        //-----------------//
-        private void buildHistograms (RunsTable wholeVertTable,
-                                      int width,
-                                      int height)
-        {
-            // Upper bounds for run lengths
-            final int maxBack = height / 4;
-            final int maxFore = height / 16;
-
-            for (int x = 0; x < width; x++) {
-                List<Run> runSeq = wholeVertTable.getSequence(x);
-                // Ordinate of first pixel not yet processed
-                int yLast = 0;
-
-                for (Run run : runSeq) {
-                    int y = run.getStart();
-
-                    if (y > yLast) {
-                        // Process the background run before this run
-                        int backLength = y - yLast;
-                        if (backLength <= maxBack) {
-                            back[backLength]++;
-                        }
-                    }
-
-                    // Process this foreground run
-                    int foreLength = run.getLength();
-                    if (foreLength <= maxFore) {
-                        fore[foreLength]++;
-                    }
-                    yLast = y + foreLength;
-                }
-
-                // Process a last background run, if any
-                if (yLast < height) {
-                    int backLength = height - yLast;
-                    if (backLength <= maxBack) {
-                        back[backLength]++;
-                    }
-                }
-            }
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("fore values: {}", Arrays.toString(fore));
-                logger.debug("back values: {}", Arrays.toString(back));
-            }
-
-            // Create foreground & background histograms
-            foreHisto = createHistogram(fore);
-            backHisto = createHistogram(back);
-        }
-    }
-
-    //-----------------//
-    // HoriHistoKeeper //
-    //-----------------//
-    /**
-     * Just a prototype, for histogram of *horizontal* runs.
-     */
-    private class HoriHistoKeeper
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final int[] fore; // (black) foreground runs
-
-        private final int[] back; // (white) background runs
-
-        //~ Constructors -------------------------------------------------------
-        //
-        //-------------//
-        // HistoKeeper //
-        //-------------//
-        /**
-         * Create an instance of histoKeeper.
-         *
-         * @param wMax the maximum possible run length
-         */
-        public HoriHistoKeeper (int wMax)
-        {
-            // Allocate histogram counters
-            fore = new int[wMax + 2];
-            back = new int[wMax + 2];
-
-            // Useful?
-            Arrays.fill(fore, 0);
-            Arrays.fill(back, 0);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        //
-        //-----------//
-        // writePlot //
-        //-----------//
-        public void writePlot ()
-        {
-            int upper = (int) Math.min(
-                    fore.length,
-                    ((backPeak != null) ? ((backPeak.getKey().best * 3) / 2) : 20));
-
-            new Plotter(
-                    "hori-black",
-                    fore,
-                    foreHisto,
-                    foreSpreadRatio,
-                    forePeak,
-                    null,
-                    upper).plot(new Point(0, 0));
-            new Plotter(
-                    "hori-white",
-                    back,
-                    backHisto,
-                    backSpreadRatio,
-                    backPeak,
-                    secondBackPeak,
-                    upper).plot(new Point(20, 20));
-        }
-
-        //-----------------//
-        // createHistogram //
-        //-----------------//
-        private Histogram<Integer> createHistogram (int... vals)
-        {
-            Histogram<Integer> histo = new Histogram<>();
-
-            for (int i = 0; i < vals.length; i++) {
-                histo.increaseCount(i, vals[i]);
-            }
-
-            return histo;
-        }
-
-        //-----------------//
-        // buildHistograms //
-        //-----------------//
-        private void buildHistograms (RunsTable horiTable,
-                                      int width,
-                                      int height)
-        {
-            // Upper bounds for run lengths
-            final int maxBack = width;
-            final int maxFore = 20; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-            for (int y = 0; y < height; y++) {
-                List<Run> runSeq = horiTable.getSequence(y);
-                // Abscissa of first pixel not yet processed
-                int xLast = 0;
-
-                for (Run run : runSeq) {
-                    int x = run.getStart();
-
-                    if (x > xLast) {
-                        // Process the background run before this run
-                        int backLength = x - xLast;
-                        if (backLength <= maxBack) {
-                            back[backLength]++;
-                        }
-                    }
-
-                    // Process this foreground run
-                    int foreLength = run.getLength();
-                    if (foreLength <= maxFore) {
-                        fore[foreLength]++;
-                    }
-                    xLast = x + foreLength;
-                }
-
-                // Process a last background run, if any
-                if (xLast < width) {
-                    int backLength = width - xLast;
-                    if (backLength <= maxBack) {
-                        back[backLength]++;
-                    }
-                }
-            }
-
-            if (logger.isDebugEnabled()) {
-                logger.debug("fore values: {}", Arrays.toString(fore));
-                logger.debug("back values: {}", Arrays.toString(back));
-            }
-
-            // Create foreground & background histograms
-            foreHisto = createHistogram(fore);
-            backHisto = createHistogram(back);
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -868,13 +661,107 @@ public class ScaleBuilder
                 0.8,
                 "Default beam height defined as ratio of background peak");
 
+        final Constant.Ratio stemAsForeRatio = new Constant.Ratio(
+                1.0,
+                "Default stem thickness defined as ratio of foreground peak");
+
+    }
+
+    //-----------------//
+    // HoriHistoKeeper //
+    //-----------------//
+    /**
+     * Handles the histogram of horizontal foreground runs.
+     */
+    private class HoriHistoKeeper
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final int[] fore; // (black) foreground runs
+
+        // We are not interested of horizontal runs longer than this value
+        private final int maxFore = 20;
+
+        //~ Constructors -------------------------------------------------------
+        /**
+         * Create an instance of histoKeeper.
+         *
+         * @param wMax the maximum possible horizontal run length value
+         */
+        public HoriHistoKeeper (int wMax)
+        {
+            // Allocate histogram counters
+            fore = new int[wMax + 2];
+
+            // Useful?
+            Arrays.fill(fore, 0);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        //
+        //-----------//
+        // writePlot //
+        //-----------//
+        public void writePlot ()
+        {
+            new Plotter(
+                    "horizontal black",
+                    fore,
+                    horiHisto,
+                    null,
+                    stemEntry,
+                    null,
+                    maxFore).plot(new Point(80, 80));
+        }
+
+        //-----------------//
+        // buildHistograms //
+        //-----------------//
+        private void buildHistograms (RunsTable horiTable,
+                                      int height)
+        {
+            for (int y = 0; y < height; y++) {
+                List<Run> runSeq = horiTable.getSequence(y);
+
+                for (Run run : runSeq) {
+                    // Process this foreground run
+                    int foreLength = run.getLength();
+
+                    if (foreLength <= maxFore) {
+                        fore[foreLength]++;
+                    }
+                }
+            }
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("fore values: {}", Arrays.toString(fore));
+            }
+
+            // Create foreground histogram
+            horiHisto = createHistogram(fore);
+        }
+
+        //-----------------//
+        // createHistogram //
+        //-----------------//
+        private Histogram<Integer> createHistogram (int... vals)
+        {
+            Histogram<Integer> histo = new Histogram<Integer>();
+
+            for (int i = 0; i < vals.length; i++) {
+                histo.increaseCount(i, vals[i]);
+            }
+
+            return histo;
+        }
     }
 
     //---------//
     // Plotter //
     //---------//
     /**
-     * In charge of building and displaying a chart on provided runs collection
+     * In charge of building and displaying a chart on provided
+     * collection of lengths values.
      */
     private class Plotter
     {
@@ -886,9 +773,9 @@ public class ScaleBuilder
 
         private final Histogram<Integer> histo;
 
-        private final double spreadRatio;
+        private final Double spreadRatio;
 
-        private final PeakEntry<Double> peak;
+        private final HistoEntry<? extends Number> peak;
 
         private final PeakEntry<Double> secondPeak;
 
@@ -900,8 +787,8 @@ public class ScaleBuilder
         public Plotter (String name,
                         int[] values,
                         Histogram<Integer> histo,
-                        double spreadRatio,
-                        PeakEntry<Double> peak,
+                        Double spreadRatio,
+                        HistoEntry<? extends Number> peak,
                         PeakEntry<Double> secondPeak, // if any
                         int upper)
         {
@@ -920,7 +807,10 @@ public class ScaleBuilder
             // All values, quorum line & spread line
             plotValues();
             plotQuorumLine();
-            plotSpreadLine("", peak);
+
+            if (spreadRatio != null) {
+                plotSpreadLine("", (PeakEntry) peak);
+            }
 
             // Second peak spread line?
             if (secondPeak != null) {
@@ -930,7 +820,7 @@ public class ScaleBuilder
             // Chart
             JFreeChart chart = ChartFactory.createXYLineChart(
                     sheet.getId() + " (" + name + " runs)", // Title
-                    "Lengths " + ((scale != null) ? scale : "*no scale*"), // X-Axis label
+                    "Lengths - " + ((scale != null) ? scale : "*no scale*"), // X-Axis label
                     "Counts", // Y-Axis label
                     dataset, // Dataset
                     PlotOrientation.VERTICAL, // orientation,
@@ -981,12 +871,13 @@ public class ScaleBuilder
             Integer secKey = null;
 
             if (peak != null) {
-                double mainKey = peak.getKey().best;
+                double mainKey = peak.getBest()
+                        .doubleValue();
                 key = (int) mainKey;
             }
 
             if (secondPeak != null) {
-                double secondKey = secondPeak.getKey().best;
+                double secondKey = secondPeak.getBest();
                 secKey = (int) secondKey;
             }
 
@@ -999,6 +890,142 @@ public class ScaleBuilder
             }
 
             dataset.addSeries(series);
+        }
+    }
+
+    //-----------------//
+    // VertHistoKeeper //
+    //-----------------//
+    /**
+     * This class builds the precise vertical foreground and background
+     * run lengths, it retrieves the various peaks and is able to
+     * display a chart on the related populations.
+     */
+    private class VertHistoKeeper
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final int[] fore; // (black) foreground runs
+
+        private final int[] back; // (white) background runs
+
+        //~ Constructors -------------------------------------------------------
+        /**
+         * Create an instance of histoKeeper.
+         *
+         * @param hMax the maximum possible run length value
+         */
+        public VertHistoKeeper (int hMax)
+        {
+            // Allocate histogram counters
+            fore = new int[hMax + 2];
+            back = new int[hMax + 2];
+
+            // Useful?
+            Arrays.fill(fore, 0);
+            Arrays.fill(back, 0);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        //
+        //-----------//
+        // writePlot //
+        //-----------//
+        public void writePlot ()
+        {
+            int upper = (int) Math.min(
+                    fore.length,
+                    ((backPeak != null) ? ((backPeak.getKey().best * 3) / 2) : 20));
+
+            new Plotter(
+                    "vertical black",
+                    fore,
+                    foreHisto,
+                    foreSpreadRatio,
+                    forePeak,
+                    null,
+                    upper).plot(new Point(0, 0));
+            new Plotter(
+                    "vertical white",
+                    back,
+                    backHisto,
+                    backSpreadRatio,
+                    backPeak,
+                    secondBackPeak,
+                    upper).plot(new Point(40, 40));
+        }
+
+        //-----------------//
+        // buildHistograms //
+        //-----------------//
+        private void buildHistograms (RunsTable wholeVertTable,
+                                      int width,
+                                      int height)
+        {
+            // Upper bounds for run lengths
+            final int maxBack = height / 4;
+            final int maxFore = height / 16;
+
+            for (int x = 0; x < width; x++) {
+                List<Run> runSeq = wholeVertTable.getSequence(x);
+
+                // Ordinate of first pixel not yet processed
+                int yLast = 0;
+
+                for (Run run : runSeq) {
+                    int y = run.getStart();
+
+                    if (y > yLast) {
+                        // Process the background run before this run
+                        int backLength = y - yLast;
+
+                        if (backLength <= maxBack) {
+                            back[backLength]++;
+                        }
+                    }
+
+                    // Process this foreground run
+                    int foreLength = run.getLength();
+
+                    if (foreLength <= maxFore) {
+                        fore[foreLength]++;
+                    }
+
+                    yLast = y + foreLength;
+                }
+
+                // Process a last background run, if any
+                if (yLast < height) {
+                    int backLength = height - yLast;
+
+                    if (backLength <= maxBack) {
+                        back[backLength]++;
+                    }
+                }
+            }
+
+            if (logger.isDebugEnabled()) {
+                logger.debug("fore values: {}", Arrays.toString(fore));
+                logger.debug("back values: {}", Arrays.toString(back));
+            }
+
+            // Create foreground & background histograms
+            foreHisto = createHistogram(fore);
+            backHisto = createHistogram(back);
+        }
+
+        //-----------------//
+        // createHistogram //
+        //-----------------//
+        private Histogram<Integer> createHistogram (int... vals)
+        {
+            Histogram<Integer> histo = new Histogram<Integer>();
+
+            for (int i = 0; i < vals.length; i++) {
+                histo.increaseCount(i, vals[i]);
+            }
+
+            return histo;
         }
     }
 }

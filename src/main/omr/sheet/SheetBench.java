@@ -24,7 +24,8 @@ import java.util.Date;
  * Class {@code SheetBench} records all important information related
  * to the processing of a music sheet.
  *
- * <p>It delegates the actual recording to the containing score bench,
+ * <p>
+ * It delegates the actual recording to the containing score bench,
  * just prefixing the records with the sheet index</p>
  *
  * @author Hervé Bitteur
@@ -125,38 +126,22 @@ public class SheetBench
     {
         addProp("scale.mainFore", "" + scale.getMainFore());
         addProp("scale.interline", "" + scale.getInterline());
-
-        if (scale.getMaxFore() != null) {
-            addProp("scale.maxFore", "" + scale.getMaxFore());
-        }
-
-        if (scale.getMaxInterline() != null) {
-            addProp("scale.maxInterline", "" + scale.getMaxInterline());
-        }
-
-        if (scale.getMinInterline() != null) {
-            addProp("scale.minInterline", "" + scale.getMinInterline());
-        }
+        addProp("scale.maxFore", "" + scale.getMaxFore());
+        addProp("scale.maxInterline", "" + scale.getMaxInterline());
+        addProp("scale.minInterline", "" + scale.getMinInterline());
 
         if (scale.getSecondInterline() != null) {
             addProp("scale.secondInterline", "" + scale.getSecondInterline());
-        }
-
-        if (scale.getMaxSecondInterline() != null) {
             addProp(
                     "scale.maxSecondInterline",
                     "" + scale.getMaxSecondInterline());
-        }
-
-        if (scale.getMinSecondInterline() != null) {
             addProp(
                     "scale.minSecondInterline",
                     "" + scale.getMinSecondInterline());
         }
 
-        if (scale.getMainBeam() != null) {
-            addProp("scale.mainBeam", "" + scale.getMainBeam());
-        }
+        addProp("scale.mainBeam", "" + scale.getMainBeam());
+        addProp("scale.mainStem", "" + scale.getMainStem());
     }
 
     //------------//
