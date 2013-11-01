@@ -155,7 +155,10 @@ public class FileCopier
             Path newFolder = dest.resolve(source.relativize(dir));
 
             if (Files.notExists(newFolder)) {
+                logger.debug("Creating folder {}", newFolder);
                 Files.copy(dir, newFolder, REPLACE_EXISTING);
+            } else {
+                logger.debug("Folder {} already exists.", newFolder);
             }
 
             return CONTINUE;
@@ -166,10 +169,9 @@ public class FileCopier
                                           BasicFileAttributes attrs)
             throws IOException
         {
-            Files.copy(
-                file,
-                dest.resolve(source.relativize(file)),
-                REPLACE_EXISTING);
+            final Path destPath = dest.resolve(source.relativize(file));
+            logger.debug("Copying file {} to {}", file, destPath);
+            Files.copy(file, destPath, REPLACE_EXISTING);
 
             return CONTINUE;
         }
