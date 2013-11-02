@@ -512,8 +512,15 @@ public class Scale
     public static class Fraction
             extends Constant.Double
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Static fields/initializers -----------------------------------------
 
+        public static final Fraction ZERO = new Fraction(0, "zero");
+
+        static {
+            ZERO.setUnitAndName(Scale.class.getName(), "ZERO");
+        }
+
+        //~ Constructors -------------------------------------------------------
         /**
          * Specific constructor, where 'unit' and 'name' are assigned
          * later.

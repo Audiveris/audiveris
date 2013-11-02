@@ -47,16 +47,19 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 
 /**
  * Class {@code FilamentsFactory} builds filaments (long series of
  * sections) out of a collection of sections.
  *
- * <p>These filaments are meant to represent good candidates for (horizontal)
+ * <p>
+ * These filaments are meant to represent good candidates for (horizontal)
  * staff lines or (vertical) bar lines. The factory aims at a given orientation,
  * though the input sections may exhibit mixed orientations.</p>
  *
- * <p>Internal parameters have default values defined via a ConstantSet. Before
+ * <p>
+ * Internal parameters have default values defined via a ConstantSet. Before
  * launching filaments retrieval by {@link #retrieveFilaments}, parameters can
  * be modified individually by calling some setXXX() methods.</p>
  *
@@ -88,7 +91,7 @@ public class FilamentsFactory
     private final Orientation orientation;
 
     /** Precise constructor for filaments. */
-    private final Constructor<?> glyphConstructor;
+    private  Constructor<?> glyphConstructor;
 
     /** Scale-dependent constants. */
     private final Parameters params;
@@ -105,22 +108,26 @@ public class FilamentsFactory
      * @param layer       precise glyph layer
      * @param orientation the target orientation
      * @param glyphClass  precise class to be use for glyph creation
-     * @throws Exception
      */
     public FilamentsFactory (Scale scale,
                              Nest nest,
                              GlyphLayer layer,
                              Orientation orientation,
                              Class<? extends Glyph> glyphClass)
-            throws Exception
     {
         this.scale = scale;
         this.nest = nest;
         this.layer = layer;
         this.orientation = orientation;
 
-        glyphConstructor = glyphClass.getConstructor(
-                new Class<?>[]{Scale.class, GlyphLayer.class});
+        try {
+            glyphConstructor = glyphClass.getConstructor(
+                    new Class<?>[]{Scale.class, GlyphLayer.class});
+        } catch (NoSuchMethodException ex) {
+            logger.error(null, ex);
+        } catch (SecurityException ex) {
+            logger.error(null, ex);
+        }
 
         params = new Parameters();
         params.initialize();
@@ -296,6 +303,14 @@ public class FilamentsFactory
     public void setMaxThickness (Scale.Fraction frac)
     {
         params.maxThickness = scale.toPixels(frac);
+    }
+
+    //-----------------//
+    // setMaxThickness //
+    //-----------------//
+    public void setMaxThickness (int value)
+    {
+        params.maxThickness = value;
     }
 
     //----------------//
@@ -918,7 +933,7 @@ public class FilamentsFactory
 
         Constant.Ratio minSectionAspect = new Constant.Ratio(
                 3,
-                "Minimum section aspect (length / thixkness)");
+                "Minimum section aspect (length / thickness)");
 
         Constant.Ratio maxConsistentRatio = new Constant.Ratio(
                 1.7,

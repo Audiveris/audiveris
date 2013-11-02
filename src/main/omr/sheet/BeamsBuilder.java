@@ -56,8 +56,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code BeamsBuilder} is in charge, at system level, of
- * retrieving the possible beam and beam hooks interpretations.
+ * Class {@literal BeamsBuilder} is in charge, at system level, of
+ * retrieving the possible beam and beam hook interpretations.
  * <p>
  * The retrieval is performed on the collection of spots produced by closing
  * the blurred initial image with a disk-shape structure element whose diameter
@@ -98,7 +98,7 @@ public class BeamsBuilder
     @Navigable(false)
     private final SystemInfo system;
 
-    /** Binarized image. */
+    /** Input image. */
     private PixelFilter pixelFilter;
 
     //~ Constructors -----------------------------------------------------------
@@ -132,9 +132,9 @@ public class BeamsBuilder
      */
     public void buildBeams ()
     {
-        // Cache binarized image
+        // Cache input image
         pixelFilter = sheet.getPicture()
-                .getBuffer(Picture.BufferKey.BINARY);
+                .getBuffer(Picture.BufferKey.STAFF_FREE);
 
         // First, retrieve beams from spots
         beamSpots = getBeamSpots();
@@ -548,8 +548,6 @@ public class BeamsBuilder
     private boolean createBeamInters (BeamItems beamItems)
     {
         boolean success = false;
-        SIGraph sig = system.getSig();
-
         List<BeamItem> items = beamItems.getItems();
 
         for (BeamItem item : items) {
@@ -1126,7 +1124,7 @@ public class BeamsBuilder
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
+     * Class {@literal Parameters} gathers all pre-scaled constants.
      */
     private static class Parameters
     {

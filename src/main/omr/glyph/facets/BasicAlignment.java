@@ -477,7 +477,7 @@ public class BasicAlignment
         // We have a problem if glyph is just 1 pixel: no computable slope!
         if (glyph.getWeight() <= 1) {
             startPoint = stopPoint = box.getLocation();
-            slope = 0d; // Why not? we just need a value.
+            slope = 0d; // we just need a value.
 
             return;
         }

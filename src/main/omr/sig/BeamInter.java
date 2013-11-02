@@ -24,7 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.geom.Line2D;
 
 /**
- * Abstract class {@code BeamInter} is the basis for {@link
+ * Abstract class {@literal BeamInter} is the basis for {@link
  * FullBeamInter} and {@link BeamHookInter} classes.
  *
  * @author Hervé Bitteur
@@ -60,10 +60,10 @@ public abstract class BeamInter
                          Line2D median,
                          double height)
     {
-        super(glyph, shape, impacts.computeGrade());
+        super(glyph, shape, impacts.getGrade());
         this.median = median;
         this.height = height;
-        
+
         setImpacts(impacts);
 
         setArea(
@@ -169,9 +169,9 @@ public abstract class BeamInter
 
         //~ Methods ------------------------------------------------------------
         @Override
-        public double computeGrade ()
+        public double getGrade ()
         {
-            return (width + core + belt) / 3;
+            return (width + (2 * core) + (2 * belt)) / 5;
         }
 
         @Override

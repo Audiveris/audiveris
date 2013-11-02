@@ -14,6 +14,8 @@ package omr.image;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.lag.Lags;
+
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
@@ -107,7 +109,10 @@ public class Picture
         //~ Enumeration constant initializers ----------------------------------
 
         /** The binarized image. */
-        BINARY;
+        BINARY,
+        /** Image with staff lines
+         * removed. */
+        STAFF_FREE;
 
     }
 
@@ -117,7 +122,7 @@ public class Picture
     private final Sheet sheet;
 
     /** Image dimension. */
-    private Dimension dimension;
+    private final Dimension dimension;
 
     /**
      * Service object where gray level of pixel is to be written to
@@ -160,16 +165,10 @@ public class Picture
         // Make sure format, colors, etc are OK for us
         printInfo(image, "Original image");
         image = checkImage(image);
-        printInfo(image, "Initial  image");
+        ///printInfo(image, "Initial  image");
         images.put(ImageKey.INITIAL, image);
         dimension = new Dimension(image.getWidth(), image.getHeight());
 
-        //        // Cache results
-        //        this.image = image;
-        //        raster = Raster.createRaster(
-        //                image.getData().getSampleModel(),
-        //                image.getData().getDataBuffer(),
-        //                null);
         // Wrap the initial image
         initialSource = new BufferedSource(image);
     }
@@ -222,7 +221,7 @@ public class Picture
     //---------------//
     // disposeBuffer //
     //---------------//
-    public void disposeImage (BufferKey key)
+    public void disposeBuffer (BufferKey key)
     {
         PixelBuffer buf = buffers.get(key);
 
@@ -323,10 +322,19 @@ public class Picture
                     switch (key) {
                     case BINARY:
                         buf = binarized(images.get(ImageKey.INITIAL));
-                        buffers.put(key, buf);
+
+                        break;
+
+                    case STAFF_FREE:
+                        buf = Lags.buildBuffer(
+                                dimension,
+                                sheet.getLag(Lags.HLAG),
+                                sheet.getLag(Lags.VLAG));
 
                         break;
                     }
+
+                    buffers.put(key, buf);
                 }
             }
         }

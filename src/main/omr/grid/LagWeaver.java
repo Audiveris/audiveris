@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
+import omr.image.PixelBuffer;
 
 /**
  * Class {@code LagWeaver} is just a prototype. TODO.
@@ -156,7 +157,7 @@ public class LagWeaver
 //        buildGlyphs();
 
         // The end
-        ///watch.print();
+        watch.print();
     }
 
     //---------------//
@@ -481,7 +482,7 @@ public class LagWeaver
             final boolean[] occupied = new boolean[vSect.getLength(
                     Orientation.VERTICAL)];
             Point prevPt = null;
-            Point pt = null;
+            Point pt;
             Heading prevHeading = null;
             Heading heading = null;
             pointsAside.clear();

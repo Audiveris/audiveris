@@ -459,14 +459,6 @@ public interface Section
     public Section inPreviousSibling ();
 
     /**
-     * Check that the section at hand is a candidate section not yet
-     * aggregated to a recognized stick.
-     *
-     * @return true if aggregable (but not yet aggregated)
-     */
-    public boolean isAggregable ();
-
-    /**
      * Report whether this section is "fat", according to the current
      * criteria and desired orientation.
      *

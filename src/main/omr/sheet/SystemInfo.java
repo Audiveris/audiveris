@@ -506,21 +506,6 @@ public class SystemInfo
         glyphsBuilder.computeGlyphFeatures(glyph);
     }
 
-    //----------------------//
-    // createCheckSuite //
-    //----------------------//
-    /**
-     * Build a check suite for stem retrievals.
-     *
-     * @param isShort are we looking for short (vs standard) stems?
-     * @return the newly built check suite
-     */
-    public CheckSuite<Glyph> createStemCheckSuite (boolean isShort)
-            throws StepException
-    {
-        return verticalsBuilder.createCheckSuite(isShort);
-    }
-
     //------------//
     // dumpGlyphs //
     //------------//
@@ -1291,12 +1276,10 @@ public class SystemInfo
      * leaves.
      *
      * @param glyph   the glyph to segment along stems
-     * @param isShort should we look for short (rather than standard) stems?
      */
-    public void segmentGlyphOnStems (Glyph glyph,
-                                     boolean isShort)
+    public void segmentGlyphOnStems (Glyph glyph)
     {
-        verticalsBuilder.segmentGlyphOnStems(glyph, isShort);
+        verticalsBuilder.segmentGlyphOnStems(glyph);
     }
 
     //--------//

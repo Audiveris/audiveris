@@ -311,7 +311,7 @@ public class SigSolver
             final Inter head = it.next();
 
             if (head.isVip()) {
-                logger.info("VIP checkHeads on {}", head);
+                logger.info("VIP checkHeads for {}", head);
             }
 
             if (!headHasStem(head)) {

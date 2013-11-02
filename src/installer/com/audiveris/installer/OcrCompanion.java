@@ -281,7 +281,11 @@ public class OcrCompanion
             && local.isDirectory()
             && (local.listFiles().length > 0)) {
             // Try immediate copy, in user mode
-            final Path[] sources = new Path[]{local.toPath()};
+            final Path[] sources = new Path[]{
+                new File(
+                local,
+                Descriptor.TESSERACT_OCR).toPath()
+            };
             final Path target = tessdata.get()
                     .getParentFile()
                     .getParentFile()
@@ -423,7 +427,8 @@ public class OcrCompanion
                                 file);
 
                         // Post a delete command
-                        appendCommand(descriptor.getDeleteCommand(file));
+                        appendCommand(
+                                descriptor.getDeleteCommand(file));
                     }
                 }
 

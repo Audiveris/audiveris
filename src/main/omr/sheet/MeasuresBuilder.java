@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.check.FailureResult;
+import omr.check.Failure;
 
 import omr.constant.ConstantSet;
 
@@ -64,13 +64,13 @@ public class MeasuresBuilder
             MeasuresBuilder.class);
 
     // Failures
-    private static final FailureResult NOT_WITHIN_SYSTEM = new FailureResult(
+    private static final Failure NOT_WITHIN_SYSTEM = new Failure(
             "Bar-NotWithinSystem");
 
-    private static final FailureResult NOT_STAFF_ALIGNED = new FailureResult(
+    private static final Failure NOT_STAFF_ALIGNED = new Failure(
             "Bar-NotStaffAligned");
 
-    private static final FailureResult NOT_SYSTEM_ALIGNED = new FailureResult(
+    private static final Failure NOT_SYSTEM_ALIGNED = new Failure(
             "Bar-NotSystemAligned");
 
     //~ Instance fields --------------------------------------------------------

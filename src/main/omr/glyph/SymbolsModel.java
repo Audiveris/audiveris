@@ -234,14 +234,13 @@ public class SymbolsModel
     //---------------//
     // segmentGlyphs //
     //---------------//
-    public void segmentGlyphs (Collection<Glyph> glyphs,
-                               boolean isShort)
+    public void segmentGlyphs (Collection<Glyph> glyphs)
     {
         deassignGlyphs(glyphs);
 
         for (Glyph glyph : new ArrayList<>(glyphs)) {
             SystemInfo system = sheet.getSystemOf(glyph);
-            system.segmentGlyphOnStems(glyph, isShort);
+            system.segmentGlyphOnStems(glyph);
         }
     }
 

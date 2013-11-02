@@ -16,7 +16,7 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 /**
- * Class {@code BlackHeadInter} represents a black note head
+ * Class {@literal BlackHeadInter} represents a black note head
  * interpretation.
  *
  * @author Hervé Bitteur
@@ -45,7 +45,7 @@ public class BlackHeadInter
                            Impacts impacts,
                            int pitch)
     {
-        super(glyph, Shape.NOTEHEAD_BLACK, impacts.computeGrade());
+        super(glyph, Shape.NOTEHEAD_BLACK, impacts.getGrade());
         this.setImpacts(impacts);
         this.pitch = pitch;
     }
@@ -120,7 +120,7 @@ public class BlackHeadInter
 
         //~ Methods ------------------------------------------------------------
         @Override
-        public double computeGrade ()
+        public double getGrade ()
         {
             return (shape + pitch) / 2;
         }

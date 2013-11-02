@@ -46,6 +46,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.Locale;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -110,9 +111,7 @@ public class InterBoard
             "Shape for this interpretation");
 
     /** Output : grade details. */
-    private final LTextField details = new LTextField(
-            "Impacts",
-            "Grade details");
+    private final JLabel details = new JLabel("");
 
     /** The JGoodies/Form constraints to be used by all subclasses. */
     protected final CellConstraints cst = new CellConstraints();
@@ -196,6 +195,9 @@ public class InterBoard
         vip.setEnabled(false);
         grade.setEnabled(false);
         details.setEnabled(false);
+
+        details.setToolTipText("Grade details");
+        details.setHorizontalAlignment(SwingConstants.CENTER);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -331,8 +333,7 @@ public class InterBoard
 
         r += 2; // --------------------------------
 
-        builder.add(details.getLabel(), cst.xy(1, r));
-        builder.add(details.getField(), cst.xyw(3, r, 9));
+        builder.add(details, cst.xyw(1, r, 11));
     }
 
     //------------------//
@@ -349,6 +350,7 @@ public class InterBoard
         JSpinner spinner = new JSpinner();
         spinner.setModel(new SpinnerInterIdModel(sigManager));
         spinner.addChangeListener(this);
+        spinner.setLocale(Locale.ENGLISH);
         SpinnerUtil.setRightAlignment(spinner);
         SpinnerUtil.setEditable(spinner, true);
 
@@ -425,7 +427,8 @@ public class InterBoard
                     .setSelected(inter.isVip());
 
             grade.setValue(inter.getGrade());
-            details.setText(inter.getDetails());
+            details.setText(
+                    (inter.getImpacts() == null) ? "" : inter.getImpacts().toString());
             deassignAction.putValue(
                     Action.NAME,
                     inter.isDeleted() ? "deleted" : "Deassign");

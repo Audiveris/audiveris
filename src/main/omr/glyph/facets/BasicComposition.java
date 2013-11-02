@@ -11,20 +11,20 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.check.Result;
-import omr.check.SuccessResult;
+import omr.check.Failure;
 
 import omr.glyph.Shape;
 
 import omr.lag.Section;
 
+import omr.sheet.SystemInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.sheet.SystemInfo;
-
-import java.awt.Point;
 import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -36,28 +36,35 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 class BasicComposition
-        extends BasicFacet
-        implements GlyphComposition
+    extends BasicFacet
+    implements GlyphComposition
 {
+    //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(BasicComposition.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+        BasicComposition.class);
+
+    //~ Instance fields --------------------------------------------------------
 
     /**
      * Sections that compose this glyph.
      * The collection is kept sorted on natural Section order (abscissa then
      * ordinate, even with mixed section orientations).
      */
-    private final SortedSet<Section> members = new TreeSet<>();
+    private final SortedSet<Section> members = new TreeSet<Section>();
 
     /** Unmodifiable view on members */
-    private final SortedSet<Section> unmodifiableMembers = Collections.unmodifiableSortedSet(members);
+    private final SortedSet<Section> unmodifiableMembers = Collections.unmodifiableSortedSet(
+        members);
+
+    /** Failures found for this glyph */
+    private final Set<Failure> failures = new LinkedHashSet<Failure>();
 
     /** Link to the compound, if any, this one is a part of */
     private Glyph partOf;
 
-    /** Result of analysis wrt this glyph */
-    private Result result;
+    //~ Constructors -----------------------------------------------------------
 
     //------------------//
     // BasicComposition //
@@ -72,6 +79,17 @@ class BasicComposition
         super(glyph);
     }
 
+    //~ Methods ----------------------------------------------------------------
+
+    //------------//
+    // addFailure //
+    //------------//
+    @Override
+    public void addFailure (Failure failure)
+    {
+        failures.add(failure);
+    }
+
     //------------//
     // addSection //
     //------------//
@@ -83,16 +101,14 @@ class BasicComposition
             throw new IllegalArgumentException("Cannot add a null section");
         }
 
-//        if (!glyph.isTransient()) {
-//            logger.error("Adding section to registered glyph");
-//        }
-
+        //        if (!glyph.isTransient()) {
+        //            logger.error("Adding section to registered glyph");
+        //        }
         // Nota: We must include the section in the glyph members before
         // linking back the section to the containing glyph.
         // Otherwise, there is a risk of using the glyph box (which depends on
         // its member sections) before the section is in the glyph members.
         // This phenomenum was sometimes observed when using parallelism.
-
         /** First, update glyph data */
         members.add(section);
 
@@ -107,7 +123,7 @@ class BasicComposition
     //-------------//
     // addSections //
     //-------------//
-    public void addSections (Glyph other,
+    public void addSections (Glyph   other,
                              Linking linkSections)
     {
         // Update glyph info in other sections
@@ -158,8 +174,8 @@ class BasicComposition
             sb.append(String.format("   partOf=%s%n", partOf));
         }
 
-        if (result != null) {
-            sb.append(String.format("   result=%s%n", result));
+        for (Failure failure : failures) {
+            sb.append(String.format("   %s%n", failure));
         }
 
         return sb.toString();
@@ -197,13 +213,23 @@ class BasicComposition
         return g;
     }
 
+    //-------------//
+    // getFailures //
+    //-------------//
+    @Override
+    public Set<Failure> getFailures ()
+    {
+        return failures;
+    }
+
     //-----------------//
     // getFirstSection //
     //-----------------//
     @Override
     public Section getFirstSection ()
     {
-        return glyph.getMembers().first();
+        return glyph.getMembers()
+                    .first();
     }
 
     //------------//
@@ -222,15 +248,6 @@ class BasicComposition
     public Glyph getPartOf ()
     {
         return partOf;
-    }
-
-    //-----------//
-    // getResult //
-    //-----------//
-    @Override
-    public Result getResult ()
-    {
-        return result;
     }
 
     //----------//
@@ -252,13 +269,13 @@ class BasicComposition
         return true;
     }
 
-    //--------------//
-    // isSuccessful //
-    //--------------//
+    //-------//
+    // isVip //
+    //-------//
     @Override
-    public boolean isSuccessful ()
+    public boolean isVip ()
     {
-        return result instanceof SuccessResult;
+        return glyph.isVip();
     }
 
     //-----------------//
@@ -298,13 +315,13 @@ class BasicComposition
         partOf = compound;
     }
 
-    //-----------//
-    // setResult //
-    //-----------//
+    //--------//
+    // setVip //
+    //--------//
     @Override
-    public void setResult (Result result)
+    public void setVip ()
     {
-        this.result = result;
+        glyph.setVip();
     }
 
     //---------------//

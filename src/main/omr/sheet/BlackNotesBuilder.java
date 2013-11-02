@@ -49,7 +49,6 @@ import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
 import omr.sig.BlackHeadInter;
-import omr.sig.FullBeamInter;
 import omr.sig.Grades;
 import omr.sig.Inter;
 import omr.sig.SIGraph;
@@ -69,9 +68,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import omr.sig.BeamInter;
 
 /**
- * Class {@code BlackNotesBuilder} is in charge, at system level, of
+ * Class {@literal BlackNotesBuilder} is in charge, at system level, of
  * retrieving the possible interpretations of black heads.
  * <p>
  * The main difficulty is the need to split large spots that were created during
@@ -313,7 +313,7 @@ public class BlackNotesBuilder
                 shapeImpact,
                 pitchImpact);
 
-        final double grade = impacts.computeGrade();
+        final double grade = impacts.getGrade();
 
         if (grade >= BlackHeadInter.getMinGrade()) {
             BlackHeadInter inter = new BlackHeadInter(glyph, impacts, pitch);
@@ -491,7 +491,8 @@ public class BlackNotesBuilder
 
         // Only SPOT-shaped glyphs
         if ((glyph.getShape() != Shape.BEAM_SPOT)
-            && (glyph.getShape() != Shape.BEAM)) {
+            && (glyph.getShape() != Shape.BEAM)
+            && (glyph.getShape() != Shape.BEAM_HOOK)) {
             return false;
         }
 
@@ -522,13 +523,13 @@ public class BlackNotesBuilder
             return false;
         }
 
-        // Discard spots with good beam interpretation
+        // Discard spots with good beam (or beam hook) interpretation
         Set<Inter> inters = glyph.getInterpretations();
 
         if (!inters.isEmpty()) {
             for (Inter inter : inters) {
-                if (inter instanceof FullBeamInter) {
-                    FullBeamInter beam = (FullBeamInter) inter;
+                if (inter instanceof BeamInter) {
+                    BeamInter beam = (BeamInter) inter;
 
                     if (beam.isGood()) {
                         return false;
@@ -841,7 +842,7 @@ public class BlackNotesBuilder
     // Parameters //
     //------------//
     /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
+     * Class {@literal Parameters} gathers all pre-scaled constants.
      */
     private static class Parameters
     {

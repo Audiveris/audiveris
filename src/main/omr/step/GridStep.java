@@ -57,6 +57,11 @@ public class GridStep
         if (editor != null) {
             editor.refresh();
         }
+        
+        // Barline board
+        sheet.getAssembly()
+                .addBoard(Step.DATA_TAB, sheet.getBarsChecker().getCheckBoard());
+        
     }
 
     //------//

@@ -90,17 +90,21 @@ public class BasicInterpret
                 SIGraph sig = system.getSig();
                 for (Inter inter : interpretations) {
                     sb.append("   interpretation=").append(inter);
-                    for (Relation relation : sig.edgesOf(inter)) {
-                        Inter source = sig.getEdgeSource(relation);
-                        Inter target = sig.getEdgeTarget(relation);
-                        sb.append(" {").append(relation);
-                        if (source != inter) {
-                            sb.append(" <- ").append(source);
+                    if (sig != null) {
+                        for (Relation relation : sig.edgesOf(inter)) {
+                            Inter source = sig.getEdgeSource(relation);
+                            Inter target = sig.getEdgeTarget(relation);
+                            sb.append(" {").append(relation);
+                            if (source != inter) {
+                                sb.append(" <- ").append(source);
+                            }
+                            if (target != inter) {
+                                sb.append(" -> ").append(target);
+                            }
+                            sb.append("}");
                         }
-                        if (target != inter) {
-                            sb.append(" -> ").append(target);
-                        }
-                        sb.append("}");
+                    } else {
+                        sb.append(" NO_SIG");
                     }
                     sb.append("\n");
                 }

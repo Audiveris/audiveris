@@ -25,8 +25,8 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
 /**
- * Class {@code CheckBoard} defines a board dedicated to the display of
- * check result information.
+ * Class {@code CheckBoard} defines a board dedicated to the display
+ * of check result information.
  *
  * @param <C> The {@link Checkable} entity type to be checked
  *

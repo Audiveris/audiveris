@@ -11,8 +11,13 @@
 // </editor-fold>
 package omr.lag;
 
+import omr.image.PixelBuffer;
+
+import java.awt.Dimension;
+import java.awt.Rectangle;
+
 /**
- * Class {@code Lags} gathers info for lags.
+ * Class {@code Lags} gathers utilities for lags.
  *
  * @author Hervé Bitteur
  */
@@ -38,4 +43,29 @@ public class Lags
     /** Split lag. */
     public static final String SPLIT_LAG = "splitLag";
 
+    //~ Methods ----------------------------------------------------------------
+    //-------------//
+    // buildBuffer //
+    //-------------//
+    /**
+     * Populate a buffer with the content of all provided lags.
+     *
+     * @param dim  dimension of the target buffer
+     * @param lags the contributing lags
+     * @return the populated buffer
+     */
+    public static PixelBuffer buildBuffer (Dimension dim,
+                                           Lag... lags)
+    {
+        final Rectangle box = new Rectangle(0, 0, dim.width, dim.height);
+        final PixelBuffer buf = new PixelBuffer(dim);
+
+        for (Lag lag : lags) {
+            for (Section section : lag.getSections()) {
+                section.fillImage(buf, box);
+            }
+        }
+
+        return buf;
+    }
 }

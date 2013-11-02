@@ -155,13 +155,11 @@ public class SymbolsController
      * Asynchronously segment a set of glyphs on their stems
      *
      * @param glyphs  glyphs to segment in order to retrieve stems
-     * @param isShort looking for short (or standard) stems
      * @return the task that carries out the processing
      */
-    public Task<Void, Void> asyncSegment (Collection<Glyph> glyphs,
-                                          boolean isShort)
+    public Task<Void, Void> asyncSegment (Collection<Glyph> glyphs)
     {
-        return new SegmentTask(sheet, isShort, glyphs).launch(sheet);
+        return new SegmentTask(sheet, glyphs).launch(sheet);
     }
 
     //----------------//

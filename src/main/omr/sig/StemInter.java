@@ -17,7 +17,7 @@ import omr.glyph.facets.Glyph;
 import omr.util.HorizontalSide;
 
 /**
- * Class {@code StemInter} represents instances of Stem
+ * Class {@literal StemInter} represents instances of Stem
  * interpretations.
  *
  * @author Hervé Bitteur
@@ -30,24 +30,18 @@ public class StemInter
     /**
      * Creates a new StemInter object.
      *
-     * @param glyph the underlying glyph
-     * @param grade the assignment quality
+     * @param glyph   the underlying glyph
+     * @param impacts the grade details
      */
     public StemInter (Glyph glyph,
-                      double grade)
+                      GradeImpacts impacts)
     {
-        super(glyph, Shape.STEM, grade);
+        super(glyph, Shape.STEM, impacts.getGrade());
+
+        setImpacts(impacts);
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    public static double getMinGrade ()
-    {
-        return BasicInter.getMinGrade();
-    }
-
     //--------//
     // accept //
     //--------//
@@ -55,6 +49,14 @@ public class StemInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    public static double getMinGrade ()
+    {
+        return BasicInter.getMinGrade();
     }
 
     //------------//
@@ -96,7 +98,7 @@ public class StemInter
                 return head;
             }
         }
-        
+
         return null;
-    }    
+    }
 }

@@ -11,10 +11,10 @@
 // </editor-fold>
 package omr.check;
 
-
 /**
  * Class {@code CheckResult} encapsulates the <b>result</b> of a check,
- * composed of a value (double) and a flag which can be RED, YELLOW or GREEN.
+ * composed of a value (double) and a flag which can be RED, YELLOW or
+ * GREEN.
  *
  * @author Hervé Bitteur
  */
@@ -22,9 +22,19 @@ public class CheckResult
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Numerical result value */
+    /** Numerical result value. */
     public double value;
 
-    /** Flag the result (RED, YELLOW, GREEN) */
-    public int flag;
+    /** The resulting grade, in 0..1 range. */
+    public double grade;
+
+    //~ Methods ----------------------------------------------------------------
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return String.format("%.2f(%.2f)", value, grade);
+    }
 }

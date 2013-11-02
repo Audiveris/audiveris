@@ -54,8 +54,6 @@ public class SystemsStep
     @Override
     public void displayUI (Sheet sheet)
     {
-        sheet.getAssembly()
-                .addBoard(Step.DATA_TAB, sheet.getBarsChecker().getCheckBoard());
         // Inter board
         sheet.getAssembly()
                 .addBoard(Step.DATA_TAB, new InterBoard(sheet));

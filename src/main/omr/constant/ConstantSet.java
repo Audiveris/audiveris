@@ -22,11 +22,12 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * This abstract class handles a set of Constants as a whole. In particular,
- * this allows a user interface (such as {@link UnitTreeTable}) to present an
- * editing table of the whole set of constants.
+ * This abstract class handles a set of Constants as a whole.
+ * In particular, this allows a user interface (such as {@link UnitTreeTable})
+ * to present an editing table of the whole set of constants.
  *
- * <p>We recommend to define only one such static ConstantSet per class/unit as
+ * <p>
+ * We recommend to define only one such static ConstantSet per class/unit as
  * a subclass of this (abstract) ConstantSet. </p>
  *
  * @author Hervé Bitteur
@@ -44,11 +45,12 @@ public abstract class ConstantSet
     private final String unit;
 
     /**
-     * The mapping between constant name & constant object. We use a sorted map
-     * to allow access by constant index in constant set, as required by
-     * ConstantTreeTable. This instance can only be lazily constructed, thanks
-     * to {@link #getMap} method, since all the enclosed constants must have
-     * been constructed beforehand.
+     * The mapping between constant name & constant object.
+     * We use a sorted map to allow access by constant index in constant set, as
+     * required by ConstantTreeTable.
+     * This instance can only be lazily constructed, thanks to {@link #getMap}
+     * method, since all the enclosed constants must have been constructed
+     * beforehand.
      */
     private volatile SortedMap<String, Constant> map;
 
@@ -57,8 +59,9 @@ public abstract class ConstantSet
     // ConstantSet //
     //-------------//
     /**
-     * A new ConstantSet instance is created, and registered at the UnitManager
-     * singleton, but its map of internal constants will need to be built later.
+     * A new ConstantSet instance is created, and registered at the
+     * UnitManager singleton, but its map of internal constants will
+     * need to be built later.
      */
     public ConstantSet ()
     {
@@ -67,7 +70,6 @@ public abstract class ConstantSet
         //        System.out.println(
         //            "\n" + Thread.currentThread().getName() +
         //            ": Creating ConstantSet " + unit);
-
         // Register this instance
         UnitManager.getInstance().addSet(this);
     }
@@ -77,7 +79,8 @@ public abstract class ConstantSet
     // dumpOf //
     //--------//
     /**
-     * A utility method to dump current value of each constant in the set.
+     * A utility method to dump current value of each constant in the
+     * set.
      *
      * @return the string representation of this set
      */
@@ -155,8 +158,8 @@ public abstract class ConstantSet
     // initialize //
     //------------//
     /**
-     * Make sure this ConstantSet has properly been initialized (its map of
-     * constants has been built)
+     * Make sure this ConstantSet has properly been initialized 
+     * (its map of constants has been built)
      *
      * @return true if initialized correctly, false otherwise
      */
@@ -169,8 +172,8 @@ public abstract class ConstantSet
     // isModified //
     //------------//
     /**
-     * Predicate to check whether at least one of the constant of the set has
-     * been modified
+     * Predicate to check whether at least one of the constant of the 
+     * set has been modified
      *
      * @return the modification status of the whole set
      */
@@ -202,8 +205,9 @@ public abstract class ConstantSet
     // toString //
     //----------//
     /**
-     * Return the last part of the ConstantSet name, without the leading package
-     * names. This short name is used by Constant TreeTable
+     * Return the last part of the ConstantSet name, without the
+     * leading package names.
+     * This short name is used by Constant TreeTable
      *
      * @return just the (unqualified) name of the ConstantSet
      */
@@ -242,8 +246,8 @@ public abstract class ConstantSet
     // initMap //
     //---------//
     /**
-     * Now that the enclosed constants of this set have been constructed, let
-     * assign them their unit and name parameters.
+     * Now that the enclosed constants of this set have been 
+     * constructed, let's assign them their unit and name parameters.
      */
     private void initMap ()
     {

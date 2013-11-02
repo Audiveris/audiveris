@@ -391,7 +391,7 @@ public class Main
             for (Locale locale : Locale.getAvailableLocales()) {
                 if (locale.toString().equalsIgnoreCase(localeStr)) {
                     Locale.setDefault(locale);
-                    logger.debug("Locale set to {}", locale);
+                    logger.info("Locale set to '{}'", locale);
                     return;
                 }
             }

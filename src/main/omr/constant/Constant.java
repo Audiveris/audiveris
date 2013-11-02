@@ -22,20 +22,22 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This abstract class handles the mapping between one application
- * variable and a property name and value. 
+ * variable and a property name and value.
  * It is meant essentially to handle any kind of symbolic constant, whose value
  * may have to be tuned and saved for future runs of the application.
  *
- * <p>Please refer to {@link ConstantManager} for a detailed explanation on how
+ * <p>
+ * Please refer to {@link ConstantManager} for a detailed explanation on how
  * the current value of any given Constant is determined at run-time.
  *
- * <p> The class {@code Constant} is not meant to be used directly (it is
+ * <p>
+ * The class {@code Constant} is not meant to be used directly (it is
  * abstract), but rather through any of its subclasses:
  *
  * <ul> <li> {@link Constant.Angle} </li> <li> {@link Constant.Boolean} </li>
  * <li> {@link Constant.Color} </li> <li> {@link Constant.Double} </li> <li>
  * {@link Constant.Integer} </li> <li> {@link Constant.Ratio} </li>
- * <li> {@link Constant.String} </li> 
+ * <li> {@link Constant.String} </li>
  * <li>and others...</li></ul> </p>
  *
  * @author Hervé Bitteur
@@ -83,12 +85,12 @@ public abstract class Constant
     // Constant //
     //----------//
     /**
-     * Creates a constant instance, while providing a default value, 
+     * Creates a constant instance, while providing a default value,
      * in case the external property is not yet defined.
      *
      * @param quantityUnit Unit used as base for measure, if relevant
      * @param sourceString Source value, expressed by a string literal which
-     * cannot be null
+     *                     cannot be null
      * @param description  A quick description of the purpose of this constant
      */
     protected Constant (java.lang.String quantityUnit,
@@ -119,8 +121,9 @@ public abstract class Constant
     //----------//
     /**
      * Modify the current value of the constant.
-     * This abstract method is actually defined in each subclass, to enforce 
-     * validation of the provided string with respect to the target constant type.
+     * This abstract method is actually defined in each subclass, to enforce
+     * validation of the provided string with respect to the target constant
+     * type.
      *
      * @param string the new value, as a string to be checked
      */
@@ -360,7 +363,7 @@ public abstract class Constant
     // decode //
     //--------//
     /**
-     * Convert a given string to the proper object value, as 
+     * Convert a given string to the proper object value, as
      * implemented by each subclass.
      *
      * @param str the encoded string
@@ -385,7 +388,7 @@ public abstract class Constant
     // setTuple //
     //----------//
     /**
-     * Modify the current parameter data in an atomic way, 
+     * Modify the current parameter data in an atomic way,
      * and remember the very first value (the initial string).
      *
      * @param str The new value (as a string)
@@ -468,8 +471,8 @@ public abstract class Constant
     // getTuple //
     //----------//
     /**
-     * Report the current tuple data, which may imply to trigger the 
-     * assignment of qualified name to the constant, in order to get 
+     * Report the current tuple data, which may imply to trigger the
+     * assignment of qualified name to the constant, in order to get
      * property data
      *
      * @return the current tuple data
@@ -586,7 +589,7 @@ public abstract class Constant
      * A subclass of Constant, meant to store a {@link java.awt.Color}
      * value.
      * They have a disk repository which is separate from the other constants.
-    */
+     */
     public static class Color
             extends Constant
     {
@@ -678,8 +681,20 @@ public abstract class Constant
     public static class Double
             extends Constant
     {
-        //~ Constructors -------------------------------------------------------
 
+        public static final Double ZERO = new Double("none", 0, "Zero");
+
+        public static final Double HALF = new Double("none", 0.5, "Half");
+
+        public static final Double ONE = new Double("none", 1, "One");
+
+        static {
+            ZERO.setUnitAndName(Constant.class.getName(), "doubleZero");
+            HALF.setUnitAndName(Constant.class.getName(), "doubleHalf");
+            ONE.setUnitAndName(Constant.class.getName(), "doubleOne");
+        }
+
+        //~ Constructors -------------------------------------------------------
         public Double (java.lang.String quantityUnit,
                        double defaultValue,
                        java.lang.String description)
@@ -802,8 +817,14 @@ public abstract class Constant
     public static class Ratio
             extends Constant.Double
     {
-        //~ Constructors -------------------------------------------------------
 
+        public static final Ratio ZERO = new Ratio(0, "zero");
+
+        static {
+            ZERO.setUnitAndName(Constant.class.getName(), "ratioZero");
+        }
+
+        //~ Constructors -------------------------------------------------------
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
@@ -859,7 +880,7 @@ public abstract class Constant
 
         //~ Methods ------------------------------------------------------------
         /**
-         * Retrieve the current constant value. 
+         * Retrieve the current constant value.
          * Actually this is synonymous with currentString()
          *
          * @return the current (string) value

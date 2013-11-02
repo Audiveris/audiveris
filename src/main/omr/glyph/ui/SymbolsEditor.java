@@ -462,7 +462,7 @@ public class SymbolsEditor
                         Glyph glyph = section.getGlyph();
 
                         if (focus.isDisplayed(glyph)) {
-                            section.render(g, drawBorders);
+                            section.render(g, drawBorders, null);
                         }
                     }
                 }

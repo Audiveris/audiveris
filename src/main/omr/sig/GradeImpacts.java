@@ -12,7 +12,7 @@
 package omr.sig;
 
 /**
- * Interface {@code GradeImpacts} defines data that impact a resulting
+ * Interface {@literal GradeImpacts} defines data that impact a resulting
  * grade value.
  *
  * @author Hervé Bitteur
@@ -21,5 +21,10 @@ public interface GradeImpacts
 {
     //~ Methods ----------------------------------------------------------------
 
-    double computeGrade ();
+    /**
+     * Retrieve a grade value from evaluation details.
+     *
+     * @return the computed grade in range 0 .. 1
+     */
+    double getGrade ();
 }

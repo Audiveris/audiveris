@@ -158,17 +158,13 @@ public class LinesRetriever
         hLag = new BasicLag(Lags.HLAG, Orientation.HORIZONTAL);
 
         // Create filament factory
-        try {
-            factory = new FilamentsFactory(
-                    scale,
-                    sheet.getNest(),
-                    GlyphLayer.DEFAULT,
-                    Orientation.HORIZONTAL,
-                    LineFilament.class);
-            factory.dump("LinesRetriever factory");
-        } catch (Exception ex) {
-            logger.warn("Cannot create lines filament factory", ex);
-        }
+        factory = new FilamentsFactory(
+                scale,
+                sheet.getNest(),
+                GlyphLayer.DEFAULT,
+                Orientation.HORIZONTAL,
+                LineFilament.class);
+        factory.dump("LinesRetriever factory");
 
         // To record the purged vertical runs
         RunsTable longVertTable = new RunsTable(
@@ -179,13 +175,13 @@ public class LinesRetriever
         // Remove runs whose height is larger than line thickness
         RunsTable shortVertTable = wholeVertTable.copy("short-vert").purge(
                 new Predicate<Run>()
-        {
-            @Override
-            public final boolean check (Run run)
-            {
-                return run.getLength() > params.maxVerticalRunLength;
-            }
-        },
+                {
+                    @Override
+                    public final boolean check (Run run)
+                    {
+                        return run.getLength() > params.maxVerticalRunLength;
+                    }
+                },
                 longVertTable);
 
         if (showRuns) {
@@ -208,13 +204,13 @@ public class LinesRetriever
 
         RunsTable longHoriTable = wholeHoriTable.copy("long-hori").purge(
                 new Predicate<Run>()
-        {
-            @Override
-            public final boolean check (Run run)
-            {
-                return run.getLength() < params.minRunLength;
-            }
-        },
+                {
+                    @Override
+                    public final boolean check (Run run)
+                    {
+                        return run.getLength() < params.minRunLength;
+                    }
+                },
                 shortHoriTable);
 
         if (showRuns) {
@@ -244,7 +240,8 @@ public class LinesRetriever
      * Complete the retrieved staff lines whenever possible with
      * filaments and short sections left over.
      *
-     * <p><b>Synopsis:</b>
+     * <p>
+     * <b>Synopsis:</b>
      * <pre>
      *      + includeDiscardedFilaments
      *          + canIncludeFilament(fil1, fil2)
@@ -350,18 +347,18 @@ public class LinesRetriever
                     double der = filament.slopeAt(p.getX(), HORIZONTAL);
                     g.draw(
                             new Line2D.Double(
-                            p.getX(),
-                            p.getY(),
-                            p.getX() - dx,
-                            p.getY() - (der * dx)));
+                                    p.getX(),
+                                    p.getY(),
+                                    p.getX() - dx,
+                                    p.getY() - (der * dx)));
                     p = filament.getStopPoint(HORIZONTAL);
                     der = filament.slopeAt(p.getX(), HORIZONTAL);
                     g.draw(
                             new Line2D.Double(
-                            p.getX(),
-                            p.getY(),
-                            p.getX() + dx,
-                            p.getY() + (der * dx)));
+                                    p.getX(),
+                                    p.getY(),
+                                    p.getX() + dx,
+                                    p.getY() + (der * dx)));
                 }
             }
         }
@@ -383,7 +380,8 @@ public class LinesRetriever
      * them into clusters of lines (as staff candidates). </li>
      * </ol>
      *
-     * <p><b>Synopsis:</b>
+     * <p>
+     * <b>Synopsis:</b>
      * <pre>
      *      + filamentFactory.retrieveFilaments()
      *      + retrieveGlobalSlope()

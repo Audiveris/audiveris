@@ -70,6 +70,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import omr.sig.BarlineInter;
+import omr.sig.Inter;
 
 /**
  * Class {@code BarsRetriever} focuses on the retrieval of vertical
@@ -159,7 +161,6 @@ public class BarsRetriever
     {
         vLag = new BasicLag(Lags.VLAG, VERTICAL);
 
-
         final int maxShift = sheet.getScale().toPixels(
                 constants.maxShift);
 
@@ -169,7 +170,7 @@ public class BarsRetriever
                 new JunctionShiftPolicy(maxShift));
         sectionsBuilder.createSections(vertTable, true);
 
-        sheet.setLag(Lags.VLAG,vLag);
+        sheet.setLag(Lags.VLAG, vLag);
 
         setVipSections();
     }
@@ -209,7 +210,7 @@ public class BarsRetriever
                 Point2D p = glyph.getStartPoint(VERTICAL);
                 double derivative = (glyph instanceof Filament)
                         ? ((Filament) glyph).slopeAt(p.getY(),
-                        VERTICAL)
+                                VERTICAL)
                         : glyph.getInvertedSlope();
                 g.draw(new Line2D.Double(p.getX(), p.getY(),
                         p.getX() - (derivative * dy),
@@ -603,7 +604,6 @@ public class BarsRetriever
      * @throws Exception
      */
     private void buildVerticalFilaments ()
-            throws Exception
     {
         // Filaments factory
         FilamentsFactory factory = new FilamentsFactory(sheet.getScale(),
@@ -694,7 +694,7 @@ public class BarsRetriever
 
                         return tryRangeConnection(
                                 systems.subList(systems.indexOf(prevSystem),
-                                1 + systems.indexOf(nextSystem)));
+                                        1 + systems.indexOf(nextSystem)));
                     }
                 }
             }
@@ -866,7 +866,6 @@ public class BarsRetriever
             //                // TODO: Should implement driven recognition here...
             //                logger.info("{}Should fill {}", sheet.getLogPrefix(), align);
             //            }
-
             // Strict: we require all staves to have a barline in this alignment
             if (filled < staffCount) {
                 // We remove this alignment and deassign its sticks
@@ -1038,7 +1037,6 @@ public class BarsRetriever
         systemTops = null; // To force recomputation
 
         //        }
-
         return modified;
     }
 
@@ -1216,9 +1214,9 @@ public class BarsRetriever
                         StaffInfo topStaff = staffManager.getStaffAt(start);
                         stick.setEndingPoints(
                                 preciseIntersection(stick,
-                                topStaff.getFirstLine()),
+                                        topStaff.getFirstLine()),
                                 preciseIntersection(stick,
-                                botStaff.getLastLine()));
+                                        botStaff.getLastLine()));
                     }
                 }
             }
@@ -1234,7 +1232,6 @@ public class BarsRetriever
      * @throws Exception
      */
     private void retrieveBarCandidates ()
-            throws Exception
     {
         BarsChecker barsChecker = new BarsChecker(sheet, true); // Rough
         barsChecker.checkCandidates(filaments);
@@ -1253,7 +1250,6 @@ public class BarsRetriever
     //-------------------//
     private void retrieveMajorBars (Collection<Glyph> oldGlyphs,
                                     Collection<Glyph> newGlyphs)
-            throws Exception
     {
         // Build vertical filaments
         if (oldGlyphs.isEmpty() && newGlyphs.isEmpty()) {
@@ -1299,8 +1295,8 @@ public class BarsRetriever
      */
     private Integer[] retrievePartTops ()
     {
-        staffManager.setPartTops(partTops =
-                new Integer[staffManager.getStaffCount()]);
+        staffManager.setPartTops(partTops
+                = new Integer[staffManager.getStaffCount()]);
 
         for (StaffInfo staff : staffManager.getStaves()) {
             ///logger.info("Staff#" + staff.getId());
@@ -1334,7 +1330,7 @@ public class BarsRetriever
                 // Use right bar, if any, even if not anchored ...
                 // Or use a plain bar stick provided it is anchored on both sides
                 if ((rightBar != null && rightBar.getSticksAncestors().contains(
-                        stick)) || (stick.getResult() == BarsChecker.BAR_PART_DEFINING)) {
+                        stick)) || isPartDefining(stick)) {
                     Point2D start = stick.getStartPoint(VERTICAL);
                     StaffInfo topStaff = staffManager.getStaffAt(start);
                     int top = topStaff.getId();
@@ -1349,6 +1345,22 @@ public class BarsRetriever
         }
 
         return partTops;
+    }
+
+    //----------------//
+    // isPartDefining //
+    //----------------//
+    private boolean isPartDefining (Glyph stick)
+    {
+        for (Inter inter : stick.getInterpretations()) {
+            if (inter instanceof BarlineInter) {
+                BarlineInter barline = (BarlineInter) inter;
+                if (barline.isPartDefining()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     //------------------//
@@ -1423,7 +1435,7 @@ public class BarsRetriever
             if (logger.isDebugEnabled()) {
                 logger.debug("Staff#{} no {} bar {}", staff.getId(), side,
                         Glyphs.toString(StickIntersection.sticksOf(
-                        staffCrossings)));
+                                        staffCrossings)));
             }
         }
 
@@ -1546,8 +1558,8 @@ public class BarsRetriever
      */
     private Integer[] retrieveSystemTops ()
     {
-        staffManager.setSystemTops(systemTops =
-                new Integer[staffManager.getStaffCount()]);
+        staffManager.setSystemTops(systemTops
+                = new Integer[staffManager.getStaffCount()]);
 
         for (StaffInfo staff : staffManager.getStaves()) {
             int bot = staff.getId();

@@ -153,9 +153,6 @@ public class SymbolMenu
         // Segment the glyph into stems & leaves
         register(0, new StemSegmentAction());
 
-        // Segment the glyph into short stems & leaves
-        register(0, new ShortStemSegmentAction());
-
         // Build a compound, with proposed shape
         register(0, new ProposedAction());
 
@@ -738,46 +735,6 @@ public class SymbolMenu
         }
     }
 
-    //------------------------//
-    // ShortStemSegmentAction //
-    //------------------------//
-    /**
-     * Perform a segmentation on the selected glyphs, into short stems
-     * and leaves.
-     */
-    private class ShortStemSegmentAction
-            extends DynAction
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public ShortStemSegmentAction ()
-        {
-            super(50);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
-            ((SymbolsController) controller).asyncSegment(glyphs, true); // isShort
-        }
-
-        @Override
-        public void update ()
-        {
-            putValue(NAME, "Look for short verticals");
-
-            if (sheet.hasSystemBoundaries() && (glyphNb > 0) && noVirtuals) {
-                setEnabled(true);
-                putValue(SHORT_DESCRIPTION, "Extract short stems and leaves");
-            } else {
-                setEnabled(false);
-                putValue(SHORT_DESCRIPTION, "No glyph to segment");
-            }
-        }
-    }
-
     //---------------//
     // SimilarAction //
     //---------------//
@@ -851,7 +808,7 @@ public class SymbolMenu
         public void actionPerformed (ActionEvent e)
         {
             Set<Glyph> glyphs = nest.getSelectedGlyphSet();
-            ((SymbolsController) controller).asyncSegment(glyphs, false); // isShort
+            ((SymbolsController) controller).asyncSegment(glyphs);
         }
 
         @Override

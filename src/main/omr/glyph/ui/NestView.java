@@ -195,7 +195,7 @@ public class NestView
         for (Lag lag : getLags()) {
             // Render all sections, using the colors they have been assigned
             for (Section section : lag.getVertices()) {
-                section.render(g, drawBorders);
+                section.render(g, drawBorders, null);
             }
         }
 
@@ -259,10 +259,19 @@ public class NestView
 
         if (glyphs != null) {
             // Decorations first
+
+            // Should we draw the section borders?
+            final boolean drawBorders = ViewParameters.getInstance()
+                    .isSectionMode();
             Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
             g.setColor(Color.blue);
 
             for (Glyph glyph : glyphs) {
+                // Draw glyph sections in specific color
+                for (Section section : glyph.getMembers()) {
+                    section.render(g, drawBorders, Colors.GLYPH_CURRENT);
+                }
+
                 // Draw character boxes for textual glyphs?
                 if (glyph.isText()) {
                     if (ViewParameters.getInstance()
@@ -298,6 +307,7 @@ public class NestView
             if (glyphs != null) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setColor(Color.gray);
+
                 Stroke oldStroke = UIUtil.setAbsoluteStroke(g2, 1f);
 
                 for (Glyph glyph : glyphs) {

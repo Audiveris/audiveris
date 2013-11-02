@@ -11,12 +11,14 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.check.Result;
+import omr.check.Checkable;
+import omr.check.Failure;
 
 import omr.lag.Section;
 
 import omr.sheet.SystemInfo;
 
+import java.util.Set;
 import java.util.SortedSet;
 
 /**
@@ -27,7 +29,7 @@ import java.util.SortedSet;
  * @author Hervé Bitteur
  */
 public interface GlyphComposition
-        extends GlyphFacet
+        extends GlyphFacet, Checkable
 {
     //~ Enumerations -----------------------------------------------------------
 
@@ -105,6 +107,13 @@ public interface GlyphComposition
     SystemInfo getAlienSystem (SystemInfo system);
 
     /**
+     * Report the failures found during analyses of this glyph.
+     *
+     * @return the collection of failures
+     */
+    Set<Failure> getFailures ();
+
+    /**
      * Report the first section in the ordered collection of members.
      *
      * @return the first section of the glyph
@@ -119,26 +128,12 @@ public interface GlyphComposition
     SortedSet<Section> getMembers ();
 
     /**
-     * Report the result found during analysis of this glyph.
-     *
-     * @return the analysis result
-     */
-    Result getResult ();
-
-    /**
      * Tests whether this glyph is active.
      * (all its member sections point to it)
      *
      * @return true if glyph is active, false otherwise
      */
     boolean isActive ();
-
-    /**
-     * Check whether the glyph is successfully recognized.
-     *
-     * @return true if the glyph is successfully recognized
-     */
-    boolean isSuccessful ();
 
     /**
      * Make all the glyph's sections point back to this glyph.
@@ -154,13 +149,6 @@ public interface GlyphComposition
      */
     boolean removeSection (Section section,
                            Linking link);
-
-    /**
-     * Record the analysis result in the glyph itself.
-     *
-     * @param result the assigned result
-     */
-    void setResult (Result result);
 
     /**
      * Include the sections from another glyph into this one, and make

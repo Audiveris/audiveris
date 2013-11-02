@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.facets;
 
-import omr.check.Result;
+import omr.check.Failure;
 
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphLayer;
@@ -66,7 +66,8 @@ import java.util.SortedSet;
 /**
  * Class {@code BasicGlyph} is the basic Glyph implementation.
  *
- * <p>From an implementation point of view, this {@code BasicGlyph} is just a
+ * <p>
+ * From an implementation point of view, this {@code BasicGlyph} is just a
  * shell around specialized Glyph facets, and most of the methods are simply
  * using delegation to the proper facet.
  *
@@ -117,7 +118,8 @@ public class BasicGlyph
      * @param scale the scaling
      * @param layer the assigned layer
      */
-    public BasicGlyph (Scale scale, GlyphLayer layer)
+    public BasicGlyph (Scale scale,
+                       GlyphLayer layer)
     {
         this(scale.getInterline(), layer);
     }
@@ -129,9 +131,10 @@ public class BasicGlyph
      * Create a new BasicGlyph object.
      *
      * @param interline the scaling interline value
-     * @param layer the assigned layer
+     * @param layer     the assigned layer
      */
-    public BasicGlyph (int interline, GlyphLayer layer)
+    public BasicGlyph (int interline,
+                       GlyphLayer layer)
     {
         addFacet(administration = new BasicAdministration(this, layer));
         addFacet(composition = new BasicComposition(this));
@@ -175,7 +178,7 @@ public class BasicGlyph
      * Create a glyph with a specific alignment class.
      *
      * @param interline      the scaling information
-     * @param layer the assigned layer
+     * @param layer          the assigned layer
      * @param alignmentClass the specific alignment class
      */
     protected BasicGlyph (int interline,
@@ -214,6 +217,12 @@ public class BasicGlyph
                                java.awt.Shape attachment)
     {
         display.addAttachment(id, attachment);
+    }
+
+    @Override
+    public void addFailure (Failure failure)
+    {
+        composition.addFailure(failure);
     }
 
     @Override
@@ -389,6 +398,12 @@ public class BasicGlyph
     public Evaluation getEvaluation ()
     {
         return recognition.getEvaluation();
+    }
+
+    @Override
+    public Set<Failure> getFailures ()
+    {
+        return composition.getFailures();
     }
 
     @Override
@@ -588,12 +603,6 @@ public class BasicGlyph
     }
 
     @Override
-    public Result getResult ()
-    {
-        return composition.getResult();
-    }
-
-    @Override
     public Shape getShape ()
     {
         return recognition.getShape();
@@ -789,12 +798,6 @@ public class BasicGlyph
     }
 
     @Override
-    public boolean isSuccessful ()
-    {
-        return composition.isSuccessful();
-    }
-
-    @Override
     public boolean isText ()
     {
         return recognition.isText();
@@ -952,12 +955,6 @@ public class BasicGlyph
     public void setRegisteredSignature (GlyphSignature sig)
     {
         geometry.setRegisteredSignature(sig);
-    }
-
-    @Override
-    public void setResult (Result result)
-    {
-        composition.setResult(result);
     }
 
     @Override
@@ -1125,9 +1122,10 @@ public class BasicGlyph
                     .append("]");
         }
 
-        if (getResult() != null) {
-            sb.append(" ")
-                    .append(getResult());
+        if (!getFailures()
+                .isEmpty()) {
+            sb.append(" failures:")
+                    .append(getFailures());
         }
 
         return sb.toString();

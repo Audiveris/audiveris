@@ -13,17 +13,25 @@ package omr.check;
 
 import omr.constant.Constant;
 
+import omr.sig.Grades;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Class {@code Check} encapsulates the <b>definition</b> of a check,
  * which can later be used on a whole population of objects.
- *
- * <p>The result of using a check on a given object is not recorded in this
- * class, but into the checked entity itself. </p>
- *
- * <p>Checks can be gathered in check suites. </p>
+ * <p>
+ * Checks are generally gathered in {@link CheckSuite} instances. </p>
+ * <p>
+ * The strategy is the following:<ul>
+ * <li>A successful individual check may eventually result in an interpretation
+ * assigned to the checked object (if the suite of checks ends with an
+ * acceptable grade).</li>
+ * <li>Any failed individual check triggers the immediate end of the containing
+ * suite but records this failure in the checked object itself, for later
+ * review.</li>
+ * </ul>
  *
  * @param <C> precise type of the objects to be checked
  *
@@ -33,54 +41,29 @@ public abstract class Check<C extends Checkable>
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Check.class);
-
-    /**
-     * Indicates a negative result
-     */
-    public static final int RED = -1;
-
-    /**
-     * Indicates a non-concluding result
-     */
-    public static final int ORANGE = 0;
-
-    /**
-     * Indicates a positive result
-     */
-    public static final int GREEN = 1;
 
     //~ Instance fields --------------------------------------------------------
     /**
-     * Specifies the FailureResult to be assigned to the Checkable object, if
-     * the result of the check end in the RED range.
+     * Specifies the Failure to be assigned to the Checkable object,
+     * when the result of this individual check is not acceptable.
      */
-    private final FailureResult redResult;
+    private final Failure failure;
 
-    /** Longer description, meant for tips */
-    private final String description;
-
-    /** Short name for this test */
+    /** Short name for this test. */
     private final String name;
 
-    /**
-     * Specifies if values are RED,ORANGE,GREEN (higher is better, covariant =
-     * true) or GREEN,ORANGE,RED (lower is better, covariant = false)
-     */
-    private final boolean covariant;
+    /** Longer description, meant for tips. */
+    private final String description;
 
-    /**
-     * Lower bound for ORANGE range. Whatever the value of 'covariant', we must
-     * always have low <= high
-     */
+    /** Lower bound for value range. */
     private Constant.Double low;
 
-    /**
-     * Higher bound for ORANGE range. Whatever the value of 'covariant', we must
-     * always have low <= high
-     */
+    /** Higher bound for value range. */
     private Constant.Double high;
+
+    /** Covariant: higher is better, contravariant: lower is better. */
+    private final boolean covariant;
 
     //~ Constructors -----------------------------------------------------------
     //-------//
@@ -101,14 +84,14 @@ public abstract class Check<C extends Checkable>
                      Constant.Double low,
                      Constant.Double high,
                      boolean covariant,
-                     FailureResult redResult)
+                     Failure redResult)
     {
         this.name = name;
         this.description = description;
         this.low = low;
         this.high = high;
         this.covariant = covariant;
-        this.redResult = redResult;
+        this.failure = redResult;
 
         verifyRange();
     }
@@ -209,19 +192,17 @@ public abstract class Check<C extends Checkable>
     // pass //
     //------//
     /**
-     * Actually run the check on the provided object, and return the result. As
-     * a side-effect, a check that totally fails (RED result) assigns this
-     * failure into the candidate object.
+     * Actually run the check on the provided object, and return the
+     * result.
+     * As a side-effect, a check that totally fails (RED result) records this
+     * failure within the candidate object itself.
      *
-     * @param obj    the checkable object to be checked
-     * @param result output for the result, or null
-     * @param update true if obj is to be updated with the result
-     *
-     * @return the result composed of the numerical value, plus a flag ({@link
-     * #RED}, {@link #ORANGE}, {@link #GREEN}) that characterizes the result of
-     *         passing the check on this object
+     * @param checkable the checkable object to be checked
+     * @param result    output for the result, or null
+     * @param update    true if the object is to be updated with failed result
+     * @return the result
      */
-    public CheckResult pass (C obj,
+    public CheckResult pass (C checkable,
                              CheckResult result,
                              boolean update)
     {
@@ -229,31 +210,34 @@ public abstract class Check<C extends Checkable>
             result = new CheckResult();
         }
 
-        result.value = getValue(obj);
+        final double range = high.getValue() - low.getValue();
+        result.value = getValue(checkable);
 
         if (covariant) {
             if (result.value < low.getValue()) {
                 if (update) {
-                    obj.setResult(redResult);
+                    checkable.addFailure(failure);
                 }
 
-                result.flag = RED;
+                result.grade = 0;
             } else if (result.value >= high.getValue()) {
-                result.flag = GREEN;
+                result.grade = 1;
             } else {
-                result.flag = ORANGE;
+                result.grade = Grades.clamp(
+                        (result.value - low.getValue()) / range);
             }
         } else {
-            if (result.value <= low.getValue()) {
-                result.flag = GREEN;
-            } else if (result.value > high.getValue()) {
+            if (result.value > high.getValue()) {
                 if (update) {
-                    obj.setResult(redResult);
+                    checkable.addFailure(failure);
                 }
 
-                result.flag = RED;
+                result.grade = 0;
+            } else if (result.value <= low.getValue()) {
+                result.grade = 1;
             } else {
-                result.flag = ORANGE;
+                result.grade = Grades.clamp(
+                        ((high.getValue() - result.value) / range));
             }
         }
 
@@ -264,8 +248,9 @@ public abstract class Check<C extends Checkable>
     // setLowHigh //
     //------------//
     /**
-     * Allows to set the pair of low and high value. They are set in one shot to
-     * allow the sanity check of 'low' less than or equal to 'high'
+     * Allows to set the pair of low and high value.
+     * They are set in one shot to allow the " low is less than or equals high "
+     * sanity check.
      *
      * @param low  the new low value
      * @param high the new high value
@@ -281,9 +266,6 @@ public abstract class Check<C extends Checkable>
     //----------//
     // toString //
     //----------//
-    /**
-     * report a readable description of this check
-     */
     @Override
     public String toString ()
     {
@@ -322,7 +304,9 @@ public abstract class Check<C extends Checkable>
         if (low.getValue() > high.getValue()) {
             logger.error(
                     "Illegal low {} high {} range for {}",
-                    low.getValue(), high.getValue(), this);
+                    low.getValue(),
+                    high.getValue(),
+                    this);
         }
     }
 

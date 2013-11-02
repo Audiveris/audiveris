@@ -43,7 +43,11 @@
     
     <!-- Define DEBUG loggers here below: -->
     <logger name="omr.step.Stepping" level="DEBUG"/>
+<!--    <logger name="omr.check.CheckSuite" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.VerticalsBuilder" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.VoidNotesBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.BeamsBuilder" level="DEBUG"/>-->
+<!--    <logger name="omr.sheet.BlackNotesBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.HorizontalsBuilder" level="DEBUG"/>-->
 <!--    <logger name="omr.selection.SelectionService" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.picture.Ghostscript" level="DEBUG"/>-->

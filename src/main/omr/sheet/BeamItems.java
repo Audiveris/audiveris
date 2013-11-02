@@ -149,57 +149,61 @@ public class BeamItems
         }
     }
 
-    //------------//
-    // checkMasks //
-    //------------//
-    public void checkMasks (Wrapper<Double> meanCoreRatio,
-                            Wrapper<Double> meanBeltRatio)
-    {
-        final PixelFilter pixelFilter = system.getSheet()
-                .getPicture()
-                .getBuffer(
-                        Picture.BufferKey.BINARY);
-        int sumCoreCount = 0;
-        int sumCoreFore = 0;
-        int sumBeltCount = 0;
-        int sumBeltFore = 0;
-
-        for (BeamItem item : items) {
-            final int idx = items.indexOf(item);
-            final Area coreArea = item.getCoreArea();
-            glyph.addAttachment("c" + idx, coreArea);
-
-            final AreaMask coreMask = new AreaMask(coreArea);
-            final WrappedInteger core = new WrappedInteger(0);
-            final int coreCount = coreMask.fore(core, pixelFilter);
-
-            sumCoreCount += coreCount;
-            sumCoreFore += core.value;
-
-            // Build belt path
-            final int dx = 5; // Horizontal margin
-            // Test is not relevant for gutter between 2 aggregated beams
-
-            final int topDy = (idx == 0) ? 2 : 0;
-            final int bottomDy = (idx == (items.size() - 1)) ? 2 : 0;
-            Area beltArea = item.getBeltArea(
-                    coreArea,
-                    dx,
-                    topDy,
-                    bottomDy);
-            glyph.addAttachment("b" + idx, beltArea);
-
-            final AreaMask beltMask = new AreaMask(beltArea);
-            final WrappedInteger belt = new WrappedInteger(0);
-            final int beltCount = beltMask.fore(belt, pixelFilter);
-
-            sumBeltCount += beltCount;
-            sumBeltFore += belt.value;
-        }
-
-        meanCoreRatio.value = (double) sumCoreFore / sumCoreCount;
-        meanBeltRatio.value = (double) sumBeltFore / sumBeltCount;
-    }
+//    //------------//
+//    // checkMasks //
+//    //------------//
+//    public void checkMasks (Wrapper<Double> meanCoreRatio,
+//                            Wrapper<Double> meanBeltRatio)
+//    {
+//        final PixelFilter pixelFilter = system.getSheet()
+//                .getPicture()
+//                .getBuffer(
+//                        Picture.BufferKey.STAFF_FREE);
+//        int sumCoreCount = 0;
+//        int sumCoreFore = 0;
+//        int sumBeltCount = 0;
+//        int sumBeltFore = 0;
+//
+//        if (glyph.isVip()) {
+//            logger.info("VIP checkMasks for {}", glyph);
+//        }
+//
+//        for (BeamItem item : items) {
+//            final int idx = items.indexOf(item);
+//            final Area coreArea = item.getCoreArea();
+//            glyph.addAttachment("c" + idx, coreArea);
+//
+//            final AreaMask coreMask = new AreaMask(coreArea);
+//            final WrappedInteger core = new WrappedInteger(0);
+//            final int coreCount = coreMask.fore(core, pixelFilter);
+//
+//            sumCoreCount += coreCount;
+//            sumCoreFore += core.value;
+//
+//            // Build belt path
+//            final int dx = 5; // Horizontal margin
+//            // Test is not relevant for gutter between 2 aggregated beams
+//
+//            final int topDy = (idx == 0) ? 2 : 0;
+//            final int bottomDy = (idx == (items.size() - 1)) ? 2 : 0;
+//            Area beltArea = item.getBeltArea(
+//                    coreArea,
+//                    dx,
+//                    topDy,
+//                    bottomDy);
+//            glyph.addAttachment("b" + idx, beltArea);
+//
+//            final AreaMask beltMask = new AreaMask(beltArea);
+//            final WrappedInteger belt = new WrappedInteger(0);
+//            final int beltCount = beltMask.fore(belt, pixelFilter);
+//
+//            sumBeltCount += beltCount;
+//            sumBeltFore += belt.value;
+//        }
+//
+//        meanCoreRatio.value = (double) sumCoreFore / sumCoreCount;
+//        meanBeltRatio.value = (double) sumBeltFore / sumBeltCount;
+//    }
 
     //---------------//
     // compareSlopes //

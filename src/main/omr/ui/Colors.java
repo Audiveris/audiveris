@@ -57,6 +57,9 @@ public class Colors
     /** Glyph area (for XORMode) */
     public static final Color GLYPH_AREA_XOR = Color.darkGray;
 
+    /** Current glyph */
+    public static final Color GLYPH_CURRENT = new Color(255, 0, 255, alpha);
+
     /** Horizontal stuff */
     public static final Color GRID_HORIZONTAL = new Color(255, 230, 230);
 

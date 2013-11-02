@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.graph;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
@@ -34,10 +35,12 @@ public interface VertexView
     /**
      * Render the vertex
      *
-     * @param g           the graphics context
-     * @param drawBorders should vertex borders be drawn
+     * @param g             the graphics context
+     * @param drawBorders   should vertex borders be drawn
+     * @param specificColor specific color
      * @return true if actually rendered, i.e. is displayed
      */
     boolean render (Graphics g,
-                    boolean drawBorders);
+                    boolean drawBorders,
+                    Color specificColor);
 }

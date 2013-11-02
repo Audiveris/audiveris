@@ -110,7 +110,7 @@ public class FilamentAlignment
     /**
      * Report the average radius of curvature along all segments of
      * the curve.
-     * This is not a global radius, but rather a way to mesure how straight
+     * This is not a global radius, but rather a way to measure how straight
      * the curve is.
      *
      * @return the average of radius measurements along all curve segments
@@ -148,7 +148,7 @@ public class FilamentAlignment
         if (curvatures.getCardinality() > 0) {
             return 1 / curvatures.getMeanValue();
         } else {
-            return 0;
+            return Double.POSITIVE_INFINITY;
         }
     }
 

@@ -61,7 +61,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
 import omr.glyph.GlyphLayer;
 
 /**
- * Class {@code BasicSection} is a basic implementation of {@link 
+ * Class {@code BasicSection} is a basic implementation of {@link
  * Section}.
  *
  * @author Hervé Bitteur
@@ -1042,15 +1042,6 @@ public class BasicSection
         return getPolygon().intersects(rect);
     }
 
-    //--------------//
-    // isAggregable //
-    //--------------//
-    @Override
-    public boolean isAggregable ()
-    {
-        return !isKnown();
-    }
-
     //-------------//
     // isColorized //
     //-------------//
@@ -1084,8 +1075,7 @@ public class BasicSection
     @Override
     public boolean isKnown ()
     {
-        return (glyph != null)
-               && (glyph.isSuccessful() || glyph.isWellKnown());
+        return (glyph != null) && glyph.isWellKnown();
     }
 
     //-------------//
@@ -1212,32 +1202,37 @@ public class BasicSection
     //--------//
     @Override
     public boolean render (Graphics g,
-                           boolean drawBorders)
+                           boolean drawBorders,
+                           Color specificColor)
     {
         Rectangle clip = g.getClipBounds();
         Rectangle rect = getBounds();
         Color oldColor = g.getColor();
 
         if (clip.intersects(rect)) {
-            // Default section color
-            Color color = isVertical() ? Colors.GRID_VERTICAL
-                    : Colors.GRID_HORIZONTAL;
+            if (specificColor != null) {
+                g.setColor(specificColor);
+            } else {
+                // Default section color
+                Color color = isVertical() ? Colors.GRID_VERTICAL
+                        : Colors.GRID_HORIZONTAL;
 
-            // Use color defined for section glyph shape, if any
-            Glyph glyph = getGlyph();
+                // Use color defined for section glyph shape, if any
+                Glyph glyph = getGlyph();
 
-            if (glyph != null) {
-                Shape shape = glyph.getShape();
+                if (glyph != null) {
+                    Shape shape = glyph.getShape();
 
-                if (shape != null) {
-                    color = shape.getColor();
+                    if (shape != null) {
+                        color = shape.getColor();
+                    }
                 }
+
+                g.setColor(color);
             }
 
-            g.setColor(color);
-
             // Fill polygon with proper color
-            Polygon polygon = getPolygon();
+            getPolygon();
             g.fillPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
 
             // Draw polygon borders if so desired
@@ -1512,7 +1507,6 @@ public class BasicSection
         //
         //        sb.append(" Wt=")
         //          .append(weight);
-
         //        sb.append(" lv=")
         //          .append(getLevel());
         //        sb.append(" fW=")

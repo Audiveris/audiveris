@@ -234,8 +234,8 @@ public class BasicInter
     {
         StringBuilder sb = new StringBuilder();
 
-        if (getGlyph() != null) {
-            sb.append(glyph.idString());
+        if (glyph != null) {
+            sb.append("g#").append(glyph.getId());
         }
 
         if (impacts != null) {

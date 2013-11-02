@@ -14,20 +14,20 @@ package omr.check;
 import omr.util.Vip;
 
 /**
- * Interface {@code Checkable} describes a class that may be checked and
- * then assigned a result for that check.
+ * Interface {@code Checkable} describes a class of objects that can
+ * be checked, generally via a suite of individual checks.
  *
  * @author Hervé Bitteur
  */
 public interface Checkable
-    extends Vip
+        extends Vip
 {
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Store the check result directly into the checkable entity.
+     * Store the check failure directly into the checkable entity.
      *
-     * @param result the result to be stored
+     * @param failure the failure to be stored
      */
-    void setResult (Result result);
+    void addFailure (Failure failure);
 }

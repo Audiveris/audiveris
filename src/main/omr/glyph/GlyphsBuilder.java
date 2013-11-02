@@ -149,6 +149,7 @@ public class GlyphsBuilder
      * @param nest     the nest to host glyph instances, if any
      * @param layer    the precise layer, if any
      * @param scale    the sheet scale
+     * @return the list of glyph instances created
      */
     public static List<Glyph> retrieveGlyphs (Collection<Section> sections,
                                               Nest nest,

@@ -12,7 +12,6 @@
 package omr.step;
 
 import omr.image.Picture;
-import omr.image.PixelBuffer;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -56,6 +55,7 @@ public class BinaryStep
                       Sheet sheet)
             throws StepException
     {
+        // Trigger the binarization, and cache the resulting buffer
         sheet.getPicture()
                 .getBuffer(Picture.BufferKey.BINARY);
     }

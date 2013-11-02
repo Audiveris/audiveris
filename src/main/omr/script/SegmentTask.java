@@ -26,25 +26,18 @@ import java.util.Collection;
 public class SegmentTask
         extends GlyphUpdateTask
 {
-    //~ Instance fields --------------------------------------------------------
-
-    /** Are we looking for short verticals? */
-    private final boolean isShort;
-
     //~ Constructors -----------------------------------------------------------
+
     /**
      * Creates a new SegmentTask object.
      *
-     * @param sheet   the sheet impacted
-     * @param isShort true if we are looking for short verticals
-     * @param glyphs  the collection of glyphs to look up
+     * @param sheet  the sheet impacted
+     * @param glyphs the collection of glyphs to look up
      */
     public SegmentTask (Sheet sheet,
-                        boolean isShort,
                         Collection<Glyph> glyphs)
     {
         super(sheet, glyphs);
-        this.isShort = isShort;
     }
 
     //-------------//
@@ -53,7 +46,6 @@ public class SegmentTask
     /** No-arg constructor for JAXB only */
     private SegmentTask ()
     {
-        isShort = false; // Dummy value
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -66,7 +58,7 @@ public class SegmentTask
     {
         sheet.getSymbolsController()
                 .getModel()
-                .segmentGlyphs(getInitialGlyphs(), isShort);
+                .segmentGlyphs(getInitialGlyphs());
     }
 
     //-----------------//
@@ -77,11 +69,6 @@ public class SegmentTask
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
         sb.append(" segment");
-
-        if (isShort) {
-            sb.append(" ")
-                    .append("short");
-        }
 
         return sb.toString();
     }

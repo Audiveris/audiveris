@@ -56,9 +56,8 @@
             description="Modify token of every source file">
 	
         <replace encoding="utf8" dir="${basedir}/src">
-            <replacetoken>; import</replacetoken>
-            <replacevalue>;
-                import</replacevalue>
+            <replacetoken>@literal </replacetoken>
+            <replacevalue>@code </replacevalue>
             <include name="**/*.java"/>
         </replace>
 	

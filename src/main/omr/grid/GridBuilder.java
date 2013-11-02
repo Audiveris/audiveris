@@ -38,7 +38,8 @@ import java.util.Collections;
  * picture, based on the retrieval of horizontal staff lines and of
  * vertical bar lines.
  *
- * <p>The actual processing is delegated to 3 companions:<ul>
+ * <p>
+ * The actual processing is delegated to 3 companions:<ul>
  * <li>{@link LinesRetriever} for retrieving all horizontal staff lines.</li>
  * <li>{@link BarsRetriever} for retrieving main vertical bar lines.</li>
  * <li>{@link TargetBuilder} for building the target grid.</li>
@@ -93,6 +94,8 @@ public class GridBuilder
     //-----------//
     /**
      * Compute and display the system frames of the sheet picture.
+     *
+     * @throws StepException
      */
     public void buildInfo ()
             throws StepException

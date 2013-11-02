@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                                R e s u l t                                 //
+//                                F a i l u r e                               //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -11,50 +11,47 @@
 // </editor-fold>
 package omr.check;
 
-
 /**
- * Class {@code Result} is the root of all result information stored while
- * processing processing checks.
+ * Class {@code Failure} is the root of all results that store a
+ * failure.
  *
  * @author Hervé Bitteur
  */
-public abstract class Result
+public class Failure
 {
     //~ Instance fields --------------------------------------------------------
 
     /**
-     * A readable comment about the result.
+     * A readable comment about the failure.
      */
     public final String comment;
 
     //~ Constructors -----------------------------------------------------------
-
-    //--------//
-    // Result //
-    //--------//
+    //---------//
+    // Failure //
+    //---------//
     /**
-     * Creates a new Result object.
+     * Create a new Failure object.
      *
-     * @param comment A description of this result
+     * @param comment A comment that describe the failure reason
      */
-    public Result (String comment)
+    public Failure (String comment)
     {
         this.comment = comment;
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------//
     // toString //
     //----------//
     /**
-     * Report a description of this result
+     * Report a readable string about this failure instance
      *
-     * @return A descriptive string
+     * @return a descriptive string
      */
     @Override
     public String toString ()
     {
-        return comment;
+        return "failure:" + comment;
     }
 }
