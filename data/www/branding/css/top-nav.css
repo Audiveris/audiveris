@@ -12,7 +12,6 @@ header {
     max-height: 15%;
     float: left;
     width: 100%;
-    position: static;
 }
 header figure {
     border-bottom: 1px blue solid;
