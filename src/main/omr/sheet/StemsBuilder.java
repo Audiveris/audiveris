@@ -20,9 +20,11 @@ import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphsBuilder;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
+import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
+import omr.lag.Sections;
 
 import omr.math.GeoOrder;
 import omr.math.GeoUtil;
@@ -652,6 +654,10 @@ public class StemsBuilder
              */
             public void link ()
             {
+                if (head.isVip()) {
+                    logger.info("VIP link {} {}", head, corner);
+                }
+
                 // Compute target end of stem
                 Point2D targetPt;
 
@@ -1441,8 +1447,7 @@ public class StemsBuilder
              * TODO: Add distance test WRT theoretical line?
              *
              * @param fatHeadSection (output) a very specific section which is
-             *                       part
-             *                       of the head.
+             *                       part of the head.
              * @return the collection of chunks found
              */
             private List<Glyph> lookupChunks (Wrapper<Section> fatHeadSection)
@@ -1457,13 +1462,43 @@ public class StemsBuilder
                         GlyphLayer.DEFAULT,
                         scale);
 
+                // Remove useless glyphs and put wide glyphs apart
+                List<Glyph> wides = new ArrayList<Glyph>();
+
                 for (Iterator<Glyph> it = chunks.iterator(); it.hasNext();) {
                     Glyph chunk = it.next();
                     Rectangle chunkBox = chunk.getBounds();
 
-                    if ((chunkBox.width > params.maxStemThickness)
-                        || (getContrib(chunkBox) == 0)) {
+                    if (getContrib(chunkBox) == 0) {
                         it.remove();
+                    } else {
+                        int meanWidth = (int) Math.rint(
+                                chunk.getMeanThickness(Orientation.VERTICAL));
+
+                        if (meanWidth > params.maxStemThickness) {
+                            wides.add(chunk);
+                            it.remove();
+                        }
+                    }
+                }
+
+                // For too wide chunks we just keep the biggest section
+                if (!wides.isEmpty()) {
+                    int interline = scale.getInterline();
+                    GlyphLayer layer = GlyphLayer.DEFAULT;
+
+                    for (Glyph wide : wides) {
+                        List<Section> members = new ArrayList<Section>(
+                                wide.getMembers());
+                        Collections.sort(
+                                members,
+                                Section.reverseWeightComparator);
+
+                        Glyph glyph = new BasicGlyph(interline, layer);
+                        glyph.addSection(
+                                members.get(0),
+                                Glyph.Linking.NO_LINK_BACK);
+                        chunks.add(glyph);
                     }
                 }
 

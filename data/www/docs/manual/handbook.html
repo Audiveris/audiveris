@@ -445,7 +445,7 @@
                     <p>
                         Enter your password and proceed.
                     </p>                                        
-                    
+
                     <br class="clear"/>
                     <img class="side" title="Installation complete" 
                          src="../images/installer-complete.png" />
@@ -509,6 +509,36 @@
                         <li>The final Audiveris application window follows
                             immediately.</li>
                     </ol>
+
+                    <div class="indent warning">
+                        <p>
+                            <b>Check the shortcut:</b>
+                            For some unknown reason, the shortcut installed by
+                            JNLP may point to a 32-bit version of Java, this has
+                            been observed on Windows when both 32-bit and 64-bit
+                            Java environments are installed.
+                        </p>
+                        <p>This will result in messages like  "<i>Error while loading 
+                                library jniTessBridge</i>" (in the log window) or
+                            "<i>Tesseract OCR is not installed properly</i>" 
+                            (in a popup).
+                            They signal that (64-bit) DLLs cannot be loaded by a
+                            (32-bit) JVM.
+                        </p>
+                        <p>
+                            To fix this, modify the shortcut as follows.
+                            Use a right-click on the icon, to select Properties then
+                            Shortcut. The "target" field points to a javaws.exe 
+                            program.
+                            If the field begins with
+                            <code>C:\Windows\SysWOW64\javaws.exe</code> then it is
+                            pointing to 32-bit Java.
+                            So modify it so that it points to 64-bit Java, using 
+                            either <code>javaws.exe</code> alone if the 64-bit Java 
+                            appears first in the path, or an explicit link such as
+                            <code>C:\Program Files\Java\jre7\bin\javaws.exe</code>.
+                        </p>
+                    </div>
 
                     <img class="right" title="Application update" 
                          src="../images/installer-update.png" />
@@ -1842,7 +1872,7 @@
                         something like:
                     </p>
 
-                            <pre id="appli-snippet" class="snippet">
+                    <pre id="appli-snippet" class="snippet">
 [...]
 &lt;application-desc main-class="Audiveris"&gt;
     <b>&lt;argument&gt;-batch&lt;/argument&gt;
@@ -3942,7 +3972,7 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
         <!-- Needed initializations for expansion mechanism -->
         <script src="../../branding/js/expansion.js"></script> 
         <script>
-            collapseAll();
+                            collapseAll();
         </script>
     </body>
 </html>
