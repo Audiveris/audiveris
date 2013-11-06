@@ -90,7 +90,7 @@ public class BeamStemRelation
     @Override
     public Double getRatio ()
     {
-        return 1.0 + (20.0 * grade);
+        return 1 + (20 * grade);
     }
 
     /**

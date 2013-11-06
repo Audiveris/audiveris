@@ -22,14 +22,10 @@ import java.awt.Rectangle;
  * @author Hervé Bitteur
  */
 public class VoidHeadInter
-        extends BasicInter
+        extends AbstractNoteInter
 {
-    //~ Instance fields --------------------------------------------------------
-
-    /** Pitch step. */
-    private final int pitch;
-
     //~ Constructors -----------------------------------------------------------
+
     //---------------//
     // VoidHeadInter //
     //---------------//
@@ -44,28 +40,6 @@ public class VoidHeadInter
                           double grade,
                           int pitch)
     {
-        super(box, Shape.NOTEHEAD_VOID, grade);
-        this.pitch = pitch;
-    }
-
-    //~ Methods ----------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
-    //----------//
-    // getPitch //
-    //----------//
-    /**
-     * @return the pitch
-     */
-    public int getPitch ()
-    {
-        return pitch;
+        super(box, Shape.NOTEHEAD_VOID, grade, pitch);
     }
 }

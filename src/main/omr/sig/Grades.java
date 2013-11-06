@@ -21,6 +21,9 @@ public class Grades
 {
     //~ Methods ----------------------------------------------------------------
 
+    //-------//
+    // clamp //
+    //-------//
     /**
      * Constraint the provided value to lie within [0..1] range.
      *
@@ -40,18 +43,44 @@ public class Grades
         return value;
     }
 
+    //------------//
+    // contextual //
+    //------------//
+    /**
+     * Compute the contextual probability of a target when supported
+     * by a source with 'ratio' value.
+     *
+     * @param target the intrinsic grade of the target
+     * @param source the intrinsic grade of a supporting source
+     * @param ratio  the ratio of supporting source
+     * @return the resulting contextual probability for target
+     */
     public static double contextual (double target,
-                                     double ratio,
-                                     double source)
+                                     double source,
+                                     double ratio)
     {
         return (source * support(target, ratio)) + ((1 - source) * target);
     }
 
+    //------------//
+    // contextual //
+    //------------//
+    /**
+     * Compute the contextual probability of a target when supported
+     * by two sources.
+     *
+     * @param target  the intrinsic grade of the target
+     * @param source1 intrinsic grade of source #1
+     * @param ratio1  ratio of supporting source #1
+     * @param source2 intrinsic grade of source #2
+     * @param ratio2  ratio of supporting source #2
+     * @return the resulting contextual probability for target
+     */
     public static double contextual (double target,
-                                     double ratio1,
                                      double source1,
-                                     double ratio2,
-                                     double source2)
+                                     double ratio1,
+                                     double source2,
+                                     double ratio2)
     {
         return (source1 * source2 * support(target, ratio1 * ratio2))
                + ((1 - source1) * source2 * support(target, ratio2))
@@ -59,16 +88,29 @@ public class Grades
                + ((1 - source1) * (1 - source2) * target);
     }
 
+    //------------//
+    // contextual //
+    //------------//
+    /**
+     * General computation of contextual probability for a target when
+     * supported by an array of sources.
+     *
+     * @param target  the intrinsic grade of the target
+     * @param sources the array of (intrinsic grades of the) supporting sources
+     * @param ratios  the array of ratios of supporting sources, parallel to
+     *                sources array
+     * @return the resulting contextual probability for target
+     */
     public static double contextual (double target,
-                                     double[] ratios,
-                                     double[] sources)
+                                     double[] sources,
+                                     double[] ratios)
     {
         assert ratios != null : "Null ratios array";
         assert sources != null : "Null sources array";
         assert ratios.length == sources.length : "Arrays of different lengths";
 
         final int n = sources.length; // Nb of supporting sources
-        final int combNb = (int) Math.pow(2, n);
+        final int combNb = (int) Math.pow(2, n); // Nb of combinations
         final boolean[] trueFalse = new boolean[]{true, false};
 
         // Define all combinations
@@ -129,8 +171,19 @@ public class Grades
         return total;
     }
 
-    public static double support (double target,
-                                  double ratio)
+    //---------//
+    // support //
+    //---------//
+    /**
+     * Compute the actual support brought on a interpretation with
+     * 'target' grade
+     *
+     * @param target the intrinsic grade of target
+     * @param ratio  the supporting ratio of a source
+     * @return the resulting support
+     */
+    private static double support (double target,
+                                   double ratio)
     {
         double support = (ratio * target) / (1 + ((ratio - 1) * target));
 
@@ -141,6 +194,7 @@ public class Grades
         //                support);
         return support;
     }
+
     //    private static void dump (boolean[] vector)
     //    {
     //        for (boolean b : vector) {

@@ -12,8 +12,8 @@
 package omr.sig;
 
 /**
- * Interface {@literal GradeImpacts} defines data that impact a resulting
- * grade value.
+ * Interface {@code GradeImpacts} defines data that impact a 
+ * resulting grade value.
  *
  * @author Hervé Bitteur
  */

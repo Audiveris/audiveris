@@ -24,12 +24,12 @@ import omr.selection.UserEvent;
 import omr.sheet.Sheet;
 
 import omr.sig.Inter;
+import omr.sig.SIGraph;
 import omr.sig.SigManager;
 
 import omr.ui.Board;
 import omr.ui.PixelCount;
 import omr.ui.field.LCheckBox;
-import omr.ui.field.LDoubleField;
 import omr.ui.field.LTextField;
 import omr.ui.field.SpinnerUtil;
 import static omr.ui.field.SpinnerUtil.NO_VALUE;
@@ -93,17 +93,15 @@ public class InterBoard
     /** Input / Output : spinner of all inter id's. */
     private JSpinner idSpinner;
 
-    /** Output : grade. */
-    private final LDoubleField grade = new LDoubleField(
-            false,
+    /** Output : grade (intrinsic/contextual). */
+    private final LTextField grade = new LTextField(
             "Grade",
-            "Probability",
-            "%.2f");
+            "Intrinsic / Contextual");
 
     /** Input / Output : VIP flag. */
     private final LCheckBox vip = new LCheckBox(
             "Vip",
-            "Is this glyph flagged as VIP?");
+            "Is this inter flagged as VIP?");
 
     /** Output : shape. */
     private final LTextField shapeField = new LTextField(
@@ -169,6 +167,13 @@ public class InterBoard
                         if ((interList != null) && !interList.isEmpty()) {
                             Inter inter = interList.get(interList.size() - 1);
                             logger.info(inter.dumpOf());
+
+                            // Details of contextual grade
+                            SIGraph sig = inter.getSig();
+
+                            if (sig != null) {
+                                sig.computeContextualGrade(inter, true);
+                            }
                         }
                     }
                 });
@@ -300,7 +305,7 @@ public class InterBoard
         // Model for idSpinner
         idSpinner = makeInterSpinner(sheet.getSigManager());
         idSpinner.setName("idSpinner");
-        idSpinner.setToolTipText("General spinner for any glyph id");
+        idSpinner.setToolTipText("Spinner for any interpretation id");
 
         // Layout
         int r = 1; // --------------------------------
@@ -426,7 +431,14 @@ public class InterBoard
             vip.getField()
                     .setSelected(inter.isVip());
 
-            grade.setValue(inter.getGrade());
+            Double cp = inter.getContextualGrade();
+
+            if (cp != null) {
+                grade.setText(String.format("%.2f/%.2f", inter.getGrade(), cp));
+            } else {
+                grade.setText(String.format("%.2f", inter.getGrade()));
+            }
+
             details.setText(
                     (inter.getImpacts() == null) ? "" : inter.getImpacts().toString());
             deassignAction.putValue(

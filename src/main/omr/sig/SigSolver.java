@@ -25,6 +25,7 @@ import omr.sheet.SystemInfo;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
+import omr.util.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,9 +35,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 
@@ -78,6 +82,107 @@ public class SigSolver
     }
 
     //~ Methods ----------------------------------------------------------------
+    //---------------//
+    // contextualize //
+    //---------------//
+    /**
+     * Compute contextual grades of target interpretations based on
+     * their supporting sources.
+     */
+    public void contextualize ()
+    {
+        for (Inter inter : sig.vertexSet()) {
+            sig.computeContextualGrade(inter, false);
+        }
+    }
+
+    //--------//
+    // reduce //
+    //--------//
+    /**
+     * Reduce conflicting interpretations.
+     *
+     * @return the number of inters deleted
+     */
+    public int reduce ()
+    {
+        int reductions = 0;
+
+        // Browse stems. TODO: browse the other classes of inter as well
+        final List<Inter> stems = sig.inters(Shape.STEM);
+
+        while (!stems.isEmpty()) {
+            for (Iterator<Inter> it = stems.iterator(); it.hasNext();) {
+                StemInter stem = (StemInter) it.next();
+                it.remove();
+
+                boolean logging = stem.isVip();
+
+                // Do we have conflicts with other inters?
+                Set<Relation> exclusions = sig.getExclusions(stem);
+
+                if (exclusions.isEmpty()) {
+                    continue;
+                }
+
+                // Retrieve the set of conflicting inters 
+                //TODO: (just stems for the time being)
+                Set<Inter> concurrents = new LinkedHashSet<Inter>();
+
+                for (Relation rel : exclusions) {
+                    Inter source = sig.getEdgeSource(rel);
+
+                    if (source instanceof StemInter) {
+                        concurrents.add(source);
+                    }
+
+                    Inter target = sig.getEdgeTarget(rel);
+
+                    if (target instanceof StemInter) {
+                        concurrents.add(target);
+                    }
+                }
+
+                double bestCp = 0;
+                Inter bestInter = null;
+
+                for (Inter inter : concurrents) {
+                    double cp = inter.getContextualGrade();
+
+                    if (cp > bestCp) {
+                        bestCp = cp;
+                        bestInter = inter;
+                    }
+                }
+
+                if (logging) {
+                    logger.info(
+                            "Best {} cp:{}\n",
+                            bestInter,
+                            String.format("%.2f", bestCp));
+                }
+
+                stems.removeAll(concurrents);
+
+                // Purge SIG
+                concurrents.remove(bestInter);
+
+                for (Inter inter : concurrents) {
+                    if (inter.isVip()) {
+                        logger.info("{} reduced by {}", inter, stem);
+                    }
+
+                    sig.removeVertex(inter);
+                    reductions++;
+                }
+
+                break;
+            }
+        }
+
+        return reductions;
+    }
+
     //-------//
     // solve //
     //-------//
@@ -86,29 +191,61 @@ public class SigSolver
      */
     public void solve ()
     {
-        logger.debug("S#{} solving sig ...", system.getId());
+        final boolean logging = false;
+
+        if (logging) {
+            logger.info("S#{} solving sig ...", system.getId());
+        }
+
+        // General overlap checks
+        flagOverlaps();
 
         /** Count of modifications done in current iteration. */
         int modifs;
 
+        /** Count of reductions performed. */
+        int reductions;
+
+        /** Count of exclusions performed. */
+        int exclusions;
+
         do {
-            modifs = 0;
-            // Detect lack of mandatory support relation for certain inters
-            modifs += checkHeads();
-            modifs += checkBeams();
-            modifs += checkHooks();
-            modifs += checkStems();
-            modifs += checkLedgers();
-            logger.debug("S#{} modifs: {}", system.getId(), modifs);
-        } while (modifs > 0);
+            reductions = 0;
+            exclusions = 0;
+
+            do {
+                modifs = 0;
+                // Detect lack of mandatory support relation for certain inters
+                modifs += checkHeads();
+                modifs += checkBeams();
+                modifs += checkHooks();
+                modifs += checkStems();
+                modifs += checkLedgers();
+
+                if (logging) {
+                    logger.info("S#{} modifs: {}", system.getId(), modifs);
+                }
+            } while (modifs > 0);
+
+            contextualize();
+            reductions = reduce();
+
+            if (logging) {
+                logger.info("S#{} reductions: {}", system.getId(), reductions);
+            }
+
+            // Remaining exclusions
+            exclusions = lookupExclusions();
+
+            if (logging) {
+                logger.info("S#{} exclusions: {}", system.getId(), exclusions);
+            }
+        } while ((reductions > 0) || (exclusions > 0));
     }
 
     //------------------//
     // beamHasBothStems //
     //------------------//
-    /**
-     * Check if a beam has a stem at both ends.
-     */
     private boolean beamHasBothStems (FullBeamInter beam)
     {
         boolean hasLeft = false;
@@ -134,37 +271,6 @@ public class SigSolver
         return hasLeft && hasRight;
     }
 
-    //-------------//
-    // hookHasStem //
-    //-------------//
-    /**
-     * Check if a beam hook has a stem.
-     */
-    private boolean hookHasStem (BeamHookInter hook)
-    {
-        boolean hasLeft = false;
-        boolean hasRight = false;
-
-        if (hook.isVip()) {
-            logger.info("VIP hookHasStem for {}", hook);
-        }
-
-        for (Relation rel : sig.edgesOf(hook)) {
-            if (rel instanceof BeamStemRelation) {
-                BeamStemRelation bsRel = (BeamStemRelation) rel;
-                BeamPortion portion = bsRel.getBeamPortion();
-
-                if (portion == BeamPortion.LEFT) {
-                    hasLeft = true;
-                } else if (portion == BeamPortion.RIGHT) {
-                    hasRight = true;
-                }
-            }
-        }
-
-        return hasLeft || hasRight;
-    }
-
     //------------//
     // checkBeams //
     //------------//
@@ -187,36 +293,6 @@ public class SigSolver
                 }
 
                 sig.removeVertex(beam);
-                it.remove();
-                modifs++;
-            }
-        }
-
-        return modifs;
-    }
-
-    //------------//
-    // checkHooks //
-    //------------//
-    /**
-     * Perform checks on beam hooks.
-     *
-     * @return the count of modifications done
-     */
-    private int checkHooks ()
-    {
-        int modifs = 0;
-        List<Inter> hooks = sig.inters(BeamHookInter.class);
-
-        for (Iterator<Inter> it = hooks.iterator(); it.hasNext();) {
-            BeamHookInter hook = (BeamHookInter) it.next();
-
-            if (!hookHasStem(hook)) {
-                if (hook.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Deleting beam hook lacking stem {}", hook);
-                }
-
-                sig.removeVertex(hook);
                 it.remove();
                 modifs++;
             }
@@ -332,6 +408,40 @@ public class SigSolver
         return modifs;
     }
 
+    //------------//
+    // checkHooks //
+    //------------//
+    /**
+     * Perform checks on beam hooks.
+     *
+     * @return the count of modifications done
+     */
+    private int checkHooks ()
+    {
+        int modifs = 0;
+        List<Inter> hooks = sig.inters(BeamHookInter.class);
+
+        for (Iterator<Inter> it = hooks.iterator(); it.hasNext();) {
+            BeamHookInter hook = (BeamHookInter) it.next();
+
+            if (!hookHasStem(hook)) {
+                if (hook.isVip() || logger.isDebugEnabled()) {
+                    logger.info("Deleting beam hook lacking stem {}", hook);
+                }
+
+                sig.removeVertex(hook);
+                it.remove();
+                modifs++;
+
+                continue;
+            }
+
+            //TODO: Check a hook has a beam nearby on the same stem
+        }
+
+        return modifs;
+    }
+
     //--------------//
     // checkLedgers //
     //--------------//
@@ -431,6 +541,67 @@ public class SigSolver
         return modifs;
     }
 
+    //--------------//
+    // flagOverlaps //
+    //--------------//
+    /**
+     * (Prototype).
+     */
+    private void flagOverlaps ()
+    {
+        // Take all inters except ledgers (and perhaps others, TODO)
+        List<Inter> inters = sig.inters(
+                new Predicate<Inter>()
+                {
+                    @Override
+                    public boolean check (Inter inter)
+                    {
+                        return !(inter instanceof LedgerInter);
+                    }
+                });
+
+        Collections.sort(inters, Inter.byAbscissa);
+
+        for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
+            Inter left = inters.get(i);
+            Rectangle leftBox = left.getBounds();
+            double xMax = leftBox.getMaxX();
+
+            for (Inter right : inters.subList(i + 1, inters.size())) {
+                // Overlap test beam/beam doesn't work (and is useless in fact)
+                if (left instanceof AbstractBeamInter
+                    && right instanceof AbstractBeamInter) {
+                    continue;
+                }
+
+                Rectangle rightBox = right.getBounds();
+
+                if (leftBox.intersects(rightBox)) {
+                    // Have a more precise look
+                    if (left.overlaps(right)) {
+                        // If there is no relation between left & right
+                        // insert an exclusion
+                        Set<Relation> rels1 = sig.getAllEdges(left, right);
+                        Set<Relation> rels2 = sig.getAllEdges(right, left);
+
+                        if (rels1.isEmpty() && rels2.isEmpty()) {
+                            if (left.isVip() || right.isVip()) {
+                                logger.info("Overlap {} & {}", left, right);
+                            }
+
+                            sig.insertExclusion(
+                                    left,
+                                    right,
+                                    Exclusion.Cause.OVERLAP);
+                        }
+                    }
+                } else if (rightBox.x > xMax) {
+                    break;
+                }
+            }
+        }
+    }
+
     //-------------//
     // headHasStem //
     //-------------//
@@ -451,6 +622,37 @@ public class SigSolver
         return false;
     }
 
+    //-------------//
+    // hookHasStem //
+    //-------------//
+    /**
+     * Check if a beam hook has a stem.
+     */
+    private boolean hookHasStem (BeamHookInter hook)
+    {
+        boolean hasLeft = false;
+        boolean hasRight = false;
+
+        if (hook.isVip()) {
+            logger.info("VIP hookHasStem for {}", hook);
+        }
+
+        for (Relation rel : sig.edgesOf(hook)) {
+            if (rel instanceof BeamStemRelation) {
+                BeamStemRelation bsRel = (BeamStemRelation) rel;
+                BeamPortion portion = bsRel.getBeamPortion();
+
+                if (portion == BeamPortion.LEFT) {
+                    hasLeft = true;
+                } else if (portion == BeamPortion.RIGHT) {
+                    hasRight = true;
+                }
+            }
+        }
+
+        return hasLeft || hasRight;
+    }
+
     //-----------------------//
     // ledgerHasNoteOrLedger //
     //-----------------------//
@@ -469,7 +671,11 @@ public class SigSolver
                                            LedgerInter ledger,
                                            List<Inter> allHeads)
     {
-        Rectangle ledgerBox = ledger.getBounds();
+        Rectangle ledgerBox = new Rectangle(ledger.getBounds());
+        int interline = system.getSheet()
+                .getScale()
+                .getInterline();
+        ledgerBox.grow(0, interline); // Very height, but that's OK
 
         // Check for another ledger on next line
         int nextIndex = index + Integer.signum(index);
@@ -533,6 +739,40 @@ public class SigSolver
         }
 
         return ledgers;
+    }
+
+    //------------------//
+    // lookupExclusions //
+    //------------------//
+    private int lookupExclusions ()
+    {
+        // Deletions
+        Set<Inter> toRemove = new HashSet<Inter>();
+
+        for (Relation rel : sig.edgeSet()) {
+            if (rel instanceof Exclusion) {
+                final Inter source = sig.getEdgeSource(rel);
+                final double scp = source.getContextualGrade();
+                final Inter target = sig.getEdgeTarget(rel);
+                final double tcp = target.getContextualGrade();
+                Inter weaker = (scp < tcp) ? source : target;
+
+                if (weaker.isVip()) {
+                    logger.info(
+                            "Remaining {} deleting weaker {}",
+                            rel.toLongString(sig),
+                            weaker);
+                }
+
+                toRemove.add(weaker);
+            }
+        }
+
+        for (Inter inter : toRemove) {
+            sig.removeVertex(inter);
+        }
+
+        return toRemove.size();
     }
 
     //---------------//

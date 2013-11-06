@@ -48,6 +48,7 @@ import omr.lag.SectionsBuilder;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
+import omr.sig.AbstractBeamInter;
 import omr.sig.BlackHeadInter;
 import omr.sig.Grades;
 import omr.sig.Inter;
@@ -68,10 +69,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import omr.sig.BeamInter;
 
 /**
- * Class {@literal BlackNotesBuilder} is in charge, at system level, of
+ * Class {@code BlackNotesBuilder} is in charge, at system level, of
  * retrieving the possible interpretations of black heads.
  * <p>
  * The main difficulty is the need to split large spots that were created during
@@ -475,18 +475,18 @@ public class BlackNotesBuilder
                     @Override
                     public boolean check (Glyph glyph)
                     {
-                        return isSuitable(glyph);
+                        return isSuitableHeadSpot(glyph);
                     }
                 });
     }
 
-    //------------//
-    // isSuitable //
-    //------------//
-    private boolean isSuitable (Glyph glyph)
+    //--------------------//
+    // isSuitableHeadSpot //
+    //--------------------//
+    private boolean isSuitableHeadSpot (Glyph glyph)
     {
         if (glyph.isVip()) {
-            logger.info("VIP isSuitable for {}", glyph);
+            logger.info("VIP isSuitableHeadSpot() for {}", glyph);
         }
 
         // Only SPOT-shaped glyphs
@@ -524,12 +524,13 @@ public class BlackNotesBuilder
         }
 
         // Discard spots with good beam (or beam hook) interpretation
+        //TODO: this is dangerous...
         Set<Inter> inters = glyph.getInterpretations();
 
         if (!inters.isEmpty()) {
             for (Inter inter : inters) {
-                if (inter instanceof BeamInter) {
-                    BeamInter beam = (BeamInter) inter;
+                if (inter instanceof AbstractBeamInter) {
+                    AbstractBeamInter beam = (AbstractBeamInter) inter;
 
                     if (beam.isGood()) {
                         return false;
@@ -842,7 +843,7 @@ public class BlackNotesBuilder
     // Parameters //
     //------------//
     /**
-     * Class {@literal Parameters} gathers all pre-scaled constants.
+     * Class {@code Parameters} gathers all pre-scaled constants.
      */
     private static class Parameters
     {

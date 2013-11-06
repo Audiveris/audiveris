@@ -316,7 +316,7 @@ public class CheckSuite<C extends Checkable>
         }
 
         // Final grade
-        grade = Math.pow(grade, 1 / totalWeight);
+        grade = 0.8 * Math.pow(grade, 1 / totalWeight); // BINGO 0.8 factor
 
         if (impacts != null) {
             impacts.setGrade(grade);

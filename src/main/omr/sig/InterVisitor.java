@@ -24,7 +24,7 @@ public interface InterVisitor
 
     void visit (Inter inter);
 
-    void visit (BeamInter inter);
+    void visit (AbstractBeamInter inter);
 
     void visit (StemInter inter);
 

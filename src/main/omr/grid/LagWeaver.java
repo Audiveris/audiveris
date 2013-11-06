@@ -157,7 +157,7 @@ public class LagWeaver
 //        buildGlyphs();
 
         // The end
-        watch.print();
+        ///watch.print();
     }
 
     //---------------//

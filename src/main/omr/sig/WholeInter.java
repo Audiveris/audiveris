@@ -21,14 +21,10 @@ import java.awt.Rectangle;
  * @author Hervé Bitteur
  */
 public class WholeInter
-        extends BasicInter
+        extends AbstractNoteInter
 {
-    //~ Instance fields --------------------------------------------------------
-
-    /** Pitch step. */
-    private final int pitch;
-
     //~ Constructors -----------------------------------------------------------
+
     //------------//
     // WholeInter //
     //------------//
@@ -43,28 +39,6 @@ public class WholeInter
                        double grade,
                        int pitch)
     {
-        super(box, Shape.WHOLE_NOTE, grade);
-        this.pitch = pitch;
-    }
-
-    //~ Methods ----------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
-    //----------//
-    // getPitch //
-    //----------//
-    /**
-     * @return the pitch
-     */
-    public int getPitch ()
-    {
-        return pitch;
+        super(box, Shape.WHOLE_NOTE, grade, pitch);
     }
 }

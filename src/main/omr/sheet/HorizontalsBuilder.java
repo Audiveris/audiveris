@@ -430,8 +430,8 @@ public class HorizontalsBuilder
                 new MinLengthCheck(
                         constants.minLedgerLengthLow,
                         constants.minLedgerLengthHigh));
-        ledgerSuite.add(1, new MaxLengthCheck());
-        ledgerSuite.add(1, new MinDensityCheck());
+//        ledgerSuite.add(1, new MaxLengthCheck());
+//        ledgerSuite.add(1, new MinDensityCheck());
 
         // endingSuite
         endingSuite = new CheckSuite<Glyph>(

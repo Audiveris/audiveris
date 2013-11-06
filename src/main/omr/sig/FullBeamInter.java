@@ -17,7 +17,7 @@ import omr.glyph.facets.Glyph;
 import java.awt.geom.Line2D;
 
 /**
- * Class {@code FullBeamInter} represents a full beam
+ * Class {@code FullAbstractBeamInter} represents a full beam
  * interpretation, as opposed to a beam hook interpretation.
  *
  * @see BeamHookInter
@@ -25,12 +25,12 @@ import java.awt.geom.Line2D;
  * @author Hervé Bitteur
  */
 public class FullBeamInter
-        extends BeamInter
+        extends AbstractBeamInter
 {
     //~ Constructors -----------------------------------------------------------
 
     /**
-     * Creates a new BeamInter object.
+     * Creates a new AbstractBeamInter object.
      *
      * @param glyph   the underlying glyph
      * @param impacts the grade details
@@ -38,7 +38,7 @@ public class FullBeamInter
      * @param height  beam height
      */
     public FullBeamInter (Glyph glyph,
-                          BeamInter.Impacts impacts,
+                          GradeImpacts impacts,
                           Line2D median,
                           double height)
     {

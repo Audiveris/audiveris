@@ -26,7 +26,7 @@ public interface Support
 
     /**
      * Report the support ratio brought by this support relation.
-     * Q: does the value depends on relation direction?
+     * Q: does the value depend on relation direction?
      *
      * @return the support value, perhaps null
      */

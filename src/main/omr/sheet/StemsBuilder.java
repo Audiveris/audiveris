@@ -24,7 +24,6 @@ import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
-import omr.lag.Sections;
 
 import omr.math.GeoOrder;
 import omr.math.GeoUtil;
@@ -33,8 +32,8 @@ import omr.math.LineUtil;
 import omr.run.Orientation;
 import omr.run.Run;
 
+import omr.sig.AbstractBeamInter;
 import omr.sig.BasicExclusion;
-import omr.sig.BeamInter;
 import omr.sig.BeamPortion;
 import omr.sig.BeamStemRelation;
 import omr.sig.Exclusion;
@@ -79,7 +78,7 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@literal StemsBuilder} processes a system to build stems that
+ * Class {@code StemsBuilder} processes a system to build stems that
  * connect to note heads and perhaps beams.
  * <p>
  * At this point, both black heads and beams have been identified thanks to
@@ -216,7 +215,7 @@ public class StemsBuilder
         systemSeeds = getSystemSeeds();
 
         // The beam and beam hook interpretations for this system
-        systemBeams = sig.inters(BeamInter.class);
+        systemBeams = sig.inters(AbstractBeamInter.class);
         Collections.sort(systemBeams, Inter.byAbscissa);
 
         // The sorted head interpretations for this system
@@ -299,8 +298,7 @@ public class StemsBuilder
 
                     // Is there an overlap between stems one & two?
                     if (oneBox.intersects(twoBox)) {
-                        Exclusion exc = new BasicExclusion(Cause.OVERLAP);
-                        sig.addEdge(one, two, exc);
+                        sig.insertExclusion(one, two, Cause.OVERLAP);
                         count++;
                     }
                 }
@@ -412,72 +410,6 @@ public class StemsBuilder
                 1.0,
                 "Maximum vertical gap between two consecutive beams of the same group");
 
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@literal Parameters} gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final int maxOutDx;
-
-        final int maxBeamInDx;
-
-        final int maxHeadInDx;
-
-        final int xMargin;
-
-        final double slopeMargin;
-
-        final int maxStemHeadGapY;
-
-        final int maxYGap;
-
-        final int maxStemThickness;
-
-        final int minHeadSectionContribution;
-
-        final int minStemExtension;
-
-        final int minHeadBeamDistance;
-
-        final int minLongStemLength;
-
-        final int maxInterBeamGap;
-
-        //~ Constructors -------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (SystemInfo system,
-                           Scale scale)
-        {
-            maxOutDx = scale.toPixels(constants.maxOutDx);
-            maxBeamInDx = scale.toPixels(constants.maxBeamInDx);
-            maxHeadInDx = scale.toPixels(constants.maxHeadInDx);
-            xMargin = scale.toPixels(constants.xMargin);
-            slopeMargin = constants.slopeMargin.getValue();
-            maxStemHeadGapY = scale.toPixels(constants.maxStemHeadGapY);
-            maxYGap = system.verticalsBuilder.getMaxYGap();
-            maxStemThickness = scale.getMainStem();
-            minHeadSectionContribution = scale.toPixels(
-                    constants.minHeadSectionContribution);
-            minStemExtension = scale.toPixels(constants.minStemExtension);
-            minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
-            minLongStemLength = scale.toPixels(constants.minLongStemLength);
-            maxInterBeamGap = scale.toPixels(constants.maxInterBeamGap);
-
-            if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
-            }
-        }
     }
 
     //------------//
@@ -668,7 +600,7 @@ public class StemsBuilder
                 targetPt = getTargetPt(new Line2D.Double(0, sysY, 100, sysY));
 
                 // Look for beams in the corner
-                List<BeamInter> beams = new ArrayList<BeamInter>();
+                List<AbstractBeamInter> beams = new ArrayList<AbstractBeamInter>();
                 int goodIndex = lookupBeams(beams);
 
                 // If we have a good beam, stop at the end of beam group
@@ -718,7 +650,7 @@ public class StemsBuilder
                 // Beam - Stem connection(s)?
                 if (!beams.isEmpty() && !stems.isEmpty()) {
                     for (int i = 0; i < beams.size(); i++) {
-                        BeamInter beam = beams.get(i);
+                        AbstractBeamInter beam = beams.get(i);
 
                         for (StemInter stem : stems) {
                             BeamStemRelation rel = connectBeamStem(beam, stem);
@@ -730,7 +662,7 @@ public class StemsBuilder
                             if ((i == goodIndex)
                                 && (goodIndex < (beams.size() - 1))) {
                                 // Extend stem connection till end of beam group
-                                for (BeamInter next : beams.subList(
+                                for (AbstractBeamInter next : beams.subList(
                                         goodIndex + 1,
                                         beams.size())) {
                                     BeamStemRelation r = (BeamStemRelation) sig.getRelation(
@@ -789,8 +721,8 @@ public class StemsBuilder
              * @param two following beam, in 'dir' direction
              * @return true if OK
              */
-            private boolean areCompatible (BeamInter one,
-                                           BeamInter two)
+            private boolean areCompatible (AbstractBeamInter one,
+                                           AbstractBeamInter two)
             {
                 // Vertical gap?
                 Point2D onePt = getTargetPt(one.getMedian());
@@ -817,7 +749,7 @@ public class StemsBuilder
              * @param stemInter the stem interpretation
              * @return the beam stem relation if successful, null otherwise
              */
-            private BeamStemRelation connectBeamStem (BeamInter beam,
+            private BeamStemRelation connectBeamStem (AbstractBeamInter beam,
                                                       StemInter stemInter)
             {
                 if (beam.isVip() && stemInter.isVip()) {
@@ -1126,7 +1058,7 @@ public class StemsBuilder
              * @param beam the beam or hook of interest
              * @return the top or bottom beam limit, according to dir
              */
-            private Line2D getLimit (BeamInter beam)
+            private Line2D getLimit (AbstractBeamInter beam)
             {
                 return beam.getBorder(corner.vSide.opposite());
             }
@@ -1358,7 +1290,7 @@ public class StemsBuilder
              *              from head
              * @return index of first good beam in the beams list
              */
-            private int lookupBeams (List<BeamInter> beams)
+            private int lookupBeams (List<AbstractBeamInter> beams)
             {
                 // Look for beams and beam hooks in the corner
                 List<Inter> allbeams = sig.intersectedInters(
@@ -1377,21 +1309,23 @@ public class StemsBuilder
                             {
                                 double d1 = Math.abs(
                                         refPt.getY()
-                                        - getTargetPt(getLimit((BeamInter) b1)).getY());
+                                        - getTargetPt(
+                                        getLimit((AbstractBeamInter) b1)).getY());
                                 double d2 = Math.abs(
                                         refPt.getY()
-                                        - getTargetPt(getLimit((BeamInter) b2)).getY());
+                                        - getTargetPt(
+                                        getLimit((AbstractBeamInter) b2)).getY());
 
                                 return Double.compare(d1, d2);
                             }
                         });
 
                 // Build the list of beams
-                BeamInter goodBeam = null;
+                AbstractBeamInter goodBeam = null;
 
                 BeamLoop:
                 for (Inter inter : allbeams) {
-                    BeamInter beam = (BeamInter) inter;
+                    AbstractBeamInter beam = (AbstractBeamInter) inter;
 
                     if (goodBeam == null) {
                         // Check if beam is far enough from head
@@ -1424,7 +1358,8 @@ public class StemsBuilder
                         }
                     } else {
                         // We are within good beam group, check end of it
-                        BeamInter lastBeam = beams.get(beams.size() - 1);
+                        AbstractBeamInter lastBeam = beams.get(
+                                beams.size() - 1);
 
                         if (areCompatible(lastBeam, beam)) {
                             beams.add(beam);
@@ -1761,6 +1696,72 @@ public class StemsBuilder
                 Collections.sort(
                         glyphs,
                         (dir > 0) ? Glyph.byOrdinate : Glyph.byReverseOrdinate);
+            }
+        }
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final int maxOutDx;
+
+        final int maxBeamInDx;
+
+        final int maxHeadInDx;
+
+        final int xMargin;
+
+        final double slopeMargin;
+
+        final int maxStemHeadGapY;
+
+        final int maxYGap;
+
+        final int maxStemThickness;
+
+        final int minHeadSectionContribution;
+
+        final int minStemExtension;
+
+        final int minHeadBeamDistance;
+
+        final int minLongStemLength;
+
+        final int maxInterBeamGap;
+
+        //~ Constructors -------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (SystemInfo system,
+                           Scale scale)
+        {
+            maxOutDx = scale.toPixels(constants.maxOutDx);
+            maxBeamInDx = scale.toPixels(constants.maxBeamInDx);
+            maxHeadInDx = scale.toPixels(constants.maxHeadInDx);
+            xMargin = scale.toPixels(constants.xMargin);
+            slopeMargin = constants.slopeMargin.getValue();
+            maxStemHeadGapY = scale.toPixels(constants.maxStemHeadGapY);
+            maxYGap = system.verticalsBuilder.getMaxYGap();
+            maxStemThickness = scale.getMainStem();
+            minHeadSectionContribution = scale.toPixels(
+                    constants.minHeadSectionContribution);
+            minStemExtension = scale.toPixels(constants.minStemExtension);
+            minHeadBeamDistance = scale.toPixels(constants.minHeadBeamDistance);
+            minLongStemLength = scale.toPixels(constants.minLongStemLength);
+            maxInterBeamGap = scale.toPixels(constants.maxInterBeamGap);
+
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
             }
         }
     }

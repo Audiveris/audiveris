@@ -21,7 +21,7 @@ import omr.glyph.facets.Glyph;
  * @author Hervé Bitteur
  */
 public class BarlineInter
-        extends BasicInter
+        extends AbstractInter
 {
     //~ Instance fields --------------------------------------------------------
 

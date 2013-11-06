@@ -11,30 +11,27 @@
 // </editor-fold>
 package omr.sig;
 
-import java.awt.Rectangle;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import java.awt.Rectangle;
+
 /**
- * Class {@literal BlackHeadInter} represents a black note head
+ * Class {@code BlackHeadInter} represents a black note head
  * interpretation.
  *
  * @author Hervé Bitteur
  */
 public class BlackHeadInter
-        extends BasicInter
+        extends AbstractNoteInter
 {
-    //~ Instance fields --------------------------------------------------------
-
-    /** Pitch step. */
-    private final int pitch;
-
     //~ Constructors -----------------------------------------------------------
+
     //----------------//
     // BlackHeadInter //
     //----------------//
     /**
-     * Creates a new BlackHeadInter object from a closing-based 
+     * Creates a new BlackHeadInter object from a closing-based
      * retrieval.
      *
      * @param glyph   the underlying glyph
@@ -42,13 +39,12 @@ public class BlackHeadInter
      * @param pitch   the note pitch
      */
     public BlackHeadInter (Glyph glyph,
-                           Impacts impacts,
+                           GradeImpacts impacts,
                            int pitch)
     {
-        super(glyph, Shape.NOTEHEAD_BLACK, impacts.getGrade());
-        this.setImpacts(impacts);
-        this.pitch = pitch;
+        super(glyph, Shape.NOTEHEAD_BLACK, impacts, pitch);
     }
+
     //----------------//
     // BlackHeadInter //
     //----------------//
@@ -61,40 +57,19 @@ public class BlackHeadInter
      * @param pitch the note pitch
      */
     public BlackHeadInter (Rectangle box,
-                          double grade,
-                          int pitch)
+                           double grade,
+                           int pitch)
     {
-        super(box, Shape.NOTEHEAD_BLACK, grade);
-        this.pitch = pitch;
+        super(box, Shape.NOTEHEAD_BLACK, grade, pitch);
     }
 
     //~ Methods ----------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public void accept (InterVisitor visitor)
-    {
-        visitor.visit(this);
-    }
-
     //-------------//
     // getMinGrade //
     //-------------//
     public static double getMinGrade ()
     {
-        return BasicInter.getMinGrade();
-    }
-
-    //----------//
-    // getPitch //
-    //----------//
-    /**
-     * @return the pitch
-     */
-    public int getPitch ()
-    {
-        return pitch;
+        return AbstractInter.getMinGrade();
     }
 
     //~ Inner Classes ----------------------------------------------------------

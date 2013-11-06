@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                        I n t e r p r e t a t i o n                         //
+//                                  I n t e r                                 //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -18,10 +18,11 @@ import omr.util.Vip;
 
 import java.awt.Rectangle;
 import java.awt.geom.Area;
+import java.awt.geom.Rectangle2D;
 import java.util.Comparator;
 
 /**
- * Interface {@code Interpretation} defines a possible interpretation.
+ * Interface {@code Inter} defines a possible interpretation.
  *
  * @author Hervé Bitteur
  */
@@ -29,6 +30,19 @@ public interface Inter
         extends VisitableInter, Vip
 {
     //~ Static fields/initializers ---------------------------------------------
+
+    /**
+     * For comparing interpretations by id.
+     */
+    public static final Comparator<Inter> byId = new Comparator<Inter>()
+    {
+        @Override
+        public int compare (Inter i1,
+                            Inter i2)
+        {
+            return Integer.compare(i1.getId(), i2.getId());
+        }
+    };
 
     /**
      * For comparing interpretations by abscissa.
@@ -84,9 +98,24 @@ public interface Inter
     Rectangle getBounds ();
 
     /**
+     * Report the contextual grade, (0..1 probability) computed for
+     * interpretation.
+     *
+     * @return the contextual grade, if any
+     */
+    Double getContextualGrade ();
+
+    /**
+     * Report the core box for this interpretation.
+     *
+     * @return a small core box
+     */
+    Rectangle2D getCoreBounds ();
+
+    /**
      * Details for tip.
      *
-     * @return infos for a tip
+     * @return informations for a tip
      */
     String getDetails ();
 
@@ -98,9 +127,10 @@ public interface Inter
     Glyph getGlyph ();
 
     /**
-     * Report the grade (0..1 probability) assigned to interpretation
+     * Report the intrinsic grade (0..1 probability) assigned to
+     * interpretation
      *
-     * @return the grade
+     * @return the intrinsic grade
      */
     double getGrade ();
 
@@ -156,12 +186,28 @@ public interface Inter
     boolean isSameAs (Inter that);
 
     /**
+     * Check whether this inter instance overlaps that inter instance.
+     *
+     * @param that the other instance
+     * @return true if overlap is detected
+     */
+    boolean overlaps (Inter that);
+
+    /**
      * Assign the bounding box for this interpretation.
      * The assigned bounds may be different from the underlying glyph bounds.
      *
      * @param box the bounding box
      */
     void setBounds (Rectangle box);
+
+    /**
+     * Assign the contextual grade, (0..1 probability) computed for
+     * interpretation.
+     *
+     * @param value the contextual grade value
+     */
+    void setContextualGrade (double value);
 
     /**
      * Assign an id to the interpretation

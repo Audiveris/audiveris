@@ -26,7 +26,7 @@ import omr.score.visitor.AbstractScoreVisitor;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.sig.BeamInter;
+import omr.sig.AbstractBeamInter;
 import omr.sig.Inter;
 import omr.sig.InterVisitor;
 import omr.sig.LedgerInter;
@@ -347,7 +347,7 @@ public class SheetPainter
     // visit //
     //-------//
     @Override
-    public void visit (BeamInter beam)
+    public void visit (AbstractBeamInter beam)
     {
         setColor(beam);
         g.fill(beam.getArea());

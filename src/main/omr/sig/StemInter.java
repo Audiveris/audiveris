@@ -17,13 +17,13 @@ import omr.glyph.facets.Glyph;
 import omr.util.HorizontalSide;
 
 /**
- * Class {@literal StemInter} represents instances of Stem
+ * Class {@code StemInter} represents instances of Stem
  * interpretations.
  *
  * @author Hervé Bitteur
  */
 public class StemInter
-        extends BasicInter
+        extends AbstractInter
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -56,7 +56,7 @@ public class StemInter
     //-------------//
     public static double getMinGrade ()
     {
-        return BasicInter.getMinGrade();
+        return AbstractInter.getMinGrade();
     }
 
     //------------//

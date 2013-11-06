@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                              B e a m I n t e r                             //
+//                      A b s t r a c t B e a m I n t e r                     //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -24,18 +24,18 @@ import org.slf4j.LoggerFactory;
 import java.awt.geom.Line2D;
 
 /**
- * Abstract class {@literal BeamInter} is the basis for {@link
+ * Abstract class {@code AbstractBeamInter} is the basis for {@link
  * FullBeamInter} and {@link BeamHookInter} classes.
  *
  * @author Hervé Bitteur
  */
-public abstract class BeamInter
-        extends BasicInter
+public abstract class AbstractBeamInter
+        extends AbstractInter
 {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(
-            BeamInter.class);
+            AbstractBeamInter.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Median line. */
@@ -54,11 +54,11 @@ public abstract class BeamInter
      * @param median  median beam line
      * @param height  beam height
      */
-    protected BeamInter (Glyph glyph,
-                         Shape shape,
-                         Impacts impacts,
-                         Line2D median,
-                         double height)
+    protected AbstractBeamInter (Glyph glyph,
+                                 Shape shape,
+                                 GradeImpacts impacts,
+                                 Line2D median,
+                                 double height)
     {
         super(glyph, shape, impacts.getGrade());
         this.median = median;

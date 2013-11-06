@@ -104,7 +104,7 @@ public class PixelBuffer
             }
         }
 
-        watch.print();
+        ///watch.print();
     }
 
     //-------------//
@@ -130,7 +130,7 @@ public class PixelBuffer
             }
         }
 
-        watch.print();
+        ///watch.print();
     }
 
     //-------------//
@@ -150,7 +150,7 @@ public class PixelBuffer
 
         System.arraycopy(buf.buffer, 0, buffer, 0, buffer.length);
 
-        watch.print();
+        ///watch.print();
     }
 
     //~ Methods ----------------------------------------------------------------

@@ -25,7 +25,7 @@ import java.awt.geom.Line2D;
  * @author Hervé Bitteur
  */
 public class BeamHookInter
-        extends BeamInter
+        extends AbstractBeamInter
 {
     //~ Constructors -----------------------------------------------------------
 
@@ -38,7 +38,7 @@ public class BeamHookInter
      * @param height  beam height
      */
     public BeamHookInter (Glyph glyph,
-                          BeamInter.Impacts impacts,
+                          GradeImpacts impacts,
                           Line2D median,
                           double height)
     {

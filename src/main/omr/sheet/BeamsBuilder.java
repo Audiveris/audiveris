@@ -25,13 +25,15 @@ import omr.image.PixelFilter;
 
 import omr.math.AreaUtil;
 import omr.math.GeoOrder;
+import omr.math.GeoUtil;
 import omr.math.Line;
 import omr.math.LineUtil;
 
 import omr.run.Orientation;
 
+import omr.sig.AbstractBeamInter;
+import omr.sig.AbstractBeamInter.Impacts;
 import omr.sig.BeamHookInter;
-import omr.sig.BeamInter.Impacts;
 import omr.sig.FullBeamInter;
 import omr.sig.Grades;
 import omr.sig.Inter;
@@ -56,7 +58,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@literal BeamsBuilder} is in charge, at system level, of
+ * Class {@code BeamsBuilder} is in charge, at system level, of
  * retrieving the possible beam and beam hook interpretations.
  * <p>
  * The retrieval is performed on the collection of spots produced by closing
@@ -75,13 +77,17 @@ public class BeamsBuilder
             BeamsBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
+    /** The dedicated system. */
+    @Navigable(false)
+    private final SystemInfo system;
+
     /** Scale-dependent constants. */
     private final Parameters params;
 
-    /** Beams for this system, NOT sorted. */
+    /** Beams (and hooks) for this system, NOT sorted. */
     private List<Inter> rawSystemBeams;
 
-    /** The related sheet */
+    /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
 
@@ -93,10 +99,6 @@ public class BeamsBuilder
 
     /** Vertical stem seeds for this system, sorted by abscissa. */
     private List<Glyph> sortedSystemSeeds;
-
-    /** The dedicated system. */
-    @Navigable(false)
-    private final SystemInfo system;
 
     /** Input image. */
     private PixelFilter pixelFilter;
@@ -118,9 +120,9 @@ public class BeamsBuilder
         sheet = system.getSheet();
         params = new Parameters(sheet.getScale());
 
-        if (system.getId() == 1) {
-            Main.dumping.dump(params);
-        }
+        //        if (system.getId() == 1) {
+        //            Main.dumping.dump(params);
+        //        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -142,10 +144,8 @@ public class BeamsBuilder
         for (Glyph glyph : beamSpots) {
             final String failure = checkBeamGlyph(glyph);
 
-            if (failure != null) {
-                if (glyph.isVip()) {
-                    logger.info("VIP beam#{} {}", glyph.getId(), failure);
-                }
+            if ((failure != null) && glyph.isVip()) {
+                logger.info("VIP beam#{} {}", glyph.getId(), failure);
             }
         }
 
@@ -176,8 +176,8 @@ public class BeamsBuilder
     // mergeOf //
     //---------//
     /**
-     * (Try to) create a new FullBeamInter instance that represents a merge
-     * of the provided beams.
+     * (Try to) create a new FullAbstractBeamInter instance that
+     * represents a merge of the provided beams.
      *
      * @param one a beam
      * @param two another beam
@@ -250,7 +250,11 @@ public class BeamsBuilder
         }
 
         for (Glyph glyph : glyphs) {
-            checkHookGlyph(beam, side, glyph);
+            String failure = checkHookGlyph(beam, side, glyph);
+
+            if ((failure != null) && glyph.isVip()) {
+                logger.info("VIP hook#{} {}", glyph.getId(), failure);
+            }
         }
     }
 
@@ -365,20 +369,22 @@ public class BeamsBuilder
     //----------------//
     /**
      * Check the provided glyph as a hook near base beam.
-     * We use the usual core & belt mask test for the hook candidate,
+     * We first check that the hook candidate does not overlap a beam.
+     * We then use the usual core & belt mask test for the hook candidate,
      * using slope and height values from base beam, and adjusted abscissa
      * limits.
      *
      * @param beam  the base beam
-     * @param side  which vertical side to browse
+     * @param side  which vertical side of beam
      * @param glyph the candidate hook
+     * @return the failure message if any, null otherwise
      */
     private String checkHookGlyph (FullBeamInter beam,
                                    VerticalSide side,
                                    Glyph glyph)
     {
         if (glyph.isVip()) {
-            logger.info("VIP checkHookGlyph {}", glyph);
+            logger.info("VIP checkHookGlyph {} on {} of {}", glyph, side, beam);
         }
 
         final Rectangle box = glyph.getBounds();
@@ -396,7 +402,7 @@ public class BeamsBuilder
             return "too slim";
         }
 
-        // Define beam item to compute core & belt impacts
+        // Define hook item
         Point centroid = glyph.getCentroid();
         double slope = LineUtil.getSlope(beam.getMedian());
         Point2D p1 = LineUtil.intersectionAtX(centroid, slope, box.x);
@@ -407,6 +413,13 @@ public class BeamsBuilder
         Line2D median = new Line2D.Double(p1, p2);
         double height = beam.getHeight();
         BeamItem item = new BeamItem(median, height);
+
+        // Check this hook item does not conflict with any existing beam
+        if (overlap(item)) {
+            return "overlap";
+        }
+
+        // Compute core & belt impacts
         Impacts impacts = computeHookImpacts(item);
 
         if (impacts != null) {
@@ -421,6 +434,7 @@ public class BeamsBuilder
             }
 
             sig.addVertex(hook);
+            rawSystemBeams.add(hook);
             glyph.setShape(Shape.BEAM_HOOK); // For visual check
 
             return null; // Mean: no failure
@@ -434,7 +448,7 @@ public class BeamsBuilder
     //--------------------//
     /**
      * Compute the grade details for the provided BeamItem, targeting
-     * a FullBeamInter.
+     * a FullAbstractBeamInter.
      *
      * @param item  the isolated beam item
      * @param above true to check above beam item
@@ -540,7 +554,8 @@ public class BeamsBuilder
     // createBeamInters //
     //------------------//
     /**
-     * Create the resulting FullBeamInter instances, one for each good item.
+     * Create the resulting FullAbstractBeamInter instances, one for each good
+     * item.
      *
      * @param beamItems the items retrieved (from a glyph)
      * @return true if at least one good item was found
@@ -593,9 +608,10 @@ public class BeamsBuilder
         // The stem seeds for this system, sorted by abscissa
         sortedSystemSeeds = getSystemSeeds();
 
-        // The beam inters for this system, NOT sorted by abscissa
+        // The beam & hook inters for this system, NOT sorted by abscissa
         // We may add to this list, but not remove elements
-        rawSystemBeams = sig.inters(Shape.BEAM);
+        // Hooks are added later to this collection
+        rawSystemBeams = sig.inters(AbstractBeamInter.class);
 
         // Extend each orphan beam as much as possible
         for (int i = 0; i < rawSystemBeams.size(); i++) {
@@ -987,6 +1003,46 @@ public class BeamsBuilder
         return seeds.isEmpty();
     }
 
+    //---------//
+    // overlap //
+    //---------//
+    /**
+     * Check whether the provided (hook) item overlaps any existing
+     * beam inter (in rawSystemBeams collection).
+     * This is mainly to detect if a hook candidate is not actually "part of"
+     * any existing beam.
+     *
+     * @param item the item to check
+     * @return true if any overlap was found
+     */
+    private boolean overlap (BeamItem item)
+    {
+        // First filtering using rough intersection (area / rectangle)
+        Area itemCore = item.getCoreArea();
+        List<Inter> beams = sig.intersectedInters(
+                rawSystemBeams,
+                GeoOrder.NONE,
+                itemCore);
+
+        if (beams.isEmpty()) {
+            return false;
+        }
+
+        // More precise look, checking that item center lies within beam area
+        Point itemCenter = GeoUtil.centerOf(itemCore.getBounds());
+
+        for (Inter inter : beams) {
+            AbstractBeamInter beam = (AbstractBeamInter) inter;
+
+            if (beam.getArea()
+                    .contains(itemCenter)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     //------------//
     // sideAreaOf //
     //------------//
@@ -1124,7 +1180,7 @@ public class BeamsBuilder
     // Parameters //
     //------------//
     /**
-     * Class {@literal Parameters} gathers all pre-scaled constants.
+     * Class {@code Parameters} gathers all pre-scaled constants.
      */
     private static class Parameters
     {

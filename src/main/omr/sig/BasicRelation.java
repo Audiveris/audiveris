@@ -42,6 +42,49 @@ public class BasicRelation
     }
 
     @Override
+    public String seenFrom (Inter inter)
+    {
+        final StringBuilder sb = new StringBuilder(toString());
+        final SIGraph sig = inter.getSig();
+
+        if (sig != null) {
+            final Inter source = sig.getEdgeSource(this);
+
+            if (source != inter) {
+                sb.append("<-")
+                        .append(source);
+            } else {
+                final Inter target = sig.getEdgeTarget(this);
+
+                if (target != inter) {
+                    sb.append("->")
+                            .append(target);
+                }
+            }
+        }
+
+        return sb.toString();
+    }
+
+    @Override
+    public String toLongString (SIGraph sig)
+    {
+        final Inter source = sig.getEdgeSource(this);
+        final Inter target = sig.getEdgeTarget(this);
+        final StringBuilder sb = new StringBuilder();
+        
+        sb.append(source);
+        sb.append("-");
+        sb.append(getName());
+        sb.append(":");
+        sb.append(getDetails());
+        sb.append("-");
+        sb.append(target);
+
+        return sb.toString();
+    }
+
+    @Override
     public String toString ()
     {
         return getName();

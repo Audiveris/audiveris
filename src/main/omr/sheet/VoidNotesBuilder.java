@@ -40,7 +40,7 @@ import omr.math.ReversePathIterator;
 
 import omr.run.Orientation;
 
-import omr.sig.BasicInter;
+import omr.sig.AbstractInter;
 import omr.sig.BlackHeadInter;
 import omr.sig.Exclusion;
 import omr.sig.Grades;
@@ -72,6 +72,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import omr.sig.AbstractNoteInter;
+
+import static omr.sig.AbstractNoteInter.shrink;
 
 /**
  * Class {@code VoidNotesBuilder} retrieves the void note heads and
@@ -284,7 +287,7 @@ public class VoidNotesBuilder
                 1 - (loc.d / params.maxMatchingDistance));
 
         // Is grade acceptable?
-        if (grade < BasicInter.getMinGrade()) {
+        if (grade < AbstractInter.getMinGrade()) {
             logger.debug(
                     "Too weak {} dist: {} grade: {} at {}",
                     shape,
@@ -370,7 +373,7 @@ public class VoidNotesBuilder
         for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
             Inter left = inters.get(i);
             Rectangle box = left.getBounds();
-            Rectangle2D smallBox = shrink(box);
+            Rectangle2D smallBox = AbstractNoteInter.shrink(box);
             double xMax = smallBox.getMaxX();
 
             for (Inter right : inters.subList(i + 1, inters.size())) {
@@ -547,7 +550,7 @@ public class VoidNotesBuilder
         StaffInfo staff = line.getStaff();
 
         // Competitors for this horizontal slice
-        final double ratio = params.shrinkVertRatio;
+        final double ratio = AbstractNoteInter.getShrinkVertRatio();
         final double above = (scale.getInterline() * (dir - ratio)) / 2;
         final double below = (scale.getInterline() * (dir + ratio)) / 2;
         final Area area = line.getArea(above, below);
@@ -692,13 +695,9 @@ public class VoidNotesBuilder
         // Use one anchor for each horizontal side of the stem seed
         final Anchor[] anchors = new Anchor[]{
             // On left of stem
-            (dir == 0) ? LEFT_STEM
-            : ((dir < 0) ? BOTTOM_LEFT_STEM
-            : TOP_LEFT_STEM),
+            (dir == 0) ? LEFT_STEM : ((dir < 0) ? BOTTOM_LEFT_STEM : TOP_LEFT_STEM),
             // On right of stem
-            (dir == 0) ? RIGHT_STEM
-            : ((dir < 0) ? BOTTOM_RIGHT_STEM
-            : TOP_RIGHT_STEM)
+            (dir == 0) ? RIGHT_STEM : ((dir < 0) ? BOTTOM_RIGHT_STEM : TOP_RIGHT_STEM)
         };
 
         for (Glyph seed : seeds) {
@@ -719,7 +718,11 @@ public class VoidNotesBuilder
 
                     // Skip if location already used by good object (beam, black head)
                     if (!overlap(smallBox, competitors)) {
-                        final double dist = tpl.evaluate(x, y, anchor, distances);
+                        final double dist = tpl.evaluate(
+                                x,
+                                y,
+                                anchor,
+                                distances);
 
                         if (dist <= params.maxMatchingDistance) {
                             PixelDistance loc = new PixelDistance(x, y, dist);
@@ -777,7 +780,7 @@ public class VoidNotesBuilder
      *
      * @param staff the staff to process
      * @param seeds should we stick to stem seeds or not?
-     * @return the list of created interpretations
+     * @return the list of created heads
      */
     private List<Inter> processStaff (StaffInfo staff,
                                       boolean seeds)
@@ -859,129 +862,16 @@ public class VoidNotesBuilder
             inters.removeAll(toRemove);
 
             for (Inter inter : toRemove) {
-                logger.debug("Purging {} at {}", inter, inter.getBounds());
+                if (inter.isVip()) {
+                    logger.info("Purging {} at {}", inter, inter.getBounds());
+                }
+
                 sig.removeVertex(inter);
             }
         }
     }
 
-    //--------//
-    // shrink //
-    //--------//
-    /**
-     * Shrink a bit a template box when checking for note overlap.
-     *
-     * @param box
-     * @return the shrunk box
-     */
-    private Rectangle2D shrink (Rectangle box)
-    {
-        double newWidth = params.shrinkHoriRatio * box.width;
-        double newHeight = params.shrinkVertRatio * box.height;
-
-        return new Rectangle2D.Double(
-                box.getCenterX() - (newWidth / 2.0),
-                box.getCenterY() - (newHeight / 2.0),
-                newWidth,
-                newHeight);
-    }
-
     //~ Inner Classes ----------------------------------------------------------
-    //-------------//
-    // LineAdapter //
-    //-------------//
-    /**
-     * Such adapter is needed to interact with staff LineInfo or ledger
-     * glyph line in a consistent way.
-     */
-    private abstract static class LineAdapter
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final StaffInfo staff;
-
-        private final String prefix;
-
-        //~ Constructors -------------------------------------------------------
-        public LineAdapter (StaffInfo staff,
-                            String prefix)
-        {
-            this.staff = staff;
-            this.prefix = prefix;
-        }
-
-        //~ Methods ------------------------------------------------------------
-        /**
-         * Report the competitors lookup area, according to limits above
-         * and below, defined as ordinate shifts relative to the
-         * reference line.
-         *
-         * @param above offset (positive or negative) from line to top limit.
-         * @param below offset (positive or negative) from line to bottom limit.
-         */
-        public abstract Area getArea (double above,
-                                      double below);
-
-        /** Report the abscissa at beginning of line. */
-        public abstract int getLeftAbscissa ();
-
-        /** Report the abscissa at end of line. */
-        public abstract int getRightAbscissa ();
-
-        /** Report the ordinate at provided abscissa. */
-        public abstract int yAt (int x);
-
-        /** Needed to allow various attachments on the same staff. */
-        public String getPrefix ()
-        {
-            return prefix;
-        }
-
-        public StaffInfo getStaff ()
-        {
-            return staff;
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
-
-        final Constant.Boolean printParameters = new Constant.Boolean(
-                false,
-                "Should we print out the class parameters?");
-
-        final Constant.Boolean allowAttachments = new Constant.Boolean(
-                false,
-                "Should we allow staff attachments for created areas?");
-
-        final Constant.Double maxMatchingDistance = new Constant.Double(
-                "distance**2",
-                1.5,
-                "Maximum (square) matching distance");
-
-        final Scale.Fraction maxTemplateDelta = new Scale.Fraction(
-                0.75,
-                "Maximum dx or dy between similar template instances");
-
-        final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
-                0.7,
-                "Shrink horizontal ratio to apply when checking for overlap");
-
-        final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
-                0.5,
-                "Shrink vertical ratio to apply when checking for overlap");
-
-    }
-
     //-----------//
     // Aggregate //
     //-----------//
@@ -1041,6 +931,72 @@ public class VoidNotesBuilder
             sb.append("}");
 
             return sb.toString();
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        final Constant.Boolean printParameters = new Constant.Boolean(
+                false,
+                "Should we print out the class parameters?");
+
+        final Constant.Boolean allowAttachments = new Constant.Boolean(
+                false,
+                "Should we allow staff attachments for created areas?");
+
+        final Constant.Double maxMatchingDistance = new Constant.Double(
+                "distance**2",
+                1.5,
+                "Maximum (square) matching distance");
+
+        final Scale.Fraction maxTemplateDelta = new Scale.Fraction(
+                0.75,
+                "Maximum dx or dy between similar template instances");
+
+        final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
+                0.7,
+                "Shrink horizontal ratio to apply when checking for overlap");
+
+        final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
+                0.5,
+                "Shrink vertical ratio to apply when checking for overlap");
+
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final double maxMatchingDistance;
+
+        final int maxTemplateDelta;
+
+        //~ Constructors -------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (Scale scale)
+        {
+            maxMatchingDistance = constants.maxMatchingDistance.getValue();
+            maxTemplateDelta = scale.toPixels(constants.maxTemplateDelta);
         }
     }
 
@@ -1107,37 +1063,60 @@ public class VoidNotesBuilder
         }
     }
 
-    //------------//
-    // Parameters //
-    //------------//
+    //-------------//
+    // LineAdapter //
+    //-------------//
     /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
+     * Such adapter is needed to interact with staff LineInfo or ledger
+     * glyph line in a consistent way.
      */
-    private static class Parameters
+    private abstract static class LineAdapter
     {
         //~ Instance fields ----------------------------------------------------
 
-        final double maxMatchingDistance;
+        private final StaffInfo staff;
 
-        final int maxTemplateDelta;
-
-        final double shrinkHoriRatio;
-
-        final double shrinkVertRatio;
+        private final String prefix;
 
         //~ Constructors -------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
+        public LineAdapter (StaffInfo staff,
+                            String prefix)
         {
-            maxMatchingDistance = constants.maxMatchingDistance.getValue();
-            maxTemplateDelta = scale.toPixels(constants.maxTemplateDelta);
-            shrinkHoriRatio = constants.shrinkHoriRatio.getValue();
-            shrinkVertRatio = constants.shrinkVertRatio.getValue();
+            this.staff = staff;
+            this.prefix = prefix;
         }
+
+        //~ Methods ------------------------------------------------------------
+        /**
+         * Report the competitors lookup area, according to limits above
+         * and below, defined as ordinate shifts relative to the
+         * reference line.
+         *
+         * @param above offset (positive or negative) from line to top limit.
+         * @param below offset (positive or negative) from line to bottom limit.
+         */
+        public abstract Area getArea (double above,
+                                      double below);
+
+        /** Report the abscissa at beginning of line. */
+        public abstract int getLeftAbscissa ();
+
+        /** Needed to allow various attachments on the same staff. */
+        public String getPrefix ()
+        {
+            return prefix;
+        }
+
+        /** Report the abscissa at end of line. */
+        public abstract int getRightAbscissa ();
+
+        public StaffInfo getStaff ()
+        {
+            return staff;
+        }
+
+        /** Report the ordinate at provided abscissa. */
+        public abstract int yAt (int x);
     }
 
     //------------------//

@@ -59,7 +59,7 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@literal VerticalsBuilder} is in charge of retrieving major
+ * Class {@code VerticalsBuilder} is in charge of retrieving major
  * vertical seeds of a dedicated system.
  *
  * The purpose is to use these major vertical sticks as seeds for stems,
@@ -126,7 +126,7 @@ public class VerticalsBuilder
     private PixelFilter pixelFilter;
 
     /** Suite of checks for a vertical seed. */
-    public final SeedCheckSuite suite = new SeedCheckSuite();
+    private final SeedCheckSuite suite = new SeedCheckSuite();
 
     //~ Constructors -----------------------------------------------------------
     //------------------//
@@ -426,6 +426,187 @@ public class VerticalsBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //------------//
+    // BlackCheck //
+    //------------//
+    /**
+     * Check stick length of black parts.
+     */
+    private class BlackCheck
+            extends Check<GlyphContext>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected BlackCheck ()
+        {
+            super(
+                    "Black",
+                    "Check that black part of stick is long enough",
+                    constants.blackLow,
+                    constants.blackHigh,
+                    true,
+                    TOO_SHORT);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        // Retrieve the length data
+        @Override
+        protected double getValue (GlyphContext context)
+        {
+            return scale.pixelsToFrac(context.black);
+        }
+    }
+
+    //------------//
+    // CleanCheck //
+    //------------//
+    /**
+     * Check the length of stem portions with no item stuck either on
+     * left, right or both sides.
+     * As a side-effect, additional data is stored in context: white, black and
+     * gap fields.
+     */
+    private class CleanCheck
+            extends Check<GlyphContext>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected CleanCheck ()
+        {
+            super(
+                    "Clean",
+                    "Check total clean length",
+                    constants.cleanLow,
+                    constants.cleanHigh,
+                    true,
+                    TOO_HIGH_ADJACENCY);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        protected double getValue (GlyphContext context)
+        {
+            final Glyph stick = context.stick;
+            final int dx = scale.toPixels(constants.beltMarginDx);
+            final Point2D start = stick.getStartPoint(VERTICAL);
+            final Point2D stop = stick.getStopPoint(VERTICAL);
+            final double halfWidth = (typicalWidth - 1) / 2;
+
+            // Theoretical stem vertical lines on left and right sides
+            final Line2D leftLine = new Line2D.Double(
+                    new Point2D.Double(start.getX() - halfWidth, start.getY()),
+                    new Point2D.Double(stop.getX() - halfWidth, stop.getY()));
+            final Line2D rightLine = new Line2D.Double(
+                    new Point2D.Double(start.getX() + halfWidth, start.getY()),
+                    new Point2D.Double(stop.getX() + halfWidth, stop.getY()));
+            final Rectangle stickBox = stick.getBounds();
+
+            // Inspect each horizontal row of the stick
+            int largestGap = 0; // Largest gap so far
+            int lastBlackY = -1; // Ordinate of last black row
+            int lastWhiteY = -1; // Ordinate of last white row
+            int whiteCount = 0; // Count of rows where stem is white (broken)
+            int leftCount = 0; // Count of rows where stem has item on left
+            int rightCount = 0; // Count of rows where stem has item on right
+            int bothCount = 0; // Count of rows where stem has item on both
+            int cleanCount = 0; // Count of rows where stem is bare (no item stuck)
+
+            if (stick.isVip()) {
+                logger.info("VIP CleanCheck for {}", stick);
+            }
+
+            final int yMin = stickBox.y;
+            final int yMax = (stickBox.y + stickBox.height) - 1;
+
+            for (int y = yMin; y <= yMax; y++) {
+                final int leftLimit = (int) Math.rint(
+                        LineUtil.intersectionAtY(leftLine, y).getX());
+                final int rightLimit = (int) Math.rint(
+                        LineUtil.intersectionAtY(rightLine, y).getX());
+
+                // Make sure the stem row is not empty
+                // (top & bottom rows cannot be considered as empty)
+                if ((y != yMin) && (y != yMax)) {
+                    boolean empty = true;
+
+                    for (int x = leftLimit; x <= rightLimit; x++) {
+                        if (pixelFilter.isFore(x, y)) {
+                            empty = false;
+
+                            break;
+                        }
+                    }
+
+                    if (empty) {
+                        whiteCount++;
+                        lastWhiteY = y;
+
+                        continue;
+                    }
+                }
+
+                // End of gap?
+                if ((lastWhiteY != -1) && (lastBlackY != -1)) {
+                    largestGap = Math.max(largestGap, lastWhiteY - lastBlackY);
+                    lastWhiteY = -1;
+                }
+
+                lastBlackY = y;
+
+                // Item on left?
+                boolean onLeft = true;
+
+                for (int x = leftLimit; x >= (leftLimit - dx); x--) {
+                    if (!pixelFilter.isFore(x, y)) {
+                        onLeft = false;
+
+                        break;
+                    }
+                }
+
+                // Item on right?
+                boolean onRight = true;
+
+                for (int x = rightLimit; x <= (rightLimit + dx); x++) {
+                    if (!pixelFilter.isFore(x, y)) {
+                        onRight = false;
+
+                        break;
+                    }
+                }
+
+                if (onLeft && onRight) {
+                    bothCount++;
+                } else if (onLeft) {
+                    leftCount++;
+                } else if (onRight) {
+                    rightCount++;
+                } else {
+                    cleanCount++;
+                }
+            }
+
+            if (stick.isVip()) {
+                logger.info(
+                        "#{} gap:{} white:{} both:{} left:{} right:{} clean:{}",
+                        stick.getId(),
+                        largestGap,
+                        whiteCount,
+                        bothCount,
+                        leftCount,
+                        rightCount,
+                        cleanCount);
+            }
+
+            // Side effect: update context data
+            context.white = whiteCount;
+            context.black = bothCount + leftCount + rightCount + cleanCount;
+            context.gap = largestGap;
+
+            return scale.pixelsToFrac(cleanCount);
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -451,7 +632,7 @@ public class VerticalsBuilder
                 "Horizontal belt margin checked around stem");
 
         Check.Grade minCheckResult = new Check.Grade(
-                0.4,
+                0.3,
                 "Minimum result for suite of check");
 
         Scale.Fraction blackHigh = new Scale.Fraction(
@@ -474,10 +655,6 @@ public class VerticalsBuilder
                 2.0,
                 "High vertical gap between stem segments");
 
-        Scale.Fraction gapLow = new Scale.Fraction(
-                0,
-                "Low vertical gap between stem segments");
-
         Constant.Double slopeHigh = new Constant.Double(
                 "tangent",
                 0.2,
@@ -487,15 +664,42 @@ public class VerticalsBuilder
                 0.2,
                 "High mean distance to average stem line");
 
-        Scale.Fraction straightLow = new Scale.Fraction(
-                0,
-                "Low mean distance to average stem line");
-
         Constant.Double maxCoTangentForCheck = new Constant.Double(
                 "cotangent",
                 0.1,
                 "Maximum cotangent for interactive check of a stem candidate");
 
+    }
+
+    //----------//
+    // GapCheck //
+    //----------//
+    /**
+     * Check largest gap in stick.
+     */
+    private class GapCheck
+            extends Check<GlyphContext>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected GapCheck ()
+        {
+            super(
+                    "Gap",
+                    "Check size of largest hole in stick",
+                    Scale.Fraction.ZERO,
+                    constants.gapHigh,
+                    false,
+                    TOO_HOLLOW);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        // Retrieve the length data
+        @Override
+        protected double getValue (GlyphContext context)
+        {
+            return scale.pixelsToFrac(context.gap);
+        }
     }
 
     //--------------//
@@ -547,210 +751,6 @@ public class VerticalsBuilder
         public String toString ()
         {
             return "stick#" + stick.getId();
-        }
-    }
-
-    //------------//
-    // BlackCheck //
-    //------------//
-    /**
-     * Check stick length of black parts.
-     */
-    private class BlackCheck
-            extends Check<GlyphContext>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected BlackCheck ()
-        {
-            super(
-                    "Black",
-                    "Check that black part of stick is long enough",
-                    constants.blackLow,
-                    constants.blackHigh,
-                    true,
-                    TOO_SHORT);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        // Retrieve the length data
-        @Override
-        protected double getValue (GlyphContext context)
-        {
-            return scale.pixelsToFrac(context.black);
-        }
-    }
-
-    //------------//
-    // CleanCheck //
-    //------------//
-    /**
-     * Check the length of stem portions with no item stuck either on
-     * left, right or both sides.
-     */
-    private class CleanCheck
-            extends Check<GlyphContext>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected CleanCheck ()
-        {
-            super(
-                    "Clean",
-                    "Check total clean length",
-                    constants.cleanLow,
-                    constants.cleanHigh,
-                    true,
-                    TOO_HIGH_ADJACENCY);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        protected double getValue (GlyphContext context)
-        {
-            final Glyph stick = context.stick;
-
-            final int dx = scale.toPixels(constants.beltMarginDx);
-            final Point2D start = stick.getStartPoint(VERTICAL);
-            final Point2D stop = stick.getStopPoint(VERTICAL);
-            final double halfWidth = (typicalWidth - 1) / 2;
-
-            // Theoretical stem vertical lines on left and right
-            final Line2D leftLine = new Line2D.Double(
-                    new Point2D.Double(start.getX() - halfWidth, start.getY()),
-                    new Point2D.Double(stop.getX() - halfWidth, stop.getY()));
-            final Line2D rightLine = new Line2D.Double(
-                    new Point2D.Double(start.getX() + halfWidth, start.getY()),
-                    new Point2D.Double(stop.getX() + halfWidth, stop.getY()));
-            final Rectangle stickBox = stick.getBounds();
-
-            // Inspect each horizontal row
-            int largestGap = 0; // Largest gap so far
-            int lastBlackY = -1; // Ordinate of last black row
-            int lastWhiteY = -1; // Ordinate of last white row
-            int whiteCount = 0; // Count of rows where stem is white (broken)
-            int leftCount = 0; // Count of rows where stem has item on left
-            int rightCount = 0; // Count of rows where stem has item on right
-            int bothCount = 0; // Count of rows where stem has item on both
-            int cleanCount = 0; // Count of rows where stem is bare (no item stuck)
-
-            if (stick.isVip()) {
-                logger.info("VIP getCleanValue for {}", stick);
-            }
-
-            for (int y = stickBox.y; y < (stickBox.y + stickBox.height); y++) {
-                final int leftLimit = (int) Math.rint(
-                        LineUtil.intersectionAtY(leftLine, y).getX());
-                final int rightLimit = (int) Math.rint(
-                        LineUtil.intersectionAtY(rightLine, y).getX());
-
-                // Make sure the stem row is not empty
-                boolean empty = true;
-
-                for (int x = leftLimit; x <= rightLimit; x++) {
-                    if (pixelFilter.isFore(x, y)) {
-                        empty = false;
-
-                        break;
-                    }
-                }
-
-                if (empty) {
-                    whiteCount++;
-                    lastWhiteY = y;
-
-                    continue;
-                }
-
-                // End of gap?
-                if ((lastWhiteY != -1) && (lastBlackY != -1)) {
-                    largestGap = Math.max(largestGap, lastWhiteY - lastBlackY);
-                    lastWhiteY = -1;
-                }
-
-                lastBlackY = y;
-
-                // Item on left?
-                boolean onLeft = true;
-
-                for (int x = leftLimit; x >= (leftLimit - dx); x--) {
-                    if (!pixelFilter.isFore(x, y)) {
-                        onLeft = false;
-
-                        break;
-                    }
-                }
-
-                // Item on right?
-                boolean onRight = true;
-
-                for (int x = rightLimit; x <= (rightLimit + dx); x++) {
-                    if (!pixelFilter.isFore(x, y)) {
-                        onRight = false;
-
-                        break;
-                    }
-                }
-
-                if (onLeft && onRight) {
-                    bothCount++;
-                } else if (onLeft) {
-                    leftCount++;
-                } else if (onRight) {
-                    rightCount++;
-                } else {
-                    cleanCount++;
-                }
-            }
-
-            if (stick.isVip()) {
-                logger.info(
-                        "#{} white:{} both:{} left:{} right:{} clean:{}",
-                        stick.getId(),
-                        whiteCount,
-                        bothCount,
-                        leftCount,
-                        rightCount,
-                        cleanCount);
-            }
-
-            // Side effect: update context data
-            context.white = whiteCount;
-            context.black = bothCount + leftCount + rightCount + cleanCount;
-            context.gap = largestGap;
-
-            return scale.pixelsToFrac(cleanCount);
-        }
-    }
-
-    //----------//
-    // GapCheck //
-    //----------//
-    /**
-     * Check largest gap in stick.
-     */
-    private class GapCheck
-            extends Check<GlyphContext>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected GapCheck ()
-        {
-            super(
-                    "Gap",
-                    "Check that largest hole in stick in not too long",
-                    constants.gapLow,
-                    constants.gapHigh,
-                    false,
-                    TOO_HOLLOW);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        // Retrieve the length data
-        @Override
-        protected double getValue (GlyphContext context)
-        {
-            return scale.pixelsToFrac(context.gap);
         }
     }
 
@@ -879,7 +879,7 @@ public class VerticalsBuilder
             super(
                     "Straight",
                     "Check that stick is straight",
-                    constants.straightLow,
+                    Scale.Fraction.ZERO,
                     constants.straightHigh,
                     false,
                     NON_STRAIGHT);

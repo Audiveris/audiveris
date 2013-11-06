@@ -64,35 +64,16 @@ class RelationAction
         SIGraph sig = inter.getSig();
         Inter source = sig.getEdgeSource(relation);
         Inter target = sig.getEdgeTarget(relation);
-        
-        StringBuilder sb = new StringBuilder();
-        sb.append(relation);
 
         if (source != inter) {
             other = source;
-            sb.append(" <- ")
-                    .append(source);
         } else if (target != inter) {
             other = target;
-            sb.append(" -> ")
-                    .append(target);
         } else {
             other = null;
         }
 
-        //        if (relation instanceof AbstractConnection) {
-        //            AbstractConnection rel = (AbstractConnection) relation;
-        //            double cp = sig.getContextualGrade(rel);
-        //            sb.append(" CP:")
-        //                    .append(String.format("%.2f", cp));
-        //
-        //            if (rel instanceof HeadStemRelation && (beamStemRel != null)) {
-        //                double cp2 = sig.getContextualGrade(inter, rel, beamStemRel);
-        //                sb.append(" CP2:")
-        //                        .append(String.format("%.2f", cp2));
-        //            }
-        //        }
-        putValue(NAME, sb.toString());
+        putValue(NAME, relation.seenFrom(inter));
 
         final String details = relation.getDetails();
 

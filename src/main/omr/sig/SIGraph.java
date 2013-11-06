@@ -35,8 +35,15 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Class {@code SIGraph} represents the Symbol Interpretation Graph
@@ -93,6 +100,26 @@ public class SIGraph
         return res;
     }
 
+    //------------------------//
+    // computeContextualGrade //
+    //------------------------//
+    public double computeContextualGrade (Inter inter,
+                                          boolean logging)
+    {
+        final Set<Support> supports = getSupports(inter);
+        double cp;
+
+        if (!supports.isEmpty()) {
+            cp = computeContextualGrade(inter, supports, logging);
+        } else {
+            cp = inter.getGrade();
+        }
+
+        inter.setContextualGrade(cp);
+
+        return cp;
+    }
+
     //-----------------//
     // containedInters //
     //-----------------//
@@ -145,66 +172,29 @@ public class SIGraph
         return found;
     }
 
-    //--------------------//
-    // getContextualGrade //
-    //--------------------//
+    //---------------//
+    // getExclusions //
+    //---------------//
     /**
-     * Compute the contextual probability for a target which is
-     * supported by a collection of relations.
-     * It is assumed that all these supporting relation have the same target,
-     * if not a runtime exception is raised (perhaps we could relax this and
-     * simply ignore the relations that have a different target?)
+     * Report the set of conflicting relations the provided inter is
+     * involved in.
      *
-     * @param target   the common target
-     * @param supports the set of supporting relations
-     * @return the resulting contextual probability for the target inter.
+     * @param inter the provided interpretation
+     * @return the set of exclusions that involve inter, perhaps empty but not
+     *         null
      */
-    public Double getContextualGrade (Inter target,
-                                      Support... supports)
+    public Set<Relation> getExclusions (Inter inter)
     {
-        int n = supports.length;
-        double[] ratios = new double[n];
-        double[] sources = new double[n];
-
-        // Feed arrays and check common target
-        for (int i = 0; i < n; i++) {
-            Support support = supports[i];
-
-            if (target != getEdgeTarget(support)) {
-                throw new RuntimeException("No common target");
-            }
-
-            ratios[i] = support.getRatio();
-            sources[i] = getEdgeSource(support)
-                    .getGrade();
-        }
-
-        return Grades.contextual(target.getGrade(), ratios, sources);
-    }
-
-    //--------------------//
-    // getContextualGrade //
-    //--------------------//
-    /**
-     * Compute the contextual probability brought by this relation.
-     *
-     * @param support the support relation
-     * @return the resulting contextual probability for the relation target
-     */
-    public Double getContextualGrade (Support support)
-    {
-        return contextual(
-                getEdgeTarget(support),
-                support,
-                getEdgeSource(support));
+        return getRelations(inter, Exclusion.class);
     }
 
     //----------//
     // getInter //
     //----------//
     /**
-     * Report the interpretation if any of desired class for the
-     * glyph at hand.
+     * Report the (first) interpretation if any of desired class for
+     * the glyph at hand.
+     * TODO: Could we have several inters of desired class for the same glyph?
      *
      * @param glyph  the underlying glyph
      * @param classe the interpretation class desired
@@ -220,6 +210,98 @@ public class SIGraph
         }
 
         return null;
+    }
+
+    //-------------//
+    // getPartners //
+    //-------------//
+    /**
+     * Report all largest collections of non-conflicting partners
+     * within the provided collection of interpretations.
+     *
+     * @param inters the provided collection of interpretations, with perhaps
+     *               some mutual exclusion relations.
+     * @return all the possible consistent partner collections, with no pair
+     *         of concurrent interpretations in the same collection
+     */
+    public List<List<Inter>> getPartners (List<Inter> inters)
+    {
+        int n = inters.size();
+        Collections.sort(inters, Inter.byId);
+
+        List<List<Inter>> result = new ArrayList<List<Inter>>();
+
+        // Map inter -> concurrents of inter (within the provided collection)
+        Map<Inter, Set<Inter>> map = new HashMap<Inter, Set<Inter>>();
+        boolean conflict = false;
+
+        for (Inter inter : inters) {
+            Set<Inter> concurrents = new HashSet<Inter>();
+            map.put(inter, concurrents);
+
+            for (Relation rel : getExclusions(inter)) {
+                Inter concurrent = (getEdgeTarget(rel) == inter)
+                        ? getEdgeSource(rel) : getEdgeTarget(rel);
+
+                if ((inter.getId() < concurrent.getId())
+                    && inters.contains(concurrent)) {
+                    concurrents.add(concurrent);
+                    conflict = true;
+                }
+            }
+        }
+
+        if (!conflict) {
+            result.add(inters);
+
+            return result;
+        }
+
+        // Define all possible sequences
+        List<Sequence> seqs = new ArrayList<Sequence>();
+        seqs.add(new Sequence(n));
+
+        for (int i = 0; i < n; i++) {
+            Inter inter = inters.get(i);
+            Set<Inter> concurrents = map.get(inter);
+
+            for (int is = 0, isBreak = seqs.size(); is < isBreak; is++) {
+                Sequence seq = seqs.get(is);
+
+                if (seq.line[i] != -1) {
+                    if (concurrents.isEmpty()) {
+                        seq.line[i] = 1;
+                    } else {
+                        seq.line[i] = 0;
+                        
+                        // Duplicate line
+                        Sequence newSeq = seq.copy();
+                        newSeq.line[i] = 1;
+
+                        for (Inter c : concurrents) {
+                            // Forbid dependent locations
+                            newSeq.line[inters.indexOf(c)] = -1;
+                        }
+
+                        seqs.add(newSeq);
+                    }
+                }
+            }
+        }
+
+        for (Sequence seq : seqs) {
+            List<Inter> list = new ArrayList<Inter>();
+
+            for (int i = 0; i < n; i++) {
+                if (seq.line[i] == 1) {
+                    list.add(inters.get(i));
+                }
+            }
+
+            result.add(list);
+        }
+
+        return result;
     }
 
     //-------------//
@@ -248,6 +330,55 @@ public class SIGraph
         return null;
     }
 
+    //--------------//
+    // getRelations //
+    //--------------//
+    /**
+     * Report the set of relations of desired class the provided inter
+     * is involved in.
+     *
+     * @param inter  the provided interpretation
+     * @param classe the desired class of relation
+     * @return the set of involving relations, perhaps empty but not null
+     */
+    public Set<Relation> getRelations (Inter inter,
+                                       Class classe)
+    {
+        Set<Relation> relations = new LinkedHashSet<Relation>();
+
+        for (Relation rel : edgesOf(inter)) {
+            if (classe.isAssignableFrom(rel.getClass())) {
+                relations.add(rel);
+            }
+        }
+
+        return relations;
+    }
+
+    //-------------//
+    // getSupports //
+    //-------------//
+    /**
+     * Report the set of supporting relations the provided inter is
+     * involved as target
+     *
+     * @param inter the provided interpretation
+     * @return the set of supporting relations for inter, perhaps empty but not
+     *         null
+     */
+    public Set<Support> getSupports (Inter inter)
+    {
+        Set<Support> supports = new LinkedHashSet<Support>();
+
+        for (Relation rel : edgesOf(inter)) {
+            if (rel instanceof Support) {
+                supports.add((Support) rel);
+            }
+        }
+
+        return supports;
+    }
+
     //--------//
     // system //
     //--------//
@@ -263,19 +394,23 @@ public class SIGraph
     // insertExclusion //
     //-----------------//
     /**
-     * Insert an exclusion relation between source and target, unless
+     * Insert an exclusion relation between two inters, unless
      * such an exclusion already exists.
-     * TODO: is the order relevant between source and target? TBC
+     * We always insert exclusion from lower id to higher id.
      *
-     * @param source provided source
-     * @param target provided target
+     * @param inter1 provided inter #1
+     * @param inter2 provided inter #2
      * @param cause  exclusion cause (for creation only)
      * @return the concrete exclusion relation, found or created
      */
-    public Exclusion insertExclusion (Inter source,
-                                      Inter target,
+    public Exclusion insertExclusion (Inter inter1,
+                                      Inter inter2,
                                       Cause cause)
     {
+        boolean direct = inter1.getId() < inter2.getId();
+        Inter source = direct ? inter1 : inter2;
+        Inter target = direct ? inter2 : inter1;
+
         for (Relation rel : getAllEdges(source, target)) {
             if (rel instanceof Exclusion) {
                 return (Exclusion) rel;
@@ -286,34 +421,6 @@ public class SIGraph
         addEdge(source, target, exc);
 
         return exc;
-    }
-
-    //------------------//
-    // insertExclusions //
-    //------------------//
-    /**
-     * Insert mutual exclusions between all members of the provided
-     * collection of interpretations.
-     *
-     * @param inters the provided collection of mutually exclusive inters
-     * @param cause  the exclusion cause
-     */
-    public void insertExclusions (List<? extends Inter> inters,
-                                  Cause cause)
-    {
-        int count = inters.size();
-
-        if (count < 2) {
-            return;
-        }
-
-        for (int i = 0; i < (count - 1); i++) {
-            Inter one = inters.get(i);
-
-            for (Inter two : inters.subList(i + 1, count)) {
-                addEdge(one, two, new BasicExclusion(cause));
-            }
-        }
     }
 
     //--------//
@@ -592,6 +699,89 @@ public class SIGraph
         return super.removeVertex(inter);
     }
 
+    //------------------------//
+    // computeContextualGrade //
+    //------------------------//
+    /**
+     * Compute the contextual probability for a interpretation which
+     * is supported by a collection of relations.
+     * It is assumed that all these supporting relations involve the inter as
+     * either a target or a source, otherwise a runtime exception is thrown.
+     * <p>
+     * There may be mutual exclusion between some partners. In this case, we
+     * identify all partitions of compatible partners and report the best
+     * resulting contextual value among those partitions.
+     *
+     * @param inter    the inter whose contextual grade is to be computed
+     * @param supports the set of supporting relations the inter is involved
+     *                 with, some may be in conflict
+     * @param logging  true for getting a printout of contributions
+     * @return the best resulting contextual probability for the inter
+     */
+    private Double computeContextualGrade (Inter inter,
+                                           Collection<? extends Support> supports,
+                                           boolean logging)
+    {
+        if (inter.isVip()) {
+            logger.info("VIP computeContextualGrade for {}", inter);
+        }
+
+        List<Inter> others = new ArrayList<Inter>();
+        Map<Inter, Support> map = new HashMap<Inter, Support>();
+
+        // Check inter involvement
+        for (Support support : supports) {
+            final Inter other;
+
+            if (inter == getEdgeTarget(support)) {
+                other = getEdgeSource(support);
+            } else if (inter == getEdgeSource(support)) {
+                other = getEdgeTarget(support);
+            } else {
+                throw new RuntimeException("No common interpretation");
+            }
+
+            others.add(other);
+            map.put(other, support);
+        }
+
+        // Check for mutual exclusion between 'others'
+        List<List<Inter>> seqs = getPartners(others);
+        double bestCp = 0;
+        List<Inter> bestSeq = null;
+
+        for (List<Inter> seq : seqs) {
+            int n = seq.size();
+            double[] ratios = new double[n];
+            double[] partners = new double[n];
+
+            for (int i = 0; i < n; i++) {
+                Inter other = seq.get(i);
+                Support support = map.get(other);
+                // We assume support ratio does not depend on relation direction
+                ratios[i] = support.getRatio();
+                partners[i] = other.getGrade();
+            }
+
+            double cp = Grades.contextual(inter.getGrade(), partners, ratios);
+
+            if (cp > bestCp) {
+                bestCp = cp;
+                bestSeq = seq;
+            }
+        }
+
+        if (logging || inter.isVip()) {
+            logger.info(
+                    "{} cp:{} {}",
+                    inter,
+                    String.format("%.3f", bestCp),
+                    supportsSeenFrom(inter, map, bestSeq));
+        }
+
+        return bestCp;
+    }
+
     //------------//
     // contextual //
     //------------//
@@ -601,7 +791,69 @@ public class SIGraph
     {
         return Grades.contextual(
                 target.getGrade(),
-                support.getRatio(),
-                source.getGrade());
+                source.getGrade(),
+                support.getRatio());
+    }
+
+    //------------------//
+    // supportsSeenFrom //
+    //------------------//
+    private String supportsSeenFrom (Inter inter,
+                                     Map<Inter, Support> map,
+                                     List<Inter> others)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (Inter other : others) {
+            if (sb.length() == 0) {
+                sb.append("[");
+            } else {
+                sb.append(", ");
+            }
+
+            Support support = map.get(other);
+            sb.append(support.seenFrom(inter));
+        }
+
+        sb.append("]");
+
+        return sb.toString();
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //----------//
+    // Sequence //
+    //----------//
+    /**
+     * This class lists a sequence of interpretations statuses.
+     * Possible status values are:
+     * -1: the related inter is forbidden (because of a conflict with an inter
+     * located before in the sequence)
+     * 0: the related inter is not selected
+     * 1: the related inter is selected
+     */
+    private static class Sequence
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        // The sequence of interpretations statuses
+        // This line is parallel to the list of inters considered
+        int[] line;
+
+        //~ Constructors -------------------------------------------------------
+        public Sequence (int n)
+        {
+            line = new int[n];
+            Arrays.fill(line, 0);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        public Sequence copy ()
+        {
+            Sequence newSeq = new Sequence(line.length);
+            System.arraycopy(line, 0, newSeq.line, 0, line.length);
+
+            return newSeq;
+        }
     }
 }

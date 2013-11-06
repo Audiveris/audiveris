@@ -85,7 +85,7 @@ public class GradesTest
         double[] ratios = new double[] {5.0, 2.0};
         double[] sources = new double[] {0.5, 0.8};
         double expResult = 0.49;
-        double result = Grades.contextual(target, ratios, sources);
+        double result = Grades.contextual(target, sources, ratios);
         assertEquals(expResult, result, 0.01);
     }
 

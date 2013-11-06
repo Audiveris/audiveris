@@ -72,13 +72,13 @@ public class HeadStemRelation
         return stemPortion;
     }
 
-    //------------//
+    //----------//
     // getRatio //
-    //------------//
+    //----------//
     @Override
     public Double getRatio ()
     {
-        return 1.0 + (2.0 * grade);
+        return 1.0 + (10.0 * grade);
     }
 
     /**

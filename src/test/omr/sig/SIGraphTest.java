@@ -39,7 +39,7 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
 /**
- * Class {@code SIGraphTest}
+ * Class {@code SIGraphTest} tests unitary features of SIGraph.
  *
  * @author Hervé Bitteur
  */
@@ -85,19 +85,19 @@ public class SIGraphTest
         frame.setSize(600, 600);
         frame.setVisible(true);
 
-        Inter blanche = new BasicInter((Glyph) null, Shape.NOTEHEAD_VOID, 0.5);
+        Inter blanche = new BasicInter(Shape.NOTEHEAD_VOID, 0.5);
         sig.addVertex(blanche);
 
-        Inter head = new BasicInter((Glyph) null, Shape.NOTEHEAD_BLACK, 0.6);
+        Inter head = new BasicInter(Shape.NOTEHEAD_BLACK, 0.6);
         sig.addVertex(head);
 
-        Inter beam = new BasicInter((Glyph) null, Shape.BEAM, 0.8);
+        Inter beam = new BasicInter(Shape.BEAM, 0.8);
         sig.addVertex(beam);
 
-        Inter hook = new BasicInter((Glyph) null, Shape.BEAM_HOOK, 0.7);
+        Inter hook = new BasicInter(Shape.BEAM_HOOK, 0.7);
         sig.addVertex(hook);
 
-        Inter stem = new BasicInter((Glyph) null, Shape.STEM, 0.3);
+        Inter stem = new BasicInter(Shape.STEM, 0.3);
         sig.addVertex(stem);
 
         //        RelationFactory factory = new RelationFactory();
@@ -119,7 +119,7 @@ public class SIGraphTest
         sig.addEdge(beam, stem, new BasicSupport(0.2));
         sig.addEdge(hook, stem, new BasicSupport(0.4));
 
-        Inter stem2 = new BasicInter((Glyph) null, Shape.STEM, 0.5);
+        Inter stem2 = new BasicInter(Shape.STEM, 0.5);
         sig.addVertex(stem2);
         sig.addEdge(beam, stem2);
 
@@ -129,7 +129,6 @@ public class SIGraphTest
         //        positionVertexAt(stem, 150, 250);
         //        positionVertexAt(beam, 250, 350);
         //        positionVertexAt(stem2, 300, 250);
-
         // Pass the facade the JGraph instance
         JGraphFacade facade = new JGraphFacade(jgraph);
 
@@ -172,6 +171,24 @@ public class SIGraphTest
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //------------//
+    // BasicInter //
+    //------------//
+    private static class BasicInter
+            extends AbstractInter
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public BasicInter (Shape shape,
+                           double grade)
+        {
+            super((Glyph) null, shape, grade);
+        }
+    }
+
+    //-----------------//
+    // ListenableGraph //
+    //-----------------//
     /**
      * a listenable directed multigraph that allows loops and parallel edges.
      */

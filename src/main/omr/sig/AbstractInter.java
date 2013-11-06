@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                    B a s i c I n t e r p r e t a t i o n                    //
+//                          A b s t r a c t I n t e r                         //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -19,21 +19,28 @@ import omr.glyph.facets.Glyph;
 
 import omr.math.GeoUtil;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.Rectangle;
 import java.awt.geom.Area;
+import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code BasicInter} is the basis implementation for
- * Interpretation interface.
+ * Class {@code AbstractInter} is the abstract implementation basis
+ * for Interpretation interface.
  *
  * @author Hervé Bitteur
  */
-public class BasicInter
+public abstract class AbstractInter
         implements Inter
 {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(
+            AbstractInter.class);
 
     //~ Instance fields --------------------------------------------------------
     /** The underlying glyph, if any. */
@@ -44,6 +51,9 @@ public class BasicInter
 
     /** The quality of this interpretation. */
     protected final double grade;
+
+    /** The contextual grade of this interpretation, if any. */
+    protected Double contextualGrade;
 
     /** The hosting SIG. */
     protected SIGraph sig;
@@ -67,55 +77,55 @@ public class BasicInter
     protected GradeImpacts impacts;
 
     //~ Constructors -----------------------------------------------------------
-    //------------//
-    // BasicInter //
-    //------------//
+    //---------------//
+    // AbstractInter //
+    //---------------//
     /**
-     * Creates a new BasicInter object.
+     * Creates a new AbstractInter object.
      *
      * @param glyph the glyph to interpret
      * @param shape the possible shape
      * @param grade the interpretation quality
      */
-    public BasicInter (Glyph glyph,
-                       Shape shape,
-                       double grade)
+    public AbstractInter (Glyph glyph,
+                          Shape shape,
+                          double grade)
     {
         this(glyph, null, shape, grade);
     }
 
-    //------------//
-    // BasicInter //
-    //------------//
+    //---------------//
+    // AbstractInter //
+    //---------------//
     /**
-     * Creates a new BasicInter object.
+     * Creates a new AbstractInter object.
      *
      * @param box   the object bounds
      * @param shape the possible shape
      * @param grade the interpretation quality
      */
-    public BasicInter (Rectangle box,
-                       Shape shape,
-                       double grade)
+    public AbstractInter (Rectangle box,
+                          Shape shape,
+                          double grade)
     {
         this(null, box, shape, grade);
     }
 
-    //------------//
-    // BasicInter //
-    //------------//
+    //---------------//
+    // AbstractInter //
+    //---------------//
     /**
-     * Creates a new BasicInter object.
+     * Creates a new AbstractInter object.
      *
      * @param glyph the glyph to interpret
      * @param box   the precise object bounds (if different from glyph bounds)
      * @param shape the possible shape
      * @param grade the interpretation quality
      */
-    public BasicInter (Glyph glyph,
-                       Rectangle box,
-                       Shape shape,
-                       double grade)
+    public AbstractInter (Glyph glyph,
+                          Rectangle box,
+                          Shape shape,
+                          double grade)
     {
         this.glyph = glyph;
         this.box = box;
@@ -167,6 +177,10 @@ public class BasicInter
         if (!deleted) {
             deleted = true;
 
+            if (isVip()) {
+                logger.info("VIP delete {}", this);
+            }
+
             if (sig != null) {
                 sig.removeVertex(this);
             }
@@ -192,7 +206,11 @@ public class BasicInter
                         getClass().getSimpleName(),
                         Integer.toHexString(this.hashCode())));
         sb.append(String.format("   %s%n", this));
-        sb.append(String.format("   %s%n", getDetails()));
+
+        if (!getDetails()
+                .isEmpty()) {
+            sb.append(String.format("   %s", getDetails()));
+        }
 
         return sb.toString();
     }
@@ -201,7 +219,7 @@ public class BasicInter
     // getArea //
     //---------//
     /**
-     * @return the area
+     * @return the area, if any
      */
     @Override
     public Area getArea ()
@@ -226,6 +244,24 @@ public class BasicInter
         return null;
     }
 
+    //--------------------//
+    // getContextualGrade //
+    //--------------------//
+    @Override
+    public Double getContextualGrade ()
+    {
+        return contextualGrade;
+    }
+
+    //---------------//
+    // getCoreBounds //
+    //---------------//
+    @Override
+    public Rectangle2D getCoreBounds ()
+    {
+        return getBounds();
+    }
+
     //------------//
     // getDetails //
     //------------//
@@ -235,7 +271,8 @@ public class BasicInter
         StringBuilder sb = new StringBuilder();
 
         if (glyph != null) {
-            sb.append("g#").append(glyph.getId());
+            sb.append("g#")
+                    .append(glyph.getId());
         }
 
         if (impacts != null) {
@@ -340,15 +377,21 @@ public class BasicInter
         return vip;
     }
 
-    //---------//
-    // setArea //
-    //---------//
-    /**
-     * @param area the area to set
-     */
-    public void setArea (Area area)
+    //----------//
+    // overlaps //
+    //----------//
+    @Override
+    public boolean overlaps (Inter that)
     {
-        this.area = area;
+        if (this.area != null) {
+            return this.area.intersects(that.getCoreBounds());
+        } else if (that.getArea() != null) {
+            return that.getArea()
+                    .intersects(this.getCoreBounds());
+        } else {
+            return this.getCoreBounds()
+                    .intersects(that.getCoreBounds());
+        }
     }
 
     //-----------//
@@ -358,6 +401,15 @@ public class BasicInter
     public void setBounds (Rectangle box)
     {
         this.box = box;
+    }
+
+    //--------------------//
+    // setContextualGrade //
+    //--------------------//
+    @Override
+    public void setContextualGrade (double value)
+    {
+        contextualGrade = value;
     }
 
     //-------//
@@ -418,6 +470,17 @@ public class BasicInter
         }
 
         return sb.toString();
+    }
+
+    //---------//
+    // setArea //
+    //---------//
+    /**
+     * @param area the area to set
+     */
+    protected void setArea (Area area)
+    {
+        this.area = area;
     }
 
     //~ Inner Classes ----------------------------------------------------------

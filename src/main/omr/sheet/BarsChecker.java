@@ -58,7 +58,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class {@literal BarsChecker} is dedicated to physical checks of
+ * Class {@code BarsChecker} is dedicated to physical checks of
  * vertical sticks that are candidates for bar lines.
  *
  * @author Hervé Bitteur

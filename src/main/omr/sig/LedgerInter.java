@@ -20,7 +20,7 @@ import omr.glyph.facets.Glyph;
  * @author Hervé Bitteur
  */
 public class LedgerInter
-        extends BasicInter
+        extends AbstractInter
 {
     //~ Constructors -----------------------------------------------------------
 

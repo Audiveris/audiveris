@@ -21,9 +21,33 @@ public interface Relation
 {
     //~ Methods ----------------------------------------------------------------
 
-    /** Short name. */
+    /**
+     * Details for tip.
+     *
+     * @return relation details
+     */
+    String getDetails ();
+
+    /**
+     * Short name.
+     *
+     * @return the relation short name
+     */
     String getName ();
-    
-    /** Details for tip. */
-    String getDetails();
+
+    /**
+     * Relation description when seen from one of its involved inters
+     *
+     * @param inter the interpretation point of view
+     * @return the inter-based description
+     */
+    String seenFrom (Inter inter);
+
+    /**
+     * Report a long description of the relation
+     *
+     * @param sig the containing sig
+     * @return long description
+     */
+    String toLongString (SIGraph sig);
 }

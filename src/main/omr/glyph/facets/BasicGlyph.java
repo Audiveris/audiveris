@@ -1124,7 +1124,7 @@ public class BasicGlyph
 
         if (!getFailures()
                 .isEmpty()) {
-            sb.append(" failures:")
+            sb.append(" ")
                     .append(getFailures());
         }
 
