@@ -226,7 +226,8 @@ public class InsertTask
             // Specific for LEDGERs: add them to related staff
             if (shape == Shape.LEDGER) {
                 StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
-                staff.addLedger(glyph);
+                //TODO: insert a LedgerInter!
+                ///staff.addLedger(glyph);
             }
 
             glyphs.add(glyph);

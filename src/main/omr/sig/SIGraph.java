@@ -273,7 +273,7 @@ public class SIGraph
                         seq.line[i] = 1;
                     } else {
                         seq.line[i] = 0;
-                        
+
                         // Duplicate line
                         Sequence newSeq = seq.copy();
                         newSeq.line[i] = 1;
@@ -419,6 +419,10 @@ public class SIGraph
 
         Exclusion exc = new BasicExclusion(cause);
         addEdge(source, target, exc);
+
+        if (inter1.isVip() || inter2.isVip()) {
+            logger.info("VIP inserted {}", exc.toLongString(this));
+        }
 
         return exc;
     }
@@ -686,6 +690,61 @@ public class SIGraph
         system.getSheet()
                 .getLocationService()
                 .publish(event);
+    }
+
+    //------------------//
+    // reduceExclusions //
+    //------------------//
+    /**
+     * Process each exclusion in the provided collection by removing
+     * the source or target vertex of lower contextual grade.
+     *
+     * @param relations the collection to process
+     * @return the set of vertices removed
+     */
+    public Set<Inter> reduceExclusions (Collection<? extends Relation> relations)
+    {
+        // Deletions
+        Set<Inter> toRemove = new LinkedHashSet<Inter>();
+
+        for (Relation rel : relations) {
+            if (rel instanceof Exclusion) {
+                final Inter source = getEdgeSource(rel);
+                final double scp = source.getContextualGrade();
+                final Inter target = getEdgeTarget(rel);
+                final double tcp = target.getContextualGrade();
+                Inter weaker = (scp < tcp) ? source : target;
+
+                if (weaker.isVip()) {
+                    logger.info(
+                            "Remaining {} deleting weaker {}",
+                            rel.toLongString(this),
+                            weaker);
+                }
+
+                toRemove.add(weaker);
+            }
+        }
+
+        for (Inter inter : toRemove) {
+            removeVertex(inter);
+        }
+
+        return toRemove;
+    }
+
+    //------------------//
+    // reduceExclusions //
+    //------------------//
+    /**
+     * Process each exclusion in the SIG by removing the source or
+     * target vertex of lower contextual grade.
+     *
+     * @return the set of vertices removed
+     */
+    public Set<Inter> reduceExclusions ()
+    {
+        return reduceExclusions(edgeSet());
     }
 
     //--------------//

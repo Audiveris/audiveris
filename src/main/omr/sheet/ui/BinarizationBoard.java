@@ -134,8 +134,9 @@ public class BinarizationBoard
                     FilterDescriptor desc = sheet.getPage()
                             .getFilterParam()
                             .getTarget();
-                    PixelSource source = new BufferedSource(
-                            sheet.getPicture().getImage(Picture.ImageKey.INITIAL));
+                    PixelSource source = sheet.getPicture()
+                            .getSource(
+                                    Picture.SourceKey.INITIAL);
                     PixelFilter filter = desc.getFilter(source);
 
                     if (filter == null) {

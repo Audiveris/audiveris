@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.check;
 
-import omr.check.CheckSuite.Impacts;
+import omr.check.SuiteImpacts;
 
 import omr.constant.Constant;
 
@@ -169,7 +169,7 @@ public class CheckPanel<C extends Checkable>
         }
 
         // Run the suite
-        Impacts impacts = suite.getImpacts(checkable);
+        SuiteImpacts impacts = suite.getImpacts(checkable);
 
         // Fill one row per check
         List<Check<C>> checks = suite.getChecks();
@@ -259,19 +259,24 @@ public class CheckPanel<C extends Checkable>
                 StringBuilder sb = new StringBuilder();
                 sb.append("<html>");
                 sb.append(check.getDescription());
-
-                Constant constant = check.getLowConstant();
-
-                // Tell data unit if relevant
                 sb.append("<br/>");
 
-                if (constant.getQuantityUnit() != null) {
+                // Tell data unit if relevant
+                String unit = check.getLowConstant()
+                        .getQuantityUnit();
+
+                if (unit == null) {
+                    unit = check.getHighConstant()
+                            .getQuantityUnit();
+                }
+
+                if (unit != null) {
                     sb.append("Unit=")
-                            .append(constant.getQuantityUnit());
+                            .append(unit);
                 } else {
                     // Otherwise, simply tell the data type
                     sb.append("Type=")
-                            .append(constant.getShortTypeName());
+                            .append(check.getHighConstant().getShortTypeName());
                 }
 
                 sb.append("</html>");

@@ -91,7 +91,7 @@ public class FilamentsFactory
     private final Orientation orientation;
 
     /** Precise constructor for filaments. */
-    private  Constructor<?> glyphConstructor;
+    private Constructor<?> glyphConstructor;
 
     /** Scale-dependent constants. */
     private final Parameters params;
@@ -244,7 +244,7 @@ public class FilamentsFactory
             createFilaments(filaments, source);
 
             logger.debug("{} {} filaments created.",
-                    orientation, filaments.size());
+                         orientation, filaments.size());
 
             // Merge filaments into larger filaments
             watch.start("mergeFilaments");
@@ -496,7 +496,8 @@ public class FilamentsFactory
                         if (logger.isDebugEnabled() || areVips) {
                             logger.info(
                                     "{}Delta pos too high for overlap: {} vs {}",
-                                    vips, posGap, params.maxOverlapDeltaPos);
+                                    vips, String.format("%.2f", posGap),
+                                    params.maxOverlapDeltaPos);
                         }
 
                         return false;
@@ -668,7 +669,7 @@ public class FilamentsFactory
 
             if (logger.isDebugEnabled() || section.isVip() || nest.isVip(fil)) {
                 logger.info(
-                        "Created {} with {}", fil, section);
+                        "VIP created {} with {}", fil, section);
 
                 if (section.isVip() || nest.isVip(fil)) {
                     fil.setVip();
@@ -703,7 +704,7 @@ public class FilamentsFactory
             }
 
             logger.debug("expandFilaments: {}/{}",
-                    sections.size(), source.size());
+                         sections.size(), source.size());
 
             Collections.sort(sections, Section.posComparator);
 
@@ -755,8 +756,8 @@ public class FilamentsFactory
                                     || fil.isVip()
                                     || sectionGlyph.isVip()) {
                                     logger.info("Merging {} w/ {}",
-                                            fil,
-                                            Sections.toString(sectionGlyph.getMembers()));
+                                                fil,
+                                                Sections.toString(sectionGlyph.getMembers()));
 
                                     if (sectionGlyph.isVip()) {
                                         fil.setVip();
@@ -772,7 +773,7 @@ public class FilamentsFactory
                         } else {
                             if (fil.isVip() && sectionGlyph.isVip()) {
                                 logger.info("No intersection between {} and {}",
-                                        fil, sectionGlyph);
+                                            fil, sectionGlyph);
                             }
                         }
                     }

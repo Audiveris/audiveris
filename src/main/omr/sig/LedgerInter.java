@@ -36,6 +36,19 @@ public class LedgerInter
         super(glyph, Shape.LEDGER, grade);
     }
 
+    /**
+     * Creates a new LedgerInter object.
+     *
+     * @param glyph   the underlying glyph
+     * @param impacts the assignment details
+     */
+    public LedgerInter (Glyph glyph,
+                        GradeImpacts impacts)
+    {
+        this(glyph, impacts.getGrade());
+        setImpacts(impacts);
+    }
+
     //~ Methods ----------------------------------------------------------------
     //--------//
     // accept //

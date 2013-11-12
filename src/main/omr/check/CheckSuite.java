@@ -11,21 +11,33 @@
 // </editor-fold>
 package omr.check;
 
-import omr.sig.GradeImpacts;
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
  * Class {@code CheckSuite} represents a suite of homogeneous checks,
  * meaning that all checks in the suite work on the same object type.
- *
- * Every check in the suite is assigned a weight, to represent its relative
- * importance in the suite.
+ * <p>
+ * A check suite is typically applied on a candidate to evaluate the
+ * <b>intrinsic</b> quality (grade) of this candidate that depends on the
+ * candidate alone.
+ * This intrinsic grade can be complemented by <b>contextual</b> grade that
+ * takes into account potential supporting entities nearby.
+ * To leave room for contextual increment, the intrinsic grade is applied a
+ * standard reduction ratio.
+ * <p>
+ * Every check in the suite is assigned a <b>weight</b>, to represent its
+ * relative importance in the computation of the final grade value.
+ * A weight value of <b>zero</b> implements a pure <b>constraint</b> check that
+ * has no role in the precise computation of the final grade value, except that
+ * it can detect that a constraint is not matched and thus make the whole check
+ * suite fail.
  *
  * @param <C> the subtype of Checkable objects used in the
  *            homogeneous collection of checks in this suite
@@ -36,21 +48,22 @@ public class CheckSuite<C extends Checkable>
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(
             CheckSuite.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Name of this suite. */
-    protected String name;
+    protected final String name;
 
     /** Minimum threshold for final grade. */
-    protected double threshold;
+    protected final double threshold;
 
     /** List of checks in the suite. */
     private final List<Check<C>> checks = new ArrayList<Check<C>>();
 
-    /** List of related weights in the suite. */
+    /** Parallel list of related weights. */
     private final List<Double> weights = new ArrayList<Double>();
 
     /** Total checks weight. */
@@ -74,43 +87,6 @@ public class CheckSuite<C extends Checkable>
     }
 
     //~ Methods ----------------------------------------------------------------
-    //----------------//
-    // passCollection //
-    //----------------//
-    /**
-     * Pass the whole collection of suites in a row and return
-     * the global result.
-     *
-     * @param <C>       The specific type of checked object
-     * @param checkable the object to be checked
-     * @param suites    the collection of check suites to pass
-     *
-     * @return the global result
-     */
-    public static <C extends Checkable> double passCollection (C checkable,
-                                                               Collection<CheckSuite<C>> suites)
-    {
-        double totalWeight = 0.0d;
-        double grade = 0.0d;
-
-        for (CheckSuite<C> suite : suites) {
-            double res = suite.pass(checkable, null);
-
-            // If one totally failed, give up immediately
-            if (res == -1) {
-                return res;
-            } else {
-                // Aggregate results
-                double weight = suite.getTotalWeight();
-                totalWeight += weight;
-                grade += (res * weight);
-            }
-        }
-
-        // Final grade
-        return grade / totalWeight;
-    }
-
     //-----//
     // add //
     //-----//
@@ -204,6 +180,14 @@ public class CheckSuite<C extends Checkable>
         return checks;
     }
 
+    //--------------------//
+    // getDefaultMinGrade //
+    //--------------------//
+    public static double getDefaultMinGrade ()
+    {
+        return constants.defaultMinGrade.getValue();
+    }
+
     //------------//
     // getImpacts //
     //------------//
@@ -214,9 +198,9 @@ public class CheckSuite<C extends Checkable>
      * @param checkable the object to be checked
      * @return the detailed impacts
      */
-    public Impacts getImpacts (C checkable)
+    public SuiteImpacts getImpacts (C checkable)
     {
-        final Impacts<C> impacts = new Impacts<C>(this, checkable);
+        final SuiteImpacts<C> impacts = new SuiteImpacts<C>(this, checkable);
         pass(checkable, impacts);
 
         return impacts;
@@ -287,9 +271,8 @@ public class CheckSuite<C extends Checkable>
      * @return the computed grade.
      */
     public double pass (C checkable,
-                        Impacts impacts)
+                        SuiteImpacts impacts)
     {
-        final boolean debug = logger.isDebugEnabled() || checkable.isVip();
         final CheckResult result = new CheckResult();
         double grade = 1d;
         int index = 0;
@@ -316,39 +299,13 @@ public class CheckSuite<C extends Checkable>
         }
 
         // Final grade
-        grade = 0.8 * Math.pow(grade, 1 / totalWeight); // BINGO 0.8 factor
+        grade = Math.pow(grade, 1 / totalWeight) * constants.intrinsicRatio.getValue();
 
         if (impacts != null) {
             impacts.setGrade(grade);
         }
 
         return grade;
-    }
-
-    //---------//
-    // setName //
-    //---------//
-    /**
-     * Assign a new name to the check suite.
-     *
-     * @param name the new name
-     */
-    public void setName (String name)
-    {
-        this.name = name;
-    }
-
-    //--------------//
-    // setThreshold //
-    //--------------//
-    /**
-     * Allows to assign a new threshold for the suite.
-     *
-     * @param threshold the new minimum result
-     */
-    public void setThreshold (double threshold)
-    {
-        this.threshold = threshold;
     }
 
     //--------------//
@@ -364,122 +321,24 @@ public class CheckSuite<C extends Checkable>
     }
 
     //~ Inner Classes ----------------------------------------------------------
-    //---------//
-    // Impacts //
-    //---------//
+    //-----------//
+    // Constants //
+    //-----------//
     /**
-     * A GradeImpacts implementation based on a CheckSuite.
-     *
-     * @param <C> precise Checkable type
+     * General constants for CheckSuite.
      */
-    public static class Impacts<C extends Checkable>
-            implements GradeImpacts
+    private static final class Constants
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
-        /** The underlying suite of check instances. */
-        private final CheckSuite<C> suite;
+        Constant.Ratio intrinsicRatio = new Constant.Ratio(
+                0.8,
+                "Reduction ratio applied on any suite grade");
 
-        /** The checked object. */
-        private final Checkable checkable;
+        Constant.Ratio defaultMinGrade = new Constant.Ratio(
+                0.5,
+                "Default minimum acceptable suite result");
 
-        /** Individual check values. */
-        private final double[] values;
-
-        /** Individual check details. */
-        private final double[] details;
-
-        /** Resulting suite grade. */
-        private double grade;
-
-        //~ Constructors -------------------------------------------------------
-        public Impacts (CheckSuite<C> suite,
-                        C checkable)
-        {
-            this.suite = suite;
-            this.checkable = checkable;
-
-            final int size = suite.getChecks()
-                    .size();
-            values = new double[size];
-            details = new double[size];
-        }
-
-        //~ Methods ------------------------------------------------------------
-        public String getDump ()
-        {
-            final List<Check<C>> checks = suite.getChecks();
-            final List<Double> weights = suite.getWeights();
-
-            final StringBuilder sb = new StringBuilder();
-            sb.append(suite.getName())
-                    .append(" ")
-                    .append(checkable);
-
-            for (int i = 0; i < checks.size(); i++) {
-                Check<C> check = checks.get(i);
-                sb.append(" ")
-                        .append(check.getName())
-                        .append(":")
-                        .append(values[i]);
-            }
-
-            sb.append(String.format(" => %.2f", grade));
-
-            return sb.toString();
-        }
-
-        @Override
-        public double getGrade ()
-        {
-            return grade;
-        }
-
-        public double getValue (int index)
-        {
-            return values[index];
-        }
-
-        public void setDetail (int index,
-                               double detail)
-        {
-            details[index] = detail;
-        }
-
-        public void setGrade (double grade)
-        {
-            this.grade = grade;
-        }
-
-        public void setValue (int index,
-                              double value)
-        {
-            values[index] = value;
-        }
-
-        @Override
-        public String toString ()
-        {
-            final StringBuilder sb = new StringBuilder();
-            final List<Check<C>> checks = suite.getChecks();
-            final List<Double> weights = suite.getWeights();
-
-            for (int i = 0; i < checks.size(); i++) {
-                double weight = weights.get(i);
-
-                if (weight != 0) {
-                    Check<C> check = checks.get(i);
-
-                    if (sb.length() > 0) {
-                        sb.append(" ");
-                    }
-
-                    sb.append(
-                            String.format("%s:%.2f", check.getName(), details[i]));
-                }
-            }
-
-            return sb.toString();
-        }
     }
 }

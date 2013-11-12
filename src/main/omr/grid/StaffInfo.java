@@ -27,6 +27,9 @@ import omr.score.entity.Staff;
 import omr.sheet.NotePosition;
 import omr.sheet.Scale;
 
+import omr.sig.Inter;
+import omr.sig.LedgerInter;
+
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.VerticalSide;
@@ -120,13 +123,13 @@ public class StaffInfo
     private GeoPath area;
 
     /** Map of ledgers nearby. */
-    private final SortedMap<Integer, SortedSet<Glyph>> ledgerMap = new TreeMap<>();
+    private final SortedMap<Integer, SortedSet<LedgerInter>> ledgerMap = new TreeMap<>();
 
     /** Corresponding staff entity in the score hierarchy. */
     private Staff scoreStaff;
 
     /** Potential attachments. */
-    private AttachmentHolder attachments = new BasicAttachmentHolder();
+    private final AttachmentHolder attachments = new BasicAttachmentHolder();
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -171,20 +174,20 @@ public class StaffInfo
     // addLedger //
     //-----------//
     /**
-     * Add a ledger to the collection (which is lazily created)
+     * Add a ledger glyph to the collection.
      *
      * @param ledger the ledger to add
      * @param index  the staff-based index for ledger line
      */
-    public void addLedger (Glyph ledger,
+    public void addLedger (LedgerInter ledger,
                            int index)
     {
         assert ledger != null : "Cannot add a null ledger";
 
-        SortedSet<Glyph> ledgerSet = ledgerMap.get(index);
+        SortedSet<LedgerInter> ledgerSet = ledgerMap.get(index);
 
         if (ledgerSet == null) {
-            ledgerSet = new TreeSet<>(Glyph.byAbscissa);
+            ledgerSet = new TreeSet<>(Inter.byFullAbscissa);
             ledgerMap.put(index, ledgerSet);
         }
 
@@ -195,41 +198,41 @@ public class StaffInfo
     // addLedger //
     //-----------//
     /**
-     * Add a ledger to the collection, computing line index from
+     * Add a ledger glyph to the collection, computing line index from
      * glyph pitch position.
      *
-     * @param ledger the ledger to add
+     * @param ledger the ledger glyph to add
      */
-    public void addLedger (Glyph ledger)
+    public void addLedger (LedgerInter ledger)
     {
         assert ledger != null : "Cannot add a null ledger";
 
         addLedger(ledger,
-                getLedgerLineIndex(pitchPositionOf(ledger.getCentroid())));
+                  getLedgerLineIndex(pitchPositionOf(ledger.getGlyph().getCentroid())));
     }
 
     //--------------//
     // removeLedger //
     //--------------//
     /**
-     * Remove a legder from staff collection.
+     * Remove a ledger from staff collection.
      *
      * @param ledger the ledger to remove
      * @return true if actually removed, false if not found
      */
-    public boolean removeLedger (Glyph ledger)
+    public boolean removeLedger (LedgerInter ledger)
     {
         assert ledger != null : "Cannot remove a null ledger";
 
         // Browse all staff ledger indices
-        for (SortedSet<Glyph> ledgerSet : ledgerMap.values()) {
+        for (SortedSet<LedgerInter> ledgerSet : ledgerMap.values()) {
             if (ledgerSet.remove(ledger)) {
                 return true;
             }
         }
 
         // Not found
-        logger.debug("Could not find ledger {}", ledger.idString());
+        logger.debug("Could not find ledger {}", ledger);
         return false;
     }
 
@@ -379,8 +382,8 @@ public class StaffInfo
 
         // Browse all staff ledgers
         Set<IndexedLedger> foundLedgers = new HashSet<>();
-        for (Map.Entry<Integer, SortedSet<Glyph>> entry : ledgerMap.entrySet()) {
-            for (Glyph ledger : entry.getValue()) {
+        for (Map.Entry<Integer, SortedSet<LedgerInter>> entry : ledgerMap.entrySet()) {
+            for (LedgerInter ledger : entry.getValue()) {
                 if (ledger.getBounds().intersects(searchBox)) {
                     foundLedgers.add(new IndexedLedger(ledger, entry.getKey()));
                 }
@@ -392,7 +395,7 @@ public class StaffInfo
             double bestDist = Double.MAX_VALUE;
 
             for (IndexedLedger iLedger : foundLedgers) {
-                Point2D center = iLedger.glyph.getAreaCenter();
+                Point2D center = iLedger.ledger.getGlyph().getAreaCenter();
                 double dist = Math.abs(center.getY() - point.getY());
 
                 if (dist < bestDist) {
@@ -528,7 +531,7 @@ public class StaffInfo
             {
                 return Double.compare(Math.abs(o1), Math.abs(o2));
             }
-        });
+                });
 
         double sum = 0;
 
@@ -594,7 +597,7 @@ public class StaffInfo
     //--------------//
     // getLedgerMap //
     //--------------//
-    public SortedMap<Integer, SortedSet<Glyph>> getLedgerMap ()
+    public SortedMap<Integer, SortedSet<LedgerInter>> getLedgerMap ()
     {
         return ledgerMap;
     }
@@ -603,13 +606,13 @@ public class StaffInfo
     // getLedgers //
     //------------//
     /**
-     * Report the ordered set of ledgers, if any, for a given pitch value.
+     * Report the ordered set of ledgers, if any, for a given index.
      *
      * @param lineIndex the precise line index that specifies algebraic
      *                  distance from staff
      * @return the proper abscissa-ordered set of ledgers, or null
      */
-    public SortedSet<Glyph> getLedgers (int lineIndex)
+    public SortedSet<LedgerInter> getLedgers (int lineIndex)
     {
         return ledgerMap.get(lineIndex);
     }
@@ -714,7 +717,7 @@ public class StaffInfo
             bestLedger = getClosestLedger(point);
 
             if (bestLedger != null) {
-                Point2D center = bestLedger.glyph.getAreaCenter();
+                Point2D center = bestLedger.ledger.getGlyph().getAreaCenter();
                 int ledgerPitch = getLedgerPitchPosition(bestLedger.index);
                 double deltaPitch = (2d * (point.getY() - center.getY())) / specificScale.
                         getInterline();
@@ -1017,22 +1020,22 @@ public class StaffInfo
     //---------------//
 
     /**
-     * This combines the ledger glyph with the index relative to the
+     * This combines the ledger with the index relative to the
      * hosting staff.
      */
     public static class IndexedLedger
     {
 
-        /** The ledger glyph. */
-        public final Glyph glyph;
+        /** The ledger. */
+        public final LedgerInter ledger;
 
         /** Staff-based line index. (-1, -2, ... above, +1, +2, ... below) */
         public final int index;
 
-        public IndexedLedger (Glyph ledger,
+        public IndexedLedger (LedgerInter ledger,
                               int index)
         {
-            this.glyph = ledger;
+            this.ledger = ledger;
             this.index = index;
         }
     }

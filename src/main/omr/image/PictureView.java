@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.image;
 
-import omr.image.Picture.ImageKey;
+import omr.image.Picture.SourceKey;
 
 import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
@@ -34,8 +34,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
- * Class {@code PictureView} defines the view dedicated to the display
- * of the picture image of a music sheet.
+ * Class {@code PictureView} defines the view dedicated to the
+ * display of the picture image of a music sheet.
  *
  * @author Hervé Bitteur
  */
@@ -76,7 +76,7 @@ public class PictureView
         // Listen to all painting parameters
         PaintingParameters.getInstance()
                 .addPropertyChangeListener(
-                new WeakPropertyChangeListener(this));
+                        new WeakPropertyChangeListener(this));
 
         // Insert view
         setView(view);
@@ -113,7 +113,7 @@ public class PictureView
             if (painting.isInputPainting()) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.drawRenderedImage(
-                        sheet.getPicture().getImage(ImageKey.INITIAL),
+                        sheet.getPicture().getInitialImage(),
                         null);
             } else {
                 // Use a white background
@@ -136,12 +136,12 @@ public class PictureView
                 boolean mixed = painting.isInputPainting();
                 sheet.getPage()
                         .accept(
-                        new PagePhysicalPainter(
-                        g,
-                        mixed ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE,
-                        mixed ? false : painting.isVoicePainting(),
-                        true,
-                        false));
+                                new PagePhysicalPainter(
+                                        g,
+                                        mixed ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE,
+                                        mixed ? false : painting.isVoicePainting(),
+                                        true,
+                                        false));
             } else {
                 if (sheet.getTargetBuilder() != null) {
                     sheet.getTargetBuilder()

@@ -13,7 +13,6 @@ package omr.sig;
 
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
-import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
@@ -33,7 +32,6 @@ import org.slf4j.LoggerFactory;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -206,13 +204,10 @@ public class SigSolver
         /** Count of reductions performed. */
         int reductions;
 
-        /** Count of exclusions performed. */
-        int exclusions;
+        /** Count of deletions performed. */
+        int deletions;
 
         do {
-            reductions = 0;
-            exclusions = 0;
-
             do {
                 modifs = 0;
                 // Detect lack of mandatory support relation for certain inters
@@ -235,12 +230,13 @@ public class SigSolver
             }
 
             // Remaining exclusions
-            exclusions = lookupExclusions();
+            deletions = sig.reduceExclusions()
+                    .size();
 
             if (logging) {
-                logger.info("S#{} exclusions: {}", system.getId(), exclusions);
+                logger.info("S#{} deletions: {}", system.getId(), deletions);
             }
-        } while ((reductions > 0) || (exclusions > 0));
+        } while ((reductions > 0) || (deletions > 0));
     }
 
     //------------------//
@@ -452,25 +448,26 @@ public class SigSolver
      */
     private int checkLedgers ()
     {
+        // All system notes, sorted by abscissa
+        List<Inter> allNotes = sig.inters(
+                ShapeSet.shapesOf(
+                        ShapeSet.NoteHeads.getShapes(),
+                        Arrays.asList(Shape.WHOLE_NOTE)));
+        Collections.sort(allNotes, Inter.byAbscissa);
+
         int modifs = 0;
         boolean modified;
 
         do {
             modified = false;
 
-            List<Inter> allNotes = sig.inters(
-                    ShapeSet.shapesOf(
-                            ShapeSet.NoteHeads.getShapes(),
-                            Arrays.asList(Shape.WHOLE_NOTE)));
-            Collections.sort(allNotes, Inter.byAbscissa);
-
             for (StaffInfo staff : system.getStaves()) {
-                SortedMap<Integer, SortedSet<Glyph>> map = staff.getLedgerMap();
+                SortedMap<Integer, SortedSet<LedgerInter>> map = staff.getLedgerMap();
 
-                for (Entry<Integer, SortedSet<Glyph>> entry : map.entrySet()) {
+                for (Entry<Integer, SortedSet<LedgerInter>> entry : map.entrySet()) {
                     int index = entry.getKey();
-                    SortedSet<Glyph> glyphs = entry.getValue();
-                    List<LedgerInter> ledgers = ledgerIntersOf(glyphs);
+                    SortedSet<LedgerInter> ledgers = entry.getValue();
+                    List<LedgerInter> toRemove = new ArrayList<LedgerInter>();
 
                     for (LedgerInter ledger : ledgers) {
                         if (ledger.isVip()) {
@@ -489,9 +486,14 @@ public class SigSolver
                             }
 
                             sig.removeVertex(ledger);
+                            toRemove.add(ledger);
                             modified = true;
                             modifs++;
                         }
+                    }
+
+                    if (!toRemove.isEmpty()) {
+                        ledgers.removeAll(toRemove);
                     }
                 }
             }
@@ -663,27 +665,25 @@ public class SigSolver
      * @param staff    the containing staff
      * @param index    the ledger line index
      * @param ledger   the ledger to check
-     * @param allHeads the abscissa-ordered list of heads in the system
+     * @param allNotes the abscissa-ordered list of notes in the system
      * @return true if OK
      */
     private boolean ledgerHasNoteOrLedger (StaffInfo staff,
                                            int index,
                                            LedgerInter ledger,
-                                           List<Inter> allHeads)
+                                           List<Inter> allNotes)
     {
         Rectangle ledgerBox = new Rectangle(ledger.getBounds());
         int interline = system.getSheet()
                 .getScale()
                 .getInterline();
-        ledgerBox.grow(0, interline); // Very height, but that's OK
+        ledgerBox.grow(0, interline); // Very high box, but that's OK
 
         // Check for another ledger on next line
         int nextIndex = index + Integer.signum(index);
-        SortedSet<Glyph> nextGlyphs = staff.getLedgers(nextIndex);
+        SortedSet<LedgerInter> nextLedgers = staff.getLedgers(nextIndex);
 
-        if (nextGlyphs != null) {
-            List<LedgerInter> nextLedgers = ledgerIntersOf(nextGlyphs);
-
+        if (nextLedgers != null) {
             for (LedgerInter nextLedger : nextLedgers) {
                 // Check abscissa compatibility
                 if (GeoUtil.xOverlap(ledgerBox, nextLedger.getBounds()) > 0) {
@@ -693,52 +693,24 @@ public class SigSolver
         }
 
         // Else, check for a note centered on ledger, or just on next pitch
-        final int pitch = StaffInfo.getLedgerPitchPosition(index);
-        final int nextPitch = pitch + Integer.signum(index);
+        final int ledgerPitch = StaffInfo.getLedgerPitchPosition(index);
+        final int nextPitch = ledgerPitch + Integer.signum(index);
 
-        final List<Inter> heads = sig.intersectedInters(
-                allHeads,
+        final List<Inter> notes = sig.intersectedInters(
+                allNotes,
                 GeoOrder.BY_ABSCISSA,
                 ledgerBox);
 
-        for (Inter head : heads) {
-            final int headPitch = (head instanceof BlackHeadInter)
-                    ? ((BlackHeadInter) head).getPitch()
-                    : ((head instanceof VoidHeadInter)
-                    ? ((VoidHeadInter) head).getPitch()
-                    : ((WholeInter) head).getPitch());
+        for (Inter inter : notes) {
+            final AbstractNoteInter note = (AbstractNoteInter) inter;
+            final int notePitch = note.getPitch();
 
-            if ((headPitch == pitch) || (headPitch == nextPitch)) {
+            if ((notePitch == ledgerPitch) || (notePitch == nextPitch)) {
                 return true;
             }
         }
 
         return false;
-    }
-
-    //----------------//
-    // ledgerIntersOf //
-    //----------------//
-    /**
-     * Retrieve the collection of ledgers interpretations that can be
-     * found in the provided collection of glyphs.
-     *
-     * @param glyphs the provided glyph instances
-     * @return the ledgers interpretations found
-     */
-    private List<LedgerInter> ledgerIntersOf (Collection<Glyph> glyphs)
-    {
-        List<LedgerInter> ledgers = new ArrayList<LedgerInter>();
-
-        for (Glyph glyph : glyphs) {
-            for (Inter inter : glyph.getInterpretations()) {
-                if (inter instanceof LedgerInter) {
-                    ledgers.add((LedgerInter) inter);
-                }
-            }
-        }
-
-        return ledgers;
     }
 
     //------------------//

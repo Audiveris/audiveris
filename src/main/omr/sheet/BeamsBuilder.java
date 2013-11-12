@@ -135,8 +135,9 @@ public class BeamsBuilder
     public void buildBeams ()
     {
         // Cache input image
-        pixelFilter = sheet.getPicture()
-                .getBuffer(Picture.BufferKey.STAFF_FREE);
+        pixelFilter = (PixelFilter) sheet.getPicture()
+                .getSource(
+                        Picture.SourceKey.STAFF_LINE_FREE);
 
         // First, retrieve beams from spots
         beamSpots = getBeamSpots();

@@ -20,7 +20,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code HeadStemRelation}
+ * Class {@code HeadStemRelation} represents the relation support
+ * between a head and a stem.
  *
  * @author Hervé Bitteur
  */

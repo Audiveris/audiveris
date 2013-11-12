@@ -141,12 +141,12 @@ public class AbstractNoteInter
         //~ Instance fields ----------------------------------------------------
 
         final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
-                0.7,
-                "Shrink horizontal ratio to apply when checking note overlap");
+                0.5, //0.7,
+                "Horizontal shrink ratio to apply when checking note overlap");
 
         final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
                 0.5,
-                "Shrink vertical ratio to apply when checking note overlap");
+                "Vertical shrink ratio to apply when checking note overlap");
 
     }
 }

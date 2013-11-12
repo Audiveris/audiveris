@@ -19,6 +19,7 @@ import omr.grid.StaffInfo;
 import omr.grid.StaffManager;
 
 import omr.image.Picture;
+import omr.image.PixelFilter;
 
 import omr.lag.BasicLag;
 import omr.lag.JunctionShiftPolicy;
@@ -77,7 +78,7 @@ public class HorizontalsFilter
     // process //
     //---------//
     /**
-     * Start from the binarized image and build the runs and sections 
+     * Start from the binarized image and build the runs and sections
      * that could compose ledgers or endings.
      */
     public void process ()
@@ -85,8 +86,8 @@ public class HorizontalsFilter
         final Scale scale = sheet.getScale();
         final int minDistance = scale.toPixels(
                 constants.minDistanceFromStaff);
-        final int minLength = scale.toPixels(
-                HorizontalsBuilder.getMinFullLedgerLength());
+        final int minRunLength = scale.toPixels(
+                constants.minRunLength);
         final StaffManager staffManager = sheet.getStaffManager();
         final RunsTableFactory.Filter filter = new RunsTableFactory.Filter()
         {
@@ -105,8 +106,9 @@ public class HorizontalsFilter
 
         final RunsTable hugeHoriTable = new RunsTableFactory(
                 HORIZONTAL,
-                sheet.getPicture().getBuffer(Picture.BufferKey.BINARY),
-                minLength).createTable("huge-hori", filter);
+                (PixelFilter) sheet.getPicture().getSource(
+                Picture.SourceKey.BINARY),
+                minRunLength).createTable("huge-hori", filter);
 
         if (Main.getGui() != null) {
             RunsViewer runsViewer = sheet.getRunsViewer();
@@ -117,8 +119,7 @@ public class HorizontalsFilter
                 "hHugeLag",
                 Orientation.HORIZONTAL);
 
-        final int maxShift = scale.toPixels(
-                HorizontalsBuilder.getMaxShift());
+        final int maxShift = scale.toPixels(constants.maxRunShift);
 
         final SectionsBuilder sectionsBuilder = new SectionsBuilder(
                 lag,
@@ -142,6 +143,14 @@ public class HorizontalsFilter
         Scale.Fraction minDistanceFromStaff = new Scale.Fraction(
                 0.5,
                 "Minimum vertical distance from nearest staff");
+
+        Scale.Fraction maxRunShift = new Scale.Fraction(
+                0.05,
+                "Max shift between two runs of ledger sections");
+
+        Scale.Fraction minRunLength = new Scale.Fraction(
+                1.0,
+                "Minimum length for a ledger run");
 
     }
 }

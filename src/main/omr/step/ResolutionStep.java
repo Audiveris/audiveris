@@ -11,10 +11,15 @@
 // </editor-fold>
 package omr.step;
 
+import omr.image.Picture;
+
+import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
+import java.util.Collection;
+
 /**
- * Class {@code ResolutionStep} implements <b>RESOLUTION</b> step, 
+ * Class {@code ResolutionStep} implements <b>RESOLUTION</b> step,
  * which tries to reduce the SIG incrementally.
  *
  * @author Hervé Bitteur
@@ -46,5 +51,17 @@ public class ResolutionStep
             throws StepException
     {
         system.sigResolver.solve();
+    }
+
+    @Override
+    protected void doEpilog (Collection<SystemInfo> systems,
+                             Sheet sheet)
+            throws StepException
+    {
+        Picture picture = sheet.getPicture();
+
+        for (Picture.SourceKey key : Picture.SourceKey.values()) {
+            picture.disposeSource(key);
+        }
     }
 }

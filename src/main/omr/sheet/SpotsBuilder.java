@@ -58,9 +58,9 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 /**
- * Class {@code SpotsBuilder} performs morphology analysis on original
- * image to retrieve major spots that compose black note heads and
- * beams.
+ * Class {@code SpotsBuilder} performs morphology analysis on 
+ * initial image to retrieve major spots that compose black note heads
+ * and beams.
  *
  * @author Hervé Bitteur
  */
@@ -200,9 +200,10 @@ public class SpotsBuilder
     //---------------//
     private RunsTable retrieveSpots ()
     {
-        // We need a working copy of binary buffer 
-        PixelBuffer buffer = new PixelBuffer(
-                sheet.getPicture().getBuffer(Picture.BufferKey.BINARY));
+        // We need a copy of image that we can overwrite. 
+        Picture picture = sheet.getPicture();
+        PixelBuffer buffer = (PixelBuffer) picture.getSource(
+                Picture.SourceKey.GAUSSIAN);
 
         watch.start("spots");
 
@@ -213,10 +214,10 @@ public class SpotsBuilder
         final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
         final float radius = (float) (diameter - 1) / 2;
         logger.info(
-                "{}Spots retrieval beam: {}, radius: {} ...",
+                "{}Spots retrieval beam: {}, diameter: {} ...",
                 sheet.getLogPrefix(),
                 beam,
-                radius);
+                String.format("%.1f", diameter));
 
         StructureElement se = new StructureElement(0, 1, radius, offset);
         MorphoProcessor mp = new MorphoProcessor(se);
@@ -231,8 +232,8 @@ public class SpotsBuilder
                     fromClosedBuffer,
                     "png",
                     new File(
-                            WellKnowns.TEMP_FOLDER,
-                            sheet.getPage().getId() + ".spot.png"));
+                    WellKnowns.TEMP_FOLDER,
+                    sheet.getPage().getId() + ".spot.png"));
         } catch (IOException ex) {
             logger.warn("Error storing spotTable", ex);
         }
@@ -277,7 +278,7 @@ public class SpotsBuilder
                 "Should we print out the stop watch?");
 
         final Constant.Ratio beamCircleDiameterRatio = new Constant.Ratio(
-                0.75,
+                0.8,
                 "Diameter of circle used to close beam spots, as ratio of beam height");
 
         Constant.Ratio meanCoeff = new Constant.Ratio(

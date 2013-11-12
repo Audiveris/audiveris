@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.sig;
 
+import java.awt.Point;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -54,6 +55,45 @@ public interface Inter
                             Inter i2)
         {
             return Integer.compare(i1.getBounds().x, i2.getBounds().x);
+        }
+    };
+
+    /**
+     * For comparing interpretations by abscissa, ensuring that only 
+     * identical interpretations are found equal.
+     * This comparator can thus be used for a TreeSet.
+     */
+    public static final Comparator<Inter> byFullAbscissa = new Comparator<Inter>()
+    {
+        @Override
+        public int compare (Inter o1,
+                            Inter o2)
+        {
+            if (o1 == o2) {
+                return 0;
+            }
+
+            Point loc1 = o1.getBounds()
+                    .getLocation();
+            Point loc2 = o2.getBounds()
+                    .getLocation();
+
+            // Are x values different?
+            int dx = loc1.x - loc2.x;
+
+            if (dx != 0) {
+                return dx;
+            }
+
+            // Vertically aligned, so use ordinates
+            int dy = loc1.y - loc2.y;
+
+            if (dy != 0) {
+                return dy;
+            }
+
+            // Finally, use id ...
+            return o1.getId() - o2.getId();
         }
     };
 

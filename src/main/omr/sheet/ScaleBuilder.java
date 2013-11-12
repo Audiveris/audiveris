@@ -18,8 +18,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.image.Picture;
-import omr.image.Picture.ImageKey;
-import omr.image.PixelBuffer;
+import omr.image.Picture.SourceKey;
 
 import omr.math.Histogram;
 import omr.math.Histogram.HistoEntry;
@@ -55,6 +54,7 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
+import omr.image.PixelFilter;
 
 /**
  * Class {@code ScaleBuilder} encapsulates the computation of a sheet
@@ -205,14 +205,14 @@ public class ScaleBuilder
             Picture picture = sheet.getPicture();
 
             // Retrieve the whole table of foreground runs
-            PixelBuffer binaryBuffer = picture.getBuffer(
-                    Picture.BufferKey.BINARY);
+            PixelFilter binaryFilter = (PixelFilter) picture.getSource(
+                    Picture.SourceKey.BINARY);
 
             watch.start("Global vertical lag");
 
             RunsTableFactory vertFactory = new RunsTableFactory(
                     Orientation.VERTICAL,
-                    binaryBuffer,
+                    binaryFilter,
                     0);
             RunsTable wholeVertTable = vertFactory.createTable(
                     "vertBinary");
@@ -224,7 +224,7 @@ public class ScaleBuilder
             // For the time being, it is kept alive for display purpose, and to
             // allow the dewarping of the initial picture.
             if (constants.disposeImage.isSet()) {
-                picture.disposeImage(ImageKey.INITIAL); // To discard image
+                picture.disposeSource(SourceKey.INITIAL); // To discard image
             }
 
             // Build the two histograms
@@ -247,7 +247,7 @@ public class ScaleBuilder
             // Look at horizontal histo for stem thickness
             RunsTableFactory horiFactory = new RunsTableFactory(
                     Orientation.HORIZONTAL,
-                    binaryBuffer,
+                    binaryFilter,
                     0);
             RunsTable horiTable = horiFactory.createTable("horiBinary");
             horiFactory = null; // To allow garbage collection ASAP

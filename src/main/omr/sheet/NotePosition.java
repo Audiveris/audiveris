@@ -104,7 +104,7 @@ public class NotePosition
 
         if (indexedLedger != null) {
             sb.append(" ledger#")
-                    .append(indexedLedger.glyph.getId());
+                    .append(indexedLedger.ledger.getId());
         }
 
         sb.append("}");

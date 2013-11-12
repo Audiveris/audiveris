@@ -17,6 +17,8 @@ import omr.grid.StaffInfo;
 
 import omr.math.GeoUtil;
 
+import omr.run.Orientation;
+
 import omr.score.entity.Measure;
 import omr.score.entity.Page;
 import omr.score.entity.ScoreSystem;
@@ -335,7 +337,13 @@ public class SheetPainter
     public void visit (LedgerInter ledger)
     {
         setColor(ledger);
-        g.setStroke(ledgerStroke);
+        ///g.setStroke(ledgerStroke);
+        g.setStroke(
+                new BasicStroke(
+                        (float) ledger.getGlyph().getMeanThickness(
+                                Orientation.HORIZONTAL),
+                        BasicStroke.CAP_ROUND,
+                        BasicStroke.JOIN_ROUND));
 
         ledger.getGlyph()
                 .renderLine(g);

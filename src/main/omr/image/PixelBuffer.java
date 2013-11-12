@@ -38,7 +38,7 @@ import java.util.Arrays;
  */
 @ThreadSafe
 public class PixelBuffer
-        implements PixelFilter
+        implements PixelFilter, PixelSink
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -154,16 +154,6 @@ public class PixelBuffer
     }
 
     //~ Methods ----------------------------------------------------------------
-    //----------//
-    // setPixel //
-    //----------//
-    public final void setPixel (int x,
-                                int y,
-                                int val)
-    {
-        buffer[(y * width) + x] = (byte) val;
-    }
-
     //------//
     // dump //
     //------//
@@ -198,14 +188,7 @@ public class PixelBuffer
     public int getPixel (int x,
                          int y)
     {
-        int val = buffer[(y * width) + x];
-
-        // Byte is signed, so...
-        if (val < 0) {
-            val += 256;
-        }
-
-        return val;
+        return buffer[(y * width) + x] & 0xff;
     }
 
     //-----------//
@@ -257,6 +240,17 @@ public class PixelBuffer
                            int y)
     {
         return getPixel(x, y) < 225;
+    }
+
+    //----------//
+    // setPixel //
+    //----------//
+    @Override
+    public final void setPixel (int x,
+                                int y,
+                                int val)
+    {
+        buffer[(y * width) + x] = (byte) val;
     }
 
     //-----------------//

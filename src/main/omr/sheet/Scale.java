@@ -362,6 +362,22 @@ public class Scale
         return pixels / interlineRange.best;
     }
 
+    //------------------//
+    // pixelsToLineFrac //
+    //------------------//
+    /**
+     * Compute the line fraction that corresponds to the given
+     * number of pixels.
+     *
+     * @param pixels the equivalent in number of pixels
+     * @return the line fraction
+     * @see #toPixels
+     */
+    public double pixelsToLineFrac (double pixels)
+    {
+        return pixels / lineRange.best;
+    }
+
     //----------//
     // toPixels //
     //----------//

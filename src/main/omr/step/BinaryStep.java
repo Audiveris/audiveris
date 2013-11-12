@@ -55,8 +55,8 @@ public class BinaryStep
                       Sheet sheet)
             throws StepException
     {
-        // Trigger the binarization, and cache the resulting buffer
+        // Trigger the binarization, and cache the resulting source
         sheet.getPicture()
-                .getBuffer(Picture.BufferKey.BINARY);
+                .getSource(Picture.SourceKey.BINARY);
     }
 }

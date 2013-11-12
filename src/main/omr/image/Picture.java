@@ -25,8 +25,6 @@ import omr.sheet.Sheet;
 
 import omr.util.StopWatch;
 
-import com.jhlabs.image.GaussianFilter;
-
 import org.bushe.swing.event.EventSubscriber;
 
 import org.slf4j.Logger;
@@ -47,20 +45,20 @@ import java.util.Map;
 import javax.media.jai.JAI;
 
 /**
- * Class {@code Picture} handles the sheet initial gray-level image,
- * as well as the images derived from it (such as by filtering).
+ * Class {@code Picture} starts from the original BufferedImage to
+ * provide all {@link PixelSource} instances derived from it.
  * <p>
- * The {@code Picture} constructor takes a provided original image, whatever its
- * format and color model, and converts it if necessary to come up with a usable
- * gray-level image (of type TYPE_BYTE_GRAY): the INITIAL BufferedImage.
+ * The {@code Picture} constructor takes a provided original image, whatever
+ * its format and color model, and converts it if necessary to come up with a
+ * usable gray-level PixelSource: the INITIAL source.
  * <p>
- * Besides the INITIAL image, this class handles a collection of images, all of
- * the same dimension, with the ability to retrieve them on demand or dispose
- * them, via {@link #getImage} and {@link #disposeImage} methods.
+ * Besides the INITIAL source, this class handles a collection of sources, all
+ * of the same dimension, with the ability to retrieve them on demand or dispose
+ * them, via {@link #getSource} and {@link #disposeSource} methods.
  * <p>
  * Any instance of this class is registered on the related Sheet location
  * service, so that each time a location event is received, the corresponding
- * pixel gray value of the INITIAL image is published.
+ * pixel gray value of the INITIAL sources is published.
  *
  * <p>
  * TODO: When an alpha channel is involved, perform the alpha multiplication
@@ -86,33 +84,24 @@ public class Picture
 
     //~ Enumerations -----------------------------------------------------------
     /**
-     * Set of known images, to be extended as needed.
+     * The set of handled sources, to be extended as needed.
      */
-    public static enum ImageKey
+    public static enum SourceKey
     {
         //~ Enumeration constant initializers ----------------------------------
 
-        /** The initial gray-level image. */
+        /** The initial gray-level source. */
         INITIAL,
-        /** The Gaussian-filtered image. */
-        GAUSSIAN,
-        /** The Median-filtered image. */
-        MEDIAN;
-
-    }
-
-    /**
-     * Set of known buffers, to be extended as needed.
-     */
-    public static enum BufferKey
-    {
-        //~ Enumeration constant initializers ----------------------------------
-
-        /** The binarized image. */
+        /** The binarized black &
+         * white source. */
         BINARY,
-        /** Image with staff lines
-         * removed. */
-        STAFF_FREE;
+        /** The Gaussian-filtered source. */
+        GAUSSIAN,
+        /** The Median-filtered source. */
+        MEDIAN,
+        /** The source with staff
+         * lines removed. */
+        STAFF_LINE_FREE;
 
     }
 
@@ -130,16 +119,15 @@ public class Picture
      */
     private final SelectionService levelService;
 
-    /** Map of all handled images. */
-    private final Map<ImageKey, BufferedImage> images = new EnumMap<ImageKey, BufferedImage>(
-            ImageKey.class);
+    /** Map of all handled sources. */
+    private final Map<SourceKey, PixelSource> sources = new EnumMap<SourceKey, PixelSource>(
+            SourceKey.class);
 
-    /** Map of all handled buffers. */
-    private final Map<BufferKey, PixelBuffer> buffers = new EnumMap<BufferKey, PixelBuffer>(
-            BufferKey.class);
+    /** The initial (gray-level) image. */
+    private BufferedImage initialImage;
 
-    /** A wrapping around the initial (default) image. */
-    private BufferedSource initialSource;
+    /** The initial (gray-level) source. (for onEvent only) */
+    private PixelSource initialSource;
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -165,70 +153,51 @@ public class Picture
         // Make sure format, colors, etc are OK for us
         printInfo(image, "Original image");
         image = checkImage(image);
-        ///printInfo(image, "Initial  image");
-        images.put(ImageKey.INITIAL, image);
         dimension = new Dimension(image.getWidth(), image.getHeight());
 
-        // Wrap the initial image
-        initialSource = new BufferedSource(image);
+        // Remember the initial image
+        initialImage = image;
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-----------//
-    // printInfo //
-    //-----------//
+    //--------//
+    // invert //
+    //--------//
     /**
-     * Convenient method to print some characteristics of the provided
-     * image.
+     * Convenient method on invert an image.
      *
-     * @param img   the image to query
-     * @param title a title to be printed
+     * @param image the image to process
+     * @return the invert of provided image
      */
-    public static void printInfo (BufferedImage img,
-                                  String title)
+    public static BufferedImage invert (BufferedImage image)
     {
-        int type = img.getType();
-        ColorModel colorModel = img.getColorModel();
-        logger.info(
-                "{} type: {}={} {}",
-                (title != null) ? title : "",
-                type,
-                typeOf(type),
-                colorModel);
+        return JAI.create(
+                "Invert",
+                new ParameterBlock().addSource(image).add(null),
+                null)
+                .getAsBufferedImage();
     }
 
-    //--------------//
-    // disposeImage //
-    //--------------//
-    public void disposeImage (ImageKey key)
+    //---------------//
+    // disposeSource //
+    //---------------//
+    public void disposeSource (SourceKey key)
     {
-        BufferedImage img = images.get(key);
+        // Nullify cached data, if needed
+        if (key == SourceKey.INITIAL) {
+            initialImage = null;
+            initialSource = null;
+            logger.info("{} source disposed.", key);
 
-        if (img != null) {
-            synchronized (images) {
-                images.put(key, null);
-
-                // Nullify cached data, if needed
-                if (key == ImageKey.INITIAL) {
-                    initialSource = null;
-                }
-
-                logger.info("{} image disposed.", key);
-            }
+            return;
         }
-    }
 
-    //---------------//
-    // disposeBuffer //
-    //---------------//
-    public void disposeBuffer (BufferKey key)
-    {
-        PixelBuffer buf = buffers.get(key);
+        PixelSource src = sources.get(key);
 
-        if (buf != null) {
-            synchronized (buffers) {
-                buffers.put(key, null);
-                logger.info("{} buffer disposed.", key);
+        if (src != null) {
+            synchronized (sources) {
+                sources.put(key, null);
+                logger.info("{} source disposed.", key);
             }
         }
     }
@@ -247,14 +216,14 @@ public class Picture
      * @param yMin  y first ordinate
      * @param yMax  y last ordinate
      */
-    public void dumpRectangle (ImageKey key,
+    public void dumpRectangle (SourceKey key,
                                String title,
                                int xMin,
                                int xMax,
                                int yMin,
                                int yMax)
     {
-        PixelSource source = new BufferedSource(getImage(key));
+        PixelSource source = getSource(key);
         StringBuilder sb = new StringBuilder();
 
         sb.append(String.format("%n"));
@@ -301,47 +270,46 @@ public class Picture
         logger.info(sb.toString());
     }
 
-    //-----------//
-    // getBuffer //
-    //-----------//
-    /**
-     * Report the desired buffer, creating it if necessary.
-     *
-     * @param key the key of desired buffer
-     * @return the buffer ready to use
-     */
-    public PixelBuffer getBuffer (BufferKey key)
-    {
-        PixelBuffer buf = buffers.get(key);
-
-        if (buf == null) {
-            synchronized (buffers) {
-                buf = buffers.get(key);
-
-                if (buf == null) {
-                    switch (key) {
-                    case BINARY:
-                        buf = binarized(images.get(ImageKey.INITIAL));
-
-                        break;
-
-                    case STAFF_FREE:
-                        buf = Lags.buildBuffer(
-                                dimension,
-                                sheet.getLag(Lags.HLAG),
-                                sheet.getLag(Lags.VLAG));
-
-                        break;
-                    }
-
-                    buffers.put(key, buf);
-                }
-            }
-        }
-
-        return buf;
-    }
-
+    //    //-----------//
+    //    // getBuffer //
+    //    //-----------//
+    //    /**
+    //     * Report the desired buffer, creating it if necessary.
+    //     *
+    //     * @param key the key of desired buffer
+    //     * @return the buffer ready to use
+    //     */
+    //    public PixelBuffer getBuffer (BufferKey key)
+    //    {
+    //        PixelBuffer buf = buffers.get(key);
+    //
+    //        if (buf == null) {
+    //            synchronized (buffers) {
+    //                buf = buffers.get(key);
+    //
+    //                if (buf == null) {
+    //                    switch (key) {
+    //                    case BINARY:
+    //                        buf = binarized(sources.get(SourceKey.INITIAL));
+    //
+    //                        break;
+    //
+    //                    case STAFF_FREE:
+    //                        buf = Lags.buildBuffer(
+    //                                dimension,
+    //                                sheet.getLag(Lags.HLAG),
+    //                                sheet.getLag(Lags.VLAG));
+    //
+    //                        break;
+    //                    }
+    //
+    //                    buffers.put(key, buf);
+    //                }
+    //            }
+    //        }
+    //
+    //        return buf;
+    //    }
     //--------------//
     // getDimension //
     //--------------//
@@ -368,42 +336,28 @@ public class Picture
         return dimension.height;
     }
 
-    //----------//
-    // getImage //
-    //----------//
-    /**
-     * Report the desired image, creating it if necessary.
+    //-----------------//
+    // getInitialImage //
+    //-----------------//
+    /** Report the initial (BufferedImage) image.
      *
-     * @param key the key of desired image
-     * @return the image ready to use
+     * @return the initial image
      */
-    public BufferedImage getImage (ImageKey key)
+    public BufferedImage getInitialImage ()
     {
-        BufferedImage img = images.get(key);
+        return initialImage;
+    }
 
-        if (img == null) {
-            synchronized (images) {
-                img = images.get(key);
-
-                if (img == null) {
-                    switch (key) {
-                    case GAUSSIAN:
-                        img = gaussianFiltered(images.get(ImageKey.INITIAL));
-                        images.put(key, img);
-
-                        break;
-
-                    case MEDIAN:
-                        img = medianFiltered(images.get(ImageKey.INITIAL));
-                        images.put(key, img);
-
-                        break;
-                    }
-                }
-            }
-        }
-
-        return img;
+    //------------------//
+    // getInitialSource //
+    //------------------//
+    /** Report the initial source.
+     *
+     * @return the initial source
+     */
+    public PixelSource getInitialSource ()
+    {
+        return new BufferedSource(initialImage);
     }
 
     //---------//
@@ -420,6 +374,63 @@ public class Picture
     }
 
     //----------//
+    // getSource //
+    //----------//
+    /**
+     * Report the desired image, creating it if necessary.
+     *
+     * @param key the key of desired image
+     * @return the image ready to use
+     */
+    public PixelSource getSource (SourceKey key)
+    {
+        // Initial source is special, because it's a BufferedImage which needs
+        // a dedicated wrapper for each user.
+        if (key == SourceKey.INITIAL) {
+            return getInitialSource();
+        }
+
+        PixelSource src = sources.get(key);
+
+        if (src == null) {
+            synchronized (sources) {
+                src = sources.get(key);
+
+                if (src == null) {
+                    switch (key) {
+                    case BINARY:
+                        src = binarized(getInitialSource());
+
+                        break;
+
+                    case GAUSSIAN:
+                        src = gaussianFiltered(sources.get(SourceKey.BINARY));
+
+                        break;
+
+                    case MEDIAN:
+                        src = medianFiltered(sources.get(SourceKey.BINARY));
+
+                        break;
+
+                    case STAFF_LINE_FREE:
+                        src = Lags.buildBuffer(
+                                dimension,
+                                sheet.getLag(Lags.HLAG),
+                                sheet.getLag(Lags.VLAG));
+
+                        break;
+                    }
+
+                    sources.put(key, src);
+                }
+            }
+        }
+
+        return src;
+    }
+
+    //----------//
     // getWidth //
     //----------//
     /**
@@ -431,24 +442,6 @@ public class Picture
     public int getWidth ()
     {
         return dimension.width;
-    }
-
-    //--------//
-    // invert //
-    //--------//
-    /**
-     * Convenient method on invert an image.
-     *
-     * @param image the image to process
-     * @return the invert of provided image
-     */
-    public static BufferedImage invert (BufferedImage image)
-    {
-        return JAI.create(
-                "Invert",
-                new ParameterBlock().addSource(image).add(null),
-                null)
-                .getAsBufferedImage();
     }
 
     //---------//
@@ -464,8 +457,12 @@ public class Picture
     @Override
     public void onEvent (LocationEvent event)
     {
-        if (initialSource == null) {
+        if (initialImage == null) {
             return;
+        }
+
+        if (initialSource == null) {
+            initialSource = getInitialSource();
         }
 
         try {
@@ -496,6 +493,29 @@ public class Picture
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
+    }
+
+    //-----------//
+    // printInfo //
+    //-----------//
+    /**
+     * Convenient method to print some characteristics of the provided
+     * image.
+     *
+     * @param img   the image to query
+     * @param title a title to be printed
+     */
+    public static void printInfo (BufferedImage img,
+                                  String title)
+    {
+        int type = img.getType();
+        ColorModel colorModel = img.getColorModel();
+        logger.info(
+                "{} type: {}={} {}",
+                (title != null) ? title : "",
+                type,
+                typeOf(type),
+                colorModel);
     }
 
     //----------//
@@ -565,6 +585,77 @@ public class Picture
                     new ParameterBlock().addSource(image).add(matrix),
                     null)
                     .getAsBufferedImage();
+        }
+    }
+
+    //-----------//
+    // binarized //
+    //-----------//
+    private PixelBuffer binarized (PixelSource src)
+    {
+        FilterDescriptor desc = sheet.getPage()
+                .getFilterParam()
+                .getTarget();
+        logger.info("{}{} {}", sheet.getLogPrefix(), "Binarization", desc);
+        sheet.getPage()
+                .getFilterParam()
+                .setActual(desc);
+
+        PixelFilter filter = desc.getFilter(src);
+
+        return new PixelBuffer(filter);
+    }
+
+    //--------//
+    // typeOf //
+    //--------//
+    private static String typeOf (int type)
+    {
+        switch (type) {
+        case BufferedImage.TYPE_CUSTOM:
+            return "TYPE_CUSTOM";
+
+        case BufferedImage.TYPE_INT_RGB:
+            return "TYPE_INT_RGB";
+
+        case BufferedImage.TYPE_INT_ARGB:
+            return "TYPE_INT_ARGB";
+
+        case BufferedImage.TYPE_INT_ARGB_PRE:
+            return "TYPE_INT_ARGB_PRE";
+
+        case BufferedImage.TYPE_INT_BGR:
+            return "TYPE_INT_BGR";
+
+        case BufferedImage.TYPE_3BYTE_BGR:
+            return "TYPE_3BYTE_BGR";
+
+        case BufferedImage.TYPE_4BYTE_ABGR:
+            return "TYPE_4BYTE_ABGR";
+
+        case BufferedImage.TYPE_4BYTE_ABGR_PRE:
+            return "TYPE_4BYTE_ABGR_PRE";
+
+        case BufferedImage.TYPE_USHORT_565_RGB:
+            return "TYPE_USHORT_565_RGB";
+
+        case BufferedImage.TYPE_USHORT_555_RGB:
+            return "TYPE_USHORT_555_RGB";
+
+        case BufferedImage.TYPE_BYTE_GRAY:
+            return "TYPE_BYTE_GRAY";
+
+        case BufferedImage.TYPE_USHORT_GRAY:
+            return "TYPE_USHORT_GRAY";
+
+        case BufferedImage.TYPE_BYTE_BINARY:
+            return "TYPE_BYTE_BINARY";
+
+        case BufferedImage.TYPE_BYTE_INDEXED:
+            return "TYPE_BYTE_INDEXED";
+
+        default:
+            return "?";
         }
     }
 
@@ -645,12 +736,12 @@ public class Picture
     //------------------//
     // gaussianFiltered //
     //------------------//
-    private BufferedImage gaussianFiltered (BufferedImage img)
+    private PixelBuffer gaussianFiltered (PixelSource src)
     {
         StopWatch watch = new StopWatch("Gaussian");
 
         try {
-            watch.start("Filter " + img.getWidth() + "x" + img.getHeight());
+            watch.start("Filter " + src.getWidth() + "x" + src.getHeight());
 
             final int radius = constants.gaussianRadius.getValue();
             logger.info(
@@ -658,9 +749,9 @@ public class Picture
                     sheet.getLogPrefix(),
                     radius);
 
-            GaussianFilter gaussianFilter = new GaussianFilter(radius);
+            GaussianGrayFilter gaussianFilter = new GaussianGrayFilter(radius);
 
-            return gaussianFilter.filter(img, null);
+            return gaussianFilter.filter(src);
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -671,12 +762,12 @@ public class Picture
     //----------------//
     // medianFiltered //
     //----------------//
-    private BufferedImage medianFiltered (BufferedImage img)
+    private PixelBuffer medianFiltered (PixelSource src)
     {
         StopWatch watch = new StopWatch("Median");
 
         try {
-            watch.start("Filter " + img.getWidth() + "x" + img.getHeight());
+            watch.start("Filter " + src.getWidth() + "x" + src.getHeight());
 
             final int radius = constants.medianRadius.getValue();
             logger.info(
@@ -686,83 +777,12 @@ public class Picture
 
             MedianGrayFilter medianFilter = new MedianGrayFilter(radius);
 
-            return medianFilter.filter(img);
+            return medianFilter.filter(src);
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
             }
         }
-    }
-
-    //--------//
-    // typeOf //
-    //--------//
-    private static String typeOf (int type)
-    {
-        switch (type) {
-        case BufferedImage.TYPE_CUSTOM:
-            return "TYPE_CUSTOM";
-
-        case BufferedImage.TYPE_INT_RGB:
-            return "TYPE_INT_RGB";
-
-        case BufferedImage.TYPE_INT_ARGB:
-            return "TYPE_INT_ARGB";
-
-        case BufferedImage.TYPE_INT_ARGB_PRE:
-            return "TYPE_INT_ARGB_PRE";
-
-        case BufferedImage.TYPE_INT_BGR:
-            return "TYPE_INT_BGR";
-
-        case BufferedImage.TYPE_3BYTE_BGR:
-            return "TYPE_3BYTE_BGR";
-
-        case BufferedImage.TYPE_4BYTE_ABGR:
-            return "TYPE_4BYTE_ABGR";
-
-        case BufferedImage.TYPE_4BYTE_ABGR_PRE:
-            return "TYPE_4BYTE_ABGR_PRE";
-
-        case BufferedImage.TYPE_USHORT_565_RGB:
-            return "TYPE_USHORT_565_RGB";
-
-        case BufferedImage.TYPE_USHORT_555_RGB:
-            return "TYPE_USHORT_555_RGB";
-
-        case BufferedImage.TYPE_BYTE_GRAY:
-            return "TYPE_BYTE_GRAY";
-
-        case BufferedImage.TYPE_USHORT_GRAY:
-            return "TYPE_USHORT_GRAY";
-
-        case BufferedImage.TYPE_BYTE_BINARY:
-            return "TYPE_BYTE_BINARY";
-
-        case BufferedImage.TYPE_BYTE_INDEXED:
-            return "TYPE_BYTE_INDEXED";
-
-        default:
-            return "?";
-        }
-    }
-
-    //-----------//
-    // binarized //
-    //-----------//
-    private PixelBuffer binarized (BufferedImage img)
-    {
-        FilterDescriptor desc = sheet.getPage()
-                .getFilterParam()
-                .getTarget();
-        logger.info("{}{} {}", sheet.getLogPrefix(), "Binarization", desc);
-        sheet.getPage()
-                .getFilterParam()
-                .setActual(desc);
-
-        PixelFilter filter = desc.getFilter(new BufferedSource(img));
-
-        return new PixelBuffer(filter);
     }
 
     //~ Inner Classes ----------------------------------------------------------

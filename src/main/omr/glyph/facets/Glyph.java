@@ -103,20 +103,20 @@ public interface Glyph
                 return 0;
             }
 
-            Point ref = o1.getBounds()
+            Point loc1 = o1.getBounds()
                     .getLocation();
-            Point otherRef = o2.getBounds()
+            Point loc2 = o2.getBounds()
                     .getLocation();
 
             // Are x values different?
-            int dx = ref.x - otherRef.x;
+            int dx = loc1.x - loc2.x;
 
             if (dx != 0) {
                 return dx;
             }
 
             // Vertically aligned, so use ordinates
-            int dy = ref.y - otherRef.y;
+            int dy = loc1.y - loc2.y;
 
             if (dy != 0) {
                 return dy;

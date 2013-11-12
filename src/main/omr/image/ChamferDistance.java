@@ -83,7 +83,7 @@ public interface ChamferDistance
      * @return the distance transform image, where each pixel value is the
      *         distance to the nearest reference pixel
      */
-    Table computeToBack (PixelBuffer input);
+    Table computeToBack (PixelFilter input);
 
     //---------------//
     // computeToFore //
@@ -97,7 +97,7 @@ public interface ChamferDistance
      * @return the distance transform image, where each pixel value is the
      *         distance to the nearest reference pixel
      */
-    Table computeToFore (PixelBuffer input);
+    Table computeToFore (PixelFilter input);
 
     //~ Inner Classes ----------------------------------------------------------
     public abstract class Abstract
@@ -162,7 +162,7 @@ public interface ChamferDistance
         // computeToBack //
         //---------------//
         @Override
-        public Table computeToBack (PixelBuffer input)
+        public Table computeToBack (PixelFilter input)
         {
             Table output = allocateOutput(input.getWidth(), input.getHeight());
             initializeToBack(input, output);
@@ -175,7 +175,7 @@ public interface ChamferDistance
         // computeToFore //
         //---------------//
         @Override
-        public Table computeToFore (PixelBuffer input)
+        public Table computeToFore (PixelFilter input)
         {
             Table output = allocateOutput(input.getWidth(), input.getHeight());
             initializeToFore(input, output);
@@ -184,14 +184,19 @@ public interface ChamferDistance
             return output;
         }
 
-        /** To get a Table instance of proper type and size. */
+        /** To get a Table instance of proper type and size.
+         *
+         * @param width  desired width
+         * @param height desired height
+         * @return the table of proper type and dimension
+         */
         protected abstract Table allocateOutput (int width,
                                                  int height);
 
         //------------------//
         // initializeToBack //
         //------------------//
-        private void initializeToBack (PixelBuffer input,
+        private void initializeToBack (PixelFilter input,
                                        Table output)
         {
             for (int y = 0, h = input.getHeight(); y < h; y++) {
@@ -208,7 +213,7 @@ public interface ChamferDistance
         //------------------//
         // initializeToFore //
         //------------------//
-        private void initializeToFore (PixelBuffer input,
+        private void initializeToFore (PixelFilter input,
                                        Table output)
         {
             for (int y = 0, h = input.getHeight(); y < h; y++) {

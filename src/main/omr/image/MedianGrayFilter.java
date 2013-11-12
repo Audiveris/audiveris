@@ -11,10 +11,6 @@
 // </editor-fold>
 package omr.image;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.util.Arrays;
 
 /**
@@ -24,6 +20,7 @@ import java.util.Arrays;
  * @author Hervé Bitteur
  */
 public class MedianGrayFilter
+        extends AbstractGrayFilter
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -46,34 +43,12 @@ public class MedianGrayFilter
     //--------//
     // filter //
     //--------//
-    /**
-     * Apply this filter on a given input image.
-     *
-     * @param image the input image, assumed of TYPE_BYTE_GRAY
-     * @return the filtered image
-     */
-    public BufferedImage filter (final BufferedImage image)
+    @Override
+    public void filter (final PixelSource input,
+                        final PixelSink output)
     {
-        if (!(image instanceof RenderedImage)) {
-            throw new IllegalArgumentException(
-                    "Input image is not a RenderedImage");
-        }
-
-        if (image.getType() != BufferedImage.TYPE_BYTE_GRAY) {
-            throw new IllegalArgumentException(
-                    "Input image is not of type TYPE_BYTE_GRAY");
-        }
-
-        final int width = image.getWidth();
-        final int height = image.getHeight();
-        final BufferedImage filtered = new BufferedImage(
-                width,
-                height,
-                BufferedImage.TYPE_BYTE_GRAY);
-        final Raster in = image.getRaster();
-        final WritableRaster out = filtered.getRaster();
-        final int[] inPixel = new int[1];
-        final int[] outPixel = new int[1];
+        final int width = input.getWidth();
+        final int height = input.getHeight();
         final int[] histogram = new int[256];
         Arrays.fill(histogram, 0);
 
@@ -103,9 +78,7 @@ public class MedianGrayFilter
 
                 for (int i = x - rad; i <= (x + rad); i++) {
                     for (int j = y - rad; j <= (y + rad); j++) {
-                        in.getPixel(i, j, inPixel);
-
-                        int val = inPixel[0];
+                        int val = input.getPixel(i, j);
                         histogram[val]++;
                     }
                 }
@@ -121,11 +94,8 @@ public class MedianGrayFilter
                     median--;
                 }
 
-                outPixel[0] = median + 1;
-                out.setPixel(x, y, outPixel);
+                output.setPixel(x, y, median + 1);
             }
         }
-
-        return filtered;
     }
 }

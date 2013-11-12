@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import omr.sig.LedgerInter;
 
 /**
  * Class {@code LedgerPattern} checks the related system for invalid 
@@ -51,6 +52,7 @@ import java.util.SortedSet;
  *
  * @author Hervé Bitteur
  */
+@Deprecated
 public class LedgerPattern
         extends GlyphPattern
 {
@@ -108,97 +110,97 @@ public class LedgerPattern
     {
         int nb = 0;
 
-        for (StaffInfo staff : system.getStaves()) {
-            Map<Integer, SortedSet<Glyph>> ledgerMap = staff.getLedgerMap();
-
-            for (Iterator<Entry<Integer, SortedSet<Glyph>>> iter = ledgerMap.
-                    entrySet().iterator();
-                    iter.hasNext();) {
-                Entry<Integer, SortedSet<Glyph>> entry = iter.next();
-                SortedSet<Glyph> ledgerSet = entry.getValue();
-                List<Glyph> ledgerGlyphs = new ArrayList<>();
-
-                for (Glyph ledger : ledgerSet) {
-                    ledgerGlyphs.add(ledger);
-                }
-
-                // Process 
-                for (Iterator<Glyph> it = ledgerSet.iterator(); it.hasNext();) {
-                    Glyph ledger = it.next();
-                    Set<Glyph> neighbors = new HashSet<>();
-
-                    if (isInvalid(ledger, neighbors)) {
-                        // Check if we can forge a ledger-compatible neighbor
-                        Glyph compound = system.buildCompound(
-                                ledger,
-                                false,
-                                system.getGlyphs(),
-                                new LedgerAdapter(
-                                system,
-                                Grades.ledgerNoteMinGrade,
-                                ledgerNeighbors,
-                                ledgerGlyphs));
-
-                        if (compound == null) {
-                            // Here, we have not found any convincing neighbor
-                            // Let's invalid this pseudo ledger
-                            logger.debug("Invalid ledger {}", ledger);
-                            ledger.setShape(null);
-                            it.remove();
-                            nb++;
-                        }
-                    }
-                }
-
-                if (ledgerSet.isEmpty()) {
-                    iter.remove();
-                }
-            }
-        }
+//        for (StaffInfo staff : system.getStaves()) {
+//            Map<Integer, SortedSet<LedgerInter>> ledgerMap = staff.getLedgerMap();
+//
+//            for (Iterator<Entry<Integer, SortedSet<LedgerInter>>> iter = ledgerMap.
+//                    entrySet().iterator();
+//                    iter.hasNext();) {
+//                Entry<Integer, SortedSet<LedgerInter>> entry = iter.next();
+//                SortedSet<LedgerInter> ledgerSet = entry.getValue();
+////                List<Glyph> ledgerGlyphs = new ArrayList<>();
+////
+////                for (Glyph ledger : ledgerSet) {
+////                    ledgerGlyphs.add(ledger);
+////                }
+//
+//                // Process 
+//                for (Iterator<LedgerInter> it = ledgerSet.iterator(); it.hasNext();) {
+//                    LedgerInter ledger = it.next();
+//                    Set<Glyph> neighbors = new HashSet<>();
+//
+//                    if (isInvalid(ledger, neighbors)) {
+//                        // Check if we can forge a ledger-compatible neighbor
+//                        Glyph compound = system.buildCompound(
+//                                ledger,
+//                                false,
+//                                system.getGlyphs(),
+//                                new LedgerAdapter(
+//                                system,
+//                                Grades.ledgerNoteMinGrade,
+//                                ledgerNeighbors,
+//                                ledgerGlyphs));
+//
+//                        if (compound == null) {
+//                            // Here, we have not found any convincing neighbor
+//                            // Let's invalid this pseudo ledger
+//                            logger.debug("Invalid ledger {}", ledger);
+//                            ledger.setShape(null);
+//                            it.remove();
+//                            nb++;
+//                        }
+//                    }
+//                }
+//
+//                if (ledgerSet.isEmpty()) {
+//                    iter.remove();
+//                }
+//            }
+//        }
 
         return nb;
     }
 
-    //-----------//
-    // isInvalid //
-    //-----------//
-    private boolean isInvalid (Glyph ledgerGlyph,
-                               Set<Glyph> neighborGlyphs)
-    {
-        // A short ledger must be stuck to either a note head or a stem 
-        // (or a grace note)
-        List<Section> allSections = new ArrayList<>();
-
-        for (Section section : ledgerGlyph.getMembers()) {
-            allSections.addAll(section.getSources());
-            allSections.addAll(section.getTargets());
-            allSections.addAll(section.getOppositeSections());
-        }
-
-        for (Section sct : allSections) {
-            Glyph g = sct.getGlyph();
-
-            if ((g != null) && (g != ledgerGlyph)) {
-                neighborGlyphs.add(g);
-            }
-        }
-
-        for (Glyph glyph : neighborGlyphs) {
-            Shape shape = glyph.getShape();
-
-            if ((shape == Shape.STEM) || ledgerNeighbors.contains(shape)) {
-                return false;
-            }
-        }
-
-        // If this a long ledger, check farther from the staff for a note with
-        // a ledger (full or chunk)
-        if (builder.isFullLedger(ledgerGlyph)) {
-            return false;
-        }
-
-        return true;
-    }
+//    //-----------//
+//    // isInvalid //
+//    //-----------//
+//    private boolean isInvalid (Glyph ledgerGlyph,
+//                               Set<Glyph> neighborGlyphs)
+//    {
+//        // A short ledger must be stuck to either a note head or a stem 
+//        // (or a grace note)
+//        List<Section> allSections = new ArrayList<>();
+//
+//        for (Section section : ledgerGlyph.getMembers()) {
+//            allSections.addAll(section.getSources());
+//            allSections.addAll(section.getTargets());
+//            allSections.addAll(section.getOppositeSections());
+//        }
+//
+//        for (Section sct : allSections) {
+//            Glyph g = sct.getGlyph();
+//
+//            if ((g != null) && (g != ledgerGlyph)) {
+//                neighborGlyphs.add(g);
+//            }
+//        }
+//
+//        for (Glyph glyph : neighborGlyphs) {
+//            Shape shape = glyph.getShape();
+//
+//            if ((shape == Shape.STEM) || ledgerNeighbors.contains(shape)) {
+//                return false;
+//            }
+//        }
+//
+//        // If this a long ledger, check farther from the staff for a note with
+//        // a ledger (full or chunk)
+////        if (builder.isFullLedger(ledgerGlyph)) {
+////            return false;
+////        }
+//
+//        return true;
+//    }
 
     //~ Inner Classes ----------------------------------------------------------
     //-----------//

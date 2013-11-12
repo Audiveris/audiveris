@@ -13,7 +13,7 @@ package omr.step;
 
 import omr.image.ChamferDistance;
 import omr.image.Picture;
-import omr.image.PixelBuffer;
+import omr.image.PixelFilter;
 import omr.image.Table;
 
 import omr.sheet.Sheet;
@@ -80,8 +80,9 @@ public class VoidNotesStep
                              Sheet sheet)
             throws StepException
     {
-        PixelBuffer buffer = sheet.getPicture()
-                .getBuffer(Picture.BufferKey.BINARY);
+        Picture picture = sheet.getPicture();
+        PixelFilter buffer = (PixelFilter) picture.getSource(
+                Picture.SourceKey.BINARY);
         Table table = new ChamferDistance.Short().computeToFore(buffer);
         sheet.setDistanceImage(table);
     }

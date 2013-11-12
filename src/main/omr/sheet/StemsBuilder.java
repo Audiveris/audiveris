@@ -33,10 +33,8 @@ import omr.run.Orientation;
 import omr.run.Run;
 
 import omr.sig.AbstractBeamInter;
-import omr.sig.BasicExclusion;
 import omr.sig.BeamPortion;
 import omr.sig.BeamStemRelation;
-import omr.sig.Exclusion;
 import omr.sig.Exclusion.Cause;
 import omr.sig.FullBeamInter;
 import omr.sig.GradeImpacts;
@@ -84,17 +82,15 @@ import java.util.List;
  * At this point, both black heads and beams have been identified thanks to
  * spots processing, and void heads thanks to chamfer matching.
  * We don't have flags yet at this time.
- *
  * <p>
  * A stem is expected to be horizontally connected on the left or right
- * side of the head and vertically connected as well.
+ * side of a head and vertically connected as well.
  * Such connections are looked up in the 4 corners of every head.
  * In poor-quality scores, stems can lack many pixels, resulting in vertical
  * gaps between stem parts and between head and nearest stem part, so we
  * must accept such potential gaps (even if we lower the resulting
  * interpretation grade).
  * However we can be much more strict for the horizontal gap of the connection.
- *
  * <p>
  * A stem can be the aggregation of several items: stem seeds (built from
  * long vertical sticks) and chunks (glyphs built from sections found in the
@@ -105,10 +101,9 @@ import java.util.List;
  * beam.</li>
  * <li>Use a similar approach for the case of flag (if the flag is in the right
  * direction), except that we don't have identified flags yet!</li>
- * <li>If no obvious limit exists, accept all gaps in sequence until a too large
- * gap is encountered.</li>
+ * <li>If no obvious limit exists, accept all gaps in sequence while no too
+ * large gap is encountered.</li>
  * </ol>
- *
  * <p>
  * Every sequence of stem items built from the head should be evaluated and
  * recorded as a separate stem interpretation in the SIG.
@@ -118,7 +113,6 @@ import java.util.List;
  * We could also analyze in the whole page the population of "good" stems to
  * come up with most common stem lengths according to stem configurations,
  * and support stem interpretations that match these most common lengths.
- *
  * <p>
  * Stem-head connection uses criteria based on xGap and yGap at reference point.
  * Stem-beam connection uses yGap (and xGap in the case of beam side
@@ -146,6 +140,7 @@ public class StemsBuilder
     private final SystemInfo system;
 
     /** The related SIG. */
+    @Navigable(false)
     private final SIGraph sig;
 
     /** Sheet scale. */
@@ -206,6 +201,33 @@ public class StemsBuilder
     //-----------//
     /**
      * Link stems to suitable heads and beams in the system.
+     * <pre>
+     * Synopsis:
+     *
+     * - retrieve systemSeeds, systemBeams, systemHeads
+     *
+     * FOREACH head in systemHeads:
+     *      FOREACH corner:
+     *          - getReferencePoint()
+     *          - getLookupArea()
+     *          - link()
+     *              - lookupBeams()
+     *              - lookupSeeds()
+     *              - lookupChunks()
+     *              - includeItems()
+     *                  - createStemInter() for relevant items
+     *                  - connectHeadStem() for relevant items
+     *              - connectBeamStem() for relevant beams
+     *
+     * - retrieve systemStems
+     *
+     * FOREACH head in systemHeads:
+     *      FOREACH corner:
+     *          - reuse()
+     *              - connectHeadStem() for relevant stems
+     *
+     * - performMutualExclusions
+     * </pre>
      */
     public void linkStems ()
     {
@@ -326,13 +348,11 @@ public class StemsBuilder
 
         for (Inter inter : stems) {
             StemInter stem = (StemInter) inter;
-            Rectangle stemBox = stem.getBounds();
 
             NoteLoop:
             for (Inter note : notes) {
-                if (note.getBounds()
-                        .intersects(stemBox)) {
-                    // Is there a connection?
+                if (note.overlaps(stem)) {
+                    // Is there a support connection?
                     if (!(note instanceof WholeInter)) {
                         for (Relation rel : sig.getAllEdges(note, stem)) {
                             if (rel instanceof HeadStemRelation) {
@@ -366,7 +386,7 @@ public class StemsBuilder
                 "Maximum horizontal gap between head/beam and stem");
 
         final Scale.Fraction maxHeadInDx = new Scale.Fraction(
-                0.2,
+                0.3, //0.2,
                 "Maximum horizontal overlap between head and stem");
 
         final Scale.Fraction maxBeamInDx = new Scale.Fraction(
@@ -549,8 +569,11 @@ public class StemsBuilder
             /** The corner being processed. */
             private final Corner corner;
 
-            /** Direction of ordinates going away from head. */
-            private final int dir;
+            /** Direction of abscissae when going away from head. */
+            private final int xDir;
+
+            /** Direction of ordinates when going away from head. */
+            private final int yDir;
 
             /** The reference point for the corner. */
             private final Point2D refPt;
@@ -569,7 +592,8 @@ public class StemsBuilder
             {
                 this.corner = corner;
 
-                dir = (corner.vSide == BOTTOM) ? 1 : (-1);
+                xDir = (corner.hSide == RIGHT) ? 1 : (-1);
+                yDir = (corner.vSide == BOTTOM) ? 1 : (-1);
                 refPt = getReferencePoint();
                 area = getLuArea();
             }
@@ -595,7 +619,7 @@ public class StemsBuilder
 
                 // Use system limit
                 Rectangle systemBox = system.getBounds();
-                int sysY = (dir > 0) ? (systemBox.y + systemBox.height)
+                int sysY = (yDir > 0) ? (systemBox.y + systemBox.height)
                         : systemBox.y;
                 targetPt = getTargetPt(new Line2D.Double(0, sysY, 100, sysY));
 
@@ -637,7 +661,7 @@ public class StemsBuilder
                     int contrib = getContrib(runBox);
 
                     if (contrib > 0) {
-                        refY += (dir * contrib);
+                        refY += (yDir * contrib);
                     }
                 }
 
@@ -767,7 +791,8 @@ public class StemsBuilder
                     final Line2D beamLimit = getLimit(beam);
                     bRel = new BeamStemRelation();
                     bRel.setStemPortion(
-                            (dir > 0) ? StemPortion.STEM_BOTTOM : StemPortion.STEM_TOP);
+                            (yDir > 0) ? StemPortion.STEM_BOTTOM
+                            : StemPortion.STEM_TOP);
 
                     // Precise cross point
                     Point2D start = stemGlyph.getStartPoint(
@@ -802,7 +827,7 @@ public class StemsBuilder
                     }
 
                     // Ordinate
-                    final double yGap = (dir > 0)
+                    final double yGap = (yDir > 0)
                             ? Math.max(
                                     0,
                                     crossPt.getY() - stop.getY())
@@ -878,7 +903,7 @@ public class StemsBuilder
 
                     if (hRel.getGrade() >= hRel.getMinGrade()) {
                         // Determine stem portion (with 1/2 head margin)
-                        if (dir > 0) {
+                        if (yDir > 0) {
                             if (stemBox.y >= (headBox.y - (headBox.height / 2))) {
                                 hRel.setStemPortion(StemPortion.STEM_TOP);
                             } else {
@@ -895,16 +920,24 @@ public class StemsBuilder
                         }
 
                         sig.addEdge(head, stemInter, hRel);
-                        logger.debug("{} {} {}", head, corner, hRel);
+
+                        if (stemInter.isVip()) {
+                            logger.info("{} {} {}", head, corner, hRel);
+                        }
                     } else {
+                        if (stemInter.isVip()) {
+                            logger.info(
+                                    "Failed connection {} to {} {} {}",
+                                    stemInter,
+                                    head,
+                                    corner,
+                                    hRel.getDetails());
+                        }
+
                         hRel = null;
                     }
                 }
 
-                //
-                //                if (hRel != null) {
-                //                    head.setShape(Shape.NOTEHEAD_BLACK);
-                //                }
                 return hRel;
             }
 
@@ -914,13 +947,11 @@ public class StemsBuilder
             /**
              * (Try to) create stem interpretation with proper grade.
              *
-             * @param items     the sequence of items (seeds / chunks) that
-             *                  compose the stem
-             * @param extension distance from head to end of stem
+             * @param items the sequence of items (seeds / chunks) that
+             *              compose the stem
              * @return the proper stem interpretation or null if too weak
              */
-            private StemInter createStemInter (List<Glyph> items,
-                                               double extension)
+            private StemInter createStemInter (List<Glyph> items)
             {
                 final Glyph stem = (items.size() > 1)
                         ? system.buildCompound(items) : items.get(0);
@@ -937,69 +968,6 @@ public class StemsBuilder
                 if (stemInter == null) {
                     GradeImpacts impacts = system.verticalsBuilder.checkStem(
                             stem);
-
-                    //                    // Use the amount of white space to evaluate the stem.
-                    //                    double largestGap = 0;
-                    //                    int blackLength = 0;
-                    //                    int whiteLength = 0;
-                    //                    Integer lastY = null;
-                    //
-                    //                    for (Glyph item : items) {
-                    //                        final Rectangle itemBox = item.getBounds();
-                    //                        final int itemY = (dir > 0) ? itemBox.y
-                    //                                : ((itemBox.y + itemBox.height)
-                    //                                   - 1);
-                    //                        blackLength += itemBox.height;
-                    //
-                    //                        if (lastY != null) {
-                    //                            int gap = Math.abs(itemY - lastY);
-                    //                            whiteLength += gap;
-                    //                            largestGap = Math.max(largestGap, gap);
-                    //                        }
-                    //
-                    //                        lastY = itemY + (dir * (itemBox.height - 1));
-                    //                    }
-                    //
-                    //                    //                    final double totalLength = blackLength + whiteLength;
-                    //                    //
-                    //                    //                    // Impact of white ratio
-                    //                    //                    double whiteImpact = Grades.clamp(
-                    //                    //                            1 - (whiteLength / totalLength));
-                    //                    //
-                    //                    // Impact of largest gap
-                    //                    double gapImpact = Grades.clamp(
-                    //                            1 - (largestGap / params.maxYGap));
-                    //
-                    //                    // Impact of straightness: mean distance to straight line
-                    //                    double straightImpact = Grades.clamp(
-                    //                            1
-                    //                            - (stem.getMeanDistance() / params.maxDistanceToLine));
-                    //
-                    //                    // Impact of length
-                    //                    double lengthImpact = Grades.clamp(
-                    //                            (blackLength - params.minStemExtension) / (params.minLongStemLength
-                    //                                                                       - params.minStemExtension));
-                    //
-                    //                    VerticalsBuilder builder = system.verticalsBuilder;
-                    //
-                    //                    // Impact of Slope
-                    //                    double slopeImpact = builder.verticalCheck.pass(
-                    //                            stem,
-                    //                            null,
-                    //                            true).grade;
-                    //
-                    //                    // Impact of Clean
-                    //                    double cleanImpact = Grades.clamp(
-                    //                            builder.cleanCheck.pass(stem, null, true).grade);
-                    //
-                    //                    Impacts impacts = new Impacts(
-                    //                            lengthImpact,
-                    //                            gapImpact,
-                    //                            straightImpact,
-                    //                            slopeImpact,
-                    //                            cleanImpact);
-                    //
-                    //                    // Weighted value
                     double grade = impacts.getGrade();
 
                     if (grade >= StemInter.getMinGrade()) {
@@ -1042,10 +1010,8 @@ public class StemsBuilder
              */
             private Point2D getInPoint ()
             {
-                final int xSign = (corner.hSide == LEFT) ? (-1) : 1;
-
                 return new Point2D.Double(
-                        refPt.getX() - (xSign * params.maxHeadInDx),
+                        refPt.getX() - (xDir * params.maxHeadInDx),
                         refPt.getY());
             }
 
@@ -1075,10 +1041,8 @@ public class StemsBuilder
              */
             private Area getLuArea ()
             {
-                final int xSign = (corner.hSide == LEFT) ? (-1) : 1;
-
                 final double slope = skew.getSlope();
-                final double dSlope = -xSign * dir * params.slopeMargin;
+                final double dSlope = -xDir * yDir * params.slopeMargin;
 
                 final Point2D outPt = getOutPoint();
                 final Point2D inPt = getInPoint();
@@ -1090,7 +1054,7 @@ public class StemsBuilder
 
                 // Then segment away from head (system limit)
                 final Rectangle systemBox = system.getBounds();
-                final double yLimit = (dir > 0) ? systemBox.getMaxY()
+                final double yLimit = (yDir > 0) ? systemBox.getMaxY()
                         : systemBox.getMinY();
                 final double dy = yLimit - outPt.getY();
                 lu.lineTo(inPt.getX() + ((slope + dSlope) * dy), yLimit);
@@ -1120,10 +1084,8 @@ public class StemsBuilder
              */
             private Point2D getOutPoint ()
             {
-                final int xSign = (corner.hSide == LEFT) ? (-1) : 1;
-
                 return new Point2D.Double(
-                        refPt.getX() + (xSign * params.maxOutDx),
+                        refPt.getX() + (xDir * params.maxOutDx),
                         refPt.getY());
             }
 
@@ -1141,11 +1103,8 @@ public class StemsBuilder
             private Point2D getReferencePoint ()
             {
                 final Point center = GeoUtil.centerOf(headBox);
-                final double dx = (corner.hSide == LEFT)
-                        ? (-headSymbolDim.width * 0.5)
-                        : (headSymbolDim.width * 0.5);
-                final double dy = (dir > 0) ? (headSymbolDim.height * 0.45)
-                        : (-headSymbolDim.height * 0.45);
+                final double dx = xDir * headSymbolDim.width * 0.5;
+                final double dy = yDir * headSymbolDim.height * 0.45;
 
                 return new Point2D.Double(center.x + dx, center.y + dy);
             }
@@ -1164,9 +1123,9 @@ public class StemsBuilder
             private Rectangle getRunBox (Section section,
                                          HorizontalSide side)
             {
-                final Run run = (side == LEFT) ? section.getFirstRun()
+                final Run run = (xDir < 0) ? section.getFirstRun()
                         : section.getLastRun();
-                final int pos = (side == LEFT) ? section.getFirstPos()
+                final int pos = (xDir < 0) ? section.getFirstPos()
                         : section.getLastPos();
 
                 return new Rectangle(pos, run.getStart(), 1, run.getLength());
@@ -1208,7 +1167,7 @@ public class StemsBuilder
             {
                 return new Rectangle(
                         0, // x is irrelevant
-                        (int) Math.rint((dir > 0) ? refPt.getY() : yLimit),
+                        (int) Math.rint((yDir > 0) ? refPt.getY() : yLimit),
                         0, // width is irrelevant
                         (int) Math.rint(Math.abs(yLimit - refPt.getY())));
             }
@@ -1229,8 +1188,7 @@ public class StemsBuilder
                                                   Section fatHeadSection)
             {
                 double lastY = refY; // Current end of stem
-                StemInter stemInter = null;
-                List<StemInter> allInters = new ArrayList<StemInter>();
+                List<StemInter> allStemInters = new ArrayList<StemInter>();
 
                 for (int i = 0; i < items.size(); i++) {
                     Glyph item = items.get(i);
@@ -1242,9 +1200,9 @@ public class StemsBuilder
                     }
 
                     // Is gap with previous item acceptable?
-                    final int itemY = (dir > 0) ? itemBox.y
+                    final int itemY = (yDir > 0) ? itemBox.y
                             : ((itemBox.y + itemBox.height) - 1);
-                    final double itemStart = (dir > 0) ? Math.max(itemY, refY)
+                    final double itemStart = (yDir > 0) ? Math.max(itemY, refY)
                             : Math.min(itemY, refY);
                     final double yGap = Math.abs(itemStart - lastY);
 
@@ -1257,7 +1215,7 @@ public class StemsBuilder
                     }
 
                     // Check minimum stem extension from head
-                    lastY = itemY + (dir * (itemBox.height - 1));
+                    lastY = itemY + (yDir * (itemBox.height - 1));
 
                     final double extension = Math.abs(lastY - refY);
 
@@ -1266,17 +1224,18 @@ public class StemsBuilder
                     }
 
                     // OK, build a stem interpretation with all items so far
-                    // TODO: some items might be too distant from line and should be skipped!
+                    // TODO: some items might be horizontally too distant from
+                    // stem line and should be skipped?
                     List<Glyph> stemItems = items.subList(0, i + 1);
-                    stemInter = createStemInter(stemItems, extension);
+                    StemInter stemInter = createStemInter(stemItems);
 
                     if (stemInter != null) {
-                        allInters.add(stemInter);
+                        allStemInters.add(stemInter);
                         connectHeadStem(fatHeadSection, stemInter);
                     }
                 }
 
-                return allInters;
+                return allStemInters;
             }
 
             //-------------//
@@ -1298,26 +1257,26 @@ public class StemsBuilder
                         GeoOrder.BY_ABSCISSA,
                         area);
 
-                // Sort by distance from head
+                // Sort beams by distance from head
                 Collections.sort(
                         allbeams,
                         new Comparator<Inter>()
-                        {
-                            @Override
-                            public int compare (Inter b1,
-                                                Inter b2)
-                            {
-                                double d1 = Math.abs(
-                                        refPt.getY()
-                                        - getTargetPt(
-                                        getLimit((AbstractBeamInter) b1)).getY());
-                                double d2 = Math.abs(
-                                        refPt.getY()
-                                        - getTargetPt(
-                                        getLimit((AbstractBeamInter) b2)).getY());
+                {
+                    @Override
+                    public int compare (Inter b1,
+                                        Inter b2)
+                    {
+                        double d1 = Math.abs(
+                                refPt.getY()
+                                - getTargetPt(
+                                getLimit((AbstractBeamInter) b1)).getY());
+                        double d2 = Math.abs(
+                                refPt.getY()
+                                - getTargetPt(
+                                getLimit((AbstractBeamInter) b2)).getY());
 
-                                return Double.compare(d1, d2);
-                            }
+                        return Double.compare(d1, d2);
+                    }
                         });
 
                 // Build the list of beams
@@ -1330,8 +1289,8 @@ public class StemsBuilder
                     if (goodBeam == null) {
                         // Check if beam is far enough from head
                         final Point2D pt = getTargetPt(getLimit(beam));
-                        final double distToBeam = dir * (pt.getY()
-                                                         - refPt.getY());
+                        final double distToBeam = yDir * (pt.getY()
+                                                          - refPt.getY());
 
                         if (distToBeam < params.minHeadBeamDistance) {
                             if (beam.isVip() || logger.isDebugEnabled()) {
@@ -1647,17 +1606,17 @@ public class StemsBuilder
                 Collections.sort(
                         stems,
                         new Comparator<Glyph>()
-                        {
-                            @Override
-                            public int compare (Glyph o1,
-                                                Glyph o2)
-                            {
-                                // Sort by decreasing contribution
-                                int c1 = getContrib(o1.getBounds());
-                                int c2 = getContrib(o2.getBounds());
+                {
+                    @Override
+                    public int compare (Glyph o1,
+                                        Glyph o2)
+                    {
+                        // Sort by decreasing contribution
+                        int c1 = getContrib(o1.getBounds());
+                        int c2 = getContrib(o2.getBounds());
 
-                                return Integer.signum(c2 - c1);
-                            }
+                        return Integer.signum(c2 - c1);
+                    }
                         });
 
                 List<Glyph> kept = new ArrayList<Glyph>();
@@ -1695,7 +1654,7 @@ public class StemsBuilder
             {
                 Collections.sort(
                         glyphs,
-                        (dir > 0) ? Glyph.byOrdinate : Glyph.byReverseOrdinate);
+                        (yDir > 0) ? Glyph.byOrdinate : Glyph.byReverseOrdinate);
             }
         }
     }

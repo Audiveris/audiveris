@@ -358,7 +358,8 @@ public class GlyphsModel
         // Special case for ledger glyph
         if (glyph.getShape() == Shape.LEDGER) {
             StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
-            staff.removeLedger(glyph);
+            ///staff.removeLedger(glyph);
+            //TODO: handle a LedgerInter instead!
         }
 
         if (system != null) {

@@ -13,7 +13,7 @@ package omr.image;
 
 /**
  * Interface {@code PixelSource} defines the operations expected
- * from a rectangular pixel source, limited by its width and height.
+ * from a rectangular pixel source.
  * <p>It is a <b>raw</b> pixel source, because just the pixel gray value
  * is returned, with no interpretation as foreground or background.
  * This additional interpretation is reported by a {@link PixelSource}.

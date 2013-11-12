@@ -870,7 +870,7 @@ public class BasicNest
             glyph.linkAllSections();
 
             if (glyph.isVip()) {
-                logger.info("glyph#{} added", glyph.getId());
+                logger.info("VIP glyph#{} added", glyph.getId());
             }
 
             return glyph;

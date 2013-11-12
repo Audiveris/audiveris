@@ -234,7 +234,7 @@ public abstract class AbstractInter
     public Rectangle getBounds ()
     {
         if (box != null) {
-            return box;
+            return new Rectangle(box);
         }
 
         if (glyph != null) {

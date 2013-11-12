@@ -86,6 +86,23 @@ public class GeoUtil
         return (x >= line.getX1()) && (x <= line.getX2());
     }
 
+    //-----------//
+    // xEmbraces //
+    //-----------//
+    /**
+     * Check whether the abscissae of the provided rectangle embrace
+     * the provided abscissa value.
+     *
+     * @param rect the provided rectangle
+     * @param x    the abscissa value
+     * @return true if x is within rectangle abscissae
+     */
+    public static boolean xEmbraces (Rectangle rect,
+                                     double x)
+    {
+        return (x >= rect.x) && (x < (rect.x + rect.width));
+    }
+
     //------//
     // xGap //
     //------//
@@ -121,6 +138,24 @@ public class GeoUtil
         final int commonRight = Math.min(one.x + one.width, two.x + two.width);
 
         return commonRight - commonLeft;
+    }
+
+    //-----------//
+    // yEmbraces //
+    //-----------//
+    /**
+     * Check whether the ordinates of the provided line embrace
+     * the provided ordinate value (assuming line points are defined
+     * in increasing ordinate order).
+     *
+     * @param line the provided line
+     * @param y    the ordinate value
+     * @return true if x is within line ordinates
+     */
+    public static boolean yEmbraces (Line2D line,
+                                     double y)
+    {
+        return (y >= line.getY1()) && (y <= line.getY2());
     }
 
     //-----------//

@@ -14,9 +14,9 @@ package omr.sheet;
 import omr.check.Check;
 import omr.check.CheckBoard;
 import omr.check.CheckSuite;
-import omr.check.CheckSuite.Impacts;
 import omr.check.Checkable;
 import omr.check.Failure;
+import omr.check.SuiteImpacts;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -173,8 +173,9 @@ public class VerticalsBuilder
             throws StepException
     {
         // Cache input image
-        pixelFilter = sheet.getPicture()
-                .getBuffer(Picture.BufferKey.STAFF_FREE);
+        Picture picture = sheet.getPicture();
+        pixelFilter = (PixelFilter) picture.getSource(
+                Picture.SourceKey.STAFF_LINE_FREE);
 
         // Retrieve candidates
         List<Glyph> candidates = retrieveCandidates();
@@ -193,7 +194,7 @@ public class VerticalsBuilder
      * @param stick the stem candidate
      * @return the resulting impacts
      */
-    public Impacts checkStem (Glyph stick)
+    public SuiteImpacts checkStem (Glyph stick)
     {
         return suite.getImpacts(new GlyphContext(stick));
     }

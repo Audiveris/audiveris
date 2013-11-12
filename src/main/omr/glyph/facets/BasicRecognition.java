@@ -295,7 +295,7 @@ class BasicRecognition
         evaluation = new Evaluation(shape, grade);
 
         if (glyph.isVip()) {
-            logger.info("{} assigned {}", glyph.idString(), evaluation);
+            logger.info("VIP {} assigned {}", glyph.idString(), evaluation);
         }
     }
 
