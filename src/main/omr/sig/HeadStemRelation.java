@@ -14,6 +14,8 @@ package omr.sig;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.sheet.Scale;
+
 import omr.util.HorizontalSide;
 
 import org.slf4j.Logger;
@@ -73,13 +75,28 @@ public class HeadStemRelation
         return stemPortion;
     }
 
-    //----------//
-    // getRatio //
-    //----------//
-    @Override
-    public Double getRatio ()
+    //------------------//
+    // getXInGapMaximum //
+    //------------------//
+    public static Scale.Fraction getXInGapMaximum ()
     {
-        return 1.0 + (10.0 * grade);
+        return constants.xInGapMax;
+    }
+
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum ()
+    {
+        return constants.xOutGapMax;
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum ()
+    {
+        return constants.yGapMax;
     }
 
     /**
@@ -98,16 +115,40 @@ public class HeadStemRelation
         this.stemPortion = stemPortion;
     }
 
+    //-----------------//
+    // getSupportCoeff //
+    //-----------------//
     @Override
-    protected double getXWeight ()
+    protected double getSupportCoeff ()
     {
-        return constants.xWeight.getValue();
+        return constants.supportCoeff.getValue();
     }
 
+    //--------------//
+    // getXInGapMax //
+    //--------------//
     @Override
-    protected double getYWeight ()
+    protected Scale.Fraction getXInGapMax ()
     {
-        return constants.yWeight.getValue();
+        return getXInGapMaximum();
+    }
+
+    //---------------//
+    // getXOutGapMax //
+    //---------------//
+    @Override
+    protected Scale.Fraction getXOutGapMax ()
+    {
+        return getXOutGapMaximum();
+    }
+
+    //------------//
+    // getYGapMax //
+    //------------//
+    @Override
+    protected Scale.Fraction getYGapMax ()
+    {
+        return getYGapMaximum();
     }
 
     @Override
@@ -132,15 +173,21 @@ public class HeadStemRelation
     {
         //~ Instance fields ----------------------------------------------------
 
-        final Constant.Double xWeight = new Constant.Double(
-                "weight",
-                4,
-                "Weight assigned to horizontal Gap");
+        final Constant.Ratio supportCoeff = new Constant.Ratio(
+                10,
+                "Value for coeff in support formula");
 
-        final Constant.Double yWeight = new Constant.Double(
-                "weight",
-                1,
-                "Weight assigned to vertical Gap");
+        final Scale.Fraction yGapMax = new Scale.Fraction(
+                0.8,
+                "Maximum vertical gap between stem & head");
+
+        final Scale.Fraction xInGapMax = new Scale.Fraction(
+                0.2,
+                "Maximum horizontal overlap between stem & head");
+
+        final Scale.Fraction xOutGapMax = new Scale.Fraction(
+                0.2,
+                "Maximum horizontal gap between stem & head");
 
     }
 }

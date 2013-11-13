@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                          V o i d H e a d I n t e r                         //
+//                         S u p p o r t I m p a c t s                        //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -11,35 +11,42 @@
 // </editor-fold>
 package omr.sig;
 
-import omr.glyph.Shape;
-
-import java.awt.Rectangle;
-
 /**
- * Class {@code VoidHeadInter} represents a void note head
- * interpretation.
+ * Class {@code SupportImpacts} handles impacts for a supporting
+ * relation.
  *
  * @author Hervé Bitteur
  */
-public class VoidHeadInter
-        extends AbstractNoteInter
+public class SupportImpacts
+        extends BasicImpacts
 {
     //~ Constructors -----------------------------------------------------------
 
-    //---------------//
-    // VoidHeadInter //
-    //---------------//
     /**
-     * Creates a new VoidHeadInter object.
+     * Creates a new RelationImpacts object.
      *
-     * @param box     the object bounds
-     * @param impacts the grade details
-     * @param pitch   the note pitch
+     * @param names   array of names
+     * @param weights array of weights
      */
-    public VoidHeadInter (Rectangle box,
-                          GradeImpacts impacts,
-                          int pitch)
+    public SupportImpacts (String[] names,
+                           double[] weights)
     {
-        super(box, Shape.NOTEHEAD_VOID, impacts, pitch);
+        super(names, weights);
+    }
+
+    //~ Methods ----------------------------------------------------------------
+    //-------------------//
+    // getIntrinsicRatio //
+    //-------------------//
+    /**
+     * A relation is not supposed to have a contextual grade, so there
+     * is no point to leave room for it.
+     *
+     * @return 1
+     */
+    @Override
+    public double getIntrinsicRatio ()
+    {
+        return 1;
     }
 }

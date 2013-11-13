@@ -29,7 +29,7 @@ public class DistanceMatching
      * The value at each (x,y) location is the distance to nearest reference
      * point.
      */
-    private final Table distances;
+    private final DistanceTable distances;
 
     //~ Constructors -----------------------------------------------------------
     //-----------------//
@@ -41,7 +41,7 @@ public class DistanceMatching
      *
      * @param distances the distance transform image
      */
-    public DistanceMatching (Table distances)
+    public DistanceMatching (DistanceTable distances)
     {
         this.distances = distances;
     }
@@ -59,7 +59,7 @@ public class DistanceMatching
      * @return an (unsorted) list of locations with acceptable distance
      */
     public List<PixelDistance> matchAll (Template template,
-                                       double maxDistance)
+                                         double maxDistance)
     {
         final int scanWidth = distances.getWidth()
                               - template.getWidth();

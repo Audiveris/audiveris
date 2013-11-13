@@ -15,7 +15,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 /**
- * Class {@code BasicSupport}
+ * Class {@code BasicSupport} is the base implementation of {@link
+ * Support} interface.
  *
  * @author Hervé Bitteur
  */
@@ -31,8 +32,8 @@ public class BasicSupport
     /** Quality of the geometric junction. */
     protected double grade;
 
-    /** Support ratio. */
-    protected Double ratio;
+    /** Details about grade (for debugging). */
+    protected GradeImpacts impacts;
 
     //~ Constructors -----------------------------------------------------------
     /**
@@ -54,12 +55,24 @@ public class BasicSupport
     }
 
     //~ Methods ----------------------------------------------------------------
+    //----------//
+    // getGrade //
+    //----------//
     /**
      * @return the grade
      */
     public double getGrade ()
     {
         return grade;
+    }
+
+    //------------//
+    // getImpacts //
+    //------------//
+    @Override
+    public GradeImpacts getImpacts ()
+    {
+        return impacts;
     }
 
     //-------------//
@@ -70,21 +83,27 @@ public class BasicSupport
         return constants.minGrade.getValue();
     }
 
+    //---------//
+    // getName //
+    //---------//
     @Override
     public String getName ()
     {
         return "Support";
     }
 
-    /**
-     * @return the support ratio
-     */
+    //-----------------//
+    // getSupportRatio //
+    //-----------------//
     @Override
-    public Double getRatio ()
+    public double getSupportRatio ()
     {
-        return ratio;
+        return 1.0 + (getSupportCoeff() * grade);
     }
 
+    //----------//
+    // setGrade //
+    //----------//
     /**
      * @param grade the grade to set
      */
@@ -93,19 +112,33 @@ public class BasicSupport
         this.grade = grade;
     }
 
-    /**
-     * @param support the support value to set
-     */
+    //------------//
+    // setImpacts //
+    //------------//
     @Override
-    public void setRatio (double support)
+    public void setImpacts (GradeImpacts impacts)
     {
-        this.ratio = support;
+        this.impacts = impacts;
     }
 
+    //----------//
+    // toString //
+    //----------//
     @Override
     public String toString ()
     {
         return String.format("%.2f~%s", grade, getName());
+    }
+
+    //-----------------//
+    // getSupportCoeff //
+    //-----------------//
+    /**
+     * @return the coefficient used to compute support ratio
+     */
+    protected double getSupportCoeff ()
+    {
+        return constants.defaultSupportCoeff.getValue();
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -120,6 +153,10 @@ public class BasicSupport
         final Constant.Ratio minGrade = new Constant.Ratio(
                 0.1,
                 "Minimum support relation grade");
+
+        final Constant.Ratio defaultSupportCoeff = new Constant.Ratio(
+                10,
+                "Default value for coeff in support formula: 1 + coeff*grade");
 
     }
 }

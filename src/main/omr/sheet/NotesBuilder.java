@@ -26,8 +26,8 @@ import omr.grid.StaffInfo;
 
 import omr.image.Anchored.Anchor;
 import static omr.image.Anchored.Anchor.*;
+import omr.image.DistanceTable;
 import omr.image.PixelDistance;
-import omr.image.Table;
 import omr.image.Template;
 import omr.image.TemplateFactory;
 
@@ -45,6 +45,7 @@ import omr.sig.AbstractNoteInter;
 import static omr.sig.AbstractNoteInter.shrink;
 import omr.sig.BlackHeadInter;
 import omr.sig.Exclusion;
+import omr.sig.GradeImpacts;
 import omr.sig.Grades;
 import omr.sig.Inter;
 import omr.sig.LedgerInter;
@@ -77,15 +78,12 @@ import java.util.Set;
 import java.util.SortedSet;
 
 /**
- * Class {@code VoidNotesBuilder} retrieves the void note heads and
- * the whole notes for a system.
+ * Class {@code NotesBuilder} retrieves the void note heads, the black
+ * note heads and the whole notes for a system.
  * <p>
  * It uses a distance matching approach which works well for such symbols that
  * exhibit a fixed shape, with a combination of foreground and background
  * information.
- * Besides void heads, this approach is used to complement the retrieval of
- * black note heads, since it can address black heads even if those lack many
- * foreground pixels.
  * <p>
  * We don't need to check each and every location in the system, but only the
  * locations where such note kind is possible:<ul>
@@ -93,20 +91,20 @@ import java.util.SortedSet;
  * <li>We cannot fully use stems, since at this time we just have vertical seeds
  * and not all stems will contain seeds. However, if a vertical seed exists
  * nearby we can use it to evaluate a note candidate at proper location.</li>
- * <li>We can reasonably skip the locations where a (good) black note head or a
- * (good) beam has been detected.</li>
+ * <li>We can reasonably skip the locations where a (good) beam has been
+ * detected.</li>
  * </ul>
  *
  * @author Hervé Bitteur
  */
-public class VoidNotesBuilder
+public class NotesBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(
-            VoidNotesBuilder.class);
+            NotesBuilder.class);
 
     /**
      * Shapes that occur right on staff lines or ledgers.
@@ -133,8 +131,8 @@ public class VoidNotesBuilder
 
     /** Shapes of competitors. */
     private static final List<Shape> competingShapes = Arrays.asList(
-            Shape.NOTEHEAD_BLACK,
-            Shape.BEAM);
+            Shape.BEAM,
+            Shape.BEAM_HOOK);
 
     /** The template factory singleton. */
     private static TemplateFactory factory = TemplateFactory.getInstance();
@@ -166,7 +164,7 @@ public class VoidNotesBuilder
     private final Map<Shape, Template> templates = new HashMap<Shape, Template>();
 
     /** The distance table to use. */
-    private Table distances;
+    private DistanceTable distances;
 
     /** The competing interpretations for the system. */
     private List<Inter> systemCompetitors;
@@ -175,15 +173,15 @@ public class VoidNotesBuilder
     private List<Glyph> systemSeeds;
 
     //~ Constructors -----------------------------------------------------------
-    //------------------//
-    // VoidNotesBuilder //
-    //------------------//
+    //--------------//
+    // NotesBuilder //
+    //--------------//
     /**
-     * Creates a new VoidNotesBuilder object.
+     * Creates a new NotesBuilder object.
      *
      * @param system the system to process
      */
-    public VoidNotesBuilder (SystemInfo system)
+    public NotesBuilder (SystemInfo system)
     {
         this.system = system;
 
@@ -201,16 +199,16 @@ public class VoidNotesBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
-    //----------------//
-    // buildVoidHeads //
-    //----------------//
+    //------------//
+    // buildNotes //
+    //------------//
     /**
-     * Retrieve all void heads and whole notes in the system, as well
-     * as additional black heads.
+     * Retrieve all void heads, black heads and whole notes in the 
+     * system.
      */
-    public void buildVoidHeads ()
+    public void buildNotes ()
     {
-        StopWatch watch = new StopWatch("buildVoidHeads S#" + system.getId());
+        StopWatch watch = new StopWatch("buildNotes S#" + system.getId());
         systemCompetitors = getSystemCompetitors(); // Competitors
         systemSeeds = getSystemSeeds(); // Vertical seeds
         distances = sheet.getDistanceImage();
@@ -222,7 +220,7 @@ public class VoidNotesBuilder
             // First, process all seed-based heads for the staff
             List<Inter> ch = processStaff(staff, true);
 
-            // Consider seed-based heads as competitors for x-based heads
+            // Consider seed-based heads as competitors for plain x-based heads
             systemCompetitors.addAll(ch);
             Collections.sort(systemCompetitors, Inter.byOrdinate);
 
@@ -270,7 +268,7 @@ public class VoidNotesBuilder
     /**
      * Create the interpretation that corresponds to the match found.
      *
-     * @param loc    location of the match
+     * @param loc    (valued) location of the match
      * @param anchor position of location WRT shape
      * @param shape  the shape tested
      * @param pitch  the note pitch
@@ -283,8 +281,10 @@ public class VoidNotesBuilder
     {
         final Template tpl = templates.get(shape);
         final Rectangle box = tpl.getBoundsAt(loc.x, loc.y, anchor);
-        final double grade = Grades.clamp(
+        final double distImpact = Grades.clamp(
                 1 - (loc.d / params.maxMatchingDistance));
+        final GradeImpacts impacts = new AbstractNoteInter.Impacts(distImpact);
+        final double grade = impacts.getGrade();
 
         // Is grade acceptable?
         if (grade < AbstractInter.getMinGrade()) {
@@ -297,7 +297,7 @@ public class VoidNotesBuilder
 
             return null;
         } else {
-            final Inter inter = interOf(shape, box, grade, pitch);
+            final Inter inter = createNoteInter(shape, box, impacts, pitch);
             sig.addVertex(inter);
 
             if (logger.isDebugEnabled()) {
@@ -310,6 +310,40 @@ public class VoidNotesBuilder
 
             return inter;
         }
+    }
+
+    //-----------------//
+    // createNoteInter //
+    //-----------------//
+    /**
+     * Create proper inter for provided shape.
+     *
+     * @param shape   the shape used for the template
+     * @param box     the template bounds
+     * @param impacts the assignment details
+     * @param pitch   note pitch
+     * @return the created inter
+     */
+    private Inter createNoteInter (Shape shape,
+                                   Rectangle box,
+                                   GradeImpacts impacts,
+                                   int pitch)
+    {
+        switch (shape) {
+        case NOTEHEAD_BLACK:
+            return new BlackHeadInter(box, impacts, pitch);
+
+        case VOID_ODD:
+        case VOID_EVEN:
+            return new VoidHeadInter(box, impacts, pitch);
+
+        case WHOLE_ODD:
+        case WHOLE_EVEN:
+            return new WholeInter(box, impacts, pitch);
+        }
+        assert false : "No root shape for " + shape;
+
+        return null;
     }
 
     //---------------//
@@ -452,13 +486,14 @@ public class VoidNotesBuilder
     {
         List<Inter> comps = sig.inters(
                 new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        return competingShapes.contains(inter.getShape());
-                    }
-                });
+        {
+            @Override
+            public boolean check (Inter inter)
+            {
+                return inter.isGood()
+                       && competingShapes.contains(inter.getShape());
+            }
+        });
 
         Collections.sort(comps, Inter.byOrdinate);
 
@@ -486,40 +521,6 @@ public class VoidNotesBuilder
         Collections.sort(seeds, Glyph.byOrdinate);
 
         return seeds;
-    }
-
-    //---------//
-    // interOf //
-    //---------//
-    /**
-     * Create proper inter for shape
-     *
-     * @param shape the shape used for the template
-     * @param box   the template bounds
-     * @param grade assignment quality
-     * @param pitch note pitch
-     * @return the created inter
-     */
-    private Inter interOf (Shape shape,
-                           Rectangle box,
-                           double grade,
-                           int pitch)
-    {
-        switch (shape) {
-        case NOTEHEAD_BLACK:
-            return new BlackHeadInter(box, grade, pitch);
-
-        case VOID_ODD:
-        case VOID_EVEN:
-            return new VoidHeadInter(box, grade, pitch);
-
-        case WHOLE_ODD:
-        case WHOLE_EVEN:
-            return new WholeInter(box, grade, pitch);
-        }
-        assert false : "No root shape for " + shape;
-
-        return null;
     }
 
     //--------//
@@ -670,7 +671,7 @@ public class VoidNotesBuilder
      *
      * @param area        the slice to browse
      * @param line        adapter to the underlying line (staff line or ledger)
-     * @param dir         direction from the line
+     * @param dir         vertical direction from the line
      * @param pitch       pitch position
      * @param competitors collection of existing competing symbols
      * @return the list of created interpretations
@@ -760,12 +761,19 @@ public class VoidNotesBuilder
         final double xMax = box.getMaxX();
 
         for (Inter comp : competitors) {
-            Rectangle cBox = comp.getBounds();
+            if (comp.getArea() != null) {
+                if (comp.getArea()
+                        .intersects(box)) {
+                    return true;
+                }
+            } else {
+                Rectangle cBox = comp.getBounds();
 
-            if (cBox.intersects(box)) {
-                return true;
-            } else if (cBox.x > xMax) {
-                break;
+                if (cBox.intersects(box)) {
+                    return true;
+                } else if (cBox.x > xMax) {
+                    break;
+                }
             }
         }
 
@@ -875,101 +883,6 @@ public class VoidNotesBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
-    //-------------//
-    // LineAdapter //
-    //-------------//
-    /**
-     * Such adapter is needed to interact with staff LineInfo or ledger
-     * glyph line in a consistent way.
-     */
-    private abstract static class LineAdapter
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final StaffInfo staff;
-
-        private final String prefix;
-
-        //~ Constructors -------------------------------------------------------
-        public LineAdapter (StaffInfo staff,
-                            String prefix)
-        {
-            this.staff = staff;
-            this.prefix = prefix;
-        }
-
-        //~ Methods ------------------------------------------------------------
-        /**
-         * Report the competitors lookup area, according to limits above
-         * and below, defined as ordinate shifts relative to the
-         * reference line.
-         *
-         * @param above offset (positive or negative) from line to top limit.
-         * @param below offset (positive or negative) from line to bottom limit.
-         */
-        public abstract Area getArea (double above,
-                                      double below);
-
-        /** Report the abscissa at beginning of line. */
-        public abstract int getLeftAbscissa ();
-
-        /** Report the abscissa at end of line. */
-        public abstract int getRightAbscissa ();
-
-        /** Report the ordinate at provided abscissa. */
-        public abstract int yAt (int x);
-
-        /** Needed to allow various attachments on the same staff. */
-        public String getPrefix ()
-        {
-            return prefix;
-        }
-
-        public StaffInfo getStaff ()
-        {
-            return staff;
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
-
-        final Constant.Boolean printParameters = new Constant.Boolean(
-                false,
-                "Should we print out the class parameters?");
-
-        final Constant.Boolean allowAttachments = new Constant.Boolean(
-                false,
-                "Should we allow staff attachments for created areas?");
-
-        final Constant.Double maxMatchingDistance = new Constant.Double(
-                "distance**2",
-                1.5,
-                "Maximum (square) matching distance");
-
-        final Scale.Fraction maxTemplateDelta = new Scale.Fraction(
-                0.75,
-                "Maximum dx or dy between similar template instances");
-
-        final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
-                0.7,
-                "Shrink horizontal ratio to apply when checking for overlap");
-
-        final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
-                0.5,
-                "Shrink vertical ratio to apply when checking for overlap");
-
-    }
-
     //-----------//
     // Aggregate //
     //-----------//
@@ -1029,6 +942,72 @@ public class VoidNotesBuilder
             sb.append("}");
 
             return sb.toString();
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        final Constant.Boolean printParameters = new Constant.Boolean(
+                false,
+                "Should we print out the class parameters?");
+
+        final Constant.Boolean allowAttachments = new Constant.Boolean(
+                false,
+                "Should we allow staff attachments for created areas?");
+
+        final Constant.Double maxMatchingDistance = new Constant.Double(
+                "distance",
+                1.25,
+                "Maximum matching distance");
+
+        final Scale.Fraction maxTemplateDelta = new Scale.Fraction(
+                0.75,
+                "Maximum dx or dy between similar template instances");
+
+        final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
+                0.7,
+                "Shrink horizontal ratio to apply when checking for overlap");
+
+        final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
+                0.5,
+                "Shrink vertical ratio to apply when checking for overlap");
+
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final double maxMatchingDistance;
+
+        final int maxTemplateDelta;
+
+        //~ Constructors -------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (Scale scale)
+        {
+            maxMatchingDistance = constants.maxMatchingDistance.getValue();
+            maxTemplateDelta = scale.toPixels(constants.maxTemplateDelta);
         }
     }
 
@@ -1095,31 +1074,60 @@ public class VoidNotesBuilder
         }
     }
 
-    //------------//
-    // Parameters //
-    //------------//
+    //-------------//
+    // LineAdapter //
+    //-------------//
     /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
+     * Such adapter is needed to interact with staff LineInfo or ledger
+     * glyph line in a consistent way.
      */
-    private static class Parameters
+    private abstract static class LineAdapter
     {
         //~ Instance fields ----------------------------------------------------
 
-        final double maxMatchingDistance;
+        private final StaffInfo staff;
 
-        final int maxTemplateDelta;
+        private final String prefix;
 
         //~ Constructors -------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
+        public LineAdapter (StaffInfo staff,
+                            String prefix)
         {
-            maxMatchingDistance = constants.maxMatchingDistance.getValue();
-            maxTemplateDelta = scale.toPixels(constants.maxTemplateDelta);
+            this.staff = staff;
+            this.prefix = prefix;
         }
+
+        //~ Methods ------------------------------------------------------------
+        /**
+         * Report the competitors lookup area, according to limits above
+         * and below, defined as ordinate shifts relative to the
+         * reference line.
+         *
+         * @param above offset (positive or negative) from line to top limit.
+         * @param below offset (positive or negative) from line to bottom limit.
+         */
+        public abstract Area getArea (double above,
+                                      double below);
+
+        /** Report the abscissa at beginning of line. */
+        public abstract int getLeftAbscissa ();
+
+        /** Needed to allow various attachments on the same staff. */
+        public String getPrefix ()
+        {
+            return prefix;
+        }
+
+        /** Report the abscissa at end of line. */
+        public abstract int getRightAbscissa ();
+
+        public StaffInfo getStaff ()
+        {
+            return staff;
+        }
+
+        /** Report the ordinate at provided abscissa. */
+        public abstract int yAt (int x);
     }
 
     //------------------//

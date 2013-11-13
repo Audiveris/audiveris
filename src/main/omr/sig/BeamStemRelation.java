@@ -14,6 +14,8 @@ package omr.sig;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.sheet.Scale;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +56,30 @@ public class BeamStemRelation
     }
 
     //~ Methods ----------------------------------------------------------------
+    //------------------//
+    // getXInGapMaximum //
+    //------------------//
+    public static Scale.Fraction getXInGapMaximum ()
+    {
+        return constants.xInGapMax;
+    }
+
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum ()
+    {
+        return constants.xOutGapMax;
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum ()
+    {
+        return constants.yGapMax;
+    }
+
     /**
      * @return the beamPortion
      */
@@ -71,6 +97,12 @@ public class BeamStemRelation
     }
 
     @Override
+    public GradeImpacts getImpacts ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
     public String getName ()
     {
         return "Beam-Stem";
@@ -82,15 +114,6 @@ public class BeamStemRelation
     public StemPortion getStemPortion ()
     {
         return stemPortion;
-    }
-
-    //----------//
-    // getRatio //
-    //----------//
-    @Override
-    public Double getRatio ()
-    {
-        return 1 + (20 * grade);
     }
 
     /**
@@ -117,16 +140,40 @@ public class BeamStemRelation
         this.stemPortion = stemPortion;
     }
 
+    //-----------------//
+    // getSupportCoeff //
+    //-----------------//
     @Override
-    protected double getXWeight ()
+    protected double getSupportCoeff ()
     {
-        return constants.xWeight.getValue();
+        return constants.supportCoeff.getValue();
     }
 
+    //--------------//
+    // getXInGapMax //
+    //--------------//
     @Override
-    protected double getYWeight ()
+    protected Scale.Fraction getXInGapMax ()
     {
-        return constants.yWeight.getValue();
+        throw new UnsupportedOperationException("Not supported.");
+    }
+
+    //---------------//
+    // getXOutGapMax //
+    //---------------//
+    @Override
+    protected Scale.Fraction getXOutGapMax ()
+    {
+        return getXOutGapMaximum();
+    }
+
+    //------------//
+    // getYGapMax //
+    //------------//
+    @Override
+    protected Scale.Fraction getYGapMax ()
+    {
+        return getYGapMaximum();
     }
 
     @Override
@@ -139,9 +186,9 @@ public class BeamStemRelation
         if (crossPoint != null) {
             sb.append(
                     String.format(
-                    "[x:%.0f,y:%.0f]",
-                    crossPoint.getX(),
-                    crossPoint.getY()));
+                            "[x:%.0f,y:%.0f]",
+                            crossPoint.getX(),
+                            crossPoint.getY()));
         }
 
         sb.append(",")
@@ -163,15 +210,21 @@ public class BeamStemRelation
                 0.1,
                 "Minimum interpretation grade");
 
-        final Constant.Double xWeight = new Constant.Double(
-                "weight",
-                4,
-                "Weight assigned to horizontal Gap");
+        final Constant.Ratio supportCoeff = new Constant.Ratio(
+                10,
+                "Value for coeff in support formula");
 
-        final Constant.Double yWeight = new Constant.Double(
-                "weight",
-                1,
-                "Weight assigned to vertical Gap");
+        final Scale.Fraction yGapMax = new Scale.Fraction(
+                1.0,
+                "Maximum vertical gap between stem & beam");
+
+        final Scale.Fraction xInGapMax = new Scale.Fraction(
+                0.5,
+                "Maximum horizontal overlap between stem & beam");
+
+        final Scale.Fraction xOutGapMax = new Scale.Fraction(
+                0.1,
+                "Maximum horizontal gap between stem & beam");
 
     }
 }

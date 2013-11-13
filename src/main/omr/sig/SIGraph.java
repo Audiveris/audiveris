@@ -421,7 +421,7 @@ public class SIGraph
         addEdge(source, target, exc);
 
         if (inter1.isVip() || inter2.isVip()) {
-            logger.info("VIP inserted {}", exc.toLongString(this));
+            logger.info("VIP exclusion {}", exc.toLongString(this));
         }
 
         return exc;
@@ -818,7 +818,7 @@ public class SIGraph
                 Inter other = seq.get(i);
                 Support support = map.get(other);
                 // We assume support ratio does not depend on relation direction
-                ratios[i] = support.getRatio();
+                ratios[i] = support.getSupportRatio();
                 partners[i] = other.getGrade();
             }
 
@@ -851,7 +851,7 @@ public class SIGraph
         return Grades.contextual(
                 target.getGrade(),
                 source.getGrade(),
-                support.getRatio());
+                support.getSupportRatio());
     }
 
     //------------------//

@@ -11,15 +11,15 @@
 // </editor-fold>
 package omr.image;
 
-import java.awt.Dimension;
+import omr.glyph.Shape;
+
 import omr.math.TableUtil;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
+import java.awt.Dimension;
 import java.util.Collections;
 import java.util.List;
-import omr.glyph.Shape;
 
 /**
  * Class {@code ChamferMatchingTest}
@@ -91,14 +91,17 @@ public class ChamferMatchingTest
     {
         System.out.println("match");
 
-        Template template = TemplateFactory.getInstance().getTemplate(
-                Shape.NOTEHEAD_BLACK, 14);
+        Template template = TemplateFactory.getInstance()
+                .getTemplate(
+                Shape.NOTEHEAD_BLACK,
+                14);
         template.dump();
 
         PixelBuffer image = createImage(imageRows);
         TableUtil.dump("Image:", image);
 
-        Table distances = new ChamferDistance.Short().computeToFore(image);
+        DistanceTable distances = new ChamferDistance.Short().computeToFore(
+                image);
         TableUtil.dump("Distances:", distances);
 
         DistanceMatching instance = new DistanceMatching(distances);

@@ -26,7 +26,6 @@ import omr.grid.GridBuilder;
 import omr.grid.StaffManager;
 import omr.grid.TargetBuilder;
 
-import omr.image.Table;
 
 import omr.lag.Lag;
 import omr.lag.Lags;
@@ -49,10 +48,11 @@ import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
+import omr.image.DistanceTable;
 import omr.image.ImageFormatException;
-import omr.image.PixelFilter;
 import omr.image.Picture;
 import omr.image.PictureView;
+
 import omr.sheet.ui.BinarizationBoard;
 import omr.sheet.ui.BoundaryEditor;
 import omr.sheet.ui.PixelBoard;
@@ -173,7 +173,7 @@ public class Sheet
     private RunsTable wholeVerticalTable;
 
     /** Image of distances to foreground. */
-    private Table distanceImage;
+    private DistanceTable distanceImage;
 
     /** Initial skew value */
     private Skew skew;
@@ -1569,7 +1569,7 @@ public class Sheet
      *
      * @return the image of distances (to foreground)
      */
-    public Table getDistanceImage ()
+    public DistanceTable getDistanceImage ()
     {
         return distanceImage;
     }
@@ -1582,7 +1582,7 @@ public class Sheet
      *
      * @param distanceImage the image of distances (to foreground)
      */
-    public void setDistanceImage (Table distanceImage)
+    public void setDistanceImage (DistanceTable distanceImage)
     {
         this.distanceImage = distanceImage;
 

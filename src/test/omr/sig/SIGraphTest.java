@@ -39,7 +39,7 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 
 /**
- * Class {@code SIGraphTest} tests unitary features of SIGraph.
+ * Class {@literal SIGraphTest} tests unitary features of SIGraph.
  *
  * @author Hervé Bitteur
  */

@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                          V o i d N o t e s S t e p                         //
+//                              N o t e s S t e p                             //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -12,9 +12,9 @@
 package omr.step;
 
 import omr.image.ChamferDistance;
+import omr.image.DistanceTable;
 import omr.image.Picture;
 import omr.image.PixelFilter;
-import omr.image.Table;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
@@ -25,36 +25,35 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code VoidNotesStep} implements <b>VOID_NOTES</b> step,
+ * Class {@code NotesStep} implements <b>NOTES</b> step,
  * which use distance matching technique to retrieve all possible
- * interpretations of void note heads or whole notes, as well as
- * black heads left over by {@link BlackNotesStep}.
+ * interpretations of note heads (black and void) or whole notes.
  *
  * @author Hervé Bitteur
  */
-public class VoidNotesStep
+public class NotesStep
         extends AbstractSystemStep
 {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(
-            VoidNotesStep.class);
+            NotesStep.class);
 
     //~ Constructors -----------------------------------------------------------
-    //---------------//
-    // VoidNotesStep //
-    //---------------//
+    //-----------//
+    // NotesStep //
+    //-----------//
     /**
-     * Creates a new VoidNotesStep object.
+     * Creates a new NotesStep object.
      */
-    public VoidNotesStep ()
+    public NotesStep ()
     {
         super(
-                Steps.VOID_NOTES,
+                Steps.NOTES,
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
                 DATA_TAB,
-                "Retrieve void note heads & whole notes");
+                "Retrieve note heads & whole notes");
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -65,7 +64,7 @@ public class VoidNotesStep
     public void doSystem (SystemInfo system)
             throws StepException
     {
-        system.voidNotesBuilder.buildVoidHeads(); // -> Void heads
+        system.notesBuilder.buildNotes();
     }
 
     //----------//
@@ -83,7 +82,7 @@ public class VoidNotesStep
         Picture picture = sheet.getPicture();
         PixelFilter buffer = (PixelFilter) picture.getSource(
                 Picture.SourceKey.BINARY);
-        Table table = new ChamferDistance.Short().computeToFore(buffer);
+        DistanceTable table = new ChamferDistance.Short().computeToFore(buffer);
         sheet.setDistanceImage(table);
     }
 }

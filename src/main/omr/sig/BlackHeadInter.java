@@ -31,36 +31,18 @@ public class BlackHeadInter
     // BlackHeadInter //
     //----------------//
     /**
-     * Creates a new BlackHeadInter object from a closing-based
-     * retrieval.
-     *
-     * @param glyph   the underlying glyph
-     * @param impacts the grade details
-     * @param pitch   the note pitch
-     */
-    public BlackHeadInter (Glyph glyph,
-                           GradeImpacts impacts,
-                           int pitch)
-    {
-        super(glyph, Shape.NOTEHEAD_BLACK, impacts, pitch);
-    }
-
-    //----------------//
-    // BlackHeadInter //
-    //----------------//
-    /**
      * Creates a new BlackHeadInter object from a distance-matching
      * retrieval.
      *
      * @param box   the object bounds
-     * @param grade the assignment quality
+     * @param impacts the grade details
      * @param pitch the note pitch
      */
     public BlackHeadInter (Rectangle box,
-                           double grade,
+                           GradeImpacts impacts,
                            int pitch)
     {
-        super(box, Shape.NOTEHEAD_BLACK, grade, pitch);
+        super(box, Shape.NOTEHEAD_BLACK, impacts, pitch);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -76,34 +58,23 @@ public class BlackHeadInter
     //---------//
     // Impacts //
     //---------//
+    @Deprecated
     public static class Impacts
-            implements GradeImpacts
+            extends BasicImpacts
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Static fields/initializers -----------------------------------------
 
-        final double shape;
+        private static final String[] NAMES = new String[]{"shape", "pitch"};
 
-        final double pitch;
+        private static final double[] WEIGHTS = new double[]{1, 1};
 
         //~ Constructors -------------------------------------------------------
         public Impacts (double shape,
                         double pitch)
         {
-            this.shape = shape;
-            this.pitch = pitch;
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public double getGrade ()
-        {
-            return (shape + pitch) / 2;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return String.format("shape:%.2f pitch:%.2f", shape, pitch);
+            super(NAMES, WEIGHTS);
+            setImpact(0, shape);
+            setImpact(1, pitch);
         }
     }
 }

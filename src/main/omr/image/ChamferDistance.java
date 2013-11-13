@@ -69,7 +69,7 @@ public interface ChamferDistance
      * @return the distance transform image, where each pixel value is the
      *         distance to the nearest reference pixel
      */
-    public Table compute (boolean[][] input);
+    public DistanceTable compute (boolean[][] input);
 
     //---------------//
     // computeToBack //
@@ -83,7 +83,7 @@ public interface ChamferDistance
      * @return the distance transform image, where each pixel value is the
      *         distance to the nearest reference pixel
      */
-    Table computeToBack (PixelFilter input);
+    DistanceTable computeToBack (PixelFilter input);
 
     //---------------//
     // computeToFore //
@@ -97,7 +97,7 @@ public interface ChamferDistance
      * @return the distance transform image, where each pixel value is the
      *         distance to the nearest reference pixel
      */
-    Table computeToFore (PixelFilter input);
+    DistanceTable computeToFore (PixelFilter input);
 
     //~ Inner Classes ----------------------------------------------------------
     public abstract class Abstract
@@ -136,11 +136,11 @@ public interface ChamferDistance
         // compute //
         //---------//
         @Override
-        public Table compute (boolean[][] input)
+        public DistanceTable compute (boolean[][] input)
         {
             final int width = input.length;
             final int height = input[0].length;
-            Table output = allocateOutput(width, height);
+            DistanceTable output = allocateOutput(width, height, normalizer);
 
             // initialize distance
             for (int y = 0; y < height; y++) {
@@ -162,9 +162,12 @@ public interface ChamferDistance
         // computeToBack //
         //---------------//
         @Override
-        public Table computeToBack (PixelFilter input)
+        public DistanceTable computeToBack (PixelFilter input)
         {
-            Table output = allocateOutput(input.getWidth(), input.getHeight());
+            DistanceTable output = allocateOutput(
+                    input.getWidth(),
+                    input.getHeight(),
+                    normalizer);
             initializeToBack(input, output);
             process(output);
 
@@ -175,9 +178,12 @@ public interface ChamferDistance
         // computeToFore //
         //---------------//
         @Override
-        public Table computeToFore (PixelFilter input)
+        public DistanceTable computeToFore (PixelFilter input)
         {
-            Table output = allocateOutput(input.getWidth(), input.getHeight());
+            DistanceTable output = allocateOutput(
+                    input.getWidth(),
+                    input.getHeight(),
+                    normalizer);
             initializeToFore(input, output);
             process(output);
 
@@ -190,14 +196,15 @@ public interface ChamferDistance
          * @param height desired height
          * @return the table of proper type and dimension
          */
-        protected abstract Table allocateOutput (int width,
-                                                 int height);
+        protected abstract DistanceTable allocateOutput (int width,
+                                                         int height,
+                                                         int normalizer);
 
         //------------------//
         // initializeToBack //
         //------------------//
         private void initializeToBack (PixelFilter input,
-                                       Table output)
+                                       DistanceTable output)
         {
             for (int y = 0, h = input.getHeight(); y < h; y++) {
                 for (int x = 0, w = input.getWidth(); x < w; x++) {
@@ -214,7 +221,7 @@ public interface ChamferDistance
         // initializeToFore //
         //------------------//
         private void initializeToFore (PixelFilter input,
-                                       Table output)
+                                       DistanceTable output)
         {
             for (int y = 0, h = input.getHeight(); y < h; y++) {
                 for (int x = 0, w = input.getWidth(); x < w; x++) {
@@ -235,7 +242,7 @@ public interface ChamferDistance
          *
          * @param output the output data to process
          */
-        private void process (Table output)
+        private void process (DistanceTable output)
         {
             final int width = output.getWidth();
             final int height = output.getHeight();
@@ -313,7 +320,7 @@ public interface ChamferDistance
         //------------//
         // testAndSet //
         //------------//
-        private void testAndSet (Table output,
+        private void testAndSet (DistanceTable output,
                                  int x,
                                  int y,
                                  int newvalue)
@@ -345,10 +352,11 @@ public interface ChamferDistance
         //~ Methods ------------------------------------------------------------
 
         @Override
-        protected Table allocateOutput (int width,
-                                        int height)
+        protected DistanceTable allocateOutput (int width,
+                                                int height,
+                                                int normalizer)
         {
-            return new Table.Integer(width, height);
+            return new DistanceTable.Integer(width, height, normalizer);
         }
     }
 
@@ -361,10 +369,11 @@ public interface ChamferDistance
         //~ Methods ------------------------------------------------------------
 
         @Override
-        protected Table allocateOutput (int width,
-                                        int height)
+        protected DistanceTable allocateOutput (int width,
+                                                int height,
+                                                int normalizer)
         {
-            return new Table.Short(width, height);
+            return new DistanceTable.Short(width, height, normalizer);
         }
     }
 }

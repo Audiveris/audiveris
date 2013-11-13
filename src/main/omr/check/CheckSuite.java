@@ -289,7 +289,7 @@ public class CheckSuite<C extends Checkable>
 
             if (weight != 0) {
                 if (impacts != null) {
-                    impacts.setDetail(index, result.grade);
+                    impacts.setImpact(index, result.grade);
                 }
 
                 grade *= Math.pow(result.grade, weight);
@@ -334,7 +334,7 @@ public class CheckSuite<C extends Checkable>
 
         Constant.Ratio intrinsicRatio = new Constant.Ratio(
                 0.8,
-                "Reduction ratio applied on any suite grade");
+                "Reduction ratio applied on any intrinsic grade");
 
         Constant.Ratio defaultMinGrade = new Constant.Ratio(
                 0.5,

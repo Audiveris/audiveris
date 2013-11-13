@@ -31,14 +31,14 @@ public class WholeInter
     /**
      * Creates a new WholeInter object.
      *
-     * @param box   the object bounds
-     * @param grade the assignment quality
-     * @param pitch the note pitch
+     * @param box     the object bounds
+     * @param impacts the grade details
+     * @param pitch   the note pitch
      */
     public WholeInter (Rectangle box,
-                       double grade,
+                       GradeImpacts impacts,
                        int pitch)
     {
-        super(box, Shape.WHOLE_NOTE, grade, pitch);
+        super(box, Shape.WHOLE_NOTE, impacts, pitch);
     }
 }

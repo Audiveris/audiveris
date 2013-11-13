@@ -136,7 +136,7 @@ public abstract class AbstractBeamInter
     @Override
     public boolean isGood ()
     {
-        return grade >= 0.6; //TODO: use constant
+        return grade >= 0.5; //TODO: use constant
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -144,44 +144,25 @@ public abstract class AbstractBeamInter
     // Impacts //
     //---------//
     public static class Impacts
-            implements GradeImpacts
+            extends BasicImpacts
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Static fields/initializers -----------------------------------------
 
-        /** width impact. */
-        final double width;
+        private static final String[] NAMES = new String[]{
+            "width", "core", "belt"
+        };
 
-        /** core ratio impact. */
-        final double core;
-
-        /** belt ratio impact. */
-        final double belt;
+        private static final double[] WEIGHTS = new double[]{1, 2, 2};
 
         //~ Constructors -------------------------------------------------------
         public Impacts (double width,
                         double core,
                         double belt)
         {
-            this.width = width;
-            this.core = core;
-            this.belt = belt;
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public double getGrade ()
-        {
-            return (width + (2 * core) + (2 * belt)) / 5;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return String.format(
-                    "width:%.2f core:%.2f belt:%.2f",
-                    width,
-                    core,
-                    belt);
+            super(NAMES, WEIGHTS);
+            setImpact(0, width);
+            setImpact(1, core);
+            setImpact(2, belt);
         }
     }
 }

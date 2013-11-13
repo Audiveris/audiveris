@@ -16,8 +16,8 @@ import omr.math.TableUtil;
 import java.util.Arrays;
 
 /**
- * Class {@code Table} provides a rectangular table implemented as a
- * single array of desired type (byte, short, int).
+ * Interface {@code Table} provides a rectangular table implemented 
+ * as a single array of desired type (byte, short, int).
  *
  * @author Hervé Bitteur
  */

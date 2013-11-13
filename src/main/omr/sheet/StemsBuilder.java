@@ -30,6 +30,7 @@ import omr.math.GeoUtil;
 import omr.math.LineUtil;
 
 import omr.run.Orientation;
+import static omr.run.Orientation.*;
 import omr.run.Run;
 
 import omr.sig.AbstractBeamInter;
@@ -380,19 +381,6 @@ public class StemsBuilder
         final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
-
-        final Scale.Fraction maxOutDx = new Scale.Fraction(
-                0.1,
-                "Maximum horizontal gap between head/beam and stem");
-
-        final Scale.Fraction maxHeadInDx = new Scale.Fraction(
-                0.3, //0.2,
-                "Maximum horizontal overlap between head and stem");
-
-        final Scale.Fraction maxBeamInDx = new Scale.Fraction(
-                0.5,
-                "Maximum horizontal overlap between beam and stem");
-
         final Scale.Fraction xMargin = new Scale.Fraction(
                 1.0,
                 "Abscissa margin when looking for neighboring stem seeds");
@@ -401,14 +389,6 @@ public class StemsBuilder
                 "tangent",
                 0.02,
                 "Margin around slope");
-
-        final Scale.Fraction maxStemHeadGapX = new Scale.Fraction(
-                0.2,
-                "Maximum horizontal gap between head and nearest stem segment");
-
-        final Scale.Fraction maxStemHeadGapY = new Scale.Fraction(
-                0.8,
-                "Maximum vertical gap between head and nearest stem segment");
 
         final Scale.Fraction minHeadSectionContribution = new Scale.Fraction(
                 0.2,
@@ -806,6 +786,7 @@ public class StemsBuilder
                     bRel.setCrossPoint(crossPt);
 
                     // Abscissa -> beamPortion
+                    // toLeft & toRight are >0 if within beam, <0 otherwise
                     double toLeft = crossPt.getX() - beamLimit.getX1();
                     double toRight = beamLimit.getX2() - crossPt.getX();
                     final double xGap;
@@ -882,19 +863,27 @@ public class StemsBuilder
                         // xGap computed on head section
                         // yGap measured between head section and stem glyph
                         Rectangle runBox = getRunBox(headSection, corner.hSide);
-                        xGap = Math.abs(runBox.x - refPt.getX());
+                        xGap = xDir * (runBox.x - refPt.getX());
 
                         int overlap = GeoUtil.yOverlap(runBox, stemBox);
                         yGap = Math.abs(Math.min(overlap, 0));
                     } else {
                         // Use stem line to compute both xGap and yGap
-                        Line2D line = new Line2D.Double(
-                                stemGlyph.getStartPoint(Orientation.VERTICAL),
-                                stemGlyph.getStopPoint(Orientation.VERTICAL));
-                        double distSq = line.ptSegDistSq(refPt);
-                        double xGapSq = line.ptLineDistSq(refPt);
-                        xGap = Math.sqrt(xGapSq);
-                        yGap = Math.sqrt(Math.abs(distSq - xGapSq));
+                        Point2D start = stemGlyph.getStartPoint(VERTICAL);
+                        Point2D stop = stemGlyph.getStopPoint(VERTICAL);
+                        Point2D crossPt = LineUtil.intersectionAtY(
+                                start,
+                                stop,
+                                refPt.getY());
+                        xGap = xDir * (crossPt.getX() - refPt.getX());
+
+                        if (refPt.getY() < start.getY()) {
+                            yGap = start.getY() - refPt.getY();
+                        } else if (refPt.getY() > stop.getY()) {
+                            yGap = refPt.getY() - stop.getY();
+                        } else {
+                            yGap = 0;
+                        }
                     }
 
                     hRel.setDistances(
@@ -1085,7 +1074,7 @@ public class StemsBuilder
             private Point2D getOutPoint ()
             {
                 return new Point2D.Double(
-                        refPt.getX() + (xDir * params.maxOutDx),
+                        refPt.getX() + (xDir * params.maxHeadOutDx),
                         refPt.getY());
             }
 
@@ -1669,7 +1658,7 @@ public class StemsBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
-        final int maxOutDx;
+        final int maxHeadOutDx;
 
         final int maxBeamInDx;
 
@@ -1704,12 +1693,12 @@ public class StemsBuilder
         public Parameters (SystemInfo system,
                            Scale scale)
         {
-            maxOutDx = scale.toPixels(constants.maxOutDx);
-            maxBeamInDx = scale.toPixels(constants.maxBeamInDx);
-            maxHeadInDx = scale.toPixels(constants.maxHeadInDx);
+            maxHeadOutDx = scale.toPixels(HeadStemRelation.getXOutGapMaximum());
+            maxBeamInDx = scale.toPixels(BeamStemRelation.getXInGapMaximum());
+            maxHeadInDx = scale.toPixels(HeadStemRelation.getXInGapMaximum());
             xMargin = scale.toPixels(constants.xMargin);
             slopeMargin = constants.slopeMargin.getValue();
-            maxStemHeadGapY = scale.toPixels(constants.maxStemHeadGapY);
+            maxStemHeadGapY = scale.toPixels(HeadStemRelation.getYGapMaximum());
             maxYGap = system.verticalsBuilder.getMaxYGap();
             maxStemThickness = scale.getMainStem();
             minHeadSectionContribution = scale.toPixels(

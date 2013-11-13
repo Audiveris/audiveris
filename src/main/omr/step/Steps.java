@@ -57,9 +57,7 @@ public class Steps
 
     public static final String LEDGERS = "LEDGERS";
 
-    public static final String BLACK_NOTES = "BLACK_NOTES";
-
-    public static final String VOID_NOTES = "VOID_NOTES";
+    public static final String NOTES = "NOTES";
 
     public static final String STEM_LINKS = "STEM_LINKS";
 
@@ -101,8 +99,7 @@ public class Steps
         addStep(new StemSeedsStep());
         addStep(new BeamsStep());
         addStep(new LedgersStep());
-        addStep(new BlackNotesStep());
-        addStep(new VoidNotesStep());
+        addStep(new NotesStep());
         addStep(new StemLinksStep());
         addStep(new ResolutionStep());
 

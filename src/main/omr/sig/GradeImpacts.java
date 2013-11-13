@@ -12,7 +12,7 @@
 package omr.sig;
 
 /**
- * Interface {@code GradeImpacts} defines data that impact a 
+ * Interface {@code GradeImpacts} defines data that impact a
  * resulting grade value.
  *
  * @author Hervé Bitteur
@@ -22,9 +22,47 @@ public interface GradeImpacts
     //~ Methods ----------------------------------------------------------------
 
     /**
-     * Retrieve a grade value from evaluation details.
+     * Retrieve a global grade value from detailed impacts.
      *
      * @return the computed grade in range 0 .. 1
      */
     double getGrade ();
+
+    /**
+     * Report the value of the grade impact corresponding to index
+     *
+     * @param index the index of desired impact
+     * @return the impact value
+     */
+    double getImpact (int index);
+
+    /**
+     * Report the number of individual grade impacts.
+     *
+     * @return the count of impacts
+     */
+    int getImpactCount ();
+
+    /**
+     * Report the reduction ratio to be applied on intrinsic grade
+     *
+     * @return the reduction ratio to be applied
+     */
+    double getIntrinsicRatio ();
+
+    /**
+     * Report the name of the grade impact corresponding to index
+     *
+     * @param index the index of desired impact
+     * @return the impact name
+     */
+    String getName (int index);
+
+    /**
+     * Report the weight of the grade impact corresponding to index
+     *
+     * @param index the index of desired impact
+     * @return the impact weight
+     */
+    double getWeight (int index);
 }

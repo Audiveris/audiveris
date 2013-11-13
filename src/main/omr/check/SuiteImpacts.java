@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.check;
 
-import omr.sig.GradeImpacts;
+import omr.sig.AbstractImpacts;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class SuiteImpacts<C extends Checkable>
-        implements GradeImpacts
+        extends AbstractImpacts
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -37,8 +37,8 @@ public class SuiteImpacts<C extends Checkable>
     /** Individual check values. */
     private final double[] values;
 
-    /** Individual check details. */
-    private final double[] details;
+    /** Individual check impacts. */
+    private final double[] impacts;
 
     /** Resulting suite grade. */
     private double grade;
@@ -50,8 +50,8 @@ public class SuiteImpacts<C extends Checkable>
     /**
      * Creates a new SuiteImpacts object.
      *
-     * @param suite     DOCUMENT ME!
-     * @param checkable DOCUMENT ME!
+     * @param suite     the underlying check suite
+     * @param checkable the checkable entity
      */
     public SuiteImpacts (CheckSuite<C> suite,
                          C checkable)
@@ -62,7 +62,7 @@ public class SuiteImpacts<C extends Checkable>
         final int size = suite.getChecks()
                 .size();
         values = new double[size];
-        details = new double[size];
+        impacts = new double[size];
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -100,6 +100,35 @@ public class SuiteImpacts<C extends Checkable>
         return grade;
     }
 
+    //-----------//
+    // getImpact //
+    //-----------//
+    @Override
+    public double getImpact (int index)
+    {
+        return impacts[index];
+    }
+
+    //----------------//
+    // getImpactCount //
+    //----------------//
+    @Override
+    public int getImpactCount ()
+    {
+        return impacts.length;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    @Override
+    public String getName (int index)
+    {
+        return suite.getChecks()
+                .get(index)
+                .getName();
+    }
+
     //----------//
     // getValue //
     //----------//
@@ -109,12 +138,13 @@ public class SuiteImpacts<C extends Checkable>
     }
 
     //-----------//
-    // setDetail //
+    // getWeight //
     //-----------//
-    public void setDetail (int index,
-                           double detail)
+    @Override
+    public double getWeight (int index)
     {
-        details[index] = detail;
+        return suite.getWeights()
+                .get(index);
     }
 
     //----------//
@@ -125,6 +155,15 @@ public class SuiteImpacts<C extends Checkable>
         this.grade = grade;
     }
 
+    //-----------//
+    // setImpact //
+    //-----------//
+    public void setImpact (int index,
+                           double detail)
+    {
+        impacts[index] = detail;
+    }
+
     //----------//
     // setValue //
     //----------//
@@ -132,33 +171,5 @@ public class SuiteImpacts<C extends Checkable>
                           double value)
     {
         values[index] = value;
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        final StringBuilder sb = new StringBuilder();
-        final List<Check<C>> checks = suite.getChecks();
-        final List<Double> weights = suite.getWeights();
-
-        for (int i = 0; i < checks.size(); i++) {
-            double weight = weights.get(i);
-
-            if (weight != 0) {
-                Check<C> check = checks.get(i);
-
-                if (sb.length() > 0) {
-                    sb.append(" ");
-                }
-
-                sb.append(
-                        String.format("%s:%.2f", check.getName(), details[i]));
-            }
-        }
-
-        return sb.toString();
     }
 }

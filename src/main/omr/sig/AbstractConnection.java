@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.sig;
 
+import omr.sheet.Scale;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,10 +31,17 @@ public abstract class AbstractConnection
             AbstractConnection.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** Horizontal distance at connection (in interline). */
+    /**
+     * Horizontal distance at connection (in interline).
+     * Positive value for an 'out' distance (gap).
+     * Negative value for an 'in' distance (overlap).
+     */
     protected Double xDistance;
 
-    /** Vertical distance at connection (in interline). */
+    /**
+     * Vertical distance at connection (in interline).
+     * Absolute value.
+     */
     protected Double yDistance;
 
     //~ Methods ----------------------------------------------------------------
@@ -55,8 +64,9 @@ public abstract class AbstractConnection
     /**
      * Set the gaps for this connection.
      *
-     * @param xDistance the horizontal distance
-     * @param yDistance the vertical distance
+     * @param xDistance the horizontal distance (positive for gap and negative
+     *                  for overlap)
+     * @param yDistance the vertical distance (absolute)
      */
     public void setDistances (double xDistance,
                               double yDistance)
@@ -64,51 +74,90 @@ public abstract class AbstractConnection
         this.xDistance = xDistance;
         this.yDistance = yDistance;
 
-        // Infer a grade?
-        setGrade(computeGrade());
-    }
+        // Infer impact data
+        double yGap = (getYGapMax()
+                .getValue() - yDistance) / getYGapMax()
+                .getValue();
 
-    //--------------//
-    // computeGrade //
-    //--------------//
-    protected double computeGrade ()
-    {
-        double xWeight = getXWeight();
-        double yWeight = getYWeight();
-        double wx = (xDistance == null) ? 0 : (xWeight * xDistance);
-        double wy = yWeight * yDistance;
-
-        double norm = Math.hypot(xWeight, yWeight);
-        double dist = Math.hypot(wx, wy) / norm;
-        double g = Math.max(0, 1 - (norm * dist));
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(
-                    "x:{} y:{} d:{} grade:{}",
-                    String.format("%.2f", xDistance),
-                    String.format("%.2f", yDistance),
-                    String.format("%.2f", dist),
-                    String.format("%.2f", g));
+        if (xDistance >= 0) {
+            double max = getXOutGapMax()
+                    .getValue();
+            setImpacts(new OutImpacts(yGap, (max - xDistance) / max));
+        } else {
+            double max = getXInGapMax()
+                    .getValue();
+            setImpacts(new InImpacts(yGap, (max + xDistance) / max));
         }
 
-        return g;
+        // Compute grade
+        setGrade(impacts.getGrade());
     }
 
-    protected abstract double getXWeight ();
+    protected abstract Scale.Fraction getXInGapMax ();
 
-    protected abstract double getYWeight ();
+    protected abstract Scale.Fraction getXOutGapMax ();
 
+    protected abstract Scale.Fraction getYGapMax ();
+
+    //-----------//
+    // internals //
+    //-----------//
     @Override
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());
 
         sb.append("@(")
-                .append(String.format("%.1f", xDistance))
+                .append(String.format("%.2f", xDistance))
                 .append(",")
-                .append(String.format("%.1f", yDistance))
+                .append(String.format("%.2f", yDistance))
                 .append(")");
 
         return sb.toString();
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //-----------//
+    // InImpacts //
+    //-----------//
+    public static class InImpacts
+            extends SupportImpacts
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        protected static final String[] NAMES = new String[]{"yGap", "xInGap"};
+
+        protected static final double[] WEIGHTS = new double[]{1, 2};
+
+        //~ Constructors -------------------------------------------------------
+        public InImpacts (double yGap,
+                          double xInGap)
+        {
+            super(NAMES, WEIGHTS);
+            setImpact(0, yGap);
+            setImpact(1, xInGap);
+        }
+    }
+
+    //------------//
+    // OutImpacts //
+    //------------//
+    public static class OutImpacts
+            extends SupportImpacts
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        protected static final String[] NAMES = new String[]{"yGap", "xOutGap"};
+
+        protected static final double[] WEIGHTS = new double[]{1, 4};
+
+        //~ Constructors -------------------------------------------------------
+        public OutImpacts (double yGap,
+                           double xOutGap)
+        {
+            super(NAMES, WEIGHTS);
+            setImpact(0, yGap);
+            setImpact(1, xOutGap);
+        }
     }
 }

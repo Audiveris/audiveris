@@ -122,32 +122,8 @@ binarization</panel_attributes>
   <element>
     <type>com.umlet.element.Relation</type>
     <coordinates>
-      <x>560</x>
-      <y>400</y>
-      <w>126</w>
-      <h>120</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;
-large-circle
-closing</panel_attributes>
-    <additional_attributes>70;30;70;100</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
       <x>630</x>
       <y>360</y>
-      <w>180</w>
-      <h>50</h>
-    </coordinates>
-    <panel_attributes>lt=-&gt;</panel_attributes>
-    <additional_attributes>30;30;160;30</additional_attributes>
-  </element>
-  <element>
-    <type>com.umlet.element.Relation</type>
-    <coordinates>
-      <x>630</x>
-      <y>510</y>
       <w>180</w>
       <h>50</h>
     </coordinates>
@@ -288,24 +264,6 @@ bg=#33ffff</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>600</x>
-      <y>500</y>
-      <w>60</w>
-      <h>80</h>
-    </coordinates>
-    <panel_attributes>PS
---
-Head
-Spots
-Source
-halign=center
-lth=2.5
-bg=#ffcc00</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
     <type>com.umlet.element.Class</type>
     <coordinates>
       <x>600</x>
@@ -324,10 +282,10 @@ bg=#ffcc00</panel_attributes>
       <w>60</w>
       <h>80</h>
     </coordinates>
-    <panel_attributes>DS
+    <panel_attributes>DT
 --
 Distance
-Source
+Table
 halign=center
 lth=2.5
 bg=#88ff88</panel_attributes>
@@ -400,26 +358,11 @@ bg=#33ffff</panel_attributes>
     <id>UMLClass</id>
     <coordinates>
       <x>790</x>
-      <y>520</y>
-      <w>90</w>
-      <h>40</h>
-    </coordinates>
-    <panel_attributes>Black Heads
-valign=center
-halign=center
-bg=#ffcc00</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>790</x>
       <y>300</y>
       <w>90</w>
       <h>40</h>
     </coordinates>
     <panel_attributes>Black Heads
-(additional)
 valign=center
 halign=center
 bg=#ffcc00</panel_attributes>
@@ -459,7 +402,7 @@ bg=#ff9966</panel_attributes>
       <x>760</x>
       <y>170</y>
       <w>150</w>
-      <h>410</h>
+      <h>320</h>
     </coordinates>
     <panel_attributes>Interpretations</panel_attributes>
     <additional_attributes/>
@@ -544,15 +487,15 @@ bg=#33ffff</panel_attributes>
   <element>
     <type>com.umlet.element.custom.Text</type>
     <coordinates>
-      <x>10</x>
-      <y>500</y>
+      <x>20</x>
+      <y>380</y>
       <w>140</w>
       <h>80</h>
     </coordinates>
     <panel_attributes>*Legend*
 BI = BufferedImage
 PS = PixelSource
-DS = DistanceSource</panel_attributes>
+DT = DistanceTable</panel_attributes>
     <additional_attributes/>
   </element>
   <element>

@@ -16,8 +16,8 @@ import static junit.framework.Assert.*;
 import static java.lang.Math.*;
 
 /**
- * Class <code>BasicLineCheck</code> gathers test bodies for various unit tests
- * on BasicLine class.
+ * Class <code>BasicLineCheck</code> gathers test bodies for various
+ * unit tests on BasicLine class.
  *
  * @author Hervé Bitteur
  */
@@ -32,7 +32,29 @@ public class BasicLineCheck
 
         double d = l.distanceOf(0, 0);
         System.out.println("Distance of origin: " + d);
-        assertNears("Distance of origin", 0.19611613513818404d, abs(d));
+        assertNears("Distance of origin", 0.19611613513818404d, d);
+
+        double d1 = l.distanceOf(1, 0);
+        System.out.println("Distance of (1,0): " + d1);
+        assertNears("Distance of (1,0)", -0.7844645405527361, d1);
+
+        double d2 = l.distanceOf(1, 10);
+        System.out.println("Distance of (1,10): " + d2);
+        assertNears("Distance of (1,10)", 1.176696810829104, d2);
+        
+        BasicLine ll = new BasicLine();
+        ll.includePoint(1, 1);
+        ll.includePoint(2, 10);
+        double dll = ll.distanceOf(0, 0);
+        System.out.println("ll Distance of (0.0): " + dll);
+        assertNears("ll Distance of (0,0)", 0.8834522085987723, dll);
+        
+        BasicLine h = new BasicLine();
+        h.includePoint(1, 1);
+        h.includePoint(10, -2);
+        double dh = h.distanceOf(0, 0);
+        System.out.println("h Distance of (0.0): " + dh);
+        assertNears("h Distance of (0,0)", 1.2649110640673515, dh);
     }
 
     public static void checkGetMeanDistance (BasicLine l)

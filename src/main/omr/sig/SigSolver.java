@@ -285,7 +285,7 @@ public class SigSolver
 
             if (!beamHasBothStems(beam)) {
                 if (beam.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Deleting beam lacking stem {}", beam);
+                    logger.info("VIP Deleting beam lacking stem {}", beam);
                 }
 
                 sig.removeVertex(beam);

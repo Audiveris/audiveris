@@ -187,7 +187,7 @@ public class Picture
         if (key == SourceKey.INITIAL) {
             initialImage = null;
             initialSource = null;
-            logger.info("{} source disposed.", key);
+            logger.debug("{} source disposed.", key);
 
             return;
         }
@@ -197,7 +197,7 @@ public class Picture
         if (src != null) {
             synchronized (sources) {
                 sources.put(key, null);
-                logger.info("{} source disposed.", key);
+                logger.debug("{} source disposed.", key);
             }
         }
     }

@@ -54,6 +54,23 @@ public class AbstractNoteInter
         super(box, shape, grade);
         this.pitch = pitch;
     }
+    /**
+     * Creates a new AbstractNoteInter object.
+     *
+     * @param box   the object bounds
+     * @param shape the underlying shape
+     * @param impacts the grade details
+     * @param pitch the note pitch
+     */
+    public AbstractNoteInter (Rectangle box,
+                              Shape shape,
+                              GradeImpacts impacts,
+                              int pitch)
+    {
+        super(box, shape, impacts.getGrade());
+        setImpacts(impacts);
+        this.pitch = pitch;
+    }
 
     /**
      * Creates a new AbstractNoteInter object.
@@ -69,7 +86,7 @@ public class AbstractNoteInter
                               int pitch)
     {
         super(glyph, shape, impacts.getGrade());
-        this.setImpacts(impacts);
+        setImpacts(impacts);
         this.pitch = pitch;
     }
 
@@ -141,12 +158,32 @@ public class AbstractNoteInter
         //~ Instance fields ----------------------------------------------------
 
         final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
-                0.5, //0.7,
+                0.5,
                 "Horizontal shrink ratio to apply when checking note overlap");
 
         final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
                 0.5,
                 "Vertical shrink ratio to apply when checking note overlap");
 
+    }
+    
+    //---------//
+    // Impacts //
+    //---------//
+    public static class Impacts
+    extends BasicImpacts
+    {
+              //~ Static fields/initializers -----------------------------------------
+
+        private static final String[] NAMES = new String[]{"dist"};
+
+        private static final double[] WEIGHTS = new double[]{1};
+
+        //~ Constructors -------------------------------------------------------
+        public Impacts (double dist)
+        {
+            super(NAMES, WEIGHTS);
+            setImpact(0, dist);
+        }
     }
 }

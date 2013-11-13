@@ -412,9 +412,16 @@ public class SheetPainter
                 .getColor();
 
         // Alpha value based on grade: 0..1 -> 0..255
+        // Prefer contextual grade when available
+        Double grade = inter.getContextualGrade();
+
+        if (grade == null) {
+            grade = inter.getGrade();
+        }
+
         final int alpha = Math.min(
                 255,
-                Math.max(0, (int) Math.rint(255 * inter.getGrade())));
+                Math.max(0, (int) Math.rint(255 * grade)));
         final Color color = new Color(
                 base.getRed(),
                 base.getGreen(),

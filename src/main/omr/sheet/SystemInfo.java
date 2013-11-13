@@ -111,10 +111,7 @@ public class SystemInfo
     public final BeamsBuilder beamsBuilder;
 
     /** Dedicated notes builder */
-    public final BlackNotesBuilder blackNotesBuilder;
-
-    /** Dedicated void notes builder */
-    public final VoidNotesBuilder voidNotesBuilder;
+    public final NotesBuilder notesBuilder;
 
     /** Dedicated verticals builder */
     public final VerticalsBuilder verticalsBuilder;
@@ -251,8 +248,7 @@ public class SystemInfo
         glyphsBuilder = new GlyphsBuilder(this);
         compoundBuilder = new CompoundBuilder(this);
         beamsBuilder = new BeamsBuilder(this);
-        blackNotesBuilder = new BlackNotesBuilder(this);
-        voidNotesBuilder = new VoidNotesBuilder(this);
+        notesBuilder = new NotesBuilder(this);
         verticalsBuilder = new VerticalsBuilder(this);
         stemsBuilder = new StemsBuilder(this);
         horizontalsBuilder = new HorizontalsBuilder(this);

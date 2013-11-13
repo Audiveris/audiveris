@@ -111,8 +111,8 @@ public class Template
         offsets.put(
                 anchor,
                 new Point(
-                        (int) Math.rint(xRatio * width),
-                        (int) Math.rint(yRatio * height)));
+                (int) Math.rint(xRatio * width),
+                (int) Math.rint(yRatio * height)));
     }
 
     //------//
@@ -170,13 +170,12 @@ public class Template
      * @param y         location ordinate
      * @param anchor    the anchor kind to use for (x,y), null for upper left
      * @param distances the distance transform image to search
-     * @return the SQUARE of quadratic average distance computed on all key
-     *         positions
+     * @return the quadratic average distance computed on all key positions
      */
     public double evaluate (int x,
                             int y,
                             Anchor anchor,
-                            Table distances)
+                            DistanceTable distances)
     {
         // Offsets to apply to location?
         if (anchor != null) {
@@ -198,11 +197,11 @@ public class Template
         double total = 0;
 
         for (PixelDistance pix : keyPoints) {
-            double dist = (distances.getValue(x + pix.x, y + pix.y) - pix.d) / 3d;
+            double dist = distances.getValue(x + pix.x, y + pix.y) - pix.d;
             total += (dist * dist);
         }
 
-        return total / keyPoints.size();
+        return Math.sqrt(total / keyPoints.size()) / distances.getNormalizer();
     }
 
     //-------------//
