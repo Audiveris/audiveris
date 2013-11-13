@@ -174,7 +174,7 @@ public class HeadStemRelation
         //~ Instance fields ----------------------------------------------------
 
         final Constant.Ratio supportCoeff = new Constant.Ratio(
-                10,
+                5,
                 "Value for coeff in support formula");
 
         final Scale.Fraction yGapMax = new Scale.Fraction(
@@ -182,7 +182,7 @@ public class HeadStemRelation
                 "Maximum vertical gap between stem & head");
 
         final Scale.Fraction xInGapMax = new Scale.Fraction(
-                0.2,
+                0.25,
                 "Maximum horizontal overlap between stem & head");
 
         final Scale.Fraction xOutGapMax = new Scale.Fraction(

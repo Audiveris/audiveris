@@ -128,7 +128,7 @@ public class LedgerRelation
         //~ Instance fields ----------------------------------------------------
 
         final Constant.Ratio supportCoeff = new Constant.Ratio(
-                10,
+                5,
                 "Value for coeff in support formula");
 
         final Scale.Fraction yGapMax = new Scale.Fraction(

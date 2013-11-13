@@ -832,7 +832,7 @@ public class SIGraph
 
         if (logging || inter.isVip()) {
             logger.info(
-                    "{} cp:{} {}",
+                    "VIP {} cp:{} {}",
                     inter,
                     String.format("%.3f", bestCp),
                     supportsSeenFrom(inter, map, bestSeq));

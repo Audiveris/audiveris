@@ -344,8 +344,8 @@ public class StemsBuilder
     {
         List<Inter> notes = sig.inters(
                 ShapeSet.shapesOf(
-                        ShapeSet.NoteHeads.getShapes(),
-                        Arrays.asList(Shape.WHOLE_NOTE)));
+                ShapeSet.NoteHeads.getShapes(),
+                Arrays.asList(Shape.WHOLE_NOTE)));
 
         for (Inter inter : stems) {
             StemInter stem = (StemInter) inter;
@@ -381,6 +381,7 @@ public class StemsBuilder
         final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
+
         final Scale.Fraction xMargin = new Scale.Fraction(
                 1.0,
                 "Abscissa margin when looking for neighboring stem seeds");
@@ -810,11 +811,11 @@ public class StemsBuilder
                     // Ordinate
                     final double yGap = (yDir > 0)
                             ? Math.max(
-                                    0,
-                                    crossPt.getY() - stop.getY())
+                            0,
+                            crossPt.getY() - stop.getY())
                             : Math.max(
-                                    0,
-                                    start.getY() - crossPt.getY());
+                            0,
+                            start.getY() - crossPt.getY());
 
                     bRel.setDistances(
                             scale.pixelsToFrac(xGap),
@@ -1266,7 +1267,7 @@ public class StemsBuilder
 
                         return Double.compare(d1, d2);
                     }
-                        });
+                });
 
                 // Build the list of beams
                 AbstractBeamInter goodBeam = null;
@@ -1606,7 +1607,7 @@ public class StemsBuilder
 
                         return Integer.signum(c2 - c1);
                     }
-                        });
+                });
 
                 List<Glyph> kept = new ArrayList<Glyph>();
 

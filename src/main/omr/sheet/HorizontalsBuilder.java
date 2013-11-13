@@ -113,6 +113,8 @@ public class HorizontalsBuilder
 
     private static final Failure TOO_THICK = new Failure("Hori-TooThick");
 
+    private static final Failure TOO_HOLLOW = new Failure("Hori-TooHollow");
+
     private static final Failure TOO_SLOPED = new Failure("Hori-TooSloped");
 
     private static final Failure TOO_SHIFTED = new Failure(
@@ -417,14 +419,14 @@ public class HorizontalsBuilder
     {
         List<Inter> beams = sig.inters(
                 new Predicate<Inter>()
-                {
-                    @Override
-                    public boolean check (Inter inter)
-                    {
-                        return (inter instanceof AbstractBeamInter)
-                               && inter.isGood();
-                    }
-                });
+        {
+            @Override
+            public boolean check (Inter inter)
+            {
+                return (inter instanceof AbstractBeamInter)
+                       && inter.isGood();
+            }
+        });
 
         Collections.sort(beams, Inter.byAbscissa);
 
@@ -650,7 +652,11 @@ public class HorizontalsBuilder
             double grade = impacts.getGrade();
 
             if (stick.isVip()) {
-                logger.info("VIP {}", impacts.getDump());
+                logger.info(
+                        "VIP staff#{} at {} {}",
+                        staff.getId(),
+                        index,
+                        impacts.getDump());
             }
 
             if (grade >= constants.minCheckResult.getValue()) {
@@ -723,9 +729,9 @@ public class HorizontalsBuilder
                     // Abscissa overlap
                     exclusions.add(
                             sig.insertExclusion(
-                                    ledger,
-                                    other,
-                                    Exclusion.Cause.OVERLAP));
+                            ledger,
+                            other,
+                            Exclusion.Cause.OVERLAP));
                 } else if (GeoUtil.xOverlap(fatBox, otherBox) > 0) {
                     // This is a neighbor, check dy at mid abscissa
                     Point2D otherLeft = other.getGlyph()
@@ -750,9 +756,9 @@ public class HorizontalsBuilder
                     if (yGap > maxDy) {
                         exclusions.add(
                                 sig.insertExclusion(
-                                        ledger,
-                                        other,
-                                        Exclusion.Cause.INCOMPATIBLE));
+                                ledger,
+                                other,
+                                Exclusion.Cause.INCOMPATIBLE));
                     } else {
                         LedgerRelation rel = new LedgerRelation();
                         rel.setDistances(
@@ -805,10 +811,14 @@ public class HorizontalsBuilder
                 0.1,
                 "Maximum slope for displaying check board");
 
+        Constant.Ratio densityLow = new Constant.Ratio(
+                0.5,
+                "Minimum ledger density");
+
         // Constants specified WRT mean line thickness
         // -------------------------------------------
         Scale.LineFraction maxFilamentThickness = new Scale.LineFraction(
-                1.5,
+                2.0,
                 "Maximum filament thickness WRT mean line height");
 
         Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
@@ -842,7 +852,7 @@ public class HorizontalsBuilder
                 "Maximum space between overlapping filaments");
 
         Scale.Fraction ledgerMarginY = new Scale.Fraction(
-                0.3,
+                0.4,
                 "Margin on ledger ordinate WRT theoretical ordinate");
 
         Scale.Fraction minEndingLengthHigh = new Scale.Fraction(
@@ -882,6 +892,38 @@ public class HorizontalsBuilder
                 "Minimum abscissa overlap for using ledger as reference");
 
     }
+
+//    //--------------//
+//    // DensityCheck //
+//    //--------------//
+//    private static class DensityCheck
+//            extends Check<Glyph>
+//    {
+//        //~ Constructors -------------------------------------------------------
+//
+//        protected DensityCheck ()
+//        {
+//            super(
+//                    "Density",
+//                    "Check that stick fills its bounds",
+//                    constants.densityLow,
+//                    Constant.Ratio.ONE,
+//                    true,
+//                    TOO_HOLLOW);
+//        }
+//
+//        //~ Methods ------------------------------------------------------------
+//        // Retrieve the density
+//        @Override
+//        protected double getValue (Glyph stick)
+//        {
+//            Rectangle rect = stick.getBounds();
+//            double meanHeight = stick.getMeanThickness(HORIZONTAL);
+//            double area = rect.width * meanHeight;
+// NO! This does not work !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//            return stick.getWeight() / area;
+//        }
+//    }
 
     //------------------//
     // LedgerCheckBoard //
@@ -950,9 +992,9 @@ public class HorizontalsBuilder
             super("LedgerFine", constants.minCheckResult.getValue());
 
             add(1, new MinThicknessCheck());
-            add(1, new MaxThicknessCheck());
+            add(0, new MaxThicknessCheck());
             add(
-                    2,
+                    4,
                     new MinLengthCheck(
                     constants.minLedgerLengthLow,
                     constants.minLedgerLengthHigh));
@@ -974,9 +1016,9 @@ public class HorizontalsBuilder
             super("LedgerRough", constants.minCheckResult.getValue());
 
             add(1, new MinThicknessCheck());
-            add(1, new MaxThicknessCheck());
+            add(0, new MaxThicknessCheck());
             add(
-                    2,
+                    4,
                     new MinLengthCheck(
                     constants.minLedgerLengthLow,
                     constants.minLedgerLengthHigh));

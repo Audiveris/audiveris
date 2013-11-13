@@ -244,7 +244,7 @@ public class FilamentsFactory
             createFilaments(filaments, source);
 
             logger.debug("{} {} filaments created.",
-                         orientation, filaments.size());
+                    orientation, filaments.size());
 
             // Merge filaments into larger filaments
             watch.start("mergeFilaments");
@@ -704,7 +704,7 @@ public class FilamentsFactory
             }
 
             logger.debug("expandFilaments: {}/{}",
-                         sections.size(), source.size());
+                    sections.size(), source.size());
 
             Collections.sort(sections, Section.posComparator);
 
@@ -756,8 +756,8 @@ public class FilamentsFactory
                                     || fil.isVip()
                                     || sectionGlyph.isVip()) {
                                     logger.info("Merging {} w/ {}",
-                                                fil,
-                                                Sections.toString(sectionGlyph.getMembers()));
+                                            fil,
+                                            Sections.toString(sectionGlyph.getMembers()));
 
                                     if (sectionGlyph.isVip()) {
                                         fil.setVip();
@@ -773,7 +773,7 @@ public class FilamentsFactory
                         } else {
                             if (fil.isVip() && sectionGlyph.isVip()) {
                                 logger.info("No intersection between {} and {}",
-                                            fil, sectionGlyph);
+                                        fil, sectionGlyph);
                             }
                         }
                     }

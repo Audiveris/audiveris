@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                       V o i d N o t e s B u i l d e r                      //
+//                           N o t e s B u i l d e r                          //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -203,7 +203,7 @@ public class NotesBuilder
     // buildNotes //
     //------------//
     /**
-     * Retrieve all void heads, black heads and whole notes in the 
+     * Retrieve all void heads, black heads and whole notes in the
      * system.
      */
     public void buildNotes ()
@@ -221,8 +221,8 @@ public class NotesBuilder
             List<Inter> ch = processStaff(staff, true);
 
             // Consider seed-based heads as competitors for plain x-based heads
-            systemCompetitors.addAll(ch);
-            Collections.sort(systemCompetitors, Inter.byOrdinate);
+            //            systemCompetitors.addAll(ch);
+            //            Collections.sort(systemCompetitors, Inter.byOrdinate);
 
             // Second, process x-based heads for the staff
             ch.addAll(processStaff(staff, false));

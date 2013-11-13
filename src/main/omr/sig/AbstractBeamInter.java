@@ -152,7 +152,7 @@ public abstract class AbstractBeamInter
             "width", "core", "belt"
         };
 
-        private static final double[] WEIGHTS = new double[]{1, 2, 2};
+        private static final double[] WEIGHTS = new double[]{0.5, 2, 2};
 
         //~ Constructors -------------------------------------------------------
         public Impacts (double width,
