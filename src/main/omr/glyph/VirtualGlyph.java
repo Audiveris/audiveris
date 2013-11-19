@@ -11,15 +11,11 @@
 // </editor-fold>
 package omr.glyph;
 
-import omr.lag.Section;
-
 import omr.math.GeoUtil;
 
 import omr.ui.symbol.Symbols;
 
-import java.awt.Color;
 import java.awt.Point;
-import java.util.Collection;
 
 /**
  * Class {@code VirtualGlyph} is an artificial glyph specifically
@@ -48,31 +44,18 @@ public class VirtualGlyph
                          Point center)
     {
         // Build a glyph of proper size
-        super(shape, Symbols.getSymbol(shape), interline, GlyphLayer.DROP, null);
+        super(
+                shape,
+                Symbols.getSymbol(shape),
+                interline,
+                GlyphLayer.DROP,
+                null);
 
         // Translation from generic center to actual center
         translate(GeoUtil.vectorOf(getAreaCenter(), center));
     }
 
     //~ Methods ----------------------------------------------------------------
-    //----------//
-    // colorize //
-    //----------//
-    @Override
-    public void colorize (Color color)
-    {
-        // Nothing to colorize
-    }
-
-    //----------//
-    // colorize //
-    //----------//
-    @Override
-    public void colorize (Collection<Section> sections,
-                          Color color)
-    {
-    }
-
     //----------//
     // isActive //
     //----------//

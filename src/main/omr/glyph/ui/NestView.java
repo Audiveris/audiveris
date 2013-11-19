@@ -14,6 +14,7 @@ package omr.glyph.ui;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.Glyphs;
 import omr.glyph.Nest;
 import omr.glyph.facets.Glyph;
 
@@ -80,11 +81,8 @@ public class NestView
     /** The underlying nest */
     protected final Nest nest;
 
-    /** Related glyphs controller */
-    protected final GlyphsController controller;
-
-    /** The sequence of lags (synchronized). */
-    private final List<Lag> lags = new ArrayList<Lag>();
+    /** The sequence of lags. */
+    protected final List<Lag> lags = new ArrayList<Lag>();
 
     /** Related sheet, if any. */
     private final Sheet sheet;
@@ -99,18 +97,15 @@ public class NestView
     /**
      * Create a nest view.
      *
-     * @param nest       the underlying nest of glyphs
-     * @param controller the related glyphs controller
-     * @param lags       the initial lags to be displayed
-     * @param sheet      related sheet, if any
+     * @param nest  the underlying nest of glyph instances
+     * @param lags  the initial lags to be displayed
+     * @param sheet related sheet, if any
      */
     public NestView (Nest nest,
-                     GlyphsController controller,
                      List<Lag> lags,
                      Sheet sheet)
     {
         this.nest = nest;
-        this.controller = controller;
         this.sheet = sheet;
 
         if (sheet != null) {
@@ -119,9 +114,7 @@ public class NestView
             itemRenderers = null;
         }
 
-        synchronized (this.lags) {
-            this.lags.addAll(lags);
-        }
+        this.lags.addAll(lags);
 
         setName(nest.getName() + "-View");
 
@@ -136,24 +129,6 @@ public class NestView
     }
 
     //~ Methods ----------------------------------------------------------------
-    //--------//
-    // addLag //
-    //--------//
-    public void addLag (Lag lag)
-    {
-        synchronized (lags) {
-            lags.add(lag);
-        }
-    }
-
-    //---------------//
-    // getController //
-    //---------------//
-    public GlyphsController getController ()
-    {
-        return controller;
-    }
-
     //----------------//
     // propertyChange //
     //----------------//
@@ -192,7 +167,7 @@ public class NestView
         // Stroke for borders
         final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
 
-        for (Lag lag : getLags()) {
+        for (Lag lag : lags) {
             // Render all sections, using the colors they have been assigned
             for (Section section : lag.getVertices()) {
                 section.render(g, drawBorders, null);
@@ -204,16 +179,6 @@ public class NestView
 
         // Restore stroke
         g.setStroke(oldStroke);
-    }
-
-    //---------//
-    // getLags //
-    //---------//
-    protected List<Lag> getLags ()
-    {
-        synchronized (lags) {
-            return new ArrayList<Lag>(lags);
-        }
     }
 
     //---------------//
@@ -254,55 +219,54 @@ public class NestView
             }
         }
 
-        // Render the selected glyph(s) if any
-        Set<Glyph> glyphs = nest.getSelectedGlyphSet();
+        if (!ViewParameters.getInstance()
+                .isSectionMode()) {
+            // Render the selected glyph(s) if any
+            Set<Glyph> glyphs = nest.getSelectedGlyphSet();
 
-        if (glyphs != null) {
-            // Decorations first
+            if (glyphs != null) {
+                // Decorations first
+                // Should we draw the section borders?
+                final boolean drawBorders = ViewParameters.getInstance()
+                        .isSectionMode();
+                Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+                g.setColor(Color.blue);
 
-            // Should we draw the section borders?
-            final boolean drawBorders = ViewParameters.getInstance()
-                    .isSectionMode();
-            Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
-            g.setColor(Color.blue);
+                for (Glyph glyph : glyphs) {
+                    // Draw glyph sections in specific color
+                    for (Section section : glyph.getMembers()) {
+                        section.render(g, drawBorders, Colors.GLYPH_CURRENT);
+                    }
 
-            for (Glyph glyph : glyphs) {
-                // Draw glyph sections in specific color
-                for (Section section : glyph.getMembers()) {
-                    section.render(g, drawBorders, Colors.GLYPH_CURRENT);
-                }
+                    // Draw character boxes for textual glyphs?
+                    if (glyph.isText()) {
+                        if (ViewParameters.getInstance()
+                                .isLetterBoxPainting()) {
+                            TextWord word = glyph.getTextWord();
 
-                // Draw character boxes for textual glyphs?
-                if (glyph.isText()) {
-                    if (ViewParameters.getInstance()
-                            .isLetterBoxPainting()) {
-                        TextWord word = glyph.getTextWord();
-
-                        if (word != null) {
-                            for (TextChar ch : word.getChars()) {
-                                Rectangle b = ch.getBounds();
-                                g.drawRect(b.x, b.y, b.width, b.height);
+                            if (word != null) {
+                                for (TextChar ch : word.getChars()) {
+                                    Rectangle b = ch.getBounds();
+                                    g.drawRect(b.x, b.y, b.width, b.height);
+                                }
                             }
                         }
                     }
+
+                    // Draw attachments, if any
+                    glyph.renderAttachments(g);
+
+                    // Draw glyph line?
+                    if (ViewParameters.getInstance()
+                            .isLinePainting()) {
+                        glyph.renderLine(g);
+                    }
                 }
 
-                // Draw attachments, if any
-                glyph.renderAttachments(g);
-
-                // Draw glyph line?
-                if (ViewParameters.getInstance()
-                        .isLinePainting()) {
-                    glyph.renderLine(g);
-                }
+                g.setStroke(oldStroke);
             }
 
-            g.setStroke(oldStroke);
-        }
-
-        // Glyph areas second, using XOR mode for the area
-        if (!ViewParameters.getInstance()
-                .isSectionMode()) {
+            // Glyph areas second, using XOR mode for the area
             // Glyph selection mode
             if (glyphs != null) {
                 Graphics2D g2 = (Graphics2D) g.create();
@@ -334,7 +298,7 @@ public class NestView
             }
         } else {
             // Section selection mode
-            for (Lag lag : getLags()) {
+            for (Lag lag : lags) {
                 Set<Section> selected = lag.getSelectedSectionSet();
 
                 if ((selected != null) && !selected.isEmpty()) {
@@ -344,23 +308,6 @@ public class NestView
                 }
             }
         }
-
-        // Render the selected interpretations, if any
-        //        if (sheet != null) {
-        //            List<Inter> inters = sheet.getSelectedInterList();
-        //
-        //            if ((inters != null) && !inters.isEmpty()) {
-        //                Graphics2D g2 = (Graphics2D) g.create();
-        //                g2.setColor(Color.black);
-        //                g2.setXORMode(Color.darkGray);
-        //
-        //                for (Inter inter : inters) {
-        //                    renderBoxArea(inter.getBounds(), g2);
-        //                }
-        //
-        //                g2.dispose();
-        //            }
-        //        }
     }
 
     //---------------------//

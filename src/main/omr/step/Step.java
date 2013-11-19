@@ -30,12 +30,14 @@ public interface Step
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Labels for view in tabbed panel */
+    /** Labels for view in tabbed panel. */
     public static final String PICTURE_TAB = "Picture";
 
     public static final String BINARY_TAB = "Binary";
 
     public static final String DATA_TAB = "Data";
+
+    public static final String HORI_TAB = "Ledgers";
 
     //~ Enumerations -----------------------------------------------------------
     public enum Mandatory

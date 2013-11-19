@@ -42,7 +42,7 @@ public class Colors
     /** Successful entities */
     public static final Color ENTITY = Color.black;
 
-    /** Past successful entities */
+    /** Past successful entities (such as staff lines) */
     public static final Color ENTITY_MINOR = new Color(192, 192, 192);
 
     /** Virtual entities */
@@ -54,7 +54,7 @@ public class Colors
     /** Glyph area */
     public static final Color GLYPH_AREA = Color.black;
 
-    /** Glyph area (for XORMode) */
+    /** Glyph area (for XORMode, no longer used) */
     public static final Color GLYPH_AREA_XOR = Color.darkGray;
 
     /** Current glyph */

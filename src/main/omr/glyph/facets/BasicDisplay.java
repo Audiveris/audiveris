@@ -22,11 +22,8 @@ import omr.lag.Section;
 import omr.ui.Colors;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.image.WritableRaster;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -38,16 +35,15 @@ import java.util.Map;
  * @author Hervé Bitteur
  */
 class BasicDisplay
-    extends BasicFacet
-    implements GlyphDisplay
+        extends BasicFacet
+        implements GlyphDisplay
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Potential attachments, lazily allocated */
+    /** Potential attachments, lazily allocated. */
     protected AttachmentHolder attachments;
 
     //~ Constructors -----------------------------------------------------------
-
     //--------------//
     // BasicDisplay //
     //--------------//
@@ -62,12 +58,11 @@ class BasicDisplay
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------------//
     // addAttachment //
     //---------------//
     @Override
-    public void addAttachment (String         id,
+    public void addAttachment (String id,
                                java.awt.Shape attachment)
     {
         if (attachment != null) {
@@ -110,27 +105,6 @@ class BasicDisplay
         return sb.toString();
     }
 
-    //----------//
-    // colorize //
-    //----------//
-    @Override
-    public void colorize (Color color)
-    {
-        colorize(glyph.getMembers(), color);
-    }
-
-    //----------//
-    // colorize //
-    //----------//
-    @Override
-    public void colorize (Collection<Section> sections,
-                          Color               color)
-    {
-        for (Section section : sections) {
-            section.setColor(color);
-        }
-    }
-
     //--------//
     // dumpOf //
     //--------//
@@ -169,7 +143,7 @@ class BasicDisplay
             return Colors.SHAPE_UNKNOWN;
         } else {
             return glyph.getShape()
-                        .getColor();
+                    .getColor();
         }
     }
 
@@ -180,7 +154,7 @@ class BasicDisplay
     public PixelBuffer getImage ()
     {
         // Determine the bounding box
-        final Rectangle   box = glyph.getBounds();
+        final Rectangle box = glyph.getBounds();
         final PixelBuffer image = new PixelBuffer(box.getSize());
 
         // Now paint each section in black foreground
@@ -189,17 +163,6 @@ class BasicDisplay
         }
 
         return image;
-    }
-
-    //------------//
-    // recolorize //
-    //------------//
-    @Override
-    public void recolorize ()
-    {
-        for (Section section : glyph.getMembers()) {
-            section.resetColor();
-        }
     }
 
     //-------------------//

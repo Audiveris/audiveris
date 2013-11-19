@@ -688,10 +688,13 @@ public abstract class Constant
 
         public static final Double ONE = new Double("none", 1, "One");
 
+        public static final Double TWO = new Double("none", 2, "Two");
+
         static {
             ZERO.setUnitAndName(Constant.class.getName(), "doubleZero");
             HALF.setUnitAndName(Constant.class.getName(), "doubleHalf");
             ONE.setUnitAndName(Constant.class.getName(), "doubleOne");
+            TWO.setUnitAndName(Constant.class.getName(), "doubleTwo");
         }
 
         //~ Constructors -------------------------------------------------------

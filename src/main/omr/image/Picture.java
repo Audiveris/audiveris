@@ -270,46 +270,6 @@ public class Picture
         logger.info(sb.toString());
     }
 
-    //    //-----------//
-    //    // getBuffer //
-    //    //-----------//
-    //    /**
-    //     * Report the desired buffer, creating it if necessary.
-    //     *
-    //     * @param key the key of desired buffer
-    //     * @return the buffer ready to use
-    //     */
-    //    public PixelBuffer getBuffer (BufferKey key)
-    //    {
-    //        PixelBuffer buf = buffers.get(key);
-    //
-    //        if (buf == null) {
-    //            synchronized (buffers) {
-    //                buf = buffers.get(key);
-    //
-    //                if (buf == null) {
-    //                    switch (key) {
-    //                    case BINARY:
-    //                        buf = binarized(sources.get(SourceKey.INITIAL));
-    //
-    //                        break;
-    //
-    //                    case STAFF_FREE:
-    //                        buf = Lags.buildBuffer(
-    //                                dimension,
-    //                                sheet.getLag(Lags.HLAG),
-    //                                sheet.getLag(Lags.VLAG));
-    //
-    //                        break;
-    //                    }
-    //
-    //                    buffers.put(key, buf);
-    //                }
-    //            }
-    //        }
-    //
-    //        return buf;
-    //    }
     //--------------//
     // getDimension //
     //--------------//
@@ -404,12 +364,12 @@ public class Picture
                         break;
 
                     case GAUSSIAN:
-                        src = gaussianFiltered(sources.get(SourceKey.BINARY));
+                        src = gaussianFiltered(getSource(SourceKey.MEDIAN));
 
                         break;
 
                     case MEDIAN:
-                        src = medianFiltered(sources.get(SourceKey.BINARY));
+                        src = medianFiltered(getSource(SourceKey.BINARY));
 
                         break;
 
@@ -808,8 +768,8 @@ public class Picture
 
         Constant.Integer gaussianRadius = new Constant.Integer(
                 "pixels",
-                1,
-                "Radius of Gaussian filtering kernel (1 for 3x3, 2 for 5x5)");
+                2,
+                "Radius of Gaussian filtering kernel (1 for 3x3, 2 for 5x5, etc)");
 
         Constant.Integer medianRadius = new Constant.Integer(
                 "pixels",

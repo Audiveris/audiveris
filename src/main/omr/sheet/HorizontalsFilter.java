@@ -107,20 +107,13 @@ public class HorizontalsFilter
         final RunsTable hugeHoriTable = new RunsTableFactory(
                 HORIZONTAL,
                 (PixelFilter) sheet.getPicture().getSource(
-                Picture.SourceKey.BINARY),
+                        Picture.SourceKey.BINARY),
                 minRunLength).createTable("huge-hori", filter);
-
-        if (Main.getGui() != null) {
-            RunsViewer runsViewer = sheet.getRunsViewer();
-            runsViewer.display(hugeHoriTable);
-        }
 
         final Lag lag = new BasicLag(
                 "hHugeLag",
                 Orientation.HORIZONTAL);
-
         final int maxShift = scale.toPixels(constants.maxRunShift);
-
         final SectionsBuilder sectionsBuilder = new SectionsBuilder(
                 lag,
                 new JunctionShiftPolicy(maxShift));
@@ -129,6 +122,12 @@ public class HorizontalsFilter
 
         sheet.setLag(Lags.FULL_HLAG, lag);
         sheet.dispatchHorizontalHugeSections();
+
+        if (Main.getGui() != null) {
+            // Display a view on this lag
+            HoriController horiController = new HoriController(sheet, lag);
+            horiController.refresh();
+        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

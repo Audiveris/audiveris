@@ -263,19 +263,6 @@ public class BasicGlyph
     }
 
     @Override
-    public void colorize (Collection<Section> sections,
-                          Color color)
-    {
-        display.colorize(sections, color);
-    }
-
-    @Override
-    public void colorize (Color color)
-    {
-        display.colorize(color);
-    }
-
-    @Override
     public boolean containsSection (int id)
     {
         return composition.containsSection(id);
@@ -843,12 +830,6 @@ public class BasicGlyph
     public void linkAllSections ()
     {
         composition.linkAllSections();
-    }
-
-    @Override
-    public void recolorize ()
-    {
-        display.recolorize();
     }
 
     @Override

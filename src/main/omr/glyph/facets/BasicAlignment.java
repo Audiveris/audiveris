@@ -494,55 +494,55 @@ public class BasicAlignment
             startPoint = new Point2D.Double(line.xAtY(top), top);
             stopPoint = new Point2D.Double(line.xAtY(bot), bot);
 
-            if (!line.isVertical()) {
-                Point2D pLeft = new Point2D.Double(left, line.yAtX(left));
-                Point2D pRight = new Point2D.Double(right, line.yAtX(right));
-
-                if (line.getInvertedSlope() > 0) {
-                    if (pLeft.getY() > startPoint.getY()) {
-                        startPoint = pLeft;
-                    }
-
-                    if (pRight.getY() < stopPoint.getY()) {
-                        stopPoint = pRight;
-                    }
-                } else {
-                    if (pRight.getY() > startPoint.getY()) {
-                        startPoint = pRight;
-                    }
-
-                    if (pLeft.getY() < stopPoint.getY()) {
-                        stopPoint = pLeft;
-                    }
-                }
-            }
+            //            if (!line.isVertical()) {
+            //                Point2D pLeft = new Point2D.Double(left, line.yAtX(left));
+            //                Point2D pRight = new Point2D.Double(right, line.yAtX(right));
+            //
+            //                if (line.getInvertedSlope() > 0) {
+            //                    if (pLeft.getY() > startPoint.getY()) {
+            //                        startPoint = pLeft;
+            //                    }
+            //
+            //                    if (pRight.getY() < stopPoint.getY()) {
+            //                        stopPoint = pRight;
+            //                    }
+            //                } else {
+            //                    if (pRight.getY() > startPoint.getY()) {
+            //                        startPoint = pRight;
+            //                    }
+            //
+            //                    if (pLeft.getY() < stopPoint.getY()) {
+            //                        stopPoint = pLeft;
+            //                    }
+            //                }
+            //            }
         } else {
             // Use line intersections with left & right box sides
             startPoint = new Point2D.Double(left, line.yAtX(left));
             stopPoint = new Point2D.Double(right, line.yAtX(right));
 
-            if (!line.isHorizontal()) {
-                Point2D pTop = new Point2D.Double(line.xAtY(top), top);
-                Point2D pBot = new Point2D.Double(line.xAtY(bot), bot);
-
-                if (slope > 0) {
-                    if (pTop.getX() > startPoint.getX()) {
-                        startPoint = pTop;
-                    }
-
-                    if (pBot.getX() < stopPoint.getX()) {
-                        stopPoint = pBot;
-                    }
-                } else {
-                    if (pBot.getX() > startPoint.getX()) {
-                        startPoint = pBot;
-                    }
-
-                    if (pTop.getX() < stopPoint.getX()) {
-                        stopPoint = pTop;
-                    }
-                }
-            }
+            //            if (!line.isHorizontal()) {
+            //                Point2D pTop = new Point2D.Double(line.xAtY(top), top);
+            //                Point2D pBot = new Point2D.Double(line.xAtY(bot), bot);
+            //
+            //                if (slope > 0) {
+            //                    if (pTop.getX() > startPoint.getX()) {
+            //                        startPoint = pTop;
+            //                    }
+            //
+            //                    if (pBot.getX() < stopPoint.getX()) {
+            //                        stopPoint = pBot;
+            //                    }
+            //                } else {
+            //                    if (pBot.getX() > startPoint.getX()) {
+            //                        startPoint = pBot;
+            //                    }
+            //
+            //                    if (pTop.getX() < stopPoint.getX()) {
+            //                        stopPoint = pTop;
+            //                    }
+            //                }
+            //            }
         }
     }
 

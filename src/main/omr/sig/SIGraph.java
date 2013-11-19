@@ -696,41 +696,98 @@ public class SIGraph
     // reduceExclusions //
     //------------------//
     /**
-     * Process each exclusion in the provided collection by removing
-     * the source or target vertex of lower contextual grade.
+     * Reduce all exclusions until there is no one left.
+     * <pre>
+     * Strategy is as follows:
+     * - Pick up among all current exclusions the one whose high inter has the
+     * highest CG value among all exclusions.
+     * - Remove the low inter of this chosen exclusion.
+     * - Recompute all CG values.
+     * - Iterate until no more exclusion is left.
+     * </pre>
      *
      * @param relations the collection to process
      * @return the set of vertices removed
      */
     public Set<Inter> reduceExclusions (Collection<? extends Relation> relations)
     {
-        // Deletions
-        Set<Inter> toRemove = new LinkedHashSet<Inter>();
+        Set<Inter> removed = new HashSet<Inter>();
+        Relation bestRel;
 
-        for (Relation rel : relations) {
-            if (rel instanceof Exclusion) {
-                final Inter source = getEdgeSource(rel);
-                final double scp = source.getContextualGrade();
-                final Inter target = getEdgeTarget(rel);
-                final double tcp = target.getContextualGrade();
+        do {
+            // Chose best exclusion
+            double bestCP = 0;
+            bestRel = null;
+
+            for (Relation rel : relations) {
+                if (rel instanceof Exclusion) {
+                    final Inter source = getEdgeSource(rel);
+                    final Inter target = getEdgeTarget(rel);
+
+                    if ((source != null) && (target != null)) {
+                        Double scp = source.getContextualGrade();
+
+                        if (scp == null) {
+                            scp = source.getGrade();
+                        }
+
+                        Double tcp = target.getContextualGrade();
+
+                        if (tcp == null) {
+                            tcp = target.getGrade();
+                        }
+
+                        final double cp = Math.max(scp, tcp);
+
+                        if (bestCP < cp) {
+                            bestCP = cp;
+                            bestRel = rel;
+                        }
+                    }
+                }
+            }
+
+            // Kill the weaker branch of the selected exclusion
+            if (bestRel != null) {
+                final Inter source = getEdgeSource(bestRel);
+                Double scp = source.getContextualGrade();
+
+                if (scp == null) {
+                    scp = source.getGrade();
+                }
+
+                final Inter target = getEdgeTarget(bestRel);
+                Double tcp = target.getContextualGrade();
+
+                if (tcp == null) {
+                    tcp = target.getGrade();
+                }
+
                 Inter weaker = (scp < tcp) ? source : target;
 
                 if (weaker.isVip()) {
                     logger.info(
-                            "Remaining {} deleting weaker {}",
-                            rel.toLongString(this),
+                            "VIP conflict {} deleting weaker {}",
+                            bestRel.toLongString(this),
                             weaker);
                 }
 
-                toRemove.add(weaker);
+                Set<Relation> edges = edgesOf(weaker);
+                Set<Inter> involved = involvedInters(edges);
+
+                relations.removeAll(edges);
+                removed.add(weaker);
+                removeVertex(weaker);
+                involved.remove(weaker);
+
+                // Update contextual values
+                for (Inter inter : involved) {
+                    computeContextualGrade(inter, false);
+                }
             }
-        }
+        } while (bestRel != null);
 
-        for (Inter inter : toRemove) {
-            removeVertex(inter);
-        }
-
-        return toRemove;
+        return removed;
     }
 
     //------------------//
@@ -744,7 +801,7 @@ public class SIGraph
      */
     public Set<Inter> reduceExclusions ()
     {
-        return reduceExclusions(edgeSet());
+        return reduceExclusions(new HashSet<Relation>(edgeSet()));
     }
 
     //--------------//
@@ -830,14 +887,14 @@ public class SIGraph
             }
         }
 
-        if (logging || inter.isVip()) {
-            logger.info(
-                    "VIP {} cp:{} {}",
-                    inter,
-                    String.format("%.3f", bestCp),
-                    supportsSeenFrom(inter, map, bestSeq));
-        }
-
+        //        if (logging || inter.isVip()) {
+        //            logger.info(
+        //                    "VIP {} cp:{} {}",
+        //                    inter,
+        //                    String.format("%.3f", bestCp),
+        //                    supportsSeenFrom(inter, map, bestSeq));
+        //        }
+        //
         return bestCp;
     }
 
@@ -852,6 +909,21 @@ public class SIGraph
                 target.getGrade(),
                 source.getGrade(),
                 support.getSupportRatio());
+    }
+
+    //----------------//
+    // involvedInters //
+    //----------------//
+    private Set<Inter> involvedInters (Collection<? extends Relation> relations)
+    {
+        Set<Inter> inters = new HashSet<Inter>();
+
+        for (Relation rel : relations) {
+            inters.add(getEdgeSource(rel));
+            inters.add(getEdgeTarget(rel));
+        }
+
+        return inters;
     }
 
     //------------------//

@@ -56,6 +56,7 @@ public class RunsTableView
      * Creates a new RunsTableView object.
      *
      * @param table the underlying table of runs
+     * @param locationService the service where locations are retrieved from
      */
     public RunsTableView (RunsTable table,
                           SelectionService locationService)

@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.lag;
 
+import omr.glyph.GlyphLayer;
 import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
@@ -58,7 +59,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
-import omr.glyph.GlyphLayer;
 
 /**
  * Class {@code BasicSection} is a basic implementation of {@link
@@ -136,20 +136,6 @@ public class BasicSection
 
     /** The containing system, if any */
     private SystemInfo system;
-
-    /**
-     * Default color. This is the permanent default which is used when
-     * the color is reset by {@link #resetColor}
-     */
-    protected Color defaultColor;
-
-    /**
-     * Color currently used.
-     * By default, the color is the defaultColor chosen out of the palette.
-     * But, temporarily, a section can be assigned a different color,
-     * for example to highlight the section.
-     */
-    protected Color color;
 
     //~ Constructors -----------------------------------------------------------
     //--------------//
@@ -245,8 +231,8 @@ public class BasicSection
     // compareTo //
     //-----------//
     /**
-     * Needed to implement Comparable, sorting sections first by absolute
-     * abscissa, then by absolute ordinate.
+     * Needed to implement Comparable, sorting sections first by 
+     * absolute abscissa, then by absolute ordinate.
      *
      * @param other the other section to compare to
      * @return the result of ordering
@@ -606,15 +592,6 @@ public class BasicSection
         }
 
         return centroid;
-    }
-
-    //-----------------//
-    // getDefaultColor //
-    //-----------------//
-    @Override
-    public Color getDefaultColor ()
-    {
-        return defaultColor;
     }
 
     //-------------------//
@@ -1042,15 +1019,6 @@ public class BasicSection
         return getPolygon().intersects(rect);
     }
 
-    //-------------//
-    // isColorized //
-    //-------------//
-    @Override
-    public boolean isColorized ()
-    {
-        return defaultColor != null;
-    }
-
     //-------//
     // isFat //
     //-------//
@@ -1218,8 +1186,6 @@ public class BasicSection
                         : Colors.GRID_HORIZONTAL;
 
                 // Use color defined for section glyph shape, if any
-                Glyph glyph = getGlyph();
-
                 if (glyph != null) {
                     Shape shape = glyph.getShape();
 
@@ -1277,15 +1243,6 @@ public class BasicSection
         }
     }
 
-    //------------//
-    // resetColor //
-    //------------//
-    @Override
-    public void resetColor ()
-    {
-        setColor(defaultColor);
-    }
-
     //----------//
     // resetFat //
     //----------//
@@ -1293,24 +1250,6 @@ public class BasicSection
     public void resetFat ()
     {
         this.fat = null;
-    }
-
-    //----------//
-    // setColor //
-    //----------//
-    @Override
-    public void setColor (Color color)
-    {
-        this.color = color;
-    }
-
-    //-----------------//
-    // setDefaultColor //
-    //-----------------//
-    @Override
-    public void setDefaultColor (Color color)
-    {
-        defaultColor = color;
     }
 
     //--------//
@@ -1356,7 +1295,7 @@ public class BasicSection
         }
 
         if (isVip()) {
-            logger.info("{} linkedTo {}", this, glyph);
+            logger.info("VIP {} linkedTo {}", this, glyph);
 
             if (glyph != null) {
                 glyph.setVip();

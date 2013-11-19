@@ -279,11 +279,11 @@ class BasicRecognition
         if ((oldShape != null) && (oldShape != shape)
             && (oldShape != Shape.GLYPH_PART)) {
             forbidShape(oldShape);
-
-            if (glyph.isVip()) {
-                logger.info("Shape {} forbidden for {}",
-                        oldShape, glyph.idString());
-            }
+//
+//            if (glyph.isVip()) {
+//                logger.info("Shape {} forbidden for {}",
+//                        oldShape, glyph.idString());
+//            }
         }
 
         if (shape != null) {

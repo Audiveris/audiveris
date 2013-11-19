@@ -462,7 +462,7 @@ class GlyphBrowser
         //~ Constructors -------------------------------------------------------
         public Display ()
         {
-            view = new MyView(controller);
+            view = new MyView();
             view.setLocationService(locationService);
             view.subscribe();
             modelRectangle = new Rectangle();
@@ -553,9 +553,9 @@ class GlyphBrowser
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyView (GlyphsController controller)
+        public MyView ()
         {
-            super(tNest, controller, Arrays.asList(htLag, vtLag), null);
+            super(tNest, Arrays.asList(htLag, vtLag), null);
             setName("GlyphBrowser-View");
             subscribe();
         }
@@ -786,8 +786,7 @@ class GlyphBrowser
 
                     lag.addVertex(section); // Trick!
                     section.setGraph(lag);
-
-                    section.setColor(color);
+                    section.setGlyph(glyph);
                 }
             }
 

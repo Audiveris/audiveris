@@ -11,8 +11,7 @@
 // </editor-fold>
 package omr.check;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
+import omr.sig.Inter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +47,6 @@ public class CheckSuite<C extends Checkable>
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Constants constants = new Constants();
-
     private static final Logger logger = LoggerFactory.getLogger(
             CheckSuite.class);
 
@@ -58,7 +55,10 @@ public class CheckSuite<C extends Checkable>
     protected final String name;
 
     /** Minimum threshold for final grade. */
-    protected final double threshold;
+    protected final double minThreshold;
+
+    /** Good threshold for final grade. */
+    protected final double goodThreshold;
 
     /** List of checks in the suite. */
     private final List<Check<C>> checks = new ArrayList<Check<C>>();
@@ -74,16 +74,32 @@ public class CheckSuite<C extends Checkable>
     // CheckSuite //
     //------------//
     /**
-     * Create a suite of checks
+     * Create a suite of checks with standard threshold values.
      *
-     * @param name      the name for the suite (for debug)
-     * @param threshold the threshold to test results
+     * @param name the name for the suite (for debug)
+     */
+    public CheckSuite (String name)
+    {
+        this(name, Inter.minGrade, Inter.goodGrade);
+    }
+
+    //------------//
+    // CheckSuite //
+    //------------//
+    /**
+     * Create a suite of checks with specific thresholds.
+     *
+     * @param name          the name for the suite (for debug)
+     * @param minThreshold  the threshold for acceptable results
+     * @param goodThreshold the threshold for good results
      */
     public CheckSuite (String name,
-                       double threshold)
+                       double minThreshold,
+                       double goodThreshold)
     {
         this.name = name;
-        this.threshold = threshold;
+        this.minThreshold = minThreshold;
+        this.goodThreshold = goodThreshold;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -134,29 +150,33 @@ public class CheckSuite<C extends Checkable>
      */
     public void dump ()
     {
-        StringBuilder sb = new StringBuilder(String.format("%n"));
+        StringBuilder sb = new StringBuilder(String.format("\n"));
 
         if (name != null) {
             sb.append(name);
         }
 
-        sb.append(String.format(" Check Suite: threshold=%f%n", threshold));
+        sb.append(
+                String.format(
+                        " Check Suite: min=%f good=%f\n",
+                        minThreshold,
+                        goodThreshold));
 
         dumpSpecific(sb);
 
         sb.append(
                 String.format(
-                        "Weight    Name             Covariant    Low       High%n"));
+                        "Weight    Name             Covariant    Low       High\n"));
         sb.append(
                 String.format(
-                        "------    ----                ------    ---       ----%n"));
+                        "------    ----                ------    ---       ----\n"));
 
         int index = 0;
 
         for (Check<C> check : checks) {
             sb.append(
                     String.format(
-                            "%4.1f      %-19s  %5b  % 6.2f    % 6.2f %n",
+                            "%4.1f      %-19s  %5b  % 6.2f    % 6.2f \n",
                             weights.get(index++),
                             check.getName(),
                             check.isCovariant(),
@@ -180,12 +200,17 @@ public class CheckSuite<C extends Checkable>
         return checks;
     }
 
-    //--------------------//
-    // getDefaultMinGrade //
-    //--------------------//
-    public static double getDefaultMinGrade ()
+    //-----------------//
+    // getGoodThreshold //
+    //-----------------//
+    /**
+     * Report the assigned good threshold.
+     *
+     * @return the assigned good result
+     */
+    public double getGoodThreshold ()
     {
-        return constants.defaultMinGrade.getValue();
+        return goodThreshold;
     }
 
     //------------//
@@ -206,6 +231,19 @@ public class CheckSuite<C extends Checkable>
         return impacts;
     }
 
+    //-----------------//
+    // getMinThreshold //
+    //-----------------//
+    /**
+     * Report the assigned minimum threshold.
+     *
+     * @return the assigned minimum result
+     */
+    public double getMinThreshold ()
+    {
+        return minThreshold;
+    }
+
     //---------//
     // getName //
     //---------//
@@ -217,19 +255,6 @@ public class CheckSuite<C extends Checkable>
     public String getName ()
     {
         return name;
-    }
-
-    //--------------//
-    // getThreshold //
-    //--------------//
-    /**
-     * Report the assigned threshold.
-     *
-     * @return the assigned minimum result
-     */
-    public double getThreshold ()
-    {
-        return threshold;
     }
 
     //----------------//
@@ -282,24 +307,25 @@ public class CheckSuite<C extends Checkable>
 
             if (impacts != null) {
                 impacts.setValue(index, result.value);
+                impacts.setImpact(index, result.grade);
             }
 
             // Aggregate results
-            double weight = weights.get(index);
+            if (result.grade == 0) {
+                grade = 0;
+            } else {
+                double weight = weights.get(index);
 
-            if (weight != 0) {
-                if (impacts != null) {
-                    impacts.setImpact(index, result.grade);
+                if (weight != 0) {
+                    grade *= Math.pow(result.grade, weight);
                 }
-
-                grade *= Math.pow(result.grade, weight);
             }
 
             index++;
         }
 
         // Final grade
-        grade = Math.pow(grade, 1 / totalWeight) * constants.intrinsicRatio.getValue();
+        grade = Math.pow(grade, 1 / totalWeight) * Inter.intrinsicRatio;
 
         if (impacts != null) {
             impacts.setGrade(grade);
@@ -318,27 +344,5 @@ public class CheckSuite<C extends Checkable>
      */
     protected void dumpSpecific (StringBuilder sb)
     {
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    /**
-     * General constants for CheckSuite.
-     */
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Constant.Ratio intrinsicRatio = new Constant.Ratio(
-                0.8,
-                "Reduction ratio applied on any intrinsic grade");
-
-        Constant.Ratio defaultMinGrade = new Constant.Ratio(
-                0.5,
-                "Default minimum acceptable suite result");
-
     }
 }

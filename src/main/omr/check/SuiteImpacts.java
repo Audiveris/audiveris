@@ -86,7 +86,11 @@ public class SuiteImpacts<C extends Checkable>
         }
 
         sb.append(
-                String.format(" => %.2f (min %.2f)", grade, suite.getThreshold()));
+                String.format(
+                        " => %.2f (min %.2f, good %.2f)",
+                        grade,
+                        suite.getMinThreshold(),
+                        suite.getGoodThreshold()));
 
         return sb.toString();
     }

@@ -22,20 +22,27 @@ import omr.glyph.facets.Glyph;
 public class LedgerInter
         extends AbstractInter
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Instance fields --------------------------------------------------------
 
     /**
-     * Creates a new LedgerInter object.
+     * Index of virtual line relative to staff.
+     * Above staff if index is negative (-1, -2, etc)
      *
-     * @param glyph the underlying glyph
-     * @param grade the assignment quality
+     * -2 -
+     * -1 -
+     * ---------------------------------
+     * ---------------------------------
+     * ---------------------------------
+     * ---------------------------------
+     * ---------------------------------
+     * +1 -
+     * +2 -
+     *
+     * Below staff if index is positive (+1, +2, etc)
      */
-    public LedgerInter (Glyph glyph,
-                        double grade)
-    {
-        super(glyph, Shape.LEDGER, grade);
-    }
+    private Integer index;
 
+    //~ Constructors -----------------------------------------------------------
     /**
      * Creates a new LedgerInter object.
      *
@@ -45,7 +52,7 @@ public class LedgerInter
     public LedgerInter (Glyph glyph,
                         GradeImpacts impacts)
     {
-        this(glyph, impacts.getGrade());
+        super(glyph, Shape.LEDGER, impacts.getGrade());
         setImpacts(impacts);
     }
 
@@ -57,5 +64,37 @@ public class LedgerInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //------------//
+    // getDetails //
+    //------------//
+    @Override
+    public String getDetails ()
+    {
+        StringBuilder sb = new StringBuilder(super.getDetails());
+
+        if (index != null) {
+            sb.append(" index:")
+                    .append(index);
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * @return the index
+     */
+    public Integer getIndex ()
+    {
+        return index;
+    }
+
+    /**
+     * @param index the index to set
+     */
+    public void setIndex (int index)
+    {
+        this.index = index;
     }
 }

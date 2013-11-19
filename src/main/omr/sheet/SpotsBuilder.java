@@ -22,13 +22,14 @@ import omr.glyph.GlyphsBuilder;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.image.GaussianGrayFilter;
+import omr.image.GlobalFilter;
 import omr.image.ImageView;
 import omr.image.MorphoProcessor;
 import omr.image.Picture;
 import omr.image.PixelBuffer;
 import omr.image.PixelFilter;
 import omr.image.StructureElement;
-import omr.image.VerticalFilter;
 
 import omr.lag.BasicLag;
 import omr.lag.JunctionRatioPolicy;
@@ -58,7 +59,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 /**
- * Class {@code SpotsBuilder} performs morphology analysis on 
+ * Class {@code SpotsBuilder} performs morphology analysis on
  * initial image to retrieve major spots that compose black note heads
  * and beams.
  *
@@ -165,7 +166,6 @@ public class SpotsBuilder
                 spotLag,
                 headLag,
                 splitLag);
-        sheet.setSpotsController(spotController);
         spotController.refresh();
     }
 
@@ -232,8 +232,8 @@ public class SpotsBuilder
                     fromClosedBuffer,
                     "png",
                     new File(
-                    WellKnowns.TEMP_FOLDER,
-                    sheet.getPage().getId() + ".spot.png"));
+                            WellKnowns.TEMP_FOLDER,
+                            sheet.getPage().getId() + ".spot.png"));
         } catch (IOException ex) {
             logger.warn("Error storing spotTable", ex);
         }
@@ -248,11 +248,10 @@ public class SpotsBuilder
                             new BoardsPane(new PixelBoard(sheet)));
         }
 
-        // Binarize the spots, with rather low thresholds
-        final PixelFilter source = new VerticalFilter(
+        // Binarize the spots via a global filter (no illumination problem)
+        final PixelFilter source = new GlobalFilter(
                 buffer,
-                constants.meanCoeff.getValue(),
-                constants.stdDevCoeff.getValue());
+                constants.binarizationThreshold.getValue());
 
         // Get and display thresholded spots
         RunsTable table = new RunsTableFactory(SPOT_ORIENTATION, source, 0).createTable(
@@ -281,13 +280,10 @@ public class SpotsBuilder
                 0.8,
                 "Diameter of circle used to close beam spots, as ratio of beam height");
 
-        Constant.Ratio meanCoeff = new Constant.Ratio(
-                0.4,
-                "Specific adaptive meanCoeff value for spots image");
-
-        Constant.Ratio stdDevCoeff = new Constant.Ratio(
-                0.6,
-                "Specific adaptive stdDevCoeff value for spots image");
+        final Constant.Integer binarizationThreshold = new Constant.Integer(
+                "pixel",
+                160,
+                "Global threshold used for binarization of gray spots");
 
     }
 }

@@ -193,15 +193,16 @@ public abstract class AbstractSystemStep
                             {
                                 try {
                                     logger.debug("{} doSystem #{}",
-                                            AbstractSystemStep.this,
-                                            system.idString());
+                                                 AbstractSystemStep.this,
+                                                 system.idString());
 
                                     doSystem(system);
                                 } catch (Exception ex) {
                                     logger.warn(sheet.getLogPrefix()
                                                 + "Interrupt on "
-                                                + system.idString(),
-                                            ex);
+                                                + system.idString()
+                                                + " (" + ex + ") ",
+                                                ex);
                                 }
 
                                 return null;

@@ -84,7 +84,10 @@ public class BeamsBuilder
     /** Scale-dependent constants. */
     private final Parameters params;
 
-    /** Beams (and hooks) for this system, NOT sorted. */
+    /**
+     * Beams (and hooks) for this system.
+     * Collection is called raw to remind us it is NOT sorted
+     */
     private List<Inter> rawSystemBeams;
 
     /** The related sheet. */
@@ -95,7 +98,7 @@ public class BeamsBuilder
     private final SIGraph sig;
 
     /** Beam spots for this system, sorted by abscissa. */
-    private List<Glyph> beamSpots;
+    private List<Glyph> sortedBeamSpots;
 
     /** Vertical stem seeds for this system, sorted by abscissa. */
     private List<Glyph> sortedSystemSeeds;
@@ -140,9 +143,9 @@ public class BeamsBuilder
                         Picture.SourceKey.STAFF_LINE_FREE);
 
         // First, retrieve beams from spots
-        beamSpots = getBeamSpots();
+        sortedBeamSpots = getBeamSpots();
 
-        for (Glyph glyph : beamSpots) {
+        for (Glyph glyph : sortedBeamSpots) {
             final String failure = checkBeamGlyph(glyph);
 
             if ((failure != null) && glyph.isVip()) {
@@ -151,9 +154,12 @@ public class BeamsBuilder
         }
 
         // Second, extend beams as needed
+        sortedBeamSpots = getBeamSpots(); // Update
         extendBeams();
 
         // Third, retrieve beam hooks
+        sortedBeamSpots = getBeamSpots(); // Update
+
         buildHooks();
     }
 
@@ -242,11 +248,14 @@ public class BeamsBuilder
                 new Point2D.Double(median.getX1(), median.getY1() + dy),
                 new Point2D.Double(median.getX2(), median.getY2() + dy),
                 height);
-        List<Glyph> glyphs = sig.intersectedGlyphs(beamSpots, true, luArea);
+        List<Glyph> glyphs = sig.intersectedGlyphs(
+                sortedBeamSpots,
+                true,
+                luArea);
 
         if (!glyphs.isEmpty()) {
             if (beam.isVip() || logger.isDebugEnabled()) {
-                logger.info("{} {}:", beam, side);
+                logger.info("VIP {} {} hooks:", beam, side);
             }
         }
 
@@ -270,10 +279,7 @@ public class BeamsBuilder
      */
     private void buildHooks ()
     {
-        // Update the collection of beam spots
-        beamSpots = getBeamSpots();
-
-        for (Inter inter : sig.inters(Shape.BEAM)) {
+        for (Inter inter : sig.inters(FullBeamInter.class)) {
             for (VerticalSide side : VerticalSide.values()) {
                 browseHooks((FullBeamInter) inter, side);
             }
@@ -357,7 +363,7 @@ public class BeamsBuilder
 
         // Compute items grade and create FullBeamInter instances when acceptable
         if (createBeamInters(items)) {
-            glyph.setShape(Shape.BEAM); // For visual check
+            glyph.setShape(Shape.BEAM); // Mark it as already assigned to beam
 
             return null; // Mean: no failure
         } else {
@@ -598,20 +604,19 @@ public class BeamsBuilder
     //-------------//
     /**
      * Now that individual beams candidates have been extracted, try to
-     * improve beam geometry (merge, extension) and detect beam groups.
-     * Check whether both beam ends have a stem (seed) nearby.
-     * If not, this may indicate a broken beam, so try to extend it to either
-     * another beam (merge) or a stem seed (extension) or in parallel with a
-     * sibling beam (extension).
+     * improve beam geometry (merge, extension).
+     * Try to extend each beam to either another beam (merge) or a stem seed
+     * (extension) or in parallel with a sibling beam (extension) or to another
+     * spot (extension).
      */
     private void extendBeams ()
     {
         // The stem seeds for this system, sorted by abscissa
         sortedSystemSeeds = getSystemSeeds();
 
-        // The beam & hook inters for this system, NOT sorted by abscissa
-        // We may add to this list, but not remove elements
-        // Hooks are added later to this collection
+        // The beam & hook inters for this system, NOT sorted by abscissa.
+        // We may add to this list, but not remove elements (they are deleted).
+        // Later, buildHooks() will add hooks to this list.
         rawSystemBeams = sig.inters(AbstractBeamInter.class);
 
         // Extend each orphan beam as much as possible
@@ -629,17 +634,13 @@ public class BeamsBuilder
             }
 
             for (HorizontalSide side : HorizontalSide.values()) {
-                if (noStem(beam, side)) {
-                    if (beam.isVip() || logger.isDebugEnabled()) {
-                        logger.info("{} has no stem on {}", beam, side);
-                    }
-
-                    // This may create new beam instance.
-                    if (extendToBeam(beam, side)
-                        || extendToStem(beam, side)
-                        || extendInParallel(beam, side)) {
-                        break;
-                    }
+                // If successful, this appends a new beam instance to the list.
+                // The new beam will later be tested for further extension.
+                if (extendToBeam(beam, side)
+                    || extendToStem(beam, side)
+                    || extendInParallel(beam, side)
+                    || extendToSpot(beam, side)) {
+                    break;
                 }
             }
         }
@@ -670,14 +671,14 @@ public class BeamsBuilder
                 median.getP1(),
                 median.getP2(),
                 3 * height);
+        beam.addAttachment("=" + ((side == LEFT) ? "L" : "R"), luArea);
+
         List<Inter> others = sig.intersectedInters(
                 rawSystemBeams,
                 GeoOrder.NONE,
                 luArea);
 
-        if (!others.isEmpty()) {
-            others.remove(beam); // Safer
-        }
+        others.remove(beam); // Safer
 
         if (!others.isEmpty()) {
             // Use a closer look
@@ -742,15 +743,18 @@ public class BeamsBuilder
     private boolean extendToBeam (FullBeamInter beam,
                                   HorizontalSide side)
     {
-        Area area = sideAreaOf(beam, side, 0, params.maxBeamsGapX, 0);
+        Area area = sideAreaOf(
+                "-",
+                beam,
+                side,
+                0,
+                params.maxBeamsGapX,
+                0);
         List<Inter> others = sig.intersectedInters(
                 rawSystemBeams,
                 GeoOrder.NONE,
                 area);
-
-        if (!others.isEmpty()) {
-            others.remove(beam); // Safer
-        }
+        others.remove(beam); // Safer
 
         if (!others.isEmpty()) {
             // Use a closer look, using colinearity
@@ -768,16 +772,17 @@ public class BeamsBuilder
                     if (newBeam != null) {
                         sig.addVertex(newBeam);
                         rawSystemBeams.add(newBeam);
-                        beam.delete();
-                        other.delete();
 
                         if (beam.isVip() || other.isVip()) {
                             newBeam.setVip();
                         }
 
+                        beam.delete();
+                        other.delete();
+
                         if (newBeam.isVip() || logger.isDebugEnabled()) {
                             logger.info(
-                                    "Merged {} & {} into {}",
+                                    "VIP Merged {} & {} into {}",
                                     beam,
                                     other,
                                     newBeam);
@@ -817,18 +822,26 @@ public class BeamsBuilder
         final Line2D median = beam.getMedian();
         final double height = beam.getHeight();
 
-        // Check we have enough pixels in the extension zone
+        // Check we have a concrete extension
         Point2D endPt = (side == LEFT) ? median.getP1() : median.getP2();
-        double extDx = Math.abs(extPt.getX() - endPt.getX());
-        Area extArea = sideAreaOf(beam, side, 0, extDx, 0);
+        double extDx = (side == LEFT) ? (endPt.getX() - extPt.getX())
+                : (extPt.getX() - endPt.getX());
+
+        // (to cope with rounding we use 1 instead of 0)
+        if (extDx <= 1) {
+            return false;
+        }
+
+        // Check we have a high enough black ratio in the extension zone
+        Area extArea = sideAreaOf("+", beam, side, 0, extDx, 0);
         AreaMask extMask = new AreaMask(extArea);
         WrappedInteger extCore = new WrappedInteger(0);
         int extCoreCount = extMask.fore(extCore, pixelFilter);
         double extCoreRatio = (double) extCore.value / extCoreCount;
 
-        if (extCoreRatio < params.minCoreBlackRatio) {
+        if (extCoreRatio < params.minExtBlackRatio) {
             if (logging) {
-                logger.info("{} lacks pixels in stem extension", beam);
+                logger.info("VIP {} lacks pixels in stem extension", beam);
             }
 
             return false;
@@ -869,7 +882,7 @@ public class BeamsBuilder
 
             if (logging) {
                 logger.info(
-                        "{} extended as {} {}",
+                        "VIP {} extended as {} {}",
                         beam,
                         newBeam,
                         newBeam.getImpacts());
@@ -878,11 +891,71 @@ public class BeamsBuilder
             return true;
         } else {
             if (logging) {
-                logger.info("{} extension failed", beam);
+                logger.info("VIP {} extension failed", beam);
             }
 
             return false;
         }
+    }
+
+    //--------------//
+    // extendToSpot //
+    //--------------//
+    /**
+     * Try to extend the provided beam on the desired side to a spot
+     * within reach.
+     *
+     * @param beam the beam to extend
+     * @param side the horizontal side
+     * @return true if extension was done, false otherwise
+     */
+    private boolean extendToSpot (FullBeamInter beam,
+                                  HorizontalSide side)
+    {
+        final boolean logging = beam.isVip() || logger.isDebugEnabled();
+
+        // Lookup area for spots
+        Area luArea = sideAreaOf(
+                "O",
+                beam,
+                side,
+                0, // dy
+                params.maxExtensionToSpot, // extDx
+                0); // intDx
+
+        List<Glyph> spots = sig.intersectedGlyphs(
+                sortedBeamSpots,
+                true,
+                luArea);
+
+        if (beam.getGlyph() != null) {
+            spots.remove(beam.getGlyph()); // Safer
+        }
+
+        if (!spots.isEmpty()) {
+            // Pick up the nearest spot
+            Glyph spot = (side == LEFT) ? spots.get(spots.size() - 1)
+                    : spots.get(0);
+
+            if (logging) {
+                logger.info(
+                        "VIP {} found spot#{} on {}",
+                        beam,
+                        spot.getId(),
+                        side);
+            }
+
+            // Try to extend the beam to this spot, inclusive
+            Line2D median = beam.getMedian();
+            Rectangle spotBox = spot.getBounds();
+            int x = (side == LEFT) ? spotBox.x
+                    : ((spotBox.x + spotBox.width) - 1);
+            Point2D extPt = LineUtil.intersectionAtX(median, x);
+
+            return extendToPoint(beam, side, extPt);
+        }
+
+        return false;
     }
 
     //--------------//
@@ -903,6 +976,7 @@ public class BeamsBuilder
 
         // Lookup area for stem seed
         Area luArea = sideAreaOf(
+                "|",
                 beam,
                 side,
                 params.maxStemBeamGapY, // dy
@@ -914,6 +988,8 @@ public class BeamsBuilder
                 true,
                 luArea);
 
+        // We should remove seeds already 'embraced' by the beam
+        // It's easier to proceed and simply check for concrete extension.
         if (!seeds.isEmpty()) {
             // Pick up the nearest stem seed
             Glyph seed = (side == LEFT) ? seeds.get(seeds.size() - 1)
@@ -975,35 +1051,6 @@ public class BeamsBuilder
         return seeds;
     }
 
-    //--------//
-    // noStem //
-    //--------//
-    /**
-     * Check whether the provided beam lacks stem seed near the
-     * desired end.
-     *
-     * @param beam provided beam
-     * @param side side of end to check
-     * @return true if end is orphan
-     */
-    private boolean noStem (FullBeamInter beam,
-                            HorizontalSide side)
-    {
-        // Define a precise check area on desired beam side and check for seed
-        Area area = sideAreaOf(
-                beam,
-                side,
-                params.maxStemBeamGapY,
-                params.maxStemBeamGapX,
-                params.maxStemBeamGapX);
-        List<Glyph> seeds = sig.intersectedGlyphs(
-                sortedSystemSeeds,
-                true,
-                area);
-
-        return seeds.isEmpty();
-    }
-
     //---------//
     // overlap //
     //---------//
@@ -1050,21 +1097,23 @@ public class BeamsBuilder
     /**
      * Define an area on desired horizontal side of the beam.
      *
-     * @param inter  the beam inter
+     * @param kind   kind of area (meant for attachment debug)
+     * @param beam   the beam inter
      * @param side   desired side
      * @param double extDy ordinate extension
      * @param double extDx abscissa extension
      * @param double intDx abscissa offset towards beam interior
      * @return the area
      */
-    private Area sideAreaOf (FullBeamInter inter,
+    private Area sideAreaOf (String kind,
+                             FullBeamInter beam,
                              HorizontalSide side,
                              double extDy,
                              double extDx,
                              double intDx)
     {
-        final Line2D median = inter.getMedian();
-        final double height = inter.getHeight() + (2 * extDy);
+        final Line2D median = beam.getMedian();
+        final double height = beam.getHeight() + (2 * extDy);
         final double intX = (side == LEFT) ? (median.getX1() - 1 + intDx)
                 : ((median.getX2() + 1) - intDx);
         final Point2D intPt = LineUtil.intersectionAtX(median, intX);
@@ -1076,12 +1125,7 @@ public class BeamsBuilder
                         extPt,
                         intPt,
                         height) : AreaUtil.horizontalParallelogram(intPt, extPt, height);
-
-        //TODO: we should allow attachments on Inter class!
-        if (inter.getGlyph() != null) {
-            inter.getGlyph()
-                    .addAttachment(inter.getId() + "s" + side.ordinal(), area);
-        }
+        beam.addAttachment(kind + ((side == LEFT) ? "L" : "R"), area);
 
         return area;
     }
@@ -1129,8 +1173,12 @@ public class BeamsBuilder
                 "Maximum ordinate gap between stem and beam");
 
         final Scale.Fraction maxExtensionToStem = new Scale.Fraction(
-                2.0,
+                4.0,
                 "Maximum beam horizontal extension to stem seed");
+
+        final Scale.Fraction maxExtensionToSpot = new Scale.Fraction(
+                2.0,
+                "Maximum beam horizontal extension to spot");
 
         final Scale.Fraction beltMarginDx = new Scale.Fraction(
                 0.25,
@@ -1175,6 +1223,10 @@ public class BeamsBuilder
                 0.7,
                 "Minimum ratio of black pixels inside beam");
 
+        final Constant.Ratio minExtBlackRatio = new Constant.Ratio(
+                0.5,
+                "Minimum ratio of black pixels inside beam extension");
+
     }
 
     //------------//
@@ -1203,6 +1255,8 @@ public class BeamsBuilder
 
         final int maxExtensionToStem;
 
+        final int maxExtensionToSpot;
+
         final int beltMarginDx;
 
         final int beltMarginDy;
@@ -1223,6 +1277,8 @@ public class BeamsBuilder
 
         final double minCoreBlackRatio;
 
+        final double minExtBlackRatio;
+
         //~ Constructors -------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -1239,6 +1295,7 @@ public class BeamsBuilder
             maxStemBeamGapX = scale.toPixels(constants.maxStemBeamGapX);
             maxStemBeamGapY = scale.toPixels(constants.maxStemBeamGapY);
             maxExtensionToStem = scale.toPixels(constants.maxExtensionToStem);
+            maxExtensionToSpot = scale.toPixels(constants.maxExtensionToSpot);
             beltMarginDx = scale.toPixels(constants.beltMarginDx);
             beltMarginDy = scale.toPixels(constants.beltMarginDy);
             minLargeBeamWidth = scale.toPixels(constants.minLargeBeamWidth);
@@ -1250,6 +1307,7 @@ public class BeamsBuilder
                     constants.maxDistanceToBorder);
             maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
             minCoreBlackRatio = constants.minCoreBlackRatio.getValue();
+            minExtBlackRatio = constants.minExtBlackRatio.getValue();
 
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);

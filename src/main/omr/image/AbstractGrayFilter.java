@@ -89,7 +89,7 @@ public abstract class AbstractGrayFilter
 
         filter(input, output);
 
-        watch.print();
+        ///watch.print();
 
         return output;
     }

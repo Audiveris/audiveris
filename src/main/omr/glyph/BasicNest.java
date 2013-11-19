@@ -501,10 +501,10 @@ public class BasicNest
                 if (!layerNest.originals.isEmpty()) {
                     sb.append(
                             String.format(
-                            " %s:%d/%d",
-                            layer,
-                            getActiveGlyphs(layer).size(),
-                            layerNest.originals.size()));
+                                    " %s:%d/%d",
+                                    layer,
+                                    getActiveGlyphs(layer).size(),
+                                    layerNest.originals.size()));
                 }
             }
         } else {
@@ -616,8 +616,8 @@ public class BasicNest
             for (LayerNest layerNest : byLayer.values()) {
                 pile.addAll(
                         Glyphs.containingGlyphs(
-                        layerNest.getOriginals(),
-                        rect.getLocation()));
+                                layerNest.getOriginals(),
+                                rect.getLocation()));
             }
 
             publish(new GlyphPileEvent(this, hint, movement, pile));
@@ -714,10 +714,10 @@ public class BasicNest
                     compound = system.buildTransientCompound(glyphs);
                     publish(
                             new GlyphEvent(
-                            this,
-                            SelectionHint.GLYPH_TRANSIENT,
-                            movement,
-                            compound));
+                                    this,
+                                    SelectionHint.GLYPH_TRANSIENT,
+                                    movement,
+                                    compound));
                 }
             } catch (IllegalArgumentException ex) {
                 // All glyphs do not belong to the same system
@@ -766,10 +766,10 @@ public class BasicNest
         if (locEvent != null) {
             publish(
                     new LocationEvent(
-                    this,
-                    locEvent.hint,
-                    MouseMovement.PRESSING,
-                    locEvent.getData()));
+                            this,
+                            locEvent.hint,
+                            MouseMovement.PRESSING,
+                            locEvent.getData()));
         }
     }
 
@@ -966,8 +966,8 @@ public class BasicNest
                                 original.getId(),
                                 Sections.toString(" members", glyph.getMembers()),
                                 Sections.toString(
-                                " original",
-                                original.getMembers()));
+                                        " original",
+                                        original.getMembers()));
                     }
 
                     glyph = original;

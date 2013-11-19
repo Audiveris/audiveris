@@ -223,13 +223,10 @@ public class Sheet
     private boolean hasSystemBoundaries = false;
 
     /** Registered item renderers, if any */
-    private Set<ItemRenderer> itemRenderers = new HashSet<>();
+    private final Set<ItemRenderer> itemRenderers = new HashSet<>();
 
     /** Display of runs tables. */
-    private RunsViewer runsViewer;
-
-    /** Display of all spots. */
-    private SpotsController spotsController;
+    private final RunsViewer runsViewer;
 
     //~ Constructors -----------------------------------------------------------
     //
@@ -1588,28 +1585,6 @@ public class Sheet
 
         // Save this distance image on disk for visual check
         //TableUtil.store(getId() + ".dist", distanceImage);
-    }
-
-    //--------------------//
-    // getSpotsController //
-    //--------------------//
-    /**
-     * @return the spotsController
-     */
-    public SpotsController getSpotsController ()
-    {
-        return spotsController;
-    }
-
-    //--------------------//
-    // setSpotsController //
-    //--------------------//
-    /**
-     * @param spotsController the spotsController to set
-     */
-    public void setSpotsController (SpotsController spotsController)
-    {
-        this.spotsController = spotsController;
     }
 
     //---------//

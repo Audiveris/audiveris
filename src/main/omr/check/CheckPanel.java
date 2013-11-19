@@ -110,31 +110,6 @@ public class CheckPanel<C extends Checkable>
     }
 
     //~ Methods ----------------------------------------------------------------
-    //----------//
-    // setSuite //
-    //----------//
-    /**
-     * Assign a (new) suite to the check pane.
-     *
-     * @param suite the (new) check suite to be used
-     */
-    public final void setSuite (CheckSuite<C> suite)
-    {
-        this.suite = suite;
-
-        if (suite != null) {
-            createValueFields(); // Values
-            createBoundFields(); // Bounds
-            buildComponent(); // Create/update component
-        }
-
-        // Refresh the display
-        if (component != null) {
-            component.validate();
-            component.repaint();
-        }
-    }
-
     //--------------//
     // getComponent //
     //--------------//
@@ -187,15 +162,43 @@ public class CheckPanel<C extends Checkable>
         // Global suite result
         final double grade = impacts.getGrade();
 
-        if (grade >= suite.getThreshold()) {
+        if (grade >= suite.getGoodThreshold()) {
             globalField.setForeground(GREEN_COLOR);
-            globalField.setToolTipText("Check has succeeded!");
+            globalField.setToolTipText("Good result!");
+        } else if (grade >= suite.getMinThreshold()) {
+            globalField.setForeground(ORANGE_COLOR);
+            globalField.setToolTipText("Acceptable result!");
         } else {
             globalField.setForeground(RED_COLOR);
-            globalField.setToolTipText("Check has failed!");
+            globalField.setToolTipText("Check has totally failed!");
         }
 
         globalField.setText(textOf(grade));
+    }
+
+    //----------//
+    // setSuite //
+    //----------//
+    /**
+     * Assign a (new) suite to the check pane.
+     *
+     * @param suite the (new) check suite to be used
+     */
+    public final void setSuite (CheckSuite<C> suite)
+    {
+        this.suite = suite;
+
+        if (suite != null) {
+            createValueFields(); // Values
+            createBoundFields(); // Bounds
+            buildComponent(); // Create/update component
+        }
+
+        // Refresh the display
+        if (component != null) {
+            component.validate();
+            component.repaint();
+        }
     }
 
     //----------------//

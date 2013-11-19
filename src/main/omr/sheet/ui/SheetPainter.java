@@ -81,15 +81,15 @@ public class SheetPainter
     private final Graphics2D g;
 
     /** Clip rectangle. */
-    private Rectangle clip;
+    private final Rectangle clip;
 
     /** Alpha composite for interpretations. */
-    private AlphaComposite composite = AlphaComposite.getInstance(
+    private final AlphaComposite composite = AlphaComposite.getInstance(
             AlphaComposite.SRC_OVER,
             0.5f);
 
     /** Default full composite. */
-    private AlphaComposite fullComposite = AlphaComposite.getInstance(
+    private final AlphaComposite fullComposite = AlphaComposite.getInstance(
             AlphaComposite.SRC_OVER,
             1f);
 
@@ -106,7 +106,7 @@ public class SheetPainter
     private Stroke ledgerStroke;
 
     /** Stroke for stems. */
-    private Stroke stemStroke;
+    private final Stroke stemStroke;
 
     //~ Constructors -----------------------------------------------------------
     //--------------//

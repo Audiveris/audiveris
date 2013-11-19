@@ -21,7 +21,6 @@ import omr.glyph.ui.SymbolGlyphBoard;
 
 import omr.lag.Lag;
 
-import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
@@ -38,6 +37,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.List;
 
 /**
  * Class {@code SpotsController} is a quick & dirty hack to display
@@ -54,11 +54,6 @@ public class SpotsController
     private static final Logger logger = LoggerFactory.getLogger(
             SpotsController.class);
 
-    /** Events that can be published on internal service (TODO: Check this!) */
-    private static final Class<?>[] locEvents = new Class<?>[]{
-        LocationEvent.class
-    };
-
     /** Set of shapes of interest. */
     private static final EnumSet<Shape> relevantShapes = EnumSet.of(
             Shape.BEAM_SPOT,
@@ -69,13 +64,8 @@ public class SpotsController
             Shape.NOTEHEAD_BLACK,
             Shape.NOTEHEAD_VOID);
 
-    private static final EnumSet<Shape> beamShapes = EnumSet.of(
-            Shape.BEAM,
-            Shape.BEAM_2,
-            Shape.BEAM_3);
-
     //~ Instance fields --------------------------------------------------------
-    private final Lag[] initialLags;
+    private final Lag[] lags;
 
     /** Related user display if any */
     private MyView view;
@@ -88,27 +78,16 @@ public class SpotsController
      * Creates a new SpotsController object.
      *
      * @param sheet related sheet
+     * @param lags  collection of lags to handle
      */
     public SpotsController (Sheet sheet,
                             Lag... lags)
     {
         super(new GlyphsModel(sheet, sheet.getNest(), null));
-        this.initialLags = lags;
+        this.lags = lags;
     }
 
     //~ Methods ----------------------------------------------------------------
-    //--------//
-    // addLag //
-    //--------//
-    public void addLag (Lag lag)
-    {
-        if (view == null) {
-            displayFrame();
-        }
-
-        view.addLag(lag);
-    }
-
     //---------//
     // refresh //
     //---------//
@@ -130,15 +109,15 @@ public class SpotsController
     private void displayFrame ()
     {
         // Specific rubber display
-        view = new MyView(getNest());
+        view = new MyView(getNest(), Arrays.asList(lags));
 
         sheet.getAssembly()
                 .addViewTab(
-                "Spots",
-                new ScrollView(view),
-                new BoardsPane(
-                new PixelBoard(sheet),
-                new SymbolGlyphBoard(this, true, true)));
+                        "Spots",
+                        new ScrollView(view),
+                        new BoardsPane(
+                                new PixelBoard(sheet),
+                                new SymbolGlyphBoard(this, true, true)));
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -150,13 +129,10 @@ public class SpotsController
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyView (Nest nest)
+        public MyView (Nest nest,
+                       List<Lag> lags)
         {
-            super(
-                    nest,
-                    SpotsController.this,
-                    Arrays.asList(initialLags),
-                    sheet);
+            super(nest, lags, sheet);
 
             setLocationService(sheet.getLocationService());
 

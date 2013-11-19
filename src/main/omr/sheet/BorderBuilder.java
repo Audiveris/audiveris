@@ -415,7 +415,7 @@ public class BorderBuilder
             int y = (top + bot) / 2;
 
             if (top > bot && !userWarned) {
-                logger.warn("{}{} got closed at x:{} y:{}",
+                logger.info("{}{} got closed at x:{} y:{}",
                         sheet.getLogPrefix(), idString(), x, y);
                 userWarned = true;
             }

@@ -13,6 +13,8 @@ package omr.math;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.awt.geom.Line2D;
 import static java.lang.Math.*;
 
 /**
@@ -222,8 +224,8 @@ public class BasicLine
         // abs is used in case of rounding errors
         return sqrt(
                 abs(
-                (a * a * sx2) + (b * b * sy2) + (c * c * n)
-                + (2 * a * b * sxy) + (2 * a * c * sx) + (2 * b * c * sy)) / n);
+                        (a * a * sx2) + (b * b * sy2) + (c * c * n)
+                        + (2 * a * b * sxy) + (2 * a * c * sx) + (2 * b * c * sy)) / n);
     }
 
     //----------------//
@@ -382,6 +384,25 @@ public class BasicLine
         that.dirty = true;
 
         return that;
+    }
+
+    //----------//
+    // toDouble //
+    //----------//
+    /**
+     * Generate a Line2D.Double instance that matches line end points
+     *
+     * @return a Line2D.Double instance
+     */
+    public Line2D.Double toDouble ()
+    {
+        checkLineParameters();
+
+        if (isRatherVertical) {
+            return new Line2D.Double(xAtY(yMin), yMin, xAtY(yMax), yMax);
+        } else {
+            return new Line2D.Double(xMin, yAtX(xMin), xMax, yAtX(xMax));
+        }
     }
 
     //----------//

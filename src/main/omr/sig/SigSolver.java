@@ -432,7 +432,7 @@ public class SigSolver
                 continue;
             }
 
-            //TODO: Check a hook has a beam nearby on the same stem
+            //TODO: Check the hook has a beam nearby on the same stem
         }
 
         return modifs;

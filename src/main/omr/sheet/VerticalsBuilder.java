@@ -233,7 +233,6 @@ public class VerticalsBuilder
      */
     private void checkVerticals (Collection<Glyph> sticks)
     {
-        double minResult = constants.minCheckResult.getValue();
         int seedNb = 0;
         logger.debug("Searching verticals on {} sticks", sticks.size());
 
@@ -262,7 +261,7 @@ public class VerticalsBuilder
             double res = suite.pass(new GlyphContext(stick), null);
 
             ///logger.debug("suite=> {} for {}", res, stick);
-            if (res >= minResult) {
+            if (res >= suite.getMinThreshold()) {
                 stick.setShape(Shape.VERTICAL_SEED);
                 seedNb++;
             } else {
@@ -493,6 +492,21 @@ public class VerticalsBuilder
             final Point2D stop = stick.getStopPoint(VERTICAL);
             final double halfWidth = (typicalWidth - 1) / 2;
 
+            {
+                // Sanity check
+                double invSlope = LineUtil.getInvertedSlope(start, stop);
+
+                if (Double.isNaN(invSlope)
+                    || Double.isInfinite(invSlope)
+                    || (Math.abs(invSlope) > 0.5)) {
+                    if (stick.isVip()) {
+                        logger.info("VIP too far from vertical {}", stick);
+                    }
+
+                    return 0;
+                }
+            }
+
             // Theoretical stem vertical lines on left and right sides
             final Line2D leftLine = new Line2D.Double(
                     new Point2D.Double(start.getX() - halfWidth, start.getY()),
@@ -512,12 +526,12 @@ public class VerticalsBuilder
             int bothCount = 0; // Count of rows where stem has item on both
             int cleanCount = 0; // Count of rows where stem is bare (no item stuck)
 
+            final int yMin = stickBox.y;
+            final int yMax = (stickBox.y + stickBox.height) - 1;
+
             if (stick.isVip()) {
                 logger.info("VIP CleanCheck for {}", stick);
             }
-
-            final int yMin = stickBox.y;
-            final int yMax = (stickBox.y + stickBox.height) - 1;
 
             for (int y = yMin; y <= yMax; y++) {
                 final int leftLimit = (int) Math.rint(
@@ -633,8 +647,12 @@ public class VerticalsBuilder
                 "Horizontal belt margin checked around stem");
 
         Check.Grade minCheckResult = new Check.Grade(
-                0.3,
+                0.2,
                 "Minimum result for suite of check");
+
+        Check.Grade goodCheckResult = new Check.Grade(
+                0.5,
+                "Good result for suite of check");
 
         Scale.Fraction blackHigh = new Scale.Fraction(
                 2.5,
@@ -803,7 +821,10 @@ public class VerticalsBuilder
          */
         public SeedCheckSuite ()
         {
-            super("Seed", constants.minCheckResult.getValue());
+            super(
+                    "Seed",
+                    constants.minCheckResult.getValue(),
+                    constants.goodCheckResult.getValue());
 
             add(1, new SlopeCheck());
             add(1, new StraightCheck());

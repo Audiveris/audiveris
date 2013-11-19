@@ -1,12 +1,12 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                         S t e m C o n t r o l l e r                        //
+//                         H o r i C o n t r o l l e r                        //
 //                                                                            //
 //----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
@@ -18,8 +18,10 @@ import omr.glyph.ui.NestView;
 import omr.glyph.ui.SymbolGlyphBoard;
 
 import omr.lag.Lag;
+import omr.lag.ui.SectionBoard;
 
-import omr.selection.LocationEvent;
+import omr.run.RunBoard;
+
 import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
@@ -31,57 +33,48 @@ import omr.ui.view.ScrollView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Graphics2D;
 import java.util.Arrays;
+import omr.step.Step;
 
 /**
- * Class {@code StemController}
+ * Class {@code HoriController} display horizontal glyphs for ledgers
+ * etc.
  *
  * @author Hervé Bitteur
  */
-public class StemController
-    extends GlyphsController
+public class HoriController
+        extends GlyphsController
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        StemController.class);
-
-    /** Events that can be published on internal service (TODO: Check this!) */
-    private static final Class<?>[] locEvents = new Class<?>[] {
-                                                    LocationEvent.class
-                                                };
+            HoriController.class);
 
     //~ Instance fields --------------------------------------------------------
-
     private final Lag lag;
 
     /** Related user display if any */
     private MyView view;
 
     //~ Constructors -----------------------------------------------------------
-
+    //----------------//
+    // HoriController //
+    //----------------//
     /**
-     * Creates a new StemController object.
+     * Creates a new HoriController object.
      *
      * @param sheet related sheet
-     * @param nest  spot nest
+     * @param lag   the full horizontal lag
      */
-    public StemController (Sheet sheet,
-                           Nest  nest,
-                           Lag   lag)
+    public HoriController (Sheet sheet,
+                           Lag lag)
     {
-        super(new GlyphsModel(sheet, nest, null));
+        super(new GlyphsModel(sheet, sheet.getNest(), null));
         this.lag = lag;
-
-        nest.setServices(sheet.getLocationService());
-        lag.setServices(
-            sheet.getLocationService());
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //---------//
     // refresh //
     //---------//
@@ -106,35 +99,35 @@ public class StemController
         view = new MyView(getNest());
 
         sheet.getAssembly()
-             .addViewTab(
-            "Stems",
-            new ScrollView(view),
-            new BoardsPane(
-                new PixelBoard(sheet),
-                new SymbolGlyphBoard(this, true, true)));
+                .addViewTab(
+                        Step.HORI_TAB,
+                        new ScrollView(view),
+                        new BoardsPane(
+                                new PixelBoard(sheet),
+                                new RunBoard(lag, false),
+                                new SectionBoard(lag, false),
+                                new SymbolGlyphBoard(this, true, true)));
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //--------//
     // MyView //
     //--------//
     private final class MyView
-        extends NestView
+            extends NestView
     {
         //~ Constructors -------------------------------------------------------
 
         public MyView (Nest nest)
         {
-            super(nest, StemController.this, Arrays.asList(lag), sheet);
+            super(nest, Arrays.asList(lag), sheet);
 
             setLocationService(sheet.getLocationService());
 
-            setName("StemController-MyView");
+            setName("HoriController-MyView");
         }
 
         //~ Methods ------------------------------------------------------------
-
         //---------//
         // onEvent //
         //---------//
@@ -195,13 +188,30 @@ public class StemController
             }
         }
 
-        //-------------//
-        // renderItems //
-        //-------------//
-        @Override
-        public void renderItems (Graphics2D g)
-        {
-            super.renderItems(g);
-        }
+        //        //-------------//
+        //        // renderItems //
+        //        //-------------//
+        //        @Override
+        //        public void renderItems (Graphics2D g)
+        //        {
+        //            super.renderItems(g);
+        //
+        //            Rectangle clip = g.getClipBounds();
+        //
+        //            Color oldColor = g.getColor();
+        //            g.setColor(Color.RED);
+        //
+        //            for (Glyph glyph : nest.getAllGlyphs()) {
+        //                final Shape shape = glyph.getShape();
+        //
+        //                if (relevantShapes.contains(shape)
+        //                    && clip.intersects(glyph.getBounds())) {
+        //                    // Draw mean line
+        //                    glyph.renderLine(g);
+        //                }
+        //            }
+        //
+        //            g.setColor(oldColor);
+        //        }
     }
 }

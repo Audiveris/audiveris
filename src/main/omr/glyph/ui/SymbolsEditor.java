@@ -76,6 +76,7 @@ import java.util.Set;
 
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
+import omr.sig.Inter;
 
 /**
  * Class {@code SymbolsEditor} defines, for a given sheet, a UI pane
@@ -112,10 +113,10 @@ public class SymbolsEditor
     private final MyView view;
 
     /** Popup menu related to page selection. */
-    private PageMenu pageMenu;
+    private final PageMenu pageMenu;
 
     /** The entity used for display focus. */
-    private ShapeFocusBoard focus;
+    private final ShapeFocusBoard focus;
 
     //~ Constructors -----------------------------------------------------------
     //---------------//
@@ -144,13 +145,13 @@ public class SymbolsEditor
                 sheet,
                 symbolsController,
                 new ActionListener()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                view.repaint();
-            }
-        },
+                {
+                    @Override
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        view.repaint();
+                    }
+                },
                 false);
 
         pageMenu = new PageMenu(
@@ -168,7 +169,7 @@ public class SymbolsEditor
                 new SectionBoard(vLag, false),
                 new SymbolGlyphBoard(symbolsController, true, true),
                 focus,
-                new EvaluationBoard(sheet, symbolsController, true),
+                new EvaluationBoard(sheet, symbolsController, false),
                 new ShapeBoard(sheet, symbolsController, false));
 
         // Create a hosting pane for the view
@@ -190,13 +191,13 @@ public class SymbolsEditor
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                view.highLight(slot);
-            }
-        });
+                {
+                    @Override
+                    public void run ()
+                    {
+                        view.highLight(slot);
+                    }
+                });
     }
 
     //-----------//
@@ -282,13 +283,12 @@ public class SymbolsEditor
         {
             super(
                     nest,
-                    symbolsController,
                     Arrays.asList(sheet.getLag(Lags.HLAG), sheet.getLag(Lags.VLAG)),
                     sheet);
             setName("SymbolsEditor-MyView");
 
             // Subscribe to all lags for SectionSet events
-            for (Lag lag : getLags()) {
+            for (Lag lag : lags) {
                 lag.getSectionService()
                         .subscribeStrongly(SectionSetEvent.class, this);
             }
@@ -456,7 +456,7 @@ public class SymbolsEditor
                 // Stroke for borders
                 final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
 
-                for (Lag lag : getLags()) {
+                for (Lag lag : lags) {
                     // Render all sections, using assigned colors
                     for (Section section : lag.getVertices()) {
                         Glyph glyph = section.getGlyph();
@@ -496,10 +496,19 @@ public class SymbolsEditor
                 // Render all sheet physical info known so far
                 sheet.getPage()
                         .accept(
-                        new SheetPainter(g, boundaryEditor.isSessionOngoing()));
+                                new SheetPainter(g, boundaryEditor.isSessionOngoing()));
 
                 // Normal display of selected items
                 super.renderItems(g);
+
+                // Render (last) selected inter, if any
+                List<Inter> inters = sheet.getSelectedInterList();
+                if (inters != null && !inters.isEmpty()) {
+                    Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+                    Inter inter = inters.get(inters.size() - 1);
+                    inter.renderAttachments(g);
+                    g.setStroke(oldStroke);
+                }
             }
 
             if (painting.isOutputPainting()) {
@@ -576,7 +585,7 @@ public class SymbolsEditor
                 // Collect section sets from all lags
                 List<Section> allSections = new ArrayList<>();
 
-                for (Lag lag : getLags()) {
+                for (Lag lag : lags) {
                     Set<Section> selected = lag.getSelectedSectionSet();
 
                     if (selected != null) {
@@ -599,25 +608,25 @@ public class SymbolsEditor
                     logger.debug("Editor. Publish glyph {}", compound);
                     publish(
                             new GlyphEvent(
-                            this,
-                            GLYPH_TRANSIENT,
-                            movement,
-                            compound));
+                                    this,
+                                    GLYPH_TRANSIENT,
+                                    movement,
+                                    compound));
 
                     if (compound != null) {
                         publish(
                                 new GlyphSetEvent(
-                                this,
-                                GLYPH_TRANSIENT,
-                                movement,
-                                Glyphs.sortedSet(compound)));
+                                        this,
+                                        GLYPH_TRANSIENT,
+                                        movement,
+                                        Glyphs.sortedSet(compound)));
                     } else {
                         publish(
                                 new GlyphSetEvent(
-                                this,
-                                GLYPH_TRANSIENT,
-                                movement,
-                                null));
+                                        this,
+                                        GLYPH_TRANSIENT,
+                                        movement,
+                                        null));
                     }
                 } catch (IllegalArgumentException ex) {
                     // All sections do not belong to the same system

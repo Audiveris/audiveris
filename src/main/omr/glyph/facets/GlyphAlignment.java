@@ -47,6 +47,7 @@ public interface GlyphAlignment
     /**
      * Report the average thickness, using the provided orientation.
      *
+     * @param orientation chosen orientation
      * @return the average thickness
      */
     public double getMeanThickness (Orientation orientation);

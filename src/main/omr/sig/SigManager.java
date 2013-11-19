@@ -104,7 +104,7 @@ public class SigManager
 
         if (isVip(inter)) {
             inter.setVip();
-            logger.info("Inter {} registered", inter);
+            logger.info("VIP inter {} registered", inter);
         }
 
         return id;

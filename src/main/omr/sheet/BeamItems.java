@@ -13,10 +13,6 @@ package omr.sheet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.image.AreaMask;
-import omr.image.Picture;
-import omr.image.PixelFilter;
-
 import omr.lag.Section;
 
 import omr.math.Barycenter;
@@ -29,15 +25,12 @@ import omr.run.Run;
 
 import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
-import omr.util.WrappedInteger;
-import omr.util.Wrapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import static java.lang.Math.*;
@@ -149,62 +142,6 @@ public class BeamItems
         }
     }
 
-//    //------------//
-//    // checkMasks //
-//    //------------//
-//    public void checkMasks (Wrapper<Double> meanCoreRatio,
-//                            Wrapper<Double> meanBeltRatio)
-//    {
-//        final PixelFilter pixelFilter = system.getSheet()
-//                .getPicture()
-//                .getBuffer(
-//                        Picture.BufferKey.STAFF_FREE);
-//        int sumCoreCount = 0;
-//        int sumCoreFore = 0;
-//        int sumBeltCount = 0;
-//        int sumBeltFore = 0;
-//
-//        if (glyph.isVip()) {
-//            logger.info("VIP checkMasks for {}", glyph);
-//        }
-//
-//        for (BeamItem item : items) {
-//            final int idx = items.indexOf(item);
-//            final Area coreArea = item.getCoreArea();
-//            glyph.addAttachment("c" + idx, coreArea);
-//
-//            final AreaMask coreMask = new AreaMask(coreArea);
-//            final WrappedInteger core = new WrappedInteger(0);
-//            final int coreCount = coreMask.fore(core, pixelFilter);
-//
-//            sumCoreCount += coreCount;
-//            sumCoreFore += core.value;
-//
-//            // Build belt path
-//            final int dx = 5; // Horizontal margin
-//            // Test is not relevant for gutter between 2 aggregated beams
-//
-//            final int topDy = (idx == 0) ? 2 : 0;
-//            final int bottomDy = (idx == (items.size() - 1)) ? 2 : 0;
-//            Area beltArea = item.getBeltArea(
-//                    coreArea,
-//                    dx,
-//                    topDy,
-//                    bottomDy);
-//            glyph.addAttachment("b" + idx, beltArea);
-//
-//            final AreaMask beltMask = new AreaMask(beltArea);
-//            final WrappedInteger belt = new WrappedInteger(0);
-//            final int beltCount = beltMask.fore(belt, pixelFilter);
-//
-//            sumBeltCount += beltCount;
-//            sumBeltFore += belt.value;
-//        }
-//
-//        meanCoreRatio.value = (double) sumCoreFore / sumCoreCount;
-//        meanBeltRatio.value = (double) sumBeltFore / sumBeltCount;
-//    }
-
     //---------------//
     // compareSlopes //
     //---------------//
@@ -296,13 +233,9 @@ public class BeamItems
         }
 
         if (glyph.isVip()) {
-            logger.info(toString());
+            logger.info(
+                    String.format("VIP %s globalDist:%.2f", this, meanDist));
         }
-
-        logger.debug(
-                "Beam#{} globalDist:{}",
-                glyph.getId(),
-                String.format("%.2f", meanDist));
 
         return meanDist;
     }
@@ -405,9 +338,20 @@ public class BeamItems
 
         // Create the middle lines with proper vertical gap
         BeamItem item = items.get(0);
-        Line2D median = item.median;
-        double gutter = max(0, item.height - (2 * typicalHeight));
+        double gutter = item.height - (2 * typicalHeight);
+
+        if (gutter < 0) {
+            if (glyph.isVip()) {
+                logger.info(
+                        "VIP glyph#{} not enough room for 2 beams",
+                        glyph.getId());
+            }
+
+            return;
+        }
+
         double newHeight = (item.height - gutter) / 2;
+        final Line2D median = item.median;
 
         if (logger.isDebugEnabled()) {
             logger.debug(

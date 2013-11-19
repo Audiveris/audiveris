@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.sheet;
 
-import omr.check.CheckSuite;
-
 import omr.glyph.CompoundBuilder;
 import omr.glyph.CompoundBuilder.CompoundAdapter;
 import omr.glyph.GlyphInspector;
@@ -39,8 +37,6 @@ import omr.score.entity.SystemPart;
 
 import omr.sig.SIGraph;
 import omr.sig.SigSolver;
-
-import omr.step.StepException;
 
 import omr.text.TextBuilder;
 import omr.text.TextLine;
@@ -73,7 +69,8 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * Most of the physical processing is done in parallel at system level, and
  * thus is handled from this SystemInfo object.
  *
- * <p>Many processing tasks are actually handled by companion classes, but
+ * <p>
+ * Many processing tasks are actually handled by companion classes, but
  * SystemInfo is the interface of choice, with delegation to the proper
  * companion.
  *
@@ -167,11 +164,11 @@ public class SystemInfo
     /** Unmodifiable view of the horizontal section collection */
     private final Collection<Section> hSectionsView = Collections.
             unmodifiableCollection(
-            hSections);
+                    hSections);
 
     private final Collection<Section> hFullSectionsView = Collections.
             unmodifiableCollection(
-            hFullSections);
+                    hFullSections);
 
     ///   VERTICALS   //////////////////////////////////////////////////////////
     /** Vertical sections, assigned once for all to this system */
@@ -180,7 +177,7 @@ public class SystemInfo
     /** Unmodifiable view of the vertical section collection */
     private final Collection<Section> vSectionsView = Collections.
             unmodifiableCollection(
-            vSections);
+                    vSections);
 
     /** Collection of (active?) glyphs in this system */
     private final SortedSet<Glyph> glyphs = new ConcurrentSkipListSet<>(
@@ -189,7 +186,7 @@ public class SystemInfo
     /** Unmodifiable view of the glyphs collection */
     private final SortedSet<Glyph> glyphsView = Collections.
             unmodifiableSortedSet(
-            glyphs);
+                    glyphs);
 
     /** Set of sentence made of text glyphs */
     private Set<TextLine> sentences = new LinkedHashSet<>();
@@ -268,7 +265,8 @@ public class SystemInfo
      * are made no longer active glyphs. To just register a glyph (without
      * impacting its sections), use {@link #registerGlyph} instead.
      *
-     * <p><b>Note</b>: The caller must use the returned glyph since it may be
+     * <p>
+     * <b>Note</b>: The caller must use the returned glyph since it may be
      * different from the provided glyph (this happens when an original glyph
      * with same signature existed before this one)
      *
@@ -418,7 +416,8 @@ public class SystemInfo
      * containing nest, the containing system, nor the contained sections
      * themselves.
      *
-     * <p>If the newly built compound duplicates an original glyph, the original
+     * <p>
+     * If the newly built compound duplicates an original glyph, the original
      * glyph is used in place of the compound. Finally, the glyph features are
      * computed before the compound is returned.</p>
      *
@@ -439,7 +438,8 @@ public class SystemInfo
      * {@link #addGlyph}, this building has no impact on either the containing
      * nest, the containing system, nor the contained sections themselves.
      *
-     * <p>If the newly built compound duplicates an original glyph, the original
+     * <p>
+     * If the newly built compound duplicates an original glyph, the original
      * glyph is used in place of the compound. Finally, the glyph features are
      * computed before the compound is returned.</p>
      *
@@ -907,7 +907,7 @@ public class SystemInfo
                     double otherDp = Math.abs(
                             otherPos.getPitchPosition()
                             - StaffInfo.getLedgerPitchPosition(
-                            otherPos.getLedger().index));
+                                    otherPos.getLedger().index));
 
                     if (otherDp < dp) {
                         logger.debug("   otherPos: {}", pos);
@@ -1221,7 +1221,7 @@ public class SystemInfo
 
         if (logger.isDebugEnabled()) {
             logger.debug("removeInactiveGlyphs: {} {}",
-                    toRemove.size(), Glyphs.toString(toRemove));
+                         toRemove.size(), Glyphs.toString(toRemove));
         }
 
         for (Glyph glyph : toRemove) {
@@ -1271,7 +1271,7 @@ public class SystemInfo
      * Process a glyph to retrieve its internal potential stems and
      * leaves.
      *
-     * @param glyph   the glyph to segment along stems
+     * @param glyph the glyph to segment along stems
      */
     public void segmentGlyphOnStems (Glyph glyph)
     {

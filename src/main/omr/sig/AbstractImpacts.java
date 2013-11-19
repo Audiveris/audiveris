@@ -11,9 +11,6 @@
 // </editor-fold>
 package omr.sig;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 /**
  * Class {@code AbstractImpacts} is an abstract implementation of
  * {@link GradeImpacts} interface
@@ -23,15 +20,15 @@ import omr.constant.ConstantSet;
 public abstract class AbstractImpacts
         implements GradeImpacts
 {
-    //~ Static fields/initializers ---------------------------------------------
-
-    private static final Constants constants = new Constants();
-
     //~ Methods ----------------------------------------------------------------
+
+    //-------------------//
+    // getIntrinsicRatio //
+    //-------------------//
     @Override
     public double getIntrinsicRatio ()
     {
-        return constants.intrinsicRatio.getValue();
+        return Inter.intrinsicRatio;
     }
 
     //----------//
@@ -71,24 +68,5 @@ public abstract class AbstractImpacts
         }
 
         return getIntrinsicRatio() * Math.pow(global, 1 / totalWeight);
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//   
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Constant.Ratio intrinsicRatio = new Constant.Ratio(
-                0.8,
-                "Reduction ratio applied on any intrinsic grade");
-
-        Constant.Ratio defaultMinGrade = new Constant.Ratio(
-                0.1,
-                "Default minimum acceptable grade");
-
     }
 }

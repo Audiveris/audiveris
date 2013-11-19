@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
-import omr.image.PixelBuffer;
 
 /**
  * Class {@code LagWeaver} is just a prototype. TODO.

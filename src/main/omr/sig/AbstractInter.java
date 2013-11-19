@@ -11,20 +11,22 @@
 // </editor-fold>
 package omr.sig;
 
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
-
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
+import omr.glyph.ui.AttachmentHolder;
+import omr.glyph.ui.BasicAttachmentHolder;
 
 import omr.math.GeoUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Class {@code AbstractInter} is the abstract implementation basis
@@ -36,8 +38,6 @@ public abstract class AbstractInter
         implements Inter
 {
     //~ Static fields/initializers ---------------------------------------------
-
-    private static final Constants constants = new Constants();
 
     private static final Logger logger = LoggerFactory.getLogger(
             AbstractInter.class);
@@ -75,6 +75,9 @@ public abstract class AbstractInter
 
     /** Details about grade (for debugging). */
     protected GradeImpacts impacts;
+
+    /** Potential attachments, lazily allocated. */
+    private AttachmentHolder attachments;
 
     //~ Constructors -----------------------------------------------------------
     //---------------//
@@ -146,17 +149,27 @@ public abstract class AbstractInter
     //--------------//
     // getGoodGrade //
     //--------------//
+    /**
+     * Report the minimum grade to consider an interpretation as good.
+     *
+     * @return the minimum grade value for a good interpretation
+     */
     public static double getGoodGrade ()
     {
-        return constants.goodGrade.getValue();
+        return goodGrade;
     }
 
     //-------------//
     // getMinGrade //
     //-------------//
+    /**
+     * Report the minimum grade for an acceptable interpretation
+     *
+     * @return the minimum grade for keeping an Inter instance
+     */
     public static double getMinGrade ()
     {
-        return constants.minGrade.getValue();
+        return minGrade;
     }
 
     //--------//
@@ -166,6 +179,22 @@ public abstract class AbstractInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //---------------//
+    // addAttachment //
+    //---------------//
+    @Override
+    public void addAttachment (String id,
+                               java.awt.Shape attachment)
+    {
+        assert attachment != null : "Adding a null attachment";
+
+        if (attachments == null) {
+            attachments = new BasicAttachmentHolder();
+        }
+
+        attachments.addAttachment(id, attachment);
     }
 
     //--------//
@@ -227,6 +256,19 @@ public abstract class AbstractInter
         return area;
     }
 
+    //----------------//
+    // getAttachments //
+    //----------------//
+    @Override
+    public Map<String, java.awt.Shape> getAttachments ()
+    {
+        if (attachments != null) {
+            return attachments.getAttachments();
+        } else {
+            return Collections.emptyMap();
+        }
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -280,7 +322,9 @@ public abstract class AbstractInter
                 sb.append(" ");
             }
 
-            sb.append(impacts);
+            sb.append("(")
+                    .append(impacts)
+                    .append(")");
         }
 
         return sb.toString();
@@ -394,6 +438,30 @@ public abstract class AbstractInter
         }
     }
 
+    //-------------------//
+    // removeAttachments //
+    //-------------------//
+    @Override
+    public int removeAttachments (String prefix)
+    {
+        if (attachments != null) {
+            return attachments.removeAttachments(prefix);
+        } else {
+            return 0;
+        }
+    }
+
+    //-------------------//
+    // renderAttachments //
+    //-------------------//
+    @Override
+    public void renderAttachments (Graphics2D g)
+    {
+        if (attachments != null) {
+            attachments.renderAttachments(g);
+        }
+    }
+
     //-----------//
     // setBounds //
     //-----------//
@@ -459,15 +527,20 @@ public abstract class AbstractInter
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(String.format("%.2f", grade));
-
-        sb.append("~")
-                .append(shape);
+        sb.append(shape);
 
         if (getId() != 0) {
             sb.append("#")
                     .append(getId());
         }
+
+        sb.append(String.format("(%.2f", grade));
+
+        if (contextualGrade != null) {
+            sb.append(String.format("/%.2f", contextualGrade));
+        }
+
+        sb.append(")");
 
         return sb.toString();
     }
@@ -481,24 +554,5 @@ public abstract class AbstractInter
     protected void setArea (Area area)
     {
         this.area = area;
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final Constant.Ratio minGrade = new Constant.Ratio(
-                0.08,
-                "Minimum interpretation grade");
-
-        final Constant.Ratio goodGrade = new Constant.Ratio(
-                0.2,
-                "Good interpretation grade");
-
     }
 }

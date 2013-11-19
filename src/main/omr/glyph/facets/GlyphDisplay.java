@@ -39,22 +39,6 @@ interface GlyphDisplay
     String asciiDrawing ();
 
     /**
-     * Set the display color of all sections that compose this glyph.
-     *
-     * @param color color for the whole glyph
-     */
-    void colorize (Color color);
-
-    /**
-     * Set the display color of all sections in provided collection.
-     *
-     * @param sections the collection of sections
-     * @param color    the display color
-     */
-    void colorize (Collection<Section> sections,
-                   Color color);
-
-    /**
      * Report the color to be used to colorize the provided glyph,
      * according to the color policy which is based on the glyph shape.
      *
@@ -69,9 +53,4 @@ interface GlyphDisplay
      * @return a black & white image (contour box size )
      */
     PixelBuffer getImage ();
-
-    /**
-     * Reset the display color of all sections that compose this glyph.
-     */
-    void recolorize ();
 }

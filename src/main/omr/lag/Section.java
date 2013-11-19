@@ -45,7 +45,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * Interface {@code Section} handles a section of contiguous and
  * compatible {@link Run} instances.
  *
- * <p> A section carries orientation information, which is the orientation for
+ * <p>
+ * A section carries orientation information, which is the orientation for
  * all runs in this section.
  *
  * <ol> <li> Positions increase in parallel with run numbers, so the thickness
@@ -57,7 +58,8 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  * of all run stopping coordinates. We define section length as the value: stop
  * - start +1 </li> </ol>
  *
- * <p><b>Beware</b>, the section orientation only governs the runs orientation.
+ * <p>
+ * <b>Beware</b>, the section orientation only governs the runs orientation.
  * It by no means implies that the section dimension is longer in the direction
  * along the runs than in the direction across.
  * To enforce this, the {@link #getLength(Orientation)} requires that an
@@ -183,6 +185,9 @@ public interface Section
 
     /**
      * Draws the section, into the provided table.
+     *
+     * @param table the table to populate
+     * @param box   the region of interest
      */
     public void fillTable (char[][] table,
                            Rectangle box);
@@ -207,6 +212,7 @@ public interface Section
      * Report the ratio of length over thickness, along provided
      * orientation.
      *
+     * @param orientation the desired orientation
      * @return the "slimness" of the section
      */
     public double getAspect (Orientation orientation);
@@ -300,6 +306,8 @@ public interface Section
 
     /**
      * Return the length of the section, using the provided orientation.
+     * @param orientation the desired orientation
+     * @return the section length (along orientation)
      */
     public int getLength (Orientation orientation);
 
@@ -321,6 +329,7 @@ public interface Section
      * Report the ratio of length over mean thickness, using the
      * provided orientation.
      *
+     * @param orientation the desired orientation
      * @return the "slimness" of the section
      */
     public double getMeanAspect (Orientation orientation);
@@ -336,6 +345,7 @@ public interface Section
      * Report the average thickness of the section, using the provided
      * orientation.
      *
+     * @param orientation the desired orientation
      * @return the average thickness of the section
      */
     public double getMeanThickness (Orientation orientation);
@@ -430,6 +440,7 @@ public interface Section
      * Return the thickness of the section, using the provided
      * orientation.
      *
+     * @param orientation the desired orientation
      * @return the thickness across the provided orientation.
      */
     public int getThickness (Orientation orientation);
