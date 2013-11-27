@@ -11,9 +11,13 @@
 // </editor-fold>
 package omr.step;
 
+import omr.sheet.ui.DeltaView;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.ui.RunsViewer;
+import omr.sheet.ui.PixelBoard;
+
+import omr.ui.BoardsPane;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +26,7 @@ import java.util.Collection;
 
 /**
  * Class {@code ScaleStep} implements <b>SCALE</b> step, which
- * determines the general scaling informations of a sheet, based 
+ * determines the general scaling informations of a sheet, based
  * essentially on the mean distance between staff lines.
  *
  * @author Hervé Bitteur
@@ -60,11 +64,12 @@ public class ScaleStep
     @Override
     public void displayUI (Sheet sheet)
     {
-        RunsViewer runsViewer = sheet.getRunsViewer();
-
-        if (runsViewer != null) {
-            runsViewer.display(sheet.getWholeVerticalTable());
-        }
+        // Display delta view
+        sheet.getAssembly()
+                .addViewTab(
+                        Step.DELTA_TAB,
+                        new DeltaView(sheet),
+                        new BoardsPane(new PixelBoard(sheet)));
     }
 
     //------//

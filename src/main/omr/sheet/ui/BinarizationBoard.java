@@ -13,9 +13,7 @@ package omr.sheet.ui;
 
 import omr.image.AdaptiveFilter;
 import omr.image.AdaptiveFilter.AdaptiveContext;
-import omr.image.BufferedSource;
 import omr.image.FilterDescriptor;
-import omr.image.Picture;
 import omr.image.PixelFilter;
 import omr.image.PixelSource;
 import omr.image.RandomFilter;
@@ -24,6 +22,7 @@ import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.UserEvent;
 
+import omr.sheet.Picture;
 import omr.sheet.Sheet;
 
 import omr.ui.Board;

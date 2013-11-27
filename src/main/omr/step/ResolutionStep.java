@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.step;
 
-import omr.image.Picture;
-
+import omr.sheet.Picture;
+import static omr.sheet.Picture.SourceKey.*;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -58,10 +58,12 @@ public class ResolutionStep
                              Sheet sheet)
             throws StepException
     {
-        Picture picture = sheet.getPicture();
+        final Picture picture = sheet.getPicture();
 
-        for (Picture.SourceKey key : Picture.SourceKey.values()) {
-            picture.disposeSource(key);
-        }
+        //        picture.disposeSource(INITIAL);
+        // picture.disposeSource(BINARY);
+        picture.disposeSource(GAUSSIAN);
+        picture.disposeSource(MEDIAN);
+        picture.disposeSource(STAFF_LINE_FREE);
     }
 }

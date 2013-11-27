@@ -183,7 +183,7 @@
     <!-- ============= -->
     <!-- Pack all native libs of an arch into a .jar file -->
     <target name="-do-pack-libs">
-        <echo message="-- Packing up SOs for ${bits}" />
+        <echo message="== Packing up SOs for ${bits}" />
         <jar destfile="dist/lib/tess-unix-${bits}.jar">
             <fileset dir="dev/unix/TessBridgeJNI/${bits}" />
         </jar>

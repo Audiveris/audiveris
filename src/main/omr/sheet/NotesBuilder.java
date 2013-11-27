@@ -223,7 +223,6 @@ public class NotesBuilder
             // Consider seed-based heads as competitors for plain x-based heads
             //            systemCompetitors.addAll(ch);
             //            Collections.sort(systemCompetitors, Inter.byOrdinate);
-
             // Second, process x-based heads for the staff
             ch.addAll(processStaff(staff, false));
 
@@ -281,8 +280,8 @@ public class NotesBuilder
     {
         final Template tpl = templates.get(shape);
         final Rectangle box = tpl.getBoundsAt(loc.x, loc.y, anchor);
-        final double distImpact = Grades.clamp(
-                1 - (loc.d / params.maxMatchingDistance));
+        final double distImpact = 1
+                                  - (loc.d / params.maxMatchingDistance);
         final GradeImpacts impacts = new AbstractNoteInter.Impacts(distImpact);
         final double grade = impacts.getGrade();
 
@@ -486,14 +485,14 @@ public class NotesBuilder
     {
         List<Inter> comps = sig.inters(
                 new Predicate<Inter>()
-        {
-            @Override
-            public boolean check (Inter inter)
-            {
-                return inter.isGood()
-                       && competingShapes.contains(inter.getShape());
-            }
-        });
+                {
+                    @Override
+                    public boolean check (Inter inter)
+                    {
+                        return inter.isGood()
+                               && competingShapes.contains(inter.getShape());
+                    }
+                });
 
         Collections.sort(comps, Inter.byOrdinate);
 

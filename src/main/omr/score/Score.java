@@ -38,7 +38,7 @@ import omr.script.Script;
 import omr.script.ScriptActions;
 
 import omr.sheet.Sheet;
-import omr.image.PictureLoader;
+import omr.image.ImageLoader;
 import omr.sheet.ui.SheetActions;
 import omr.sheet.ui.SheetsController;
 
@@ -218,7 +218,7 @@ public class Score
      */
     public void createPages (SortedSet<Integer> pageIds)
     {
-        SortedMap<Integer, BufferedImage> images = PictureLoader.loadImages(
+        SortedMap<Integer, BufferedImage> images = ImageLoader.loadImages(
                 imageFile,
                 pageIds);
 

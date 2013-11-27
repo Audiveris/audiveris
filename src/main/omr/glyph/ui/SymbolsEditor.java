@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.glyph.ui;
 
+import java.awt.Color;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphNetwork;
@@ -64,6 +65,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -490,13 +492,19 @@ public class SymbolsEditor
         @Override
         protected void renderItems (Graphics2D g)
         {
+            // Anti-aliasing ON
+            g.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+
+            Color oldColor = g.getColor();
             PaintingParameters painting = PaintingParameters.getInstance();
 
             if (painting.isInputPainting()) {
                 // Render all sheet physical info known so far
                 sheet.getPage()
                         .accept(
-                                new SheetPainter(g, boundaryEditor.isSessionOngoing()));
+                                new SheetPainter(g, true, boundaryEditor.isSessionOngoing()));
 
                 // Normal display of selected items
                 super.renderItems(g);
@@ -515,14 +523,15 @@ public class SymbolsEditor
                 boolean mixed = painting.isInputPainting();
 
                 // Render the recognized score entities
+                g.setColor(mixed ? Colors.MUSIC_SYMBOLS : Colors.MUSIC_ALONE);
                 PagePhysicalPainter painter = new PagePhysicalPainter(
                         g,
-                        mixed ? Colors.MUSIC_SYMBOLS : Colors.MUSIC_ALONE,
                         mixed ? false : painting.isVoicePainting(),
                         false,
                         painting.isAnnotationPainting());
                 sheet.getPage()
                         .accept(painter);
+                g.setColor(oldColor);
 
                 // The slot being played, if any
                 if (highlightedSlot != null) {

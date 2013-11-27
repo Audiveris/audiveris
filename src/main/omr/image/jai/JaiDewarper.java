@@ -11,11 +11,6 @@
 // </editor-fold>
 package omr.image.jai;
 
-import omr.image.Picture;
-import omr.image.Picture.SourceKey;
-
-import omr.sheet.Sheet;
-
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 
@@ -23,6 +18,9 @@ import javax.media.jai.InterpolationBilinear;
 import javax.media.jai.JAI;
 import javax.media.jai.Warp;
 import javax.media.jai.WarpGrid;
+import omr.image.ImageUtil;
+
+import static omr.image.ImageUtil.invert;
 
 /**
  * Class {@code JaiDewarper} is meant to keep JAI-based dewarping
@@ -35,21 +33,15 @@ public class JaiDewarper
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** The related sheet. */
-    private final Sheet sheet;
-
-    /** The dewarp grid */
+    /** The dewarp grid. */
     private Warp dewarpGrid;
 
     //~ Constructors -----------------------------------------------------------
     /**
      * Creates a new JaiDewarper object.
-     *
-     * @param sheet the related sheet
      */
-    public JaiDewarper (Sheet sheet)
+    public JaiDewarper ()
     {
-        this.sheet = sheet;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -78,14 +70,16 @@ public class JaiDewarper
     //-------------//
     // dewarpImage //
     //-------------//
-    public BufferedImage dewarpImage ()
+    public BufferedImage dewarpImage (BufferedImage image)
     {
+        assert dewarpGrid != null : "dewarpGrid not defined";
+
         ParameterBlock pb = new ParameterBlock();
-        pb.addSource(Picture.invert(sheet.getPicture().getInitialImage()));
+        pb.addSource(ImageUtil.invert(image));
         pb.add(dewarpGrid);
         pb.add(new InterpolationBilinear());
 
-        BufferedImage dewarpedImage = Picture.invert(
+        BufferedImage dewarpedImage = invert(
                 JAI.create("warp", pb).getAsBufferedImage());
 
         ///((PlanarImage) dewarpedImage).getTiles();

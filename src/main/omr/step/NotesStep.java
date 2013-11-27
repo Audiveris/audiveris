@@ -13,9 +13,9 @@ package omr.step;
 
 import omr.image.ChamferDistance;
 import omr.image.DistanceTable;
-import omr.image.Picture;
 import omr.image.PixelFilter;
 
+import omr.sheet.Picture;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 

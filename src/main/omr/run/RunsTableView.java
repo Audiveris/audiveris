@@ -115,8 +115,8 @@ public class RunsTableView
     @Override
     public void render (Graphics2D g)
     {
-        // Render all sections, using the colors they have been assigned
-        renderRuns(g);
+        // Render all table runs
+        table.render(g);
 
         // Paint additional items, such as recognized items, etc...
         renderItems(g);
@@ -133,60 +133,6 @@ public class RunsTableView
     protected void renderItems (Graphics2D g)
     {
         // Void
-    }
-
-    //------------//
-    // renderRuns //
-    //------------//
-    protected void renderRuns (Graphics2D g)
-    {
-        Rectangle clip = g.getClipBounds();
-
-        switch (table.getOrientation()) {
-        case HORIZONTAL: {
-            int minRow = Math.max(clip.y, 0);
-            int maxRow = Math.min((clip.y + clip.height), table.getHeight())
-                         - 1;
-
-            for (int row = minRow; row <= maxRow; row++) {
-                List<Run> seq = table.getSequence(row);
-
-                for (Run run : seq) {
-                    g.setColor(runColor(run));
-                    g.fillRect(run.getStart(), row, run.getLength(), 1);
-                }
-            }
-        }
-
-        break;
-
-        case VERTICAL: {
-            int minRow = Math.max(clip.x, 0);
-            int maxRow = Math.min((clip.x + clip.width), table.getWidth()) - 1;
-
-            for (int row = minRow; row <= maxRow; row++) {
-                List<Run> seq = table.getSequence(row);
-
-                for (Run run : seq) {
-                    g.setColor(runColor(run));
-                    g.fillRect(row, run.getStart(), 1, run.getLength());
-                }
-            }
-        }
-
-        break;
-        }
-    }
-
-    //----------//
-    // runColor //
-    //----------//
-    protected Color runColor (Run run)
-    {
-        //        int level = run.getLevel();
-        //
-        //        return new Color(level, level, level);
-        return Color.BLACK;
     }
 
     //-------------//

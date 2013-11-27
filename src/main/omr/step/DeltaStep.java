@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                             B i n a r y S t e p                            //
+//                              D e l t a S t e p                             //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
@@ -11,38 +11,45 @@
 // </editor-fold>
 package omr.step;
 
-import omr.sheet.Picture;
 import omr.sheet.Sheet;
+import omr.sheet.SheetDelta;
 import omr.sheet.SystemInfo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 
 /**
- * Class {@code BinaryStep} implements <b>BINARY</b> step,
- * which binarizes the initial sheet image, using proper filter,
- * to come up with a black & white image.
+ * Class {@code DeltaStep} computes the various delta values
+ * (negatives, positives and false positives) on a whole sheet.
  *
  * @author Hervé Bitteur
  */
-public class BinaryStep
+public class DeltaStep
         extends AbstractStep
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Static fields/initializers ---------------------------------------------
 
-    //------------//
-    // BinaryStep //
-    //------------//
+    /** Usual logger utility */
+    private static final Logger logger = LoggerFactory.getLogger(
+            DeltaStep.class);
+
+    //~ Constructors -----------------------------------------------------------
+    //-----------//
+    // DeltaStep //
+    //-----------//
     /**
-     * Creates a new BinaryStep object.
+     * Creates a new DeltaStep object.
      */
-    public BinaryStep ()
+    public DeltaStep ()
     {
         super(
-                Steps.BINARY,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                BINARY_TAB,
-                "Binarize the initial sheet image");
+                Steps.DELTA,
+                Level.SCORE_LEVEL,
+                Mandatory.OPTIONAL,
+                DELTA_TAB,
+                "Compute page delta values");
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -50,12 +57,10 @@ public class BinaryStep
     // doit //
     //------//
     @Override
-    public void doit (Collection<SystemInfo> unused,
+    public void doit (Collection<SystemInfo> systems,
                       Sheet sheet)
             throws StepException
     {
-        // Trigger the binarization, and cache the resulting source
-        sheet.getPicture()
-                .getSource(Picture.SourceKey.BINARY);
+        new SheetDelta(sheet).computeRatios();
     }
 }

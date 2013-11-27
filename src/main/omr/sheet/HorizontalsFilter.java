@@ -18,7 +18,6 @@ import omr.constant.ConstantSet;
 import omr.grid.StaffInfo;
 import omr.grid.StaffManager;
 
-import omr.image.Picture;
 import omr.image.PixelFilter;
 
 import omr.lag.BasicLag;
@@ -31,8 +30,6 @@ import omr.run.Orientation;
 import static omr.run.Orientation.HORIZONTAL;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
-
-import omr.sheet.ui.RunsViewer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

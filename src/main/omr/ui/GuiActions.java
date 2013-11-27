@@ -341,7 +341,7 @@ public class GuiActions
     // showMemory //
     //------------//
     /**
-     * Action to desplay the current value of occupied memory
+     * Action to display the current value of occupied memory
      *
      * @param e the event that triggered this action
      */

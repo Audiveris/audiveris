@@ -118,7 +118,7 @@ public class NestView
 
         setName(nest.getName() + "-View");
 
-        setBackground(Color.white);
+        ///setBackground(Color.white);
 
         // (Weakly) listening on ViewParameters and PaintingParameters
         PropertyChangeListener listener = new WeakPropertyChangeListener(this);
@@ -194,7 +194,9 @@ public class NestView
                                   Graphics2D g)
     {
         // Check the clipping
-        if ((box != null) && box.intersects(g.getClipBounds())) {
+        Rectangle clip = g.getClipBounds();
+
+        if ((box != null) && ((clip == null) || clip.intersects(box))) {
             g.drawRect(box.x, box.y, box.width, box.height);
         }
     }

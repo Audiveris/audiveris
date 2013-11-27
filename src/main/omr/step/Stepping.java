@@ -40,7 +40,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import javax.swing.SwingUtilities;
-import omr.glyph.Nest;
 
 /**
  * Class {@code Stepping} handles the scheduling of step(s) on a score

@@ -92,7 +92,10 @@ public class OcrCompanion
     };
 
     /** Name of local temporary folder for OCR languages. */
-    private static final String LOCAL_OCR_FOLDER = "local-ocr-folder";
+    public static final String LOCAL_OCR_FOLDER = "local-ocr-folder";
+
+    /** Name of local temporary folder for binary files. */
+    public static final String LOCAL_LIB_FOLDER = "local-lib-folder";
 
     //~ Instance fields --------------------------------------------------------
     /** Handling of tessdata directory. */

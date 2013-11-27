@@ -26,7 +26,6 @@ import omr.grid.GridBuilder;
 import omr.grid.StaffManager;
 import omr.grid.TargetBuilder;
 
-
 import omr.lag.Lag;
 import omr.lag.Lags;
 import omr.lag.Section;
@@ -50,8 +49,7 @@ import omr.selection.UserEvent;
 
 import omr.image.DistanceTable;
 import omr.image.ImageFormatException;
-import omr.image.Picture;
-import omr.image.PictureView;
+import omr.sheet.ui.PictureView;
 
 import omr.sheet.ui.BinarizationBoard;
 import omr.sheet.ui.BoundaryEditor;
@@ -98,7 +96,7 @@ import java.util.TreeMap;
 
 /**
  * Class {@code Sheet} is the central hub for Sheet processing,
- * keeping pointers to all processings related to the image, and to
+ * keeping pointers to all processing related to the image, and to
  * their results.
  *
  * @author Hervé Bitteur
@@ -1192,7 +1190,7 @@ public class Sheet
         if (!closing) {
             if (!score.getPages().isEmpty()) {
                 logger.info("{}Removed page #{}",
-                        page.getScore().getLogPrefix(), page.getIndex());
+                            page.getScore().getLogPrefix(), page.getIndex());
             } else {
                 score.close();
             }
@@ -1247,7 +1245,7 @@ public class Sheet
             picture = new Picture(this, image, locationService);
             setPicture(picture);
             getBench().recordImageDimension(picture.getWidth(), picture.
-                    getHeight());
+                                            getHeight());
 
             done(Steps.valueOf(Steps.LOAD));
         } catch (ImageFormatException ex) {
@@ -1498,10 +1496,10 @@ public class Sheet
         case Steps.LEDGERS:
             setLag(Lags.FULL_HLAG, null);
         // Fall-through!
-            
+
         case Steps.BEAMS:
             setLag(Lags.SPOT_LAG, null);
-            
+
         default:
         }
     }
@@ -1699,7 +1697,7 @@ public class Sheet
 
         Inter inter = sigManager.getInter(id);
         locationService.publish(new InterListEvent(this, hint, movement,
-                inter != null ? Arrays.asList(inter) : null));
+                                                   inter != null ? Arrays.asList(inter) : null));
 
     }
 }

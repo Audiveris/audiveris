@@ -14,14 +14,11 @@ package omr.jai;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import omr.image.PictureLoader;
-
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
-import java.io.File;
 
 import javax.media.jai.InterpolationBilinear;
 import javax.media.jai.JAI;
@@ -41,7 +38,8 @@ public class TestWarp
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(TestWarp.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+        TestWarp.class);
 
     /** Identity */
     private static final AffineTransform identity = new AffineTransform();
@@ -131,6 +129,18 @@ public class TestWarp
         }
     }
 
+    //--------//
+    // invert //
+    //--------//
+    private static RenderedImage invert (RenderedImage image)
+    {
+        return JAI.create(
+            "Invert",
+            new ParameterBlock().addSource(image).add(null).add(null).add(null).add(
+                null).add(null),
+            null);
+    }
+
     //--------------//
     // buildPattern //
     //--------------//
@@ -159,17 +169,5 @@ public class TestWarp
         }
 
         return img;
-    }
-
-    //--------//
-    // invert //
-    //--------//
-    private static RenderedImage invert (RenderedImage image)
-    {
-        return JAI.create(
-            "Invert",
-            new ParameterBlock().addSource(image).add(null).add(null).add(null).add(
-                null).add(null),
-            null);
     }
 }

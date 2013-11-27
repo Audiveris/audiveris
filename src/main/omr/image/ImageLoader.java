@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                         P i c t u r e L o a d e r                          //
+//                            I m a g e L o a d e r                           //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -38,17 +38,16 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
 /**
- * Class {@code PictureLoader} gathers helper functions for {@link
- * Picture} to handle the loading of one or several images out of an
- * input file.
- *
- * <p>It leverages several software pieces: JAI, ImageIO, and Ghostscript.
+ * Class {@code ImageLoader} gathers helper functions to handle the 
+ * loading of one or several images out of an input file.
+ * <p>
+ * It leverages several software pieces: JAI, ImageIO, and Ghostscript.
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
  * @author Maxim Poliakovski
  */
-public class PictureLoader
+public class ImageLoader
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -56,13 +55,13 @@ public class PictureLoader
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(PictureLoader.class);
+    private static final Logger logger = LoggerFactory.getLogger(ImageLoader.class);
 
     //~ Constructors -----------------------------------------------------------
     /**
      * To disallow instantiation.
      */
-    private PictureLoader ()
+    private ImageLoader ()
     {
     }
 
@@ -170,7 +169,7 @@ public class PictureLoader
 
                 if (imageCount > 1) {
                     logger.info("{} contains {} images",
-                            imgFile.getName(), imageCount);
+                                imgFile.getName(), imageCount);
                 }
 
                 SortedMap<Integer, BufferedImage> images = new TreeMap<>();
@@ -182,7 +181,7 @@ public class PictureLoader
                         BufferedImage img = reader.read(i - 1);
                         images.put(id, img);
                         logger.info("Loaded image #{} ({} x {})",
-                                id, img.getWidth(), img.getHeight());
+                                    id, img.getWidth(), img.getHeight());
                     }
                 }
 

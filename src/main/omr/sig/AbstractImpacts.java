@@ -60,10 +60,13 @@ public abstract class AbstractImpacts
 
         for (int i = 0; i < getImpactCount(); i++) {
             double weight = getWeight(i);
+            double impact = getImpact(i);
             totalWeight += weight;
 
-            if (weight != 0) {
-                global *= Math.pow(getImpact(i), weight);
+            if (impact == 0) {
+                global = 0;
+            } else if (weight != 0) {
+                global *= Math.pow(impact, weight);
             }
         }
 

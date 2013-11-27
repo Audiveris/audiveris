@@ -77,17 +77,17 @@ public abstract class AbstractConnection
         // Infer impact data
         double yMax = getYGapMax()
                 .getValue();
-        double yImpact = Grades.clamp((yMax - yDistance) / yMax);
+        double yImpact = (yMax - yDistance) / yMax;
 
         if (xDistance >= 0) {
             double xMax = getXOutGapMax()
                     .getValue();
-            double xImpact = Grades.clamp((xMax - xDistance) / xMax);
+            double xImpact = (xMax - xDistance) / xMax;
             setImpacts(new OutImpacts(yImpact, xImpact));
         } else {
             double xMax = getXInGapMax()
                     .getValue();
-            double xImpact = Grades.clamp((xMax + xDistance) / xMax);
+            double xImpact = (xMax + xDistance) / xMax;
             setImpacts(new InImpacts(yImpact, xImpact));
         }
 

@@ -25,6 +25,7 @@ import omr.score.entity.ScoreSystem;
 import omr.score.entity.SystemPart;
 import omr.score.visitor.AbstractScoreVisitor;
 
+import omr.sheet.Scale;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
@@ -94,13 +95,22 @@ public class SheetPainter
             1f);
 
     /** Saved stroke for restoration at the end of the painting. */
-    private final Stroke oldStroke;
+    private Stroke oldStroke;
+
+    /** Are we drawing enriched data?. */
+    private final boolean enriched;
 
     /** Are we drawing editable boundaries?. */
     private final boolean editableBoundaries;
 
     /** Music font properly scaled. */
     private MusicFont musicFont;
+
+    /** Global scale. */
+    private Scale scale;
+
+    /** Stroke for staff lines. */
+    private Stroke lineStroke;
 
     /** Stroke for ledgers. */
     private Stroke ledgerStroke;
@@ -116,16 +126,20 @@ public class SheetPainter
      * Creates a new SheetPainter object.
      *
      * @param g                  Graphic context
-     * @param editableBoundaries flag to draw editable boundaries
+     * @param enriched           flag to enrich display with attachments,
+     *                           colors, etc. Use false for a display as close
+     *                           as possible to input image.
+     * @param editableBoundaries flag to draw boundaries as editable
      */
     public SheetPainter (Graphics g,
+                         boolean enriched,
                          boolean editableBoundaries)
     {
         this.g = (Graphics2D) g;
         this.clip = g.getClipBounds();
+        this.enriched = enriched;
         this.editableBoundaries = editableBoundaries;
 
-        oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
         stemStroke = new BasicStroke(
                 3f,
                 BasicStroke.CAP_ROUND,
@@ -164,11 +178,26 @@ public class SheetPainter
     {
         try {
             Sheet sheet = page.getSheet();
+            scale = page.getScale();
 
             ledgerStroke = new BasicStroke(
                     sheet.getScale().getMainFore(),
                     BasicStroke.CAP_ROUND,
                     BasicStroke.JOIN_ROUND);
+
+            // Determine staff lines parameters
+            int lineThickness = scale.getMainFore();
+            lineStroke = new BasicStroke(
+                    lineThickness,
+                    BasicStroke.CAP_ROUND,
+                    BasicStroke.JOIN_ROUND);
+
+            if (enriched) {
+                oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+            } else {
+                oldStroke = g.getStroke();
+                g.setStroke(lineStroke);
+            }
 
             // Use specific color
             g.setColor(Color.BLACK);
@@ -261,19 +290,24 @@ public class SheetPainter
 
             // Check that this system is visible
             if (bounds.intersects(clip)) {
-                g.setColor(Color.BLACK);
-                // System boundary
-                systemInfo.getBoundary()
-                        .render(g, editableBoundaries);
+                g.setColor(Color.BLACK); // Useful???
 
-                // Staff lines
-                for (StaffInfo staff : systemInfo.getStaves()) {
-                    staff.renderAttachments(g);
+                if (enriched) {
+                    // System boundary
+                    systemInfo.getBoundary()
+                            .render(g, editableBoundaries);
+
+                    // Staff lines attachments
+                    for (StaffInfo staff : systemInfo.getStaves()) {
+                        staff.renderAttachments(g);
+                    }
+
+                    // For inter drawing with composite
+///                    g.setComposite(composite);
                 }
 
                 // All interpretations for this system
                 SIGraph sig = systemInfo.getSig();
-                g.setComposite(composite);
 
                 for (Inter inter : sig.vertexSet()) {
                     if (clip.intersects(inter.getBounds())) {
@@ -281,7 +315,7 @@ public class SheetPainter
                     }
                 }
 
-                g.setComposite(fullComposite);
+///                g.setComposite(fullComposite);
 
                 // Virtual glyphs (should be in SIG?)
                 paintVirtualGlyphs(systemInfo);
@@ -322,6 +356,8 @@ public class SheetPainter
     public void visit (StemInter stem)
     {
         setColor(stem);
+
+        //TODO: use proper stem thickness! (see ledger)
         g.setStroke(stemStroke);
 
         stem.getGlyph()
@@ -372,7 +408,10 @@ public class SheetPainter
     private void paintVirtualGlyphs (SystemInfo systemInfo)
     {
         Color oldColor = g.getColor();
-        g.setColor(Colors.ENTITY_VIRTUAL);
+
+        if (enriched) {
+            g.setColor(Colors.ENTITY_VIRTUAL);
+        }
 
         for (Glyph glyph : systemInfo.getGlyphs()) {
             if (glyph.isVirtual()) {
@@ -407,26 +446,28 @@ public class SheetPainter
      */
     private void setColor (Inter inter)
     {
-        // Shape base color
-        final Color base = inter.getShape()
-                .getColor();
+        if (enriched) {
+            // Shape base color
+            final Color base = inter.getShape()
+                    .getColor();
 
-        // Alpha value based on grade: 0..1 -> 0..255
-        // Prefer contextual grade when available
-        Double grade = inter.getContextualGrade();
+            // Alpha value based on grade: 0..1 -> 0..255
+            // Prefer contextual grade when available
+            Double grade = inter.getContextualGrade();
 
-        if (grade == null) {
-            grade = inter.getGrade();
+            if (grade == null) {
+                grade = inter.getGrade();
+            }
+
+            final int alpha = Math.min(
+                    255,
+                    Math.max(0, (int) Math.rint(255 * grade)));
+            final Color color = new Color(
+                    base.getRed(),
+                    base.getGreen(),
+                    base.getBlue(),
+                    alpha);
+            g.setColor(color);
         }
-
-        final int alpha = Math.min(
-                255,
-                Math.max(0, (int) Math.rint(255 * grade)));
-        final Color color = new Color(
-                base.getRed(),
-                base.getGreen(),
-                base.getBlue(),
-                alpha);
-        g.setColor(color);
     }
 }

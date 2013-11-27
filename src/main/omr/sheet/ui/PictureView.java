@@ -9,9 +9,7 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.image;
-
-import omr.image.Picture.SourceKey;
+package omr.sheet.ui;
 
 import omr.score.ui.PagePhysicalPainter;
 import omr.score.ui.PaintingParameters;
@@ -30,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -107,38 +106,41 @@ public class PictureView
         @Override
         public void render (Graphics2D g)
         {
+            Color oldColor = g.getColor();
+            
+            // Anti-aliasing ON
+            g.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+
             PaintingParameters painting = PaintingParameters.getInstance();
 
             // Render the picture image
             if (painting.isInputPainting()) {
-                Graphics2D g2 = (Graphics2D) g;
-                g2.drawRenderedImage(
-                        sheet.getPicture().getInitialImage(),
-                        null);
+                g.drawRenderedImage(sheet.getPicture().getInitialImage(), null);
             } else {
                 // Use a white background
-                Color oldColor = g.getColor();
-                g.setColor(Color.WHITE);
-
                 Rectangle rect = g.getClipBounds();
 
-                g.fill(rect);
-                g.setColor(oldColor);
+                if (rect != null) {
+                    g.setColor(Color.WHITE);
+                    g.fill(rect);
+                }
             }
 
             // Render the recognized score entities?
             if (painting.isOutputPainting()) {
-                if (sheet.getTargetBuilder() != null) {
-                    sheet.getTargetBuilder()
-                            .renderSystems(g); // TODO: Temporary 
-                }
-
+                // Draw sort of system brackets
+                //                if (sheet.getTargetBuilder() != null) {
+                //                    sheet.getTargetBuilder()
+                //                            .renderSystems(g); // TODO: Temporary 
+                //                }
                 boolean mixed = painting.isInputPainting();
+                g.setColor(mixed ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE);
                 sheet.getPage()
                         .accept(
                                 new PagePhysicalPainter(
                                         g,
-                                        mixed ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE,
                                         mixed ? false : painting.isVoicePainting(),
                                         true,
                                         false));
@@ -148,6 +150,8 @@ public class PictureView
                             .renderWarpGrid(g, true);
                 }
             }
+
+            g.setColor(oldColor);
         }
     }
 }

@@ -9,10 +9,20 @@
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
 //----------------------------------------------------------------------------//
 // </editor-fold>
-package omr.image;
+package omr.sheet;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
+import omr.image.BufferedSource;
+import omr.image.FilterDescriptor;
+import omr.image.GaussianGrayFilter;
+import omr.image.ImageFormatException;
+import omr.image.ImageUtil;
+import omr.image.MedianGrayFilter;
+import omr.image.PixelBuffer;
+import omr.image.PixelFilter;
+import omr.image.PixelSource;
 
 import omr.lag.Lags;
 
@@ -20,8 +30,6 @@ import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
 import omr.selection.SelectionService;
-
-import omr.sheet.Sheet;
 
 import omr.util.StopWatch;
 
@@ -35,10 +43,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.awt.image.Raster;
 import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
-import java.awt.image.renderable.ParameterBlock;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -151,7 +156,7 @@ public class Picture
         this.levelService = levelService;
 
         // Make sure format, colors, etc are OK for us
-        printInfo(image, "Original image");
+        ImageUtil.printInfo(image, "Original image");
         image = checkImage(image);
         dimension = new Dimension(image.getWidth(), image.getHeight());
 
@@ -160,24 +165,6 @@ public class Picture
     }
 
     //~ Methods ----------------------------------------------------------------
-    //--------//
-    // invert //
-    //--------//
-    /**
-     * Convenient method on invert an image.
-     *
-     * @param image the image to process
-     * @return the invert of provided image
-     */
-    public static BufferedImage invert (BufferedImage image)
-    {
-        return JAI.create(
-                "Invert",
-                new ParameterBlock().addSource(image).add(null),
-                null)
-                .getAsBufferedImage();
-    }
-
     //---------------//
     // disposeSource //
     //---------------//
@@ -455,29 +442,6 @@ public class Picture
         }
     }
 
-    //-----------//
-    // printInfo //
-    //-----------//
-    /**
-     * Convenient method to print some characteristics of the provided
-     * image.
-     *
-     * @param img   the image to query
-     * @param title a title to be printed
-     */
-    public static void printInfo (BufferedImage img,
-                                  String title)
-    {
-        int type = img.getType();
-        ColorModel colorModel = img.getColorModel();
-        logger.info(
-                "{} type: {}={} {}",
-                (title != null) ? title : "",
-                type,
-                typeOf(type),
-                colorModel);
-    }
-
     //----------//
     // toString //
     //----------//
@@ -485,67 +449,6 @@ public class Picture
     public String toString ()
     {
         return getName();
-    }
-
-    //------------//
-    // RGBAToGray //
-    //------------//
-    private static BufferedImage RGBAToGray (BufferedImage image)
-    {
-        logger.info("Discarding alpha band ...");
-
-        return RGBToGray(
-                JAI.create("bandselect", image, new int[]{0, 1, 2}).getAsBufferedImage());
-    }
-
-    //-----------//
-    // RGBToGray //
-    //-----------//
-    private static BufferedImage RGBToGray (BufferedImage image)
-    {
-        logger.info("Converting RGB image to gray ...");
-
-        if (constants.useMaxChannelInColorToGray.isSet()) {
-            // We use the max value among the RGB channels
-            int width = image.getWidth();
-            int height = image.getHeight();
-            BufferedImage img = new BufferedImage(
-                    width,
-                    height,
-                    BufferedImage.TYPE_BYTE_GRAY);
-            WritableRaster raster = img.getRaster();
-            Raster source = image.getData();
-            int[] levels = new int[3];
-            int maxLevel;
-
-            for (int y = 0; y < height; y++) {
-                for (int x = 0; x < width; x++) {
-                    source.getPixel(x, y, levels);
-                    maxLevel = 0;
-
-                    for (int level : levels) {
-                        if (maxLevel < level) {
-                            maxLevel = level;
-                        }
-                    }
-
-                    raster.setSample(x, y, 0, maxLevel);
-                }
-            }
-
-            return img;
-        } else {
-            // We use luminance value based on standard RGB combination
-            double[][] matrix = {
-                {0.114d, 0.587d, 0.299d, 0.0d}
-            };
-
-            return JAI.create(
-                    "bandcombine",
-                    new ParameterBlock().addSource(image).add(matrix),
-                    null)
-                    .getAsBufferedImage();
-        }
     }
 
     //-----------//
@@ -564,59 +467,6 @@ public class Picture
         PixelFilter filter = desc.getFilter(src);
 
         return new PixelBuffer(filter);
-    }
-
-    //--------//
-    // typeOf //
-    //--------//
-    private static String typeOf (int type)
-    {
-        switch (type) {
-        case BufferedImage.TYPE_CUSTOM:
-            return "TYPE_CUSTOM";
-
-        case BufferedImage.TYPE_INT_RGB:
-            return "TYPE_INT_RGB";
-
-        case BufferedImage.TYPE_INT_ARGB:
-            return "TYPE_INT_ARGB";
-
-        case BufferedImage.TYPE_INT_ARGB_PRE:
-            return "TYPE_INT_ARGB_PRE";
-
-        case BufferedImage.TYPE_INT_BGR:
-            return "TYPE_INT_BGR";
-
-        case BufferedImage.TYPE_3BYTE_BGR:
-            return "TYPE_3BYTE_BGR";
-
-        case BufferedImage.TYPE_4BYTE_ABGR:
-            return "TYPE_4BYTE_ABGR";
-
-        case BufferedImage.TYPE_4BYTE_ABGR_PRE:
-            return "TYPE_4BYTE_ABGR_PRE";
-
-        case BufferedImage.TYPE_USHORT_565_RGB:
-            return "TYPE_USHORT_565_RGB";
-
-        case BufferedImage.TYPE_USHORT_555_RGB:
-            return "TYPE_USHORT_555_RGB";
-
-        case BufferedImage.TYPE_BYTE_GRAY:
-            return "TYPE_BYTE_GRAY";
-
-        case BufferedImage.TYPE_USHORT_GRAY:
-            return "TYPE_USHORT_GRAY";
-
-        case BufferedImage.TYPE_BYTE_BINARY:
-            return "TYPE_BYTE_BINARY";
-
-        case BufferedImage.TYPE_BYTE_INDEXED:
-            return "TYPE_BYTE_INDEXED";
-
-        default:
-            return "?";
-        }
     }
 
     //------------//
@@ -678,18 +528,19 @@ public class Picture
             return img;
         } else if ((numBands == 2) && hasAlpha) {
             // Pixel + alpha
-            // Discard alpha (TODO: check if premultiplied!!!)
-            return JAI.create("bandselect", img, new int[]{})
+            // Discard alpha
+            return JAI.create("bandselect", img, new int[]{0})
                     .getAsBufferedImage();
         } else if ((numBands == 3) && !hasAlpha) {
             // RGB
-            return RGBToGray(img);
+            return ImageUtil.maxRgbToGray(img);
         } else if ((numBands == 4) && hasAlpha) {
             // RGB + alpha
-            return RGBAToGray(img);
+            return ImageUtil.maxRgbaToGray(img);
         } else {
             throw new ImageFormatException(
-                    "Unsupported sample model numBands=" + numBands);
+                    "Unsupported sample model numBands=" + numBands + " hasAlpha="
+                    + hasAlpha);
         }
     }
 

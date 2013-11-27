@@ -217,7 +217,7 @@ public class SpotsController
                 final Shape shape = glyph.getShape();
 
                 if (relevantShapes.contains(shape)
-                    && clip.intersects(glyph.getBounds())) {
+                    && ((clip == null) || clip.intersects(glyph.getBounds()))) {
                     // Draw mean line
                     glyph.renderLine(g);
                 }

@@ -86,6 +86,6 @@ public class BasicImpacts
     protected void setImpact (int index,
                               double impact)
     {
-        impacts[index] = impact;
+        impacts[index] = Grades.clamp(impact);
     }
 }

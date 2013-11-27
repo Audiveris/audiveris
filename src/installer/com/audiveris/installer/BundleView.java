@@ -384,7 +384,8 @@ public class BundleView
         {
             try {
                 bundle.installBundle();
-                logger.info("\nYou can now safely exit.\n");
+                logger.info("\nYou can now safely exit"
+                        + ", Audiveris application will be launched.\n");
                 if (Installer.hasUI()) {
                     JOptionPane.showMessageDialog(
                             Installer.getFrame(),

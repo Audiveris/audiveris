@@ -15,7 +15,7 @@ import omr.score.Score;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.image.PictureLoader;
+import omr.image.ImageLoader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +74,7 @@ public class LoadStep
         set.add(index);
 
         SortedMap<Integer, BufferedImage> images =
-                PictureLoader.loadImages(imageFile, set);
+                ImageLoader.loadImages(imageFile, set);
         if (images != null) {
             sheet.setImage(images.get(index));
         }

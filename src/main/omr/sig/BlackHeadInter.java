@@ -53,28 +53,4 @@ public class BlackHeadInter
     {
         return AbstractInter.getMinGrade();
     }
-
-    //~ Inner Classes ----------------------------------------------------------
-    //---------//
-    // Impacts //
-    //---------//
-    @Deprecated
-    public static class Impacts
-            extends BasicImpacts
-    {
-        //~ Static fields/initializers -----------------------------------------
-
-        private static final String[] NAMES = new String[]{"shape", "pitch"};
-
-        private static final double[] WEIGHTS = new double[]{1, 1};
-
-        //~ Constructors -------------------------------------------------------
-        public Impacts (double shape,
-                        double pitch)
-        {
-            super(NAMES, WEIGHTS);
-            setImpact(0, shape);
-            setImpact(1, pitch);
-        }
-    }
 }

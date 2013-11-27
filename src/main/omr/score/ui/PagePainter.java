@@ -95,7 +95,8 @@ import java.util.Set;
 /**
  * Class {@code PagePainter} is an abstract class that defines common
  * features of a page painter.
- * <p>It is specialized by: <ul>
+ * <p>
+ * It is specialized by: <ul>
  * <li>{@link PagePhysicalPainter} for the presentation of page entities over
  * the sheet glyphs</li>
  * <li>We used to also have a PageLogicalPainter for the "ideal" score view</li>
@@ -119,8 +120,8 @@ public abstract class PagePainter
     /** A transformation to half scale (used for slot time annotation) */
     protected static final AffineTransform halfAT = AffineTransform.
             getScaleInstance(
-            0.5,
-            0.5);
+                    0.5,
+                    0.5);
 
     /** Font for annotations */
     protected static final Font basicFont = new Font(
@@ -168,6 +169,9 @@ public abstract class PagePainter
     // Graphic context
     protected final Graphics2D g;
 
+    /** Global stroke. */
+    protected Stroke defaultStroke;
+
     // Global color
     protected final Color defaultColor;
 
@@ -187,15 +191,12 @@ public abstract class PagePainter
     protected Scale scale;
 
     // For staff lines
-    protected int lineThickness;
-
     protected Stroke lineStroke;
 
+    // For ledgers
+    protected Stroke ledgerStroke;
+
     // For stems
-    protected float stemThickness;
-
-    protected float stemHalfThickness;
-
     protected Stroke stemStroke;
 
     // For beams
@@ -209,40 +210,30 @@ public abstract class PagePainter
     protected SystemInfo systemInfo;
 
     //~ Constructors -----------------------------------------------------------
-    //--------------//
+    //-------------//
     // PagePainter //
-    //--------------//
+    //-------------//
     /**
      * Creates a new PagePainter object.
      *
      * @param graphics      Graphic context
-     * @param color         the default color
      * @param coloredVoices true for voices with different colors
      * @param linePainting  true for painting staff lines
      * @param annotated     true if annotations are to be drawn
      */
     public PagePainter (Graphics graphics,
-                        Color color,
                         boolean coloredVoices,
                         boolean linePainting,
                         boolean annotated)
     {
-        g = (Graphics2D) graphics.create();
-
+        g = (Graphics2D) graphics;
         oldClip = g.getClipBounds();
 
-        this.defaultColor = color;
         this.coloredVoices = coloredVoices;
         this.linePainting = linePainting;
         this.annotated = annotated;
 
-        // Use a specific color for all score entities
-        g.setColor(color);
-
-        // Anti-aliasing
-        g.setRenderingHint(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
+        defaultColor = g.getColor();
 
         // Default font for annotations
         g.setFont(basicFont);
@@ -326,7 +317,7 @@ public abstract class PagePainter
                     beam.getPoint(HorizontalSide.LEFT));
             final Point right = new Point(
                     beam.getPoint(HorizontalSide.RIGHT));
-            final int dx = (int) Math.rint(stemHalfThickness);
+            final int dx = (int) Math.rint(scale.getMainStem() / 2d);
             final int dy = (int) Math.rint(beamHalfThickness);
 
             // Compute precise abscissae values
@@ -533,8 +524,8 @@ public abstract class PagePainter
                 try {
                     paint(
                             musicFont.layout(
-                            measureElement.getShape(),
-                            measureElement.getDimension()),
+                                    measureElement.getShape(),
+                                    measureElement.getDimension()),
                             measureElement.getReferencePoint());
                 } catch (ConcurrentModificationException ignored) {
                 } catch (Exception ex) {
@@ -568,9 +559,9 @@ public abstract class PagePainter
             if (stem != null) {
                 // Note is attached to a stem, link note display to the stem
                 paint(shape,
-                        noteLocation(note),
-                        (center.x < chord.getTailLocation().x) ? MIDDLE_RIGHT
-                        : MIDDLE_LEFT);
+                      noteLocation(note),
+                      (center.x < chord.getTailLocation().x) ? MIDDLE_RIGHT
+                      : MIDDLE_LEFT);
             } else {
                 // Standard display
                 paint(shape.getPhysicalShape(), noteLocation(note));
@@ -581,8 +572,8 @@ public abstract class PagePainter
 
             if (accid != null) {
                 paint(accid.getShape(),
-                        accidentalLocation(note, accid),
-                        BASELINE_CENTER);
+                      accidentalLocation(note, accid),
+                      BASELINE_CENTER);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
@@ -660,10 +651,9 @@ public abstract class PagePainter
         }
 
         try {
-            Stroke oldStroke = g.getStroke();
             g.setStroke(lineStroke);
             g.draw(slur.getCurve());
-            g.setStroke(oldStroke);
+            g.setStroke(defaultStroke);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warn(
@@ -1008,23 +998,26 @@ public abstract class PagePainter
     // initParameters //
     //----------------//
     /**
-     * Initialization sequence common to ScorePhysicalPainter and
-     * ScoreLogicalPainter
+     * Initialization sequence common to PagePhysicalPainter and
+     * PageLogicalPainter
      */
     protected void initParameters ()
     {
         // Determine staff lines parameters
-        lineThickness = scale.getMainFore();
         lineStroke = new BasicStroke(
-                lineThickness,
+                (float) scale.getMainFore(),
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND);
+
+        // Determine ledger parameters
+        ledgerStroke = new BasicStroke(
+                (float) scale.getMainFore(),
                 BasicStroke.CAP_ROUND,
                 BasicStroke.JOIN_ROUND);
 
         // Determine stems parameters
-        stemThickness = scale.getMainFore();
-        stemHalfThickness = stemThickness / 2;
         stemStroke = new BasicStroke(
-                stemThickness,
+                (float) scale.getMainStem(),
                 BasicStroke.CAP_ROUND,
                 BasicStroke.JOIN_ROUND);
 
@@ -1034,15 +1027,18 @@ public abstract class PagePainter
         } else {
             UIUtil.setAbsoluteStroke(g, 1f);
         }
+        
+        defaultStroke = g.getStroke();
     }
 
     //----------//
     // location //
     //----------//
     /**
-     * Build the desired absolute drawing point, the abscissa being adjusted to
-     * fit on the provided chord stem, and the ordinate being computed from the
-     * pitch position with respect to the containing staff
+     * Build the desired absolute drawing point, the abscissa being
+     * adjusted to fit on the provided chord stem, and the ordinate
+     * being computed from the pitch position with respect to the
+     * containing staff
      *
      * @param sysPoint the (approximate) system-based drawing point
      * @param chord    the chord whose stem must be stuck to the (note) symbol
@@ -1064,8 +1060,8 @@ public abstract class PagePainter
     // location //
     //----------//
     /**
-     * Build the desired absolute drawing point, the abscissa being adjusted to
-     * fit on the provided chord stem
+     * Build the desired absolute drawing point, the abscissa being
+     * adjusted to fit on the provided chord stem
      *
      * @param sysPoint the (approximate) system-based drawing point
      * @param chord    the chord whose stem must be stuck to the (note) symbol
@@ -1081,8 +1077,9 @@ public abstract class PagePainter
     // location //
     //----------//
     /**
-     * Build the desired absolute drawing point, the ordinate being computed
-     * from the pitch position with respect to the containing staff
+     * Build the desired absolute drawing point, the ordinate being
+     * computed from the pitch position with respect to the containing
+     * staff
      *
      * @param sysPoint the (approximate) system-based drawing point
      * @param staff    the containing staff
@@ -1102,8 +1099,8 @@ public abstract class PagePainter
     // paint //
     //-------//
     /**
-     * This is the general paint method for drawing a symbol layout, at a
-     * specified location, using a specified alignment
+     * This is the general paint method for drawing a symbol layout,
+     * at a specified location, using a specified alignment
      *
      * @param layout    what: the symbol, perhaps transformed
      * @param location  where: the precise location in the display
@@ -1195,8 +1192,8 @@ public abstract class PagePainter
     // paintTimeNumber //
     //-----------------//
     /**
-     * Paint a (time) number using the coordinates in units of its center point
-     * within the containing system part
+     * Paint a (time) number using the coordinates in units of its
+     * center point within the containing system part
      *
      * @param number the number whose icon must be painted
      * @param center the center of desired location
@@ -1213,8 +1210,9 @@ public abstract class PagePainter
     // preciseAbscissa //
     //-----------------//
     /**
-     * Compute the rather precise abscissa, adjacent to the provided chord stem,
-     * on the side implied by the specified approximate sysPoint
+     * Compute the rather precise abscissa, adjacent to the provided
+     * chord stem, on the side implied by the specified approximate
+     * sysPoint
      *
      * @param sysPoint the (note) approximate center
      * @param chord    the chord/stem the note should be stuck to
@@ -1225,7 +1223,7 @@ public abstract class PagePainter
     {
         // Compute symbol abscissa according to chord stem
         int stemX = chord.getTailLocation().x;
-        double dx = stemHalfThickness - 2d; // slight adjustment
+        double dx = scale.getMainStem() / 2d - 2d; // slight adjustment
 
         if (sysPoint.x < stemX) {
             // Symbol is on left side of stem
@@ -1240,8 +1238,8 @@ public abstract class PagePainter
     // colorOf //
     //---------//
     /**
-     * Report the color to use when painting elements related to the provided
-     * voice
+     * Report the color to use when painting elements related to the
+     * provided voice
      *
      * @param voice the provided voice
      * @return the color to use

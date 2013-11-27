@@ -27,7 +27,8 @@ import java.util.Comparator;
  * represent a ledger, a legato sign or the horizontal part of an
  * alternate ending.
  *
- * <p>The role of a Dash, as compared to a plain {@link omr.glyph.facets.Glyph}
+ * <p>
+ * The role of a Dash, as compared to a plain {@link omr.glyph.facets.Glyph}
  * is to handle the horizontal segment (its Line and contour box), even if the
  * underlying stick has been discarded. Doing so saves us the need to serialize
  * the whole horizontal GlyphLag.
@@ -166,7 +167,9 @@ public abstract class Dash
      */
     public void render (Graphics g)
     {
-        if (box.intersects(g.getClipBounds())) {
+        Rectangle clip = g.getClipBounds();
+
+        if ((clip == null) || clip.intersects(box)) {
             line = getLine();
 
             Point start = new Point(

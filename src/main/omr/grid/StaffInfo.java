@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.grid;
 
+import omr.constant.ConstantSet;
+
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
@@ -56,7 +58,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import omr.constant.ConstantSet;
 
 /**
  * Class {@code StaffInfo} handles the physical informations of a staff
@@ -74,7 +75,8 @@ public class StaffInfo
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(StaffInfo.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            StaffInfo.class);
 
     /** To sort by staff id. */
     public static final Comparator<StaffInfo> byId = new Comparator<StaffInfo>()
@@ -123,7 +125,7 @@ public class StaffInfo
     private GeoPath area;
 
     /** Map of ledgers nearby. */
-    private final SortedMap<Integer, SortedSet<LedgerInter>> ledgerMap = new TreeMap<>();
+    private final SortedMap<Integer, SortedSet<LedgerInter>> ledgerMap = new TreeMap<Integer, SortedSet<LedgerInter>>();
 
     /** Corresponding staff entity in the score hierarchy. */
     private Staff scoreStaff;
@@ -159,6 +161,24 @@ public class StaffInfo
     }
 
     //~ Methods ----------------------------------------------------------------
+    //--------------------//
+    // getLedgerLineIndex //
+    //--------------------//
+    /**
+     * Compute staff-based line index, based on provided pitch position
+     *
+     * @param pitchPosition the provided pitch position
+     * @return the computed line index
+     */
+    public static int getLedgerLineIndex (double pitchPosition)
+    {
+        if (pitchPosition > 0) {
+            return (int) Math.rint(pitchPosition / 2) - 2;
+        } else {
+            return (int) Math.rint(pitchPosition / 2) + 2;
+        }
+    }
+
     //
     //---------------//
     // addAttachment //
@@ -187,7 +207,7 @@ public class StaffInfo
         SortedSet<LedgerInter> ledgerSet = ledgerMap.get(index);
 
         if (ledgerSet == null) {
-            ledgerSet = new TreeSet<>(Inter.byFullAbscissa);
+            ledgerSet = new TreeSet<LedgerInter>(Inter.byFullAbscissa);
             ledgerMap.put(index, ledgerSet);
         }
 
@@ -207,33 +227,32 @@ public class StaffInfo
     {
         assert ledger != null : "Cannot add a null ledger";
 
-        addLedger(ledger,
-                  getLedgerLineIndex(pitchPositionOf(ledger.getGlyph().getCentroid())));
+        addLedger(
+                ledger,
+                getLedgerLineIndex(
+                        pitchPositionOf(ledger.getGlyph().getCentroid())));
     }
 
-    //--------------//
-    // removeLedger //
-    //--------------//
+    //------------//
+    // distanceTo //
+    //------------//
     /**
-     * Remove a ledger from staff collection.
+     * Report the vertical (algebraic) distance between staff and the
+     * provided point.
+     * Distance is negative if the point is within the staff and positive
+     * outside.
      *
-     * @param ledger the ledger to remove
-     * @return true if actually removed, false if not found
+     * @param point the provided point
+     * @return algebraic distance between staff and point, specified in pixels
      */
-    public boolean removeLedger (LedgerInter ledger)
+    public int distanceTo (Point point)
     {
-        assert ledger != null : "Cannot remove a null ledger";
+        final double top = getFirstLine()
+                .yAt(point.getX());
+        final double bottom = getLastLine()
+                .yAt(point.getX());
 
-        // Browse all staff ledger indices
-        for (SortedSet<LedgerInter> ledgerSet : ledgerMap.values()) {
-            if (ledgerSet.remove(ledger)) {
-                return true;
-            }
-        }
-
-        // Not found
-        logger.debug("Could not find ledger {}", ledger);
-        return false;
+        return (int) Math.max(top - point.getY(), point.getY() - bottom);
     }
 
     //------//
@@ -252,6 +271,45 @@ public class StaffInfo
         for (LineInfo line : lines) {
             System.out.println(" LineInfo" + i++ + " " + line.toString());
         }
+    }
+
+    //-------//
+    // gapTo //
+    //-------//
+    /**
+     * Report the vertical gap between staff and the provided
+     * rectangle.
+     *
+     * @param rect the provided rectangle
+     * @return 0 if the rectangle intersects the staff, otherwise the vertical
+     *         distance from staff to closest edge of the rectangle
+     */
+    public int gapTo (Rectangle rect)
+    {
+        Point center = GeoUtil.centerOf(rect);
+        int staffTop = getFirstLine()
+                .yAt(center.x);
+        int staffBot = getLastLine()
+                .yAt(center.x);
+        int glyphTop = rect.y;
+        int glyphBot = (glyphTop + rect.height) - 1;
+
+        // Check overlap
+        int top = Math.max(glyphTop, staffTop);
+        int bot = Math.min(glyphBot, staffBot);
+
+        if (top <= bot) {
+            return 0;
+        }
+
+        // No overlap, compute distance
+        int dist = Integer.MAX_VALUE;
+        dist = Math.min(dist, Math.abs(staffTop - glyphTop));
+        dist = Math.min(dist, Math.abs(staffTop - glyphBot));
+        dist = Math.min(dist, Math.abs(staffBot - glyphTop));
+        dist = Math.min(dist, Math.abs(staffBot - glyphBot));
+
+        return dist;
     }
 
     //-------------//
@@ -304,7 +362,8 @@ public class StaffInfo
      */
     public Rectangle2D getAreaBounds ()
     {
-        return getArea().getBounds2D();
+        return getArea()
+                .getBounds2D();
     }
 
     //----------------//
@@ -347,8 +406,10 @@ public class StaffInfo
     public IndexedLedger getClosestLedger (Point2D point)
     {
         IndexedLedger bestLedger = null;
-        double top = getFirstLine().yAt(point.getX());
-        double bottom = getLastLine().yAt(point.getX());
+        double top = getFirstLine()
+                .yAt(point.getX());
+        double bottom = getLastLine()
+                .yAt(point.getX());
         double rawPitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom
                                                                           - top);
 
@@ -381,10 +442,12 @@ public class StaffInfo
                 searchBox.getHeight() + (2 * interline));
 
         // Browse all staff ledgers
-        Set<IndexedLedger> foundLedgers = new HashSet<>();
+        Set<IndexedLedger> foundLedgers = new HashSet<IndexedLedger>();
+
         for (Map.Entry<Integer, SortedSet<LedgerInter>> entry : ledgerMap.entrySet()) {
             for (LedgerInter ledger : entry.getValue()) {
-                if (ledger.getBounds().intersects(searchBox)) {
+                if (ledger.getBounds()
+                        .intersects(searchBox)) {
                     foundLedgers.add(new IndexedLedger(ledger, entry.getKey()));
                 }
             }
@@ -395,7 +458,8 @@ public class StaffInfo
             double bestDist = Double.MAX_VALUE;
 
             for (IndexedLedger iLedger : foundLedgers) {
-                Point2D center = iLedger.ledger.getGlyph().getAreaCenter();
+                Point2D center = iLedger.ledger.getGlyph()
+                        .getAreaCenter();
                 double dist = Math.abs(center.getY() - point.getY());
 
                 if (dist < bestDist) {
@@ -446,61 +510,6 @@ public class StaffInfo
         return left + specificScale.toPixels(constants.minDMZWidth);
     }
 
-    //-------//
-    // gapTo //
-    //-------//
-    /**
-     * Report the vertical gap between staff and the provided
-     * rectangle.
-     *
-     * @param rect the provided rectangle
-     * @return 0 if the rectangle intersects the staff, otherwise the vertical
-     *         distance from staff to closest edge of the rectangle
-     */
-    public int gapTo (Rectangle rect)
-    {
-        Point center = GeoUtil.centerOf(rect);
-        int staffTop = getFirstLine().yAt(center.x);
-        int staffBot = getLastLine().yAt(center.x);
-        int glyphTop = rect.y;
-        int glyphBot = glyphTop + rect.height - 1;
-
-        // Check overlap
-        int top = Math.max(glyphTop, staffTop);
-        int bot = Math.min(glyphBot, staffBot);
-        if (top <= bot) {
-            return 0;
-        }
-
-        // No overlap, compute distance
-        int dist = Integer.MAX_VALUE;
-        dist = Math.min(dist, Math.abs(staffTop - glyphTop));
-        dist = Math.min(dist, Math.abs(staffTop - glyphBot));
-        dist = Math.min(dist, Math.abs(staffBot - glyphTop));
-        dist = Math.min(dist, Math.abs(staffBot - glyphBot));
-
-        return dist;
-    }
-
-    //------------//
-    // distanceTo //
-    //------------//
-    /**
-     * Report the vertical (algebraic) distance between staff and the
-     * provided point.
-     * Distance is negative if the point is within the staff and positive
-     * outside.
-     *
-     * @param point the provided point
-     * @return algebraic distance between staff and point, specified in pixels
-     */
-    public int distanceTo (Point point)
-    {
-        final double top = getFirstLine().yAt(point.getX());
-        final double bottom = getLastLine().yAt(point.getX());
-        return (int) Math.max(top - point.getY(), point.getY() - bottom);
-    }
-
     //----------------//
     // getEndingSlope //
     //----------------//
@@ -514,7 +523,7 @@ public class StaffInfo
      */
     public double getEndingSlope (HorizontalSide side)
     {
-        List<Double> slopes = new ArrayList<>(lines.size());
+        List<Double> slopes = new ArrayList<Double>(lines.size());
 
         for (LineInfo l : lines) {
             FilamentLine line = (FilamentLine) l;
@@ -524,13 +533,13 @@ public class StaffInfo
         Collections.sort(
                 slopes,
                 new Comparator<Double>()
-        {
-            @Override
-            public int compare (Double o1,
-                                Double o2)
-            {
-                return Double.compare(Math.abs(o1), Math.abs(o2));
-            }
+                {
+                    @Override
+                    public int compare (Double o1,
+                                        Double o2)
+                    {
+                        return Double.compare(Math.abs(o1), Math.abs(o2));
+                    }
                 });
 
         double sum = 0;
@@ -565,7 +574,8 @@ public class StaffInfo
      */
     public int getHeight ()
     {
-        return getSpecificScale().getInterline() * (lines.size() - 1);
+        return getSpecificScale()
+                .getInterline() * (lines.size() - 1);
     }
 
     //-------//
@@ -602,6 +612,30 @@ public class StaffInfo
         return ledgerMap;
     }
 
+    //------------------------//
+    // getLedgerPitchPosition //
+    //------------------------//
+    /**
+     * Report the pitch position of a ledger WRT the related staff
+     *
+     * @param lineIndex the ledger line index
+     * @return the ledger pitch position
+     */
+    public static int getLedgerPitchPosition (int lineIndex)
+    {
+        //        // Safer, for the time being...
+        //        if (getStaff()
+        //                .getLines()
+        //                .size() != 5) {
+        //            throw new RuntimeException("Only 5-line staves are supported");
+        //        }
+        if (lineIndex > 0) {
+            return 4 + (2 * lineIndex);
+        } else {
+            return -4 + (2 * lineIndex);
+        }
+    }
+
     //------------//
     // getLedgers //
     //------------//
@@ -634,6 +668,19 @@ public class StaffInfo
         GeoPath limit = (side == TOP) ? topLimit : bottomLimit;
 
         return limit.yAtX(x);
+    }
+
+    //--------------//
+    // getLineCount //
+    //--------------//
+    /**
+     * Report the number of lines in this staff.
+     *
+     * @return the number of lines (6, 4, ...)
+     */
+    public int getLineCount ()
+    {
+        return lines.size();
     }
 
     //----------//
@@ -693,8 +740,11 @@ public class StaffInfo
      */
     public double getMidOrdinate (HorizontalSide side)
     {
-        return (getFirstLine().getEndPoint(side).getY() + getLastLine().
-                getEndPoint(side).getY()) / 2;
+        return (getFirstLine()
+                .getEndPoint(side)
+                .getY() + getLastLine()
+                .getEndPoint(side)
+                .getY()) / 2;
     }
 
     //-----------------//
@@ -717,57 +767,15 @@ public class StaffInfo
             bestLedger = getClosestLedger(point);
 
             if (bestLedger != null) {
-                Point2D center = bestLedger.ledger.getGlyph().getAreaCenter();
+                Point2D center = bestLedger.ledger.getGlyph()
+                        .getAreaCenter();
                 int ledgerPitch = getLedgerPitchPosition(bestLedger.index);
-                double deltaPitch = (2d * (point.getY() - center.getY())) / specificScale.
-                        getInterline();
+                double deltaPitch = (2d * (point.getY() - center.getY())) / specificScale.getInterline();
                 pitch = ledgerPitch + deltaPitch;
             }
         }
 
         return new NotePosition(this, pitch, bestLedger);
-    }
-
-    //------------------------//
-    // getLedgerPitchPosition //
-    //------------------------//
-    /**
-     * Report the pitch position of a ledger WRT the related staff
-     *
-     * @param lineIndex the ledger line index
-     * @return the ledger pitch position
-     */
-    public static int getLedgerPitchPosition (int lineIndex)
-    {
-        //        // Safer, for the time being...
-        //        if (getStaff()
-        //                .getLines()
-        //                .size() != 5) {
-        //            throw new RuntimeException("Only 5-line staves are supported");
-        //        }
-        if (lineIndex > 0) {
-            return 4 + (2 * lineIndex);
-        } else {
-            return -4 + (2 * lineIndex);
-        }
-    }
-
-    //--------------------//
-    // getLedgerLineIndex //
-    //--------------------//
-    /**
-     * Compute staff-based line index, based on provided pitch position
-     *
-     * @param pitchPosition the provided pitch position
-     * @return the computed line index
-     */
-    public static int getLedgerLineIndex (double pitchPosition)
-    {
-        if (pitchPosition > 0) {
-            return (int) Math.rint(pitchPosition / 2) - 2;
-        } else {
-            return (int) Math.rint(pitchPosition / 2) + 2;
-        }
     }
 
     //---------------//
@@ -839,8 +847,10 @@ public class StaffInfo
      */
     public double pitchPositionOf (Point2D pt)
     {
-        double top = getFirstLine().yAt(pt.getX());
-        double bottom = getLastLine().yAt(pt.getX());
+        double top = getFirstLine()
+                .yAt(pt.getX());
+        double bottom = getLastLine()
+                .yAt(pt.getX());
 
         return ((lines.size() - 1) * ((2 * pt.getY()) - bottom - top)) / (bottom
                                                                           - top);
@@ -853,6 +863,32 @@ public class StaffInfo
     public int removeAttachments (String prefix)
     {
         return attachments.removeAttachments(prefix);
+    }
+
+    //--------------//
+    // removeLedger //
+    //--------------//
+    /**
+     * Remove a ledger from staff collection.
+     *
+     * @param ledger the ledger to remove
+     * @return true if actually removed, false if not found
+     */
+    public boolean removeLedger (LedgerInter ledger)
+    {
+        assert ledger != null : "Cannot remove a null ledger";
+
+        // Browse all staff ledger indices
+        for (SortedSet<LedgerInter> ledgerSet : ledgerMap.values()) {
+            if (ledgerSet.remove(ledger)) {
+                return true;
+            }
+        }
+
+        // Not found
+        logger.debug("Could not find ledger {}", ledger);
+
+        return false;
     }
 
     //--------//
@@ -870,7 +906,9 @@ public class StaffInfo
         LineInfo lastLine = getLastLine();
 
         if ((firstLine != null) && (lastLine != null)) {
-            if (g.getClipBounds().intersects(getAreaBounds())) {
+            Rectangle clip = g.getClipBounds();
+
+            if ((clip == null) || clip.intersects(getAreaBounds())) {
                 // Draw the left and right vertical lines
                 for (HorizontalSide side : HorizontalSide.values()) {
                     Point2D first = firstLine.getEndPoint(side);
@@ -982,20 +1020,26 @@ public class StaffInfo
     {
         StringBuilder sb = new StringBuilder("{StaffInfo");
 
-        sb.append(" id=").append(getId());
-        sb.append(" left=").append((float) left);
-        sb.append(" right=").append((float) right);
+        sb.append(" id=")
+                .append(getId());
+        sb.append(" left=")
+                .append((float) left);
+        sb.append(" right=")
+                .append((float) right);
 
         if (specificScale != null) {
-            sb.append(" specificScale=").append(specificScale.getInterline());
+            sb.append(" specificScale=")
+                    .append(specificScale.getInterline());
         }
 
         if (leftBar != null) {
-            sb.append(" leftBar:").append(leftBar);
+            sb.append(" leftBar:")
+                    .append(leftBar);
         }
 
         if (rightBar != null) {
-            sb.append(" rightBar:").append(rightBar);
+            sb.append(" rightBar:")
+                    .append(rightBar);
         }
 
         sb.append("}");
@@ -1003,28 +1047,17 @@ public class StaffInfo
         return sb.toString();
     }
 
-    //--------------//
-    // getLineCount //
-    //--------------//
-    /**
-     * Report the number of lines in this staff.
-     *
-     * @return the number of lines (6, 4, ...)
-     */
-    public int getLineCount ()
-    {
-        return lines.size();
-    }
+    //~ Inner Classes ----------------------------------------------------------
     //---------------//
     // IndexedLedger //
     //---------------//
-
     /**
      * This combines the ledger with the index relative to the
      * hosting staff.
      */
     public static class IndexedLedger
     {
+        //~ Instance fields ----------------------------------------------------
 
         /** The ledger. */
         public final LedgerInter ledger;
@@ -1032,6 +1065,7 @@ public class StaffInfo
         /** Staff-based line index. (-1, -2, ... above, +1, +2, ... below) */
         public final int index;
 
+        //~ Constructors -------------------------------------------------------
         public IndexedLedger (LedgerInter ledger,
                               int index)
         {

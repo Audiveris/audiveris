@@ -14,10 +14,14 @@ package omr.step;
 import omr.plugin.Plugin;
 import omr.plugin.PluginsManager;
 
+import omr.sheet.Sheet;
+import omr.sheet.SystemInfo;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -74,6 +78,8 @@ public class Steps
     public static final String SCORE = "SCORE";
 
     // Optional step names
+    public static final String DELTA = "DELTA";
+
     public static final String PRINT = "PRINT";
 
     public static final String EXPORT = "EXPORT";
@@ -82,6 +88,9 @@ public class Steps
 
     /** Ordered sequence of steps */
     private static final List<Step> steps = new ArrayList<Step>();
+
+    /** Dummy step placeholder. */
+    private static final Step NO_STEP = new NoStep();
 
     /** Map of defined steps */
     private static final Map<String, Step> stepMap = new HashMap<String, Step>();
@@ -93,7 +102,6 @@ public class Steps
         addStep(new BinaryStep());
         addStep(new ScaleStep());
         addStep(new GridStep());
-
         addStep(new SystemsStep());
 
         addStep(new StemSeedsStep());
@@ -103,14 +111,17 @@ public class Steps
         addStep(new StemLinksStep());
         addStep(new ResolutionStep());
 
-        addStep(new TextsStep());
-        addStep(new SymbolsStep());
-        addStep(new MeasuresStep());
-        addStep(new PagesStep());
-        addStep(new ScoreStep());
+        //        addStep(new TextsStep());
+        addNoStep(SYMBOLS);
+        //        addStep(new SymbolsStep());
+        //        addStep(new MeasuresStep());
+        //        addStep(new PagesStep());
+        addNoStep(SCORE);
+        //        addStep(new ScoreStep());
 
         // Optional steps, in whatever order
         // ---------------------------------
+        addStep(new DeltaStep());
         addStep(new PrintStep());
         addStep(new ExportStep());
 
@@ -282,6 +293,14 @@ public class Steps
         return sorted;
     }
 
+    //-----------//
+    // addNoStep //
+    //-----------//
+    private static void addNoStep (String name)
+    {
+        stepMap.put(name, NO_STEP);
+    }
+
     //---------//
     // addStep //
     //---------//
@@ -347,6 +366,29 @@ public class Steps
         protected Step decode (java.lang.String str)
         {
             return valueOf(str);
+        }
+    }
+
+    //--------//
+    // NoStep //
+    //--------//
+    private static class NoStep
+            extends AbstractStep
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public NoStep ()
+        {
+            super(null, null, null, null, null);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        protected void doit (Collection<SystemInfo> systems,
+                             Sheet sheet)
+                throws StepException
+        {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }

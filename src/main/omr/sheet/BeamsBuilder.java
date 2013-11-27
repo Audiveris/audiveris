@@ -20,7 +20,6 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.image.AreaMask;
-import omr.image.Picture;
 import omr.image.PixelFilter;
 
 import omr.math.AreaUtil;
@@ -35,7 +34,6 @@ import omr.sig.AbstractBeamInter;
 import omr.sig.AbstractBeamInter.Impacts;
 import omr.sig.BeamHookInter;
 import omr.sig.FullBeamInter;
-import omr.sig.Grades;
 import omr.sig.Inter;
 import omr.sig.SIGraph;
 
@@ -546,13 +544,10 @@ public class BeamsBuilder
             return null;
         }
 
-        double widthImpact = Grades.clamp(
-                (width - minWidth) / (double) minLargeWidth);
-        double coreImpact = Grades.clamp(
-                (coreRatio - params.minCoreBlackRatio) / (1
-                                                          - params.minCoreBlackRatio));
-        double beltImpact = Grades.clamp(
-                1 - (beltRatio / params.maxBeltBlackRatio));
+        double widthImpact = (width - minWidth) / (double) minLargeWidth;
+        double coreImpact = (coreRatio - params.minCoreBlackRatio) / (1
+                                                                      - params.minCoreBlackRatio);
+        double beltImpact = 1 - (beltRatio / params.maxBeltBlackRatio);
 
         return new Impacts(widthImpact, coreImpact, beltImpact);
     }

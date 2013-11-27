@@ -12,6 +12,7 @@
 package omr.check;
 
 import omr.sig.AbstractImpacts;
+import omr.sig.Grades;
 
 import java.util.List;
 
@@ -163,9 +164,9 @@ public class SuiteImpacts<C extends Checkable>
     // setImpact //
     //-----------//
     public void setImpact (int index,
-                           double detail)
+                           double impact)
     {
-        impacts[index] = detail;
+        impacts[index] = Grades.clamp(impact);
     }
 
     //----------//

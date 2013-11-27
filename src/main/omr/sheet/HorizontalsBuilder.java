@@ -30,7 +30,6 @@ import omr.grid.FilamentsFactory;
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
 
-import omr.image.Picture;
 import omr.image.PixelFilter;
 
 import omr.lag.Section;
@@ -697,13 +696,14 @@ public class HorizontalsBuilder
             // Now, check for collision or support relations within line
             // population and reduce the population accordingly.
             reduceLedgers(staff, index, ledgers);
-//            logger.info(
-//                    "staff:{} index:{} kept:{} {}",
-//                    staff.getId(),
-//                    index,
-//                    ledgers.size(),
-//                    ledgers);
-//
+
+            //            logger.info(
+            //                    "staff:{} index:{} kept:{} {}",
+            //                    staff.getId(),
+            //                    index,
+            //                    ledgers.size(),
+            //                    ledgers);
+            //
             // Populate staff with ledgers kept
             for (LedgerInter ledger : ledgers) {
                 ledger.getGlyph()
@@ -739,13 +739,13 @@ public class HorizontalsBuilder
                                 int index,
                                 List<LedgerInter> ledgers)
     {
-//        logger.info(
-//                "staff:{} index:{} comp:{} {}",
-//                staff.getId(),
-//                index,
-//                ledgers.size(),
-//                ledgers);
-//
+        //        logger.info(
+        //                "staff:{} index:{} comp:{} {}",
+        //                staff.getId(),
+        //                index,
+        //                ledgers.size(),
+        //                ledgers);
+        //
         int maxDx = scale.toPixels(constants.maxInterLedgerDx);
         Set<Exclusion> exclusions = new LinkedHashSet<Exclusion>();
         Collections.sort(ledgers, Inter.byAbscissa);
@@ -1098,6 +1098,39 @@ public class HorizontalsBuilder
         }
     }
 
+    //----------------//
+    // LeftPitchCheck //
+    //----------------//
+    private class LeftPitchCheck
+            extends Check<GlyphContext>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected LeftPitchCheck ()
+        {
+            super(
+                    "LPitch",
+                    "Check that left ordinate is close to theoretical value",
+                    Constant.Double.ZERO,
+                    constants.ledgerMarginY,
+                    false,
+                    TOO_SHIFTED);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        protected double getValue (GlyphContext context)
+        {
+            Glyph stick = context.stick;
+            double yTarget = context.yTarget;
+            double y = stick.getStartPoint(HORIZONTAL)
+                    .getY();
+
+            return sheet.getScale()
+                    .pixelsToFrac(Math.abs(y - yTarget));
+        }
+    }
+
     //-------------------//
     // MaxThicknessCheck //
     //-------------------//
@@ -1192,38 +1225,6 @@ public class HorizontalsBuilder
         }
     }
 
-    //----------------//
-    // LeftPitchCheck //
-    //----------------//
-    private class LeftPitchCheck
-            extends Check<GlyphContext>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        protected LeftPitchCheck ()
-        {
-            super(
-                    "LPitch",
-                    "Check that left ordinate is close to theoretical value",
-                    Constant.Double.ZERO,
-                    constants.ledgerMarginY,
-                    false,
-                    TOO_SHIFTED);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        protected double getValue (GlyphContext context)
-        {
-            Glyph stick = context.stick;
-            double yTarget = context.yTarget;
-            double y = stick.getStartPoint(HORIZONTAL).getY();
-
-            return sheet.getScale()
-                    .pixelsToFrac(Math.abs(y - yTarget));
-        }
-    }
-
     //-----------------//
     // RightPitchCheck //
     //-----------------//
@@ -1249,7 +1250,8 @@ public class HorizontalsBuilder
         {
             Glyph stick = context.stick;
             double yTarget = context.yTarget;
-            double y = stick.getStopPoint(HORIZONTAL).getY();
+            double y = stick.getStopPoint(HORIZONTAL)
+                    .getY();
 
             return sheet.getScale()
                     .pixelsToFrac(Math.abs(y - yTarget));

@@ -56,7 +56,7 @@ import javax.swing.event.ChangeListener;
  * the {@link omr.sheet.ui.SheetAssembly} example.
  *
  * <p>When using this class, we have to provide our own Zoom instance, either at
- * contruction time by using the proper constructor or later by using the {@link
+ * construction time by using the proper constructor or later by using the {@link
  * #setZoom} method. The class then registers itself as an observer of the
  * Zoom instance, to be notified when the zoom ratio is modified.
  *
@@ -467,19 +467,14 @@ public class RubberPanel
     @Override
     public void stateChanged (ChangeEvent e)
     {
-        // Force a redisplay?
-        //        if (isShowing()) {
         showFocusLocation(getSelectedRectangle(), true);
-
-        //        }
     }
 
     //-----------//
     // subscribe //
     //-----------//
     /**
-     * Subscribe to the (previously injected) location service (either Sheet or
-     * Score location, depending on the context)
+     * Subscribe to the (previously injected) location service.
      */
     public void subscribe ()
     {
@@ -535,7 +530,7 @@ public class RubberPanel
     // unsubscribe //
     //-------------//
     /**
-     * Unsubscribe from the related location service
+     * Un-subscribe from the related location service
      */
     public void unsubscribe ()
     {

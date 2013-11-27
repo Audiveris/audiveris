@@ -19,8 +19,11 @@ import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
 
 import omr.math.BasicLine;
+import omr.math.GeoUtil;
 import omr.math.Line;
 import omr.math.Rational;
+
+import omr.run.Orientation;
 
 import omr.score.entity.Barline;
 import omr.score.entity.Chord;
@@ -36,9 +39,19 @@ import omr.sheet.Sheet;
 import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
 
+import omr.sig.AbstractBeamInter;
+import omr.sig.Inter;
+import omr.sig.InterVisitor;
+import omr.sig.LedgerInter;
+import omr.sig.SIGraph;
+import omr.sig.StemInter;
+
 import omr.ui.Colors;
+import omr.ui.symbol.Alignment;
 import static omr.ui.symbol.Alignment.*;
 import omr.ui.symbol.MusicFont;
+import omr.ui.symbol.ShapeSymbol;
+import omr.ui.symbol.Symbols;
 import omr.ui.util.UIUtil;
 
 import omr.util.TreeNode;
@@ -47,11 +60,13 @@ import omr.util.VerticalSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Stroke;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
@@ -71,6 +86,7 @@ import java.util.ConcurrentModificationException;
  */
 public class PagePhysicalPainter
         extends PagePainter
+        implements InterVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
@@ -86,18 +102,16 @@ public class PagePhysicalPainter
      * Creates a new PagePhysicalPainter object.
      *
      * @param graphics      Graphic context
-     * @param color         the color to be used for foreground
      * @param coloredVoices true for voices with different colors
      * @param linePainting  true for painting staff lines
      * @param annotated     true if annotations are to be drawn
      */
     public PagePhysicalPainter (Graphics graphics,
-                                Color color,
                                 boolean coloredVoices,
                                 boolean linePainting,
                                 boolean annotated)
     {
-        super(graphics, color, coloredVoices, linePainting, annotated);
+        super(graphics, coloredVoices, linePainting, annotated);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -119,8 +133,7 @@ public class PagePhysicalPainter
         final Measure measure = slot.getMeasure();
         final Color oldColor = g.getColor();
         g.setColor(color);
-
-        final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1);
+        UIUtil.setAbsoluteStroke(g, 1);
 
         try {
             final int x = slot.getX();
@@ -183,7 +196,7 @@ public class PagePhysicalPainter
                     ex);
         }
 
-        g.setStroke(oldStroke);
+        g.setStroke(defaultStroke);
         g.setColor(oldColor);
     }
 
@@ -233,8 +246,6 @@ public class PagePhysicalPainter
         g.setColor(defaultColor);
 
         try {
-            Stroke oldStroke = g.getStroke();
-
             // This drawing is driven by the barline shape
             Shape shape = barline.getShape();
             Rectangle box = barline.getBox();
@@ -297,7 +308,7 @@ public class PagePhysicalPainter
             //                    paint(DOT_set, glyph.getCentroid());
             //                }
             //            }
-            g.setStroke(oldStroke);
+            ///g.setStroke(defaultStroke);
         } catch (ConcurrentModificationException ignored) {
             return false;
         } catch (Exception ex) {
@@ -477,7 +488,7 @@ public class PagePhysicalPainter
                 // Render only what we have got so far...
                 g.setColor(defaultColor);
 
-                // Staff lines
+                // Staff lines (attachments)
                 sheet.getStaffManager()
                         .render(g);
             }
@@ -561,7 +572,8 @@ public class PagePhysicalPainter
             // Check that this system is visible
             Rectangle bounds = systemInfo.getBounds();
 
-            if ((bounds == null) || !bounds.intersects(oldClip)) {
+            if ((bounds == null)
+                || ((oldClip != null) && !(oldClip.intersects(bounds)))) {
                 return false;
             }
 
@@ -570,15 +582,12 @@ public class PagePhysicalPainter
 
             g.setColor(defaultColor);
 
-            // Ledgers and endings
-            for (Glyph glyph : systemInfo.getGlyphs()) {
-                Shape shape = glyph.getShape();
+            // All interpretations for this system
+            SIGraph sig = systemInfo.getSig();
 
-                if (((shape == Shape.LEDGER)
-                     || (shape == Shape.ENDING_HORIZONTAL)
-                     || (shape == Shape.ENDING_VERTICAL))
-                    && glyph.isActive()) {
-                    glyph.renderLine(g);
+            for (Inter inter : sig.vertexSet()) {
+                if (oldClip == null || oldClip.intersects(inter.getBounds())) {
+                    inter.accept(this);
                 }
             }
         } catch (ConcurrentModificationException ignored) {
@@ -589,6 +598,68 @@ public class PagePhysicalPainter
         }
 
         return true;
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (Inter inter)
+    {
+        setColor(inter);
+
+        ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
+        Glyph glyph = inter.getGlyph();
+        Point center = (glyph != null) ? glyph.getCentroid()
+                : GeoUtil.centerOf(inter.getBounds());
+        symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (StemInter stem)
+    {
+        setColor(stem);
+
+        //TODO: use proper stem thickness! (see ledger)
+        g.setStroke(stemStroke);
+
+        stem.getGlyph()
+                .renderLine(g);
+
+        g.setStroke(defaultStroke);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (LedgerInter ledger)
+    {
+        setColor(ledger);
+        g.setStroke(
+                new BasicStroke(
+                        (float) ledger.getGlyph().getMeanThickness(
+                                Orientation.HORIZONTAL),
+                        BasicStroke.CAP_ROUND,
+                        BasicStroke.JOIN_ROUND));
+
+        ledger.getGlyph()
+                .renderLine(g);
+
+        g.setStroke(defaultStroke);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (AbstractBeamInter beam)
+    {
+        setColor(beam);
+        g.fill(beam.getArea());
     }
 
     //--------------------//
@@ -669,5 +740,19 @@ public class PagePhysicalPainter
         } else {
             return center;
         }
+    }
+
+    //----------//
+    // setColor //
+    //----------//
+    /**
+     * Use color that depends on shape with an alpha value that
+     * depends on interpretation grade.
+     *
+     * @param inter the interpretation to colorize
+     */
+    private void setColor (Inter inter)
+    {
+        // void
     }
 }

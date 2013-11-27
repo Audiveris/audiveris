@@ -128,7 +128,7 @@ public class MultipleRunsViewer
 
             for (RunsTable table : tables) {
                 g.setColor(colors[index++ % colors.length]);
-                renderRuns(table, g);
+                table.render(g);
             }
 
             // Paint additional items, such as recognized items, etc...
@@ -138,54 +138,6 @@ public class MultipleRunsViewer
         protected void renderItems (Graphics2D g)
         {
             sheet.renderItems(g);
-        }
-
-        //------------//
-        // renderRuns //
-        //------------//
-        protected void renderRuns (RunsTable table,
-                                   Graphics2D g)
-        {
-            if (table == null) {
-                return;
-            }
-            
-            Rectangle clip = g.getClipBounds();
-
-            switch (table.getOrientation()) {
-            case HORIZONTAL: {
-                int minRow = Math.max(clip.y, 0);
-                int maxRow = Math.min(
-                        (clip.y + clip.height),
-                        table.getHeight()) - 1;
-
-                for (int row = minRow; row <= maxRow; row++) {
-                    List<Run> seq = table.getSequence(row);
-
-                    for (Run run : seq) {
-                        g.fillRect(run.getStart(), row, run.getLength(), 1);
-                    }
-                }
-            }
-
-            break;
-
-            case VERTICAL: {
-                int minRow = Math.max(clip.x, 0);
-                int maxRow = Math.min((clip.x + clip.width), table.getWidth())
-                             - 1;
-
-                for (int row = minRow; row <= maxRow; row++) {
-                    List<Run> seq = table.getSequence(row);
-
-                    for (Run run : seq) {
-                        g.fillRect(row, run.getStart(), 1, run.getLength());
-                    }
-                }
-            }
-
-            break;
-            }
         }
     }
 }

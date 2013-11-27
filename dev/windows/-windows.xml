@@ -62,10 +62,10 @@
     <!-- ============= -->
     <!-- Pack all native libs of an arch into a .jar file -->
     <target name="-do-pack-libs">
-        <echo message="-- Packing up DLLs for ${bits}" />
-        <jar destfile="dist/lib/tess-windows-${bits}.jar">
+        <echo message="== Packing up DLLs for ${bits}" />
+        <jar destfile="dist/resources/tess-windows-${bits}.jar">
             <fileset dir="dev/windows/dll/${bits}" 
-                     includes="jniTessBridge.dll, jniTessBridge.dll.manifest"/>
+                     includes="jniTessBridge.dll, liblept168.dll, libtesseract302.dll"/>
         </jar>
     </target>
 

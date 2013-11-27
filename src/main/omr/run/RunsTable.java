@@ -11,8 +11,8 @@
 // </editor-fold>
 package omr.run;
 
-import omr.image.PixelSource;
 import omr.image.PixelBuffer;
+import omr.image.PixelSource;
 
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -41,21 +42,21 @@ import java.util.List;
  * @author Hervé Bitteur
  */
 public class RunsTable
-        implements Cloneable,
-                   PixelSource,
-                   Oriented,
-                   EventSubscriber<LocationEvent>
+        implements Cloneable, PixelSource, Oriented, EventSubscriber<LocationEvent>
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(RunsTable.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            RunsTable.class);
 
     /** Events that can be published on the table run service */
     public static final Class<?>[] eventsWritten = new Class<?>[]{RunEvent.class};
 
     /** Events observed on location service */
-    public static final Class<?>[] eventsRead = new Class<?>[]{LocationEvent.class};
+    public static final Class<?>[] eventsRead = new Class<?>[]{
+        LocationEvent.class
+    };
 
     //~ Instance fields --------------------------------------------------------
     /** (Debugging) name of this runs table. */
@@ -93,7 +94,6 @@ public class RunsTable
         this.orientation = orientation;
         this.dimension = dimension;
 
-
         runService = new SelectionService(name, eventsWritten);
 
         // Allocate the runs, according to orientation
@@ -101,7 +101,7 @@ public class RunsTable
                 new Rectangle(0, 0, dimension.width, dimension.height));
 
         // Prepare the collections of runs, one collection per pos value
-        runs = new ArrayList<>(rect.height);
+        runs = new ArrayList<List<Run>>(rect.height);
 
         for (int i = 0; i < rect.height; i++) {
             runs.add(new ArrayList<Run>());
@@ -175,7 +175,8 @@ public class RunsTable
             sb.append('|');
 
             for (int col = 0; col < buffer.getWidth(); col++) {
-                sb.append((buffer.getPixel(col, row) == BACKGROUND) ? '-' : 'X');
+                sb.append(
+                        (buffer.getPixel(col, row) == BACKGROUND) ? '-' : 'X');
             }
 
             sb.append(String.format("|%n"));
@@ -190,6 +191,99 @@ public class RunsTable
         sb.append(String.format("+%n"));
 
         return sb.toString();
+    }
+
+    //-----------//
+    // getBuffer //
+    //-----------//
+    /**
+     * Fill a rectangular buffer with the runs
+     *
+     * @return the filled buffer
+     */
+    public PixelBuffer getBuffer ()
+    {
+        // Prepare output buffer
+        PixelBuffer buffer = new PixelBuffer(dimension);
+
+        switch (orientation) {
+        case HORIZONTAL:
+
+            for (int row = 0; row < getSize(); row++) {
+                List<Run> seq = getSequence(row);
+
+                for (Run run : seq) {
+                    for (int c = run.getStart(); c <= run.getStop(); c++) {
+                        buffer.setPixel(c, row, 0);
+                    }
+                }
+            }
+
+            break;
+
+        case VERTICAL:
+
+            for (int row = 0; row < getSize(); row++) {
+                List<Run> seq = getSequence(row);
+
+                for (Run run : seq) {
+                    for (int col = run.getStart(); col <= run.getStop();
+                            col++) {
+                        buffer.setPixel(row, col, 0);
+                    }
+                }
+            }
+
+            break;
+        }
+
+        return buffer;
+    }
+
+    //--------------//
+    // getDimension //
+    //--------------//
+    /**
+     * Report the absolute dimension of the table, width along x axis
+     * and height along the y axis.
+     *
+     * @return the absolute dimension
+     */
+    public Dimension getDimension ()
+    {
+        return new Dimension(dimension);
+    }
+
+    //-----------//
+    // getHeight //
+    //-----------//
+    @Override
+    public int getHeight ()
+    {
+        return dimension.height;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * @return the name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
+    //----------------//
+    // getOrientation //
+    //----------------//
+    /**
+     * @return the orientation of the runs
+     */
+    @Override
+    public Orientation getOrientation ()
+    {
+        return orientation;
     }
 
     //----------//
@@ -252,126 +346,6 @@ public class RunsTable
         return null;
     }
 
-    //-----------//
-    // getBuffer //
-    //-----------//
-    /**
-     * Fill a rectangular buffer with the runs
-     *
-     * @return the filled buffer
-     */
-    public PixelBuffer getBuffer ()
-    {
-        // Prepare output buffer
-        PixelBuffer buffer = new PixelBuffer(dimension);
-
-        switch (orientation) {
-        case HORIZONTAL:
-
-            for (int row = 0; row < getSize(); row++) {
-                List<Run> seq = getSequence(row);
-
-                for (Run run : seq) {
-                    for (int c = run.getStart(); c <= run.getStop(); c++) {
-                        buffer.setPixel(c, row, 0);
-                    }
-                }
-            }
-
-            break;
-
-        case VERTICAL:
-
-            for (int row = 0; row < getSize(); row++) {
-                List<Run> seq = getSequence(row);
-
-                for (Run run : seq) {
-                    for (int col = run.getStart(); col <= run.getStop();
-                            col++) {
-                        buffer.setPixel(row, col, 0);
-                    }
-                }
-            }
-
-            break;
-        }
-
-        return buffer;
-    }
-
-    //-------------//
-    // getSequence //
-    //-------------//
-    /**
-     * Report the sequence of runs at a given index
-     *
-     * @param index the desired index
-     * @return the MODIFIABLE sequence of rows
-     */
-    public final List<Run> getSequence (int index)
-    {
-        return runs.get(index);
-    }
-
-    //---------//
-    // getSize //
-    //---------//
-    /**
-     * Report the number of sequences of runs in the table
-     *
-     * @return the table size (in terms of sequences)
-     */
-    public final int getSize ()
-    {
-        return runs.size();
-    }
-
-    //--------------//
-    // getDimension //
-    //--------------//
-    /**
-     * Report the absolute dimension of the table, width along x axis
-     * and height along the y axis.
-     *
-     * @return the absolute dimension
-     */
-    public Dimension getDimension ()
-    {
-        return new Dimension(dimension);
-    }
-
-    //-----------//
-    // getHeight //
-    //-----------//
-    @Override
-    public int getHeight ()
-    {
-        return dimension.height;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * @return the name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
-    //----------------//
-    // getOrientation //
-    //----------------//
-    /**
-     * @return the orientation of the runs
-     */
-    @Override
-    public Orientation getOrientation ()
-    {
-        return orientation;
-    }
-
     //-------------//
     // getRunCount //
     //-------------//
@@ -404,6 +378,43 @@ public class RunsTable
     public SelectionService getRunService ()
     {
         return runService;
+    }
+
+    //-------------//
+    // getSequence //
+    //-------------//
+    /**
+     * Report the sequence of runs at a given index
+     *
+     * @param index the desired index
+     * @return the MODIFIABLE sequence of rows
+     */
+    public final List<Run> getSequence (int index)
+    {
+        return runs.get(index);
+    }
+
+    //---------//
+    // getSize //
+    //---------//
+    /**
+     * Report the number of sequences of runs in the table
+     *
+     * @return the table size (in terms of sequences)
+     */
+    public final int getSize ()
+    {
+        return runs.size();
+    }
+
+    //--------------------//
+    // cutLocationService //
+    //--------------------//
+    public void cutLocationService (SelectionService locationService)
+    {
+        for (Class<?> eventClass : eventsRead) {
+            locationService.unsubscribe(eventClass, this);
+        }
     }
 
     //----------//
@@ -613,7 +624,8 @@ public class RunsTable
                     it.remove();
 
                     if (removed != null) {
-                        removed.getSequence(i).add(run);
+                        removed.getSequence(i)
+                                .add(run);
                     }
                 }
             }
@@ -629,8 +641,8 @@ public class RunsTable
      * Purge a runs table of all runs that match the provided filter,
      * and populate the provided 'removed' table with the removed runs.
      *
-     * @param filter the filter to detect runs to remove
-     * @param removed   a table to be filled, if not null, with purged runs
+     * @param filter  the filter to detect runs to remove
+     * @param removed a table to be filled, if not null, with purged runs
      * @return this runs table, to allow easy chaining
      */
     public RunsTable purge (Filter filter,
@@ -659,7 +671,8 @@ public class RunsTable
                     it.remove();
 
                     if (removed != null) {
-                        removed.getSequence(i).add(run);
+                        removed.getSequence(i)
+                                .add(run);
                     }
                 }
             }
@@ -688,6 +701,57 @@ public class RunsTable
         }
     }
 
+    //--------//
+    // render //
+    //--------//
+    /**
+     * Render the table runs onto the clip area of the provided
+     * graphics environment.
+     *
+     * @param g target environment
+     */
+    public void render (Graphics2D g)
+    {
+        // Potential clipping area (perhaps null)
+        Rectangle clip = g.getClipBounds();
+
+        switch (getOrientation()) {
+        case HORIZONTAL: {
+            int minRow = (clip != null) ? Math.max(clip.y, 0) : 0;
+            int maxRow = (clip != null)
+                    ? (Math.min((clip.y + clip.height), getHeight()) - 1)
+                    : (getHeight() - 1);
+
+            for (int row = minRow; row <= maxRow; row++) {
+                List<Run> seq = getSequence(row);
+
+                for (Run run : seq) {
+                    g.fillRect(run.getStart(), row, run.getLength(), 1);
+                }
+            }
+        }
+
+        break;
+
+        case VERTICAL: {
+            int minRow = (clip != null) ? Math.max(clip.x, 0) : 0;
+            int maxRow = (clip != null)
+                    ? (Math.min((clip.x + clip.width), getWidth()) - 1)
+                    : (getWidth() - 1);
+
+            for (int row = minRow; row <= maxRow; row++) {
+                List<Run> seq = getSequence(row);
+
+                for (Run run : seq) {
+                    g.fillRect(row, run.getStart(), 1, run.getLength());
+                }
+            }
+        }
+
+        break;
+        }
+    }
+
     //--------------------//
     // setLocationService //
     //--------------------//
@@ -695,16 +759,6 @@ public class RunsTable
     {
         for (Class<?> eventClass : eventsRead) {
             locationService.subscribeStrongly(eventClass, this);
-        }
-    }
-
-    //--------------------//
-    // cutLocationService //
-    //--------------------//
-    public void cutLocationService (SelectionService locationService)
-    {
-        for (Class<?> eventClass : eventsRead) {
-            locationService.unsubscribe(eventClass, this);
         }
     }
 
@@ -717,20 +771,27 @@ public class RunsTable
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
 
-        sb.append(" ").append(name);
+        sb.append(" ")
+                .append(name);
 
-        sb.append(" ").append(orientation);
+        sb.append(" ")
+                .append(orientation);
 
-        sb.append(" ").append(dimension.width).append("x").append(
-                dimension.height);
+        sb.append(" ")
+                .append(dimension.width)
+                .append("x")
+                .append(dimension.height);
 
         // Debug
         if (false) {
             int count = 0;
+
             for (List<Run> seq : runs) {
                 count += seq.size();
             }
-            sb.append(" count:").append(count);
+
+            sb.append(" count:")
+                    .append(count);
         }
 
         sb.append("}");
@@ -769,7 +830,8 @@ public class RunsTable
             runService.publish(new RunEvent(this, hint, movement, run));
         }
     }
-    
+
+    //~ Inner Interfaces -------------------------------------------------------
     //--------//
     // Filter //
     //--------//
@@ -779,13 +841,17 @@ public class RunsTable
      */
     public static interface Filter
     {
+        //~ Methods ------------------------------------------------------------
+
         /**
          * Perform the filter on the provided run within the sequence
          * index.
-         * @param run the run to check
+         *
+         * @param run      the run to check
          * @param sequence the index of the containing run sequence
          * @return true if check is OK
          */
-        boolean check(Run run, int sequence);
+        boolean check (Run run,
+                       int sequence);
     }
 }

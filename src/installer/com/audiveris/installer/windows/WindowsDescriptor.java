@@ -13,6 +13,8 @@ package com.audiveris.installer.windows;
 
 import com.audiveris.installer.Descriptor;
 import com.audiveris.installer.DescriptorFactory;
+import com.audiveris.installer.FileCopier;
+import com.audiveris.installer.Installer;
 import com.audiveris.installer.Jnlp;
 import com.audiveris.installer.SpecificFile;
 import com.audiveris.installer.Utilities;
@@ -27,14 +29,20 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.audiveris.installer.OcrCompanion.LOCAL_LIB_FOLDER;
+import static java.nio.file.FileVisitResult.CONTINUE;
 
 /**
  * Class {@code WindowsDescriptor} implements Installer descriptor for
@@ -149,12 +157,12 @@ public class WindowsDescriptor
         /**
          * Jar name for 32-bit.
          */
-        static final String JAR_32 = "resources/tesseract-windows-32bit.jar";
+        static final String JAR_32 = "resources/tess-windows-32bit.jar";
 
         /**
          * Jar name for 64-bit.
          */
-        static final String JAR_64 = "resources/tesseract-windows-64bit.jar";
+        static final String JAR_64 = "resources/tess-windows-64bit.jar";
 
         /**
          * Dll for leptonica.
@@ -165,6 +173,11 @@ public class WindowsDescriptor
          * Dll for tesseract.
          */
         static final String DLL_TESSERACT = "libtesseract302.dll";
+
+        /**
+         * Dll for bridge.
+         */
+        static final String DLL_BRIDGE = "jniTessBridge.dll";
 
     }
 
@@ -329,16 +342,75 @@ public class WindowsDescriptor
     public void installTesseract ()
             throws Exception
     {
+        /**
+         * The current strategy (for Windows) is to copy all needed
+         * DLLs into the proper target system folder.
+         * (The previous strategy was to keep them in Java cache, but we faced
+         * problems when trying to load them explicitly).
+         * As usual, we download and expand locally, then try to copy the
+         * expanded files to target system folder. 
+         * If direct copy is denied, we post copy commands to be run later at 
+         * elevated level.
+         */
+        final File local = getLocalLibFolder();
+        final File lib = new File(local, "lib");
+        lib.mkdirs();
+        logger.debug("local lib folder: {}", lib.getAbsolutePath());
+
         final URI codeBase = Jnlp.basicService.getCodeBase().toURI();
         final String jarName = DescriptorFactory.OS_ARCH.equals("x86") ? TESS.JAR_32 : TESS.JAR_64;
         final URL url = Utilities.toURI(codeBase, jarName).toURL();
-        final String sysDir = DescriptorFactory.WOW ? TESS.SYSTEM_WOW : TESS.SYSTEM_PURE;
         Utilities.downloadJarAndExpand(
                 "Tesseract",
                 url.toString(),
                 getTempFolder(),
                 "",
-                new File(sysDir));
+                lib);
+
+        // (Try to) copy from local folder to system folder
+        final Path libPath = lib.toPath();
+        final Path[] sources = new Path[]{libPath};
+        final String sysDir = DescriptorFactory.WOW ? TESS.SYSTEM_WOW : TESS.SYSTEM_PURE;
+        final Path target = Paths.get(sysDir);
+
+        try {
+            FileCopier fc = new FileCopier(sources, target, true);
+            fc.copy();
+        } catch (IOException ex) {
+            logger.info(
+                    "Could not directly copy Tesseract binary files"
+                    + ", will post a copy command at system level");
+
+            // Fallback to posted copy commands
+            Files.walkFileTree(libPath, new SimpleFileVisitor<Path>()
+            {
+                @Override
+                public FileVisitResult visitFile (Path file,
+                                                  BasicFileAttributes attrs) throws IOException
+                {
+                    Installer.getBundle()
+                            .appendCommand(getCopyCommand(file, target));
+
+                    return CONTINUE;
+
+                }
+            });
+        }
+
+    }
+
+    //-------------------//
+    // getLocalLibFolder //
+    //-------------------//
+    /**
+     * Report the local (temporary) folder where binary files are
+     * expanded before being copied to final target location.
+     *
+     * @return the local lib folder
+     */
+    private File getLocalLibFolder ()
+    {
+        return new File(getTempFolder(), LOCAL_LIB_FOLDER);
     }
 
     //---------//
@@ -396,7 +468,8 @@ public class WindowsDescriptor
     {
         final String sysDir = DescriptorFactory.WOW ? TESS.SYSTEM_WOW : TESS.SYSTEM_PURE;
         return Files.exists(Paths.get(sysDir, TESS.DLL_LEPTONICA))
-               && Files.exists(Paths.get(sysDir, TESS.DLL_TESSERACT));
+               && Files.exists(Paths.get(sysDir, TESS.DLL_TESSERACT))
+               && Files.exists(Paths.get(sysDir, TESS.DLL_BRIDGE));
     }
 
     //----------//

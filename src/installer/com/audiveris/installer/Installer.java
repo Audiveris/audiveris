@@ -151,7 +151,18 @@ public class Installer
             ///installerService.hideProgressBar();
             if (hasUI) {
                 logger.info(
-                        "\n   Please:\n"
+                        "\nEnvironment:\n"
+                        + "- OS:           {}\n"
+                        + "- Architecture: {}\n"
+                        + "- Java VM:      {}\n",
+                        System.getProperty("os.name") + " "
+                        + System.getProperty("os.version"),
+                        System.getProperty("os.arch"),
+                        System.getProperty("java.vm.name") + " (build "
+                        + System.getProperty("java.vm.version") + ", "
+                        + System.getProperty("java.vm.info") + ")");
+                logger.info(
+                        "Please:\n"
                         + "- Add or remove OCR-supported languages,\n"
                         + "- Check or uncheck optional components,\n"
                         + "- Launch installation.\n");

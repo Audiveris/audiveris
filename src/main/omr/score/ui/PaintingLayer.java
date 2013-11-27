@@ -17,13 +17,16 @@ package omr.score.ui;
 public enum PaintingLayer
 {
 
-    /** Input data: image or glyphs */
+    /** Input: image or glyphs. */
     INPUT("layer-input.png"),
-    /** Both input and output */
+    /** Union of input and output. */
     INPUT_OUTPUT("layer-input-output.png"),
-    /** Output data: score entities */
+    /** Output: score entities. */
     OUTPUT("layer-output.png");
 
+    //---------------//
+    // PaintingLayer //
+    //---------------//
     /**
      * Creates a new PaintingLayer object.
      *
@@ -34,8 +37,12 @@ public enum PaintingLayer
         this.imageName = imageName;
     }
 
+    /** Name of file where related icon can be read. */
     private final String imageName;
 
+    //--------------//
+    // getImageName //
+    //--------------//
     public String getImageName ()
     {
         return imageName;

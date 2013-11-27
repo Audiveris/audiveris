@@ -29,7 +29,6 @@ import omr.glyph.facets.Glyph;
 import omr.grid.FilamentsFactory;
 import omr.grid.StaffInfo;
 
-import omr.image.Picture;
 import omr.image.PixelFilter;
 
 import omr.lag.Section;

@@ -193,10 +193,8 @@ public class FilamentAlignment
 
         if (orientation == Orientation.HORIZONTAL) {
             if ((coord < startPoint.getX()) || (coord > stopPoint.getX())) {
-                double sl = (stopPoint.getY() - startPoint.getY()) / (stopPoint.
-                        getX()
-                                                                      - startPoint.
-                        getX());
+                double sl = (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX()
+                                                                      - startPoint.getX());
 
                 return startPoint.getY() + (sl * (coord - startPoint.getX()));
             } else {
@@ -204,10 +202,8 @@ public class FilamentAlignment
             }
         } else {
             if ((coord < startPoint.getY()) || (coord > stopPoint.getY())) {
-                double sl = (stopPoint.getX() - startPoint.getX()) / (stopPoint.
-                        getY()
-                                                                      - startPoint.
-                        getY());
+                double sl = (stopPoint.getX() - startPoint.getX()) / (stopPoint.getY()
+                                                                      - startPoint.getY());
 
                 return startPoint.getX() + (sl * (coord - startPoint.getY()));
             } else {
@@ -233,7 +229,8 @@ public class FilamentAlignment
     /**
      * Polish the filament by looking at local curvatures and removing
      * sections when necessary.
-     * <p>If the local point is next to the first or last point of the curve,
+     * <p>
+     * If the local point is next to the first or last point of the curve,
      * then the point to modify is likely to be this first or last point.
      * In the other cases, the local point itself is modified.
      */
@@ -247,7 +244,7 @@ public class FilamentAlignment
             final List<Line2D> bisectors = getBisectors();
 
             // Compute radius values (using same index as points)
-            final List<Double> radii = new ArrayList<>();
+            final List<Double> radii = new ArrayList<Double>();
             radii.add(null); // To skip index 0 for which we have no value (???)
 
             for (int i = 1, iBreak = points.size() - 1; i < iBreak; i++) {
@@ -271,8 +268,12 @@ public class FilamentAlignment
 
             if (rad < constants.minRadius.getValue()) {
                 if (logger.isDebugEnabled() || glyph.isVip()) {
-                    logger.info("Polishing F#{} minRad: {} seq:{} {}",
-                            glyph.getId(), (float) rad, idx, points.get(idx));
+                    logger.info(
+                            "Polishing F#{} minRad: {} seq:{} {}",
+                            glyph.getId(),
+                            (float) rad,
+                            idx,
+                            points.get(idx));
                 }
 
                 // Adjust the removable point for first & last points
@@ -295,7 +296,7 @@ public class FilamentAlignment
                         orientedPt.getY() - (probeWidth / 2),
                         probeWidth,
                         probeWidth);
-                List<Section> found = new ArrayList<>();
+                List<Section> found = new ArrayList<Section>();
 
                 for (Section section : glyph.getMembers()) {
                     if (rect.intersects(section.getOrientedBounds())) {
@@ -308,23 +309,26 @@ public class FilamentAlignment
                     Collections.sort(
                             found,
                             new Comparator<Section>()
-                    {
-                        @Override
-                        public int compare (Section s1,
-                                            Section s2)
-                        {
-                            return Double.compare(
-                                    point.distance(s1.getCentroid()),
-                                    point.distance(s2.getCentroid()));
-                        }
-                    });
+                            {
+                                @Override
+                                public int compare (Section s1,
+                                                    Section s2)
+                                {
+                                    return Double.compare(
+                                            point.distance(s1.getCentroid()),
+                                            point.distance(s2.getCentroid()));
+                                }
+                            });
                 }
 
                 Section section = found.isEmpty() ? null : found.get(0);
 
                 if (section != null) {
-                    logger.debug("Removed section#{} from {} F{}",
-                            section.getId(), orientation, glyph.getId());
+                    logger.debug(
+                            "Removed section#{} from {} F{}",
+                            section.getId(),
+                            orientation,
+                            glyph.getId());
                     glyph.removeSection(section, Linking.LINK_BACK);
                     modified = true;
                 }
@@ -338,7 +342,9 @@ public class FilamentAlignment
     @Override
     public void renderLine (Graphics2D g)
     {
-        if (!glyph.getBounds().intersects(g.getClipBounds())) {
+        Rectangle clip = g.getClipBounds();
+
+        if ((clip != null) && !clip.intersects(glyph.getBounds())) {
             return;
         }
 
@@ -350,8 +356,7 @@ public class FilamentAlignment
         // Then the absolute defining points?
         if (constants.showFilamentPoints.isSet() && (points != null)) {
             // Point radius
-            double r = glyph.getInterline() * constants.filamentPointSize.
-                    getValue();
+            double r = glyph.getInterline() * constants.filamentPointSize.getValue();
             Ellipse2D ellipse = new Ellipse2D.Double();
 
             for (Point2D p : points) {
@@ -372,9 +377,11 @@ public class FilamentAlignment
         }
 
         if (orientation == Orientation.HORIZONTAL) {
-            return getLine().yDerivativeAtX(coord);
+            return getLine()
+                    .yDerivativeAtX(coord);
         } else {
-            return getLine().xDerivativeAtY(coord);
+            return getLine()
+                    .xDerivativeAtY(coord);
         }
     }
 
@@ -418,7 +425,7 @@ public class FilamentAlignment
             // Determine the number of segments and their precise length
             int segCount = (int) Math.rint(length / typicalLength);
             double segLength = length / segCount;
-            List<Point2D> newPoints = new ArrayList<>(segCount + 1);
+            List<Point2D> newPoints = new ArrayList<Point2D>(segCount + 1);
 
             // First point
             if (startPoint == null) {
@@ -481,8 +488,7 @@ public class FilamentAlignment
         for (Point2D p : points) {
             double dc = Math.abs(
                     coord
-                    - ((orientation == Orientation.HORIZONTAL) ? p.getX() : p.
-                    getY()));
+                    - ((orientation == Orientation.HORIZONTAL) ? p.getX() : p.getY()));
 
             if ((dc <= margin) && (dc < bestDeltacoord)) {
                 bestDeltacoord = dc;
@@ -508,12 +514,12 @@ public class FilamentAlignment
             computeLine();
         }
 
-        List<Line2D> bisectors = new ArrayList<>();
+        List<Line2D> bisectors = new ArrayList<Line2D>();
 
         for (int i = 0; i < (points.size() - 1); i++) {
             bisectors.add(
                     LineUtil.bisector(
-                    new Line2D.Double(points.get(i), points.get(i + 1))));
+                            new Line2D.Double(points.get(i), points.get(i + 1))));
         }
 
         return bisectors;
@@ -524,7 +530,8 @@ public class FilamentAlignment
     //-----------//
     /**
      * Report radius computed at point with index 'i'.
-     * <p>TODO: This a simplistic way for computing radius, based on insection
+     * <p>
+     * TODO: This a simplistic way for computing radius, based on insection
      * of the two adjacent bisectors.
      * There may be other ways, such as using the following property:
      * sin angle a / length of segment a = 1 / (2 * radius)

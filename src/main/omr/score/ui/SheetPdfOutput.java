@@ -28,14 +28,13 @@ import org.slf4j.LoggerFactory;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.io.File;
 import java.io.FileOutputStream;
 
 /**
  * Class {@code SheetPdfOutput} produces a physical PDF output of a
  * score.
- *
- * <p>TODO: Implement a PDF with multiple output pages
  *
  * @author Hervé Bitteur
  */
@@ -48,10 +47,10 @@ public class SheetPdfOutput
             ScoresManager.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** The related score */
+    /** The related score. */
     private final Score score;
 
-    /** The file to print to */
+    /** The file to print to. */
     private final File file;
 
     //~ Constructors -----------------------------------------------------------
@@ -93,12 +92,19 @@ public class SheetPdfOutput
 
                 PdfContentByte cb = writer.getDirectContent();
                 Graphics2D g2 = cb.createGraphics(dim.width, dim.height);
+                
+                // Scale: 1
                 g2.scale(1, 1);
 
+                // Anti-aliasing ON
+                g2.setRenderingHint(
+                        RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+
                 // Painting
+                g2.setColor(Color.BLACK);
                 PagePhysicalPainter painter = new PagePhysicalPainter(
                         g2,
-                        Color.BLACK, // Foreground color
                         false, // No voice painting
                         true, // Paint staff lines
                         false); // No annotations

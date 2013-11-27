@@ -17,6 +17,7 @@ import omr.action.ActionManager;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+import static omr.score.ui.PaintingLayer.*;
 
 import org.jdesktop.application.AbstractBean;
 import org.jdesktop.application.Action;
@@ -78,7 +79,7 @@ public class PaintingParameters
     private boolean voicePainting = false;
 
     /** Layer painting is chosen to be not persistent. */
-    private PaintingLayer paintingLayer = PaintingLayer.INPUT;
+    private PaintingLayer paintingLayer = INPUT;
 
     //~ Methods ----------------------------------------------------------------
     //-------------//
@@ -110,8 +111,7 @@ public class PaintingParameters
     //-----------------//
     public boolean isInputPainting ()
     {
-        return (getPaintingLayer() == PaintingLayer.INPUT)
-               || (getPaintingLayer() == PaintingLayer.INPUT_OUTPUT);
+        return (paintingLayer == INPUT) || (paintingLayer == INPUT_OUTPUT);
     }
 
     //----------------//
@@ -127,8 +127,7 @@ public class PaintingParameters
     //------------------//
     public boolean isOutputPainting ()
     {
-        return (getPaintingLayer() == PaintingLayer.OUTPUT)
-               || (getPaintingLayer() == PaintingLayer.INPUT_OUTPUT);
+        return (paintingLayer == INPUT_OUTPUT) || (paintingLayer == OUTPUT);
     }
 
     //----------------//
@@ -333,8 +332,8 @@ public class PaintingParameters
                 layerIcons.put(
                         layer,
                         new ImageIcon(
-                        getClass().getResource(
-                        root + "/apps/" + layer.getImageName())));
+                                getClass().getResource(
+                                        root + "/apps/" + layer.getImageName())));
             }
         }
 

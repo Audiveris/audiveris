@@ -75,7 +75,8 @@ public class BasicSection
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(BasicSection.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            BasicSection.class);
 
     //~ Instance fields --------------------------------------------------------
     /** Position of first run */
@@ -88,7 +89,7 @@ public class BasicSection
 
     /** The collection of runs that make up the section */
     @XmlElement(name = "run")
-    private final List<Run> runs = new ArrayList<>();
+    private final List<Run> runs = new ArrayList<Run>();
 
     /** Oriented bounding rectangle */
     protected Rectangle orientedBounds;
@@ -185,17 +186,23 @@ public class BasicSection
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("%n"));
 
-        sb.append(String.format(
-                "xMin=%d, xMax=%d%n", box.x, box.x + box.width - 1));
-        sb.append(String.format(
-                "yMin=%d, yMax=%d%n", box.y, box.y + box.height - 1));
+        sb.append(
+                String.format("xMin=%d, xMax=%d%n", box.x, (box.x + box.width) - 1));
+        sb.append(
+                String.format(
+                        "yMin=%d, yMax=%d%n",
+                        box.y,
+                        (box.y + box.height) - 1));
 
         for (int iy = 0; iy < table.length; iy++) {
             sb.append(String.format("%d:", iy + box.y));
+
             char[] line = table[iy];
+
             for (int ix = 0; ix < line.length; ix++) {
                 sb.append(line[ix]);
             }
+
             sb.append(String.format("%n"));
         }
 
@@ -209,7 +216,7 @@ public class BasicSection
     public void addOppositeSection (Section otherSection)
     {
         if (oppositeSections == null) {
-            oppositeSections = new HashSet<>();
+            oppositeSections = new HashSet<Section>();
         }
 
         oppositeSections.add(otherSection);
@@ -231,7 +238,7 @@ public class BasicSection
     // compareTo //
     //-----------//
     /**
-     * Needed to implement Comparable, sorting sections first by 
+     * Needed to implement Comparable, sorting sections first by
      * absolute abscissa, then by absolute ordinate.
      *
      * @param other the other section to compare to
@@ -244,8 +251,10 @@ public class BasicSection
             return 0;
         }
 
-        final Point ref = this.getBounds().getLocation();
-        final Point otherRef = other.getBounds().getLocation();
+        final Point ref = this.getBounds()
+                .getLocation();
+        final Point otherRef = other.getBounds()
+                .getLocation();
 
         // Are x values different?
         final int dx = ref.x - otherRef.x;
@@ -285,10 +294,14 @@ public class BasicSection
         // Invalidate cached data
         invalidateCache();
 
-        logger.debug("Parameters of {} maxRunLength={} meanRunLength={}"
-                     + " weight={} foreWeight={}",
-                this, getMaxRunLength(), getMeanRunLength(),
-                weight, foreWeight);
+        logger.debug(
+                "Parameters of {} maxRunLength={} meanRunLength={}"
+                + " weight={} foreWeight={}",
+                this,
+                getMaxRunLength(),
+                getMeanRunLength(),
+                weight,
+                foreWeight);
     }
 
     //----------//
@@ -298,7 +311,8 @@ public class BasicSection
     public boolean contains (int x,
                              int y)
     {
-        return getPolygon().contains(x, y);
+        return getPolygon()
+                .contains(x, y);
     }
 
     //----------//
@@ -390,8 +404,8 @@ public class BasicSection
             final int pMin = oRoi.y;
             final int pMax = -1
                              + Math.min(
-                    firstPos + runs.size(),
-                    oRoi.y + oRoi.height);
+                            firstPos + runs.size(),
+                            oRoi.y + oRoi.height);
             final int cMin = oRoi.x;
             final int cMax = (oRoi.x + oRoi.width) - 1;
             int p = firstPos - 1;
@@ -539,9 +553,7 @@ public class BasicSection
     {
         Rectangle box = getBounds();
 
-        return new Point(
-                box.x + (box.width / 2),
-                box.y + (box.height / 2));
+        return new Point(box.x + (box.width / 2), box.y + (box.height / 2));
     }
 
     //-----------//
@@ -835,7 +847,8 @@ public class BasicSection
     @Override
     public PathIterator getPathIterator ()
     {
-        return getPolygon().getPathIterator(null);
+        return getPolygon()
+                .getPathIterator(null);
     }
 
     //------------//
@@ -958,10 +971,12 @@ public class BasicSection
         }
 
         // Proper source section
-        Section source = getSources().get(getInDegree() - 1);
+        Section source = getSources()
+                .get(getInDegree() - 1);
 
         // Browse till we get to this as target
-        for (Iterator<Section> li = source.getTargets().iterator(); li.hasNext();) {
+        for (Iterator<Section> li = source.getTargets()
+                .iterator(); li.hasNext();) {
             Section section = li.next();
 
             if (section == this) {
@@ -989,11 +1004,13 @@ public class BasicSection
         }
 
         // Proper source section
-        Section source = getSources().get(0);
+        Section source = getSources()
+                .get(0);
 
         // Browse till we get to this as target
-        for (ListIterator<Section> li = source.getTargets().listIterator(
-                source.getOutDegree()); li.hasPrevious();) {
+        for (ListIterator<Section> li = source.getTargets()
+                .listIterator(
+                        source.getOutDegree()); li.hasPrevious();) {
             Section section = li.previous();
 
             if (section == this) {
@@ -1016,7 +1033,8 @@ public class BasicSection
     @Override
     public boolean intersects (Rectangle rect)
     {
-        return getPolygon().intersects(rect);
+        return getPolygon()
+                .intersects(rect);
     }
 
     //-------//
@@ -1098,10 +1116,12 @@ public class BasicSection
         }
 
         // Proper target section
-        Section target = getTargets().get(getOutDegree() - 1);
+        Section target = getTargets()
+                .get(getOutDegree() - 1);
 
         // Browse till we get to this as source
-        for (Iterator<Section> li = target.getSources().iterator(); li.hasNext();) {
+        for (Iterator<Section> li = target.getSources()
+                .iterator(); li.hasNext();) {
             Section section = li.next();
 
             if (section == this) {
@@ -1129,11 +1149,13 @@ public class BasicSection
         }
 
         // Proper target section
-        Section target = getTargets().get(getOutDegree() - 1);
+        Section target = getTargets()
+                .get(getOutDegree() - 1);
 
         // Browse till we get to this as source
-        for (ListIterator<Section> li = target.getSources().listIterator(
-                target.getInDegree()); li.hasPrevious();) {
+        for (ListIterator<Section> li = target.getSources()
+                .listIterator(
+                        target.getInDegree()); li.hasPrevious();) {
             Section section = li.previous();
 
             if (section == this) {
@@ -1177,7 +1199,7 @@ public class BasicSection
         Rectangle rect = getBounds();
         Color oldColor = g.getColor();
 
-        if (clip.intersects(rect)) {
+        if ((clip == null) || clip.intersects(rect)) {
             if (specificColor != null) {
                 g.setColor(specificColor);
             } else {
@@ -1227,7 +1249,7 @@ public class BasicSection
         Rectangle clip = g.getClipBounds();
         Rectangle rect = getBounds();
 
-        if (clip.intersects(rect)) {
+        if ((clip == null) || clip.intersects(rect)) {
             Graphics2D g2 = (Graphics2D) g;
             final Stroke oldStroke = UIUtil.setAbsoluteStroke(g2, 1f);
             Polygon polygon = getPolygon();
@@ -1362,7 +1384,8 @@ public class BasicSection
             sb.append("?");
         }
 
-        sb.append("#").append(getId());
+        sb.append("#")
+                .append(getId());
 
         sb.append(internalsString());
 
@@ -1429,7 +1452,8 @@ public class BasicSection
         StringBuilder sb = new StringBuilder(super.internalsString());
 
         if (oppositeSections != null) {
-            sb.append("/").append(oppositeSections.size());
+            sb.append("/")
+                    .append(oppositeSections.size());
         }
 
         //        sb.append(" fPos=")
@@ -1455,10 +1479,12 @@ public class BasicSection
         }
 
         if (glyph != null) {
-            sb.append(" ").append(glyph.idString());
+            sb.append(" ")
+                    .append(glyph.idString());
 
             if (glyph.getShape() != null) {
-                sb.append(":").append(glyph.getShape());
+                sb.append(":")
+                        .append(glyph.getShape());
             }
         }
 
@@ -1573,7 +1599,8 @@ public class BasicSection
 
         if (dir < 0) {
             // Finish with starting point
-            xpoints[index] = runs.get(0).getStart();
+            xpoints[index] = runs.get(0)
+                    .getStart();
             ypoints[index] = getFirstPos();
             index++;
         }

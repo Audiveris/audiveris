@@ -17,8 +17,7 @@ import static omr.WellKnowns.LINE_SEPARATOR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.image.Picture;
-import omr.image.Picture.SourceKey;
+import omr.image.PixelFilter;
 
 import omr.math.Histogram;
 import omr.math.Histogram.HistoEntry;
@@ -32,6 +31,7 @@ import omr.run.RunsTableFactory;
 
 import omr.score.Score;
 
+import omr.sheet.Picture.SourceKey;
 import omr.sheet.ui.SheetsController;
 
 import omr.step.StepException;
@@ -54,7 +54,6 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
-import omr.image.PixelFilter;
 
 /**
  * Class {@code ScaleBuilder} encapsulates the computation of a sheet

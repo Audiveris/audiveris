@@ -515,12 +515,6 @@ public class MainGui
     {
         logger.debug("MainGui. 1/initialize");
 
-        // Display software reference
-        logger.info(
-                "Reference: {}:{}",
-                WellKnowns.TOOL_REF,
-                WellKnowns.TOOL_BUILD);
-
         // Launch background pre-loading tasks?
         if (constants.preloadCostlyPackages.getValue()) {
             JaiLoader.preload();

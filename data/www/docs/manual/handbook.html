@@ -14,7 +14,8 @@
             //]]>
         </script>
 
-        <script src="https://java.com/js/deployJava.js"></script>
+        <!-- Java Deployment Toolkit -->
+        <script src="https://www.java.com/js/deployJava.js"></script>
 
         <meta charset="utf-8" />
         <meta name="description" content="How to operate Audiveris" />
@@ -162,7 +163,7 @@
                 Handbook
             </h1>
             <p>
-                This documentation applies to Audiveris version 4.2 and 
+                This documentation applies to Audiveris version 4.3 and 
                 above, for Windows and Linux environments.
             </p>
 
@@ -510,40 +511,82 @@
                             immediately.</li>
                     </ol>
 
-                    <div class="indent warning">
-                        <p>
-                            <b>Check the shortcut:</b>
-                            For some unknown reason, the shortcut installed by
-                            JNLP may point to a 32-bit version of Java, this has
-                            been observed on Windows when both 32-bit and 64-bit
-                            Java environments are installed.
-                        </p>
-                        <p>This will result in messages like  "<i>Error while loading 
-                                library jniTessBridge</i>" (in the log window) or
-                            "<i>Tesseract OCR is not installed properly</i>" 
-                            (in a popup).
-                            They signal that (64-bit) DLLs cannot be loaded by a
-                            (32-bit) JVM.
-                        </p>
-                        <p>
-                            To fix this, modify the shortcut as follows.
-                            Use a right-click on the icon, to select Properties then
-                            Shortcut. The "target" field points to a javaws.exe 
-                            program.
-                            If the field begins with
-                            <code>C:\Windows\SysWOW64\javaws.exe</code> then it is
-                            pointing to 32-bit Java.
-                            So modify it so that it points to 64-bit Java, using 
-                            either <code>javaws.exe</code> alone if the 64-bit Java 
-                            appears first in the path, or an explicit link such as
-                            <code>C:\Program Files\Java\jre7\bin\javaws.exe</code>.
-                        </p>
-                    </div>
+                    <p>
+                        <b>32-bit vs 64-bit: "<i>Tesseract OCR is not installed properly</i>" </b>
+                    </p>
+                    <p>
+                        A 32-bit OS can run only 32-bit programs, but a 64-bit
+                        OS can usually run both 32-bit and 64-bit programs.
+                        This applies to the <code>javaws</code> program as well,
+                        and typically you can have different Java environments
+                        installed on your OS.
+                        Java byte-code is OS and architecture independent, but
+                        Audiveris needs Tesseract OCR software, a C++ program,
+                        accessed through JNI in the same process.
+                        The related binary files are installed by Audiveris
+                        installer into proper (Windows) system folders:
+                        a 32-bit <code>javaws</code> will target 32-bit system 
+                        folders while a 64-bit <code>javaws</code> will target
+                        64-bit system folders.
+                    </p>
+                    <p>
+                        If, on following launches, you observe messages like 
+                        "<i>Error while loading library jniTessBridge</i>"
+                        (in the log window) or
+                        "<i>Tesseract OCR is not installed properly</i>" 
+                        (in a popup), they signal an architecture mismatch: 
+                        you are trying to load 64-bit binaries from a 32-bit
+                        javaws/JVM or vice versa.
+                        Typically, for some unknown reason, the shortcut 
+                        installed by JNLP may point to a 32-bit version of Java,
+                        this has been observed on Windows when both 32-bit and 
+                        64-bit Java environments are installed.
+                    </p>
+                    <p>
+                        To fix this, you can modify the shortcut as follows.
+                        Use a right-click on the icon, to select Properties then
+                        Shortcut. The "target" field points to a javaws.exe 
+                        program.
+                        If the field begins with
+                        <code>C:\Windows\SysWOW64\javaws.exe</code> then it is
+                        pointing to 32-bit Java.
+                        So modify it so that it points to 64-bit Java, using 
+                        either <code>javaws.exe</code> alone if the 64-bit Java 
+                        appears first in the path, or an explicit link such as
+                        <code>C:\Program Files\Java\jre7\bin\javaws.exe</code>.
+                    </p>
+
+                    <p>
+                        Better yet, you can even have both 32-bit and 64-bit 
+                        versions of Audiveris active at the same time, each with
+                        its own set of binaries in proper system folders.
+                        To do so, you have to install each version, for example
+                        (assuming you have uninstalled any previous version):
+                    </p>
+                    <ol>
+                        <li><code>(32-bit)\javaws https://audiveris.kenai.com/jnlp/launch.jnlp</code></li>
+                        <li><code>javaws -uninstall https://audiveris.kenai.com/jnlp/launch.jnlp</code></li>
+                        <li><code>(64-bit)\javaws https://audiveris.kenai.com/jnlp/launch.jnlp</code></li>
+                    </ol>
+                    <p>
+                        The purpose of step #2 (uninstall) is to remove Audiveris 
+                        from Java cache so that the next call to javaws (step #3)
+                        will actually trigger the download of the needed binaries
+                        from Audiveris web site.
+
+                        From that point on, you can use either 32-bit javaws
+                        or 64-bit javaws (or whatever launch mechanism you 
+                        choose) and it will launch the corresponding version
+                        immediately since both binary sets are available, while
+                        Audiveris byte-code is in Java cache.
+                    </p>
 
                     <img class="right" title="Application update" 
                          src="../images/installer-update.png" />
                     <p>
                         <b>Application updates:</b>
+                    </p>
+                    <p>
                         New versions of Audiveris resources may become 
                         available on the server. 
                         Every time you launch Audiveris, a quick network access
@@ -3972,7 +4015,7 @@ OpenJDK 64-Bit Server VM (build 23.2-b09, mixed mode)</pre>
         <!-- Needed initializations for expansion mechanism -->
         <script src="../../branding/js/expansion.js"></script> 
         <script>
-                            collapseAll();
+            collapseAll();
         </script>
     </body>
 </html>

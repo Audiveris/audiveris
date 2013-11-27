@@ -22,11 +22,9 @@ import omr.glyph.GlyphsBuilder;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.image.GaussianGrayFilter;
 import omr.image.GlobalFilter;
-import omr.image.ImageView;
+import omr.image.ImageUtil;
 import omr.image.MorphoProcessor;
-import omr.image.Picture;
 import omr.image.PixelBuffer;
 import omr.image.PixelFilter;
 import omr.image.StructureElement;
@@ -41,6 +39,7 @@ import omr.run.Orientation;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
 
+import omr.sheet.ui.ImageView;
 import omr.sheet.ui.PixelBoard;
 
 import omr.ui.BoardsPane;
@@ -224,23 +223,14 @@ public class SpotsBuilder
 
         mp.close(buffer);
 
-        BufferedImage fromClosedBuffer = buffer.toBufferedImage();
+        BufferedImage closedImg = buffer.toBufferedImage();
 
         // Store buffer on disk for further manual analysis if any
-        try {
-            ImageIO.write(
-                    fromClosedBuffer,
-                    "png",
-                    new File(
-                            WellKnowns.TEMP_FOLDER,
-                            sheet.getPage().getId() + ".spot.png"));
-        } catch (IOException ex) {
-            logger.warn("Error storing spotTable", ex);
-        }
+        ImageUtil.saveOnDisk(closedImg, sheet.getPage().getId() + ".spot");
 
         // Display the gray-level view of all spots
         if (Main.getGui() != null) {
-            ImageView imageView = new ImageView(sheet, fromClosedBuffer);
+            ImageView imageView = new ImageView(sheet, closedImg);
             sheet.getAssembly()
                     .addViewTab(
                             "SpotView",
