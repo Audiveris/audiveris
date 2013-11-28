@@ -304,18 +304,16 @@ public class SheetAssembly
     /**
      * Force a tab selection programmatically.
      *
-     * @param step the step whose related tab must be selected
+     * @param tab the tab to be selected
      */
-    public void selectViewTab (Step step)
+    public void selectViewTab (String tab)
     {
-        final String title = step.getTab();
-
         for (int i = 0, count = viewsPane.getTabCount(); i < count; i++) {
-            if (viewsPane.getTitleAt(i).equals(title)) {
+            if (viewsPane.getTitleAt(i).equals(tab)) {
                 viewsPane.setSelectedIndex(i);
                 viewsPane.repaint();
 
-                logger.debug("Selected view tab {}", title);
+                logger.debug("Selected view tab {}", tab);
 
                 return;
             }

@@ -12,7 +12,7 @@
 package omr.step;
 
 import omr.sheet.Sheet;
-import omr.sheet.SheetDelta;
+import omr.sheet.SheetDiff;
 import omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
@@ -21,8 +21,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code DeltaStep} computes the various delta values
- * (negatives, positives and false positives) on a whole sheet.
+ * Class {@code DeltaStep} computes the delta value as a kind of
+ * recognition level on a whole sheet.
  *
  * @author Hervé Bitteur
  */
@@ -48,8 +48,8 @@ public class DeltaStep
                 Steps.DELTA,
                 Level.SCORE_LEVEL,
                 Mandatory.OPTIONAL,
-                DELTA_TAB,
-                "Compute page delta values");
+                DATA_TAB,
+                "Compute page delta");
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -61,6 +61,7 @@ public class DeltaStep
                       Sheet sheet)
             throws StepException
     {
-        new SheetDelta(sheet).computeRatios();
+        SheetDiff sheetDelta = new SheetDiff(sheet);
+        sheetDelta.computeDiff();
     }
 }

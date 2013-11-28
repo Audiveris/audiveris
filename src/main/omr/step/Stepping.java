@@ -182,7 +182,7 @@ public class Stepping
                     // Update sheet view for this step?
                     if (finished) {
                         step.displayUI(sheet);
-                        sheet.getAssembly().selectViewTab(step);
+                        sheet.getAssembly().selectViewTab(step.getTab());
                     }
 
                     // Call attention to this sheet (only if displayed), 

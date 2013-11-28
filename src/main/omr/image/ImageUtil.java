@@ -235,6 +235,23 @@ public class ImageUtil
         }
     }
 
+    //-----//
+    // xor //
+    //-----//
+    /**
+     * Xor operation on two images.
+     *
+     * @param image1 first image to process
+     * @param image2 second image to process
+     * @return the resulting image
+     */
+    public static BufferedImage xor (BufferedImage image1,
+                                     BufferedImage image2)
+    {
+        return JAI.create("Xor", image1, image2)
+                .getAsBufferedImage();
+    }
+
     //--------//
     // typeOf //
     //--------//

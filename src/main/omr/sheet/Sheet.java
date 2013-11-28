@@ -213,6 +213,9 @@ public class Sheet
 
     /** Related boundary editor */
     private BoundaryEditor boundaryEditor; // ??????????????
+    
+    /** Delta measurements. */
+    private SheetDiff sheetDelta;
 
     /** Id of last long horizontal section */
     private int lastLongHSectionId = -1;
@@ -304,6 +307,28 @@ public class Sheet
     public Set<ItemRenderer> getItemRenderers ()
     {
         return itemRenderers;
+    }
+
+    //---------------//
+    // getSheetDelta //
+    //---------------//
+    /**
+     * @return the sheetDelta
+     */
+    public SheetDiff getSheetDelta ()
+    {
+        return sheetDelta;
+    }
+
+    //---------------//
+    // setSheetDelta //
+    //---------------//
+    /**
+     * @param sheetDelta the sheetDelta to set
+     */
+    public void setSheetDelta (SheetDiff sheetDelta)
+    {
+        this.sheetDelta = sheetDelta;
     }
 
     //-------------//

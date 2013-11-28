@@ -37,6 +37,8 @@ public interface Step
 
     public static final String DELTA_TAB = "Delta";
 
+    public static final String DIFF_TAB = "Diff";
+
     public static final String DATA_TAB = "Data";
 
     public static final String HORI_TAB = "Ledgers";
