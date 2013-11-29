@@ -1,6 +1,6 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                             S p l i t S t e p                              //
+//                           S y s t e m s S t e p                            //
 //                                                                            //
 //----------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">                          //
@@ -48,16 +48,6 @@ public class SystemsStep
     }
 
     //~ Methods ----------------------------------------------------------------
-    //-----------//
-    // displayUI //
-    //-----------//
-    @Override
-    public void displayUI (Sheet sheet)
-    {
-        // Inter board
-        sheet.getAssembly()
-                .addBoard(Step.DATA_TAB, new InterBoard(sheet));
-    }
 
     //------//
     // doit //

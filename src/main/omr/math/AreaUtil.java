@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.math;
 
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
@@ -29,10 +31,11 @@ public class AreaUtil
     // horizontalParallelogram //
     //-------------------------//
     /**
-     * Create a parallelogram mostly horizontal, where top and bottom
-     * sides are short and horizontal.
+     * Create a parallelogram mostly horizontal, where left and right
+     * sides are short and vertical.
      * This is most useful for beams.
-     * <p>Nota: the defining points are meant to be the extrema points 
+     * <p>
+     * Nota: the defining points are meant to be the extrema points
      * <b>inside</b> the parallelogram.
      *
      * @param left   left point of median line
@@ -59,10 +62,11 @@ public class AreaUtil
     // verticalParallelogram //
     //-----------------------//
     /**
-     * Create a parallelogram mostly horizontal, where left and right
-     * sides are short and vertical.
+     * Create a parallelogram mostly horizontal, where top and bottom
+     * sides are short and horizontal.
      * This is most useful for stems.
-     * <p>Nota: the defining points are meant to be the extrema points 
+     * <p>
+     * Nota: the defining points are meant to be the extrema points
      * <b>inside</b> the parallelogram.
      *
      * @param top    top point of median line
@@ -80,6 +84,49 @@ public class AreaUtil
         path.lineTo(top.getX() + dx + 1, top.getY()); // Upper right
         path.lineTo(bottom.getX() + dx + 1, bottom.getY() + 1); // Lower right
         path.lineTo(bottom.getX() - dx, bottom.getY() + 1); // Lower left
+        path.closePath();
+
+        return new Area(path);
+    }
+
+    //----------------//
+    // verticalRibbon //
+    //----------------//
+    /**
+     * Create a ribbon mostly vertical, where top and bottom are
+     * short and horizontal and left and right sides are long and
+     * rather vertical.
+     * This is most useful for barlines.
+     * <p>
+     * Nota: the defining points are meant to be the extrema points
+     * <b>inside</b> the ribbon.
+     *
+     * @param median the defining vertical line (either a straight BasicLine
+     *               or a more wavy NaturalSpline)
+     * @param width  ribbon width
+     * @return the created area
+     */
+    public static Area verticalRibbon (Line median,
+                                       double width)
+    {
+        final double dx = width / 2; // Half width
+        final GeoPath path = new GeoPath();
+        final Shape line = (median instanceof NaturalSpline)
+                ? (NaturalSpline) median
+                : ((BasicLine) median).toDouble();
+
+        // Left line
+        path.append(
+                line.getPathIterator(AffineTransform.getTranslateInstance(-dx, 0)),
+                false);
+
+        // Right line (reversed)
+        path.append(
+                ReversePathIterator.getReversePathIterator(
+                        line,
+                        AffineTransform.getTranslateInstance(dx + 1, 0)),
+                true);
+
         path.closePath();
 
         return new Area(path);

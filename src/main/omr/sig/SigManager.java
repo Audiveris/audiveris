@@ -47,7 +47,7 @@ public class SigManager
     private final ConcurrentHashMap<Integer, Inter> allInters = new ConcurrentHashMap<Integer, Inter>();
 
     /** List of IDs for VIP inters. */
-    final List<Integer> vipInters;
+    private final List<Integer> vipInters;
 
     //~ Constructors -----------------------------------------------------------
     /**

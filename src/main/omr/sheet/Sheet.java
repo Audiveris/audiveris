@@ -153,6 +153,9 @@ public class Sheet
     /** SIG manager for all systems. */
     private final SigManager sigManager = new SigManager();
 
+    /** Global sheet SIG. */
+    private final SIGraph sheetSig;
+
     //-- resettable members ----------------------------------------------------
     //
     /** The related picture */
@@ -213,7 +216,7 @@ public class Sheet
 
     /** Related boundary editor */
     private BoundaryEditor boundaryEditor; // ??????????????
-    
+
     /** Delta measurements. */
     private SheetDiff sheetDelta;
 
@@ -249,6 +252,8 @@ public class Sheet
     {
         this.page = page;
         this.score = page.getScore();
+
+        sheetSig = new SIGraph(this);
 
         locationService = new SelectionService("sheet", allowedEvents);
         for (Class<?> eventClass : eventsRead) {
@@ -931,11 +936,19 @@ public class Sheet
      */
     public SystemInfo getSystemOf (Point point)
     {
-        for (SystemInfo info : getSystems()) {
-            SystemBoundary boundary = info.getBoundary();
+        for (SystemInfo system : getSystems()) {
+            SystemBoundary boundary = system.getBoundary();
 
-            if ((boundary != null) && boundary.contains(point)) {
-                return info;
+            if (boundary != null) {
+                if (boundary.contains(point)) {
+                    return system;
+                }
+            } else {
+                // No boundary, system is not fully defined yet
+                // This is used to locate barline, use position wrt top & bottom
+                if (point.y <= system.getBottom()) {
+                    return system;
+                }
             }
         }
 
@@ -1111,18 +1124,18 @@ public class Sheet
         Collections.sort(
                 neighbors,
                 new Comparator<SystemInfo>()
-                {
-                    @Override
-                    public int compare (SystemInfo s1,
-                                        SystemInfo s2)
-                    {
-                        int y1 = (s1.getTop() + s1.getBottom()) / 2;
-                        int d1 = Math.abs(point.y - y1);
-                        int y2 = (s2.getTop() + s2.getBottom()) / 2;
-                        int d2 = Math.abs(point.y - y2);
+        {
+            @Override
+            public int compare (SystemInfo s1,
+                                SystemInfo s2)
+            {
+                int y1 = (s1.getTop() + s1.getBottom()) / 2;
+                int d1 = Math.abs(point.y - y1);
+                int y2 = (s2.getTop() + s2.getBottom()) / 2;
+                int d2 = Math.abs(point.y - y2);
 
-                        return Integer.signum(d1 - d2);
-                    }
+                return Integer.signum(d1 - d2);
+            }
                 });
 
         return neighbors;
@@ -1270,7 +1283,7 @@ public class Sheet
             picture = new Picture(this, image, locationService);
             setPicture(picture);
             getBench().recordImageDimension(picture.getWidth(), picture.
-                                            getHeight());
+                    getHeight());
 
             done(Steps.valueOf(Steps.LOAD));
         } catch (ImageFormatException ex) {
@@ -1550,8 +1563,8 @@ public class Sheet
                     Step.PICTURE_TAB,
                     pictureView,
                     new BoardsPane(
-                            new PixelBoard(this),
-                            new BinarizationBoard(this)));
+                    new PixelBoard(this),
+                    new BinarizationBoard(this)));
         }
     }
 
@@ -1724,5 +1737,13 @@ public class Sheet
         locationService.publish(new InterListEvent(this, hint, movement,
                                                    inter != null ? Arrays.asList(inter) : null));
 
+    }
+
+    //-------------//
+    // getSheetSig //
+    //-------------//
+    public SIGraph getSheetSig ()
+    {
+        return sheetSig;
     }
 }

@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.sig;
 
-
 /**
  * Interface {@code InterVisitor} is meant to visit any instance of
  * shape interpretation.
@@ -29,4 +28,6 @@ public interface InterVisitor
     void visit (StemInter inter);
 
     void visit (LedgerInter inter);
+
+    void visit (BarlineInter inter);
 }

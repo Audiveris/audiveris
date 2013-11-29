@@ -11,12 +11,15 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.Main;
+
 import omr.check.Check;
 import omr.check.CheckBoard;
 import omr.check.CheckResult;
 import omr.check.CheckSuite;
 import omr.check.Checkable;
 import omr.check.Failure;
+import omr.check.SuiteImpacts;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
@@ -39,9 +42,10 @@ import omr.selection.MouseMovement;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
-import omr.sheet.BarsChecker.BarCheckSuite;
-
 import omr.sig.BarlineInter;
+import omr.sig.SIGraph;
+
+import omr.step.Step;
 import static omr.util.HorizontalSide.*;
 import omr.util.Predicate;
 
@@ -54,12 +58,16 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Class {@code BarsChecker} is dedicated to physical checks of
  * vertical sticks that are candidates for bar lines.
+ * <p>
+ * Two instances are used during the processing of a given sheet:<ol>
+ * <li>The first one focuses on system retrieval and uses only rough
+ * checks.</li>
+ * <li>The second one focuses on measure bars and uses more precise checks.</li>
+ * </ol>
  *
  * @author Hervé Bitteur
  */
@@ -121,26 +129,24 @@ public class BarsChecker
     private static final Failure NON_STRAIGHT = new Failure("Bar-NonStraight");
 
     //~ Instance fields --------------------------------------------------------
+    /** Related sheet. */
+    private final Sheet sheet;
+
+    /** Related scale. */
+    private final Scale scale;
+
+    /** Related staves. */
+    private final StaffManager staffManager;
+
     /**
+     * Rough checks flag.
      * true for rough tests (when retrieving staff grid),
      * false for precise tests (when retrieving measure bar lines)
      */
     private final boolean rough;
 
-    /** Related sheet */
-    private final Sheet sheet;
-
-    /** Related scale */
-    private final Scale scale;
-
-    /** Related staves */
-    private final StaffManager staffManager;
-
-    /** Suite of checks to be performed */
+    /** Suite of checks to be performed. (depends on 'rough' flag) */
     private final BarCheckSuite suite;
-
-    /** Related context of a bar stick */
-    private final Map<Glyph, GlyphContext> contexts = new HashMap<Glyph, GlyphContext>();
 
     //~ Constructors -----------------------------------------------------------
     //-------------//
@@ -162,6 +168,17 @@ public class BarsChecker
         scale = sheet.getScale();
         suite = new BarCheckSuite();
         staffManager = sheet.getStaffManager();
+
+        if (Main.getGui() != null) {
+            // Barline check board
+            sheet.getAssembly()
+                    .addBoard(
+                            Step.DATA_TAB,
+                            new BarCheckBoard(
+                            suite,
+                            sheet.getNest().getGlyphService(),
+                            new Class<?>[]{GlyphEvent.class}));
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -169,10 +186,10 @@ public class BarsChecker
     // checkCandidates //
     //-----------------//
     /**
-     * From the list of vertical sticks, this method uses several tests
+     * From a list of vertical sticks, this method uses several tests
      * to provide the initial collection of good bar lines candidates.
      *
-     * @param sticks the collection of candidate sticks
+     * @param sticks the provided collection of candidate sticks
      */
     public void checkCandidates (Collection<? extends Glyph> sticks)
     {
@@ -180,29 +197,43 @@ public class BarsChecker
         for (Glyph stick : sticks) {
             // Allocate the candidate context, and pass the whole check suite
             GlyphContext context = new GlyphContext(stick);
-
-            double res = suite.pass(context, null);
+            SuiteImpacts impacts = suite.getImpacts(context);
+            double grade = impacts.getGrade();
 
             if (logger.isDebugEnabled() || stick.isVip()) {
-                logger.info("suite => {} for {}", (float) res, stick);
+                logger.info("VIP check {}", impacts.getDump());
             }
 
             if ((stick.isBar() && stick.isManualShape())
-                || (res >= suite.getMinThreshold())) {
+                || (grade >= suite.getMinThreshold())) {
                 // OK, we flag this candidate with proper barline shape
-                contexts.put(stick, context);
-
-                if ((!stick.isBar() || !stick.isManualShape())) {
-                    stick.setShape(
-                            isThickBar(stick) ? Shape.THICK_BARLINE
-                            : Shape.THIN_BARLINE);
-                }
-
-                BarlineInter inter = new BarlineInter(
+                // Check for an existing barline inter for this stick
+                BarlineInter inter = (BarlineInter) SIGraph.getInter(
                         stick,
-                        stick.getShape(),
-                        1.0);
-                stick.addInterpretation(inter); //TODO: what about SIG?
+                        BarlineInter.class);
+
+                if (inter == null) {
+                    if ((!stick.isBar() || !stick.isManualShape())) {
+                        stick.setShape(
+                                isThickBar(stick) ? Shape.THICK_BARLINE
+                                : Shape.THIN_BARLINE);
+                    }
+
+                    inter = new BarlineInter(
+                            stick,
+                            stick.getShape(),
+                            impacts,
+                            stick.getLine(),
+                            stick.getMeanThickness(Orientation.VERTICAL));
+
+                    SystemInfo system = sheet.getSystemOf(stick);
+                    SIGraph sig = (system != null) ? system.getSig()
+                            : sheet.getSheetSig();
+                    sig.addVertex(inter);
+                } else {
+                    // Update assignment quality with more precise results
+                    inter.setImpacts(impacts);
+                }
 
                 // Additional processing for Bars that define a system or a part
                 // (they start AND end with precise staves horizontal limits)
@@ -244,35 +275,17 @@ public class BarsChecker
 
                     stick.setShape(null);
 
-                    //TODO: remove barline inter?
+                    // Remove barline inter if any
+                    BarlineInter inter = (BarlineInter) SIGraph.getInter(
+                            stick,
+                            BarlineInter.class);
+
+                    if (inter != null) {
+                        inter.delete();
+                    }
                 }
             }
         }
-    }
-
-    //---------------//
-    // getCheckBoard //
-    //---------------//
-    public CheckBoard<GlyphContext> getCheckBoard ()
-    {
-        return new BarCheckBoard(
-                getSuite(),
-                sheet.getNest().getGlyphService(),
-                new Class<?>[]{GlyphEvent.class});
-    }
-
-    //----------//
-    // getSuite //
-    //----------//
-    /**
-     * Report the suite currently defined.
-     * (used by package mate SystemsBuilder)
-     *
-     * @return the check suite
-     */
-    public CheckSuite<GlyphContext> getSuite ()
-    {
-        return suite;
     }
 
     //------------------//
@@ -343,8 +356,7 @@ public class BarsChecker
 
         // Average width of the stick
         final int meanWidth = (int) Math.rint(
-                (double) stick.getWeight() / (double) stick.getLength(
-                        Orientation.VERTICAL));
+                stick.getMeanThickness(Orientation.VERTICAL));
 
         return meanWidth > maxThinWidth;
     }
@@ -371,68 +383,6 @@ public class BarsChecker
         {
             this.top = topIdx;
             this.bot = botIdx;
-        }
-    }
-
-    //---------------//
-    // BarCheckSuite //
-    //---------------//
-    class BarCheckSuite
-            extends CheckSuite<GlyphContext>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public BarCheckSuite ()
-        {
-            super("Bar");
-
-            // Be very careful with check order, because of side-effects
-            // topArea, bottomArea, isPartDefining, isThick are already set
-            //
-            add(1, new SlopeCheck());
-            add(0, new LeftCheck());
-            add(0, new RightCheck());
-            add(1, new HeightCheck());
-            add(1, new RadiusCheck());
-
-            add(1, new TopLeftChunkCheck());
-            add(1, new TopRightChunkCheck());
-            add(1, new BottomLeftChunkCheck());
-            add(1, new BottomRightChunkCheck());
-
-            add(1, new TopInterCheck());
-            add(1, new BottomInterCheck());
-
-            if (!rough) {
-                add(1, new TopLineCheck()); // May set topStaff
-                add(1, new BottomLineCheck()); // May set botStaff
-                add(1, new AnchorCheck()); // Reads topStaff & botStaff
-            }
-
-            if (logger.isDebugEnabled()) {
-                dump();
-            }
-
-            //            // We don't check that the bar does not start before first staff,
-            //            // this is too restrictive because of alternate endings.  We however
-            //            // do check that the bar does not end after last staff of the
-            //            // last part of the system.
-            //            int barAbscissa = bar.getMidPos();
-            //            int systemBottom = scoreSystem.getLastPart()
-            //                                          .getLastStaff()
-            //                                          .getInfo()
-            //                                          .getLastLine()
-            //                                          .yAt(barAbscissa);
-            //
-            //            if ((bar.getStop() - systemBottom) > maxDy) {
-            //                if (logger.isDebugEnabled()) {
-            //                    logger.debug("Bar stopping too low");
-            //                }
-            //
-            //                bar.setResult(NOT_WITHIN_SYSTEM);
-            //
-            //                continue;
-            //            }
         }
     }
 
@@ -499,58 +449,126 @@ public class BarsChecker
         }
     }
 
-    //----------------------//
-    // BottomLeftChunkCheck //
-    //----------------------//
-    /**
-     * Check for lack of chunk on lower left side of the bar stick
-     */
-    private class BottomLeftChunkCheck
-            extends ChunkCheck
+    //-------------//
+    // AnchorCheck //
+    //-------------//
+    private class AnchorCheck
+            extends Check<GlyphContext>
     {
         //~ Constructors -------------------------------------------------------
 
-        protected BottomLeftChunkCheck ()
+        protected AnchorCheck ()
         {
             super(
-                    "BLChunk",
-                    "Check for no big chunk on bottom left side",
-                    BOTTOM_LEFT_CHUNK);
+                    "Anchor",
+                    "Check top and bottom alignment of bars (thick/thin) with staff",
+                    Constant.Double.HALF,
+                    Constant.Double.HALF,
+                    true,
+                    NOT_STAFF_ANCHORED);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        // Make sure that at least top or bottom are staff anchors, and that
+        // both are staff anchors in the case of thick bars.
+        @Override
+        protected double getValue (GlyphContext context)
+        {
+            if (rough) {
+                if (context.isPartDefining) {
+                    return 1;
+                } else {
+                    if ((context.topStaff != -1) && (context.botStaff != -1)) {
+                        return 1;
+                    }
+                }
+
+                return 0;
+            } else {
+                if (context.isThick) {
+                    if ((context.topStaff != -1) && (context.botStaff != -1)) {
+                        return 1;
+                    }
+                } else {
+                    if ((context.topStaff != -1) || (context.botStaff != -1)) {
+                        return 1;
+                    }
+                }
+
+                return 0;
+            }
+        }
+    }
+
+    //---------------//
+    // BarCheckBoard //
+    //---------------//
+    /**
+     * A specific board dedicated to interactive physical checks of
+     * bar line sticks.
+     */
+    private class BarCheckBoard
+            extends CheckBoard<GlyphContext>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public BarCheckBoard (CheckSuite<GlyphContext> suite,
+                              SelectionService eventService,
+                              Class[] eventList)
+        {
+            super("BarlineCheck", suite, eventService, eventList);
         }
 
         //~ Methods ------------------------------------------------------------
         @Override
-        protected Rectangle getBox (Glyph stick)
+        public void onEvent (UserEvent event)
         {
-            Point2D bottom = stick.getStopPoint(VERTICAL);
-            Rectangle box = new Rectangle(
-                    (int) Math.rint(bottom.getX() - nWidth),
-                    (int) Math.rint(bottom.getY() - (1.5 * nHeight)),
-                    nWidth,
-                    2 * nHeight);
-            stick.addAttachment("bl", box);
+            try {
+                // Ignore RELEASING
+                if (event.movement == MouseMovement.RELEASING) {
+                    return;
+                }
 
-            return box;
+                if (event instanceof GlyphEvent) {
+                    GlyphEvent glyphEvent = (GlyphEvent) event;
+                    Glyph glyph = glyphEvent.getData();
+
+                    if (glyph != null) {
+                        // Make sure this is a rather vertical stick
+                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
+                            // Apply a fresh suite
+                            GlyphContext context = new GlyphContext(glyph);
+                            applySuite(new BarCheckSuite(), context);
+
+                            return;
+                        }
+                    }
+
+                    tellObject(null);
+                }
+            } catch (Exception ex) {
+                logger.warn(getClass().getName() + " onEvent error", ex);
+            }
         }
     }
 
-    //-----------------//
-    // BottomLineCheck //
-    //-----------------//
-    private class BottomLineCheck
-            extends LongCheck
+    //------------------//
+    // BottomInterCheck //
+    //------------------//
+    private class BottomInterCheck
+            extends Check<GlyphContext>
     {
         //~ Constructors -------------------------------------------------------
 
-        protected BottomLineCheck ()
+        protected BottomInterCheck ()
         {
             super(
-                    "BotLine",
-                    "Check that bottom of stick is close to bottom of staff",
+                    "BotInter",
+                    "Check that bottom of stick reaches last staff",
                     Scale.Fraction.ZERO,
-                    constants.maxDyToStaffLine,
+                    constants.maxStaffYGapHigh,
                     false,
-                    BOTTOM_EXCESS);
+                    HIGH_BOTTOM);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -570,57 +588,100 @@ public class BarsChecker
             double dy = sheet.getScale()
                     .pixelsToFrac(Math.abs(staffBottom - stop.getY()));
 
-            // Change limits according to rough & partDefining
-            if (rough && context.isPartDefining) {
-                setLowHigh(
-                        Scale.Fraction.ZERO,
-                        constants.maxDyToStaffLine_Rough);
-            } else {
-                setLowHigh(Scale.Fraction.ZERO, constants.maxDyToStaffLine);
-            }
-
-            // Side-effect
-            if (dy <= getHigh()) {
-                context.botStaff = context.bottomArea;
-            }
-
             return dy;
         }
     }
 
-    //-----------------------//
-    // BottomRightChunkCheck //
-    //-----------------------//
-    /**
-     * Check for lack of chunk on lower right side of the bar stick
-     */
-    private class BottomRightChunkCheck
-            extends ChunkCheck
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Instance fields ----------------------------------------------------
 
-        protected BottomRightChunkCheck ()
-        {
-            super(
-                    "BRChunk",
-                    "Check for no big chunk on bottom right side",
-                    BOTTOM_RIGHT_CHUNK);
-        }
+        Scale.Fraction chunkWidth = new Scale.Fraction(
+                0.3,
+                "Width of box to look for chunks");
 
-        //~ Methods ------------------------------------------------------------
-        @Override
-        protected Rectangle getBox (Glyph stick)
-        {
-            Point2D bottom = stick.getStopPoint(VERTICAL);
-            Rectangle box = new Rectangle(
-                    (int) Math.rint(bottom.getX()),
-                    (int) Math.rint(bottom.getY() - (1.5 * nHeight)),
-                    nWidth,
-                    2 * nHeight);
-            stick.addAttachment("br", box);
+        Scale.Fraction chunkHalfHeight = new Scale.Fraction(
+                0.5,
+                "Half height of box to look for chunks");
 
-            return box;
-        }
+        Constant.Ratio chunkRatioHigh = new Constant.Ratio(
+                4.0,
+                "High ratio of alien pixels to detect chunks (in 1/1000)");
+
+        Scale.Fraction maxDyToStaffLine = new Scale.Fraction(
+                0.4,
+                "High vertical distance between bar edge and staff line");
+
+        Scale.Fraction maxDyToStaffLine_Rough = new Scale.Fraction(
+                4.0,
+                "Rough high vertical distance between bar edge and staff line");
+
+        Scale.Fraction maxStaffDHeightHigh = new Scale.Fraction(
+                0.4,
+                "High Maximum difference between a bar length and min staff height");
+
+        Scale.Fraction maxStaffDHeightHighRough = new Scale.Fraction(
+                1,
+                "Rough high Maximum difference between a bar length and min staff height");
+
+        Scale.Fraction maxStaffDHeightLow = new Scale.Fraction(
+                0.2,
+                "Low Maximum difference between a bar length and min staff height");
+
+        Scale.Fraction maxStaffDHeightLowRough = new Scale.Fraction(
+                0.5,
+                "Rough low Maximum difference between a bar length and min staff height");
+
+        Scale.Fraction maxStaffYGapHigh = new Scale.Fraction(
+                3,
+                "High Maximum dy between a bar edge and target staff line");
+
+        Scale.Fraction minStaffDxHigh = new Scale.Fraction(
+                0,
+                "High Minimum horizontal distance between a bar and a staff edge");
+
+        Scale.Fraction minStaffDxHighRough = new Scale.Fraction(
+                -3,
+                "Rough high Minimum horizontal distance between a bar and a staff edge");
+
+        Scale.Fraction minStaffDxLow = new Scale.Fraction(
+                -1,
+                "Low Minimum horizontal distance between a bar and a staff edge");
+
+        Scale.Fraction minStaffDxLowRough = new Scale.Fraction(
+                -5,
+                "Rough low Minimum horizontal distance between a bar and a staff edge");
+
+        Constant.Double slopeHigh = new Constant.Double(
+                "tangent",
+                0.1,
+                "Maximum difference with global slope");
+
+        Scale.Fraction radiusLow = new Scale.Fraction(
+                25,
+                "Low minimum radius");
+
+        Scale.Fraction radiusHigh = new Scale.Fraction(
+                60,
+                "High minimum radius");
+
+        Scale.Fraction maxThinWidth = new Scale.Fraction(
+                0.3,
+                "Maximum width of a normal bar, versus a thick bar");
+
+        Constant.Ratio minStaffCountForLongBar = new Constant.Ratio(
+                2,
+                "Minimum length for long bars, stated in number of staff heights");
+
+        Constant.Double maxCoTangentForCheck = new Constant.Double(
+                "cotangent",
+                0.1,
+                "Maximum cotangent for checking a barline candidate");
+
     }
 
     //------------//
@@ -722,219 +783,120 @@ public class BarsChecker
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Scale.Fraction chunkWidth = new Scale.Fraction(
-                0.3,
-                "Width of box to look for chunks");
-
-        Scale.Fraction chunkHalfHeight = new Scale.Fraction(
-                0.5,
-                "Half height of box to look for chunks");
-
-        Constant.Ratio chunkRatioHigh = new Constant.Ratio(
-                4.0,
-                "High ratio of alien pixels to detect chunks (in 1/1000)");
-
-        Scale.Fraction maxDyToStaffLine = new Scale.Fraction(
-                0.4,
-                "High vertical distance between bar edge and staff line");
-
-        Scale.Fraction maxDyToStaffLine_Rough = new Scale.Fraction(
-                4.0,
-                "Rough high vertical distance between bar edge and staff line");
-
-        Scale.Fraction maxStaffDHeightHigh = new Scale.Fraction(
-                0.4,
-                "High Maximum difference between a bar length and min staff height");
-
-        Scale.Fraction maxStaffDHeightHighRough = new Scale.Fraction(
-                1,
-                "Rough high Maximum difference between a bar length and min staff height");
-
-        Scale.Fraction maxStaffDHeightLow = new Scale.Fraction(
-                0.2,
-                "Low Maximum difference between a bar length and min staff height");
-
-        Scale.Fraction maxStaffDHeightLowRough = new Scale.Fraction(
-                0.5,
-                "Rough low Maximum difference between a bar length and min staff height");
-
-        Scale.Fraction maxStaffYGapHigh = new Scale.Fraction(
-                3,
-                "High Maximum dy between a bar edge and target staff line");
-
-        Scale.Fraction minStaffDxHigh = new Scale.Fraction(
-                0,
-                "High Minimum horizontal distance between a bar and a staff edge");
-
-        Scale.Fraction minStaffDxHighRough = new Scale.Fraction(
-                -3,
-                "Rough high Minimum horizontal distance between a bar and a staff edge");
-
-        Scale.Fraction minStaffDxLow = new Scale.Fraction(
-                -1,
-                "Low Minimum horizontal distance between a bar and a staff edge");
-
-        Scale.Fraction minStaffDxLowRough = new Scale.Fraction(
-                -5,
-                "Rough low Minimum horizontal distance between a bar and a staff edge");
-
-        Constant.Double slopeHigh = new Constant.Double(
-                "tangent",
-                0.1,
-                "Maximum difference with global slope");
-
-        Scale.Fraction radiusLow = new Scale.Fraction(
-                25,
-                "Low minimum radius");
-
-        Scale.Fraction radiusHigh = new Scale.Fraction(
-                60,
-                "High minimum radius");
-
-        Scale.Fraction maxThinWidth = new Scale.Fraction(
-                0.3,
-                "Maximum width of a normal bar, versus a thick bar");
-
-        Constant.Ratio minStaffCountForLongBar = new Constant.Ratio(
-                2,
-                "Minimum length for long bars, stated in number of staff heights");
-
-        Constant.Double maxCoTangentForCheck = new Constant.Double(
-                "cotangent",
-                0.1,
-                "Maximum cotangent for checking a barline candidate");
-
-    }
-
-    //-------------//
-    // AnchorCheck //
-    //-------------//
-    private class AnchorCheck
-            extends Check<GlyphContext>
+    //---------------//
+    // BarCheckSuite //
+    //---------------//
+    private class BarCheckSuite
+            extends CheckSuite<GlyphContext>
     {
         //~ Constructors -------------------------------------------------------
 
-        protected AnchorCheck ()
+        public BarCheckSuite ()
         {
-            super(
-                    "Anchor",
-                    "Check top and bottom alignment of bars (thick/thin) with staff",
-                    Constant.Double.HALF,
-                    Constant.Double.HALF,
-                    true,
-                    NOT_STAFF_ANCHORED);
-        }
+            super("Bar");
 
-        //~ Methods ------------------------------------------------------------
-        // Make sure that at least top or bottom are staff anchors, and that
-        // both are staff anchors in the case of thick bars.
-        @Override
-        protected double getValue (GlyphContext context)
-        {
-            if (rough) {
-                if (context.isPartDefining) {
-                    return 1;
-                } else {
-                    if ((context.topStaff != -1) && (context.botStaff != -1)) {
-                        return 1;
-                    }
-                }
+            // Be very careful with check order, because of side-effects
+            // topArea, bottomArea, isPartDefining, isThick are already set
+            //
+            add(1, new SlopeCheck());
+            add(0, new LeftCheck());
+            add(0, new RightCheck());
+            add(1, new HeightCheck());
+            add(1, new RadiusCheck());
 
-                return 0;
-            } else {
-                if (context.isThick) {
-                    if ((context.topStaff != -1) && (context.botStaff != -1)) {
-                        return 1;
-                    }
-                } else {
-                    if ((context.topStaff != -1) || (context.botStaff != -1)) {
-                        return 1;
-                    }
-                }
+            add(1, new TopLeftChunkCheck());
+            add(1, new TopRightChunkCheck());
+            add(1, new BottomLeftChunkCheck());
+            add(1, new BottomRightChunkCheck());
 
-                return 0;
+            add(1, new TopInterCheck());
+            add(1, new BottomInterCheck());
+
+            if (!rough) {
+                add(1, new TopLineCheck()); // May set topStaff
+                add(1, new BottomLineCheck()); // May set botStaff
+                add(1, new AnchorCheck()); // Reads topStaff & botStaff
             }
+
+            if (logger.isDebugEnabled()) {
+                dump();
+            }
+
+            //            // We don't check that the bar does not start before first staff,
+            //            // this is too restrictive because of alternate endings.  We however
+            //            // do check that the bar does not end after last staff of the
+            //            // last part of the system.
+            //            int barAbscissa = bar.getMidPos();
+            //            int systemBottom = scoreSystem.getLastPart()
+            //                                          .getLastStaff()
+            //                                          .getInfo()
+            //                                          .getLastLine()
+            //                                          .yAt(barAbscissa);
+            //
+            //            if ((bar.getStop() - systemBottom) > maxDy) {
+            //                if (logger.isDebugEnabled()) {
+            //                    logger.debug("Bar stopping too low");
+            //                }
+            //
+            //                bar.setResult(NOT_WITHIN_SYSTEM);
+            //
+            //                continue;
+            //            }
         }
     }
 
-    //---------------//
-    // BarCheckBoard //
-    //---------------//
+    //----------------------//
+    // BottomLeftChunkCheck //
+    //----------------------//
     /**
-     * A specific board dedicated to interactive physical checks of
-     * bar line sticks.
+     * Check for lack of chunk on lower left side of the bar stick
      */
-    private class BarCheckBoard
-            extends CheckBoard<GlyphContext>
+    private class BottomLeftChunkCheck
+            extends ChunkCheck
     {
         //~ Constructors -------------------------------------------------------
 
-        public BarCheckBoard (CheckSuite<GlyphContext> suite,
-                              SelectionService eventService,
-                              Class[] eventList)
+        protected BottomLeftChunkCheck ()
         {
-            super("BarlineCheck", suite, eventService, eventList);
+            super(
+                    "BL",
+                    "Check for no big chunk on bottom left side",
+                    BOTTOM_LEFT_CHUNK);
         }
 
         //~ Methods ------------------------------------------------------------
         @Override
-        public void onEvent (UserEvent event)
+        protected Rectangle getBox (Glyph stick)
         {
-            try {
-                // Ignore RELEASING
-                if (event.movement == MouseMovement.RELEASING) {
-                    return;
-                }
+            Point2D bottom = stick.getStopPoint(VERTICAL);
+            Rectangle box = new Rectangle(
+                    (int) Math.rint(bottom.getX() - nWidth),
+                    (int) Math.rint(bottom.getY() - (1.5 * nHeight)),
+                    nWidth,
+                    2 * nHeight);
+            stick.addAttachment("bl", box);
 
-                if (event instanceof GlyphEvent) {
-                    GlyphEvent glyphEvent = (GlyphEvent) event;
-                    Glyph glyph = glyphEvent.getData();
-
-                    if (glyph != null) {
-                        // Make sure this is a rather vertical stick
-                        if (Math.abs(glyph.getInvertedSlope()) <= constants.maxCoTangentForCheck.getValue()) {
-                            // Apply a fresh suite
-                            BarsChecker.GlyphContext context = new BarsChecker.GlyphContext(
-                                    glyph);
-                            applySuite(new BarCheckSuite(), context);
-
-                            return;
-                        }
-                    }
-
-                    tellObject(null);
-                }
-            } catch (Exception ex) {
-                logger.warn(getClass().getName() + " onEvent error", ex);
-            }
+            return box;
         }
     }
 
-    //------------------//
-    // BottomInterCheck //
-    //------------------//
-    private class BottomInterCheck
-            extends Check<GlyphContext>
+    //-----------------//
+    // BottomLineCheck //
+    //-----------------//
+    private class BottomLineCheck
+            extends LongCheck
     {
         //~ Constructors -------------------------------------------------------
 
-        protected BottomInterCheck ()
+        protected BottomLineCheck ()
         {
             super(
-                    "BotInter",
-                    "Check that bottom of stick reaches last staff",
+                    "BotLine",
+                    "Check that bottom of stick is close to bottom of staff",
                     Scale.Fraction.ZERO,
-                    constants.maxStaffYGapHigh,
+                    constants.maxDyToStaffLine,
                     false,
-                    HIGH_BOTTOM);
+                    BOTTOM_EXCESS);
         }
 
         //~ Methods ------------------------------------------------------------
@@ -954,7 +916,56 @@ public class BarsChecker
             double dy = sheet.getScale()
                     .pixelsToFrac(Math.abs(staffBottom - stop.getY()));
 
+            // Change limits according to rough & partDefining
+            if (rough && context.isPartDefining) {
+                setLowHigh(
+                        Scale.Fraction.ZERO,
+                        constants.maxDyToStaffLine_Rough);
+            } else {
+                setLowHigh(Scale.Fraction.ZERO, constants.maxDyToStaffLine);
+            }
+
+            // Side-effect
+            if (dy <= getHigh()) {
+                context.botStaff = context.bottomArea;
+            }
+
             return dy;
+        }
+    }
+
+    //-----------------------//
+    // BottomRightChunkCheck //
+    //-----------------------//
+    /**
+     * Check for lack of chunk on lower right side of the bar stick
+     */
+    private class BottomRightChunkCheck
+            extends ChunkCheck
+    {
+        //~ Constructors -------------------------------------------------------
+
+        protected BottomRightChunkCheck ()
+        {
+            super(
+                    "BR",
+                    "Check for no big chunk on bottom right side",
+                    BOTTOM_RIGHT_CHUNK);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        protected Rectangle getBox (Glyph stick)
+        {
+            Point2D bottom = stick.getStopPoint(VERTICAL);
+            Rectangle box = new Rectangle(
+                    (int) Math.rint(bottom.getX()),
+                    (int) Math.rint(bottom.getY() - (1.5 * nHeight)),
+                    nWidth,
+                    2 * nHeight);
+            stick.addAttachment("br", box);
+
+            return box;
         }
     }
 
@@ -1228,7 +1239,7 @@ public class BarsChecker
         protected TopLeftChunkCheck ()
         {
             super(
-                    "TLChunk",
+                    "TL",
                     "Check for no big chunk on top left side",
                     TOP_LEFT_CHUNK);
         }
@@ -1317,7 +1328,7 @@ public class BarsChecker
         protected TopRightChunkCheck ()
         {
             super(
-                    "TRChunk",
+                    "TR",
                     "Check for no big chunk on top right side",
                     TOP_RIGHT_CHUNK);
         }

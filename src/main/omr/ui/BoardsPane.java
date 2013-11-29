@@ -44,7 +44,8 @@ import javax.swing.SwingConstants;
  * Board} instances, where data related to current point, run, section,
  * glyph, etc can be displayed in dedicated boards.
  *
- * <p>There is one BoardsPane instance for each view of the same sheet,
+ * <p>
+ * There is one BoardsPane instance for each view of the same sheet,
  * each with its own collection of board instances.
  *
  * @author Hervé Bitteur
@@ -119,9 +120,11 @@ public class BoardsPane
      */
     public void addBoard (Board board)
     {
-        // Avoid duplicates
-        if (getBoard(board.getName()) != null) {
-            return;
+        // Replace any board with same name, if any
+        Board oldBoard = getBoard(board.getName());
+        if (oldBoard != null) {
+            boards.remove(oldBoard);
+            oldBoard.disconnect();
         }
 
         boards.add(board);

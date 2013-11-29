@@ -19,6 +19,7 @@ import static omr.math.GeoOrder.*;
 
 import omr.selection.InterListEvent;
 
+import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.sig.Exclusion.Cause;
@@ -49,6 +50,10 @@ import java.util.Set;
  * Class {@code SIGraph} represents the Symbol Interpretation Graph
  * that aims at finding the best global interpretation of all symbols
  * in a system.
+ * <p>
+ * A special instance is created at sheet level for the time when the systems
+ * have not yet been defined. This sheet-level instance has its system pointer
+ * at null.
  *
  * @author Hervé Bitteur
  */
@@ -60,6 +65,9 @@ public class SIGraph
     private static final Logger logger = LoggerFactory.getLogger(SIGraph.class);
 
     //~ Instance fields --------------------------------------------------------
+    /** Dedicated sheet */
+    private final Sheet sheet;
+
     /** Dedicated system */
     private final SystemInfo system;
 
@@ -68,15 +76,67 @@ public class SIGraph
     // SIGraph //
     //---------//
     /**
-     * Creates a new SIGraph object.
+     * Creates a new SIGraph object at system level.
+     *
+     * @param system the containing system
      */
     public SIGraph (SystemInfo system)
     {
-        super(new RelationFactory());
+        this(system.getSheet(), system);
+    }
+
+    //---------//
+    // SIGraph //
+    //---------//
+    /**
+     * Creates a new SIGraph object at sheet level.
+     *
+     * @param sheet the containing sheet
+     */
+    public SIGraph (Sheet sheet)
+    {
+        this(sheet, null);
+    }
+
+    //---------//
+    // SIGraph //
+    //---------//
+    /**
+     * Creates a new SIGraph object.
+     */
+    private SIGraph (Sheet sheet,
+                     SystemInfo system)
+    {
+        super(Relation.class);
+        this.sheet = sheet;
         this.system = system;
     }
 
     //~ Methods ----------------------------------------------------------------
+    //----------//
+    // getInter //
+    //----------//
+    /**
+     * Report the (first) interpretation if any of desired class for
+     * the glyph at hand.
+     * TODO: Could we have several inters of desired class for the same glyph?
+     *
+     * @param glyph  the underlying glyph
+     * @param classe the interpretation class desired
+     * @return the existing interpretation if any, or null
+     */
+    public static Inter getInter (Glyph glyph,
+                                  Class classe)
+    {
+        for (Inter inter : glyph.getInterpretations()) {
+            if (classe.isAssignableFrom(inter.getClass())) {
+                return inter;
+            }
+        }
+
+        return null;
+    }
+
     //-----------//
     // addVertex //
     //-----------//
@@ -93,9 +153,11 @@ public class SIGraph
     {
         boolean res = super.addVertex(inter);
         inter.setSig(this);
-        system.getSheet()
-                .getSigManager()
-                .register(inter);
+
+        if ((system == null) || (inter.getId() == 0)) {
+            sheet.getSigManager()
+                    .register(inter);
+        }
 
         return res;
     }
@@ -186,30 +248,6 @@ public class SIGraph
     public Set<Relation> getExclusions (Inter inter)
     {
         return getRelations(inter, Exclusion.class);
-    }
-
-    //----------//
-    // getInter //
-    //----------//
-    /**
-     * Report the (first) interpretation if any of desired class for
-     * the glyph at hand.
-     * TODO: Could we have several inters of desired class for the same glyph?
-     *
-     * @param glyph  the underlying glyph
-     * @param classe the interpretation class desired
-     * @return the existing interpretation if any, or null
-     */
-    public Inter getInter (Glyph glyph,
-                           Class classe)
-    {
-        for (Inter inter : glyph.getInterpretations()) {
-            if (classe.isAssignableFrom(inter.getClass())) {
-                return inter;
-            }
-        }
-
-        return null;
     }
 
     //-------------//

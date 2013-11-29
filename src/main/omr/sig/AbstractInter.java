@@ -50,7 +50,7 @@ public abstract class AbstractInter
     protected final Shape shape;
 
     /** The quality of this interpretation. */
-    protected final double grade;
+    protected double grade;
 
     /** The contextual grade of this interpretation, if any. */
     protected Double contextualGrade;
@@ -499,6 +499,7 @@ public abstract class AbstractInter
     public void setImpacts (GradeImpacts impacts)
     {
         this.impacts = impacts;
+        grade = impacts.getGrade();
     }
 
     //--------//

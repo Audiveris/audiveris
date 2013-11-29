@@ -17,6 +17,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import java.util.Collection;
+import omr.sig.ui.InterBoard;
 
 /**
  * Class {@code GridStep} implements <b>GRID</b> step, which
@@ -56,12 +57,7 @@ public class GridStep
 
         if (editor != null) {
             editor.refresh();
-        }
-        
-        // Barline board
-        sheet.getAssembly()
-                .addBoard(Step.DATA_TAB, sheet.getBarsChecker().getCheckBoard());
-        
+        }        
     }
 
     //------//

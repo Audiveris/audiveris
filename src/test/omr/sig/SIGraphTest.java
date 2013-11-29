@@ -203,7 +203,7 @@ public class SIGraphTest
         //~ Constructors -------------------------------------------------------
         ListenableGraph ()
         {
-            super(new Multigraph<Inter, Relation>(new RelationFactory()));
+            super(new Multigraph<Inter, Relation>(Relation.class));
         }
     }
 }

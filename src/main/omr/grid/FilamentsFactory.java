@@ -755,7 +755,7 @@ public class FilamentsFactory
                                 if (logger.isDebugEnabled()
                                     || fil.isVip()
                                     || sectionGlyph.isVip()) {
-                                    logger.info("Merging {} w/ {}",
+                                    logger.info("VIP merging {} w/ {}",
                                                 fil,
                                                 Sections.toString(sectionGlyph.getMembers()));
 

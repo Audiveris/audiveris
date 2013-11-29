@@ -23,6 +23,9 @@ import omr.run.RunsTable;
 
 import omr.sheet.Sheet;
 
+import omr.sig.ui.InterBoard;
+
+import omr.step.Step;
 import omr.step.StepException;
 
 import omr.util.StopWatch;
@@ -56,9 +59,10 @@ public class GridBuilder
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-            GridBuilder.class);
+        GridBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
+
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -69,6 +73,7 @@ public class GridBuilder
     private final BarsRetriever barsRetriever;
 
     //~ Constructors -----------------------------------------------------------
+
     //-------------//
     // GridBuilder //
     //-------------//
@@ -89,6 +94,7 @@ public class GridBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
+
     //-----------//
     // buildInfo //
     //-----------//
@@ -98,7 +104,7 @@ public class GridBuilder
      * @throws StepException
      */
     public void buildInfo ()
-            throws StepException
+        throws StepException
     {
         StopWatch watch = new StopWatch("GridBuilder");
 
@@ -110,6 +116,10 @@ public class GridBuilder
             // Display
             if (Main.getGui() != null) {
                 displayEditor();
+                
+                // Inter board
+                sheet.getAssembly()
+                     .addBoard(Step.DATA_TAB, new InterBoard(sheet));
             }
 
             // Retrieve the horizontal staff lines filaments
@@ -119,12 +129,15 @@ public class GridBuilder
             // Retrieve the major vertical barlines and thus the systems
             watch.start("retrieveSystemBars");
             barsRetriever.retrieveSystemBars(
-                    Collections.EMPTY_SET,
-                    Collections.EMPTY_SET);
+                Collections.EMPTY_SET,
+                Collections.EMPTY_SET);
 
             // Complete the staff lines w/ short sections & filaments left over
             watch.start("completeLines");
             linesRetriever.completeLines();
+
+            // From here on we should work at system level
+            // ===========================================
 
             // Retrieve minor barlines (for measures)
             barsRetriever.retrieveMeasureBars();
@@ -186,8 +199,8 @@ public class GridBuilder
      */
     private void buildAllLags ()
     {
-        final boolean showRuns = constants.showRuns.isSet()
-                                 && (Main.getGui() != null);
+        final boolean   showRuns = constants.showRuns.isSet() &&
+                                   (Main.getGui() != null);
         final StopWatch watch = new StopWatch("buildAllLags");
 
         try {
@@ -198,8 +211,8 @@ public class GridBuilder
             watch.start("linesRetriever.buildLag");
 
             RunsTable longVertTable = linesRetriever.buildLag(
-                    wholeVertTable,
-                    showRuns);
+                wholeVertTable,
+                showRuns);
 
             // vLag creation
             watch.start("barsRetriever.buildLag");
@@ -220,25 +233,23 @@ public class GridBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
-
+            false,
+            "Should we print out the stop watch?");
         Constant.Boolean showRuns = new Constant.Boolean(
-                false,
-                "Should we show view on runs?");
-
+            false,
+            "Should we show view on runs?");
         Constant.Boolean buildDewarpedTarget = new Constant.Boolean(
-                false,
-                "Should we build a dewarped target?");
-
+            false,
+            "Should we build a dewarped target?");
     }
 }

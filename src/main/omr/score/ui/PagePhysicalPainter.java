@@ -40,6 +40,7 @@ import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
 
 import omr.sig.AbstractBeamInter;
+import omr.sig.BarlineInter;
 import omr.sig.Inter;
 import omr.sig.InterVisitor;
 import omr.sig.LedgerInter;
@@ -60,10 +61,8 @@ import omr.util.VerticalSide;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -586,7 +585,7 @@ public class PagePhysicalPainter
             SIGraph sig = systemInfo.getSig();
 
             for (Inter inter : sig.vertexSet()) {
-                if (oldClip == null || oldClip.intersects(inter.getBounds())) {
+                if ((oldClip == null) || oldClip.intersects(inter.getBounds())) {
                     inter.accept(this);
                 }
             }
@@ -660,6 +659,16 @@ public class PagePhysicalPainter
     {
         setColor(beam);
         g.fill(beam.getArea());
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (BarlineInter barline)
+    {
+        setColor(barline);
+        g.fill(barline.getArea());
     }
 
     //--------------------//

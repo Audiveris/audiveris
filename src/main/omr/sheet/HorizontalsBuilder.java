@@ -320,66 +320,6 @@ public class HorizontalsBuilder
         return false;
     }
 
-    //    //----------//
-    //    // feedback //
-    //    //----------//
-    //    private void feedback ()
-    //    {
-    //        int nl = 0;
-    //        int nt = 0;
-    //        int ne = 0;
-    //
-    //        for (Glyph glyph : system.getGlyphs()) {
-    //            Shape shape = glyph.getShape();
-    //
-    //            if (shape == Shape.LEDGER) {
-    //                nl++;
-    //            } else if (shape == Shape.ENDING_HORIZONTAL) {
-    //                ne++;
-    //            } else if (shape == Shape.TENUTO) {
-    //                nt++;
-    //            }
-    //        }
-    //
-    //        // A bit tedious
-    //        StringBuilder sb = new StringBuilder();
-    //        sb.append("S#")
-    //                .append(system.getId());
-    //        sb.append(" ");
-    //
-    //        if (nl > 0) {
-    //            sb.append("ledgers: ")
-    //                    .append(nl);
-    //        } else if (logger.isDebugEnabled()) {
-    //            sb.append("No ledger");
-    //        }
-    //
-    //        if (nt > 0) {
-    //            if (sb.length() > 0) {
-    //                sb.append(", ");
-    //            }
-    //
-    //            sb.append(nt)
-    //                    .append(" tenuto")
-    //                    .append((nt > 1) ? "s" : "");
-    //        } else if (logger.isDebugEnabled()) {
-    //            sb.append("No tenuto");
-    //        }
-    //
-    //        if (ne > 0) {
-    //            if (sb.length() > 0) {
-    //                sb.append(", ");
-    //            }
-    //
-    //            sb.append(ne)
-    //                    .append(" ending")
-    //                    .append((ne > 1) ? "s" : "");
-    //        } else if (logger.isDebugEnabled()) {
-    //            sb.append("No ending");
-    //        }
-    //
-    //        logger.debug("{}{}", sheet.getLogPrefix(), sb.toString());
-    //    }
     //---------------//
     // filterLedgers //
     //---------------//

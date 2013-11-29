@@ -30,6 +30,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.sig.AbstractBeamInter;
+import omr.sig.BarlineInter;
 import omr.sig.Inter;
 import omr.sig.InterVisitor;
 import omr.sig.LedgerInter;
@@ -303,7 +304,7 @@ public class SheetPainter
                     }
 
                     // For inter drawing with composite
-///                    g.setComposite(composite);
+                    ///                    g.setComposite(composite);
                 }
 
                 // All interpretations for this system
@@ -315,8 +316,7 @@ public class SheetPainter
                     }
                 }
 
-///                g.setComposite(fullComposite);
-
+                ///                g.setComposite(fullComposite);
                 // Virtual glyphs (should be in SIG?)
                 paintVirtualGlyphs(systemInfo);
 
@@ -395,6 +395,16 @@ public class SheetPainter
     {
         setColor(beam);
         g.fill(beam.getArea());
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (BarlineInter barline)
+    {
+        setColor(barline);
+        g.fill(barline.getArea());
     }
 
     //--------------------//

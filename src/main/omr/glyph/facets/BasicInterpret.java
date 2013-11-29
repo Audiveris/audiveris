@@ -12,6 +12,7 @@
 package omr.glyph.facets;
 
 import omr.sheet.SystemInfo;
+
 import omr.sig.Inter;
 import omr.sig.Relation;
 import omr.sig.SIGraph;
@@ -29,26 +30,33 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public class BasicInterpret
-        extends BasicFacet
-        implements GlyphInterpret
+    extends BasicFacet
+    implements GlyphInterpret
 {
+    //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(
-            BasicInterpret.class);
+        BasicInterpret.class);
+
     //~ Instance fields --------------------------------------------------------
 
     /** Set of interpretation(s) for this glyph . */
-    private final Set<Inter> interpretations = new HashSet<>();
+    private final Set<Inter> interpretations = new HashSet<Inter>();
 
-    //----------------//
-    // BasicInterpret //
-    //----------------//
+    //~ Constructors -----------------------------------------------------------
+
+    /**
+     * Creates a new BasicInterpret object.
+     *
+     * @param glyph the underlying glyph
+     */
     public BasicInterpret (Glyph glyph)
     {
         super(glyph);
     }
 
     //~ Methods ----------------------------------------------------------------
+
     //-------------------//
     // addInterpretation //
     //-------------------//
@@ -56,6 +64,51 @@ public class BasicInterpret
     public void addInterpretation (Inter inter)
     {
         interpretations.add(inter);
+    }
+
+    //--------//
+    // dumpOf //
+    //--------//
+    @Override
+    public String dumpOf ()
+    {
+        StringBuilder sb = new StringBuilder();
+
+        if (!interpretations.isEmpty()) {
+            for (Inter inter : interpretations) {
+                sb.append("   interpretation=")
+                  .append(inter);
+
+                SIGraph sig = inter.getSig();
+
+                if (sig != null) {
+                    for (Relation relation : sig.edgesOf(inter)) {
+                        Inter source = sig.getEdgeSource(relation);
+                        Inter target = sig.getEdgeTarget(relation);
+                        sb.append(" {")
+                          .append(relation);
+
+                        if (source != inter) {
+                            sb.append(" <- ")
+                              .append(source);
+                        }
+
+                        if (target != inter) {
+                            sb.append(" -> ")
+                              .append(target);
+                        }
+
+                        sb.append("}");
+                    }
+                } else {
+                    sb.append(" NO_SIG");
+                }
+
+                sb.append("\n");
+            }
+        }
+
+        return sb.toString();
     }
 
     //--------------------//
@@ -74,45 +127,5 @@ public class BasicInterpret
     public void invalidateCache ()
     {
         interpretations.clear();
-    }
-
-    //--------//
-    // dumpOf //
-    //--------//
-    @Override
-    public String dumpOf ()
-    {
-        StringBuilder sb = new StringBuilder();
-
-        if (!interpretations.isEmpty()) {
-            SystemInfo system = glyph.getSystem();
-            if (system != null) {
-                SIGraph sig = system.getSig();
-                for (Inter inter : interpretations) {
-                    sb.append("   interpretation=").append(inter);
-                    if (sig != null) {
-                        for (Relation relation : sig.edgesOf(inter)) {
-                            Inter source = sig.getEdgeSource(relation);
-                            Inter target = sig.getEdgeTarget(relation);
-                            sb.append(" {").append(relation);
-                            if (source != inter) {
-                                sb.append(" <- ").append(source);
-                            }
-                            if (target != inter) {
-                                sb.append(" -> ").append(target);
-                            }
-                            sb.append("}");
-                        }
-                    } else {
-                        sb.append(" NO_SIG");
-                    }
-                    sb.append("\n");
-                }
-            } else {
-                logger.warn("No system for glyph#{}", glyph.getId());
-            }
-        }
-
-        return sb.toString();
     }
 }
