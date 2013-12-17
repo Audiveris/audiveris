@@ -14,7 +14,6 @@ package omr.sheet;
 import omr.Main;
 
 import omr.glyph.BasicNest;
-import omr.glyph.Glyphs;
 import omr.glyph.GlyphNest;
 import omr.glyph.SymbolsModel;
 import omr.glyph.facets.Glyph;
@@ -23,7 +22,6 @@ import omr.glyph.ui.SymbolsEditor;
 
 import omr.grid.GridBuilder;
 import omr.grid.StaffManager;
-import omr.grid.TargetBuilder;
 
 import omr.lag.Lag;
 import omr.lag.Lags;
@@ -75,9 +73,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -199,9 +195,6 @@ public class Sheet
 
     /** Specific builder dealing with glyphs */
     private volatile SymbolsController symbolsController;
-
-    /** Related target builder */
-    private volatile TargetBuilder targetBuilder;
 
     /** Related symbols editor */
     private SymbolsEditor symbolsEditor;
@@ -865,17 +858,6 @@ public class Sheet
         return systemManager;
     }
 
-    //------------------//
-    // getTargetBuilder //
-    //------------------//
-    /**
-     * @return the targetBuilder
-     */
-    public TargetBuilder getTargetBuilder ()
-    {
-        return targetBuilder;
-    }
-
     //----------//
     // getWidth //
     //----------//
@@ -1033,17 +1015,6 @@ public class Sheet
         this.skew = skew;
     }
 
-    //------------------//
-    // setTargetBuilder //
-    //------------------//
-    /**
-     * @param targetBuilder the targetBuilder to set
-     */
-    public void setTargetBuilder (TargetBuilder targetBuilder)
-    {
-        this.targetBuilder = targetBuilder;
-    }
-
     //----------//
     // toString //
     //----------//
@@ -1095,7 +1066,6 @@ public class Sheet
             staffManager.reset();
             systemManager = null;
             symbolsController = null;
-            targetBuilder = null;
             symbolsEditor = null;
         // Fall-through!
 
@@ -1236,7 +1206,7 @@ public class Sheet
             return;
         }
 
-        if (rect == null) {
+        if (rect == null || systemManager == null) {
             return;
         }
 

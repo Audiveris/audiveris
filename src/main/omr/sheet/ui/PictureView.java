@@ -144,11 +144,6 @@ public class PictureView
                                         mixed ? false : painting.isVoicePainting(),
                                         true,
                                         false));
-            } else {
-                if (sheet.getTargetBuilder() != null) {
-                    sheet.getTargetBuilder()
-                            .renderWarpGrid(g, true);
-                }
             }
 
             g.setColor(oldColor);

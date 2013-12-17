@@ -41,8 +41,8 @@ import java.util.Collection;
  * vertical bar lines.
  * <p>
  * The actual processing is delegated to 3 companions:<ul>
- * <li>{@link LinesRetriever} for retrieving all horizontal staff lines.</li>
- * <li>{@link BarsRetriever} for retrieving main vertical bar lines.</li>
+ * <li>{@link LinesRetriever} for retrieving horizontal staff lines.</li>
+ * <li>{@link BarsRetriever} for retrieving vertical bar lines.</li>
  * <li>Optionally, {@link TargetBuilder} for building the target grid.</li>
  * </ul>
  *
@@ -125,7 +125,7 @@ public class GridBuilder
             // Complete horizontal lag with short sections
             linesRetriever.createShortSections();
 
-            // Retrieve the major vertical barlines and thus the systems
+            // Retrieve the vertical barlines and thus the systems
             watch.start("retrieveBarlines");
             barsRetriever.retrieveBarlines();
 
@@ -134,12 +134,12 @@ public class GridBuilder
             linesRetriever.completeLines();
 
             /** Companion in charge of target grid */
-            TargetBuilder targetBuilder = new TargetBuilder(sheet);
-            sheet.setTargetBuilder(targetBuilder);
-
             // Define the destination grid, if so desired
             if (constants.buildDewarpedTarget.isSet()) {
                 watch.start("targetBuilder");
+
+                TargetBuilder targetBuilder = new TargetBuilder(sheet);
+                sheet.addItemRenderer(targetBuilder);
                 targetBuilder.buildInfo();
             }
         } catch (Throwable ex) {

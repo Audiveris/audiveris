@@ -300,8 +300,7 @@ public class LinesRetriever
 
             // Polish staff lines (TODO: to be improved)
             for (StaffInfo staff : staffManager.getStaves()) {
-                for (LineInfo l : staff.getLines()) {
-                    FilamentLine line = (FilamentLine) l;
+                for (FilamentLine line : staff.getLines()) {
                     line.fil.polishCurvature();
                 }
             }
@@ -511,8 +510,7 @@ public class LinesRetriever
             logger.debug("{}", staff);
 
             // Adjust left and right endings of each line in the staff
-            for (LineInfo l : staff.getLines()) {
-                FilamentLine line = (FilamentLine) l;
+            for (FilamentLine line : staff.getLines()) {
                 line.setEndingPoints(
                         getLineEnding(system, staff, line, LEFT),
                         getLineEnding(system, staff, line, RIGHT));
@@ -521,13 +519,11 @@ public class LinesRetriever
             // Insert line intermediate points, if so needed
             List<LineFilament> fils = new ArrayList<LineFilament>();
 
-            for (LineInfo l : staff.getLines()) {
-                FilamentLine line = (FilamentLine) l;
+            for (FilamentLine line : staff.getLines()) {
                 fils.add(line.fil);
             }
 
-            for (LineInfo l : staff.getLines()) {
-                FilamentLine line = (FilamentLine) l;
+            for (FilamentLine line : staff.getLines()) {
                 line.fil.fillHoles(fils);
             }
         }
@@ -792,8 +788,7 @@ public class LinesRetriever
             int iMin = 0;
 
             for (StaffInfo staff : system.getStaves()) {
-                for (LineInfo l : staff.getLines()) {
-                    FilamentLine line = (FilamentLine) l;
+                for (FilamentLine line : staff.getLines()) {
                     LineFilament filament = line.fil;
                     Rectangle lineBox = filament.getBounds();
                     lineBox.grow(0, scale.getMainFore());
@@ -864,22 +859,23 @@ public class LinesRetriever
             int iMin = 0;
 
             for (StaffInfo staff : system.getStaves()) {
-                for (LineInfo l : staff.getLines()) {
+                for (FilamentLine line : staff.getLines()) {
                     /*
                      * Inclusion on the fly would imply recomputation of
                      * filament at each section inclusion. So we need to
                      * retrieve all "stickers" for a given staff line, and
                      * perform a global inclusion at the end only.
                      */
-                    FilamentLine line = (FilamentLine) l;
                     LineFilament fil = line.fil;
                     Rectangle lineBox = fil.getBounds();
                     lineBox.grow(0, scale.getMainFore());
 
-                    double minX = fil.getStartPoint(HORIZONTAL)
-                            .getX();
-                    double maxX = fil.getStopPoint(HORIZONTAL)
-                            .getX();
+                    // We must preserve these (imposed) points
+                    final Point2D startPoint = fil.getStartPoint(HORIZONTAL);
+                    final Point2D stopPoint = fil.getStopPoint(HORIZONTAL);
+
+                    double minX = startPoint.getX();
+                    double maxX = stopPoint.getX();
                     int minY = lineBox.y;
                     int maxY = lineBox.y + lineBox.height;
                     List<Section> stickers = new ArrayList<Section>();
@@ -913,12 +909,21 @@ public class LinesRetriever
                     }
 
                     // Actually include the retrieved stickers?
+                    boolean updated = false;
+
                     for (Section section : stickers) {
                         if (updateGeometry) {
+                            // This invalidates glyph cache, including extrema
                             fil.addSection(section);
+                            updated = true;
                         } else {
                             section.setGlyph(fil);
                         }
+                    }
+
+                    // Reset imposed extrema points
+                    if (updated) {
+                        fil.setEndingPoints(startPoint, stopPoint);
                     }
                 }
             }
