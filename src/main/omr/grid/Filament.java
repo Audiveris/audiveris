@@ -99,7 +99,7 @@ public class Filament
     //------------//
     public void addSection (Section section)
     {
-        addSection(section, Linking.LINK_BACK);
+        addSection(section, Linking.LINK);
     }
 
     //------------//

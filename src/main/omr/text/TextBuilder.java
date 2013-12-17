@@ -51,6 +51,8 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import omr.glyph.GlyphLayer;
+import omr.glyph.GlyphNest;
 
 /**
  * Class {@code TextBuilder} provide features to check, build and
@@ -165,7 +167,7 @@ public class TextBuilder
         int minConf = constants.minConfidence.getValue();
         if (conf == null || conf < minConf) {
             logger.debug("      Too low confidence {} vs {} for {}",
-                    conf, minConf, textLine);
+                         conf, minConf, textLine);
             return false;
         }
 
@@ -253,7 +255,7 @@ public class TextBuilder
 
             if (fontInfo.pointsize > params.maxFontSize) {
                 logger.debug("Too big font {} vs {} on {}",
-                        fontInfo.pointsize, params.maxFontSize, textLine);
+                             fontInfo.pointsize, params.maxFontSize, textLine);
                 return false;
             }
         }
@@ -279,6 +281,7 @@ public class TextBuilder
         if (logger.isDebugEnabled()) {
             logger.info("{} mapGlyphs", system.idString());
         }
+        GlyphNest nest = system.getSheet().getNest();
 
         // To make sure that the same section is not assigned to several words
         for (Section section : allSections) {
@@ -299,8 +302,8 @@ public class TextBuilder
                         allSections);
 
                 if (!wordSections.isEmpty()) {
-                    Glyph wordGlyph = system.addGlyph(system.buildGlyph(
-                            wordSections));
+                    Glyph wordGlyph = system.registerGlyph(nest.buildGlyph(
+                            wordSections, GlyphLayer.DEFAULT, true, Glyph.Linking.LINK));
 
                     // Link TextWord -> Glyph
                     word.setGlyph(wordGlyph);
@@ -385,7 +388,7 @@ public class TextBuilder
     {
         Set<TextLine> sentences = system.getSentences();
         logger.info("{} {} sentences: {}",
-                title, system.idString(), sentences.size());
+                    title, system.idString(), sentences.size());
 
         for (TextLine sentence : sentences) {
             logger.info("   {}", sentence);
@@ -531,16 +534,15 @@ public class TextBuilder
     public List<TextLine> retrieveOcrLine (Glyph glyph,
                                            String language)
     {
-        final String label = "s" + glyph.getSystem()
-                .getId() + "-g" + glyph.getId();
+        final String label = "s" + system.getId() + "-g" + glyph.getId();
 
         return getOcr()
                 .recognize(glyph.getImage().toBufferedImage(),
-                glyph.getBounds().getLocation(),
-                language,
-                OCR.LayoutMode.SINGLE_BLOCK,
-                system,
-                label);
+                           glyph.getBounds().getLocation(),
+                           language,
+                           OCR.LayoutMode.SINGLE_BLOCK,
+                           system,
+                           label);
     }
 
     //------------------//
@@ -706,7 +708,7 @@ public class TextBuilder
                             if (candidate.isVip() || head.isVip()
                                 || logger.isDebugEnabled()) {
                                 logger.info("   merging {} into {}",
-                                        candidate, head);
+                                            candidate, head);
                             }
 
                             head.addWords(candidate.getWords());
@@ -744,10 +746,10 @@ public class TextBuilder
     {
         Point2D P1 = line.getDskOrigin();
         Point p1 = new Point((int) Math.rint(P1.getX()),
-                (int) Math.rint(P1.getY()));
+                             (int) Math.rint(P1.getY()));
         Point2D P2 = system.getSkew().deskewed(line.getBaseline().getP2());
         Point p2 = new Point((int) Math.rint(P2.getX()),
-                (int) Math.rint(P2.getY()));
+                             (int) Math.rint(P2.getY()));
         Rectangle rect = new Rectangle(p1);
         rect.add(p2);
 
@@ -788,7 +790,7 @@ public class TextBuilder
                 int prevStop = prevBounds.x + prevBounds.width;
                 int gap = word.getBounds().x - prevStop;
                 logger.debug("      gap {} vs {} to {}",
-                        gap, params.minWordDx, word);
+                             gap, params.minWordDx, word);
 
                 if (gap < params.minWordDx) {
                     toRemove.add(prevWord);
@@ -846,10 +848,10 @@ public class TextBuilder
                     // Check for a separator in the new manual value
                     if (!word.getChars().isEmpty()) {
                         logger.debug("Manual modif for {}",
-                                wordGlyph.idString());
+                                     wordGlyph.idString());
                         subWords = getSubWords(word,
-                                line,
-                                new WordScanner.ManualScanner(
+                                               line,
+                                               new WordScanner.ManualScanner(
                                 wordGlyph.getTextValue(),
                                 line.isLyrics(),
                                 word.getChars()));
@@ -867,14 +869,14 @@ public class TextBuilder
                             newWord.setGlyph(wordGlyph);
                             subWords.add(newWord);
                             wordGlyph.setTextWord(wordGlyph.getOcrLanguage(),
-                                    newWord);
+                                                  newWord);
                         }
                     }
                 }
             } else {
                 subWords = getSubWords(word,
-                        line,
-                        new WordScanner.OcrScanner(
+                                       line,
+                                       new WordScanner.OcrScanner(
                         word.getValue(),
                         line.isLyrics(),
                         word.getChars()));
@@ -936,7 +938,7 @@ public class TextBuilder
                         if (gap > maxAbscissaGap) {
                             int splitPos = words.indexOf(word);
                             List<TextWord> lineWords = words.subList(0,
-                                    splitPos);
+                                                                     splitPos);
                             TextLine newLine = new TextLine(system, lineWords);
                             newLine.setRole(line.getRole());
                             if (line.isVip() || logger.isDebugEnabled()) {
@@ -1021,7 +1023,7 @@ public class TextBuilder
                         line);
 
                 logger.debug("      subWord ''{}'' from ''{}''",
-                        newWord.getValue(), word.getValue());
+                             newWord.getValue(), word.getValue());
                 subWords.add(newWord);
             }
         }
@@ -1072,11 +1074,12 @@ public class TextBuilder
     public void switchLanguageTexts ()
     {
         final Page page = system.getSheet().getPage();
+        final GlyphNest nest = system.getSheet().getNest();
         final LiveParam<String> textParam = page.getTextParam();
         final String language = textParam.getTarget();
         if (logger.isDebugEnabled()) {
             logger.info("{} switchLanguageTexts lan:{}",
-                    system.idString(), language);
+                        system.idString(), language);
         }
         textParam.setActual(language);
 
@@ -1086,19 +1089,19 @@ public class TextBuilder
             Glyph compound = glyphs.size() == 1
                     ? glyphs.get(0)
                     : system.
-                    registerGlyph(system.buildTransientCompound(glyphs));
+                    registerGlyph(nest.buildGlyph(glyphs, false, Glyph.Linking.NO_LINK));
 
             List<TextLine> lines = retrieveOcrLine(compound, language);
             if (lines == null || lines.size() != 1) {
                 logger.debug("{} No valid replacement for {}",
-                        system.idString(), oldLine);
+                             system.idString(), oldLine);
             } else {
                 TextLine newLine = lines.get(0);
                 recutStandardWords(newLine);
 
                 if (logger.isDebugEnabled()) {
                     logger.info("{} refreshing {} by {}",
-                            system.idString(), oldLine, newLine);
+                                system.idString(), oldLine, newLine);
                     oldLine.dump();
                     newLine.dump();
                 }
@@ -1115,7 +1118,7 @@ public class TextBuilder
                         }
                     } else {
                         logger.debug("{} no word for {} in {}",
-                                system.idString(), oldWord, newLine);
+                                     system.idString(), oldWord, newLine);
                     }
                 }
 

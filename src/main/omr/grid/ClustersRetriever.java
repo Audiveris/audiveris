@@ -20,9 +20,7 @@ import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import omr.math.GeoUtil;
 import omr.math.Histogram;
 
 import omr.run.Orientation;
@@ -33,6 +31,9 @@ import omr.sheet.Sheet;
 import omr.sheet.Skew;
 
 import omr.util.Wrapper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -72,7 +73,7 @@ public class ClustersRetriever
     /**
      * For comparing Filament instances on their starting point
      */
-    private static final Comparator<Filament> startComparator = new Comparator<Filament>()
+    private static final Comparator<Filament> byStartAbscissa = new Comparator<Filament>()
     {
         @Override
         public int compare (Filament f1,
@@ -88,7 +89,7 @@ public class ClustersRetriever
     /**
      * For comparing Filament instances on their stopping point
      */
-    private static final Comparator<Filament> stopComparator = new Comparator<Filament>()
+    private static final Comparator<Filament> byStopAbscissa = new Comparator<Filament>()
     {
         @Override
         public int compare (Filament f1,
@@ -102,8 +103,8 @@ public class ClustersRetriever
     };
 
     //~ Instance fields --------------------------------------------------------
-    /** Comparator on cluster ordinate */
-    public Comparator<LineCluster> ordinateComparator = new Comparator<LineCluster>()
+    /** Comparator on cluster ordinate. */
+    public Comparator<LineCluster> byOrdinate = new Comparator<LineCluster>()
     {
         @Override
         public int compare (LineCluster c1,
@@ -121,6 +122,28 @@ public class ClustersRetriever
             }
 
             return 0;
+        }
+    };
+
+    /**
+     * Comparator by page layout (this leads to systems).
+     */
+    public Comparator<LineCluster> byLayout = new Comparator<LineCluster>()
+    {
+        @Override
+        public int compare (LineCluster c1,
+                            LineCluster c2)
+        {
+            Point p1 = c1.getCenter();
+            Point p2 = c2.getCenter();
+
+            if (GeoUtil.xOverlap(c1.getBounds(), c2.getBounds()) < 0) {
+                // No abscissa overlap, we are side by side: use abscissa
+                return Integer.compare(p1.x, p2.x);
+            } else {
+                // Abscissa overlap, we are one under the other: use ordinate
+                return Double.compare(ordinateOf(p1), ordinateOf(p2));
+            }
         }
     };
 
@@ -143,7 +166,7 @@ public class ClustersRetriever
     private final List<LineFilament> filaments;
 
     /** Filaments discarded */
-    private final List<LineFilament> discardedFilaments = new ArrayList<>();
+    private final List<LineFilament> discardedFilaments = new ArrayList<LineFilament>();
 
     /** Skew of the sheet */
     private final Skew skew;
@@ -164,7 +187,7 @@ public class ClustersRetriever
     private int[] colX;
 
     /** Collection of clusters */
-    private final List<LineCluster> clusters = new ArrayList<>();
+    private final List<LineCluster> clusters = new ArrayList<LineCluster>();
 
     //~ Constructors -----------------------------------------------------------
     //-------------------//
@@ -192,7 +215,7 @@ public class ClustersRetriever
         skew = sheet.getSkew();
         pictureWidth = sheet.getWidth();
         scale = sheet.getScale();
-        colCombs = new TreeMap<>();
+        colCombs = new TreeMap<Integer, List<FilamentComb>>();
 
         params = new Parameters(scale);
     }
@@ -211,8 +234,10 @@ public class ClustersRetriever
 
         // Check relevance
         if ((popSize < 4) || (popSize > 6)) {
-            logger.info("{}Giving up spurious line comb size: {}",
-                    sheet.getLogPrefix(), popSize);
+            logger.info(
+                    "{}Giving up spurious line comb size: {}",
+                    sheet.getLogPrefix(),
+                    popSize);
 
             return discardedFilaments;
         }
@@ -225,7 +250,10 @@ public class ClustersRetriever
 
         logger.info(
                 "{}Retrieved line clusters: {} of size: {} with interline: {}",
-                sheet.getLogPrefix(), clusters.size(), popSize, interline);
+                sheet.getLogPrefix(),
+                clusters.size(),
+                popSize,
+                interline);
 
         return discardedFilaments;
     }
@@ -267,7 +295,7 @@ public class ClustersRetriever
      */
     Collection<Glyph> getStafflineGlyphs ()
     {
-        List<Glyph> glyphs = new ArrayList<>();
+        List<Glyph> glyphs = new ArrayList<Glyph>();
 
         for (LineCluster cluster : clusters) {
             for (FilamentLine line : cluster.getLines()) {
@@ -298,10 +326,10 @@ public class ClustersRetriever
             for (FilamentComb comb : entry.getValue()) {
                 g.draw(
                         new Line2D.Double(
-                        x,
-                        comb.getY(0),
-                        x,
-                        comb.getY(comb.getCount() - 1)));
+                                x,
+                                comb.getY(0),
+                                x,
+                                comb.getY(comb.getCount() - 1)));
             }
         }
 
@@ -395,10 +423,11 @@ public class ClustersRetriever
         if (gap <= 0) {
             // Overlap: use middle of common part
             final int xMid = (maxLeft + minRight) / 2;
-            final double slope = sheet.getSkew().getSlope();
+            final double slope = sheet.getSkew()
+                    .getSlope();
             dist = bestMatch(
                     ordinatesOf(
-                    one.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
+                            one.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
                     ordinatesOf(
                     two.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
                     deltaPos);
@@ -433,7 +462,7 @@ public class ClustersRetriever
     private double computeAcceptableLength ()
     {
         // Determine minimum true length for valid clusters
-        List<Integer> lengths = new ArrayList<>();
+        List<Integer> lengths = new ArrayList<Integer>();
 
         for (LineCluster cluster : clusters) {
             lengths.add(cluster.getTrueLength());
@@ -442,8 +471,7 @@ public class ClustersRetriever
         Collections.sort(lengths);
 
         int medianLength = lengths.get(lengths.size() / 2);
-        double minLength = medianLength * constants.minClusterLengthRatio.
-                getValue();
+        double minLength = medianLength * constants.minClusterLengthRatio.getValue();
 
         logger.debug("medianLength: {} minLength: {}", medianLength, minLength);
 
@@ -464,11 +492,13 @@ public class ClustersRetriever
                     Orientation.HORIZONTAL)) {
                 ///logger.info("Inclusion " + twoAnc + " into " + oneAnc);
                 oneAnc.include(twoAnc);
-                oneAnc.getCombs().putAll(twoAnc.getCombs());
+                oneAnc.getCombs()
+                        .putAll(twoAnc.getCombs());
             } else {
                 ///logger.info("Inclusion " + oneAnc + " into " + twoAnc);
                 twoAnc.include(oneAnc);
-                twoAnc.getCombs().putAll(oneAnc.getCombs());
+                twoAnc.getCombs()
+                        .putAll(oneAnc.getCombs());
             }
         }
     }
@@ -480,12 +510,13 @@ public class ClustersRetriever
     {
         Collections.sort(
                 filaments,
-                Glyphs.getReverseLengthComparator(Orientation.HORIZONTAL));
+                Glyphs.byReverseLength(Orientation.HORIZONTAL));
 
         for (LineFilament fil : filaments) {
             fil = (LineFilament) fil.getAncestor();
 
-            if ((fil.getCluster() == null) && !fil.getCombs().isEmpty()) {
+            if ((fil.getCluster() == null) && !fil.getCombs()
+                    .isEmpty()) {
                 LineCluster cluster = new LineCluster(interline, fil);
                 clusters.add(cluster);
             }
@@ -551,7 +582,8 @@ public class ClustersRetriever
     private void expandCluster (LineCluster cluster,
                                 List<LineFilament> fils)
     {
-        final double slope = sheet.getSkew().getSlope();
+        final double slope = sheet.getSkew()
+                .getSlope();
         Rectangle clusterBox = null;
 
         for (LineFilament fil : fils) {
@@ -603,8 +635,10 @@ public class ClustersRetriever
                                 || fil.isVip()
                                 || cluster.isVip()) {
                                 logger.info(
-                                        "Aggregated F{} to C{} at index {}",
-                                        fil.getId(), cluster.getId(), index);
+                                        "VIP aggregated F{} to C{} at index {}",
+                                        fil.getId(),
+                                        cluster.getId(),
+                                        index);
 
                                 if (fil.isVip()) {
                                     cluster.setVip();
@@ -617,8 +651,11 @@ public class ClustersRetriever
                         }
                     } else {
                         if (areVips) {
-                            logger.info("{}dy={} vs {}",
-                                    vips, dy, params.maxExpandDy);
+                            logger.info(
+                                    "VIP {}dy={} vs {}",
+                                    vips,
+                                    dy,
+                                    params.maxExpandDy);
                         }
                     }
                 }
@@ -639,14 +676,14 @@ public class ClustersRetriever
      */
     private void expandClusters ()
     {
-        List<LineFilament> startFils = new ArrayList<>(filaments);
-        Collections.sort(startFils, startComparator);
+        List<LineFilament> startFils = new ArrayList<LineFilament>(filaments);
+        Collections.sort(startFils, byStartAbscissa);
 
-        List<LineFilament> stopFils = new ArrayList<>(startFils);
-        Collections.sort(stopFils, stopComparator);
+        List<LineFilament> stopFils = new ArrayList<LineFilament>(startFils);
+        Collections.sort(stopFils, byStopAbscissa);
 
         // Browse clusters, starting with the longest ones
-        Collections.sort(clusters, LineCluster.reverseLengthComparator);
+        Collections.sort(clusters, LineCluster.byReverseLength);
 
         for (LineCluster cluster : clusters) {
             logger.debug("Expanding {}", cluster);
@@ -673,7 +710,7 @@ public class ClustersRetriever
             Map<Integer, FilamentComb> combs = fil.getCombs();
 
             // Sequence of lines around the filament, indexed by relative pos
-            Map<Integer, LineFilament> lines = new TreeMap<>();
+            Map<Integer, LineFilament> lines = new TreeMap<Integer, LineFilament>();
 
             // Loop on all combs this filament is involved in
             for (FilamentComb comb : combs.values()) {
@@ -707,24 +744,36 @@ public class ClustersRetriever
     private void mergeClusterPairs ()
     {
         // Sort clusters according to their ordinate in page
-        Collections.sort(clusters, ordinateComparator);
+        Collections.sort(clusters, byOrdinate);
 
         double minLength = computeAcceptableLength();
         WholeLoop:
         for (int idx = 0; idx < clusters.size();) {
             LineCluster cluster = clusters.get(idx);
+            Rectangle clusterBox = cluster.getBounds();
             Point2D dskCenter = skew.deskewed(cluster.getCenter());
             double yMax = dskCenter.getY() + params.maxMergeCenterDy;
 
             for (LineCluster cl : clusters.subList(idx + 1, clusters.size())) {
                 // Check dy
-                if (skew.deskewed(cl.getCenter()).getY() > yMax) {
+                if (skew.deskewed(cl.getCenter())
+                        .getY() > yMax) {
                     break;
                 }
 
+                // Check for blank space (2 systems side by side)
+                Rectangle clBox = cl.getBounds();
+
+                if (GeoUtil.xGap(clusterBox, clBox) > params.maxMergeDx) {
+                    // Too wide horizontal gap, must be side by side
+                    continue;
+                }
+
                 // Merge
-                logger.info("Pairing clusters C{} & C{}",
-                        cluster.getId(), cl.getId());
+                logger.info(
+                        "Pairing clusters C{} & C{}",
+                        cluster.getId(),
+                        cl.getId());
                 cluster.mergeWith(cl, 0);
                 clusters.remove(cl);
 
@@ -752,7 +801,7 @@ public class ClustersRetriever
     private void mergeClusters ()
     {
         // Sort clusters according to their ordinate in page
-        Collections.sort(clusters, ordinateComparator);
+        Collections.sort(clusters, byOrdinate);
 
         for (LineCluster current : clusters) {
             LineCluster candidate = current;
@@ -760,7 +809,7 @@ public class ClustersRetriever
             // Keep on working while we do have a candidate to check for merge
             CandidateLoop:
             while (true) {
-                Wrapper<Integer> deltaPos = new Wrapper<>();
+                Wrapper<Integer> deltaPos = new Wrapper<Integer>();
                 Rectangle candidateBox = candidate.getBounds();
                 candidateBox.grow(params.clusterXMargin, params.clusterYMargin);
 
@@ -780,8 +829,11 @@ public class ClustersRetriever
                     if (headBox.intersects(candidateBox)) {
                         // Try a merge
                         if (canMerge(head, candidate, deltaPos)) {
-                            logger.debug("Merging {} with {} delta:{}",
-                                    candidate, head, deltaPos.value);
+                            logger.debug(
+                                    "Merging {} with {} delta:{}",
+                                    candidate,
+                                    head,
+                                    deltaPos.value);
 
                             // Do the merge
                             candidate.mergeWith(head, deltaPos.value);
@@ -807,7 +859,9 @@ public class ClustersRetriever
     private Double ordinateOf (Point2D point)
     {
         if (point != null) {
-            return sheet.getSkew().deskewed(point).getY();
+            return sheet.getSkew()
+                    .deskewed(point)
+                    .getY();
         } else {
             return null;
         }
@@ -892,7 +946,7 @@ public class ClustersRetriever
         // Discard non standard clusters
         destroyNonStandardClusters();
 
-        // Merge clusters horizontally
+        // Merge clusters horizontally, when relevant
         mergeClusterPairs();
 
         // Aggregate filaments left over when possible (second)
@@ -936,7 +990,7 @@ public class ClustersRetriever
         double samplingDx = (double) pictureWidth / (sampleCount + 1);
 
         for (int col = 1; col <= sampleCount; col++) {
-            final List<FilamentComb> colList = new ArrayList<>();
+            final List<FilamentComb> colList = new ArrayList<FilamentComb>();
             colCombs.put(col, colList);
 
             final int x = (int) Math.rint(samplingDx * col);
@@ -961,8 +1015,10 @@ public class ClustersRetriever
                             comb.append(prevFily.filament, prevFily.y);
 
                             if (prevFily.filament.isVip()) {
-                                logger.info("Created {} with {}",
-                                        comb, prevFily.filament);
+                                logger.info(
+                                        "VIP created {} with {}",
+                                        comb,
+                                        prevFily.filament);
                             }
                         }
 
@@ -970,8 +1026,10 @@ public class ClustersRetriever
                         comb.append(fily.filament, fily.y);
 
                         if (fily.filament.isVip()) {
-                            logger.info("Appended {} to {}",
-                                    fily.filament, comb);
+                            logger.info(
+                                    "VIP appended {} to {}",
+                                    fily.filament,
+                                    comb);
                         }
                     } else {
                         // No comb active
@@ -996,11 +1054,13 @@ public class ClustersRetriever
      */
     private List<FilY> retrieveFilamentsAtX (double x)
     {
-        List<FilY> list = new ArrayList<>();
+        List<FilY> list = new ArrayList<FilY>();
 
         for (LineFilament fil : filaments) {
-            if ((x >= fil.getStartPoint(HORIZONTAL).getX())
-                && (x <= fil.getStopPoint(HORIZONTAL).getX())) {
+            if ((x >= fil.getStartPoint(HORIZONTAL)
+                    .getX())
+                && (x <= fil.getStopPoint(HORIZONTAL)
+                    .getX())) {
                 list.add(new FilY(fil, fil.getPositionAt(x, HORIZONTAL)));
             }
         }
@@ -1019,7 +1079,7 @@ public class ClustersRetriever
     private void retrievePopularSize ()
     {
         // Build histogram of combs lengths
-        Histogram<Integer> histo = new Histogram<>();
+        Histogram<Integer> histo = new Histogram<Integer>();
 
         for (List<FilamentComb> list : colCombs.values()) {
             for (FilamentComb comb : list) {
@@ -1031,8 +1091,11 @@ public class ClustersRetriever
         // Should be 4 for bass tab, 5 for standard notation, 6 for guitar tab
         popSize = histo.getMaxBucket();
 
-        logger.debug("{}Popular line comb: {} histo:{}",
-                sheet.getLogPrefix(), popSize, histo.dataString());
+        logger.debug(
+                "{}Popular line comb: {} histo:{}",
+                sheet.getLogPrefix(),
+                popSize,
+                histo.dataString());
     }
 
     //--------------//
@@ -1040,7 +1103,7 @@ public class ClustersRetriever
     //--------------//
     private void trimClusters ()
     {
-        Collections.sort(clusters, ordinateComparator);
+        Collections.sort(clusters, byOrdinate);
 
         // Trim clusters with too many lines
         for (Iterator<LineCluster> it = clusters.iterator(); it.hasNext();) {

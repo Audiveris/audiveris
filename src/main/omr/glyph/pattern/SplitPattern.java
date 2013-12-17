@@ -131,7 +131,7 @@ public class SplitPattern
 
         section.setProcessed(true);
 
-        glyph.addSection(section, Glyph.Linking.NO_LINK_BACK);
+        glyph.addSection(section, Glyph.Linking.NO_LINK);
 
         // Check recursively all sections linked to this one...
 
@@ -232,8 +232,6 @@ public class SplitPattern
                 continue;
             }
 
-            system.computeGlyphFeatures(chunk);
-
             Evaluation vote = GlyphNetwork.getInstance().vote(
                     chunk,
                     system,
@@ -258,7 +256,7 @@ public class SplitPattern
         }
 
         for (Glyph glyph : bestSplit.sigs.values()) {
-            system.addGlyph(glyph);
+            system.registerGlyph(glyph);
         }
 
         return true;
@@ -333,7 +331,7 @@ public class SplitPattern
             Entry<GlyphSignature, Glyph> lowEntry = getSecondLargest();
             Glyph smallerGlyph = lowEntry.getValue();
             sigs.remove(lowEntry.getKey());
-            smallerGlyph.addSection(seed, Linking.NO_LINK_BACK);
+            smallerGlyph.addSection(seed, Linking.NO_LINK);
             sigs.put(smallerGlyph.getSignature(), smallerGlyph);
 
             // Register the chunks (copy needed to avoid concurrent modifs)

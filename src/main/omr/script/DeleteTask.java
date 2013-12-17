@@ -136,21 +136,22 @@ public class DeleteTask
     protected SortedSet<SystemInfo> retrieveCurrentImpact (Sheet sheet)
     {
         SortedSet<SystemInfo> impactedSystems = new TreeSet<>();
+        logger.error("Not yet implemented");
 
-        for (Glyph glyph : glyphs) {
-            Point location = glyph.getAreaCenter();
-            SystemInfo system = sheet.getSystemOf(location);
-
-            if (system != null) {
-                // Include this system
-                impactedSystems.add(system);
-            }
-
-            if (glyph.getShape().isPersistent()) {
-                // Include all following systems as well
-                impactedSystems.addAll(remaining(system));
-            }
-        }
+//        for (Glyph glyph : glyphs) {
+//            Point location = glyph.getAreaCenter();
+//            SystemInfo system = sheet.getSystemOf(location);
+//
+//            if (system != null) {
+//                // Include this system
+//                impactedSystems.add(system);
+//            }
+//
+//            if (glyph.getShape().isPersistent()) {
+//                // Include all following systems as well
+//                impactedSystems.addAll(remaining(system));
+//            }
+//        }
 
         return impactedSystems;
     }

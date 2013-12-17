@@ -57,6 +57,7 @@ import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import omr.glyph.GlyphNest;
 
 /**
  * Class {@code ScoreChecker} can visit the score hierarchy and perform
@@ -254,31 +255,31 @@ public class ScoreChecker
     @Override
     public boolean visit (Measure measure)
     {
-        try {
-            final Scale scale = measure.getScale();
-            final ScoreSystem system = measure.getSystem();
-            final SystemInfo systemInfo = system.getInfo();
-
-            // Check the beam groups for non-recognized hooks
-            for (BeamGroup group : measure.getBeamGroups()) {
-                for (Chord chord : group.getChords()) {
-                    Glyph stem = chord.getStem();
-
-                    // We could have rests (w/o stem!)
-                    if (stem != null) {
-                        searchHooks(
-                                chord,
-                                systemInfo.lookupIntersectedGlyphs(
-                                systemInfo.stemBoxOf(stem),
-                                stem));
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + measure,
-                    ex);
-        }
+//        try {
+//            final Scale scale = measure.getScale();
+//            final ScoreSystem system = measure.getSystem();
+//            final SystemInfo systemInfo = system.getInfo();
+//
+//            // Check the beam groups for non-recognized hooks
+//            for (BeamGroup group : measure.getBeamGroups()) {
+//                for (Chord chord : group.getChords()) {
+//                    Glyph stem = chord.getStem();
+//
+//                    // We could have rests (w/o stem!)
+//                    if (stem != null) {
+//                        searchHooks(
+//                                chord,
+//                                systemInfo.lookupIntersectedGlyphs(
+//                                systemInfo.stemBoxOf(stem),
+//                                stem));
+//                    }
+//                }
+//            }
+//        } catch (Exception ex) {
+//            logger.warn(
+//                    getClass().getSimpleName() + " Error visiting " + measure,
+//                    ex);
+//        }
 
         return true;
     }
@@ -852,14 +853,16 @@ public class ScoreChecker
             glyphs.addAll(second.getGlyphs());
 
             SystemInfo system = first.getSystem().getInfo();
-            Glyph compound = system.buildTransientCompound(glyphs);
+            GlyphNest nest = system.getSheet().getNest();
+            
+            Glyph compound = nest.buildGlyph(glyphs, false, Glyph.Linking.NO_LINK);
             Evaluation vote = GlyphNetwork.getInstance().vote(
                     compound,
                     first.getSystem().getInfo(),
                     Grades.mergedNoteMinGrade);
 
             if (vote != null) {
-                compound = system.addGlyph(compound);
+                compound = system.registerGlyph(compound);
                 compound.setEvaluation(vote);
                 logger.debug("{} merged two note heads", compound.idString());
             }

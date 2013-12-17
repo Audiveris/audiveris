@@ -114,13 +114,6 @@ interface GlyphEnvironment
                            Set<Glyph> bads);
 
     /**
-     * Report the containing system, if any.
-     *
-     * @return the system containing this glyph
-     */
-    SystemInfo getSystem ();
-
-    /**
      * Report whether the glyph touches a ledger
      *
      * @return true if there is a close ledger

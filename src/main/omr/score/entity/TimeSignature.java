@@ -36,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import omr.glyph.GlyphNest;
 
 /**
  * Class {@code TimeSignature} encapsulates a time signature,
@@ -408,9 +409,10 @@ public class TimeSignature
             }
 
             SystemInfo systemInfo = getSystem().getInfo();
-            Glyph compound = systemInfo.buildTransientCompound(
-                    getGlyphs());
-            compound = systemInfo.addGlyph(compound);
+            GlyphNest nest = systemInfo.getSheet().getNest();
+            Glyph compound = nest.buildGlyph(
+                    getGlyphs(), false, Glyph.Linking.NO_LINK);
+            compound = systemInfo.registerGlyph(compound);
             compound.setShape(shape, Evaluation.ALGORITHM);
 
             if (shape == Shape.CUSTOM_TIME) {

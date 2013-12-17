@@ -30,4 +30,6 @@ public interface InterVisitor
     void visit (LedgerInter inter);
 
     void visit (BarlineInter inter);
+
+    void visit (BarConnectionInter inter);
 }

@@ -22,6 +22,7 @@
     <action domain="FILE" section="30" class="omr.sheet.ui.SheetActions" method="zoomWidth"                                               button="javax.swing.JButton"/>
     <action domain="FILE" section="30" class="omr.sheet.ui.SheetActions" method="zoomHeight"                                              button="javax.swing.JButton"/>
     <action domain="FILE" section="40" class="omr.sheet.ui.SheetActions" method="plotScale"/>
+    <action domain="FILE" section="40" class="omr.sheet.ui.SheetActions" method="plotStaves"/>
     <action domain="FILE" section="60" class="omr.sheet.ui.SheetActions" method="removeSheet"/>
     <action domain="FILE" section="65" class="omr.sheet.ui.SheetActions" method="closeScore"/>
     <action domain="FILE" section="70" class="omr.ui.GuiActions"         method="exit"/>

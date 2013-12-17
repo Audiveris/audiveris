@@ -61,16 +61,17 @@ public class Sections
         return box;
     }
 
-    //----------------------------//
-    // getReverseLengthComparator //
-    //----------------------------//
+    //-----------------//
+    // byReverseLength //
+    //-----------------//
     /**
      * Return a comparator for comparing Section instances on their
      * decreasing length, using the provided orientation.
      *
      * @param orientation the provided orientation
+     * @return the properly oriented length comparator
      */
-    public static Comparator<Section> getReverseLengthComparator (
+    public static Comparator<Section> byReverseLength (
             final Orientation orientation)
     {
         return new Comparator<Section>()

@@ -68,60 +68,60 @@ public class FlagPattern
     {
         int nb = 0;
 
-        for (Glyph flag : system.getGlyphs()) {
-            if (!ShapeSet.Flags.contains(flag.getShape())
-                || flag.isManualShape()) {
-                continue;
-            }
-
-            if (flag.isVip() || logger.isDebugEnabled()) {
-                logger.info("Checking flag #{}", flag.getId());
-            }
-
-            Glyph stem = flag.getStem(HorizontalSide.LEFT);
-
-            if (stem == null) {
-                if (flag.isVip() || logger.isDebugEnabled()) {
-                    logger.info("No left stem for flag #{}", flag.getId());
-                }
-
-                flag.setShape(null);
-                nb++;
-
-                break;
-            }
-
-            // Look for other stuff on the stem, whatever the side
-            Rectangle stemBox = system.stemBoxOf(stem);
-            boolean found = false;
-
-            for (Glyph g : system.lookupIntersectedGlyphs(stemBox, stem, flag)) {
-                // We are looking for head (or some similar large stuff)
-                Shape shape = g.getShape();
-
-                if (ShapeSet.NoteHeads.contains(shape)
-                    || ((shape == null)
-                        && (g.getNormalizedWeight() >= constants.minStuffWeight.getValue()))) {
-                    if (flag.isVip() || logger.isDebugEnabled()) {
-                        logger.info("Confirmed flag #{}", flag.getId());
-                    }
-
-                    found = true;
-
-                    break;
-                }
-            }
-
-            if (!found) {
-                // Deassign this flag w/ no head neighbor
-                if (flag.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Cancelled flag #{}", flag.getId());
-                }
-
-                flag.setShape(null);
-                nb++;
-            }
-        }
+//        for (Glyph flag : system.getGlyphs()) {
+//            if (!ShapeSet.Flags.contains(flag.getShape())
+//                || flag.isManualShape()) {
+//                continue;
+//            }
+//
+//            if (flag.isVip() || logger.isDebugEnabled()) {
+//                logger.info("Checking flag #{}", flag.getId());
+//            }
+//
+//            Glyph stem = flag.getStem(HorizontalSide.LEFT);
+//
+//            if (stem == null) {
+//                if (flag.isVip() || logger.isDebugEnabled()) {
+//                    logger.info("No left stem for flag #{}", flag.getId());
+//                }
+//
+//                flag.setShape(null);
+//                nb++;
+//
+//                break;
+//            }
+//
+//            // Look for other stuff on the stem, whatever the side
+//            Rectangle stemBox = system.stemBoxOf(stem);
+//            boolean found = false;
+//
+//            for (Glyph g : system.lookupIntersectedGlyphs(stemBox, stem, flag)) {
+//                // We are looking for head (or some similar large stuff)
+//                Shape shape = g.getShape();
+//
+//                if (ShapeSet.NoteHeads.contains(shape)
+//                    || ((shape == null)
+//                        && (g.getNormalizedWeight() >= constants.minStuffWeight.getValue()))) {
+//                    if (flag.isVip() || logger.isDebugEnabled()) {
+//                        logger.info("Confirmed flag #{}", flag.getId());
+//                    }
+//
+//                    found = true;
+//
+//                    break;
+//                }
+//            }
+//
+//            if (!found) {
+//                // Deassign this flag w/ no head neighbor
+//                if (flag.isVip() || logger.isDebugEnabled()) {
+//                    logger.info("Cancelled flag #{}", flag.getId());
+//                }
+//
+//                flag.setShape(null);
+//                nb++;
+//            }
+//        }
 
         return nb;
     }

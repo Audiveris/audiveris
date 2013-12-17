@@ -34,7 +34,7 @@ public abstract class DynamicMenu
             DynamicMenu.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** The concrete UI menu */
+    /** The concrete UI menu. */
     private JMenu menu;
 
     /** Specific menu listener */

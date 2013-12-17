@@ -1016,7 +1016,9 @@ public class BeamsBuilder
         final List<Glyph> spots = new ArrayList<Glyph>();
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (glyph.getShape() == Shape.BEAM_SPOT) {
+            final Shape shape = glyph.getShape();
+
+            if ((shape == Shape.BEAM_SPOT) || (shape == Shape.BEAM)) {
                 spots.add(glyph);
             }
         }

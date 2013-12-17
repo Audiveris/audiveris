@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.sig.ui;
 
-import omr.glyph.Nest;
+import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -77,7 +77,7 @@ class GlyphAction
     //---------//
     public void publish ()
     {
-        Nest nest = glyph.getNest();
+        GlyphNest nest = glyph.getNest();
         nest.getGlyphService()
                 .publish(
                 new GlyphEvent(

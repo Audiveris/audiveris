@@ -18,7 +18,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLayer;
 import omr.glyph.Glyphs;
-import omr.glyph.Nest;
+import omr.glyph.GlyphNest;
 import omr.glyph.facets.BasicAlignment;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
@@ -31,6 +31,7 @@ import omr.math.Line;
 import omr.math.PointsCollector;
 
 import omr.run.Orientation;
+import static omr.run.Orientation.*;
 
 import omr.sheet.Scale;
 
@@ -39,6 +40,7 @@ import omr.util.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.lang.reflect.Constructor;
@@ -47,21 +49,30 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 
 /**
  * Class {@code FilamentsFactory} builds filaments (long series of
  * sections) out of a collection of sections.
- *
  * <p>
  * These filaments are meant to represent good candidates for (horizontal)
- * staff lines or (vertical) bar lines. The factory aims at a given orientation,
- * though the input sections may exhibit mixed orientations.</p>
- *
+ * staff lines or (vertical) bar lines.
+ * The factory aims at a given orientation, though the collection of input
+ * sections may exhibit mixed orientations.
  * <p>
- * Internal parameters have default values defined via a ConstantSet. Before
- * launching filaments retrieval by {@link #retrieveFilaments}, parameters can
- * be modified individually by calling some setXXX() methods.</p>
+ * The factory works in two phases:<ol>
+ * <li>The first phase, by default, discovers skeletons lines using the long
+ * input sections and merges them as much as possible.
+ * This strategy fits well the case of a population of sections with no
+ * organization known a priori.
+ * Another strategy is to explicitly provide the set of skeletons lines, and
+ * thus make the factory focus on them only.
+ * </li>
+ * <li>The second phase completes these skeletons whenever possible by short
+ * sections left over, and merges them again.</li></ol>
+ * <p>
+ * Customization: Default parameters values are defined via a ConstantSet.
+ * Before launching filaments retrieval by {@link #retrieveFilaments},
+ * parameters can be modified individually by calling proper setXXX() methods.
  *
  * @author Hervé Bitteur
  */
@@ -82,7 +93,7 @@ public class FilamentsFactory
     private final Scale scale;
 
     /** Where filaments are to be stored. */
-    private final Nest nest;
+    private final GlyphNest nest;
 
     /** Which related layer. */
     private final GlyphLayer layer;
@@ -107,10 +118,12 @@ public class FilamentsFactory
      * @param nest        the nest to host created filaments
      * @param layer       precise glyph layer
      * @param orientation the target orientation
-     * @param glyphClass  precise class to be use for glyph creation
+     * @param glyphClass  precise class to be used for glyph creation,
+     *                    typically {@link BasicGlyph} (for straight lines)
+     *                    or {@link Filament} / {@link LineFilament} (for spline lines)
      */
     public FilamentsFactory (Scale scale,
-                             Nest nest,
+                             GlyphNest nest,
                              GlyphLayer layer,
                              Orientation orientation,
                              Class<? extends Glyph> glyphClass)
@@ -123,9 +136,7 @@ public class FilamentsFactory
         try {
             glyphConstructor = glyphClass.getConstructor(
                     new Class<?>[]{Scale.class, GlyphLayer.class});
-        } catch (NoSuchMethodException ex) {
-            logger.error(null, ex);
-        } catch (SecurityException ex) {
+        } catch (Exception ex) {
             logger.error(null, ex);
         }
 
@@ -224,53 +235,85 @@ public class FilamentsFactory
     // retrieveFilaments //
     //-------------------//
     /**
-     * Aggregate the long and thin sections into filaments (glyphs).
+     * Aggregate the long and thin sections into filaments.
      *
-     * @param source       the section source for filaments
-     * @param useExpansion true to expand filaments with short sections left
-     *                     over
+     * @param source the collection of input sections
      * @return the collection of retrieved filaments
      */
-    public List<Glyph> retrieveFilaments (Collection<Section> source,
-                                          boolean useExpansion)
+    public List<Glyph> retrieveFilaments (Collection<Section> source)
     {
-        StopWatch watch = new StopWatch("FilamentsFactory");
-        List<Glyph> filaments = new ArrayList<>();
+        StopWatch watch = new StopWatch("FilamentsFactory " + orientation);
+        List<Glyph> filaments = new ArrayList<Glyph>();
 
         try {
-
             // Create a filament for each section long & slim
-            watch.start("createFilaments");
-            createFilaments(filaments, source);
+            watch.start("createInitialFilaments");
+            createInitialFilaments(filaments, source);
+            logger.debug("{} filaments created.", filaments.size());
 
-            logger.debug("{} {} filaments created.",
-                         orientation, filaments.size());
-
-            // Merge filaments into larger filaments
+            // Merge filaments into larger ones
             watch.start("mergeFilaments");
             mergeFilaments(filaments);
 
-            // Expand with short sections left over?
-            if (useExpansion) {
-                watch.start("expandFilaments");
-                expandFilaments(filaments, source);
+            // Expand with short sections left over
+            watch.start("expandFilaments");
+            expandFilaments(filaments, source);
 
-                // Merge filaments into larger filaments
-                watch.start("mergeFilaments #2");
-                mergeFilaments(filaments);
-            }
+            // Merge filaments into larger filaments
+            watch.start("mergeFilaments #2");
+            mergeFilaments(filaments);
 
             // Re-register every filament with its (updated) signature
             return reRegisterFilaments(filaments);
         } catch (Exception ex) {
             logger.warn("FilamentsFactory cannot retrieveFilaments", ex);
+
             return null;
         } finally {
             if (constants.printWatch.getValue()) {
                 watch.print();
             }
         }
+    }
 
+    //-------------------//
+    // retrieveFilaments //
+    //-------------------//
+    /**
+     * Aggregate the long and thin sections into filaments along the
+     * provided skeletons lines.
+     * No merge is performed within the skeletons lines.
+     *
+     * @param source the collection of input sections
+     * @param lines  the collection of skeleton lines
+     * @return the collection of retrieved filaments
+     */
+    public List<Glyph> retrieveFilaments (Collection<Section> source,
+                                          Collection<? extends Line> lines)
+    {
+        StopWatch watch = new StopWatch("FilamentsFactory " + orientation);
+        List<Glyph> filaments = new ArrayList<Glyph>();
+
+        try {
+            // Aggregate long sections onto provided lines
+            watch.start("populateLines");
+            populateLines(filaments, source, lines);
+
+            // Expand with short sections left over
+            watch.start("expandFilaments");
+            expandFilaments(filaments, source);
+
+            // (Re)register every filament with its (final) signature
+            return reRegisterFilaments(filaments);
+        } catch (Exception ex) {
+            logger.warn("FilamentsFactory cannot retrieveFilaments", ex);
+
+            return null;
+        } finally {
+            if (constants.printWatch.getValue()) {
+                watch.print();
+            }
+        }
     }
 
     //----------------//
@@ -287,30 +330,6 @@ public class FilamentsFactory
     public void setMaxExpansionSpace (Scale.Fraction frac)
     {
         params.maxExpansionSpace = scale.toPixels(frac);
-    }
-
-    //-----------------//
-    // setMaxThickness //
-    //-----------------//
-    public void setMaxThickness (Scale.LineFraction lineFrac)
-    {
-        params.maxThickness = scale.toPixels(lineFrac);
-    }
-
-    //-----------------//
-    // setMaxThickness //
-    //-----------------//
-    public void setMaxThickness (Scale.Fraction frac)
-    {
-        params.maxThickness = scale.toPixels(frac);
-    }
-
-    //-----------------//
-    // setMaxThickness //
-    //-----------------//
-    public void setMaxThickness (int value)
-    {
-        params.maxThickness = value;
     }
 
     //----------------//
@@ -345,6 +364,37 @@ public class FilamentsFactory
         params.maxOverlapDeltaPos = scale.toPixels(lFrac);
     }
 
+    //    //------------------------//
+    //    // setMaxSectionThickness //
+    //    //------------------------//
+    //    public void setMaxSectionThickness (Scale.LineFraction lineFrac)
+    //    {
+    //        params.maxSectionThickness = scale.toPixels(lineFrac);
+    //    }
+    //
+    //    //------------------------//
+    //    // setMaxSectionThickness //
+    //    //------------------------//
+    //    public void setMaxSectionThickness (Scale.Fraction frac)
+    //    {
+    //        params.maxSectionThickness = scale.toPixels(frac);
+    //    }
+    //--------------------//
+    // setMaxOverlapSpace //
+    //--------------------//
+    public void setMaxOverlapSpace (Scale.LineFraction lfrac)
+    {
+        params.maxOverlapSpace = scale.toPixels(lfrac);
+    }
+
+    //--------------------//
+    // setMaxOverlapSpace //
+    //--------------------//
+    public void setMaxOverlapSpace (Scale.Fraction frac)
+    {
+        params.maxOverlapSpace = scale.toPixels(frac);
+    }
+
     //--------------//
     // setMaxPosGap //
     //--------------//
@@ -369,35 +419,28 @@ public class FilamentsFactory
         params.maxPosGapForSlope = scale.toPixels(frac);
     }
 
-//    //------------------------//
-//    // setMaxSectionThickness //
-//    //------------------------//
-//    public void setMaxSectionThickness (Scale.LineFraction lineFrac)
-//    {
-//        params.maxSectionThickness = scale.toPixels(lineFrac);
-//    }
-//
-//    //------------------------//
-//    // setMaxSectionThickness //
-//    //------------------------//
-//    public void setMaxSectionThickness (Scale.Fraction frac)
-//    {
-//        params.maxSectionThickness = scale.toPixels(frac);
-//    }
-    //--------------------//
-    // setMaxOverlapSpace //
-    //--------------------//
-    public void setMaxOverlapSpace (Scale.LineFraction lfrac)
+    //-----------------//
+    // setMaxThickness //
+    //-----------------//
+    public void setMaxThickness (Scale.LineFraction lineFrac)
     {
-        params.maxOverlapSpace = scale.toPixels(lfrac);
+        params.maxThickness = scale.toPixels(lineFrac);
     }
 
-    //--------------------//
-    // setMaxOverlapSpace //
-    //--------------------//
-    public void setMaxOverlapSpace (Scale.Fraction frac)
+    //-----------------//
+    // setMaxThickness //
+    //-----------------//
+    public void setMaxThickness (Scale.Fraction frac)
     {
-        params.maxOverlapSpace = scale.toPixels(frac);
+        params.maxThickness = scale.toPixels(frac);
+    }
+
+    //-----------------//
+    // setMaxThickness //
+    //-----------------//
+    public void setMaxThickness (int value)
+    {
+        params.maxThickness = value;
     }
 
     //-------------------------//
@@ -467,7 +510,9 @@ public class FilamentsFactory
                 if (logger.isDebugEnabled() || areVips) {
                     logger.info(
                             "{}Gap too long: {} vs {}",
-                            vips, coordGap, params.maxCoordGap);
+                            vips,
+                            coordGap,
+                            params.maxCoordGap);
                 }
 
                 return false;
@@ -496,7 +541,8 @@ public class FilamentsFactory
                         if (logger.isDebugEnabled() || areVips) {
                             logger.info(
                                     "{}Delta pos too high for overlap: {} vs {}",
-                                    vips, String.format("%.2f", posGap),
+                                    vips,
+                                    String.format("%.2f", posGap),
                                     params.maxOverlapDeltaPos);
                         }
 
@@ -514,8 +560,11 @@ public class FilamentsFactory
                         if (logger.isDebugEnabled() || areVips) {
                             logger.info(
                                     "{}Too thick: {} vs {} {} {}",
-                                    vips, (float) thickness,
-                                    params.maxThickness, one, two);
+                                    vips,
+                                    (float) thickness,
+                                    params.maxThickness,
+                                    one,
+                                    two);
                         }
 
                         return false;
@@ -527,8 +576,11 @@ public class FilamentsFactory
                         if (logger.isDebugEnabled() || areVips) {
                             logger.info(
                                     "{}Non consistent thickness: {} vs {} {} {}",
-                                    vips, (float) thickness,
-                                    (float) maxConsistentThickness, one, two);
+                                    vips,
+                                    (float) thickness,
+                                    (float) maxConsistentThickness,
+                                    one,
+                                    two);
                         }
 
                         return false;
@@ -543,7 +595,11 @@ public class FilamentsFactory
                         if (logger.isDebugEnabled() || areVips) {
                             logger.info(
                                     "{}Space too large: {} vs {} {} {}",
-                                    vips, (float) space, maxSpace, one, two);
+                                    vips,
+                                    (float) space,
+                                    maxSpace,
+                                    one,
+                                    two);
                         }
 
                         return false;
@@ -578,7 +634,9 @@ public class FilamentsFactory
                     if (logger.isDebugEnabled() || areVips) {
                         logger.info(
                                 "{}Delta pos too high for gap: {} vs {}",
-                                vips, (float) posGap, params.maxPosGap);
+                                vips,
+                                (float) posGap,
+                                params.maxPosGap);
                     }
 
                     return false;
@@ -592,7 +650,9 @@ public class FilamentsFactory
                         if (logger.isDebugEnabled() || areVips) {
                             logger.info(
                                     "{}Slope too high for gap: {} vs {}",
-                                    vips, (float) gapSlope, params.maxGapSlope);
+                                    vips,
+                                    (float) gapSlope,
+                                    params.maxGapSlope);
                         }
 
                         return false;
@@ -615,34 +675,39 @@ public class FilamentsFactory
     // createFilament //
     //----------------//
     private Glyph createFilament (Section section)
-            throws Exception
     {
-        final Glyph fil = (Glyph) glyphConstructor.newInstance(
-                new Object[]{scale, layer});
-        fil.addSection(section, GlyphComposition.Linking.LINK_BACK);
-        section.setProcessed(true);
+        try {
+            final Glyph fil = (Glyph) glyphConstructor.newInstance(
+                    new Object[]{scale, layer});
 
-        return nest.addGlyph(fil); // Not really useful
-        ///return fil;
+            if (section != null) {
+                fil.addSection(section, GlyphComposition.Linking.LINK);
+                section.setProcessed(true);
+            }
+
+            return nest.registerGlyph(fil); // Not really useful
+            ///return fil;
+        } catch (Exception ex) {
+            logger.error(null, ex);
+
+            return null;
+        }
     }
 
-    //-----------------//
-    // createFilaments //
-    //-----------------//
+    //------------------------//
+    // createInitialFilaments //
+    //------------------------//
     /**
-     * Aggregate long sections into initial filaments.
+     * Create initial filaments, one per long input section.
+     *
+     * @param filaments     (output) list to be populated by created filaments
+     * @param inputSections the collection of input sections
      */
-    private void createFilaments (List<Glyph> filaments,
-                                  Collection<Section> source)
+    private void createInitialFilaments (List<Glyph> filaments,
+                                         Collection<Section> inputSections)
             throws Exception
     {
-        // Sort sections by decreasing length in the desired orientation
-        List<Section> sections = new ArrayList<>(source);
-        Collections.sort(
-                sections,
-                Sections.getReverseLengthComparator(orientation));
-
-        for (Section section : sections) {
+        for (Section section : inputSections) {
             // Reset section cached data
             section.setProcessed(false);
             section.resetFat();
@@ -668,8 +733,7 @@ public class FilamentsFactory
             filaments.add(fil);
 
             if (logger.isDebugEnabled() || section.isVip() || nest.isVip(fil)) {
-                logger.info(
-                        "VIP created {} with {}", fil, section);
+                logger.info("VIP created {} with {}", fil, section);
 
                 if (section.isVip() || nest.isVip(fil)) {
                     fil.setVip();
@@ -677,7 +741,10 @@ public class FilamentsFactory
             }
         }
 
-        logger.debug("createFilaments: {}/{}", filaments.size(), source.size());
+        logger.debug(
+                "createFilaments: {}/{}",
+                filaments.size(),
+                inputSections.size());
     }
 
     //-----------------//
@@ -695,7 +762,7 @@ public class FilamentsFactory
     {
         try {
             // Sort sections by first position 
-            List<Section> sections = new ArrayList<>();
+            List<Section> sections = new ArrayList<Section>();
 
             for (Section section : source) {
                 if (!section.isProcessed() && !isSectionFat(section)) {
@@ -703,34 +770,39 @@ public class FilamentsFactory
                 }
             }
 
-            logger.debug("expandFilaments: {}/{}",
-                         sections.size(), source.size());
+            logger.debug(
+                    "expandFilaments: {}/{}",
+                    sections.size(),
+                    source.size());
 
             Collections.sort(sections, Section.posComparator);
 
             // We allocate one glyph per candidate section
             // (simply to be able to reuse the canMerge() method)
-            List<Glyph> sectionGlyphs = new ArrayList<>(sections.size());
+            List<Glyph> sectionGlyphs = new ArrayList<Glyph>(sections.size());
 
             for (Section section : sections) {
-                Glyph sectionGlyph = new BasicGlyph(scale.getInterline(), layer);
+                Glyph sectionGlyph = new BasicGlyph(
+                        scale.getInterline(),
+                        layer);
                 sectionGlyph.addSection(
                         section,
-                        GlyphComposition.Linking.NO_LINK_BACK);
+                        GlyphComposition.Linking.NO_LINK);
                 section.setProcessed(true);
-                sectionGlyph = nest.addGlyph(sectionGlyph); // Not really useful
+                sectionGlyph = nest.registerGlyph(sectionGlyph); // Not really useful
                 sectionGlyphs.add(sectionGlyph);
 
                 if (section.isVip() || nest.isVip(sectionGlyph)) {
-                    logger.info("VIP created {} from {}", sectionGlyph, section);
+                    logger.info(
+                            "VIP created {} from {}",
+                            sectionGlyph,
+                            section);
                     sectionGlyph.setVip();
                 }
             }
 
             // List of filaments, sorted by decreasing length
-            Collections.sort(
-                    filaments,
-                    Glyphs.getReverseLengthComparator(orientation));
+            Collections.sort(filaments, Glyphs.byReverseLength(orientation));
 
             // Process each filament on turn
             for (Glyph fil : filaments) {
@@ -744,7 +816,8 @@ public class FilamentsFactory
                 do {
                     expanding = false;
 
-                    for (Iterator<Glyph> it = sectionGlyphs.iterator(); it.hasNext();) {
+                    for (Iterator<Glyph> it = sectionGlyphs.iterator();
+                            it.hasNext();) {
                         Glyph sectionGlyph = it.next();
                         Rectangle glyphBounds = orientation.oriented(
                                 sectionGlyph.getBounds());
@@ -755,9 +828,11 @@ public class FilamentsFactory
                                 if (logger.isDebugEnabled()
                                     || fil.isVip()
                                     || sectionGlyph.isVip()) {
-                                    logger.info("VIP merging {} w/ {}",
-                                                fil,
-                                                Sections.toString(sectionGlyph.getMembers()));
+                                    logger.info(
+                                            "VIP merging {} w/ {}",
+                                            fil,
+                                            Sections.toString(
+                                            sectionGlyph.getMembers()));
 
                                     if (sectionGlyph.isVip()) {
                                         fil.setVip();
@@ -772,8 +847,10 @@ public class FilamentsFactory
                             }
                         } else {
                             if (fil.isVip() && sectionGlyph.isVip()) {
-                                logger.info("No intersection between {} and {}",
-                                            fil, sectionGlyph);
+                                logger.info(
+                                        "No intersection between {} and {}",
+                                        fil,
+                                        sectionGlyph);
                             }
                         }
                     }
@@ -804,15 +881,11 @@ public class FilamentsFactory
     // mergeFilaments //
     //----------------//
     /**
-     * Aggregate single-section filaments into long multi-section
-     * filaments.
+     * Aggregate filaments into longer ones.
      */
     private void mergeFilaments (List<Glyph> filaments)
     {
-        // List of filaments, sorted by decreasing length
-        Collections.sort(
-                filaments,
-                Glyphs.getReverseLengthComparator(orientation));
+        Collections.sort(filaments, Glyphs.byReverseLength(orientation));
 
         // Browse by decreasing filament length
         for (Glyph current : filaments) {
@@ -844,7 +917,8 @@ public class FilamentsFactory
                                     || candidate.isVip()) {
                                     logger.info(
                                             "VIP merged {} into {}",
-                                            candidate, head);
+                                            candidate,
+                                            head);
 
                                     if (candidate.isVip()) {
                                         head.setVip();
@@ -852,21 +926,16 @@ public class FilamentsFactory
                                 }
 
                                 head.stealSections(candidate);
-                                candidate = head; // This is a new candidate
+                                candidate = head; // This is the new candidate
 
                                 break HeadsLoop;
-                            } else {
-                                //                                if (head.isVip() || candidate.isVip()) {
-                                //                                    logger.info(
-                                //                                        "Could not merge " + candidate +
-                                //                                        " into " + head);
-                                //                                }
                             }
                         } else {
                             if (head.isVip() && candidate.isVip()) {
                                 logger.info(
                                         "VIP no fat intersection between {} and {}",
-                                        candidate, head);
+                                        candidate,
+                                        head);
                             }
                         }
                     }
@@ -876,6 +945,95 @@ public class FilamentsFactory
 
         // Discard the merged filaments
         removeMergedFilaments(filaments);
+    }
+
+    //---------------//
+    // populateLines //
+    //---------------//
+    /**
+     * Use the long source sections to stick to the provided skeletons
+     * lines and populate the filaments collection.
+     *
+     * @param filaments (output) collection to be populated
+     * @param source    the input sections
+     * @param lines     the imposed skeleton lines
+     */
+    private void populateLines (List<Glyph> filaments,
+                                Collection<Section> source,
+                                Collection<? extends Line> lines)
+    {
+        List<Section> longSections = new ArrayList<Section>();
+
+        for (Section section : source) {
+            section.setProcessed(false);
+            section.resetFat(); // ????????????
+
+            // Limit to main sections
+            if (section.getLength(orientation) < params.minCoreSectionLength) {
+                if (section.isVip()) {
+                    logger.info("Too short {}", section);
+                }
+            } else {
+                longSections.add(section);
+            }
+        }
+
+        // Sort sections by decreasing length
+        Collections.sort(longSections, Sections.byReverseLength(orientation));
+
+        for (Line line : lines) {
+            Glyph fil = createFilament(null);
+            final Rectangle lineBox = orientation.oriented(line.getBounds());
+            lineBox.grow(params.maxCoordGap, params.maxPosGap);
+
+            for (Section section : longSections) {
+                if (section.isProcessed()) {
+                    continue;
+                }
+
+                Rectangle sectionBox = orientation.oriented(
+                        section.getBounds());
+
+                if (sectionBox.intersects(lineBox)) {
+                    Point centroid = section.getCentroid();
+
+                    // Closer look: check distance to line
+                    double gap = (orientation == HORIZONTAL)
+                            ? (line.yAtXExt(centroid.x) - centroid.y)
+                            : (line.xAtYExt(centroid.y) - centroid.x);
+
+                    if (gap <= params.maxPosGap) {
+                        fil.addSection(
+                                section,
+                                GlyphComposition.Linking.NO_LINK);
+                        section.setProcessed(true);
+                    }
+                }
+            }
+
+            if (!fil.getMembers()
+                    .isEmpty()) {
+                filaments.add(fil);
+            }
+        }
+    }
+
+    //---------------------//
+    // reRegisterFilaments //
+    //---------------------//
+    private List<Glyph> reRegisterFilaments (List<Glyph> filaments)
+    {
+        List<Glyph> updated = new ArrayList<Glyph>(filaments.size());
+
+        for (Glyph fil : filaments) {
+            //            if (fil.isVip()) {
+            //                logger.warn("About to re-register {}", fil);
+            //            }
+            Glyph regGlyph = nest.registerGlyph(fil); // Really useful
+            updated.add(regGlyph);
+        }
+
+        return updated;
     }
 
     //-----------------------//
@@ -890,24 +1048,6 @@ public class FilamentsFactory
                 it.remove();
             }
         }
-    }
-
-    //---------------------//
-    // reRegisterFilaments //
-    //---------------------//
-    private List<Glyph> reRegisterFilaments (List<Glyph> filaments)
-    {
-        List<Glyph> updated = new ArrayList<>(filaments.size());
-
-        for (Glyph fil : filaments) {
-//            if (fil.isVip()) {
-//                logger.warn("About to re-register {}", fil);
-//            }
-            Glyph regGlyph = nest.addGlyph(fil); // Really useful
-            updated.add(regGlyph);
-        }
-
-        return updated;
     }
 
     //~ Inner Classes ----------------------------------------------------------

@@ -211,40 +211,40 @@ public class AlterPattern
      */
     private void checkFormerStems ()
     {
-        SortedSet<Glyph> impacted = Glyphs.sortedSet();
-
-        for (Glyph glyph : system.getGlyphs()) {
-            if (!glyph.isActive()) {
-                continue;
-            }
-
-            for (HorizontalSide side : HorizontalSide.values()) {
-                // Retrieve "deassigned" stem if any
-                Glyph stem = glyph.getStem(side);
-
-                if ((stem != null) && (stem.getShape() != Shape.STEM)) {
-                    impacted.add(glyph);
-                }
-            }
-        }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug(
-                    Glyphs.toString("Impacted alteration neighbors", impacted));
-        }
-
-        for (Glyph glyph : impacted) {
-            Shape shape = glyph.getShape();
-
-            if (ShapeSet.StemSymbols.contains(shape)) {
-                // Trigger a reevaluation (w/o forbidding the current shape)
-                glyph.setShape(null);
-                glyph.allowShape(shape);
-            }
-
-            // Re-compute glyph features
-            system.computeGlyphFeatures(glyph);
-        }
+//        SortedSet<Glyph> impacted = Glyphs.sortedSet();
+//
+//        for (Glyph glyph : system.getGlyphs()) {
+//            if (!glyph.isActive()) {
+//                continue;
+//            }
+//
+//            for (HorizontalSide side : HorizontalSide.values()) {
+//                // Retrieve "deassigned" stem if any
+//                Glyph stem = glyph.getStem(side);
+//
+//                if ((stem != null) && (stem.getShape() != Shape.STEM)) {
+//                    impacted.add(glyph);
+//                }
+//            }
+//        }
+//
+//        if (logger.isDebugEnabled()) {
+//            logger.debug(
+//                    Glyphs.toString("Impacted alteration neighbors", impacted));
+//        }
+//
+//        for (Glyph glyph : impacted) {
+//            Shape shape = glyph.getShape();
+//
+//            if (ShapeSet.StemSymbols.contains(shape)) {
+//                // Trigger a reevaluation (w/o forbidding the current shape)
+//                glyph.setShape(null);
+//                glyph.allowShape(shape);
+//            }
+//
+//            // Re-compute glyph features
+//            ///system.computeGlyphFeatures(glyph);
+//        }
     }
 
     //------------------//

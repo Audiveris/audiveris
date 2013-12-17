@@ -280,7 +280,9 @@ public enum Shape
     //
     PART_DEFINING_BARLINE("Bar line that defines a part"),
     THIN_BARLINE("Thin bar line"),
+    THIN_CONNECTION("Connection between thin barlines"),
     THICK_BARLINE("Thick bar line"),
+    THICK_CONNECTION("Connection between thick barlines"),
     DOUBLE_BARLINE("Double thin bar line"),
     FINAL_BARLINE("Thin / Thick bar line"),
     REVERSE_FINAL_BARLINE("Thick / Thin bar line"),

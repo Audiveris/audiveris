@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.Nest;
+import omr.glyph.GlyphNest;
 import omr.glyph.facets.Glyph;
 import static omr.ui.field.SpinnerUtil.*;
 
@@ -24,7 +24,7 @@ import javax.swing.AbstractSpinnerModel;
 
 /**
  * Class {@code SpinnerGlyphModel} is a spinner model backed by a
- * {@link Nest}.
+ * {@link GlyphNest}.
  * Any modification in the nest is thus transparently handled, since the nest
  * <b>is</b> the model.
  * <p>A glyph {@link Predicate} can be assigned to this SpinnerGlyphModel at
@@ -45,7 +45,7 @@ public class SpinnerGlyphModel
 
     //~ Instance fields --------------------------------------------------------
     /** Underlying glyph nest */
-    private final Nest nest;
+    private final GlyphNest nest;
 
     /** Additional predicate if any */
     private final Predicate<Glyph> predicate;
@@ -63,7 +63,7 @@ public class SpinnerGlyphModel
      *
      * @param nest the underlying glyph nest
      */
-    public SpinnerGlyphModel (Nest nest)
+    public SpinnerGlyphModel (GlyphNest nest)
     {
         this(nest, null);
     }
@@ -78,7 +78,7 @@ public class SpinnerGlyphModel
      * @param nest      the underlying glyph nest
      * @param predicate predicate of glyph, or null
      */
-    public SpinnerGlyphModel (Nest nest,
+    public SpinnerGlyphModel (GlyphNest nest,
                               Predicate<Glyph> predicate)
     {
         if (nest == null) {
@@ -111,7 +111,7 @@ public class SpinnerGlyphModel
 
         if (cur == NO_VALUE) {
             // Return first suitable glyph in nest
-            for (Glyph glyph : nest.getAllGlyphs()) {
+            for (Glyph glyph : nest.getAllGlyphsEver()) {
                 if ((predicate == null) || predicate.check(glyph)) {
                     return glyph.getId();
                 }
@@ -122,7 +122,7 @@ public class SpinnerGlyphModel
             // Return first suitable glyph after current glyph in nest
             boolean found = false;
 
-            for (Glyph glyph : nest.getAllGlyphs()) {
+            for (Glyph glyph : nest.getAllGlyphsEver()) {
                 if (!found) {
                     if (glyph.getId() == cur) {
                         found = true;
@@ -157,8 +157,8 @@ public class SpinnerGlyphModel
             return NO_VALUE;
         }
 
-        // Nest
-        for (Glyph glyph : nest.getAllGlyphs()) {
+        // GlyphNest
+        for (Glyph glyph : nest.getAllGlyphsEver()) {
             if (glyph.getId() == cur) {
                 return (prevGlyph != null) ? prevGlyph.getId() : NO_VALUE;
             }
@@ -210,7 +210,7 @@ public class SpinnerGlyphModel
         if (id == NO_VALUE) {
             ok = true;
         } else {
-            // Nest
+            // GlyphNest
             Glyph glyph = nest.getGlyph(id);
 
             if (glyph != null) {

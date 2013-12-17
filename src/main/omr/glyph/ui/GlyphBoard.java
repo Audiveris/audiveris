@@ -14,7 +14,7 @@ package omr.glyph.ui;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLayer;
-import omr.glyph.Nest;
+import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -368,7 +368,7 @@ public class GlyphBoard
      * @param nest the underlying glyph nest
      * @return the spinner built
      */
-    protected JSpinner makeGlyphSpinner (Nest nest)
+    protected JSpinner makeGlyphSpinner (GlyphNest nest)
     {
         JSpinner spinner = new JSpinner();
         spinner.setModel(new SpinnerGlyphIdModel(nest));

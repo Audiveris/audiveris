@@ -118,7 +118,7 @@ public class HorizontalsFilter
         sectionsBuilder.createSections(hugeHoriTable, true);
 
         sheet.setLag(Lags.FULL_HLAG, lag);
-        sheet.dispatchHorizontalHugeSections();
+        sheet.getSystemManager().dispatchHorizontalHugeSections();
 
         if (Main.getGui() != null) {
             // Display a view on this lag

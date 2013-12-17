@@ -12,7 +12,7 @@
 package omr.sheet;
 
 import omr.glyph.GlyphsModel;
-import omr.glyph.Nest;
+import omr.glyph.GlyphNest;
 import omr.glyph.ui.GlyphsController;
 import omr.glyph.ui.NestView;
 import omr.glyph.ui.SymbolGlyphBoard;
@@ -118,7 +118,7 @@ public class HoriController
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyView (Nest nest)
+        public MyView (GlyphNest nest)
         {
             super(nest, Arrays.asList(lag), sheet);
 

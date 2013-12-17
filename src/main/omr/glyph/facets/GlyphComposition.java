@@ -16,8 +16,6 @@ import omr.check.Failure;
 
 import omr.lag.Section;
 
-import omr.sheet.SystemInfo;
-
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -33,16 +31,36 @@ public interface GlyphComposition
 {
     //~ Enumerations -----------------------------------------------------------
 
-    /** Specifies whether a section must point back to a containing glyph */
+    /** Tells whether a section must point back to a containing glyph.
+     * <<p>
+     * A section may point back to its containing glyph, making it
+     * <b>active</b>.
+     * There may be several containing glyph instances for a given section, but
+     * at
+     * most one of them can be active.
+     * This allows to easily detect which sections and which glyph instances are
+     * active.
+     * Sections are often displayed with a color specific to the shape of their
+     * active containing glyph (example: staff lines during grid building).
+     * <p>
+     * TODO: Is this still useful?
+     * When building glyph instances from a collection of sections, we should
+     * always
+     * be able to filter the collection beforehand.
+     * The feature is convenient for color display, however staff lines sections
+     * get quickly removed, and we now focus on Inter display rather than Glyph
+     * display.
+     * So let's keep the feature for a while but use it only for sections whose
+     * role is determined once for all, like staff lines.
+     */
     enum Linking
     {
         //~ Enumeration constant initializers ----------------------------------
 
-        /** Make the section point back to the containing glyph */
-        LINK_BACK,
-        /** Do
-         * not make the section point back to the containing glyph */
-        NO_LINK_BACK;
+        /** Pointing back to glyph */
+        LINK,
+        /** No pointing back to glyph */
+        NO_LINK;
 
     }
 
@@ -97,14 +115,6 @@ public interface GlyphComposition
      * sections actually point to this glyph.
      */
     void cutSections ();
-
-    /**
-     * Check whether all the glyph sections belong to the same system.
-     *
-     * @param system the supposed containing system
-     * @return the alien system found, or null if OK
-     */
-    SystemInfo getAlienSystem (SystemInfo system);
 
     /**
      * Report the failures found during analyses of this glyph.

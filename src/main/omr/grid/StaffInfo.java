@@ -13,27 +13,24 @@ package omr.grid;
 
 import omr.constant.ConstantSet;
 
-import omr.glyph.facets.Glyph;
 import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
 
 import omr.math.GeoPath;
 import omr.math.GeoUtil;
-import omr.math.LineUtil;
-import omr.math.ReversePathIterator;
-
-import omr.run.Orientation;
 
 import omr.score.entity.Staff;
 
 import omr.sheet.NotePosition;
 import omr.sheet.Scale;
+import omr.sheet.SystemInfo;
 
 import omr.sig.Inter;
 import omr.sig.LedgerInter;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
+import omr.util.Navigable;
 import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
 
@@ -44,7 +41,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Line2D;
+import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -60,8 +57,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * Class {@code StaffInfo} handles the physical informations of a staff
+ * Class {@code StaffInfo} handles physical information of a staff
  * with its lines.
+ * <p>
  * Note: All methods are meant to provide correct results, regardless of the
  * actual number of lines in the staff instance.
  *
@@ -74,7 +72,6 @@ public class StaffInfo
 
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             StaffInfo.class);
 
@@ -89,10 +86,50 @@ public class StaffInfo
         }
     };
 
+    /** To sort by staff abscissa. */
+    public static final Comparator<StaffInfo> byAbscissa = new Comparator<StaffInfo>()
+    {
+        @Override
+        public int compare (StaffInfo o1,
+                            StaffInfo o2)
+        {
+            return Integer.compare(o1.left, o2.left);
+        }
+    };
+
     //~ Instance fields --------------------------------------------------------
-    //
-    /** Sequence of the staff lines. (from top to bottom) */
-    private final List<LineInfo> lines;
+    /**
+     * Area around the staff.
+     * The same area strategy applies for staves and for systems:
+     * The purpose is to contain relevant entities (sections, glyphs) for the
+     * staff at hand but a given entity may be contained by several staff areas
+     * when it is located in the inter-staff gutter.
+     * There is no need to be very precise with the constraint however that a
+     * staff line itself cannot belong to several staff areas.
+     * Horizontally, the area is extended half way to the next staff if any,
+     * otherwise to the limit of the page.
+     * Vertically, the area is extended to the first line (exclusive) of next
+     * staff if any, otherwise to the limit of the page.
+     */
+    private Area area;
+
+    /** Top limit of staff related area. (left to right) */
+    private GeoPath topLimit;
+
+    /** Bottom limit of staff related area. (left to right) */
+    private GeoPath bottomLimit;
+
+    /** Left limit of staff related area. (top to bottom) */
+    private GeoPath leftLimit;
+
+    /** Right limit of staff related area. (top to bottom) */
+    private GeoPath rightLimit;
+
+    /** Staff id. (counted from 1 within the sheet) */
+    private final int id;
+
+    /** Sequence of staff lines. (from top to bottom) */
+    private final List<FilamentLine> lines;
 
     /**
      * Scale specific to this staff. [not used actually]
@@ -100,32 +137,24 @@ public class StaffInfo
      */
     private final Scale specificScale;
 
-    /** Top limit of staff related area. (left to right) */
-    private GeoPath topLimit = null;
+    /** Left extrema. (beginning of lines) */
+    private int left;
 
-    /** Bottom limit of staff related area. (left to right) */
-    private GeoPath bottomLimit = null;
+    /** Right extrema. (end of lines) */
+    private int right;
 
-    /** Staff id. counted from 1 within the sheet */
-    private final int id;
-
-    /** Information about left bar line. */
-    private BarInfo leftBar;
-
-    /** Left extrema. */
-    private double left;
-
-    /** Information about right bar line. */
-    private BarInfo rightBar;
-
-    /** Right extrema. */
-    private double right;
-
-    /** The area around the staff, lazily computed. */
-    private GeoPath area;
+    /** Flag for short staff. (With a neighbor on left or right side) */
+    private boolean isShort;
 
     /** Map of ledgers nearby. */
     private final SortedMap<Integer, SortedSet<LedgerInter>> ledgerMap = new TreeMap<Integer, SortedSet<LedgerInter>>();
+
+    /** Sequence of bar lines. */
+    private List<BarPeak> barPeaks;
+
+    /** Containing system. */
+    @Navigable(false)
+    private SystemInfo system;
 
     /** Corresponding staff entity in the score hierarchy. */
     private Staff scoreStaff;
@@ -151,7 +180,7 @@ public class StaffInfo
                       double left,
                       double right,
                       Scale specificScale,
-                      List<LineInfo> lines)
+                      List<FilamentLine> lines)
     {
         this.id = id;
         this.left = (int) Math.rint(left);
@@ -230,7 +259,7 @@ public class StaffInfo
         addLedger(
                 ledger,
                 getLedgerLineIndex(
-                        pitchPositionOf(ledger.getGlyph().getCentroid())));
+                pitchPositionOf(ledger.getGlyph().getCentroid())));
     }
 
     //------------//
@@ -321,7 +350,7 @@ public class StaffInfo
      * @param side provided side
      * @return the staff abscissa
      */
-    public double getAbscissa (HorizontalSide side)
+    public int getAbscissa (HorizontalSide side)
     {
         if (side == HorizontalSide.LEFT) {
             return left;
@@ -334,21 +363,12 @@ public class StaffInfo
     // getArea //
     //---------//
     /**
-     * Report the lazily computed area defined by the staff limits.
+     * Report the area defined by the staff limits.
      *
      * @return the whole staff area
      */
-    public GeoPath getArea ()
+    public Area getArea ()
     {
-        if (area == null) {
-            area = new GeoPath();
-            area.append(topLimit, false);
-            area.append(
-                    ReversePathIterator.getReversePathIterator(bottomLimit),
-                    true);
-            area.closePath();
-        }
-
         return area;
     }
 
@@ -375,22 +395,15 @@ public class StaffInfo
         return attachments.getAttachments();
     }
 
-    //--------//
-    // getBar //
-    //--------//
+    //-------------//
+    // getBarPeaks //
+    //-------------//
     /**
-     * Report the barline, if any, on the provided side
-     *
-     * @param side proper horizontal side
-     * @return the bar on the provided side, if any
+     * @return the barPeaks
      */
-    public BarInfo getBar (HorizontalSide side)
+    public List<BarPeak> getBarPeaks ()
     {
-        if (side == HorizontalSide.LEFT) {
-            return leftBar;
-        } else {
-            return rightBar;
-        }
+        return barPeaks;
     }
 
     //------------------//
@@ -505,7 +518,7 @@ public class StaffInfo
      *
      * @return DMZ right side abscissa
      */
-    public double getDmzEnd ()
+    public int getDmzEnd ()
     {
         return left + specificScale.toPixels(constants.minDMZWidth);
     }
@@ -530,17 +543,7 @@ public class StaffInfo
             slopes.add(line.getSlope(side));
         }
 
-        Collections.sort(
-                slopes,
-                new Comparator<Double>()
-                {
-                    @Override
-                    public int compare (Double o1,
-                                        Double o2)
-                    {
-                        return Double.compare(Math.abs(o1), Math.abs(o2));
-                    }
-                });
+        Collections.sort(slopes);
 
         double sum = 0;
 
@@ -559,7 +562,7 @@ public class StaffInfo
      *
      * @return the first line
      */
-    public LineInfo getFirstLine ()
+    public FilamentLine getFirstLine ()
     {
         return lines.get(0);
     }
@@ -599,7 +602,7 @@ public class StaffInfo
      *
      * @return the last line
      */
-    public LineInfo getLastLine ()
+    public FilamentLine getLastLine ()
     {
         return lines.get(lines.size() - 1);
     }
@@ -616,7 +619,10 @@ public class StaffInfo
     // getLedgerPitchPosition //
     //------------------------//
     /**
-     * Report the pitch position of a ledger WRT the related staff
+     * Report the pitch position of a ledger WRT the related staff.
+     * <p>
+     * TODO: This implementation assumes a 5-line staff.
+     * But can we have ledgers on a staff with more (of less) than 5 lines?
      *
      * @param lineIndex the ledger line index
      * @return the ledger pitch position
@@ -651,6 +657,42 @@ public class StaffInfo
         return ledgerMap.get(lineIndex);
     }
 
+    //----------//
+    // getLimit //
+    //----------//
+    /**
+     * Report the limit of the staff area, on the provided horizontal side.
+     *
+     * @param side proper horizontal side
+     * @return the assigned limit
+     */
+    public GeoPath getLimit (HorizontalSide side)
+    {
+        if (side == LEFT) {
+            return leftLimit;
+        } else {
+            return rightLimit;
+        }
+    }
+
+    //----------//
+    // getLimit //
+    //----------//
+    /**
+     * Report the limit of the staff area, on the provided vertical side.
+     *
+     * @param side proper vertical side
+     * @return the assigned limit
+     */
+    public GeoPath getLimit (VerticalSide side)
+    {
+        if (side == TOP) {
+            return topLimit;
+        } else {
+            return bottomLimit;
+        }
+    }
+
     //-------------//
     // getLimitAtX //
     //-------------//
@@ -668,6 +710,25 @@ public class StaffInfo
         GeoPath limit = (side == TOP) ? topLimit : bottomLimit;
 
         return limit.yAtX(x);
+    }
+
+    //---------//
+    // getLine //
+    //---------//
+    /**
+     * Report first or last staff line, according to desired vertical
+     * side.
+     *
+     * @param side TOP for first, BOTTOM for last
+     * @return the staff line
+     */
+    public FilamentLine getLine (VerticalSide side)
+    {
+        if (side == TOP) {
+            return lines.get(0);
+        } else {
+            return lines.get(lines.size() - 1);
+        }
     }
 
     //--------------//
@@ -691,7 +752,7 @@ public class StaffInfo
      *
      * @return the list of lines in this staff
      */
-    public List<LineInfo> getLines ()
+    public List<FilamentLine> getLines ()
     {
         return lines;
     }
@@ -726,25 +787,6 @@ public class StaffInfo
 
             return linesRight;
         }
-    }
-
-    //----------------//
-    // getMidOrdinate //
-    //----------------//
-    /**
-     * Report an approximate ordinate of staff ending, on the provided
-     * horizontal side.
-     *
-     * @param side provided side
-     * @return the middle ordinate of staff ending
-     */
-    public double getMidOrdinate (HorizontalSide side)
-    {
-        return (getFirstLine()
-                .getEndPoint(side)
-                .getY() + getLastLine()
-                .getEndPoint(side)
-                .getY()) / 2;
     }
 
     //-----------------//
@@ -813,25 +855,29 @@ public class StaffInfo
         }
     }
 
-    //--------------//
-    // intersection //
-    //--------------//
+    //-----------//
+    // getSystem //
+    //-----------//
     /**
-     * Report the approximate point where a provided vertical stick
-     * crosses this staff.
-     *
-     * @param stick the rather vertical stick
-     * @return the crossing point
+     * @return the system
      */
-    public Point2D intersection (Glyph stick)
+    public SystemInfo getSystem ()
     {
-        LineInfo midLine = lines.get(lines.size() / 2);
+        return system;
+    }
 
-        return LineUtil.intersection(
-                midLine.getEndPoint(LEFT),
-                midLine.getEndPoint(RIGHT),
-                stick.getStartPoint(Orientation.VERTICAL),
-                stick.getStopPoint(Orientation.VERTICAL));
+    //---------//
+    // isShort //
+    //---------//
+    /**
+     * Report whether the staff is a short (partial) one, which means
+     * that there is another staff on left or right side.
+     *
+     * @return the isShort
+     */
+    public boolean isShort ()
+    {
+        return isShort;
     }
 
     //-----------------//
@@ -909,14 +955,7 @@ public class StaffInfo
             Rectangle clip = g.getClipBounds();
 
             if ((clip == null) || clip.intersects(getAreaBounds())) {
-                // Draw the left and right vertical lines
-                for (HorizontalSide side : HorizontalSide.values()) {
-                    Point2D first = firstLine.getEndPoint(side);
-                    Point2D last = lastLine.getEndPoint(side);
-                    g.draw(new Line2D.Double(first, last));
-                }
-
-                // Draw each horizontal line in the set
+                // Draw each staff line
                 for (LineInfo line : lines) {
                     line.render(g);
                 }
@@ -947,7 +986,7 @@ public class StaffInfo
      * @param val  abscissa of staff end
      */
     public void setAbscissa (HorizontalSide side,
-                             double val)
+                             int val)
     {
         if (side == HorizontalSide.LEFT) {
             left = val;
@@ -956,30 +995,31 @@ public class StaffInfo
         }
     }
 
-    //--------//
-    // setBar //
-    //--------//
-    /**
-     * Set a barline on the provided side
-     *
-     * @param side proper horizontal side
-     * @param bar  the bar to set
-     */
-    public void setBar (HorizontalSide side,
-                        BarInfo bar)
+    //---------//
+    // setArea //
+    //---------//
+    public void setArea (Area area)
     {
-        if (side == HorizontalSide.LEFT) {
-            this.leftBar = bar;
-        } else {
-            this.rightBar = bar;
-        }
+        this.area = area;
+    }
+
+    //-------------//
+    // setBarPeaks //
+    //-------------//
+    /**
+     * @param barPeaks the barPeaks to set
+     */
+    public void setBarPeaks (List<BarPeak> barPeaks)
+    {
+        this.barPeaks = barPeaks;
     }
 
     //----------//
     // setLimit //
     //----------//
     /**
-     * Define the limit of the staff area, on the provided vertical side.
+     * Define the limit of the staff area, on the provided vertical
+     * side.
      *
      * @param side  proper vertical side
      * @param limit assigned limit
@@ -999,6 +1039,31 @@ public class StaffInfo
         area = null;
     }
 
+    //----------//
+    // setLimit //
+    //----------//
+    /**
+     * Define the limit of the staff area, on the provided horizontal
+     * side.
+     *
+     * @param side  proper horizontal side
+     * @param limit assigned limit
+     */
+    public void setLimit (HorizontalSide side,
+                          GeoPath limit)
+    {
+        logger.debug("staff#{} setLimit {} {}", id, side, limit);
+
+        if (side == LEFT) {
+            leftLimit = limit;
+        } else {
+            rightLimit = limit;
+        }
+
+        // Invalidate area, so that it gets recomputed when needed
+        area = null;
+    }
+
     //---------------//
     // setScoreStaff //
     //---------------//
@@ -1012,6 +1077,17 @@ public class StaffInfo
         this.scoreStaff = scoreStaff;
     }
 
+    //-----------//
+    // setSystem //
+    //-----------//
+    /**
+     * @param system the system to set
+     */
+    public void setSystem (SystemInfo system)
+    {
+        this.system = system;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -1022,29 +1098,80 @@ public class StaffInfo
 
         sb.append(" id=")
                 .append(getId());
-        sb.append(" left=")
-                .append((float) left);
-        sb.append(" right=")
-                .append((float) right);
 
-        if (specificScale != null) {
-            sb.append(" specificScale=")
-                    .append(specificScale.getInterline());
+        if (isShort) {
+            sb.append(" SHORT");
         }
 
-        if (leftBar != null) {
-            sb.append(" leftBar:")
-                    .append(leftBar);
-        }
-
-        if (rightBar != null) {
-            sb.append(" rightBar:")
-                    .append(rightBar);
-        }
+        sb.append(" left:")
+                .append(left);
+        sb.append(" right:")
+                .append(right);
 
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-----------//
+    // xOverlaps //
+    //-----------//
+    /**
+     * Report whether staff horizontally overlaps that other staff.
+     *
+     * @param that the other staff
+     * @return true if overlap
+     */
+    public boolean xOverlaps (StaffInfo that)
+    {
+        final double commonLeft = Math.max(left, that.left);
+        final double commonRight = Math.min(right, that.right);
+
+        return commonRight > commonLeft;
+    }
+
+    //-----------//
+    // yOverlaps //
+    //-----------//
+    /**
+     * Report whether staff vertically overlaps that other staff.
+     *
+     * @param that the other staff
+     * @return true if overlap
+     */
+    public boolean yOverlaps (StaffInfo that)
+    {
+        final double thisTop = this.getFirstLine()
+                .getLeftPoint()
+                .getY();
+        final double thatTop = that.getFirstLine()
+                .getLeftPoint()
+                .getY();
+        final double commonTop = Math.max(thisTop, thatTop);
+
+        final double thisBottom = this.getLastLine()
+                .getLeftPoint()
+                .getY();
+        final double thatBottom = that.getLastLine()
+                .getLeftPoint()
+                .getY();
+        final double commonBottom = Math.min(thisBottom, thatBottom);
+
+        return commonBottom > commonTop;
+    }
+
+    //----------//
+    // setShort //
+    //----------//
+    /**
+     * Flag this staff as a "short" one, because it is displayed side
+     * by side with another one.
+     * This indicates these two staves belong to separate systems, displayed
+     * side by side, rather than one under the other.
+     */
+    void setShort ()
+    {
+        isShort = true;
     }
 
     //~ Inner Classes ----------------------------------------------------------

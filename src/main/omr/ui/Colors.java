@@ -61,19 +61,16 @@ public class Colors
     public static final Color GLYPH_CURRENT = new Color(255, 0, 255, alpha);
 
     /** Horizontal stuff */
-    public static final Color GRID_HORIZONTAL = new Color(255, 230, 230);
-
-    /** Horizontal active glyphs */
-    public static final Color GRID_HORIZONTAL_ACTIVE = new Color(255, 200, 200);
+    public static final Color GRID_HORIZONTAL = new Color(255, 200, 200);
 
     /** Vertical stuff */
-    public static final Color GRID_VERTICAL = new Color(220, 220, 255);
+    public static final Color GRID_VERTICAL = new Color(200, 200, 255);
 
     /** Barline-shape glyphs */
     public static final Color GRID_VERTICAL_SHAPED = new Color(150, 150, 255);
 
     /** Barline glyphs */
-    public static final Color GRID_BARLINE = Color.blue;
+    public static final Color GRID_BARLINE = new Color(0, 0, 255, 100);
 
     /** Hidden entity */
     public static final Color HIDDEN = Color.white;

@@ -126,11 +126,15 @@ public class NotesBuilder
 
     /** Shapes that cannot occur near stem. */
     private static final List<Shape> noStems = Arrays.asList(
+            Shape.THICK_BARLINE,
+            Shape.THIN_BARLINE,
             Shape.WHOLE_ODD,
             Shape.WHOLE_EVEN);
 
-    /** Shapes of competitors. */
+    /** Shapes of note competitors. */
     private static final List<Shape> competingShapes = Arrays.asList(
+            Shape.THICK_BARLINE,
+            Shape.THIN_BARLINE,
             Shape.BEAM,
             Shape.BEAM_HOOK);
 
@@ -253,7 +257,7 @@ public class NotesBuilder
         allShapes.addAll(odds);
 
         for (Shape shape : allShapes) {
-            Template tpl = factory.getTemplate(shape, interline);
+            Template tpl = factory.getTemplate(shape, interline +1); //BINGO +1
             minWidth = Math.min(minWidth, tpl.getWidth());
             templates.put(shape, tpl);
         }

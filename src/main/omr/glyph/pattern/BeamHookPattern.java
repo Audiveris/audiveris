@@ -63,78 +63,78 @@ public class BeamHookPattern
     {
         int nb = 0;
 
-        for (Glyph hook : system.getGlyphs()) {
-            if ((hook.getShape() != Shape.BEAM_HOOK) || hook.isManualShape()) {
-                continue;
-            }
-
-            if (hook.getStemNumber() != 1) {
-                if (hook.isVip() || logger.isDebugEnabled()) {
-                    logger.info(
-                            "{} stem(s) for beam hook #{}",
-                            hook.getStemNumber(),
-                            hook.getId());
-                }
-
-                hook.setShape(null);
-                nb++;
-            } else {
-                if (hook.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Checking hook #{}", hook.getId());
-                }
-
-                Glyph stem = null;
-                HorizontalSide side = null;
-
-                for (HorizontalSide s : HorizontalSide.values()) {
-                    side = s;
-                    stem = hook.getStem(s);
-
-                    if (stem != null) {
-                        break;
-                    }
-                }
-
-                int hookDy = hook.getCentroid().y - stem.getCentroid().y;
-
-                // Look for other stuff on the stem
-                Rectangle stemBox = system.stemBoxOf(stem);
-                boolean beamFound = false;
-
-                for (Glyph g : system.lookupIntersectedGlyphs(
-                        stemBox,
-                        stem,
-                        hook)) {
-                    // We look for a beam on the same stem side
-                    if ((g.getStem(side) == stem)) {
-                        Shape shape = g.getShape();
-
-                        if (ShapeSet.Beams.contains(shape)
-                            && (shape != Shape.BEAM_HOOK)) {
-                            if (hook.isVip() || logger.isDebugEnabled()) {
-                                logger.info(
-                                        "Confirmed beam hook #{}",
-                                        hook.getId());
-                            }
-
-                            beamFound = true;
-
-                            break;
-                        }
-                    }
-                }
-
-                if (!beamFound) {
-                    // Deassign this hook w/ no beam neighbor
-                    if (hook.isVip() || logger.isDebugEnabled()) {
-                        logger.info("Cancelled beam hook #{}", hook.getId());
-                    }
-
-                    hook.setShape(null);
-                    nb++;
-                }
-            }
-        }
+//        for (Glyph hook : system.getGlyphs()) {
+//            if ((hook.getShape() != Shape.BEAM_HOOK) || hook.isManualShape()) {
+//                continue;
+//            }
+//
+//            if (hook.getStemNumber() != 1) {
+//                if (hook.isVip() || logger.isDebugEnabled()) {
+//                    logger.info(
+//                            "{} stem(s) for beam hook #{}",
+//                            hook.getStemNumber(),
+//                            hook.getId());
+//                }
+//
+//                hook.setShape(null);
+//                nb++;
+//            } else {
+//                if (hook.isVip() || logger.isDebugEnabled()) {
+//                    logger.info("Checking hook #{}", hook.getId());
+//                }
+//
+//                Glyph stem = null;
+//                HorizontalSide side = null;
+//
+//                for (HorizontalSide s : HorizontalSide.values()) {
+//                    side = s;
+//                    stem = hook.getStem(s);
+//
+//                    if (stem != null) {
+//                        break;
+//                    }
+//                }
+//
+//                int hookDy = hook.getCentroid().y - stem.getCentroid().y;
+//
+//                // Look for other stuff on the stem
+//                Rectangle stemBox = system.stemBoxOf(stem);
+//                boolean beamFound = false;
+//
+//                for (Glyph g : system.lookupIntersectedGlyphs(
+//                        stemBox,
+//                        stem,
+//                        hook)) {
+//                    // We look for a beam on the same stem side
+//                    if ((g.getStem(side) == stem)) {
+//                        Shape shape = g.getShape();
+//
+//                        if (ShapeSet.Beams.contains(shape)
+//                            && (shape != Shape.BEAM_HOOK)) {
+//                            if (hook.isVip() || logger.isDebugEnabled()) {
+//                                logger.info(
+//                                        "Confirmed beam hook #{}",
+//                                        hook.getId());
+//                            }
+//
+//                            beamFound = true;
+//
+//                            break;
+//                        }
+//                    }
+//                }
+//
+//                if (!beamFound) {
+//                    // Deassign this hook w/ no beam neighbor
+//                    if (hook.isVip() || logger.isDebugEnabled()) {
+//                        logger.info("Cancelled beam hook #{}", hook.getId());
+//                    }
+//
+//                    hook.setShape(null);
+//                    nb++;
+//                }
+//            }
+//        }
 
         return nb;
     }

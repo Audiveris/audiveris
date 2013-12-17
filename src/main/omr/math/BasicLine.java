@@ -14,6 +14,7 @@ package omr.math;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import static java.lang.Math.*;
 
@@ -172,6 +173,16 @@ public class BasicLine
         checkLineParameters();
 
         return (a * x) + (b * y) + c;
+    }
+
+    //-----------//
+    // getBounds //
+    //-----------//
+    @Override
+    public Rectangle getBounds ()
+    {
+        return toDouble()
+                .getBounds();
     }
 
     //------------------//
@@ -405,6 +416,15 @@ public class BasicLine
         }
     }
 
+    //--------//
+    // toPath //
+    //--------//
+    @Override
+    public GeoPath toPath ()
+    {
+        return new GeoPath(toDouble());
+    }
+
     //----------//
     // toString //
     //----------//
@@ -479,6 +499,15 @@ public class BasicLine
         return (int) rint(xAtY((double) y));
     }
 
+    //---------//
+    // xAtYExt //
+    //---------//
+    @Override
+    public double xAtYExt (double y)
+    {
+        return xAtY(y);
+    }
+
     //------//
     // yAtX //
     //------//
@@ -505,6 +534,15 @@ public class BasicLine
     public int yAtX (int x)
     {
         return (int) rint(yAtX((double) x));
+    }
+
+    //---------//
+    // yAtXExt //
+    //---------//
+    @Override
+    public double yAtXExt (double x)
+    {
+        return yAtX(x);
     }
 
     //------//

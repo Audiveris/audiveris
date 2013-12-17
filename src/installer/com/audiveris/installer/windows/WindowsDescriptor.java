@@ -13,12 +13,12 @@ package com.audiveris.installer.windows;
 
 import com.audiveris.installer.Descriptor;
 import com.audiveris.installer.DescriptorFactory;
-import com.audiveris.installer.FileCopier;
 import com.audiveris.installer.Installer;
 import com.audiveris.installer.Jnlp;
+import static com.audiveris.installer.OcrCompanion.LOCAL_LIB_FOLDER;
+import static com.audiveris.installer.RegexUtil.*;
 import com.audiveris.installer.SpecificFile;
 import com.audiveris.installer.Utilities;
-import static com.audiveris.installer.RegexUtil.*;
 
 import hudson.util.jna.Shell32;
 
@@ -30,19 +30,18 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.FileVisitResult;
+import static java.nio.file.FileVisitResult.CONTINUE;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.audiveris.installer.OcrCompanion.LOCAL_LIB_FOLDER;
-import static java.nio.file.FileVisitResult.CONTINUE;
 
 /**
  * Class {@code WindowsDescriptor} implements Installer descriptor for
@@ -64,140 +63,8 @@ public class WindowsDescriptor
     /**
      * Specific prefix for application folders. {@value}
      */
-    private static final String TOOL_PREFIX =
-            "/" + COMPANY_ID + "/" + TOOL_NAME;
-
-    /**
-     * Data for Microsoft Visual C++ 2008 Redistributable.
-     */
-    private static interface CPP
-    {
-
-        /**
-         * Registry value name.
-         */
-        static final String VALUE = "DisplayName";
-
-        /**
-         * Registry radix for Wow (32/64).
-         */
-        static final String RADIX_WOW = "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\";
-
-        /**
-         * Registry radix for pure 32/32 or 64/64.
-         */
-        static final String RADIX_PURE = "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\";
-
-        /**
-         * Registry key for 32-bit.
-         */
-        static final String KEY_32 = "{9BE518E6-ECC6-35A9-88E4-87755C07200F}";
-
-        /**
-         * Registry key for 64-bit.
-         */
-        static final String KEY_64 = "{5FCE6D76-F5DC-37AB-B2B8-22AB8CEDB1D4}";
-
-        /**
-         * Download URL for 32-bit.
-         */
-        static final String URL_32 = "http://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe";
-
-        /**
-         * Download URL for 64-bit.
-         */
-        static final String URL_64 = "http://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x64.exe";
-
-    }
-
-    /**
-     * Data for Ghostscript.
-     */
-    private static interface GS
-    {
-
-        /**
-         * Registry radix for pure 32/32 or 64/64.
-         */
-        static final String RADIX_PURE = "HKLM\\SOFTWARE\\GPL Ghostscript";
-
-        /**
-         * Registry radix for Wow (32/64).
-         */
-        static final String RADIX_WOW = "HKLM\\SOFTWARE\\Wow6432Node\\GPL Ghostscript";
-
-        /**
-         * Download URL for 32-bit.
-         */
-        static final String URL_32 = "http://downloads.ghostscript.com/public/gs907w32.exe";
-
-        /**
-         * Download URL for 64-bit.
-         */
-        static final String URL_64 = "http://downloads.ghostscript.com/public/gs907w64.exe";
-
-    }
-
-    /**
-     * Data for Tesseract.
-     */
-    private static interface TESS
-    {
-
-        /**
-         * System location for pure 32/32 or 64/64.
-         */
-        static final String SYSTEM_PURE = System.getenv("SystemRoot") + "\\System32";
-
-        /**
-         * System location for Wow (32/64).
-         */
-        static final String SYSTEM_WOW = System.getenv("SystemRoot") + "\\SysWow64";
-
-        /**
-         * Jar name for 32-bit.
-         */
-        static final String JAR_32 = "resources/tess-windows-32bit.jar";
-
-        /**
-         * Jar name for 64-bit.
-         */
-        static final String JAR_64 = "resources/tess-windows-64bit.jar";
-
-        /**
-         * Dll for leptonica.
-         */
-        static final String DLL_LEPTONICA = "liblept168.dll";
-
-        /**
-         * Dll for tesseract.
-         */
-        static final String DLL_TESSERACT = "libtesseract302.dll";
-
-        /**
-         * Dll for bridge.
-         */
-        static final String DLL_BRIDGE = "jniTessBridge.dll";
-
-    }
-
-    /**
-     * For environment variables.
-     */
-    private static interface ENV
-    {
-
-        /**
-         * Registry key for machine environment variable.
-         */
-        static final String SYSTEM_KEY = "\"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\"";
-
-        /**
-         * Registry key for user environment variable.
-         */
-        static final String USER_KEY = "HKCU\\Environment";
-
-    }
+    private static final String TOOL_PREFIX = "/" + COMPANY_ID + "/"
+                                              + TOOL_NAME;
 
     //~ Methods ----------------------------------------------------------------
     //
@@ -247,10 +114,11 @@ public class WindowsDescriptor
     public File getDefaultTessdataPrefix ()
     {
         final String pf32 = DescriptorFactory.OS_ARCH.equals("x86")
-                ? "ProgramFiles"
-                : "ProgramFiles(x86)";
+                ? "ProgramFiles" : "ProgramFiles(x86)";
         final String target = System.getenv(pf32);
-        final File file = new File(new File(target), Descriptor.TESSERACT_OCR);
+        final File file = new File(
+                new File(target),
+                Descriptor.TESSERACT_OCR);
         logger.debug("getDefaultTessdataPrefix: {}", file.getAbsolutePath());
 
         return file;
@@ -292,6 +160,7 @@ public class WindowsDescriptor
     {
         final String appdata = System.getenv("APPDATA");
         final File root = new File(appdata + TOOL_PREFIX);
+
         return Arrays.asList(
                 new SpecificFile(
                 "windows/audiveris.bat",
@@ -318,9 +187,13 @@ public class WindowsDescriptor
     public void installCpp ()
             throws Exception
     {
-        final String url = DescriptorFactory.OS_ARCH.equals("x86") ? CPP.URL_32 : CPP.URL_64;
+        final String url = DescriptorFactory.OS_ARCH.equals("x86") ? CPP.URL_32
+                : CPP.URL_64;
         Utilities.downloadExecAndInstall(
-                "C++ runtime", url, getTempFolder(), "/q");
+                "C++ runtime",
+                url,
+                getTempFolder(),
+                "/q");
     }
 
     //--------------------//
@@ -330,9 +203,13 @@ public class WindowsDescriptor
     public void installGhostscript ()
             throws Exception
     {
-        final String url = DescriptorFactory.OS_ARCH.equals("x86") ? GS.URL_32 : GS.URL_64;
+        final String url = DescriptorFactory.OS_ARCH.equals("x86") ? GS.URL_32
+                : GS.URL_64;
         Utilities.downloadExecAndInstall(
-                "Ghostscript", url, getTempFolder(), "/S");
+                "Ghostscript",
+                url,
+                getTempFolder(),
+                "/S");
     }
 
     //------------------//
@@ -357,9 +234,12 @@ public class WindowsDescriptor
         lib.mkdirs();
         logger.debug("local lib folder: {}", lib.getAbsolutePath());
 
-        final URI codeBase = Jnlp.basicService.getCodeBase().toURI();
-        final String jarName = DescriptorFactory.OS_ARCH.equals("x86") ? TESS.JAR_32 : TESS.JAR_64;
-        final URL url = Utilities.toURI(codeBase, jarName).toURL();
+        final URI codeBase = Jnlp.basicService.getCodeBase()
+                .toURI();
+        final String jarName = DescriptorFactory.OS_ARCH.equals("x86")
+                ? TESS.JAR_32 : TESS.JAR_64;
+        final URL url = Utilities.toURI(codeBase, jarName)
+                .toURL();
         Utilities.downloadJarAndExpand(
                 "Tesseract",
                 url.toString(),
@@ -367,51 +247,40 @@ public class WindowsDescriptor
                 "",
                 lib);
 
-        // (Try to) copy from local folder to system folder
+        // (Try to) copy each file from local lib folder to system target folder
         final Path libPath = lib.toPath();
-        final Path[] sources = new Path[]{libPath};
-        final String sysDir = DescriptorFactory.WOW ? TESS.SYSTEM_WOW : TESS.SYSTEM_PURE;
+        final String sysDir = DescriptorFactory.WOW ? TESS.SYSTEM_WOW
+                : TESS.SYSTEM_PURE;
         final Path target = Paths.get(sysDir);
 
-        try {
-            FileCopier fc = new FileCopier(sources, target, true);
-            fc.copy();
-        } catch (IOException ex) {
-            logger.info(
-                    "Could not directly copy Tesseract binary files"
-                    + ", will post a copy command at system level");
-
-            // Fallback to posted copy commands
-            Files.walkFileTree(libPath, new SimpleFileVisitor<Path>()
+        Files.walkFileTree(
+                libPath,
+                new SimpleFileVisitor<Path>()
             {
                 @Override
                 public FileVisitResult visitFile (Path file,
-                                                  BasicFileAttributes attrs) throws IOException
+                                              BasicFileAttributes attrs)
+                    throws IOException
                 {
+                Path dest = target.resolve(file.getFileName());
+
+                try {
+                    // Try immediate copy
+                    Files.copy(file, dest, REPLACE_EXISTING);
+                    logger.info(
+                            "Copied file {} to file {}",
+                            file,
+                            dest);
+                } catch (IOException ex) {
+                    // Fallback to posted copy commands
                     Installer.getBundle()
                             .appendCommand(getCopyCommand(file, target));
+                }
 
                     return CONTINUE;
-
                 }
             });
         }
-
-    }
-
-    //-------------------//
-    // getLocalLibFolder //
-    //-------------------//
-    /**
-     * Report the local (temporary) folder where binary files are
-     * expanded before being copied to final target location.
-     *
-     * @return the local lib folder
-     */
-    private File getLocalLibFolder ()
-    {
-        return new File(getTempFolder(), LOCAL_LIB_FOLDER);
-    }
 
     //---------//
     // isAdmin //
@@ -437,16 +306,26 @@ public class WindowsDescriptor
     @Override
     public boolean isCppInstalled ()
     {
-        List<String> output = new ArrayList<>();
+        List<String> output = new ArrayList<String>();
+
         try {
             // Check Windows registry
-            final String radix = DescriptorFactory.WOW ? CPP.RADIX_WOW : CPP.RADIX_PURE;
-            final String key = radix + (DescriptorFactory.OS_ARCH.equals("x86") ? CPP.KEY_32 : CPP.KEY_64);
-            int result = WindowsUtilities.queryRegistry(output, key, "/v", CPP.VALUE);
+            final String radix = DescriptorFactory.WOW ? CPP.RADIX_WOW
+                    : CPP.RADIX_PURE;
+            final String key = radix
+                               + (DescriptorFactory.OS_ARCH.equals("x86")
+                    ? CPP.KEY_32 : CPP.KEY_64);
+            int result = WindowsUtilities.queryRegistry(
+                    output,
+                    key,
+                    "/v",
+                    CPP.VALUE);
             logger.debug("C++ query exit:{} output: {}", result, output);
+
             return result == 0;
-        } catch (IOException | InterruptedException ex) {
+        } catch (Exception ex) {
             logger.warn(Utilities.dumpOfLines(output));
+
             return false;
         }
     }
@@ -466,7 +345,9 @@ public class WindowsDescriptor
     @Override
     public boolean isTesseractInstalled ()
     {
-        final String sysDir = DescriptorFactory.WOW ? TESS.SYSTEM_WOW : TESS.SYSTEM_PURE;
+        final String sysDir = DescriptorFactory.WOW ? TESS.SYSTEM_WOW
+                : TESS.SYSTEM_PURE;
+
         return Files.exists(Paths.get(sysDir, TESS.DLL_LEPTONICA))
                && Files.exists(Paths.get(sysDir, TESS.DLL_TESSERACT))
                && Files.exists(Paths.get(sysDir, TESS.DLL_BRIDGE));
@@ -501,10 +382,15 @@ public class WindowsDescriptor
                     "/S",
                     "/E:ON",
                     "/C",
-                    " \"" + cmdLine + "\"");
+                    cmdLine);
         } else {
             List<String> output = new ArrayList<String>();
-            int res = Utilities.runProcess(output, "cmd.exe", "/c", cmdLine);
+            int res = Utilities.runProcess(
+                    output,
+                    "cmd.exe",
+                    "/c",
+                    cmdLine);
+
             if (res != 0) {
                 final String lines = Utilities.dumpOfLines(output);
                 logger.warn(lines);
@@ -593,7 +479,8 @@ public class WindowsDescriptor
         boolean relevant = false; // Is current registry info interesting?
         int index = 0; // Line number in registry outputs
 
-        double minVersion = Double.valueOf(Descriptor.GHOSTSCRIPT_MIN_VERSION);
+        double minVersion = Double.valueOf(
+                Descriptor.GHOSTSCRIPT_MIN_VERSION);
 
         // Browse registry output lines in sequence
         for (String line : getRegistryGhostscriptOutputs()) {
@@ -603,9 +490,11 @@ public class WindowsDescriptor
 
             if (keyMatcher.matches()) {
                 relevant = false;
+
                 // Check version information
                 String versionStr = getGroup(keyMatcher, VERSION);
                 logger.debug("Version read as: {}", versionStr);
+
                 Double version = Double.valueOf(versionStr);
 
                 if ((version != null) && (version >= minVersion)) {
@@ -652,7 +541,22 @@ public class WindowsDescriptor
         }
 
         logger.info("Could not find suitable Ghostscript software");
+
         return null; // Abnormal exit
+    }
+
+    //-------------------//
+    // getLocalLibFolder //
+    //-------------------//
+    /**
+     * Report the local (temporary) folder where binary files are
+     * expanded before being copied to final target location.
+     *
+     * @return the local lib folder
+     */
+    private File getLocalLibFolder ()
+    {
+        return new File(getTempFolder(), LOCAL_LIB_FOLDER);
     }
 
     //-------------------------------//
@@ -674,17 +578,160 @@ public class WindowsDescriptor
         };
 
         // Access registry twice, one for win32 & win64 and one for Wow
-        List<String> outputs = new ArrayList<>();
+        List<String> outputs = new ArrayList<String>();
 
         for (String radix : radices) {
             logger.debug("Radix: {}", radix);
+
             try {
-                WindowsUtilities.queryRegistry(outputs, radix, "/s");
-            } catch (IOException | InterruptedException ex) {
+                WindowsUtilities.queryRegistry(
+                        outputs,
+                        radix,
+                        "/s");
+            } catch (Exception ex) {
                 logger.error("Error in reading registry", ex);
             }
         }
 
         return outputs;
+    }
+
+    //~ Inner Interfaces -------------------------------------------------------
+    /**
+     * Data for Microsoft Visual C++ 2008 Redistributable.
+     */
+    private static interface CPP
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        /**
+         * Registry value name.
+         */
+        static final String VALUE = "DisplayName";
+
+        /**
+         * Registry radix for Wow (32/64).
+         */
+        static final String RADIX_WOW = "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\";
+
+        /**
+         * Registry radix for pure 32/32 or 64/64.
+         */
+        static final String RADIX_PURE = "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\";
+
+        /**
+         * Registry key for 32-bit.
+         */
+        static final String KEY_32 = "{9BE518E6-ECC6-35A9-88E4-87755C07200F}";
+
+        /**
+         * Registry key for 64-bit.
+         */
+        static final String KEY_64 = "{5FCE6D76-F5DC-37AB-B2B8-22AB8CEDB1D4}";
+
+        /**
+         * Download URL for 32-bit.
+         */
+        static final String URL_32 = "http://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x86.exe";
+
+        /**
+         * Download URL for 64-bit.
+         */
+        static final String URL_64 = "http://download.microsoft.com/download/5/D/8/5D8C65CB-C849-4025-8E95-C3966CAFD8AE/vcredist_x64.exe";
+
+}
+
+    /**
+     * For environment variables.
+     */
+    private static interface ENV
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        /**
+         * Registry key for machine environment variable.
+         */
+        static final String SYSTEM_KEY = "\"HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment\"";
+
+        /**
+         * Registry key for user environment variable.
+         */
+        static final String USER_KEY = "HKCU\\Environment";
+
+    }
+
+    /**
+     * Data for Ghostscript.
+     */
+    private static interface GS
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        /**
+         * Registry radix for pure 32/32 or 64/64.
+         */
+        static final String RADIX_PURE = "HKLM\\SOFTWARE\\GPL Ghostscript";
+
+        /**
+         * Registry radix for Wow (32/64).
+         */
+        static final String RADIX_WOW = "HKLM\\SOFTWARE\\Wow6432Node\\GPL Ghostscript";
+
+        /**
+         * Download URL for 32-bit.
+         */
+        static final String URL_32 = "http://downloads.ghostscript.com/public/gs907w32.exe";
+
+        /**
+         * Download URL for 64-bit.
+         */
+        static final String URL_64 = "http://downloads.ghostscript.com/public/gs907w64.exe";
+
+    }
+
+    /**
+     * Data for Tesseract.
+     */
+    private static interface TESS
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        /**
+         * System location for pure 32/32 or 64/64.
+         */
+        static final String SYSTEM_PURE = System.getenv("SystemRoot")
+                                          + "\\System32";
+
+        /**
+         * System location for Wow (32/64).
+         */
+        static final String SYSTEM_WOW = System.getenv("SystemRoot")
+                                         + "\\SysWow64";
+
+        /**
+         * Jar name for 32-bit.
+         */
+        static final String JAR_32 = "resources/tess-windows-32bit.jar";
+
+        /**
+         * Jar name for 64-bit.
+         */
+        static final String JAR_64 = "resources/tess-windows-64bit.jar";
+
+        /**
+         * Dll for leptonica.
+         */
+        static final String DLL_LEPTONICA = "liblept168.dll";
+
+        /**
+         * Dll for tesseract.
+         */
+        static final String DLL_TESSERACT = "libtesseract302.dll";
+
+        /**
+         * Dll for bridge.
+         */
+        static final String DLL_BRIDGE = "jniTessBridge.dll";
+
     }
 }

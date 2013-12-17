@@ -17,11 +17,12 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphsBuilder;
+import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
+import omr.glyph.facets.GlyphComposition;
 
 import omr.lag.Section;
 
@@ -954,8 +955,13 @@ public class StemsBuilder
              */
             private StemInter createStemInter (List<Glyph> items)
             {
-                final Glyph stem = (items.size() > 1)
-                        ? system.buildCompound(items) : items.get(0);
+                GlyphNest nest = system.getSheet()
+                        .getNest();
+                final Glyph stem = (items.size() == 1) ? items.get(0)
+                        : nest.buildGlyph(
+                                items,
+                                true,
+                                Glyph.Linking.NO_LINK);
 
                 if (stem.isVip()) {
                     logger.info("VIP createStemInter for {}", stem);
@@ -1325,22 +1331,22 @@ public class StemsBuilder
                 Collections.sort(
                         allbeams,
                         new Comparator<Inter>()
-                        {
-                            @Override
-                            public int compare (Inter b1,
-                                                Inter b2)
-                            {
-                                double d1 = Math.abs(
-                                        refPt.getY()
-                                        - getTargetPt(
-                                                getLimit((AbstractBeamInter) b1)).getY());
-                                double d2 = Math.abs(
-                                        refPt.getY()
-                                        - getTargetPt(
-                                                getLimit((AbstractBeamInter) b2)).getY());
+                {
+                    @Override
+                    public int compare (Inter b1,
+                                        Inter b2)
+                    {
+                        double d1 = Math.abs(
+                                refPt.getY()
+                                - getTargetPt(
+                                getLimit((AbstractBeamInter) b1)).getY());
+                        double d2 = Math.abs(
+                                refPt.getY()
+                                - getTargetPt(
+                                getLimit((AbstractBeamInter) b2)).getY());
 
-                                return Double.compare(d1, d2);
-                            }
+                        return Double.compare(d1, d2);
+                    }
                         });
 
                 // Build the list of beams
@@ -1413,11 +1419,13 @@ public class StemsBuilder
                 List<Section> sections = lookupSections(fatHeadSection);
 
                 // Aggregate these sections into glyphs & check them
-                List<Glyph> chunks = GlyphsBuilder.retrieveGlyphs(
+                GlyphNest nest = system.getSheet()
+                        .getNest();
+                List<Glyph> chunks = nest.retrieveGlyphs(
                         sections,
-                        system.getSheet().getNest(),
                         GlyphLayer.DEFAULT,
-                        scale);
+                        false,
+                        Glyph.Linking.NO_LINK);
 
                 // Remove useless glyphs and put wide glyphs apart
                 List<Glyph> wides = new ArrayList<Glyph>();
@@ -1452,9 +1460,7 @@ public class StemsBuilder
                                 Section.reverseWeightComparator);
 
                         Glyph glyph = new BasicGlyph(interline, layer);
-                        glyph.addSection(
-                                members.get(0),
-                                Glyph.Linking.NO_LINK_BACK);
+                        glyph.addSection(members.get(0), Glyph.Linking.NO_LINK);
                         chunks.add(glyph);
                     }
                 }
@@ -1656,17 +1662,17 @@ public class StemsBuilder
                 Collections.sort(
                         glyphs,
                         new Comparator<Glyph>()
-                        {
-                            @Override
-                            public int compare (Glyph o1,
-                                                Glyph o2)
-                            {
-                                // Sort by decreasing contribution
-                                int c1 = getContrib(o1.getBounds());
-                                int c2 = getContrib(o2.getBounds());
+                {
+                    @Override
+                    public int compare (Glyph o1,
+                                        Glyph o2)
+                    {
+                        // Sort by decreasing contribution
+                        int c1 = getContrib(o1.getBounds());
+                        int c2 = getContrib(o2.getBounds());
 
-                                return Integer.signum(c2 - c1);
-                            }
+                        return Integer.signum(c2 - c1);
+                    }
                         });
             }
 

@@ -455,22 +455,6 @@ public class Page
     }
 
     //----------//
-    // systemAt //
-    //----------//
-    /**
-     * Retrieve which system contains the provided point.
-     *
-     * @param point the point in the <b>SHEET</b> display
-     * @return the nearest system.
-     */
-    public ScoreSystem systemAt (Point point)
-    {
-        return getSheet()
-                .getSystemOf(point)
-                .getScoreSystem();
-    }
-
-    //----------//
     // toString //
     //----------//
     @Override

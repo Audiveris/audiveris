@@ -24,7 +24,9 @@ import java.util.TreeMap;
 
 /**
  * Class {@code LineFilament} is a {@link Filament}, used as (part of)
- * a candidate staff line.
+ * a candidate staff line, thus a filament within a cluster.
+ * <p>
+ * It is a Filament augmented by combs and cluster information.
  */
 public class LineFilament
         extends Filament
@@ -208,7 +210,7 @@ public class LineFilament
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
-        
+
         if (combs != null) {
             sb.append(" combs:").append(combs.size());
         }

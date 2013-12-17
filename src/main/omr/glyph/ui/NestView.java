@@ -15,7 +15,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyphs;
-import omr.glyph.Nest;
+import omr.glyph.GlyphNest;
 import omr.glyph.facets.Glyph;
 
 import omr.graph.DigraphView;
@@ -59,7 +59,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code NestView} is a view that combines the display of
+ * Class {@code GlyphNestView} is a view that combines the display of
  * several lags to represent a nest of glyphs.
  *
  * @author Hervé Bitteur
@@ -79,7 +79,7 @@ public class NestView
 
     //~ Instance fields --------------------------------------------------------
     /** The underlying nest */
-    protected final Nest nest;
+    protected final GlyphNest nest;
 
     /** The sequence of lags. */
     protected final List<Lag> lags = new ArrayList<Lag>();
@@ -101,7 +101,7 @@ public class NestView
      * @param lags  the initial lags to be displayed
      * @param sheet related sheet, if any
      */
-    public NestView (Nest nest,
+    public NestView (GlyphNest nest,
                      List<Lag> lags,
                      Sheet sheet)
     {

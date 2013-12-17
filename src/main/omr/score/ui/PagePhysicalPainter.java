@@ -40,6 +40,7 @@ import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
 
 import omr.sig.AbstractBeamInter;
+import omr.sig.BarConnectionInter;
 import omr.sig.BarlineInter;
 import omr.sig.Inter;
 import omr.sig.InterVisitor;
@@ -56,7 +57,6 @@ import omr.ui.symbol.Symbols;
 import omr.ui.util.UIUtil;
 
 import omr.util.TreeNode;
-import omr.util.VerticalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -519,13 +519,27 @@ public class PagePhysicalPainter
             Color oldColor = g.getColor();
             g.setColor(Colors.ANNOTATION);
 
-            Point ul = systemInfo.getBoundary()
-                    .getLimit(VerticalSide.TOP)
-                    .getPoint(0);
+            Point ul = new Point(
+                    systemInfo.getBounds().x,
+                    systemInfo.getTop() + (systemInfo.getDeltaY() / 2)
+                    + scale.getInterline());
+
             paint(
                     basicLayout("S" + system.getId(), null),
                     new Point(ul.x + annotationDx, ul.y + annotationDy),
                     TOP_LEFT);
+
+            // System area
+            g.setColor(new Color(255, 0, 0, 50));
+            g.draw(systemInfo.getArea());
+
+            // Staves areas
+            g.setColor(new Color(255, 0, 0, 50));
+
+            for (StaffInfo staff : systemInfo.getStaves()) {
+                g.draw(staff.getArea());
+            }
+
             g.setColor(oldColor);
         }
 
@@ -669,6 +683,16 @@ public class PagePhysicalPainter
     {
         setColor(barline);
         g.fill(barline.getArea());
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (BarConnectionInter connection)
+    {
+        setColor(connection);
+        g.fill(connection.getArea());
     }
 
     //--------------------//

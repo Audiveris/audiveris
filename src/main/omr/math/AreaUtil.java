@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.math;
 
+import omr.image.PixelFilter;
+
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
@@ -56,6 +58,67 @@ public class AreaUtil
         path.closePath();
 
         return new Area(path);
+    }
+
+    //--------------//
+    // verticalCore //
+    //--------------//
+    /**
+     * Perform core analysis on a vertical shape.
+     *
+     * @param filter     source of foreground / background
+     * @param leftLimit  limit on left side
+     * @param rightLimit limit on right side
+     * @return the CoreData measured
+     */
+    public static CoreData verticalCore (PixelFilter filter,
+                                         GeoPath leftLimit,
+                                         GeoPath rightLimit)
+    {
+        // Inspect each horizontal row of the stick
+        int largestGap = 0; // Largest gap so far
+        int lastBlackY = -1; // Ordinate of last black row
+        int lastWhiteY = -1; // Ordinate of last white row
+        int whiteCount = 0; // Count of rows where stem is white (broken)
+
+        final int yMin = (int) Math.ceil(leftLimit.getFirstPoint().getY());
+        final int yMax = (int) Math.floor(leftLimit.getLastPoint().getY());
+
+        for (int y = yMin; y <= yMax; y++) {
+            final int xMin = (int) Math.rint(leftLimit.xAtY(y));
+            final int xMax = (int) Math.rint(rightLimit.xAtY(y));
+
+            // Make sure the row is not empty
+            boolean empty = true;
+
+            for (int x = xMin; x <= xMax; x++) {
+                if (filter.isFore(x, y)) {
+                    empty = false;
+
+                    break;
+                }
+            }
+
+            if (empty) {
+                whiteCount++;
+                lastWhiteY = y;
+
+                continue;
+            }
+
+            // End of gap?
+            if ((lastWhiteY != -1) && (lastBlackY != -1)) {
+                largestGap = Math.max(largestGap, lastWhiteY - lastBlackY);
+                lastWhiteY = -1;
+            }
+
+            lastBlackY = y;
+        }
+
+        int height = yMax - yMin + 1;
+        double whiteRatio = (double) whiteCount / height;
+
+        return new CoreData(height, largestGap, whiteRatio);
     }
 
     //-----------------------//
@@ -106,29 +169,70 @@ public class AreaUtil
      * @param width  ribbon width
      * @return the created area
      */
-    public static Area verticalRibbon (Line median,
+    public static Area verticalRibbon (Shape median,
                                        double width)
     {
         final double dx = width / 2; // Half width
         final GeoPath path = new GeoPath();
-        final Shape line = (median instanceof NaturalSpline)
-                ? (NaturalSpline) median
-                : ((BasicLine) median).toDouble();
 
         // Left line
         path.append(
-                line.getPathIterator(AffineTransform.getTranslateInstance(-dx, 0)),
+                median.getPathIterator(
+                        AffineTransform.getTranslateInstance(-dx + 0.5, 0)),
                 false);
 
         // Right line (reversed)
         path.append(
                 ReversePathIterator.getReversePathIterator(
-                        line,
-                        AffineTransform.getTranslateInstance(dx + 1, 0)),
+                        median,
+                        AffineTransform.getTranslateInstance(dx + 0.5, 0)),
                 true);
 
         path.closePath();
 
         return new Area(path);
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //----------//
+    // CoreData //
+    //----------//
+    /**
+     * Output data from a core analysis.
+     */
+    public static class CoreData
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Total area length. (height for vertical, width for horizontal) */
+        public final int length;
+
+        /** Length of longest gap found. */
+        public final int gap;
+
+        /** Ratio of white elements on total length. */
+        public final double whiteRatio;
+
+        //~ Constructors -------------------------------------------------------
+        public CoreData (int length,
+                         int gap,
+                         double whiteRatio)
+        {
+            this.length = length;
+            this.gap = gap;
+            this.whiteRatio = whiteRatio;
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            return String.format(
+                    "length:%d gap:%d white:%.0f%s",
+                    length,
+                    gap,
+                    100 * whiteRatio,
+                    "%");
+        }
     }
 }

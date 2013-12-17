@@ -50,6 +50,6 @@ public class StemLinksStep
             throws StepException
     {
         system.stemsBuilder.linkStems(); // -> Stems links to heads & beams
-        system.sigResolver.contextualize();
+        system.sigSolver.contextualize();
     }
 }

@@ -12,7 +12,7 @@
 package omr.glyph.facets;
 
 import omr.glyph.GlyphLayer;
-import omr.glyph.Nest;
+import omr.glyph.GlyphNest;
 
 import omr.util.Vip;
 
@@ -63,7 +63,7 @@ interface GlyphAdministration
      *
      * @return the containing nest
      */
-    Nest getNest ();
+    GlyphNest getNest ();
 
     /**
      * Report a short glyph reference
@@ -101,5 +101,5 @@ interface GlyphAdministration
      *
      * @param nest the containing nest
      */
-    void setNest (Nest nest);
+    void setNest (GlyphNest nest);
 }

@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.math;
 
+import java.awt.Rectangle;
+
 /**
  * Interface {@code Line} handles the equation of a line (or more
  * generally some curved line for which Y can be computed from X),
@@ -33,6 +35,13 @@ public interface Line
      */
     double distanceOf (double x,
                        double y);
+
+    /**
+     * Report the bounding rectangle.
+     *
+     * @return the line bounds
+     */
+    Rectangle getBounds ();
 
     /**
      * Return -b/a, from a*x + b*y +c
@@ -112,6 +121,13 @@ public interface Line
     Line swappedCoordinates ();
 
     /**
+     * Report the line path.
+     *
+     * @return the path of the underlying line.
+     */
+    GeoPath toPath ();
+
+    /**
      * Retrieve the abscissa where the line crosses the given ordinate y.
      * Beware of horizontal lines !!!
      *
@@ -131,6 +147,16 @@ public interface Line
     int xAtY (int y);
 
     /**
+     * Similar functionality as xAtY, but also accepts ordinates
+     * outside the line ordinate range but extrapolating the line
+     * based on start and stop points.
+     *
+     * @param y the provided ordinate
+     * @return the abscissa value at this ordinate
+     */
+    double xAtYExt (double y);
+
+    /**
      * Retrieve the ordinate where the line crosses the given abscissa x.
      * Beware of vertical lines !!!
      *
@@ -148,6 +174,16 @@ public interface Line
      * @return the corresponding y value
      */
     int yAtX (int x);
+
+    /**
+     * Similar functionality as yAtX, but also accepts abscissae
+     * outside the line abscissa range but extrapolating the line
+     * based on start and stop points.
+     *
+     * @param x the provided abscissa
+     * @return the ordinate value at this abscissa
+     */
+    double yAtXExt (double x);
 
     //~ Inner Classes ----------------------------------------------------------
     /**

@@ -18,17 +18,17 @@ import omr.math.AreaUtil;
 import omr.math.Line;
 
 /**
- * Class {@code BarmedianInter} represents an interpretation of bar median
- * (thin or thick vertical segment).
+ * Class {@code BarlineInter} represents an interpretation of bar
+ * line (thin or thick vertical segment).
  *
  * @author Hervé Bitteur
  */
 public class BarlineInter
-    extends AbstractInter
+        extends AbstractInter
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** True if this bar median defines a part. */
+    /** True if this bar line defines a part. */
     private boolean partDefining;
 
     /** Median line, perhaps not fully straight. */
@@ -38,9 +38,8 @@ public class BarlineInter
     private final double width;
 
     //~ Constructors -----------------------------------------------------------
-
     /**
-     * Creates a new BarmedianInter object.
+     * Creates a new BarlineInter object.
      *
      * @param glyph   the underlying glyph
      * @param shape   the assigned shape
@@ -48,25 +47,26 @@ public class BarlineInter
      * @param median  the median line
      * @param width   the bar line width
      */
-    public BarlineInter (Glyph        glyph,
-                         Shape        shape,
+    public BarlineInter (Glyph glyph,
+                         Shape shape,
                          GradeImpacts impacts,
-                         Line         median,
-                         double       width)
+                         Line median,
+                         double width)
     {
         super(glyph, shape, impacts.getGrade());
         setImpacts(impacts);
         this.median = median;
         this.width = width;
 
-        setArea(AreaUtil.verticalRibbon(median, width));
+        if (median != null) {
+            setArea(AreaUtil.verticalRibbon(median.toPath(), width));
 
-        // Define precise bounds based on this path
-        setBounds(getArea().getBounds());
+            // Define precise bounds based on this path
+            setBounds(getArea().getBounds());
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //--------//
     // accept //
     //--------//
@@ -133,5 +133,30 @@ public class BarlineInter
     public void setPartDefining (boolean partDefining)
     {
         this.partDefining = partDefining;
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //---------//
+    // Impacts //
+    //---------//
+    public static class Impacts
+            extends BasicImpacts
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        private static final String[] NAMES = new String[]{"core", "belt", "gap"};
+
+        private static final double[] WEIGHTS = new double[]{1, 1, 1};
+
+        //~ Constructors -------------------------------------------------------
+        public Impacts (double core,
+                        double belt,
+                        double gap)
+        {
+            super(NAMES, WEIGHTS);
+            setImpact(0, core);
+            setImpact(1, belt);
+            setImpact(2, gap);
+        }
     }
 }

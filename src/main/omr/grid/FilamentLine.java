@@ -13,6 +13,7 @@ package omr.grid;
 
 import omr.lag.Section;
 
+import omr.math.GeoPath;
 import omr.math.Line;
 import omr.math.LineUtil;
 
@@ -37,7 +38,7 @@ public class FilamentLine
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Underlying filament */
+    /** Underlying filament. */
     LineFilament fil;
 
     //~ Constructors -----------------------------------------------------------
@@ -113,6 +114,16 @@ public class FilamentLine
     public Point2D getLeftPoint ()
     {
         return getStartPoint();
+    }
+
+    //--------//
+    // toPath //
+    //--------//
+    @Override
+    public GeoPath toPath ()
+    {
+        return fil.getLine()
+                .toPath();
     }
 
     //---------------//

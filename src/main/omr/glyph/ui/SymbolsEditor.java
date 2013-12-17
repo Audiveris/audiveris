@@ -16,7 +16,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
-import omr.glyph.Nest;
+import omr.glyph.GlyphNest;
 import omr.glyph.ShapeEvaluator;
 import omr.glyph.facets.Glyph;
 
@@ -47,7 +47,6 @@ import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.ui.BoundaryEditor;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.SheetPainter;
 
@@ -105,9 +104,6 @@ public class SymbolsEditor
     /** Related sheet. */
     private final Sheet sheet;
 
-    /** BoundaryEditor companion. */
-    private final BoundaryEditor boundaryEditor;
-
     /** Evaluator to check for NOISE glyphs. */
     private final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
 
@@ -136,9 +132,8 @@ public class SymbolsEditor
     {
         this.sheet = sheet;
         this.symbolsController = symbolsController;
-        sheet.setBoundaryEditor(boundaryEditor = new BoundaryEditor(sheet));
 
-        Nest nest = symbolsController.getNest();
+        GlyphNest nest = symbolsController.getNest();
 
         view = new MyView(nest);
         view.setLocationService(sheet.getLocationService());
@@ -147,12 +142,12 @@ public class SymbolsEditor
                 sheet,
                 symbolsController,
                 new ActionListener()
-                {
-                    @Override
-                    public void actionPerformed (ActionEvent e)
-                    {
-                        view.repaint();
-                    }
+        {
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                view.repaint();
+            }
                 },
                 false);
 
@@ -213,22 +208,22 @@ public class SymbolsEditor
      */
     public Slot getSlotAt (Point point)
     {
-        List<SystemInfo> systems = sheet.getSystems();
-
-        if (systems != null) {
-            SystemInfo systemInfo = sheet.getSystemOf(point);
-
-            if (systemInfo != null) {
-                ScoreSystem system = systemInfo.getScoreSystem();
-
-                SystemPart part = system.getPartAt(point);
-                Measure measure = part.getMeasureAt(point);
-
-                if (measure != null) {
-                    return measure.getClosestSlot(point);
-                }
-            }
-        }
+//        List<SystemInfo> systems = sheet.getSystems();
+//
+//        if (systems != null) {
+//            SystemInfo systemInfo = sheet.getSystemOf(point);
+//
+//            if (systemInfo != null) {
+//                ScoreSystem system = systemInfo.getScoreSystem();
+//
+//                SystemPart part = system.getPartAt(point);
+//                Measure measure = part.getMeasureAt(point);
+//
+//                if (measure != null) {
+//                    return measure.getClosestSlot(point);
+//                }
+//            }
+//        }
 
         return null;
     }
@@ -281,7 +276,7 @@ public class SymbolsEditor
         private Slot highlightedSlot;
 
         //~ Constructors -------------------------------------------------------
-        private MyView (Nest nest)
+        private MyView (GlyphNest nest)
         {
             super(
                     nest,
@@ -432,9 +427,7 @@ public class SymbolsEditor
                 // Default nest view behavior (locationEvent)
                 super.onEvent(event);
 
-                if (event instanceof LocationEvent) { // Location => Boundary
-                    handleEvent((LocationEvent) event);
-                } else if (event instanceof SectionSetEvent) { // SectionSet => Compound
+                if (event instanceof SectionSetEvent) { // SectionSet => Compound
                     handleEvent((SectionSetEvent) event);
                 }
             } catch (Exception ex) {
@@ -502,9 +495,7 @@ public class SymbolsEditor
 
             if (painting.isInputPainting()) {
                 // Render all sheet physical info known so far
-                sheet.getPage()
-                        .accept(
-                                new SheetPainter(g, true, boundaryEditor.isSessionOngoing()));
+                sheet.getPage().accept(new SheetPainter(g, true));
 
                 // Normal display of selected items
                 super.renderItems(g);
@@ -544,30 +535,6 @@ public class SymbolsEditor
         // handleEvent //
         //-------------//
         /**
-         * Interest in LocationEvent => system boundary modification?
-         *
-         * @param locationEvent location event
-         */
-        @SuppressWarnings("unchecked")
-        private void handleEvent (LocationEvent locationEvent)
-        {
-            super.onEvent(locationEvent);
-
-            // Update system boundary?
-            if ((locationEvent.hint == LOCATION_INIT)
-                && boundaryEditor.isSessionOngoing()) {
-                Rectangle rect = locationEvent.getData();
-
-                if ((rect != null) && (rect.width == 0) && (rect.height == 0)) {
-                    boundaryEditor.inspectBoundary(rect.getLocation());
-                }
-            }
-        }
-
-        //-------------//
-        // handleEvent //
-        //-------------//
-        /**
          * Interest in SectionSetEvent => transient Glyph.
          *
          * On reception of SECTION_SET information, we build a transient
@@ -591,59 +558,59 @@ public class SymbolsEditor
             MouseMovement movement = sectionSetEvent.movement;
 
             if (sectionSetEvent.hint.isLocation()) {
-                // Collect section sets from all lags
-                List<Section> allSections = new ArrayList<>();
-
-                for (Lag lag : lags) {
-                    Set<Section> selected = lag.getSelectedSectionSet();
-
-                    if (selected != null) {
-                        allSections.addAll(selected);
-                    }
-                }
-
-                try {
-                    Glyph compound = null;
-
-                    if (!allSections.isEmpty()) {
-                        SystemInfo system = sheet.getSystemOfSections(
-                                allSections);
-
-                        if (system != null) {
-                            compound = system.buildTransientGlyph(allSections);
-                        }
-                    }
-
-                    logger.debug("Editor. Publish glyph {}", compound);
-                    publish(
-                            new GlyphEvent(
-                                    this,
-                                    GLYPH_TRANSIENT,
-                                    movement,
-                                    compound));
-
-                    if (compound != null) {
-                        publish(
-                                new GlyphSetEvent(
-                                        this,
-                                        GLYPH_TRANSIENT,
-                                        movement,
-                                        Glyphs.sortedSet(compound)));
-                    } else {
-                        publish(
-                                new GlyphSetEvent(
-                                        this,
-                                        GLYPH_TRANSIENT,
-                                        movement,
-                                        null));
-                    }
-                } catch (IllegalArgumentException ex) {
-                    // All sections do not belong to the same system
-                    // No compound is allowed and displayed
-                    logger.warn(
-                            "Sections from different systems {}",
-                            Sections.toString(allSections));
-                }
+//                // Collect section sets from all lags
+//                List<Section> allSections = new ArrayList<>();
+//
+//                for (Lag lag : lags) {
+//                    Set<Section> selected = lag.getSelectedSectionSet();
+//
+//                    if (selected != null) {
+//                        allSections.addAll(selected);
+//                    }
+//                }
+//
+//                try {
+//                    Glyph compound = null;
+//
+//                    if (!allSections.isEmpty()) {
+//                        SystemInfo system = sheet.getSystemOfSections(
+//                                allSections);
+//
+//                        if (system != null) {
+//                            compound = system.buildTransientGlyph(allSections);
+//                        }
+//                    }
+//
+//                    logger.debug("Editor. Publish glyph {}", compound);
+//                    publish(
+//                            new GlyphEvent(
+//                                    this,
+//                                    GLYPH_TRANSIENT,
+//                                    movement,
+//                                    compound));
+//
+//                    if (compound != null) {
+//                        publish(
+//                                new GlyphSetEvent(
+//                                        this,
+//                                        GLYPH_TRANSIENT,
+//                                        movement,
+//                                        Glyphs.sortedSet(compound)));
+//                    } else {
+//                        publish(
+//                                new GlyphSetEvent(
+//                                        this,
+//                                        GLYPH_TRANSIENT,
+//                                        movement,
+//                                        null));
+//                    }
+//                } catch (IllegalArgumentException ex) {
+//                    // All sections do not belong to the same system
+//                    // No compound is allowed and displayed
+//                    logger.warn(
+//                            "Sections from different systems {}",
+//                            Sections.toString(allSections));
+//                }
             }
         }
 

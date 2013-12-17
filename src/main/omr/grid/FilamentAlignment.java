@@ -233,6 +233,11 @@ public class FilamentAlignment
      * If the local point is next to the first or last point of the curve,
      * then the point to modify is likely to be this first or last point.
      * In the other cases, the local point itself is modified.
+     * <p>
+     * TODO: Instead of computing radius, it will be easier to use the second
+     * derivative, which is linear for each cubic segment. Thus, maximum
+     * absolute values of 2nd derivatives occur at spline knots. Simply remove
+     * the knots that exhibit a too high absolute value.
      */
     public void polishCurvature ()
     {
@@ -309,15 +314,15 @@ public class FilamentAlignment
                     Collections.sort(
                             found,
                             new Comparator<Section>()
-                            {
-                                @Override
-                                public int compare (Section s1,
-                                                    Section s2)
-                                {
-                                    return Double.compare(
-                                            point.distance(s1.getCentroid()),
-                                            point.distance(s2.getCentroid()));
-                                }
+                    {
+                        @Override
+                        public int compare (Section s1,
+                                            Section s2)
+                        {
+                            return Double.compare(
+                                    point.distance(s1.getCentroid()),
+                                    point.distance(s2.getCentroid()));
+                        }
                             });
                 }
 
@@ -329,7 +334,7 @@ public class FilamentAlignment
                             section.getId(),
                             orientation,
                             glyph.getId());
-                    glyph.removeSection(section, Linking.LINK_BACK);
+                    glyph.removeSection(section, Linking.LINK);
                     modified = true;
                 }
             }

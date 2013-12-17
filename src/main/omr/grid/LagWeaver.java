@@ -48,7 +48,8 @@ public class LagWeaver
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(LagWeaver.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            LagWeaver.class);
 
     /** Table dx/dy -> Heading */
     private static final Heading[][] headings = {
@@ -65,9 +66,7 @@ public class LagWeaver
     {
         //~ Enumeration constant initializers ----------------------------------
 
-        NORTH,
-        EAST,
-        SOUTH,
+        NORTH, EAST, SOUTH,
         WEST;
 
         //~ Methods ------------------------------------------------------------
@@ -105,13 +104,13 @@ public class LagWeaver
      * Actual points around current vLag section to check to hLag presence
      * (relevant only during horiWithVert)
      */
-    private final List<Point> pointsAside = new ArrayList<>();
+    private final List<Point> pointsAside = new ArrayList<Point>();
 
     /** Points to check for source sections above in hLag */
-    private final List<Point> pointsAbove = new ArrayList<>();
+    private final List<Point> pointsAbove = new ArrayList<Point>();
 
     /** Points to check for target sections below in hLag */
-    private final List<Point> pointsBelow = new ArrayList<>();
+    private final List<Point> pointsBelow = new ArrayList<Point>();
 
     //~ Constructors -----------------------------------------------------------
     //-----------//
@@ -141,10 +140,12 @@ public class LagWeaver
         // Remove staff line stuff from hLag
         watch.start("purge hLag");
 
-        List<Section> staffLinesSections = removeStaffLines(hLag);
+        List<Section> staffLinesSections = removeStaffLineSections(hLag);
 
-        logger.debug("{}StaffLine sections removed: {}",
-                sheet.getLogPrefix(), staffLinesSections.size());
+        logger.debug(
+                "{}StaffLine sections removed: {}",
+                sheet.getLogPrefix(),
+                staffLinesSections.size());
 
         watch.start("Hori <-> Hori");
         horiWithHori();
@@ -152,9 +153,9 @@ public class LagWeaver
         watch.start("Hori <-> Vert");
         horiWithVert();
 
-//        watch.start("buildGlyphs");
-//        buildGlyphs();
+        watch.start("buildGlyphs");
 
+        ///buildGlyphs();
         // The end
         ///watch.print();
     }
@@ -189,38 +190,39 @@ public class LagWeaver
         pointsBelow.add(new Point(x, y));
     }
 
-//    //-------------//
-//    // buildGlyphs //
-//    //-------------//
-//    private void buildGlyphs ()
-//    {
-//        // Group (unknown) sections into glyphs
-//        // Consider all unknown vertical & horizontal sections
-//        List<Section> allSections = new ArrayList<>();
-//
-//        for (Section section : sheet.getVerticalLag().getSections()) {
-//            if (!section.isKnown()) {
-//                section.setProcessed(false);
-//                allSections.add(section);
-//            } else {
-//                section.setProcessed(true);
-//            }
-//        }
-//
-//        for (Section section : sheet.getHorizontalLag().getSections()) {
-//            if (!section.isKnown()) {
-//                section.setProcessed(false);
-//                allSections.add(section);
-//            } else {
-//                section.setProcessed(true);
-//            }
-//        }
-//
-//        GlyphsBuilder.retrieveGlyphs(
-//                allSections,
-//                sheet.getNest(),
-//                sheet.getScale());
-//    }
+    //    //-------------//
+    //    // buildGlyphs //
+    //    //-------------//
+    //    private void buildGlyphs ()
+    //    {
+    //        // Group (unknown) sections into glyphs
+    //        // Consider all unknown vertical & horizontal sections
+    //        List<Section> allSections = new ArrayList<>();
+    //
+    //        for (Section section : vLag.getSections()) {
+    //            if (!section.isKnown()) {
+    //                section.setProcessed(false);
+    //                allSections.add(section);
+    //            } else {
+    //                section.setProcessed(true);
+    //            }
+    //        }
+    //
+    //        for (Section section : hLag.getSections()) {
+    //            if (!section.isKnown()) {
+    //                section.setProcessed(false);
+    //                allSections.add(section);
+    //            } else {
+    //                section.setProcessed(true);
+    //            }
+    //        }
+    //
+    //        GlyphsBuilder.retrieveGlyphs(
+    //                allSections,
+    //                sheet.getNest(),
+    //                GlyphLayer.DEFAULT,
+    //                sheet.getScale());
+    //    }
     //------------------//
     // checkPointsAbove //
     //------------------//
@@ -242,7 +244,8 @@ public class LagWeaver
         }
 
         if (added && logger.isDebugEnabled()) {
-            logger.info("lSect#{} checks:{}{}",
+            logger.info(
+                    "lSect#{} checks:{}{}",
                     lSect.getId(),
                     pointsAbove.size(),
                     Sections.toString(" sources", lSect.getSources()));
@@ -271,7 +274,8 @@ public class LagWeaver
         }
 
         if (added && logger.isDebugEnabled()) {
-            logger.info("vSect#{} checks:{}{}",
+            logger.info(
+                    "vSect#{} checks:{}{}",
                     vSect.getId(),
                     pointsAside.size(),
                     Sections.toString(" hSects", vSect.getOppositeSections()));
@@ -299,7 +303,9 @@ public class LagWeaver
         }
 
         if (added && logger.isDebugEnabled()) {
-            logger.info("lSect#{} checks:{}{}", lSect.getId(),
+            logger.info(
+                    "lSect#{} checks:{}{}",
+                    lSect.getId(),
                     pointsBelow.size(),
                     Sections.toString(" targets", lSect.getTargets()));
         }
@@ -326,7 +332,8 @@ public class LagWeaver
      * from shorter runs).
      * Without such connections, glyph building would suffer over-segmentation.
      *
-     * <p>We take each long section in turn and check for connection, above and
+     * <p>
+     * We take each long section in turn and check for connection, above and
      * below, with short sections. If positive, we cross-connect them.
      */
     private void horiWithHori ()
@@ -644,42 +651,45 @@ public class LagWeaver
         removePoint(pointsBelow, x, y);
     }
 
-    //------------------//
-    // removeStaffLines //
-    //------------------//
-    private List<Section> removeStaffLines (Lag hLag)
+    //-------------------------//
+    // removeStaffLineSections //
+    //-------------------------//
+    private List<Section> removeStaffLineSections (Lag hLag)
     {
         return hLag.purgeSections(
                 new Predicate<Section>()
-        {
-            @Override
-            public boolean check (Section section)
-            {
-                Glyph glyph = section.getGlyph();
+                {
+                    @Override
+                    public boolean check (Section section)
+                    {
+                        Glyph glyph = section.getGlyph();
 
-                if ((glyph != null)
-                    && (glyph.getShape() == Shape.STAFF_LINE)) {
-                    /**
-                     * Narrow horizontal section can be kept to avoid
-                     * over-segmentation between vertical sections
-                     */
-                    if ((section.getLength(Orientation.HORIZONTAL) == 1)
-                        && (section.getLength(Orientation.VERTICAL) > 1)) {
-                        if (section.isVip() || logger.isDebugEnabled()) {
-                            logger.info("Keeping staffline section {}",
-                                    section);
+                        if ((glyph != null)
+                            && (glyph.getShape() == Shape.STAFF_LINE)) {
+                            /**
+                             * Narrow horizontal section can be kept to avoid
+                             * over-segmentation between vertical sections.
+                             * TODO: keep this?
+                             * TODO: use constant (instead of 1-pixel width)?
+                             */
+                            if ((section.getLength(Orientation.HORIZONTAL) == 1)
+                                && (section.getLength(Orientation.VERTICAL) > 1)) {
+                                if (section.isVip() || logger.isDebugEnabled()) {
+                                    logger.info(
+                                            "Keeping staffline section {}",
+                                            section);
+                                }
+
+                                section.setGlyph(null);
+
+                                return false;
+                            } else {
+                                return true;
+                            }
+                        } else {
+                            return false;
                         }
-
-                        section.setGlyph(null);
-
-                        return false;
-                    } else {
-                        return true;
                     }
-                } else {
-                    return false;
-                }
-            }
-        });
+                });
     }
 }

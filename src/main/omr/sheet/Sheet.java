@@ -15,8 +15,7 @@ import omr.Main;
 
 import omr.glyph.BasicNest;
 import omr.glyph.Glyphs;
-import omr.glyph.Nest;
-import omr.glyph.Shape;
+import omr.glyph.GlyphNest;
 import omr.glyph.SymbolsModel;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolsController;
@@ -28,8 +27,6 @@ import omr.grid.TargetBuilder;
 
 import omr.lag.Lag;
 import omr.lag.Lags;
-import omr.lag.Section;
-import omr.lag.Sections;
 
 import omr.run.RunsTable;
 
@@ -52,7 +49,6 @@ import omr.image.ImageFormatException;
 import omr.sheet.ui.PictureView;
 
 import omr.sheet.ui.BinarizationBoard;
-import omr.sheet.ui.BoundaryEditor;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.RunsViewer;
 import omr.sheet.ui.SheetAssembly;
@@ -81,13 +77,12 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -183,7 +178,7 @@ public class Sheet
     Map<String, Lag> lagMap = new TreeMap<String, Lag>();
 
     /** Global glyph nest */
-    private Nest nest;
+    private GlyphNest nest;
 
     // Companion processors
     //
@@ -199,11 +194,8 @@ public class Sheet
     /** Grid */
     private GridBuilder gridBuilder;
 
-    /** Bars checker */
-    private volatile BarsChecker barsChecker;
-
-    /** A bar line extractor for this sheet */
-    private volatile SystemsBuilder systemsBuilder;
+    /** Systems management. */
+    private volatile SystemManager systemManager;
 
     /** Specific builder dealing with glyphs */
     private volatile SymbolsController symbolsController;
@@ -214,17 +206,11 @@ public class Sheet
     /** Related symbols editor */
     private SymbolsEditor symbolsEditor;
 
-    /** Related boundary editor */
-    private BoundaryEditor boundaryEditor; // ??????????????
-
     /** Delta measurements. */
     private SheetDiff sheetDelta;
 
     /** Id of last long horizontal section */
     private int lastLongHSectionId = -1;
-
-    /** Have systems their boundaries? */
-    private boolean hasSystemBoundaries = false;
 
     /** Registered item renderers, if any */
     private final Set<ItemRenderer> itemRenderers = new HashSet<>();
@@ -427,13 +413,13 @@ public class Sheet
         }
     }
 
-    //----------------------//
-    // createSystemsBuilder //
-    //----------------------//
-    public void createSystemsBuilder ()
+    //---------------------//
+    // createSystemManager //
+    //---------------------//
+    public void createSystemManager ()
     {
         page.resetSystems();
-        systemsBuilder = new SystemsBuilder(this);
+        systemManager = new SystemManager(this);
     }
 
     //-----------------//
@@ -455,19 +441,6 @@ public class Sheet
         System.out.println("--- SystemInfos end ---");
     }
 
-    //-----------------//
-    // getActiveGlyphs //
-    //-----------------//
-    /**
-     * Export the active glyphs of the vertical lag.
-     *
-     * @return the collection of glyphs for which at least a section is assigned
-     */
-    public Collection<Glyph> getActiveGlyphs ()
-    {
-        return getNest().getActiveGlyphs();
-    }
-
     //-------------//
     // getAssembly //
     //-------------//
@@ -481,17 +454,6 @@ public class Sheet
         return assembly;
     }
 
-    //----------------//
-    // getBarsChecker //
-    //----------------//
-    /**
-     * @return the barsChecker
-     */
-    public BarsChecker getBarsChecker ()
-    {
-        return barsChecker;
-    }
-
     //----------//
     // getBench //
     //----------//
@@ -503,17 +465,6 @@ public class Sheet
     public SheetBench getBench ()
     {
         return bench;
-    }
-
-    //-------------------//
-    // getBoundaryEditor //
-    //-------------------//
-    /**
-     * @return the boundaryEditor
-     */
-    public BoundaryEditor getBoundaryEditor ()
-    {
-        return boundaryEditor;
     }
 
     //----------------//
@@ -690,7 +641,7 @@ public class Sheet
      *
      * @return the nest for glyphs, perhaps null
      */
-    public Nest getNest ()
+    public GlyphNest getNest ()
     {
         return nest;
     }
@@ -698,7 +649,7 @@ public class Sheet
     //------------//
     // createNest //
     //------------//
-    public Nest createNest ()
+    public GlyphNest createNest ()
     {
         // Beware: Glyph nest must subscribe to location before any lag,
         // to allow cleaning up of glyph data, before publication by a lag
@@ -820,29 +771,6 @@ public class Sheet
         return score;
     }
 
-    //-----------------//
-    // getShapedGlyphs //
-    //-----------------//
-    /**
-     * Report the collection of glyphs whose shape is identical to the provided
-     * shape
-     *
-     * @param shape the imposed shape
-     * @return the (perhaps empty) collection of active glyphs with right shape
-     */
-    public Collection<Glyph> getShapedGlyphs (Shape shape)
-    {
-        List<Glyph> found = new ArrayList<>();
-
-        for (Glyph glyph : getActiveGlyphs()) {
-            if (glyph.getShape() == shape) {
-                found.add(glyph);
-            }
-        }
-
-        return found;
-    }
-
     //---------------//
     // getSigManager //
     //---------------//
@@ -924,221 +852,17 @@ public class Sheet
         return systems.get(id - 1);
     }
 
-    //-------------//
-    // getSystemOf //
-    //-------------//
+    //------------------//
+    // getSystemManager //
+    //------------------//
     /**
-     * Report the system info that contains the provided point
+     * Give access to the system manager
      *
-     * @param point the provided pixel point
-     * @return the containing system info
-     *         (or null if there is no enclosing system)
+     * @return the SystemManager instance
      */
-    public SystemInfo getSystemOf (Point point)
+    public SystemManager getSystemManager ()
     {
-        for (SystemInfo system : getSystems()) {
-            SystemBoundary boundary = system.getBoundary();
-
-            if (boundary != null) {
-                if (boundary.contains(point)) {
-                    return system;
-                }
-            } else {
-                // No boundary, system is not fully defined yet
-                // This is used to locate barline, use position wrt top & bottom
-                if (point.y <= system.getBottom()) {
-                    return system;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    //-------------//
-    // getSystemOf //
-    //-------------//
-    /**
-     * Report the system, if any, which contains the provided glyph
-     * (as determined by the first section of the glyph)
-     *
-     * @param glyph the provided glyph
-     * @return the containing system, or null
-     */
-    public SystemInfo getSystemOf (Glyph glyph)
-    {
-        if (glyph.isVirtual() || glyph.getMembers().isEmpty()) {
-            return getSystemOf(glyph.getAreaCenter());
-        } else {
-            SystemInfo system = glyph.getMembers().first().getSystem();
-            if (system != null) {
-                return system;
-            } else {
-                return getSystemOf(glyph.getAreaCenter());
-            }
-        }
-    }
-
-    //-------------//
-    // getSystemOf //
-    //-------------//
-    /**
-     * Report the system, if any, which contains the provided vertical section
-     *
-     * @param section the provided section
-     * @return the containing system, or null
-     */
-    public SystemInfo getSystemOf (Section section)
-    {
-        return section.getSystem();
-    }
-
-    //-------------//
-    // getSystemOf //
-    //-------------//
-    /**
-     * Report the system that contains ALL glyphs provided.
-     * If all glyphs do not belong to the same system, exception is thrown
-     *
-     * @param glyphs the collection of glyphs
-     * @return the containing system
-     * @throws IllegalArgumentException raised if glyphs collection is not OK
-     */
-    public SystemInfo getSystemOf (Collection<Glyph> glyphs)
-    {
-        if ((glyphs == null) || glyphs.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "getSystemOf. Glyphs collection is null or empty");
-        }
-
-        SystemInfo system = null;
-        Collection<Glyph> toRemove = new ArrayList<>();
-
-        for (Glyph glyph : glyphs) {
-            SystemInfo glyphSystem = glyph.isVirtual()
-                    ? getSystemOf(glyph.getAreaCenter())
-                    : getSystemOf(glyph);
-
-            if (glyphSystem == null) {
-                toRemove.add(glyph);
-            } else {
-                if (system == null) {
-                    system = glyphSystem;
-                } else {
-                    // Make sure we are still in the same system
-                    if (glyphSystem != system) {
-                        throw new IllegalArgumentException(
-                                "getSystemOf. Glyphs from different systems ("
-                                + getSystemOf(glyph) + " and " + system + ") "
-                                + Glyphs.toString(glyphs));
-                    }
-                }
-            }
-        }
-
-        if (!toRemove.isEmpty()) {
-            logger.warn("No system for {}", Glyphs.toString(toRemove));
-            glyphs.removeAll(toRemove);
-        }
-
-        return system;
-    }
-
-    //---------------------//
-    // getSystemOfSections //
-    //---------------------//
-    /**
-     * Report the system that contains ALL sections provided.
-     * If all sections do not belong to the same system, exception is thrown
-     *
-     * @param sections the collection of sections
-     * @return the containing system
-     * @throws IllegalArgumentException raised if section collection is not
-     *                                  OK
-     */
-    public SystemInfo getSystemOfSections (Collection<Section> sections)
-    {
-        if ((sections == null) || sections.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "getSystemOfSections. Sections collection is null or empty");
-        }
-
-        SystemInfo system = null;
-        Collection<Section> toRemove = new ArrayList<>();
-
-        for (Section section : sections) {
-            SystemInfo sectionSystem = section.getSystem();
-
-            if (sectionSystem == null) {
-                toRemove.add(section);
-            } else {
-                if (system == null) {
-                    system = sectionSystem;
-                } else {
-                    // Make sure we are still in the same system
-                    if (sectionSystem != system) {
-                        throw new IllegalArgumentException(
-                                "getSystemOfSections. Sections from different systems ("
-                                + section.getSystem() + " and " + system + ") "
-                                + Sections.toString(sections));
-                    }
-                }
-            }
-        }
-
-        if (!toRemove.isEmpty()) {
-            logger.warn("No system for {}", Sections.toString(toRemove));
-            sections.removeAll(toRemove);
-        }
-
-        return system;
-    }
-
-    //-------------------//
-    // getSystemsBuilder //
-    //-------------------//
-    /**
-     * Give access to the builder in charge of bars & systems computation
-     *
-     * @return the builder instance
-     */
-    public SystemsBuilder getSystemsBuilder ()
-    {
-        return systemsBuilder;
-    }
-
-    //----------------//
-    // getSystemsNear //
-    //----------------//
-    /**
-     * Report the ordered list of systems containing or close to the
-     * provided point.
-     *
-     * @param point the provided point
-     * @return a collection of systems ordered by increasing distance from the
-     *         provided point
-     */
-    public List<SystemInfo> getSystemsNear (final Point point)
-    {
-        List<SystemInfo> neighbors = new ArrayList<>(systems);
-        Collections.sort(
-                neighbors,
-                new Comparator<SystemInfo>()
-        {
-            @Override
-            public int compare (SystemInfo s1,
-                                SystemInfo s2)
-            {
-                int y1 = (s1.getTop() + s1.getBottom()) / 2;
-                int d1 = Math.abs(point.y - y1);
-                int y2 = (s2.getTop() + s2.getBottom()) / 2;
-                int d2 = Math.abs(point.y - y2);
-
-                return Integer.signum(d1 - d2);
-            }
-                });
-
-        return neighbors;
+        return systemManager;
     }
 
     //------------------//
@@ -1163,19 +887,6 @@ public class Sheet
     public int getWidth ()
     {
         return picture.getWidth();
-    }
-
-    //---------------------//
-    // hasSystemBoundaries //
-    //---------------------//
-    /**
-     * Report whether the systems have their boundaries defined yet.
-     *
-     * @return true if already defined
-     */
-    public boolean hasSystemBoundaries ()
-    {
-        return hasSystemBoundaries;
     }
 
     //--------//
@@ -1233,28 +944,6 @@ public class Sheet
                 score.close();
             }
         }
-    }
-
-    //----------------//
-    // setBarsChecker //
-    //----------------//
-    /**
-     * @param barsChecker the barsChecker
-     */
-    public void setBarsChecker (BarsChecker barsChecker)
-    {
-        this.barsChecker = barsChecker;
-    }
-
-    //-------------------//
-    // setBoundaryEditor //
-    //-------------------//
-    /**
-     * @param boundaryEditor the boundaryEditor to set
-     */
-    public void setBoundaryEditor (BoundaryEditor boundaryEditor)
-    {
-        this.boundaryEditor = boundaryEditor;
     }
 
     //----------------//
@@ -1344,17 +1033,6 @@ public class Sheet
         this.skew = skew;
     }
 
-    //---------------------//
-    // setSystemBoundaries //
-    //---------------------//
-    /**
-     * Set the flag about systems boundaries.
-     */
-    public void setSystemBoundaries ()
-    {
-        hasSystemBoundaries = true;
-    }
-
     //------------------//
     // setTargetBuilder //
     //------------------//
@@ -1364,115 +1042,6 @@ public class Sheet
     public void setTargetBuilder (TargetBuilder targetBuilder)
     {
         this.targetBuilder = targetBuilder;
-    }
-
-    //----------------//
-    // dispatchGlyphs //
-    //----------------//
-    /**
-     * Dispatch the sheet glyphs among systems
-     *
-     * @param glyphs the collection of glyphs to dispatch among sheet systems.
-     *               If null, the nest glyphs are used.
-     */
-    public void dispatchGlyphs (Collection<Glyph> glyphs)
-    {
-        if (glyphs == null) {
-            glyphs = nest.getActiveGlyphs();
-        }
-
-        // Assign the glyphs to the proper system glyphs collection
-        for (Glyph glyph : glyphs) {
-            if (glyph.isActive()) {
-                SystemInfo system = getSystemOf(glyph);
-
-                if (system != null) {
-                    system.addGlyph(glyph);
-                } else {
-                    glyph.setShape(null);
-                }
-            }
-        }
-    }
-
-    //----------------------------//
-    // dispatchHorizontalSections //
-    //----------------------------//
-    /**
-     * Dispatch the various horizontal sections among systems
-     */
-    public void dispatchHorizontalSections ()
-    {
-        for (SystemInfo system : systems) {
-            system.getMutableHorizontalSections().clear();
-        }
-
-        // Now dispatch the lag sections among the systems
-        for (Section section : getLag(Lags.HLAG).getSections()) {
-            SystemInfo system = getSystemOf(section.getCentroid());
-            // Link section -> system
-            section.setSystem(system);
-
-            if (system != null) {
-                // Link system <>-> section
-                system.getMutableHorizontalSections().add(section);
-            }
-        }
-    }
-
-    //--------------------------------//
-    // dispatchHorizontalHugeSections //
-    //--------------------------------//
-    /**
-     * Dispatch the various horizontal huge sections among systems
-     */
-    public void dispatchHorizontalHugeSections ()
-    {
-        for (SystemInfo system : systems) {
-            system.getMutableHorizontalFullSections().clear();
-        }
-
-        // Now dispatch the lag huge sections among the systems
-        for (Section section : getLag(Lags.FULL_HLAG).getSections()) {
-            SystemInfo system = getSystemOf(section.getCentroid());
-            // Link section -> system
-            section.setSystem(system);
-
-            if (system != null) {
-                // Link system <>-> section
-                system.getMutableHorizontalFullSections().add(section);
-            }
-        }
-    }
-
-    //--------------------------//
-    // dispatchVerticalSections //
-    //--------------------------//
-    /**
-     * Dispatch the various vertical sections among systems
-     */
-    public void dispatchVerticalSections ()
-    {
-        // Take a snapshot of sections collection per system and clear it
-        Map<SystemInfo, Collection<Section>> sections = new HashMap<>();
-        for (SystemInfo system : systems) {
-            Collection<Section> systemSections = system.
-                    getMutableVerticalSections();
-            sections.put(system, new ArrayList<>(systemSections));
-            systemSections.clear();
-        }
-
-        // Now dispatch the lag sections among the systems
-        for (Section section : getLag(Lags.VLAG).getSections()) {
-            SystemInfo system = getSystemOf(section.getCentroid());
-            // Link section -> system
-            section.setSystem(system);
-
-            if (system != null) {
-                // Link system <>-> section
-                system.getMutableVerticalSections().add(section);
-            }
-        }
     }
 
     //----------//
@@ -1524,8 +1093,7 @@ public class Sheet
             gridBuilder = null;
 
             staffManager.reset();
-            barsChecker = null;
-            systemsBuilder = null;
+            systemManager = null;
             symbolsController = null;
             targetBuilder = null;
             symbolsEditor = null;
@@ -1672,22 +1240,19 @@ public class Sheet
             return;
         }
 
-        SystemInfo system = getSystemOf(rect.getLocation());
-        if (system == null) {
-            return;
-        }
+        final List<Inter> inters = new ArrayList<Inter>();
+        for (SystemInfo system : systemManager.getSystemsOf(rect.getLocation())) {
+            SIGraph sig = system.getSig();
 
-        SIGraph sig = system.getSig();
-
-        final List<Inter> inters;
-        if ((rect.width > 0) && (rect.height > 0)) {
-            // This is a non-degenerated rectangle
-            // Look for contained interpretations
-            inters = sig.containedInters(rect);
-        } else {
-            // This is just a point
-            // Look for intersected interpretations
-            inters = sig.containingInters(rect.getLocation());
+            if ((rect.width > 0) && (rect.height > 0)) {
+                // This is a non-degenerated rectangle
+                // Look for contained interpretations
+                inters.addAll(sig.containedInters(rect));
+            } else {
+                // This is just a point
+                // Look for intersected interpretations
+                inters.addAll(sig.containingInters(rect.getLocation()));
+            }
         }
 
         // Publish inters found (perhaps none)

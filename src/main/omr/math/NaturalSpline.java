@@ -21,21 +21,21 @@ import java.awt.geom.QuadCurve2D;
 /**
  * Class {@code NaturalSpline} defines a natural (cubic) spline
  * interpolated on a sequence of knots.
- *
- * <p>Internally the spline is composed of a sequence of curves, one
+ * <p>
+ * Internally the spline is composed of a sequence of curves, one
  * curve between two consecutive knots.
  * Each curve is a bezier curve defined by the 2 related knots separated by 2
  * control points.</p>
- *
- * <p>At each knot, continuity in ensured up to the second derivative.
+ * <p>
+ * At each knot, continuity in ensured up to the second derivative.
  * The second derivative is set to zero at first and last knots of the whole
  * spline.</p>
- *
- * <p>Degenerated cases: When the sequence of knots contains only 3 or 2 points,
+ * <p>
+ * Degenerated cases: When the sequence of knots contains only 3 or 2 points,
  * the spline degenerates to a quadratic or a straight line respectively.
  * If less than two points are provided, the spline cannot be created.</p>
- *
- * <p>Cf <a href="http://www.cse.unsw.edu.au/~lambert/splines/">
+ * <p>
+ * Cf <a href="http://www.cse.unsw.edu.au/~lambert/splines/">
  * http://www.cse.unsw.edu.au/~lambert/splines/</a></p>
  *
  * @author Hervé Bitteur
@@ -50,7 +50,8 @@ public class NaturalSpline
     // NaturalSpline //
     //---------------//
     /**
-     * Creates a new NaturalSpline object from a sequence of connected shapes
+     * Creates a new NaturalSpline object from a sequence of connected 
+     * shapes.
      *
      * @param curves the smooth sequence of shapes (cubic curves expected)
      */
@@ -179,12 +180,12 @@ public class NaturalSpline
             //            double cpy = (yy[1] - (u * u * yy[0]) - (t * t * yy[2])) / 2 * t * u;
             return new NaturalSpline(
                     new QuadCurve2D.Double(
-                    xx[0],
-                    yy[0],
-                    (2 * xx[1]) - ((xx[0] + xx[2]) / 2),
-                    (2 * yy[1]) - ((yy[0] + yy[2]) / 2),
-                    xx[2],
-                    yy[2]));
+                            xx[0],
+                            yy[0],
+                            (2 * xx[1]) - ((xx[0] + xx[2]) / 2),
+                            (2 * yy[1]) - ((yy[0] + yy[2]) / 2),
+                            xx[2],
+                            yy[2]));
         } else {
             // Use a sequence of cubics
             double[] dx = getCubicDerivatives(xx);
@@ -266,6 +267,18 @@ public class NaturalSpline
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    //--------//
+    // toPath //
+    //--------//
+    @Override
+    public GeoPath toPath ()
+    {
+        return this;
+    }
+
+    //------//
+    // xAtY //
+    //------//
     @Override
     public int xAtY (int y)
     {
@@ -276,18 +289,18 @@ public class NaturalSpline
     // xDerivativeAtY //
     //----------------//
     /**
-     * Report the abscissa derivative value of the spline at provided ordinate
-     * (assuming true function)
+     * Report the abscissa derivative value of the spline at provided
+     * ordinate (assuming true function).
      *
      * @param y the provided ordinate
      * @return the x derivative value at this ordinate
      */
     public double xDerivativeAtY (double y)
     {
-        final double[] buffer = new double[6];
+        final double[] coords = new double[6];
         final Point2D.Double p1 = new Point2D.Double();
         final Point2D.Double p2 = new Point2D.Double();
-        final int segmentKind = getYSegment(y, buffer, p1, p2);
+        final int segmentKind = getYSegment(y, coords, p1, p2);
         final double deltaY = p2.y - p1.y;
         final double t = (y - p1.y) / deltaY;
         final double u = 1 - t;
@@ -299,15 +312,15 @@ public class NaturalSpline
             return (p2.x - p1.x) / deltaY;
 
         case SEG_QUADTO: {
-            double cpx = buffer[0];
+            double cpx = coords[0];
 
             return ((-2 * p1.x * u) + (2 * cpx * (1 - (2 * t)))
                     + (2 * p2.x * t)) / deltaY;
         }
 
         case SEG_CUBICTO: {
-            double cpx1 = buffer[0];
-            double cpx2 = buffer[2];
+            double cpx1 = coords[0];
+            double cpx2 = coords[2];
 
             return ((-3 * p1.x * u * u) + (3 * cpx1 * ((u * u) - (2 * u * t)))
                     + (3 * cpx2 * ((2 * t * u) - (t * t))) + (3 * p2.x * t * t)) / deltaY;
@@ -331,8 +344,8 @@ public class NaturalSpline
     // yDerivativeAtX //
     //----------------//
     /**
-     * Report the ordinate derivative value of the spline at provided abscissa
-     * (assuming true function)
+     * Report the ordinate derivative value of the spline at provided
+     * abscissa (assuming true function).
      *
      * @param x the provided abscissa
      * @return the y derivative value at this abscissa
@@ -377,8 +390,8 @@ public class NaturalSpline
     // getCubicDerivatives //
     //---------------------//
     /**
-     * Computes the derivatives of natural cubic spline that interpolates the
-     * provided knots
+     * Computes the derivatives of natural cubic spline that
+     * interpolates the provided knots
      *
      * @param z the provided n knots
      * @return the corresponding array of derivative values
@@ -391,15 +404,18 @@ public class NaturalSpline
         // Compute the derivative at each provided knot
         double[] D = new double[n + 1];
 
-        /* Equation to solve:
-         * [2 1 ] [D[0]] [3(z[1] - z[0]) ]
-         * |1 4 1 | |D[1]| |3(z[2] - z[0]) |
-         * | 1 4 1 | | . | = | . |
-         * | ..... | | . | | . |
-         * | 1 4 1| | . | |3(z[n] - z[n-2])|
-         * [ 1 2] [D[n]] [3(z[n] - z[n-1])]
+        /**
+         * <pre>
+         * Equation to solve.
+         *       [2 1       ] [D[0]]   [3(z[1] - z[0])  ]
+         *       |1 4 1     | |D[1]|   |3(z[2] - z[0])  |
+         *       |  1 4 1   | | .  | = |      .         |
+         *       |    ..... | | .  |   |      .         |
+         *       |     1 4 1| | .  |   |3(z[n] - z[n-2])|
+         *       [       1 2] [D[n]]   [3(z[n] - z[n-1])]
+         * </pre>
          * by using row operations to convert the matrix to upper triangular
-         * and then back sustitution.
+         * and then back substitution.
          */
         double[] gamma = new double[n + 1];
         gamma[0] = 1.0f / 2.0f;

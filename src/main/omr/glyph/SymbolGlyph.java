@@ -91,7 +91,7 @@ public class SymbolGlyph
 
         // Retrieve the whole glyph made of all sections
         for (Section section : iLag.getSections()) {
-            addSection(section, Glyph.Linking.LINK_BACK);
+            addSection(section, Glyph.Linking.LINK);
         }
 
         // Glyph features

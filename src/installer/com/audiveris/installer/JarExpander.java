@@ -46,6 +46,7 @@ public class JarExpander
     private static final Logger logger = LoggerFactory.getLogger(
             JarExpander.class);
 
+    //~ Instance fields --------------------------------------------------------
     /** Jar file. */
     private final JarFile jar;
 
@@ -74,8 +75,11 @@ public class JarExpander
         this.sourceFolder = sourceFolder;
         this.targetFolder = targetFolder;
 
-        logger.debug("From jar {} expanding {} entries to folder {}",
-                jar.getName(), sourceFolder, targetFolder);
+        logger.debug(
+                "From jar {} expanding {} entries to folder {}",
+                jar.getName(),
+                sourceFolder,
+                targetFolder);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -91,20 +95,22 @@ public class JarExpander
     {
         // Retrieve source entries in jar file
         List<String> sources = getSourceEntries();
+
         if (sources.isEmpty()) {
             logger.warn("No sources for folder {}", sourceFolder);
+
             return 0;
         }
 
         // Compare file by file, and update if necessary
         int copied = 0; // Number of entries copied
+
         for (String source : sources) {
             copied += process(source);
         }
 
         if (copied != 0) {
-            logger.info("Installation of '{}' folder. {} entries copied to {}",
-                    sourceFolder, copied, targetFolder);
+            logger.info("{} entries copied to {}", copied, targetFolder);
         }
 
         return copied;
@@ -121,17 +127,20 @@ public class JarExpander
      */
     private List<String> getSourceEntries ()
     {
-        final List<String> found = new ArrayList<>();
+        final List<String> found = new ArrayList<String>();
         final Enumeration<JarEntry> entries = jar.entries();
         final String prefix = sourceFolder.isEmpty() ? ""
-                : sourceFolder.endsWith("/") ? sourceFolder : sourceFolder + "/";
+                : (sourceFolder.endsWith("/")
+                ? sourceFolder
+                : (sourceFolder + "/"));
         logger.debug("Prefix is '{}'", prefix);
 
         // If sourceFolder == "" we take all rooted files, 
         // excluding the manifest stuff: META-INF/...
-
         while (entries.hasMoreElements()) {
-            final String entry = entries.nextElement().getName();
+            final String entry = entries.nextElement()
+                    .getName();
+
             if (prefix.isEmpty()) {
                 // Just skip the meta inf stuff
                 if (entry.startsWith("META-INF")) {
@@ -176,10 +185,12 @@ public class JarExpander
                     } else {
                         logger.trace("Directory {} exists", target);
                     }
+
                     return 0;
                 } else {
                     Files.createDirectories(target);
                     logger.trace("Created dir {}", target);
+
                     return 1;
                 }
             } else {
@@ -190,8 +201,10 @@ public class JarExpander
                     // Compare date
                     FileTime sourceTime = FileTime.fromMillis(entry.getTime());
                     FileTime targetTime = Files.getLastModifiedTime(target);
+
                     if (targetTime.compareTo(sourceTime) >= 0) {
                         logger.trace("Target {} is up to date", target);
+
                         return 0;
                     }
                 }
@@ -206,6 +219,7 @@ public class JarExpander
             }
         } catch (IOException ex) {
             logger.warn("IOException on " + target, ex);
+
             return 0;
         }
     }

@@ -240,9 +240,9 @@ public class BasicLag
         return orientation.isVertical();
     }
 
-    //---------------------------//
+    //---------------------//
     // intersectedSections //
-    //---------------------------//
+    //---------------------//
     @Override
     public Set<Section> intersectedSections (Rectangle rect)
     {

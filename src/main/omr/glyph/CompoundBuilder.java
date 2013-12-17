@@ -43,7 +43,7 @@ public class CompoundBuilder
             CompoundBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
-    /** Dedicated system */
+    /** Dedicated system. */
     protected final SystemInfo system;
 
     //~ Constructors -----------------------------------------------------------
@@ -111,11 +111,13 @@ public class CompoundBuilder
                         Glyphs.toString(neighbors), seed);
             }
 
-            Glyph compound = system.buildTransientCompound(neighbors);
+            GlyphNest nest = system.getSheet().getNest();
+            Glyph compound = nest.buildGlyph(neighbors, false, Glyph.Linking.NO_LINK);
 
             if (adapter.isCompoundValid(compound)) {
                 // Assign and insert into system & nest environments
-                compound = system.addGlyph(compound);
+                compound = nest.registerGlyph(compound);
+                compound = system.registerGlyph(compound); // Add
                 compound.setEvaluation(adapter.getChosenEvaluation());
 
                 logger.debug("Compound #{} built as {}",
@@ -302,7 +304,7 @@ public class CompoundBuilder
     // NoAdapter //
     //-----------//
     /**
-     * A passthrough fake adapter.
+     * A pass-through fake adapter.
      */
     public static class NoAdapter
             extends AbstractAdapter

@@ -14,6 +14,7 @@ package omr.score.ui;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
 
+import omr.grid.FilamentLine;
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
 
@@ -105,38 +106,6 @@ public class BarPainter
     }
 
     //~ Methods ----------------------------------------------------------------
-    //------//
-    // draw //
-    //------//
-    /**
-     * Perform the drawing of the barline structure.
-     *
-     * @param g         graphics context
-     * @param topCenter center on top line
-     * @param botCenter center on bottom line
-     * @param part      containing part
-     */
-    public void draw (Graphics2D g,
-                      Point2D topCenter,
-                      Point2D botCenter,
-                      SystemPart part)
-    {
-        double offset = -getGlobalWidth() / 2;
-        BarItem prev = null;
-
-        for (BarItem item : items) {
-            // Translate to beginning of current item
-            offset += gap(prev, item);
-
-            // Draw current item
-            item.draw(g, topCenter, botCenter, part, offset);
-
-            // Move to end of current item
-            offset += item.width;
-            prev = item;
-        }
-    }
-
     //
     //---------------//
     // getBarPainter //
@@ -180,6 +149,38 @@ public class BarPainter
             logger.error("Illegal barline shape " + shape);
 
             return null;
+        }
+    }
+
+    //------//
+    // draw //
+    //------//
+    /**
+     * Perform the drawing of the barline structure.
+     *
+     * @param g         graphics context
+     * @param topCenter center on top line
+     * @param botCenter center on bottom line
+     * @param part      containing part
+     */
+    public void draw (Graphics2D g,
+                      Point2D topCenter,
+                      Point2D botCenter,
+                      SystemPart part)
+    {
+        double offset = -getGlobalWidth() / 2;
+        BarItem prev = null;
+
+        for (BarItem item : items) {
+            // Translate to beginning of current item
+            offset += gap(prev, item);
+
+            // Draw current item
+            item.draw(g, topCenter, botCenter, part, offset);
+
+            // Move to end of current item
+            offset += item.width;
+            prev = item;
         }
     }
 
@@ -270,7 +271,6 @@ public class BarPainter
             //                    botCenter.getX() + il * (offset + width / 2),
             //                    botCenter.getY()));
             //            g.draw(line);
-
             // Use a polygon (no need to play with clipping)
             Polygon poly = new Polygon();
             poly.addPoint(
@@ -323,9 +323,10 @@ public class BarPainter
             for (StaffInfo staff : part.getInfo()
                     .getStaves()) {
                 // Compute staff-based center
-                List<LineInfo> lines = staff.getLines();
+                List<FilamentLine> lines = staff.getLines();
                 LineInfo staffMidLine = lines.get(lines.size() / 2);
-                Point2D inter = staffMidLine.verticalIntersection(bar);
+                Point2D inter = staffMidLine.verticalIntersection(
+                        bar);
 
                 // Draw each point
                 int scaledWidth = (int) Math.rint(il * width);

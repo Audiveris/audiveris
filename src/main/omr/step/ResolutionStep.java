@@ -50,7 +50,7 @@ public class ResolutionStep
     public void doSystem (SystemInfo system)
             throws StepException
     {
-        system.sigResolver.solve();
+        system.sigSolver.solve();
     }
 
     @Override

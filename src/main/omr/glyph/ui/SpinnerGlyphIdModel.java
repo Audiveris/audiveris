@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.Nest;
+import omr.glyph.GlyphNest;
 import omr.glyph.facets.Glyph;
 import static omr.ui.field.SpinnerUtil.*;
 
@@ -22,7 +22,7 @@ import javax.swing.AbstractSpinnerModel;
 
 /**
  * Class {@code SpinnerGlyphIdModel} is a simple spinner model backed
- * by a {@link Nest} and using natural glyph id sequence.
+ * by a {@link GlyphNest} and using natural glyph id sequence.
  *
  * @author Hervé Bitteur
  */
@@ -36,7 +36,7 @@ public class SpinnerGlyphIdModel
 
     //~ Instance fields --------------------------------------------------------
     /** Underlying glyph nest */
-    private final Nest nest;
+    private final GlyphNest nest;
 
     /** Current glyph id */
     private int currentId = NO_VALUE;
@@ -47,7 +47,7 @@ public class SpinnerGlyphIdModel
      *
      * @param nest the underlying glyph nest
      */
-    public SpinnerGlyphIdModel (Nest nest)
+    public SpinnerGlyphIdModel (GlyphNest nest)
     {
         this.nest = nest;
     }

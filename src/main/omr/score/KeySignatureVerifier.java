@@ -14,6 +14,7 @@ package omr.score;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
+import omr.glyph.GlyphNest;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
@@ -133,21 +134,26 @@ public class KeySignatureVerifier
             return null;
         }
 
-        Glyph compound = systemInfo.buildTransientCompound(glyphs);
+        GlyphNest nest = systemInfo.getSheet()
+                .getNest();
+        Glyph compound = nest.buildGlyph(
+                glyphs,
+                false,
+                Glyph.Linking.NO_LINK);
 
         // Check if a proper key sig appears in the top evaluations
         Evaluation vote = GlyphNetwork.getInstance()
                 .rawVote(
-                compound,
-                Grades.keySigMinGrade,
-                new Predicate<Shape>()
-        {
-            @Override
-            public boolean check (Shape shape)
-            {
-                return shape == bestKey.getShape();
-            }
-        });
+                        compound,
+                        Grades.keySigMinGrade,
+                        new Predicate<Shape>()
+                {
+                    @Override
+                    public boolean check (Shape shape)
+                    {
+                        return shape == bestKey.getShape();
+                    }
+                        });
 
         if (vote != null) {
             // We now have a key sig!
@@ -155,7 +161,7 @@ public class KeySignatureVerifier
                     "{} built from {}",
                     vote.shape,
                     Glyphs.toString(glyphs));
-            compound = systemInfo.addGlyph(compound);
+            compound = systemInfo.registerGlyph(compound);
             compound.setShape(vote.shape, Evaluation.ALGORITHM);
 
             return compound;
@@ -259,7 +265,7 @@ public class KeySignatureVerifier
                 // We now must find a key sig out of these glyphs
                 Collection<Glyph> glyphs = system.getInfo()
                         .lookupIntersectedGlyphs(
-                        inner);
+                                inner);
 
                 Glyph compound = checkKeySig(glyphs, bestKey);
 
@@ -299,7 +305,7 @@ public class KeySignatureVerifier
             if (systemStaffIndex < staffOffset) {
                 return (Staff) part.getStaves()
                         .get(
-                        (partStaffNb + systemStaffIndex) - staffOffset);
+                                (partStaffNb + systemStaffIndex) - staffOffset);
             }
         }
 

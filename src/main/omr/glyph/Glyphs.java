@@ -188,16 +188,16 @@ public class Glyphs
         return box;
     }
 
-    //----------------------------//
-    // getReverseLengthComparator //
-    //----------------------------//
+    //-----------------//
+    // byReverseLength //
+    //-----------------//
     /**
      * For comparing glyph instances on decreasing length.
      *
      * @param orientation the desired orientation reference
      * @return the comparator
      */
-    public static Comparator<Glyph> getReverseLengthComparator (
+    public static Comparator<Glyph> byReverseLength (
             final Orientation orientation)
     {
         return new Comparator<Glyph>()

@@ -179,7 +179,7 @@ public class ScaleBuilder
                 horiHistoKeeper.writePlot();
             }
         } else {
-            logger.warn("No scale data available");
+            logger.info("No scale data available yet");
         }
     }
 
@@ -889,6 +889,16 @@ public class ScaleBuilder
             }
 
             dataset.addSeries(series);
+
+            // Derivative (just a try)
+            XYSeries derivative = new XYSeries("Derivative");
+            derivative.add(0, 0);
+
+            for (int i = 1; i <= upper; i++) {
+                derivative.add(i, values[i] - values[i - 1]);
+            }
+
+            dataset.addSeries(derivative);
         }
     }
 

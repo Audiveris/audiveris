@@ -53,7 +53,7 @@ public class TemplateFactory
             TemplateFactory.class);
 
     /** Singleton. */
-    private static TemplateFactory INSTANCE = new TemplateFactory();
+    private static final TemplateFactory INSTANCE = new TemplateFactory();
 
     /** Color for foreground pixels. */
     private static final int BLACK = Color.BLACK.getRGB();

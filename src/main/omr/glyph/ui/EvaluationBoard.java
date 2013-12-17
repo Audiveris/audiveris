@@ -53,9 +53,10 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import omr.sheet.SystemManager;
 
 /**
- * Class {@code EvaluationBoard} is a board dedicated to the 
+ * Class {@code EvaluationBoard} is a board dedicated to the
  * display of evaluation results performed by an evaluator.
  * It also provides through buttons the ability to manually assign a shape to
  * the glyph at hand.
@@ -166,28 +167,28 @@ class EvaluationBoard
         } else {
             if (evaluator != null) {
                 if (useAnnotations) {
-                    SystemInfo system = sheet.getSystemOf(glyph);
-
-                    if (system != null) {
+                    SystemManager systemManager = sheet.getSystemManager();
+                    for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
                         selector.setEvals(
                                 evaluator.evaluate(
-                                glyph,
-                                system,
-                                selector.evalCount(),
-                                constants.minGrade.getValue(),
-                                EnumSet.of(ShapeEvaluator.Condition.CHECKED),
-                                null),
+                                        glyph,
+                                        system,
+                                        selector.evalCount(),
+                                        constants.minGrade.getValue(),
+                                        EnumSet.of(ShapeEvaluator.Condition.CHECKED),
+                                        null),
                                 glyph);
+                        return;
                     }
                 } else {
                     selector.setEvals(
                             evaluator.evaluate(
-                            glyph,
-                            null,
-                            selector.evalCount(),
-                            constants.minGrade.getValue(),
-                            ShapeEvaluator.NO_CONDITIONS,
-                            null),
+                                    glyph,
+                                    null,
+                                    selector.evalCount(),
+                                    constants.minGrade.getValue(),
+                                    ShapeEvaluator.NO_CONDITIONS,
+                                    null),
                             glyph);
                 }
             }
@@ -473,9 +474,9 @@ class EvaluationBoard
                 // Barred on non-barred button
                 buttons.get(i)
                         .setEval(
-                        eval,
-                        glyph.isShapeForbidden(eval.shape),
-                        enabled);
+                                eval,
+                                glyph.isShapeForbidden(eval.shape),
+                                enabled);
             }
 
             // Zero the remaining buttons

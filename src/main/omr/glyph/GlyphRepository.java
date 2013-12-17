@@ -55,7 +55,8 @@ import javax.xml.bind.Unmarshaller;
  * Class {@code GlyphRepository} handles the store of known glyphs,
  * across multiple sheets (and possibly multiple runs).
  *
- * <p> A glyph is known by its full name, whose standard format is
+ * <p>
+ * A glyph is known by its full name, whose standard format is
  * <B>sheetName/Shape.id.xml</B>, regardless of the area it is stored (this may
  * be the <I>core</I> area or the global <I>sheets</I> area augmented by the
  * <I>samples</I> area).
@@ -63,10 +64,12 @@ import javax.xml.bind.Unmarshaller;
  * in that case its full name is the similar formats <B>icons/Shape.xml</B> or
  * <B>icons/Shape.nn.xml</B> where "nn" is a differentiating number.
  *
- * <p> The repository handles a private map of all deserialized glyphs so far,
+ * <p>
+ * The repository handles a private map of all deserialized glyphs so far,
  * since the deserialization is a rather expensive operation.
  *
- * <p> It handles two bases : the "whole base" (all glyphs from sheets and
+ * <p>
+ * It handles two bases : the "whole base" (all glyphs from sheets and
  * samples folders) and the "core base" (just the glyphs of the core, which is
  * built as a selected subset of the whole base).
  * These bases are accessible respectively by {@link #getWholeBase} and
@@ -464,7 +467,8 @@ public class GlyphRepository
      * We store glyph for which Shape is not null, and different from NOISE and
      * STEM (CLUTTER is thus stored as well).
      *
-     * <p>STRUCTURE shapes are stored in a parallel sub-directory so that they
+     * <p>
+     * STRUCTURE shapes are stored in a parallel sub-directory so that they
      * don't get erased by shapes of their leaves.
      *
      * @param sheet           the sheet whose glyphs are to be stored
@@ -487,11 +491,13 @@ public class GlyphRepository
         // Now record each relevant glyph
         int glyphNb = 0;
 
-        for (Glyph glyph : sheet.getActiveGlyphs()) {
-            Shape shape = getRecordableShape(glyph);
+        for (GlyphLayer layer : GlyphLayer.concreteValues()) {
+            for (Glyph glyph : sheet.getNest().getGlyphs(layer)) {
+                Shape shape = getRecordableShape(glyph);
 
-            if (shape != null) {
-                glyphNb += recordGlyph(glyph, shape, sheetDir);
+                if (shape != null) {
+                    glyphNb += recordGlyph(glyph, shape, sheetDir);
+                }
             }
         }
 
@@ -580,8 +586,8 @@ public class GlyphRepository
             final boolean isIcon = isIcon(gName);
             final File source = isIcon
                     ? new File(
-                    WellKnowns.SYMBOLS_FOLDER.getParentFile(),
-                    gName) : new File(WellKnowns.TRAIN_FOLDER, gName);
+                            WellKnowns.SYMBOLS_FOLDER.getParentFile(),
+                            gName) : new File(WellKnowns.TRAIN_FOLDER, gName);
 
             final File target = new File(coreFolder, gName);
             target.getParentFile().mkdirs();
@@ -697,7 +703,7 @@ public class GlyphRepository
                     InputStream is = new FileInputStream(file);
                     SymbolGlyphDescriptor desc = SymbolGlyphDescriptor.
                             loadFromXmlStream(
-                            is);
+                                    is);
                     is.close();
 
                     logger.debug("Descriptor {}", desc);

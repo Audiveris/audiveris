@@ -15,10 +15,9 @@ import omr.Main;
 
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
+import omr.glyph.facets.GlyphComposition;
 
 import omr.grid.StaffInfo;
-
-import omr.lag.Section;
 
 import omr.score.ui.ScoreActions;
 
@@ -37,7 +36,8 @@ import java.util.Collection;
  * Class {@code GlyphsModel} is a common model for synchronous glyph
  * and section handling.
  *
- * <p>Nota: User gesture should trigger actions in GlyphsController which will
+ * <p>
+ * Nota: User gesture should trigger actions in GlyphsController which will
  * asynchronously delegate to this model.
  *
  * @author Hervé Bitteur
@@ -47,11 +47,13 @@ public class GlyphsModel
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(GlyphsModel.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+        GlyphsModel.class);
 
     //~ Instance fields --------------------------------------------------------
+
     /** Underlying glyph nest */
-    protected final Nest nest;
+    protected final GlyphNest nest;
 
     /** Related Sheet */
     protected final Sheet sheet;
@@ -63,6 +65,7 @@ public class GlyphsModel
     protected Shape latestShape;
 
     //~ Constructors -----------------------------------------------------------
+
     //-------------//
     // GlyphsModel //
     //-------------//
@@ -73,16 +76,16 @@ public class GlyphsModel
      * @param nest  the related nest (cannot be null)
      * @param step  the step after which update should be perform (can be null)
      */
-    public GlyphsModel (Sheet sheet,
-                        Nest nest,
-                        Step step)
+    public GlyphsModel (Sheet     sheet,
+                        GlyphNest nest,
+                        Step      step)
     {
         // Null sheet is allowed (for GlyphVerifier use)
         this.sheet = sheet;
 
         if (nest == null) {
             throw new IllegalArgumentException(
-                    "Attempt to create a GlyphsModel with null underlying nest");
+                "Attempt to create a GlyphsModel with null underlying nest");
         } else {
             this.nest = nest;
         }
@@ -91,6 +94,7 @@ public class GlyphsModel
     }
 
     //~ Methods ----------------------------------------------------------------
+
     //--------------//
     // assignGlyphs //
     //--------------//
@@ -104,61 +108,23 @@ public class GlyphsModel
      * @param grade    the grade we have wrt the assigned shape
      */
     public void assignGlyphs (Collection<Glyph> glyphs,
-                              Shape shape,
-                              boolean compound,
-                              double grade)
+                              Shape             shape,
+                              boolean           compound,
+                              double            grade)
     {
         if (compound) {
             // Build & insert one compound
-            Glyph glyph;
-
-            SystemInfo system = sheet.getSystemOf(glyphs);
-
-            if (system != null) {
-                glyph = system.buildTransientCompound(glyphs);
-            } else {
-                glyph = new BasicGlyph(sheet.getScale().getInterline(), GlyphLayer.DEFAULT);
-
-                for (Glyph g : glyphs) {
-                    glyph.stealSections(g);
-
-                    if (glyph.getNest() == null) {
-                        glyph.setNest(g.getNest());
-                    }
-                }
-            }
+            Glyph glyph = nest.buildGlyph(glyphs, true, Glyph.Linking.LINK);
 
             assignGlyph(glyph, shape, grade);
         } else {
             // Assign each glyph individually
-            for (Glyph glyph : new ArrayList<>(glyphs)) {
+            for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
                 if (glyph.getShape() != Shape.NOISE) {
                     assignGlyph(glyph, shape, grade);
                 }
             }
         }
-    }
-
-    //----------------//
-    // assignSections //
-    //----------------//
-    /**
-     * Assign a shape to the selected collection of sections.
-     *
-     * @param sections the collection of sections to be aggregated as a glyph
-     * @param shape    the shape to be assigned
-     * @param grade    the grade we have wrt the assigned shape
-     * @return the newly built glyph
-     */
-    public Glyph assignSections (Collection<Section> sections,
-                                 Shape shape,
-                                 double grade)
-    {
-        // Build & insert one glyph out of the sections
-        SystemInfo system = sections.iterator().next().getSystem();
-        Glyph glyph = system.buildGlyph(sections);
-
-        return assignGlyph(glyph, shape, grade);
     }
 
     //----------------//
@@ -171,7 +137,7 @@ public class GlyphsModel
      */
     public void deassignGlyphs (Collection<Glyph> glyphs)
     {
-        for (Glyph glyph : new ArrayList<>(glyphs)) {
+        for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
             deassignGlyph(glyph);
         }
     }
@@ -181,7 +147,7 @@ public class GlyphsModel
     //--------------//
     public void deleteGlyphs (Collection<Glyph> glyphs)
     {
-        for (Glyph glyph : new ArrayList<>(glyphs)) {
+        for (Glyph glyph : new ArrayList<Glyph>(glyphs)) {
             deleteGlyph(glyph);
         }
     }
@@ -222,7 +188,7 @@ public class GlyphsModel
      *
      * @return the related glyph nest
      */
-    public Nest getNest ()
+    public GlyphNest getNest ()
     {
         return nest;
     }
@@ -282,44 +248,51 @@ public class GlyphsModel
      * @param grade the grade about shape
      * @return the assigned glyph (perhaps an original glyph)
      */
-    protected Glyph assignGlyph (Glyph glyph,
-                                 Shape shape,
+    protected Glyph assignGlyph (Glyph  glyph,
+                                 Shape  shape,
                                  double grade)
     {
-        if (glyph == null) {
-            return null;
-        }
-
-        if (shape != null) {
-            SystemInfo system = sheet.getSystemOf(glyph);
-
-            if (system != null) {
-                glyph = system.addGlyph(glyph); // System then nest
-            } else {
-                // Insert in nest directly, which assigns an id to the glyph
-                glyph = nest.addGlyph(glyph);
-            }
-
-            boolean isTransient = glyph.isTransient();
-            logger.debug("Assign {}{} to {}",
-                    isTransient ? "compound " : "", glyph.idString(), shape);
-
-            // Remember the latest shape assigned
-            setLatestShape(shape);
-        }
-
-        // Do the assignment of the shape to the glyph
-        glyph.setShape(shape, grade);
-
-        // Should we persist the assigned glyph?
-        if ((shape != null)
-            && (grade == Evaluation.MANUAL)
-            && (Main.getGui() != null)
-            && ScoreActions.getInstance().isManualPersisted()) {
-            // Record the glyph description to disk
-            GlyphRepository.getInstance().recordOneGlyph(glyph, sheet);
-        }
-
+        logger.error("No yet implemented");
+        
+//        if (glyph == null) {
+//            return null;
+//        }
+//
+//        if (shape != null) {
+//            SystemInfo system = sheet.getSystemOf(glyph);
+//
+//            if (system != null) {
+//                glyph = system.registerGlyph(glyph); // System then nest
+//            } else {
+//                // Insert in nest directly, which assigns an id to the glyph
+//                glyph = nest.registerGlyph(glyph);
+//            }
+//
+//            boolean isTransient = glyph.isTransient();
+//            logger.debug(
+//                "Assign {}{} to {}",
+//                isTransient ? "compound " : "",
+//                glyph.idString(),
+//                shape);
+//
+//            // Remember the latest shape assigned
+//            setLatestShape(shape);
+//        }
+//
+//        // Do the assignment of the shape to the glyph
+//        glyph.setShape(shape, grade);
+//
+//        // Should we persist the assigned glyph?
+//        if ((shape != null) &&
+//            (grade == Evaluation.MANUAL) &&
+//            (Main.getGui() != null) &&
+//            ScoreActions.getInstance()
+//                        .isManualPersisted()) {
+//            // Record the glyph description to disk
+//            GlyphRepository.getInstance()
+//                           .recordOneGlyph(glyph, sheet);
+//        }
+//
         return glyph;
     }
 
@@ -342,30 +315,31 @@ public class GlyphsModel
     //-------------//
     protected void deleteGlyph (Glyph glyph)
     {
-        if (glyph == null) {
-            return;
-        }
-
-        if (!glyph.isVirtual()) {
-            logger.warn("Attempt to delete non-virtual {}", glyph.idString());
-
-            return;
-        }
-
-
-        SystemInfo system = sheet.getSystemOf(glyph);
-
-        // Special case for ledger glyph
-        if (glyph.getShape() == Shape.LEDGER) {
-            StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
-            ///staff.removeLedger(glyph);
-            //TODO: handle a LedgerInter instead!
-        }
-
-        if (system != null) {
-            system.removeGlyph(glyph);
-        }
-
-        nest.removeVirtualGlyph((VirtualGlyph) glyph);
+        logger.error("No yet implemented");
+//        if (glyph == null) {
+//            return;
+//        }
+//
+//        if (!glyph.isVirtual()) {
+//            logger.warn("Attempt to delete non-virtual {}", glyph.idString());
+//
+//            return;
+//        }
+//
+//        SystemInfo system = sheet.getSystemOf(glyph);
+//
+//        // Special case for ledger glyph
+//        if (glyph.getShape() == Shape.LEDGER) {
+//            StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
+//
+//            ///staff.removeLedger(glyph);
+//            //TODO: handle a LedgerInter instead!
+//        }
+//
+//        if (system != null) {
+//            system.removeGlyph(glyph);
+//        }
+//
+//        nest.removeGlyph(glyph);
     }
 }

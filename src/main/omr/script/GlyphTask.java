@@ -29,6 +29,7 @@ import java.util.TreeSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import omr.sheet.SystemManager;
 
 /**
  * Class {@code GlyphTask} handles a collection of glyphs.
@@ -219,20 +220,19 @@ public abstract class GlyphTask
     protected SortedSet<SystemInfo> retrieveCurrentImpact (Sheet sheet)
     {
         SortedSet<SystemInfo> impactedSystems = new TreeSet<>();
+        SystemManager systemManager = sheet.getSystemManager();
 
         for (Glyph glyph : glyphs) {
-            SystemInfo system = sheet.getSystemOf(glyph);
-
-            if (system != null) {
-                impactedSystems.add(system);
-            }
-
             if (glyph != null) {
-                Shape shape = glyph.getShape();
+                for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+                    impactedSystems.add(system);
 
-                if ((shape != null) && shape.isPersistent()) {
-                    // Include all following systems
-                    impactedSystems.addAll(remaining(system));
+                    Shape shape = glyph.getShape();
+
+                    if ((shape != null) && shape.isPersistent()) {
+                        // Include all following systems
+                        impactedSystems.addAll(remaining(system));
+                    }
                 }
             }
         }

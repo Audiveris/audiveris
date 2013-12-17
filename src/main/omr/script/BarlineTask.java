@@ -14,23 +14,16 @@ package omr.script;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.grid.GridBuilder;
-
 import omr.sheet.Sheet;
 
-import omr.step.Stepping;
-import omr.step.Steps;
-
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * Class {@code BarlineTask} assigns (or deassigns) a barline shape to
  * a collection of glyphs.
  *
- * <p>If the compound flag is set, a compound glyph is composed from the
+ * <p>
+ * If the compound flag is set, a compound glyph is composed from the
  * provided glyphs and assigned the shape. Otherwise, each provided glyph is
  * assigned the shape.</p>
  *
@@ -92,7 +85,8 @@ public class BarlineTask
     /**
      * The amount or work depends on what is impacted by the barline(s)
      * assignment or deassignment.
-     * <p>If the modifications do not concern system-defining barlines but only
+     * <p>
+     * If the modifications do not concern system-defining barlines but only
      * measure or parts, the systems limits are not impacted.
      * Otherwise, the whole systems structure has to be redone ...!!!!
      *
@@ -101,36 +95,36 @@ public class BarlineTask
     @Override
     public void epilog (Sheet sheet)
     {
-        try {
-            GridBuilder gridBuilder = sheet.getGridBuilder();
-
-            if (getAssignedShape() != null) {
-                // Assignment
-                if (isCompound()) {
-                    Glyph firstGlyph = glyphs.iterator()
-                            .next();
-                    Glyph compound = firstGlyph.getMembers()
-                            .first()
-                            .getGlyph();
-                    gridBuilder.updateBars(glyphs, Arrays.asList(compound));
-                } else {
-                    gridBuilder.updateBars(glyphs, glyphs);
-                }
-            } else {
-                // Deassignment
-                Set<Glyph> emptySet = Collections.emptySet();
-                gridBuilder.updateBars(glyphs, emptySet);
-            }
-
-            // Following steps
-            Stepping.reprocessSheet(
-                    Steps.valueOf(Steps.SYSTEMS),
-                    sheet,
-                    sheet.getSystems(),
-                    false);
-        } catch (Exception ex) {
-            logger.warn("Error in BarlineTask", ex);
-        }
+        //        try {
+        //            GridBuilder gridBuilder = sheet.getGridBuilder();
+        //
+        //            if (getAssignedShape() != null) {
+        //                // Assignment
+        //                if (isCompound()) {
+        //                    Glyph firstGlyph = glyphs.iterator()
+        //                            .next();
+        //                    Glyph compound = firstGlyph.getMembers()
+        //                            .first()
+        //                            .getGlyph();
+        //                    gridBuilder.updateBars(glyphs, Arrays.asList(compound));
+        //                } else {
+        //                    gridBuilder.updateBars(glyphs, glyphs);
+        //                }
+        //            } else {
+        //                // Deassignment
+        //                Set<Glyph> emptySet = Collections.emptySet();
+        //                gridBuilder.updateBars(glyphs, emptySet);
+        //            }
+        //
+        //            // Following steps
+        //            Stepping.reprocessSheet(
+        //                    Steps.valueOf(Steps.SYSTEMS),
+        //                    sheet,
+        //                    sheet.getSystems(),
+        //                    false);
+        //        } catch (Exception ex) {
+        //            logger.warn("Error in BarlineTask", ex);
+        //        }
     }
 
     //-----------------//

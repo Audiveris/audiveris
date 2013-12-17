@@ -99,7 +99,7 @@ public class BorderBuilder
     private Limit botLimit;
 
     /** Free blobs. */
-    private List<GlyphRect> blobs = new ArrayList<>();
+    private final List<GlyphRect> blobs = new ArrayList<GlyphRect>();
 
     /** Has the user been warned about a closed border?. */
     private boolean userWarned;
@@ -178,12 +178,7 @@ public class BorderBuilder
                     return true;
                 }
 
-                // Purge too light glyphs
-                if (glyph.getWeight() < minGlyphWeight) {
-                    return true;
-                }
-
-                return false;
+                return glyph.getWeight() < minGlyphWeight;
             }
         });
 
@@ -652,14 +647,10 @@ public class BorderBuilder
 
         private boolean intersects (Rectangle rectangle)
         {
-            Rectangle prevRect = null;
-
             for (Rectangle rect : boxes) {
                 if (rect.intersects(rectangle)) {
                     return true;
                 }
-
-                prevRect = rect;
             }
 
             return false;

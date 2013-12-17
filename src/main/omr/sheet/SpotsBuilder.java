@@ -12,13 +12,12 @@
 package omr.sheet;
 
 import omr.Main;
-import omr.WellKnowns;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphsBuilder;
+import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -51,11 +50,8 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-
-import javax.imageio.ImageIO;
 
 /**
  * Class {@code SpotsBuilder} performs morphology analysis on
@@ -142,11 +138,12 @@ public class SpotsBuilder
         sectionsBuilder.createSections(spotTable, false);
         logger.debug("Sections: {}", spotLag.getSections().size());
 
-        List<Glyph> glyphs = GlyphsBuilder.retrieveGlyphs(
+        GlyphNest nest = sheet.getNest();
+        List<Glyph> glyphs = nest.retrieveGlyphs(
                 spotLag.getSections(),
-                sheet.getNest(),
                 GlyphLayer.SPOT,
-                sheet.getScale());
+                true,
+                Glyph.Linking.NO_LINK);
 
         sheet.setLag(Lags.SPOT_LAG, spotLag);
 
@@ -175,19 +172,27 @@ public class SpotsBuilder
     {
         int count = 0;
 
+        List<SystemInfo> relevants = new ArrayList<SystemInfo>();
+        SystemManager systemManager = sheet.getSystemManager();
+
         for (Glyph glyph : glyphs) {
-            SystemInfo system = sheet.getSystemOf(glyph);
+            Point center = glyph.getCentroid();
+            systemManager.getSystemsOf(center, relevants);
 
-            if (system != null) {
+            boolean created = false;
+
+            for (SystemInfo system : relevants) {
                 // Check glyph is within system abscissa boundaries
-                Point center = glyph.getAreaCenter();
-
                 if ((center.x >= system.getLeft())
                     && (center.x <= system.getRight())) {
                     glyph.setShape(Shape.BEAM_SPOT);
-                    system.addGlyphAndMembers(glyph);
-                    count++;
+                    system.registerGlyph(glyph);
+                    created = true;
                 }
+            }
+
+            if (created) {
+                count++;
             }
         }
 

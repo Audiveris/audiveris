@@ -11,13 +11,14 @@
 // </editor-fold>
 package omr.script;
 
+import omr.glyph.GlyphLayer;
+import omr.glyph.GlyphNest;
 import omr.glyph.SectionSets;
 import omr.glyph.facets.Glyph;
 
 import omr.lag.Section;
 
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 
 import java.util.Collection;
 import java.util.TreeSet;
@@ -47,7 +48,7 @@ import javax.xml.bind.annotation.XmlElement;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class GlyphUpdateTask
-        extends GlyphTask
+    extends GlyphTask
 {
     //~ Instance fields --------------------------------------------------------
 
@@ -56,6 +57,7 @@ public abstract class GlyphUpdateTask
     protected final SectionSets sectionSets;
 
     //~ Constructors -----------------------------------------------------------
+
     //-----------------//
     // GlyphUpdateTask //
     //-----------------//
@@ -65,7 +67,7 @@ public abstract class GlyphUpdateTask
      * @param sheet  the sheet impacted
      * @param glyphs the collection of glyphs concerned by this task
      */
-    public GlyphUpdateTask (Sheet sheet,
+    public GlyphUpdateTask (Sheet             sheet,
                             Collection<Glyph> glyphs)
     {
         super(sheet, glyphs);
@@ -82,28 +84,23 @@ public abstract class GlyphUpdateTask
     }
 
     //~ Methods ----------------------------------------------------------------
+
     //----------------//
     // retrieveGlyphs //
     //----------------//
     @Override
     protected void retrieveGlyphs ()
     {
-        glyphs = new TreeSet<>(Glyph.byAbscissa);
+        glyphs = new TreeSet<Glyph>(Glyph.byAbscissa);
+
+        GlyphNest nest = sheet.getNest();
 
         for (Collection<Section> set : sectionSets.getSets(sheet)) {
-            Glyph glyph = null;
-
-            //            if (orientation == Orientation.VERTICAL) {
-            SystemInfo system = set.iterator()
-                    .next()
-                    .getSystem();
-            glyph = system.addGlyph(system.buildGlyph(set));
-            //            } else {
-            //                glyph = GlyphsBuilder.buildGlyph(sheet.getScale(), set);
-            //                glyph = sheet.getScene()
-            //                             .addGlyph(glyph);
-            //                logger.info("Recreated " + glyph);
-            //            }
+            Glyph glyph = nest.buildGlyph(
+                set,
+                GlyphLayer.DEFAULT,
+                true,
+                Glyph.Linking.NO_LINK);
             glyphs.add(glyph);
         }
     }

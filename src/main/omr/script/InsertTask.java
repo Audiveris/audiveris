@@ -39,6 +39,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
+import omr.sheet.SystemManager;
 
 /**
  * Class {@code InsertTask} inserts a set of (virtual) glyphs into the
@@ -129,10 +130,10 @@ public class InsertTask
         // Take inserted glyph(s) as selected glyph(s)
         sheet.getNest().getGlyphService().publish(
                 new GlyphSetEvent(
-                this,
-                SelectionHint.GLYPH_INIT,
-                MouseMovement.PRESSING,
-                glyphs));
+                        this,
+                        SelectionHint.GLYPH_INIT,
+                        MouseMovement.PRESSING,
+                        glyphs));
     }
 
     //------------------//
@@ -181,20 +182,22 @@ public class InsertTask
     protected SortedSet<SystemInfo> retrieveCurrentImpact (Sheet sheet)
     {
         SortedSet<SystemInfo> impactedSystems = new TreeSet<>();
+        
+        logger.error("Not yet implemented");
 
-        for (Point location : locations) {
-            SystemInfo system = sheet.getSystemOf(location);
-
-            if (system != null) {
-                // Include this system
-                impactedSystems.add(system);
-            }
-
-            if (shape.isPersistent()) {
-                // Include all following systems as well
-                impactedSystems.addAll(remaining(system));
-            }
-        }
+//        for (Point location : locations) {
+//            SystemInfo system = sheet.getSystemOf(location);
+//
+//            if (system != null) {
+//                // Include this system
+//                impactedSystems.add(system);
+//            }
+//
+//            if (shape.isPersistent()) {
+//                // Include all following systems as well
+//                impactedSystems.addAll(remaining(system));
+//            }
+//        }
 
         return impactedSystems;
     }
@@ -209,29 +212,31 @@ public class InsertTask
     @Override
     protected void retrieveGlyphs ()
     {
-        glyphs = new LinkedHashSet<>();
-
-        for (Point location : locations) {
-            Glyph glyph = new VirtualGlyph(
-                    shape,
-                    sheet.getScale().getInterline(),
-                    location);
-
-            // TODO: Some location other than the areacenter may be desired
-            // (depending on the shape)?
-            SystemInfo system = sheet.getSystemOf(glyph.getAreaCenter());
-            glyph = system.addGlyph(glyph);
-            system.computeGlyphFeatures(glyph);
-
-            // Specific for LEDGERs: add them to related staff
-            if (shape == Shape.LEDGER) {
-                StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
-                //TODO: insert a LedgerInter!
-                ///staff.addLedger(glyph);
-            }
-
-            glyphs.add(glyph);
-        }
+        logger.error("Not yet implemented");
+//        glyphs = new LinkedHashSet<>();
+//        SystemManager systemManager = sheet.getSystemManager();
+//
+//        for (Point location : locations) {
+//            Glyph glyph = new VirtualGlyph(
+//                    shape,
+//                    sheet.getScale().getInterline(),
+//                    location);
+//
+//            // TODO: Some location other than the areacenter may be desired
+//            // (depending on the shape)?
+//            for (SystemInfo system : systemManager.getSystemsOf(location)) {
+//                glyph = system.registerGlyph(glyph);
+//
+//                // Specific for LEDGERs: add them to related staff
+//                if (shape == Shape.LEDGER) {
+//                    StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
+//                //TODO: insert a LedgerInter!
+//                    ///staff.addLedger(glyph);
+//                }
+//            }
+//
+//            glyphs.add(glyph);
+//        }
     }
 
     //----------------//

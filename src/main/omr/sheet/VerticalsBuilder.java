@@ -236,14 +236,10 @@ public class VerticalsBuilder
         logger.debug("Searching verticals on {} sticks", sticks.size());
 
         for (Glyph stick : sticks) {
-            stick = system.addGlyph(stick);
+            stick = system.registerGlyph(stick);
 
             if (stick.isVip()) {
                 logger.info("VIP checkVerticals for {}", stick);
-            }
-
-            if (stick.isKnown()) {
-                continue;
             }
 
             // Check seed is not in DMZ
@@ -388,9 +384,6 @@ public class VerticalsBuilder
      */
     private List<Glyph> retrieveCandidates ()
     {
-        // Get rid of former symbols
-        system.removeInactiveGlyphs(); // ????? what for ????? TODO
-
         // Select suitable sections
         // Since we are looking for major seeds, we'll use only vertical sections
         List<Section> sections = new ArrayList<Section>();
@@ -421,10 +414,130 @@ public class VerticalsBuilder
         }
 
         // Retrieve candidates
-        return factory.retrieveFilaments(sections, true);
+        return factory.retrieveFilaments(sections);
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
+                1.0,
+                "Maximum delta position between two overlapping filaments");
+
+        Scale.LineFraction maxOverlapSpace = new Scale.LineFraction(
+                0.3,
+                "Maximum space between overlapping filaments");
+
+        Scale.Fraction maxCoordGap = new Scale.Fraction(
+                0,
+                "Maximum delta coordinate for a gap between filaments");
+
+        Scale.Fraction beltMarginDx = new Scale.Fraction(
+                0.15,
+                "Horizontal belt margin checked around stem");
+
+        Check.Grade minCheckResult = new Check.Grade(
+                0.2,
+                "Minimum result for suite of check");
+
+        Check.Grade goodCheckResult = new Check.Grade(
+                0.5,
+                "Good result for suite of check");
+
+        Scale.Fraction blackHigh = new Scale.Fraction(
+                2.5,
+                "High length for a stem");
+
+        Scale.Fraction blackLow = new Scale.Fraction(
+                1.5,
+                "Low length for a stem");
+
+        Scale.Fraction cleanHigh = new Scale.Fraction(
+                2.0,
+                "High clean length for a stem");
+
+        Scale.Fraction cleanLow = new Scale.Fraction(
+                0.75,
+                "Low clean length for a stem");
+
+        Scale.Fraction gapHigh = new Scale.Fraction(
+                2.0,
+                "High vertical gap between stem segments");
+
+        Constant.Double slopeHigh = new Constant.Double(
+                "tangent",
+                0.2,
+                "High difference with global slope");
+
+        Scale.Fraction straightHigh = new Scale.Fraction(
+                0.2,
+                "High mean distance to average stem line");
+
+        Constant.Double maxCoTangentForCheck = new Constant.Double(
+                "cotangent",
+                0.1,
+                "Maximum cotangent for interactive check of a stem candidate");
+
+    }
+
+    //--------------//
+    // GlyphContext //
+    //--------------//
+    private static class GlyphContext
+            implements Checkable
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** The stick being checked. */
+        Glyph stick;
+
+        /** Length of largest gap found. */
+        int gap;
+
+        /** Total length of black portions of stem. */
+        int black;
+
+        /** Total length of white portions of stem. */
+        int white;
+
+        //~ Constructors -------------------------------------------------------
+        public GlyphContext (Glyph stick)
+        {
+            this.stick = stick;
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        public void addFailure (Failure failure)
+        {
+            stick.addFailure(failure);
+        }
+
+        @Override
+        public boolean isVip ()
+        {
+            return stick.isVip();
+        }
+
+        @Override
+        public void setVip ()
+        {
+            stick.setVip();
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "stick#" + stick.getId();
+        }
+    }
+
     //------------//
     // BlackCheck //
     //------------//
@@ -621,74 +734,6 @@ public class VerticalsBuilder
         }
     }
 
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
-                1.0,
-                "Maximum delta position between two overlapping filaments");
-
-        Scale.LineFraction maxOverlapSpace = new Scale.LineFraction(
-                0.3,
-                "Maximum space between overlapping filaments");
-
-        Scale.Fraction maxCoordGap = new Scale.Fraction(
-                0,
-                "Maximum delta coordinate for a gap between filaments");
-
-        Scale.Fraction beltMarginDx = new Scale.Fraction(
-                0.15,
-                "Horizontal belt margin checked around stem");
-
-        Check.Grade minCheckResult = new Check.Grade(
-                0.2,
-                "Minimum result for suite of check");
-
-        Check.Grade goodCheckResult = new Check.Grade(
-                0.5,
-                "Good result for suite of check");
-
-        Scale.Fraction blackHigh = new Scale.Fraction(
-                2.5,
-                "High length for a stem");
-
-        Scale.Fraction blackLow = new Scale.Fraction(
-                1.5,
-                "Low length for a stem");
-
-        Scale.Fraction cleanHigh = new Scale.Fraction(
-                2.0,
-                "High clean length for a stem");
-
-        Scale.Fraction cleanLow = new Scale.Fraction(
-                0.75,
-                "Low clean length for a stem");
-
-        Scale.Fraction gapHigh = new Scale.Fraction(
-                2.0,
-                "High vertical gap between stem segments");
-
-        Constant.Double slopeHigh = new Constant.Double(
-                "tangent",
-                0.2,
-                "High difference with global slope");
-
-        Scale.Fraction straightHigh = new Scale.Fraction(
-                0.2,
-                "High mean distance to average stem line");
-
-        Constant.Double maxCoTangentForCheck = new Constant.Double(
-                "cotangent",
-                0.1,
-                "Maximum cotangent for interactive check of a stem candidate");
-
-    }
-
     //----------//
     // GapCheck //
     //----------//
@@ -720,58 +765,6 @@ public class VerticalsBuilder
         }
     }
 
-    //--------------//
-    // GlyphContext //
-    //--------------//
-    private static class GlyphContext
-            implements Checkable
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** The stick being checked. */
-        Glyph stick;
-
-        /** Length of largest gap found. */
-        int gap;
-
-        /** Total length of black portions of stem. */
-        int black;
-
-        /** Total length of white portions of stem. */
-        int white;
-
-        //~ Constructors -------------------------------------------------------
-        public GlyphContext (Glyph stick)
-        {
-            this.stick = stick;
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public void addFailure (Failure failure)
-        {
-            stick.addFailure(failure);
-        }
-
-        @Override
-        public boolean isVip ()
-        {
-            return stick.isVip();
-        }
-
-        @Override
-        public void setVip ()
-        {
-            stick.setVip();
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "stick#" + stick.getId();
-        }
-    }
-
     //--------------------//
     // MySectionPredicate //
     //--------------------//
@@ -786,16 +779,6 @@ public class VerticalsBuilder
         @Override
         public boolean check (Section section)
         {
-            // We process section for which glyph is null
-            // or GLYPH_PART, NO_LEGAL_TIME, NOISE, STRUCTURE
-            boolean result = (section.getGlyph() == null)
-                             || !section.getGlyph()
-                    .isWellKnown();
-
-            if (!result) {
-                return false;
-            }
-
             // Check section is within system left and right boundaries
             Point center = section.getAreaCenter();
 
@@ -828,8 +811,8 @@ public class VerticalsBuilder
             add(1, new SlopeCheck());
             add(1, new StraightCheck());
             add(2, new CleanCheck());
-            add(1, new BlackCheck()); // Need CleanCheck output
-            add(1, new GapCheck()); // Need CleanCheck output
+            add(1, new BlackCheck()); // Needs CleanCheck output
+            add(1, new GapCheck()); // Needs CleanCheck output
 
             if (logger.isDebugEnabled() && (system.getId() == 1)) {
                 dump();

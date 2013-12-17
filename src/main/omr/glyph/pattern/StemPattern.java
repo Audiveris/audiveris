@@ -127,7 +127,8 @@ public class StemPattern
         }
 
         // Extract brand new glyphs (removeInactiveGlyphs + retrieveGlyphs)
-        system.extractNewGlyphs();
+        system.removeInactiveGlyphs();
+        system.retrieveGlyphs();
 
         // Try to recognize each glyph in turn
         List<Glyph> symbols = new ArrayList<>();
@@ -176,7 +177,7 @@ public class StemPattern
                 }
 
                 // Restore the stem
-                system.addGlyph(stem);
+                system.registerGlyph(stem);
 
                 // Deassign the nearby glyphs that cannot accept a stem
                 Set<Glyph> bads = badsMap.get(stem);

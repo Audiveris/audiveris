@@ -24,7 +24,6 @@ import omr.score.entity.Slot;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
-import omr.sheet.ui.BoundaryEditor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,7 @@ import omr.sig.ui.GlyphMenu;
 /**
  * Class {@code PageMenu} defines the popup menu which is linked to the
  * current selection in page editor view.
- * <p>It points to several sub-menus: measure, slot, chords, glyphs, boundaries
+ * <p>It points to several sub-menus: measure, slot, chords, glyphs
  * </p>
  *
  * @author Hervé Bitteur
@@ -89,14 +88,8 @@ public class PageMenu
     /** Glyph submenu. */
     private final SymbolMenu symbolMenu;
 
-    /** Boundary submenu. */
-    private final BoundaryEditor boundaryEditor;
-
     // Context
     //
-    /** Selected system. */
-    private ScoreSystem system;
-
     /** Selected measure. */
     private Measure measure;
 
@@ -136,7 +129,6 @@ public class PageMenu
 
         interMenu = new InterMenu();
         glyphMenu = new GlyphMenu();
-        boundaryEditor = page.getSheet().getBoundaryEditor();
 
         popup = new JPopupMenu();
         defineLayout();
@@ -153,7 +145,8 @@ public class PageMenu
     // getPopup //
     //----------//
     /**
-     * Report the concrete popup menu.
+     * Report the concrete pop-up menu.
+     * @return the pop-up menu
      */
     public JPopupMenu getPopup ()
     {
@@ -175,11 +168,6 @@ public class PageMenu
         List<SystemInfo> systems = sheet.getSystems();
 
         if (systems != null) {
-            SystemInfo systemInfo = sheet.getSystemOf(point);
-            if (systemInfo != null) {
-                system = systemInfo.getScoreSystem();
-            }
-
             slot = sheet.getSymbolsEditor().getSlotAt(point);
             if (slot != null) {
                 measure = slot.getMeasure();
@@ -204,9 +192,6 @@ public class PageMenu
 
         // Update chord menu
         chordNb = chordMenu.updateMenu();
-
-        // Update boundary menu
-        boundaryEditor.updateMenu();
 
         defineLayout();
     }
@@ -247,9 +232,6 @@ public class PageMenu
         if (symbolNb > 0) {
             popup.add(symbolMenu.getMenu());
         }
-
-        // Boundary
-        popup.add(boundaryEditor.getMenu());
     }
 
     //~ Inner Classes ----------------------------------------------------------

@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.glyph.ui;
 
-import omr.glyph.Nest;
+import omr.glyph.GlyphNest;
 import omr.glyph.facets.Glyph;
 
 import omr.sheet.Sheet;
@@ -45,7 +45,7 @@ public abstract class AbstractGlyphMenu
     protected final Sheet sheet;
 
     /** Related nest. */
-    protected final Nest nest;
+    protected final GlyphNest nest;
 
     /** The selected glyphs. */
     protected Set<Glyph> glyphs;

@@ -58,6 +58,7 @@ import javax.swing.SpinnerListModel;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import omr.glyph.GlyphLayer;
 
 /**
  * Class {@code ShapeFocusBoard} handles a user iteration within a
@@ -150,16 +151,16 @@ public class ShapeFocusBoard
         selectButton.setHorizontalAlignment(SwingConstants.LEFT);
         selectButton.addActionListener(
                 new ActionListener()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                pm.show(
-                        selectButton,
-                        selectButton.getX(),
-                        selectButton.getY());
-            }
-        });
+                {
+                    @Override
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        pm.show(
+                                selectButton,
+                                selectButton.getX(),
+                                selectButton.getY());
+                    }
+                });
 
         // Filter
         filterButton.addActionListener(filterListener);
@@ -171,13 +172,13 @@ public class ShapeFocusBoard
         noFocus.setToolTipText("Cancel any focus");
         noFocus.addActionListener(
                 new ActionListener()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                setCurrentShape(null);
-            }
-        });
+                {
+                    @Override
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        setCurrentShape(null);
+                    }
+                });
         pm.add(noFocus);
         ShapeSet.addAllShapes(
                 pm,
@@ -189,7 +190,7 @@ public class ShapeFocusBoard
                 JMenuItem source = (JMenuItem) e.getSource();
                 setCurrentShape(Shape.valueOf(source.getText()));
             }
-        });
+                });
 
         defineLayout();
 
@@ -264,9 +265,11 @@ public class ShapeFocusBoard
             selectButton.setIcon(currentShape.getDecoratedSymbol());
 
             // Count the number of glyphs assigned to current shape
-            for (Glyph glyph : sheet.getActiveGlyphs()) {
-                if (glyph.getShape() == currentShape) {
-                    browser.addId(glyph.getId());
+            for (GlyphLayer layer : GlyphLayer.concreteValues()) {
+                for (Glyph glyph : sheet.getNest().getGlyphs(layer)) {
+                    if (glyph.getShape() == currentShape) {
+                        browser.addId(glyph.getId());
+                    }
                 }
             }
 
@@ -301,9 +304,11 @@ public class ShapeFocusBoard
             List<DistIdPair> pairs = new ArrayList<>();
 
             // Retrieve the glyphs similar to the example
-            for (Glyph glyph : sheet.getActiveGlyphs()) {
-                double dist = evaluator.measureDistance(glyph, pattern);
-                pairs.add(new DistIdPair(dist, glyph.getId()));
+            for (GlyphLayer layer : GlyphLayer.concreteValues()) {
+                for (Glyph glyph : sheet.getNest().getGlyphs(layer)) {
+                    double dist = evaluator.measureDistance(glyph, pattern);
+                    pairs.add(new DistIdPair(dist, glyph.getId()));
+                }
             }
 
             Collections.sort(pairs, DistIdPair.distComparator);
@@ -493,7 +498,7 @@ public class ShapeFocusBoard
             if (id != NO_VALUE) {
                 getSelectionService()
                         .publish(
-                        new GlyphIdEvent(this, SelectionHint.GLYPH_INIT, null, id));
+                                new GlyphIdEvent(this, SelectionHint.GLYPH_INIT, null, id));
             }
         }
     }

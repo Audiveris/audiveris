@@ -16,7 +16,6 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
 import omr.run.RunsTable;
@@ -28,24 +27,23 @@ import omr.sig.ui.InterBoard;
 import omr.step.Step;
 import omr.step.StepException;
 
+import omr.util.Navigable;
 import omr.util.StopWatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Class {@code GridBuilder} computes the grid of systems of a sheet
  * picture, based on the retrieval of horizontal staff lines and of
  * vertical bar lines.
- *
  * <p>
  * The actual processing is delegated to 3 companions:<ul>
  * <li>{@link LinesRetriever} for retrieving all horizontal staff lines.</li>
  * <li>{@link BarsRetriever} for retrieving main vertical bar lines.</li>
- * <li>{@link TargetBuilder} for building the target grid.</li>
+ * <li>Optionally, {@link TargetBuilder} for building the target grid.</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -59,11 +57,11 @@ public class GridBuilder
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        GridBuilder.class);
+            GridBuilder.class);
 
     //~ Instance fields --------------------------------------------------------
-
     /** Related sheet. */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** Companion in charge of staff lines. */
@@ -73,7 +71,6 @@ public class GridBuilder
     private final BarsRetriever barsRetriever;
 
     //~ Constructors -----------------------------------------------------------
-
     //-------------//
     // GridBuilder //
     //-------------//
@@ -94,7 +91,6 @@ public class GridBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------//
     // buildInfo //
     //-----------//
@@ -104,7 +100,7 @@ public class GridBuilder
      * @throws StepException
      */
     public void buildInfo ()
-        throws StepException
+            throws StepException
     {
         StopWatch watch = new StopWatch("GridBuilder");
 
@@ -116,34 +112,26 @@ public class GridBuilder
             // Display
             if (Main.getGui() != null) {
                 displayEditor();
-                
+
                 // Inter board
                 sheet.getAssembly()
-                     .addBoard(Step.DATA_TAB, new InterBoard(sheet));
+                        .addBoard(Step.DATA_TAB, new InterBoard(sheet));
             }
 
-            // Retrieve the horizontal staff lines filaments
+            // Retrieve the horizontal staff lines filaments with long sections
             watch.start("retrieveLines");
             linesRetriever.retrieveLines();
 
+            // Complete horizontal lag with short sections
+            linesRetriever.createShortSections();
+
             // Retrieve the major vertical barlines and thus the systems
-            watch.start("retrieveSystemBars");
-            barsRetriever.retrieveSystemBars(
-                Collections.EMPTY_SET,
-                Collections.EMPTY_SET);
+            watch.start("retrieveBarlines");
+            barsRetriever.retrieveBarlines();
 
             // Complete the staff lines w/ short sections & filaments left over
             watch.start("completeLines");
             linesRetriever.completeLines();
-
-            // From here on we should work at system level
-            // ===========================================
-
-            // Retrieve minor barlines (for measures)
-            barsRetriever.retrieveMeasureBars();
-
-            // Adjust ending points of all systems (side) bars
-            barsRetriever.adjustSystemBars();
 
             /** Companion in charge of target grid */
             TargetBuilder targetBuilder = new TargetBuilder(sheet);
@@ -176,18 +164,18 @@ public class GridBuilder
     public void updateBars (Collection<Glyph> oldSticks,
                             Collection<Glyph> newSticks)
     {
-        logger.info("updateBars");
-        logger.info("Old {}", Glyphs.toString(oldSticks));
-        logger.info("New {}", Glyphs.toString(newSticks));
-
-        try {
-            barsRetriever.retrieveSystemBars(oldSticks, newSticks);
-        } catch (Exception ex) {
-            logger.warn("updateBars. retrieveSystemBars", ex);
-        }
-
-        barsRetriever.retrieveMeasureBars();
-        barsRetriever.adjustSystemBars();
+        //        logger.info("updateBars");
+        //        logger.info("Old {}", Glyphs.toString(oldSticks));
+        //        logger.info("New {}", Glyphs.toString(newSticks));
+        //
+        //        try {
+        //            barsRetriever.retrieveBarlines(oldSticks, newSticks);
+        //        } catch (Exception ex) {
+        //            logger.warn("updateBars. retrieveBarlines", ex);
+        //        }
+        //
+        //        barsRetriever.retrieveMeasureBars();
+        //        barsRetriever.adjustSystemBars();
     }
 
     //--------------//
@@ -199,8 +187,8 @@ public class GridBuilder
      */
     private void buildAllLags ()
     {
-        final boolean   showRuns = constants.showRuns.isSet() &&
-                                   (Main.getGui() != null);
+        final boolean showRuns = constants.showRuns.isSet()
+                                 && (Main.getGui() != null);
         final StopWatch watch = new StopWatch("buildAllLags");
 
         try {
@@ -208,15 +196,15 @@ public class GridBuilder
             RunsTable wholeVertTable = sheet.getWholeVerticalTable();
 
             // hLag creation
-            watch.start("linesRetriever.buildLag");
+            watch.start("buildHorizontalLag");
 
-            RunsTable longVertTable = linesRetriever.buildLag(
-                wholeVertTable,
-                showRuns);
+            RunsTable longVertTable = linesRetriever.buildHorizontalLag(
+                    wholeVertTable,
+                    showRuns);
 
             // vLag creation
-            watch.start("barsRetriever.buildLag");
-            barsRetriever.buildLag(longVertTable);
+            watch.start("buildVerticalLag");
+            barsRetriever.buildVerticalLag(longVertTable);
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -233,23 +221,25 @@ public class GridBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
         //~ Instance fields ----------------------------------------------------
 
         Constant.Boolean printWatch = new Constant.Boolean(
-            false,
-            "Should we print out the stop watch?");
+                false,
+                "Should we print out the stop watch?");
+
         Constant.Boolean showRuns = new Constant.Boolean(
-            false,
-            "Should we show view on runs?");
+                false,
+                "Should we show view on runs?");
+
         Constant.Boolean buildDewarpedTarget = new Constant.Boolean(
-            false,
-            "Should we build a dewarped target?");
+                false,
+                "Should we build a dewarped target?");
+
     }
 }

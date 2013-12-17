@@ -38,7 +38,8 @@ import java.util.TreeMap;
 /**
  * Class {@code LineCluster} is meant to aggregate instances of
  * {@link Filament} that are linked by {@link FilamentComb} instances
- * and thus a cluster represents a staff candidate.
+ * and thus a cluster represents a staff candidate, perhaps augmented
+ * above and/or below by "virtual lines" of ledgers.
  *
  * @author Hervé Bitteur
  */
@@ -47,11 +48,10 @@ public class LineCluster
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(LineCluster.class);
 
-    /** For comparing LineCluster instances on their true length */
-    public static final Comparator<LineCluster> reverseLengthComparator = new Comparator<LineCluster>()
+    /** For comparing LineCluster instances on their true length. */
+    public static final Comparator<LineCluster> byReverseLength = new Comparator<LineCluster>()
     {
         @Override
         public int compare (LineCluster c1,
@@ -98,7 +98,7 @@ public class LineCluster
                         LineFilament seed)
     {
         if (logger.isDebugEnabled() || seed.isVip()) {
-            logger.info("Creating cluster with F{}", seed.getId());
+            logger.info("VIP creating cluster with F{}", seed.getId());
 
             if (seed.isVip()) {
                 setVip();
@@ -167,7 +167,7 @@ public class LineCluster
         }
 
         if (contourBox != null) {
-            return new Rectangle(contourBox);
+            return new Rectangle(contourBox); // Copy
         } else {
             return null;
         }
@@ -254,10 +254,11 @@ public class LineCluster
      * Report the sequence of points that correspond to a provided
      * abscissa.
      *
-     * @param x         the provided abscissa
-     * @param xMargin   maximum abscissa margin for horizontal extrapolation
-     * @param interline the standard interline value, used for vertical
-     *                  extrapolations
+     * @param x           the provided abscissa
+     * @param xMargin     maximum abscissa margin for horizontal extrapolation
+     * @param interline   the standard interline value, used for vertical
+     *                    extrapolations
+     * @param globalSlope global slope of the sheet
      * @return the sequence of cluster points, from top to bottom, with perhaps
      *         some holes indicated by null values
      */
@@ -446,8 +447,8 @@ public class LineCluster
 
                         if (thickness > line.fil.getScale().getMaxFore()) {
                             if (filament.isVip() || logger.isDebugEnabled()) {
-                                logger.info("No room for {} in {}",
-                                        filament, this);
+                                logger.info("VIP no room for {} in {}",
+                                            filament, this);
                             }
 
                             return false;
@@ -644,8 +645,8 @@ public class LineCluster
                           int pivotPos)
     {
         if (logger.isDebugEnabled() || pivot.isVip()) {
-            logger.info("{} include pivot:{} at pos:{}",
-                    this, pivot.getId(), pivotPos);
+            logger.info("VIP {} include pivot:{} at pos:{}",
+                        this, pivot.getId(), pivotPos);
 
             if (pivot.isVip()) {
                 setVip();
@@ -679,8 +680,8 @@ public class LineCluster
                     line.add(fil);
 
                     if (fil.isVip()) {
-                        logger.info("Adding {} to {} at pos {}",
-                                fil, this, pos);
+                        logger.info("VIP adding {} to {} at pos {}",
+                                    fil, this, pos);
                         setVip();
                     }
 
@@ -710,8 +711,8 @@ public class LineCluster
                           int deltaPos)
     {
         if (logger.isDebugEnabled() || isVip() || that.isVip()) {
-            logger.info("Inclusion of {} into {} deltaPos:{}",
-                    that, this, deltaPos);
+            logger.info("VIP inclusion of {} into {} deltaPos:{}",
+                        that, this, deltaPos);
 
             if (that.isVip()) {
                 setVip();

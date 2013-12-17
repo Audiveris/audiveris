@@ -17,7 +17,7 @@ import omr.glyph.Evaluation;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
-import omr.glyph.Nest;
+import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
@@ -81,7 +81,7 @@ public class ClefPattern
 
     //~ Instance fields --------------------------------------------------------
     /** Glyphs nest */
-    private final Nest nest;
+    private final GlyphNest nest;
 
     // Scale-dependent parameters
     private final int clefWidth;
@@ -125,6 +125,7 @@ public class ClefPattern
     @Override
     public int runPattern ()
     {
+        final GlyphNest nest = system.getSheet().getNest();
         int successNb = 0;
         int staffId = 0;
 
@@ -132,8 +133,7 @@ public class ClefPattern
             staffId++;
 
             // Define the inner box to intersect clef glyph(s)
-            int left = (int) Math.rint(
-                    staff.getAbscissa(HorizontalSide.LEFT));
+            int left = staff.getAbscissa(HorizontalSide.LEFT);
             Rectangle inner = new Rectangle(
                     left + (2 * xOffset) + (clefWidth / 2),
                     staff.getFirstLine().yAt(left) + (staff.getHeight() / 2),
@@ -165,7 +165,8 @@ public class ClefPattern
 
             if (!impacted.isEmpty()) {
                 // Rebuild the larger glyph
-                Glyph larger = system.buildCompound(impacted);
+                Glyph larger = nest.buildGlyph(impacted, true, Glyph.Linking.NO_LINK);
+                system.registerGlyph(larger);
                 if (larger != null) {
                     logger.debug("Rebuilt stem-segmented {}", larger.idString());
                 }
@@ -198,6 +199,8 @@ public class ClefPattern
         if (glyphs.isEmpty()) {
             return false;
         }
+        
+        final GlyphNest nest = system.getSheet().getNest();
 
         // Check if we already have a clef among the intersected glyphs
         Set<Glyph> clefs = Glyphs.lookupGlyphs(glyphs, clefGlyphPredicate);
@@ -220,7 +223,7 @@ public class ClefPattern
         // Remove potential aliens
         Glyphs.purgeManuals(glyphs);
 
-        Glyph compound = system.buildTransientCompound(glyphs);
+        Glyph compound = nest.buildGlyph(glyphs, false, Glyph.Linking.NO_LINK);
 
         // Check if a clef appears in the top evaluations
         Evaluation vote = GlyphNetwork.getInstance().vote(
@@ -234,7 +237,7 @@ public class ClefPattern
             // We now have a clef!
             // Look around for an even better result...
             logger.debug("{} built from {}",
-                    vote.shape, Glyphs.toString(glyphs));
+                         vote.shape, Glyphs.toString(glyphs));
 
             // Look for larger stuff
             Rectangle outer = compound.getBounds();
@@ -257,8 +260,8 @@ public class ClefPattern
 
                 logger.debug("Considering {}", g);
 
-                Glyph newCompound = system.buildTransientCompound(
-                        Arrays.asList(compound, g));
+                Glyph newCompound = nest.buildGlyph(
+                        Arrays.asList(compound, g), false, Glyph.Linking.NO_LINK);
                 final Evaluation newVote = GlyphNetwork.getInstance().vote(
                         newCompound,
                         system,
@@ -274,7 +277,7 @@ public class ClefPattern
             }
 
             // Register the last definition of the clef
-            compound = system.addGlyph(compound);
+            compound = system.registerGlyph(compound);
             compound.setShape(vote.shape, Evaluation.ALGORITHM);
 
             logger.debug("{} rebuilt as {}", vote.shape, compound.idString());

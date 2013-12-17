@@ -11,8 +11,9 @@
 // </editor-fold>
 package omr.sheet;
 
+import omr.glyph.GlyphLayer;
+import omr.glyph.GlyphNest;
 import omr.glyph.GlyphsModel;
-import omr.glyph.Nest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.GlyphsController;
@@ -116,8 +117,8 @@ public class SpotsController
                         "Spots",
                         new ScrollView(view),
                         new BoardsPane(
-                                new PixelBoard(sheet),
-                                new SymbolGlyphBoard(this, true, true)));
+                        new PixelBoard(sheet),
+                        new SymbolGlyphBoard(this, true, true)));
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -129,7 +130,7 @@ public class SpotsController
     {
         //~ Constructors -------------------------------------------------------
 
-        public MyView (Nest nest,
+        public MyView (GlyphNest nest,
                        List<Lag> lags)
         {
             super(nest, lags, sheet);
@@ -213,13 +214,15 @@ public class SpotsController
             Color oldColor = g.getColor();
             g.setColor(Color.RED);
 
-            for (Glyph glyph : nest.getAllGlyphs()) {
-                final Shape shape = glyph.getShape();
+            for (GlyphLayer layer : GlyphLayer.concreteValues()) {
+                for (Glyph glyph : nest.getGlyphs(layer)) {
+                    final Shape shape = glyph.getShape();
 
-                if (relevantShapes.contains(shape)
-                    && ((clip == null) || clip.intersects(glyph.getBounds()))) {
-                    // Draw mean line
-                    glyph.renderLine(g);
+                    if (relevantShapes.contains(shape)
+                        && ((clip == null) || clip.intersects(glyph.getBounds()))) {
+                        // Draw mean line
+                        glyph.renderLine(g);
+                    }
                 }
             }
 

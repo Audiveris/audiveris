@@ -30,6 +30,7 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import omr.sig.AbstractBeamInter;
+import omr.sig.BarConnectionInter;
 import omr.sig.BarlineInter;
 import omr.sig.Inter;
 import omr.sig.InterVisitor;
@@ -101,9 +102,6 @@ public class SheetPainter
     /** Are we drawing enriched data?. */
     private final boolean enriched;
 
-    /** Are we drawing editable boundaries?. */
-    private final boolean editableBoundaries;
-
     /** Music font properly scaled. */
     private MusicFont musicFont;
 
@@ -126,20 +124,17 @@ public class SheetPainter
     /**
      * Creates a new SheetPainter object.
      *
-     * @param g                  Graphic context
-     * @param enriched           flag to enrich display with attachments,
-     *                           colors, etc. Use false for a display as close
-     *                           as possible to input image.
-     * @param editableBoundaries flag to draw boundaries as editable
+     * @param g        Graphic context
+     * @param enriched flag to enrich display with attachments,
+     *                 colors, etc. Use false for a display as close
+     *                 as possible to input image
      */
     public SheetPainter (Graphics g,
-                         boolean enriched,
-                         boolean editableBoundaries)
+                         boolean enriched)
     {
         this.g = (Graphics2D) g;
         this.clip = g.getClipBounds();
         this.enriched = enriched;
-        this.editableBoundaries = editableBoundaries;
 
         stemStroke = new BasicStroke(
                 3f,
@@ -294,9 +289,9 @@ public class SheetPainter
                 g.setColor(Color.BLACK); // Useful???
 
                 if (enriched) {
-                    // System boundary
-                    systemInfo.getBoundary()
-                            .render(g, editableBoundaries);
+                    //                    // System boundary
+                    //                    systemInfo.getBoundary()
+                    //                            .render(g, editableBoundaries);
 
                     // Staff lines attachments
                     for (StaffInfo staff : systemInfo.getStaves()) {
@@ -405,6 +400,16 @@ public class SheetPainter
     {
         setColor(barline);
         g.fill(barline.getArea());
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (BarConnectionInter connection)
+    {
+        setColor(connection);
+        g.fill(connection.getArea());
     }
 
     //--------------------//

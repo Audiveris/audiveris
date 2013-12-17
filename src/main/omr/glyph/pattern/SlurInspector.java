@@ -55,6 +55,9 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import omr.glyph.GlyphNest;
+import omr.glyph.facets.Glyph;
+import omr.sheet.SystemManager;
 
 /**
  * Class {@code SlurInspector} encapsulates physical processing
@@ -81,9 +84,9 @@ public class SlurInspector
     /** Shapes suitable for extensions. */
     private static final EnumSet<Shape> extShapes = EnumSet.copyOf(
             ShapeSet.shapesOf(
-            ShapeSet.Dots,
-            ShapeSet.shapesOf(Shape.CLUTTER, Shape.CHARACTER,
-            Shape.LEDGER, Shape.TENUTO)));
+                    ShapeSet.Dots,
+                    ShapeSet.shapesOf(Shape.CLUTTER, Shape.CHARACTER,
+                                      Shape.LEDGER, Shape.TENUTO)));
 
     //~ Instance fields --------------------------------------------------------
     //
@@ -210,7 +213,8 @@ public class SlurInspector
      *
      * @return the number of invalid slurs that are fixed
      *
-     * <p><b>Synopsis:</b>
+     * <p>
+     * <b>Synopsis:</b>
      * <pre>
      *      + extendSlur()      // attempt to get to a valid larger slur
      *          + extendSlurSections()
@@ -262,7 +266,7 @@ public class SlurInspector
             } catch (NoSlurCurveException ex) {
                 if (logger.isDebugEnabled()) {
                     logger.info("{}Abnormal curve slur#{}",
-                            system.getSheet().getLogPrefix(), slur.getId());
+                                system.getSheet().getLogPrefix(), slur.getId());
                 }
 
                 slur.setShape(null);
@@ -376,12 +380,12 @@ public class SlurInspector
                 if (newSlur != null) {
                     if (oldSlur.isVip() || logger.isDebugEnabled()) {
                         logger.info("Trimmed slur #{} as smaller #{}",
-                                oldSlur.getId(), newSlur.getId());
+                                    oldSlur.getId(), newSlur.getId());
                     }
                 } else {
                     if (oldSlur.isVip() || logger.isDebugEnabled()) {
                         logger.info("Giving up slur #{} w/ {}",
-                                oldSlur.getId(), collected);
+                                    oldSlur.getId(), collected);
                     }
 
                     left.addAll(collected);
@@ -405,7 +409,7 @@ public class SlurInspector
             }
         } else {
             logger.warn("{} No section left when trimming slur #{}",
-                    system.getScoreSystem().getContextString(), oldSlur.getId());
+                        system.getScoreSystem().getContextString(), oldSlur.getId());
 
             return null;
         }
@@ -427,23 +431,22 @@ public class SlurInspector
             Glyph newGlyph = new BasicGlyph(params.interline, GlyphLayer.DEFAULT);
 
             for (Section section : sections) {
-                newGlyph.addSection(section, Glyph.Linking.LINK_BACK);
+                newGlyph.addSection(section, Glyph.Linking.LINK);
             }
 
             // Beware, the newGlyph may now belong to a different system
-            SystemInfo newSystem = system.getSheet().getSystemOf(newGlyph);
+            SystemManager systemManager = system.getSheet().getSystemManager();
+            for (SystemInfo newSystem : systemManager.getSystemsOf(newGlyph)) {
+                // Check whether SLUR is not forbidden for this glyph
+                newGlyph = newSystem.registerGlyph(newGlyph);
 
-            // Check whether SLUR is not forbidden for this glyph
-            newGlyph = newSystem.registerGlyph(newGlyph);
+                if (newGlyph.isShapeForbidden(Shape.SLUR)) {
+                    return null;
+                }
 
-            if (newGlyph.isShapeForbidden(Shape.SLUR)) {
-                return null;
+                newGlyph.setShape(Shape.SLUR);
+                newGlyph.addAttachment("^", getCircle(newGlyph).getCurve());
             }
-
-            newGlyph = newSystem.addGlyph(newGlyph);
-            newGlyph.setShape(Shape.SLUR);
-
-            newGlyph.addAttachment("^", getCircle(newGlyph).getCurve());
 
             return newGlyph;
         } else {
@@ -592,7 +595,7 @@ public class SlurInspector
             while (true) {
                 if (root.isVip() || logger.isDebugEnabled()) {
                     logger.info("Trying to {} extend slur #{}",
-                            side, root.getId());
+                                side, root.getId());
                 }
 
                 // Look at neighboring glyphs (TODO: should be incremental?)
@@ -605,7 +608,7 @@ public class SlurInspector
                 if (compound != null) {
                     if (root.isVip() || logger.isDebugEnabled()) {
                         logger.info("Slur #{} {} extended as #{}",
-                                root.getId(), side, compound.getId());
+                                    root.getId(), side, compound.getId());
 
                         if (root.isVip()) {
                             compound.setVip();
@@ -652,6 +655,7 @@ public class SlurInspector
     private Glyph extendSlurSections (Glyph root,
                                       HorizontalSide side)
     {
+        final GlyphNest nest = system.getSheet().getNest();
         // The best compound obtained so far
         Glyph bestSlur = null;
 
@@ -729,11 +733,12 @@ public class SlurInspector
                     logger.debug("dist={}", distance);
 
                     if (distance <= adapter.extendedDistance()) {
-                        Glyph compound = system.buildTransientGlyph(config);
+                        Glyph compound = nest.buildGlyph(
+                                config, GlyphLayer.DEFAULT, false, Glyph.Linking.NO_LINK);
 
                         if (adapter.isCompoundValid(compound)) {
                             // Assign and insert into system & nest environments
-                            compound = system.addGlyph(compound);
+                            compound = system.registerGlyph(compound);
                             compound.setEvaluation(
                                     adapter.getChosenEvaluation());
 
@@ -759,7 +764,7 @@ public class SlurInspector
                     if (!sectionOk) {
                         if (root.isVip() || logger.isDebugEnabled()) {
                             logger.info("Slur #{} excluding section#{}",
-                                    root.getId(), section);
+                                        root.getId(), section);
                         }
 
                         break;
@@ -821,7 +826,7 @@ public class SlurInspector
                 logger.debug("No suitable seed section found");
             } else {
                 logger.debug("Seed section is {} dist:{}",
-                        seedSection, seedDist.value);
+                             seedSection, seedDist.value);
             }
         }
 
@@ -1164,7 +1169,7 @@ public class SlurInspector
                     return true;
                 } else {
                     logger.debug("{} Degrading distance {} vs {}",
-                            seed, compoundDistance, extendedDistance());
+                                 seed, compoundDistance, extendedDistance());
                 }
             }
 

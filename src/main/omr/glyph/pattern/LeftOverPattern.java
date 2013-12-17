@@ -83,7 +83,7 @@ public class LeftOverPattern
                     Grades.leftOverMinGrade);
 
             if (vote != null) {
-                glyph = system.addGlyph(glyph);
+                glyph = system.registerGlyph(glyph);
                 glyph.setEvaluation(vote);
 
                 if (logger.isDebugEnabled() || glyph.isVip()) {

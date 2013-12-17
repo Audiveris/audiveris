@@ -76,8 +76,6 @@ public class Script
                     type = AssignTask.class),
         @XmlElement(name = "barline",
                     type = BarlineTask.class),
-        @XmlElement(name = "boundary",
-                    type = BoundaryTask.class),
         @XmlElement(name = "delete",
                     type = DeleteTask.class),
         @XmlElement(name = "export",

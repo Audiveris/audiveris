@@ -16,8 +16,6 @@ import omr.grid.LagWeaver;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
-import omr.sig.ui.InterBoard;
-
 import java.util.Collection;
 
 /**
@@ -48,7 +46,6 @@ public class SystemsStep
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //------//
     // doit //
     //------//
@@ -59,12 +56,12 @@ public class SystemsStep
     {
         // Purge sections & runs of staff lines from hLag
         // Cross-connect vertical & remaining horizontal sections
-        // Build glyphs out of connected sections
+        // [Build glyphs out of connected sections]
         new LagWeaver(sheet).buildInfo();
 
-        // Create systems & parts
-        sheet.createSystemsBuilder();
-        sheet.getSystemsBuilder()
-                .buildSystems();
+        // Populate systems
+        sheet.createSystemManager();
+        sheet.getSystemManager()
+                .populateSystems();
     }
 }

@@ -16,7 +16,7 @@ import omr.check.Failure;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphLayer;
 import omr.glyph.GlyphSignature;
-import omr.glyph.Nest;
+import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
 
 import omr.image.PixelBuffer;
@@ -167,7 +167,7 @@ public class BasicGlyph
         setPitchPosition(value.pitchPosition);
 
         for (Section section : value.members) {
-            addSection(section, Linking.NO_LINK_BACK);
+            addSection(section, Linking.NO_LINK);
         }
     }
 
@@ -313,12 +313,6 @@ public class BasicGlyph
                                    Predicate<Section> predicate)
     {
         return environment.getAlienPixelsFrom(lag, absRoi, predicate);
-    }
-
-    @Override
-    public SystemInfo getAlienSystem (SystemInfo system)
-    {
-        return composition.getAlienSystem(system);
     }
 
     @Override
@@ -522,7 +516,7 @@ public class BasicGlyph
     }
 
     @Override
-    public Nest getNest ()
+    public GlyphNest getNest ()
     {
         return administration.getNest();
     }
@@ -645,12 +639,6 @@ public class BasicGlyph
                                   Set<Glyph> bads)
     {
         environment.getSymbolsBefore(predicate, goods, bads);
-    }
-
-    @Override
-    public SystemInfo getSystem ()
-    {
-        return environment.getSystem();
     }
 
     @Override
@@ -909,7 +897,7 @@ public class BasicGlyph
     }
 
     @Override
-    public void setNest (Nest nest)
+    public void setNest (GlyphNest nest)
     {
         administration.setNest(nest);
     }

@@ -389,7 +389,7 @@ public class HorizontalsBuilder
             section.setGlyph(null); // ???????
         }
 
-        List<Glyph> glyphs = factory.retrieveFilaments(sections, true);
+        List<Glyph> glyphs = factory.retrieveFilaments(sections);
 
         // Purge candidates that overlap good beams
         List<Glyph> toRemove = new ArrayList<Glyph>();
@@ -616,7 +616,7 @@ public class HorizontalsBuilder
             }
 
             if (grade >= ledgerSuite.getMinThreshold()) {
-                stick = system.addGlyph(stick); // Useful???
+                stick = system.registerGlyph(stick); // Useful???
 
                 // Sanity check
                 Inter inter = sig.getInter(stick, LedgerInter.class);
@@ -983,20 +983,21 @@ public class HorizontalsBuilder
                     // Make sure we have a rather horizontal stick
                     if ((glyph != null)
                         && (Math.abs(glyph.getSlope()) <= constants.maxSlopeForCheck.getValue())) {
-                        // Check there is a staff line or ledger for reference
-                        // For this we have to operate from the containing system
-                        Point center = glyph.getCentroid();
-                        SystemInfo system = sheet.getSystemOf(center);
-                        IndexTarget it = system.horizontalsBuilder.getLedgerTarget(
-                                glyph);
+                        // Check if there is a staff line or ledger for reference
+                        // For this we have to operate from some relevant system
+                        SystemManager systemManager = sheet.getSystemManager();
+                        for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+                            IndexTarget it = system.horizontalsBuilder.getLedgerTarget(
+                                    glyph);
 
-                        // Run the check suite?
-                        if (it != null) {
-                            applySuite(
-                                    ledgerSuite,
-                                    new GlyphContext(glyph, it.target));
+                            // Run the check suite?
+                            if (it != null) {
+                                applySuite(
+                                        ledgerSuite,
+                                        new GlyphContext(glyph, it.target));
 
-                            return;
+                                return;
+                            }
                         }
                     }
 
@@ -1029,8 +1030,8 @@ public class HorizontalsBuilder
             add(
                     4,
                     new MinLengthCheck(
-                            constants.minLedgerLengthLow,
-                            constants.minLedgerLengthHigh));
+                    constants.minLedgerLengthLow,
+                    constants.minLedgerLengthHigh));
             add(2, new ConvexityCheck());
 
             add(0.5, new LeftPitchCheck());

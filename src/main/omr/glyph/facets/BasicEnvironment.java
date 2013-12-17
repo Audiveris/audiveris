@@ -306,16 +306,6 @@ class BasicEnvironment
         }
     }
 
-    //-----------//
-    // getSystem //
-    //-----------//
-    @Override
-    public SystemInfo getSystem ()
-    {
-        return glyph.getFirstSection()
-                .getSystem();
-    }
-
     //--------------//
     // isWithLedger //
     //--------------//

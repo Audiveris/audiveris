@@ -14,7 +14,7 @@ package omr.glyph.ui;
 import omr.glyph.Evaluation;
 import omr.glyph.Glyphs;
 import omr.glyph.GlyphsModel;
-import omr.glyph.Nest;
+import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
@@ -214,7 +214,7 @@ public class GlyphsController
      *
      * @return the related glyph nest
      */
-    public Nest getNest ()
+    public GlyphNest getNest ()
     {
         return model.getNest();
     }

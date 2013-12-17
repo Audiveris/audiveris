@@ -113,7 +113,7 @@ class BasicComposition
         members.add(section);
 
         /** Second, update section data, if so desired */
-        if (link == Linking.LINK_BACK) {
+        if (link == Linking.LINK) {
             section.setGlyph(glyph);
         }
 
@@ -179,23 +179,6 @@ class BasicComposition
         }
 
         return sb.toString();
-    }
-
-    //----------------//
-    // getAlienSystem //
-    //----------------//
-    @Override
-    public SystemInfo getAlienSystem (SystemInfo system)
-    {
-        // Direct members
-        for (Section section : glyph.getMembers()) {
-            if (section.getSystem() != system) {
-                return section.getSystem();
-            }
-        }
-
-        // No other system found
-        return null;
     }
 
     //-------------//
@@ -296,7 +279,7 @@ class BasicComposition
     public boolean removeSection (Section section,
                                   Linking link)
     {
-        if (link == Linking.LINK_BACK) {
+        if (link == Linking.LINK) {
             section.setGlyph(null);
         }
 
@@ -331,7 +314,7 @@ class BasicComposition
     public void stealSections (Glyph that)
     {
         for (Section section : that.getMembers()) {
-            addSection(section, Linking.LINK_BACK);
+            addSection(section, Linking.LINK);
         }
 
         that.setPartOf(glyph);

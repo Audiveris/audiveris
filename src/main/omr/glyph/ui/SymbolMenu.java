@@ -22,6 +22,7 @@ import omr.selection.GlyphEvent;
 import omr.selection.SelectionHint;
 
 import omr.sheet.SystemInfo;
+import omr.sheet.SystemManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,7 +174,7 @@ public class SymbolMenu
 
         // Display all glyphs similar to the current glyph
         register(0, new SimilarAction());
-        
+
         super.initMenu();
     }
 
@@ -408,11 +409,11 @@ public class SymbolMenu
                     if (glyph != newGlyph) {
                         nest.getGlyphService()
                                 .publish(
-                                new GlyphEvent(
-                                this,
-                                SelectionHint.GLYPH_INIT,
-                                null,
-                                newGlyph));
+                                        new GlyphEvent(
+                                                this,
+                                                SelectionHint.GLYPH_INIT,
+                                                null,
+                                                newGlyph));
                     }
                 }
             } else {
@@ -660,20 +661,25 @@ public class SymbolMenu
             Glyph glyph = nest.getSelectedGlyph();
 
             if ((glyphNb > 0) && (glyph != null) && (glyph.getId() == 0)) {
-                SystemInfo system = sheet.getSystemOf(glyph);
-                Evaluation vote = evaluator.vote(
-                        glyph,
-                        system,
-                        Grades.symbolMinGrade);
+                SystemManager systemManager = sheet.getSystemManager();
 
-                if (vote != null) {
-                    proposedGlyph = glyph;
-                    proposedShape = vote.shape;
-                    setEnabled(true);
-                    putValue(NAME, "Build compound as " + proposedShape);
-                    putValue(SHORT_DESCRIPTION, "Accept the proposed compound");
+                for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+                    Evaluation vote = evaluator.vote(
+                            glyph,
+                            system,
+                            Grades.symbolMinGrade);
 
-                    return;
+                    if (vote != null) {
+                        proposedGlyph = glyph;
+                        proposedShape = vote.shape;
+                        setEnabled(true);
+                        putValue(NAME, "Build compound as " + proposedShape);
+                        putValue(
+                                SHORT_DESCRIPTION,
+                                "Accept the proposed compound");
+
+                        return;
+                    }
                 }
             }
 
@@ -816,7 +822,7 @@ public class SymbolMenu
         {
             putValue(NAME, "Look for verticals");
 
-            if (sheet.hasSystemBoundaries() && (glyphNb > 0) && noVirtuals) {
+            if ((glyphNb > 0) && noVirtuals) {
                 setEnabled(true);
                 putValue(SHORT_DESCRIPTION, "Extract stems and leaves");
             } else {
@@ -906,7 +912,7 @@ public class SymbolMenu
         {
             putValue(NAME, "Trim slur");
 
-            if (sheet.hasSystemBoundaries() && (glyphNb > 0) && noVirtuals) {
+            if ((glyphNb > 0) && noVirtuals) {
                 setEnabled(true);
                 putValue(SHORT_DESCRIPTION, "Extract slur from large glyph");
             } else {

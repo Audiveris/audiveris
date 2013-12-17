@@ -14,6 +14,7 @@ package omr.glyph.pattern;
 import omr.glyph.*;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
+import omr.glyph.facets.GlyphComposition;
 
 import omr.sheet.SystemInfo;
 
@@ -100,7 +101,7 @@ public class FermataDotPattern
                             .intersects(box)
                            && dots.contains(glyph.getShape());
                 }
-            });
+                    });
 
             for (Glyph candidate : candidates) {
                 if (fermata.isVip()
@@ -109,17 +110,21 @@ public class FermataDotPattern
                     logger.info("Dot candidate #{}", candidate);
                 }
 
-                Glyph compound = system.buildTransientCompound(
-                        Arrays.asList(fermata, candidate));
+                GlyphNest nest = system.getSheet()
+                        .getNest();
+                Glyph compound = nest.buildGlyph(
+                        Arrays.asList(fermata, candidate),
+                        false,
+                        Glyph.Linking.NO_LINK);
                 Evaluation eval = GlyphNetwork.getInstance()
                         .vote(
-                        compound,
-                        system,
-                        Grades.noMinGrade);
+                                compound,
+                                system,
+                                Grades.noMinGrade);
 
                 if (eval != null) {
                     // Assign and insert into system & nest environments
-                    compound = system.addGlyph(compound);
+                    compound = system.registerGlyph(compound);
                     compound.setEvaluation(eval);
 
                     if (compound.isVip() || logger.isDebugEnabled()) {

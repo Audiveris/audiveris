@@ -100,6 +100,66 @@ public class GeoPath
         }
     }
 
+    //---------------//
+    // getFirstPoint //
+    //---------------//
+    /**
+     * Report the first defining point of the path.
+     *
+     * @return the first path point
+     */
+    public Point2D getFirstPoint ()
+    {
+        final double[] buffer = new double[6];
+        final PathIterator it = getPathIterator(null);
+
+        if (!it.isDone()) {
+            final int segmentKind = it.currentSegment(buffer);
+            final int count = countOf(segmentKind);
+            final double x2 = buffer[count - 2];
+            final double y2 = buffer[count - 1];
+
+            if ((segmentKind == SEG_MOVETO) || (segmentKind == SEG_CLOSE)) {
+                return new Point2D.Double(x2, y2);
+            } else {
+                return new Point2D.Double(0, 0);
+            }
+        }
+
+        return null;
+    }
+
+    //--------------//
+    // getLastPoint //
+    //--------------//
+    /**
+     * Report the last defining point of the path.
+     *
+     * @return the last path point
+     */
+    public Point2D getLastPoint ()
+    {
+        final double[] buffer = new double[6];
+        final PathIterator it = getPathIterator(null);
+
+        if (it.isDone()) {
+            return null;
+        }
+
+        double x2 = 0;
+        double y2 = 0;
+
+        while (!it.isDone()) {
+            final int segmentKind = it.currentSegment(buffer);
+            final int count = countOf(segmentKind);
+            x2 = buffer[count - 2];
+            y2 = buffer[count - 1];
+            it.next();
+        }
+
+        return new Point2D.Double(x2, y2);
+    }
+
     //------------//
     // intersects //
     //------------//
@@ -201,15 +261,15 @@ public class GeoPath
      * Report the abscissa value of the spline at provided ordinate
      * (assuming true function)
      *
-     * @param y the provided ordinate
+     * @param y the provided ordinate (must be in y range of the spline)
      * @return the abscissa value at this ordinate
      */
     public double xAtY (double y)
     {
-        final double[] buffer = new double[6];
+        final double[] coords = new double[6];
         final Point2D.Double p1 = new Point2D.Double();
         final Point2D.Double p2 = new Point2D.Double();
-        final int segmentKind = getYSegment(y, buffer, p1, p2);
+        final int segmentKind = getYSegment(y, coords, p1, p2);
         final double t = (y - p1.y) / (p2.y - p1.y);
         final double u = 1 - t;
 
@@ -218,14 +278,14 @@ public class GeoPath
             return p1.x + (t * (p2.x - p1.x));
 
         case SEG_QUADTO: {
-            double cpx = buffer[0];
+            double cpx = coords[0];
 
             return (p1.x * u * u) + (2 * cpx * t * u) + (p2.x * t * t);
         }
 
         case SEG_CUBICTO: {
-            double cpx1 = buffer[0];
-            double cpx2 = buffer[2];
+            double cpx1 = coords[0];
+            double cpx2 = coords[2];
 
             return (p1.x * u * u * u) + (3 * cpx1 * t * u * u)
                    + (3 * cpx2 * t * t * u) + (p2.x * t * t * t);
@@ -236,6 +296,32 @@ public class GeoPath
         }
     }
 
+    //---------//
+    // xAtYExt //
+    //---------//
+    /**
+     * Similar functionality as xAtY, but also accepts ordinates
+     * outside the line ordinate range but extrapolating the line
+     * based on start and stop points.
+     *
+     * @param y the provided ordinate
+     * @return the abscissa value at this ordinate
+     */
+    public double xAtYExt (double y)
+    {
+        Point2D startPoint = getFirstPoint();
+        Point2D stopPoint = getLastPoint();
+
+        if ((y < startPoint.getY()) || (y > stopPoint.getY())) {
+            double sl = (stopPoint.getX() - startPoint.getX()) / (stopPoint.getY()
+                                                                  - startPoint.getY());
+
+            return startPoint.getX() + (sl * (y - startPoint.getY()));
+        } else {
+            return xAtY(y);
+        }
+    }
+
     //------//
     // yAtX //
     //------//
@@ -243,15 +329,15 @@ public class GeoPath
      * Report the ordinate value of the spline at provided abscissa
      * (assuming true function)
      *
-     * @param x the provided abscissa
+     * @param x the provided abscissa (must be in x range of the spline)
      * @return the ordinate value at this abscissa
      */
     public double yAtX (double x)
     {
-        final double[] buffer = new double[6];
+        final double[] coords = new double[6];
         final Point2D.Double p1 = new Point2D.Double();
         final Point2D.Double p2 = new Point2D.Double();
-        final int segmentKind = getXSegment(x, buffer, p1, p2);
+        final int segmentKind = getXSegment(x, coords, p1, p2);
         final double t = (x - p1.x) / (p2.x - p1.x);
         final double u = 1 - t;
 
@@ -260,14 +346,14 @@ public class GeoPath
             return p1.y + (t * (p2.y - p1.y));
 
         case SEG_QUADTO: {
-            double cpy = buffer[1];
+            double cpy = coords[1];
 
             return (p1.y * u * u) + (2 * cpy * t * u) + (p2.y * t * t);
         }
 
         case SEG_CUBICTO: {
-            double cpy1 = buffer[1];
-            double cpy2 = buffer[3];
+            double cpy1 = coords[1];
+            double cpy2 = coords[3];
 
             return (p1.y * u * u * u) + (3 * cpy1 * t * u * u)
                    + (3 * cpy2 * t * t * u) + (p2.y * t * t * t);
@@ -275,6 +361,32 @@ public class GeoPath
 
         default:
             throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        }
+    }
+
+    //---------//
+    // yAtXExt //
+    //---------//
+    /**
+     * Similar functionality as yAtX, but also accepts abscissae
+     * outside the spline abscissa range but extrapolating the line
+     * based on start and stop points.
+     *
+     * @param x the provided abscissa
+     * @return the ordinate value at this abscissa
+     */
+    public double yAtXExt (double x)
+    {
+        Point2D startPoint = getFirstPoint();
+        Point2D stopPoint = getLastPoint();
+
+        if ((x < startPoint.getX()) || (x > stopPoint.getX())) {
+            double sl = (stopPoint.getY() - startPoint.getY()) / (stopPoint.getX()
+                                                                  - startPoint.getX());
+
+            return startPoint.getY() + (sl * (x - startPoint.getX()));
+        } else {
+            return yAtX(x);
         }
     }
 
@@ -312,17 +424,17 @@ public class GeoPath
     // getXSegment //
     //-------------//
     /**
-     * Retrieve the first segment of the curve that contains the provided
-     * abscissa
+     * Retrieve the first segment of the curve that contains the
+     * provided abscissa.
      *
      * @param x      the provided abscissa
-     * @param buffer output
+     * @param coords output: coordinates
      * @param p1     output: start of segment
      * @param p2     output: end of segment
      * @return the segment kind
      */
     protected int getXSegment (double x,
-                               double[] buffer,
+                               double[] coords,
                                Point2D.Double p1,
                                Point2D.Double p2)
     {
@@ -331,10 +443,10 @@ public class GeoPath
         double y1 = 0;
 
         while (!it.isDone()) {
-            final int segmentKind = it.currentSegment(buffer);
+            final int segmentKind = it.currentSegment(coords);
             final int count = countOf(segmentKind);
-            final double x2 = buffer[count - 2];
-            final double y2 = buffer[count - 1];
+            final double x2 = coords[count - 2];
+            final double y2 = coords[count - 1];
 
             if ((segmentKind == SEG_MOVETO)
                 || (segmentKind == SEG_CLOSE)
@@ -361,17 +473,17 @@ public class GeoPath
     // getYSegment //
     //-------------//
     /**
-     * Retrieve the first segment of the curve that contains the provided
-     * ordinate
+     * Retrieve the first segment of the curve that contains the 
+     * provided ordinate.
      *
      * @param y      the provided ordinate
-     * @param buffer output
+     * @param coords output: coordinates
      * @param p1     output: start of segment
      * @param p2     output: end of segment
      * @return the segment kind
      */
     protected int getYSegment (double y,
-                               double[] buffer,
+                               double[] coords,
                                Point2D.Double p1,
                                Point2D.Double p2)
     {
@@ -380,10 +492,10 @@ public class GeoPath
         double y1 = 0;
 
         while (!it.isDone()) {
-            final int segmentKind = it.currentSegment(buffer);
+            final int segmentKind = it.currentSegment(coords);
             final int count = countOf(segmentKind);
-            final double x2 = buffer[count - 2];
-            final double y2 = buffer[count - 1];
+            final double x2 = coords[count - 2];
+            final double y2 = coords[count - 1];
 
             if ((segmentKind == SEG_MOVETO)
                 || (segmentKind == SEG_CLOSE)

@@ -17,20 +17,12 @@ import omr.glyph.facets.Glyph;
 import omr.score.entity.Note;
 import omr.score.entity.TimeRational;
 
-import omr.script.BoundaryTask;
 import omr.script.RationalTask;
 import omr.script.SegmentTask;
 import omr.script.SlurTask;
 import omr.script.TextTask;
 
-import omr.sheet.BrokenLineContext;
-import omr.sheet.SystemBoundary;
-import omr.sheet.SystemInfo;
-
 import omr.text.TextRoleInfo;
-
-import omr.util.BrokenLine;
-import omr.util.VerticalSide;
 
 import org.jdesktop.application.Task;
 
@@ -38,14 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Class {@code SymbolsController} is a GlyphsController specifically
- * meant for symbol glyphs, adding handling for assigning Texts, 
+ * meant for symbol glyphs, adding handling for assigning Texts,
  * for fixing Slurs and for segmenting on Stems.
  *
  * @author Hervé Bitteur
@@ -110,42 +99,7 @@ public class SymbolsController
                                               TextRoleInfo roleInfo,
                                               String textContent)
     {
-        return new TextTask(sheet, roleInfo, textContent, glyphs).
-                launch(sheet);
-    }
-
-    //-----------------------//
-    // asyncModifyBoundaries //
-    //-----------------------//
-    /**
-     * Asynchronously perform a modification in systems boundaries
-     *
-     * @param modifiedLines the set of modified lines
-     * @return the task that carries out the processing
-     */
-    public Task<Void, Void> asyncModifyBoundaries (Set<BrokenLine> modifiedLines)
-    {
-        List<BrokenLineContext> contexts = new ArrayList<>();
-
-        // Retrieve impacted systems
-        for (BrokenLine line : modifiedLines) {
-            int above = 0;
-            int below = 0;
-
-            for (SystemInfo system : sheet.getSystems()) {
-                SystemBoundary boundary = system.getBoundary();
-
-                if (boundary.getLimit(VerticalSide.BOTTOM) == line) {
-                    above = system.getId();
-                } else if (boundary.getLimit(VerticalSide.TOP) == line) {
-                    below = system.getId();
-                }
-            }
-
-            contexts.add(new BrokenLineContext(above, below, line));
-        }
-
-        return new BoundaryTask(sheet, contexts).launch(sheet);
+        return new TextTask(sheet, roleInfo, textContent, glyphs).launch(sheet);
     }
 
     //--------------//
@@ -154,7 +108,7 @@ public class SymbolsController
     /**
      * Asynchronously segment a set of glyphs on their stems
      *
-     * @param glyphs  glyphs to segment in order to retrieve stems
+     * @param glyphs glyphs to segment in order to retrieve stems
      * @return the task that carries out the processing
      */
     public Task<Void, Void> asyncSegment (Collection<Glyph> glyphs)
@@ -213,6 +167,7 @@ public class SymbolsController
     @Override
     public String toString ()
     {
-        return getClass().getSimpleName();
+        return getClass()
+                .getSimpleName();
     }
 }

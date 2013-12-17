@@ -12,7 +12,7 @@
 package omr.glyph.facets;
 
 import omr.glyph.GlyphLayer;
-import omr.glyph.Nest;
+import omr.glyph.GlyphNest;
 
 /**
  * Class {@code BasicAdministration} is a basic implementation of glyph
@@ -30,7 +30,7 @@ class BasicAdministration
     protected final GlyphLayer layer;
 
     /** The containing glyph nest. */
-    protected Nest nest;
+    protected GlyphNest nest;
 
     /** Glyph instance identifier. (Unique in the containing nest) */
     protected int id;
@@ -108,7 +108,7 @@ class BasicAdministration
     // getNest //
     //---------//
     @Override
-    public Nest getNest ()
+    public GlyphNest getNest ()
     {
         return nest;
     }
@@ -172,7 +172,7 @@ class BasicAdministration
     // setNest //
     //---------//
     @Override
-    public void setNest (Nest nest)
+    public void setNest (GlyphNest nest)
     {
         this.nest = nest;
     }

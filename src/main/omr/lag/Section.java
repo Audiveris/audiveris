@@ -27,8 +27,6 @@ import omr.run.Orientation;
 import omr.run.Oriented;
 import omr.run.Run;
 
-import omr.sheet.SystemInfo;
-
 import omr.util.Vip;
 
 import java.awt.Point;
@@ -114,6 +112,17 @@ public interface Section
                             Section s2)
         {
             return s1.getFirstPos() - s2.getFirstPos();
+        }
+    };
+
+    /** For comparing Section instances on their absolute abscissa */
+    public static final Comparator<Section> byAbscissa = new Comparator<Section>()
+    {
+        @Override
+        public int compare (Section s1,
+                            Section s2)
+        {
+            return Integer.compare(s1.getBounds().x, s2.getBounds().x);
         }
     };
 
@@ -306,6 +315,7 @@ public interface Section
 
     /**
      * Return the length of the section, using the provided orientation.
+     *
      * @param orientation the desired orientation
      * @return the section length (along orientation)
      */
@@ -430,13 +440,6 @@ public interface Section
     public int getStopCoord ();
 
     /**
-     * Report the containing system.
-     *
-     * @return the system (may be null)
-     */
-    public SystemInfo getSystem ();
-
-    /**
      * Return the thickness of the section, using the provided
      * orientation.
      *
@@ -507,17 +510,6 @@ public interface Section
     public boolean isVertical ();
 
     /**
-     * Merge this section with the other provided section, which is not
-     * affected, and must generally be destroyed.
-     * TODO: rename as "include".
-     * It is assumed (and not checked) that the two sections are
-     * contiguous.
-     *
-     * @param other the other section to include into this one
-     */
-    public void merge (Section other);
-
-    /**
      * Return the next sibling section, both linked by target of
      * the last outgoing edge.
      *
@@ -574,13 +566,6 @@ public interface Section
      * @param processed the processed to set
      */
     public void setProcessed (boolean processed);
-
-    /**
-     * Assign a containing system.
-     *
-     * @param system the system to set
-     */
-    public void setSystem (SystemInfo system);
 
     /**
      * Apply an absolute translation vector to this section.

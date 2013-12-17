@@ -18,6 +18,10 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphRepository;
 
+import omr.grid.StaffInfo;
+import omr.grid.StaffManager;
+import omr.grid.StaffProjector;
+
 import omr.score.Score;
 import omr.score.ScoresManager;
 import omr.score.ui.ScoreController;
@@ -28,6 +32,7 @@ import omr.sheet.ScaleBuilder;
 import omr.sheet.Sheet;
 
 import omr.ui.MainGui;
+import omr.ui.util.DynamicMenu;
 import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtil;
 
@@ -44,8 +49,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 
+import javax.swing.JFrame;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingConstants;
 
 /**
  * Class {@code SheetActions} simply gathers UI actions related to sheet
@@ -80,6 +89,23 @@ public class SheetActions
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized SheetActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new SheetActions();
+        }
+
+        return INSTANCE;
+    }
+
     //------------//
     // closeScore //
     //------------//
@@ -96,23 +122,6 @@ public class SheetActions
         if (score != null) {
             score.close();
         }
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized SheetActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new SheetActions();
-        }
-
-        return INSTANCE;
     }
 
     //---------------//
@@ -173,6 +182,65 @@ public class SheetActions
         }
     }
 
+    //------------//
+    // plotStaves //
+    //------------//
+    /**
+     * Action that allows to display the horizontal projection of a
+     * selected staff.
+     * We need a sub-menu to select proper staff.
+     * TODO: this is really a dirty hack!
+     *
+     * @param e the event that triggered this action
+     */
+    @Action(enabledProperty = SHEET_AVAILABLE)
+    public void plotStaves (ActionEvent e)
+    {
+        final Sheet sheet = SheetsController.getCurrentSheet();
+
+        if (sheet != null) {
+            final StaffManager staffManager = sheet.getStaffManager();
+
+            if (staffManager.getStaffCount() == 0) {
+                logger.info("No staff data available yet");
+
+                return;
+            }
+
+            JPopupMenu popup = new JPopupMenu("Staves IDs");
+
+            // Menu title
+            JMenuItem title = new JMenuItem("Select staff ID:");
+            title.setHorizontalAlignment(SwingConstants.CENTER);
+            title.setEnabled(false);
+            popup.add(title);
+            popup.addSeparator();
+
+            ActionListener listener = new ActionListener()
+            {
+                @Override
+                public void actionPerformed (ActionEvent e)
+                {
+                    int index = Integer.decode(e.getActionCommand()) - 1;
+                    StaffInfo staff = staffManager.getStaff(index);
+                    new StaffProjector(sheet, staff).plot();
+                }
+            };
+
+            // Populate popup
+            for (StaffInfo staff : staffManager.getStaves()) {
+                JMenuItem item = new JMenuItem("" + staff.getId());
+                item.addActionListener(listener);
+                popup.add(item);
+            }
+
+            // Display popup menu
+            JFrame frame = Main.getGui()
+                    .getFrame();
+            popup.show(frame, frame.getWidth() / 6, frame.getHeight() / 4);
+        }
+    }
+
     //--------------//
     // recordGlyphs //
     //--------------//
@@ -219,8 +287,8 @@ public class SheetActions
     // zoomHeight //
     //------------//
     /**
-     * Action that allows to adjust the display zoom, so that the full height is
-     * shown.
+     * Action that allows to adjust the display zoom, so that the full
+     * height is shown.
      *
      * @param e the event that triggered this action
      */
@@ -247,8 +315,8 @@ public class SheetActions
     // zoomWidth //
     //-----------//
     /**
-     * Action that allows to adjust the display zoom, so that the full width is
-     * shown.
+     * Action that allows to adjust the display zoom, so that the full
+     * width is shown.
      *
      * @param e the event that triggered this action
      */
@@ -318,7 +386,7 @@ public class SheetActions
                 ResourceMap resource = MainGui.getInstance()
                         .getContext()
                         .getResourceMap(
-                        SheetActions.class);
+                                SheetActions.class);
                 resource.injectComponents(menu);
             }
 
@@ -418,8 +486,8 @@ public class SheetActions
             Sheet sheet = SheetsController.getCurrentSheet();
             GlyphRepository.getInstance()
                     .recordSheetGlyphs(
-                    sheet, /* emptyStructures => */
-                    sheet.isOnPatterns());
+                            sheet, /* emptyStructures => */
+                            sheet.isOnPatterns());
 
             return null;
         }

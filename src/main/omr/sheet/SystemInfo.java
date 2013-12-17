@@ -15,7 +15,6 @@ import omr.glyph.CompoundBuilder;
 import omr.glyph.CompoundBuilder.CompoundAdapter;
 import omr.glyph.GlyphInspector;
 import omr.glyph.Glyphs;
-import omr.glyph.GlyphsBuilder;
 import omr.glyph.facets.Glyph;
 import omr.glyph.pattern.PatternsChecker;
 import omr.glyph.pattern.SlurInspector;
@@ -27,8 +26,6 @@ import omr.grid.StaffInfo;
 import omr.grid.StaffManager;
 
 import omr.lag.Section;
-
-import omr.math.GeoPath;
 
 import omr.score.SystemTranslator;
 import omr.score.entity.ScoreSystem;
@@ -44,7 +41,6 @@ import omr.text.TextLine;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
-import omr.util.VerticalSide;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,23 +48,26 @@ import org.slf4j.LoggerFactory;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
+import omr.glyph.GlyphLayer;
+import omr.glyph.GlyphNest;
 
 /**
  * Class {@code SystemInfo} gathers information from the original
  * picture about a retrieved system.
  * Most of the physical processing is done in parallel at system level, and
  * thus is handled from this SystemInfo object.
- *
  * <p>
  * Many processing tasks are actually handled by companion classes, but
  * SystemInfo is the interface of choice, with delegation to the proper
@@ -84,6 +83,17 @@ public class SystemInfo
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(SystemInfo.class);
 
+    /** To sort by system id. */
+    public static final Comparator<SystemInfo> byId = new Comparator<SystemInfo>()
+    {
+        @Override
+        public int compare (SystemInfo o1,
+                            SystemInfo o2)
+        {
+            return Integer.compare(o1.id, o2.id);
+        }
+    };
+
     //~ Instance fields --------------------------------------------------------
     /** Related sheet */
     @Navigable(false)
@@ -97,9 +107,6 @@ public class SystemInfo
 
     /** Dedicated text builder */
     private final TextBuilder textBuilder;
-
-    /** Dedicated glyph builder */
-    private final GlyphsBuilder glyphsBuilder;
 
     /** Dedicated compound builder */
     private final CompoundBuilder compoundBuilder;
@@ -120,7 +127,7 @@ public class SystemInfo
     public final HorizontalsBuilder horizontalsBuilder;
 
     /** Dedicated SIG processor */
-    public final SigSolver sigResolver;
+    public final SigSolver sigSolver;
 
     /** Dedicated glyph inspector */
     private final GlyphInspector glyphInspector;
@@ -145,12 +152,6 @@ public class SystemInfo
 
     /** Right system bar, if any */
     private BarInfo rightBar;
-
-    /** Left system limit (a filament or a straight line) */
-    private Object leftLimit;
-
-    /** Right system limit (a filament or a straight line) */
-    private Object rightLimit;
 
     /** Bar alignments for this system */
     private List<BarAlignment> barAlignments;
@@ -198,8 +199,8 @@ public class SystemInfo
     /** Unique Id for this system (in the sheet) */
     private final int id;
 
-    /** Boundary that encloses all items of this system. */
-    private SystemBoundary boundary;
+    /** Area that encloses all items of this system. */
+    private Area area;
 
     /** Ordinate of bottom of last staff of the system. */
     private int bottom;
@@ -210,6 +211,12 @@ public class SystemInfo
 
     /** Abscissa of beginning of system. */
     private int left;
+
+    /** Abscissa of beginning of system area. */
+    private int areaLeft;
+
+    /** Abscissa of end of system area. */
+    private int areaRight;
 
     /** Ordinate of top of first staff of the system. */
     private int top;
@@ -234,15 +241,13 @@ public class SystemInfo
     {
         this.id = id;
         this.sheet = sheet;
-        this.staves = staves;
 
-        updateCoordinates();
+        setStaves(staves);
 
         sig = new SIGraph(this);
-        sigResolver = new SigSolver(this, sig);
+        sigSolver = new SigSolver(this, sig);
         measuresBuilder = new MeasuresBuilder(this);
         textBuilder = new TextBuilder(this);
-        glyphsBuilder = new GlyphsBuilder(this);
         compoundBuilder = new CompoundBuilder(this);
         beamsBuilder = new BeamsBuilder(this);
         notesBuilder = new NotesBuilder(this);
@@ -255,15 +260,46 @@ public class SystemInfo
     }
 
     //~ Methods ----------------------------------------------------------------
-    //----------//
-    // addGlyph //
-    //----------//
+    //-----------//
+    // xOverlaps //
+    //-----------//
     /**
-     * Add a brand new glyph as an active glyph in proper system
-     * (and nest).
-     * If the glyph is a compound, its parts are made pointing back to it and
-     * are made no longer active glyphs. To just register a glyph (without
-     * impacting its sections), use {@link #registerGlyph} instead.
+     * Report whether this system horizontally overlaps that system
+     *
+     * @param that the other system
+     * @return true if overlap
+     */
+    public boolean xOverlaps (SystemInfo that)
+    {
+        final int commonLeft = Math.max(this.left, that.left);
+        final int commonRight = Math.min(this.left + this.width - 1,
+                                         that.left + that.width - 1);
+
+        return commonRight > commonLeft;
+    }
+
+    //-----------//
+    // yOverlaps //
+    //-----------//
+    /**
+     * Report whether this system vertically overlaps that system
+     *
+     * @param that the other system
+     * @return true if overlap
+     */
+    public boolean yOverlaps (SystemInfo that)
+    {
+        final int commonTop = Math.max(this.top, that.top);
+        final int commonBottom = Math.min(this.bottom, that.bottom);
+
+        return commonBottom > commonTop;
+    }
+
+    //---------------//
+    // registerGlyph //
+    //---------------//
+    /**
+     * Register a brand new glyph in proper system (and nest).
      *
      * <p>
      * <b>Note</b>: The caller must use the returned glyph since it may be
@@ -273,23 +309,13 @@ public class SystemInfo
      * @param glyph the brand new glyph
      * @return the original glyph as inserted in the glyph nest.
      *         Use the returned entity instead of the provided one.
-     * @see #registerGlyph
      */
-    public Glyph addGlyph (Glyph glyph)
+    public Glyph registerGlyph (Glyph glyph)
     {
-        return glyphsBuilder.addGlyph(glyph);
-    }
+        glyph = sheet.getNest().registerGlyph(glyph);
+        glyphs.add(glyph);
 
-    //--------------------//
-    // addGlyphAndMembers //
-    //--------------------//
-    public Glyph addGlyphAndMembers (Glyph glyph)
-    {
-        Glyph g = addGlyph(glyph);
-        for (Section section : g.getMembers()) {
-            section.setSystem(this);
-        }
-        return g;
+        return glyph;
     }
 
     //---------//
@@ -309,8 +335,8 @@ public class SystemInfo
     // addToGlyphsCollection //
     //-----------------------//
     /**
-     * This is a private entry meant for GlyphsBuilder only.
-     * The standard entry is {@link #addGlyph}
+     * This is a private entry meant for SystemGlyphsBuilder only.
+     * The standard entry is {@link #registerGlyph}
      *
      * @param glyph the glyph to add to the system glyph collection
      */
@@ -350,7 +376,7 @@ public class SystemInfo
                         staffInfo,
                         part,
                         new Point(left, firstLine.yAt(left)),
-                        (int) Math.rint(staffInfo.getAbscissa(RIGHT) - left),
+                        staffInfo.getAbscissa(RIGHT) - left,
                         lastLine.yAt(left) - firstLine.yAt(left));
             }
         }
@@ -372,94 +398,14 @@ public class SystemInfo
     }
 
     //---------------//
-    // buildCompound //
-    //---------------//
-    public Glyph buildCompound (Collection<Glyph> parts)
-    {
-        return compoundBuilder.buildCompound(parts);
-    }
-
-    //------------//
-    // buildGlyph //
-    //------------//
-    /**
-     * Build a glyph from a collection of sections, and make the
-     * sections point back to the glyph.
-     *
-     * @param sections the provided members of the future glyph
-     * @return the newly built glyph
-     */
-    public Glyph buildGlyph (Collection<Section> sections)
-    {
-        return glyphsBuilder.buildGlyph(sections);
-    }
-
-    //---------------//
     // buildMeasures //
     //---------------//
     /**
-     * Based on barlines found, build, check and cleanup score measures.
+     * Based on bar lines found, build, check and cleanup score measures.
      */
     public void buildMeasures ()
     {
         measuresBuilder.buildMeasures();
-    }
-
-    //------------------------//
-    // buildTransientCompound //
-    //------------------------//
-    /**
-     * Make a new glyph out of a collection of (sub) glyphs,
-     * by merging all their member sections.
-     * This compound is transient, since until it is properly inserted by use
-     * of {@link #addGlyph}, this building has no impact on either the
-     * containing nest, the containing system, nor the contained sections
-     * themselves.
-     *
-     * <p>
-     * If the newly built compound duplicates an original glyph, the original
-     * glyph is used in place of the compound. Finally, the glyph features are
-     * computed before the compound is returned.</p>
-     *
-     * @param parts the collection of (sub) glyphs
-     * @return the brand new (compound) glyph
-     */
-    public Glyph buildTransientCompound (Collection<Glyph> parts)
-    {
-        return glyphsBuilder.buildTransientCompound(parts);
-    }
-
-    //---------------------//
-    // buildTransientGlyph //
-    //---------------------//
-    /**
-     * Make a new glyph out of a collection of sections.
-     * This glyph is transient, since until it is properly inserted by use of
-     * {@link #addGlyph}, this building has no impact on either the containing
-     * nest, the containing system, nor the contained sections themselves.
-     *
-     * <p>
-     * If the newly built compound duplicates an original glyph, the original
-     * glyph is used in place of the compound. Finally, the glyph features are
-     * computed before the compound is returned.</p>
-     *
-     * @param sections the collection of sections
-     * @return the brand new transient glyph
-     */
-    public Glyph buildTransientGlyph (Collection<Section> sections)
-    {
-        return glyphsBuilder.buildTransientGlyph(sections);
-    }
-
-    //-----------------//
-    // checkBoundaries //
-    //-----------------//
-    /**
-     * Check this system for glyphs that cross the system boundaries.
-     */
-    public void checkBoundaries ()
-    {
-        glyphsBuilder.retrieveGlyphs(false);
     }
 
     //-------------//
@@ -479,27 +425,13 @@ public class SystemInfo
     /**
      * Needed to implement natural SystemInfo sorting, based on system id.
      *
-     * @param o the other system to compare to
+     * @param that the other system to compare to
      * @return the comparison result
      */
     @Override
-    public int compareTo (SystemInfo o)
+    public int compareTo (SystemInfo that)
     {
-        return Integer.signum(id - o.id);
-    }
-
-    //----------------------//
-    // computeGlyphFeatures //
-    //----------------------//
-    /**
-     * Compute all the features that will be used to recognize the
-     * glyph at hand (a mix of moments plus a few other characteristics).
-     *
-     * @param glyph the glyph at hand
-     */
-    public void computeGlyphFeatures (Glyph glyph)
-    {
-        glyphsBuilder.computeGlyphFeatures(glyph);
+        return Integer.compare(id, that.id);
     }
 
     //------------//
@@ -566,19 +498,6 @@ public class SystemInfo
         }
     }
 
-    //------------------//
-    // extractNewGlyphs //
-    //------------------//
-    /**
-     * In the specified system, build new glyphs from unknown sections
-     * (sections not linked to a known glyph).
-     */
-    public void extractNewGlyphs ()
-    {
-        removeInactiveGlyphs();
-        retrieveGlyphs();
-    }
-
     //--------//
     // getBar //
     //--------//
@@ -624,17 +543,17 @@ public class SystemInfo
         return bottom;
     }
 
-    //-------------//
-    // getBoundary //
-    //-------------//
+    //---------//
+    // getArea //
+    //---------//
     /**
-     * Report the precise boundary of this system.
+     * Report the area of this system.
      *
-     * @return the precise system boundary
+     * @return the area of relevant entities
      */
-    public SystemBoundary getBoundary ()
+    public Area getArea ()
     {
-        return boundary;
+        return area;
     }
 
     //-----------//
@@ -647,8 +566,8 @@ public class SystemInfo
      */
     public Rectangle getBounds ()
     {
-        if (boundary != null) {
-            return new Rectangle(boundary.getBounds());
+        if (area != null) {
+            return area.getBounds();
         } else {
             return null;
         }
@@ -772,21 +691,28 @@ public class SystemInfo
         return left;
     }
 
-    //----------//
-    // getLimit //
-    //----------//
-    /**
-     * Report the system limit on the provided side.
-     *
-     * @param side proper horizontal side
-     * @return the leftBar
-     */
-    public Object getLimit (HorizontalSide side)
+    //------------//
+    // getAreaEnd //
+    //------------//
+    public int getAreaEnd (HorizontalSide side)
     {
-        if (side == HorizontalSide.LEFT) {
-            return leftLimit;
+        if (side == LEFT) {
+            return areaLeft;
         } else {
-            return rightLimit;
+            return areaRight;
+        }
+    }
+
+    //------------//
+    // setAreaEnd //
+    //------------//
+    public void setAreaEnd (HorizontalSide side,
+                            int x)
+    {
+        if (side == LEFT) {
+            areaLeft = x;
+        } else {
+            areaRight = x;
         }
     }
 
@@ -907,7 +833,7 @@ public class SystemInfo
                     double otherDp = Math.abs(
                             otherPos.getPitchPosition()
                             - StaffInfo.getLedgerPitchPosition(
-                                    otherPos.getLedger().index));
+                            otherPos.getLedger().index));
 
                     if (otherDp < dp) {
                         logger.debug("   otherPos: {}", pos);
@@ -1127,9 +1053,9 @@ public class SystemInfo
         return found;
     }
 
-    //-------------------------//
+    //-------------------//
     // intersectedGlyphs //
-    //-------------------------//
+    //-------------------//
     /**
      * Look up in system glyphs for <b>all</b> glyphs, apart from the
      * excluded glyphs, intersected by a provided rectangle.
@@ -1153,28 +1079,11 @@ public class SystemInfo
         return found;
     }
 
-    //---------------//
-    // registerGlyph //
-    //---------------//
-    /**
-     * Just register this glyph (as inactive) in order to persist glyph
-     * info such as TextInfo.
-     * Use {@link #addGlyph} to fully add the glpyh as active.
-     *
-     * @param glyph the glyph to just register
-     * @return the proper (original) glyph
-     * @see #addGlyph
-     */
-    public Glyph registerGlyph (Glyph glyph)
-    {
-        return glyphsBuilder.registerGlyph(glyph);
-    }
-
     //----------------------------//
     // removeFromGlyphsCollection //
     //----------------------------//
     /**
-     * Meant for access by GlyphsBuilder only,
+     * Meant for access by SystemGlyphsBuilder only,
      * since standard entry is {@link #removeGlyph}.
      *
      * @param glyph the glyph to remove
@@ -1196,7 +1105,11 @@ public class SystemInfo
      */
     public void removeGlyph (Glyph glyph)
     {
-        glyphsBuilder.removeGlyph(glyph);
+        glyphs.remove(glyph);
+
+        // Cut link from its member sections, if pointing to this glyph
+        glyph.cutSections();
+
     }
 
     //----------------------//
@@ -1248,7 +1161,17 @@ public class SystemInfo
      */
     public void retrieveGlyphs ()
     {
-        glyphsBuilder.retrieveGlyphs(true);
+        // Consider all unknown vertical & horizontal sections
+        List<Section> allSections = new ArrayList<>();
+        allSections.addAll(getVerticalSections());
+        allSections.addAll(getHorizontalSections());
+
+        final GlyphNest nest = sheet.getNest();
+        List<Glyph> newGlyphs = nest.retrieveGlyphs(
+                allSections, GlyphLayer.DEFAULT, false, Glyph.Linking.NO_LINK);
+
+        // Record them into the system       
+        glyphs.addAll(newGlyphs);
     }
 
     //-------------//
@@ -1310,87 +1233,21 @@ public class SystemInfo
         this.barAlignments = barAlignments;
     }
 
-    //-------------//
-    // setBoundary //
-    //-------------//
-    /**
-     * Define the precise boundary of this system.
-     *
-     * @param boundary the (new) boundary
-     */
-    public void setBoundary (SystemBoundary boundary)
-    {
-        logger.debug("{} setBoundary {}", idString(), boundary);
-        this.boundary = boundary;
-
-        updateBoundary();
-    }
-
-    //----------------//
-    // updateBoundary //
-    //----------------//
-    /**
-     * We have a new (or modified) system boundary.
-     * So let's update the system boundary polygon as well as the limits of
-     * the first and last staves.
-     */
-    public void updateBoundary ()
-    {
-        // Reset the system polygon
-        boundary.update();
-
-        // Update top limit of first staff
-        GeoPath topPath = boundary.getLimit(VerticalSide.TOP).toGeoPath();
-        getFirstStaff().setLimit(VerticalSide.TOP, topPath);
-
-        // Update bottom limit of last staff
-        GeoPath bottomPath = boundary.getLimit(VerticalSide.BOTTOM).toGeoPath();
-        getLastStaff().setLimit(VerticalSide.BOTTOM, bottomPath);
-    }
-
-    //----------//
-    // setLimit //
-    //----------//
-    /**
-     * Record the system limit on the provided side.
-     *
-     * @param side  proper horizontal side
-     * @param limit the limit to set
-     */
-    public void setLimit (HorizontalSide side,
-                          Object limit)
-    {
-        if (side == HorizontalSide.LEFT) {
-            this.leftLimit = limit;
-        } else {
-            this.rightLimit = limit;
-        }
-    }
-
     //-----------//
     // setStaves //
     //-----------//
     /**
      * @param staves the range of staves
      */
-    public void setStaves (List<StaffInfo> staves)
+    public final void setStaves (List<StaffInfo> staves)
     {
         this.staves = staves;
-        updateCoordinates();
-    }
 
-    //-----------//
-    // stemBoxOf //
-    //-----------//
-    /**
-     * Report a enlarged box of a given (stem) glyph.
-     *
-     * @param stem the stem
-     * @return the enlarged stem box
-     */
-    public Rectangle stemBoxOf (Glyph stem)
-    {
-        return glyphsBuilder.stemBoxOf(stem);
+        for (StaffInfo staff : staves) {
+            staff.setSystem(this);
+        }
+
+        updateCoordinates();
     }
 
     //----------//
@@ -1400,7 +1257,7 @@ public class SystemInfo
      * Convenient method, to build a string with just the ids of the
      * system collection.
      *
-     * @param systems the collection of glysystemsphs
+     * @param systems the collection of systems
      * @return the string built
      */
     public static String toString (Collection<SystemInfo> systems)
@@ -1446,14 +1303,6 @@ public class SystemInfo
 
         if (rightBar != null) {
             sb.append(" rightBar:").append(rightBar);
-        }
-
-        if (leftLimit != null) {
-            sb.append(" leftLimit:").append(leftLimit);
-        }
-
-        if (rightLimit != null) {
-            sb.append(" rightLimit:").append(rightLimit);
         }
 
         sb.append("}");
@@ -1507,14 +1356,20 @@ public class SystemInfo
         StaffInfo firstStaff = getFirstStaff();
         LineInfo firstLine = firstStaff.getFirstLine();
         Point2D topLeft = firstLine.getEndPoint(LEFT);
-        Point2D topRight = firstLine.getEndPoint(RIGHT);
+
         StaffInfo lastStaff = getLastStaff();
         LineInfo lastLine = lastStaff.getLastLine();
         Point2D botLeft = lastLine.getEndPoint(LEFT);
 
-        left = (int) Math.rint(topLeft.getX());
+        left = Integer.MAX_VALUE;
+        int right = 0;
+        for (StaffInfo staff : staves) {
+            left = Math.min(left, staff.getAbscissa(LEFT));
+            right = Math.max(right, staff.getAbscissa(RIGHT));
+        }
+
         top = (int) Math.rint(topLeft.getY());
-        width = (int) Math.rint(topRight.getX() - topLeft.getX());
+        width = right - left + 1;
         deltaY = (int) Math.rint(
                 lastStaff.getFirstLine().getEndPoint(LEFT).getY() - topLeft.
                 getY());
@@ -1538,5 +1393,13 @@ public class SystemInfo
     public SIGraph getSig ()
     {
         return sig;
+    }
+
+    //---------//
+    // setArea //
+    //---------//
+    public void setArea (Area area)
+    {
+        this.area = area;
     }
 }
