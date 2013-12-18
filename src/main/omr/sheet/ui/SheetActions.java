@@ -20,7 +20,6 @@ import omr.glyph.GlyphRepository;
 
 import omr.grid.StaffInfo;
 import omr.grid.StaffManager;
-import omr.grid.StaffProjector;
 
 import omr.score.Score;
 import omr.score.ScoresManager;
@@ -32,7 +31,6 @@ import omr.sheet.ScaleBuilder;
 import omr.sheet.Sheet;
 
 import omr.ui.MainGui;
-import omr.ui.util.DynamicMenu;
 import omr.ui.util.OmrFileFilter;
 import omr.ui.util.UIUtil;
 
@@ -223,7 +221,7 @@ public class SheetActions
                 {
                     int index = Integer.decode(e.getActionCommand()) - 1;
                     StaffInfo staff = staffManager.getStaff(index);
-                    new StaffProjector(sheet, staff).plot();
+                    sheet.getGridBuilder().barsRetriever.plot(staff);
                 }
             };
 

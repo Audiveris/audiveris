@@ -241,7 +241,11 @@ public class FilamentAlignment
      */
     public void polishCurvature ()
     {
-        boolean modified = false;
+        // Perserve ending points
+        final Point2D oldStartPoint = startPoint;
+        final Point2D oldStopPoint = stopPoint;
+
+        boolean modified;
 
         do {
             modified = false;
@@ -339,6 +343,9 @@ public class FilamentAlignment
                 }
             }
         } while (modified);
+
+        // Restore end points
+        setEndingPoints(oldStartPoint, oldStopPoint);
     }
 
     //------------//

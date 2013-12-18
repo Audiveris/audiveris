@@ -54,6 +54,8 @@ import omr.step.StepException;
 
 import omr.ui.util.ItemRenderer;
 
+import omr.util.HorizontalSide;
+import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
 import omr.util.StopWatch;
 import omr.util.VerticalSide;
@@ -77,6 +79,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -123,6 +126,9 @@ public class BarsRetriever
 
     /** Related staff manager. */
     private final StaffManager staffManager;
+
+    /** Staff projectors. */
+    private final List<StaffProjector> projectors = new ArrayList<StaffProjector>();
 
     /** All alignments found between bars across staves. */
     private final Set<Alignment> alignments = new LinkedHashSet<Alignment>();
@@ -175,6 +181,19 @@ public class BarsRetriever
         sheet.setLag(Lags.VLAG, vLag);
 
         setVipSections();
+    }
+
+    //------//
+    // plot //
+    //------//
+    public void plot (StaffInfo staff)
+    {
+        final int index = staff.getId() - 1;
+
+        if (index < projectors.size()) {
+            projectors.get(index)
+                    .plot();
+        }
     }
 
     //-------------//
@@ -253,6 +272,12 @@ public class BarsRetriever
         // Purge long bars that do not connect staves
         purgePeaks();
 
+        // Refine all staff side abscissae
+        refineSides();
+
+        // Harmonize staves ends in the whole page
+        ///harmonizeEnds();
+        //
         // Create systems & parts from bar connections
         createSystemsAndParts();
 
@@ -362,19 +387,22 @@ public class BarsRetriever
                             sections,
                             Arrays.asList(line));
 
-                    // By construction we have exactly 1 glyph built
-                    Glyph glyph = glyphs.get(0);
-                    peak.setGlyph(glyph);
+                    // By construction we should have exactly 1 glyph built
+                    if (!glyphs.isEmpty()) {
+                        Glyph glyph = glyphs.get(0);
+                        peak.setGlyph(glyph);
 
-                    // Check whether the glyph gets above or below the staff
-                    Rectangle glyphBox = glyph.getBounds();
+                        // Check whether the glyph gets above or below the staff
+                        Rectangle glyphBox = glyph.getBounds();
 
-                    if ((peak.getTop() - glyphBox.y) > params.maxBarExtension) {
-                        peak.setAbove();
-                    }
+                        if ((peak.getTop() - glyphBox.y) > params.maxBarExtension) {
+                            peak.setAbove();
+                        }
 
-                    if (((glyphBox.y + glyphBox.height) - 1 - peak.getBottom()) > params.maxBarExtension) {
-                        peak.setBelow();
+                        if (((glyphBox.y + glyphBox.height) - 1
+                             - peak.getBottom()) > params.maxBarExtension) {
+                            peak.setBelow();
+                        }
                     }
 
                     logger.debug("Staff#{} {}", staff.getId(), peak);
@@ -643,12 +671,15 @@ public class BarsRetriever
     // findBarPeaks //
     //--------------//
     /**
-     * Use staff projections to retrieve bar peaks.
+     * Use individual staff projections to retrieve bar peaks.
      */
     private void findBarPeaks ()
     {
+        // Analysis staff per staff
         for (StaffInfo staff : staffManager.getStaves()) {
-            new StaffProjector(sheet, staff).process();
+            StaffProjector projector = new StaffProjector(sheet, staff);
+            projectors.add(projector);
+            projector.process();
         }
     }
 
@@ -819,6 +850,107 @@ public class BarsRetriever
         return sections;
     }
 
+    //    //---------------//
+    //    // harmonizeEnds //
+    //    //---------------//
+    //    /**
+    //     * Make sure staves side ends are consistent across the whole page.
+    //     * <p>
+    //     * In a page, either all staves or none start with a left bar line.
+    //     * The same applies for potential right bar line.
+    //     * <p>
+    //     * With or without bar lines, staves starting and stopping abscissae are
+    //     * not random but organized in groups.
+    //     * Strategy: try to gather ends by rather vertical lines and detect abnormal
+    //     * points.
+    //     */
+    //    private void harmonizeEnds ()
+    //    {
+    //        Skew skew = sheet.getSkew();
+    //
+    //        // Check barline presence
+    //        for (HorizontalSide side : HorizontalSide.values()) {
+    //            List<Integer> withBar = new ArrayList<Integer>();
+    //            List<Integer> withoutBar = new ArrayList<Integer>();
+    //
+    //            for (StaffInfo staff : staffManager.getStaves()) {
+    //                int xStaff = staff.getAbscissa(side);
+    //                List<BarPeak> peaks = staff.getBarPeaks();
+    //                int index = (side == LEFT) ? 0 : (peaks.size() - 1);
+    //                BarPeak peak = peaks.get(index);
+    //
+    //                if ((xStaff >= peak.getStart()) && (xStaff <= peak.getStop())) {
+    //                    withBar.add(staff.getId());
+    //                } else {
+    //                    withoutBar.add(staff.getId());
+    //                }
+    //            }
+    //
+    //            logger.info("{} Bars:{} noBars:{}", side, withBar, withoutBar);
+    //        }
+    //
+    //        // Check staff start & stop abscissa
+    //        for (HorizontalSide side : HorizontalSide.values()) {
+    //            List<BasicLine> lines = new ArrayList<BasicLine>();
+    //            BasicLine line = null;
+    //            Double prevX = null;
+    //
+    //            for (StaffInfo staff : staffManager.getStaves()) {
+    //                int x = staff.getAbscissa(side);
+    //                FilamentLine staffLine = staff.getLines()
+    //                        .get(2);
+    //                Point2D end = new Point2D.Double(
+    //                        x,
+    //                        staffLine.getEndPoint(side).getY());
+    //                Point2D dskEnd = skew.deskewed(end);
+    //                double dskX = dskEnd.getX();
+    //                boolean shift = (prevX != null)
+    //                                && (Math.abs(dskX - prevX) > params.maxAlignmentDx);
+    //                logger.info(
+    //                        "{} staff#{} x:{} dskEnd:{} {}",
+    //                        side,
+    //                        staff.getId(),
+    //                        x,
+    //                        String.format("%.0f", dskX),
+    //                        shift ? String.format("SHIFT_DETECTED: %.0f", dskX - prevX)
+    //                        : "");
+    //
+    //                if (shift) {
+    //                    // We cannot keep on with the same line
+    //                    // Reuse another one or create a brand new one?
+    //                    line = null;
+    //
+    //                    for (ListIterator<BasicLine> it = lines.listIterator(
+    //                            lines.size() - 1); it.hasPrevious();) {
+    //                        BasicLine ln = it.previous();
+    //                        final double delta;
+    //
+    //                        if (ln.getNumberOfPoints() > 1) {
+    //                            delta = ln.distanceOf(end);
+    //                        } else {
+    //                            delta = ln.getMinAbscissa() - end.getX();
+    //                        }
+    //
+    //                        if (Math.abs(delta) <= (2 * params.maxAlignmentDx)) {
+    //                            line = ln;
+    //
+    //                            break;
+    //                        }
+    //                    }
+    //                }
+    //
+    //                if (line == null) {
+    //                    lines.add(line = new BasicLine());
+    //                }
+    //
+    //                line.includePoint(end);
+    //                prevX = dskX;
+    //            }
+    //
+    //            logger.info("{} lines: {}", lines.size(), lines);
+    //        }
+    //    }
+    //
     //-------------//
     // isConnected //
     //-------------//
@@ -956,8 +1088,10 @@ public class BarsRetriever
     // purgePeaks //
     //------------//
     /**
-     * Purge long bars (those getting above or below the related staff)
-     * that do not connect staves.
+     * Purge long thin bars (those getting above or below the related
+     * staff) that do not connect staves.
+     * Thick bars are not concerned by this test, because they cannot be
+     * mistaken for stems and can appear to be extended because of brackets.
      */
     private void purgePeaks ()
     {
@@ -966,12 +1100,24 @@ public class BarsRetriever
                     .iterator(); it.hasNext();) {
                 BarPeak peak = it.next();
 
-                if ((peak.isAbove() && !isConnected(peak, BOTTOM))
-                    || (peak.isBelow() && !isConnected(peak, TOP))) {
-                    it.remove();
-                    logger.debug("Deleted long {}", peak);
+                if (peak.isThin()) {
+                    if ((peak.isAbove() && !isConnected(peak, BOTTOM))
+                        || (peak.isBelow() && !isConnected(peak, TOP))) {
+                        it.remove();
+                        logger.debug("Deleted long {}", peak);
+                    }
                 }
             }
+        }
+    }
+
+    //-------------//
+    // refineSides //
+    //-------------//
+    private void refineSides ()
+    {
+        for (StaffProjector projector : projectors) {
+            projector.refineStaffSides();
         }
     }
 
@@ -1149,6 +1295,8 @@ public class BarsRetriever
     {
         //~ Instance fields ----------------------------------------------------
 
+        final int maxAlignmentDx;
+
         final int maxRunShift;
 
         final int maxBarExtension;
@@ -1168,6 +1316,7 @@ public class BarsRetriever
          */
         public Parameters (Scale scale)
         {
+            maxAlignmentDx = scale.toPixels(constants.maxAlignmentDx);
             maxRunShift = scale.toPixels(constants.maxRunShift);
             maxBarExtension = scale.toPixels(constants.maxBarExtension);
             maxConnectionGap = scale.toPixels(constants.maxConnectionGap);

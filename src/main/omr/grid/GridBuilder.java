@@ -65,10 +65,10 @@ public class GridBuilder
     private final Sheet sheet;
 
     /** Companion in charge of staff lines. */
-    private final LinesRetriever linesRetriever;
+    public final LinesRetriever linesRetriever;
 
     /** Companion in charge of bar lines. */
-    private final BarsRetriever barsRetriever;
+    public final BarsRetriever barsRetriever;
 
     //~ Constructors -----------------------------------------------------------
     //-------------//

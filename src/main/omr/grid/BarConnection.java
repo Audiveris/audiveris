@@ -70,7 +70,7 @@ public class BarConnection
     public Area getArea ()
     {
         if (area == null) {
-            double width = Math.min(topPeak.getWidth(), bottomPeak.getWidth());
+            double width = Math.max(topPeak.getWidth(), bottomPeak.getWidth());
             double xTop = (topPeak.getStart() + topPeak.getStop()) / 2d;
             double xBot = (bottomPeak.getStart() + bottomPeak.getStop()) / 2d;
             Line2D line = new Line2D.Double(

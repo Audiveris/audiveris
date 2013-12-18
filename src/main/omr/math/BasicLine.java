@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import static java.lang.Math.*;
 
 /**
@@ -175,6 +176,14 @@ public class BasicLine
         return (a * x) + (b * y) + c;
     }
 
+    //------------//
+    // distanceOf //
+    //------------//
+    public double distanceOf (Point2D point)
+    {
+        return distanceOf(point.getX(), point.getY());
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -308,6 +317,14 @@ public class BasicLine
         dirty = true;
 
         return this;
+    }
+
+    //--------------//
+    // includePoint //
+    //--------------//
+    public void includePoint (Point2D point)
+    {
+        includePoint(point.getX(), point.getY());
     }
 
     //--------------//

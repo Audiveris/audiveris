@@ -257,7 +257,7 @@ public class NotesBuilder
         allShapes.addAll(odds);
 
         for (Shape shape : allShapes) {
-            Template tpl = factory.getTemplate(shape, interline +1); //BINGO +1
+            Template tpl = factory.getTemplate(shape, interline);
             minWidth = Math.min(minWidth, tpl.getWidth());
             templates.put(shape, tpl);
         }

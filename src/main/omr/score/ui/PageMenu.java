@@ -19,7 +19,6 @@ import omr.score.entity.Chord;
 import omr.score.entity.Measure;
 import omr.score.entity.Note;
 import omr.score.entity.Page;
-import omr.score.entity.ScoreSystem;
 import omr.score.entity.Slot;
 
 import omr.sheet.Sheet;
@@ -41,13 +40,16 @@ import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import omr.grid.StaffInfo;
+import omr.grid.StaffManager;
 import omr.sig.ui.InterMenu;
 import omr.sig.ui.GlyphMenu;
 
 /**
- * Class {@code PageMenu} defines the popup menu which is linked to the
- * current selection in page editor view.
- * <p>It points to several sub-menus: measure, slot, chords, glyphs
+ * Class {@code PageMenu} defines the pop-up menu which is linked to
+ * the current selection in page editor view.
+ * <p>
+ * It points to several sub-menus: measure, slot, chords, glyphs
  * </p>
  *
  * @author Hervé Bitteur
@@ -70,6 +72,9 @@ public class PageMenu
     /** Concrete popup menu. */
     private final JPopupMenu popup;
 
+    /** Staff submenu. */
+    private final StaffMenu staffMenu = new StaffMenu();
+
     /** Measure submenu. */
     private final MeasureMenu measureMenu = new MeasureMenu();
 
@@ -90,6 +95,9 @@ public class PageMenu
 
     // Context
     //
+    /** Selected staff, if any. */
+    private StaffInfo staff;
+    
     /** Selected measure. */
     private Measure measure;
 
@@ -146,6 +154,7 @@ public class PageMenu
     //----------//
     /**
      * Report the concrete pop-up menu.
+     *
      * @return the pop-up menu
      */
     public JPopupMenu getPopup ()
@@ -157,7 +166,7 @@ public class PageMenu
     // updateMenu //
     //------------//
     /**
-     * Update the popup menu according to the currently selected glyphs.
+     * Update the pop-up menu according to the currently selected items.
      *
      * @param point the point designated in the page display
      */
@@ -165,6 +174,11 @@ public class PageMenu
     {
         // Analyze the context to retrieve designated system, measure & slot
         Sheet sheet = page.getSheet();
+        
+        StaffManager staffManager = sheet.getStaffManager();
+        staff = staffManager.getStaffAt(point);
+        staffMenu.update();
+        
         List<SystemInfo> systems = sheet.getSystems();
 
         if (systems != null) {
@@ -203,6 +217,12 @@ public class PageMenu
     {
         popup.removeAll();
 
+        
+        // Staff
+        if (staff != null) {
+            popup.add(staffMenu.getMenu());
+        }
+        
         // Measure
         if (measure != null) {
             popup.add(measureMenu.getMenu());
@@ -329,7 +349,7 @@ public class PageMenu
             {
                 putValue(NAME, "Dump voices");
                 putValue(SHORT_DESCRIPTION,
-                        "Dump the voices of the selected measure");
+                         "Dump the voices of the selected measure");
             }
 
             //~ Methods --------------------------------------------------------
@@ -343,6 +363,92 @@ public class PageMenu
             public void update ()
             {
                 setEnabled(measure != null);
+            }
+        }
+    }
+
+    //-----------//
+    // StaffMenu //
+    //-----------//
+    private class StaffMenu
+            extends DynAction
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Concrete menu */
+        private final JMenu menu;
+
+        //~ Constructors -------------------------------------------------------
+        /**
+         * Create the staff menu
+         */
+        public StaffMenu ()
+        {
+            menu = new JMenu("Staff");
+            defineLayout();
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Default action is to open the menu
+            assert false;
+        }
+
+        public JMenu getMenu ()
+        {
+            return menu;
+        }
+
+        @Override
+        public void update ()
+        {
+            menu.setEnabled(staff != null);
+
+            if (staff != null) {
+                menu.setText("Staff #" + staff.getId() + " ...");
+            } else {
+                menu.setText("no staff");
+            }
+        }
+
+        private void defineLayout ()
+        {
+            // Staff
+            menu.add(new JMenuItem(new PlotAction()));
+        }
+
+        //~ Inner Classes ------------------------------------------------------
+        //------------//
+        // PlotAction //
+        //------------//
+        /**
+         * Plot the projection of the current staff.
+         */
+        private class PlotAction
+                extends DynAction
+        {
+            //~ Constructors ---------------------------------------------------
+
+            public PlotAction ()
+            {
+                putValue(NAME, "Projection");
+                putValue(SHORT_DESCRIPTION,
+                         "Display staff horizontal projection");
+            }
+
+            //~ Methods --------------------------------------------------------
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                page.getSheet().getGridBuilder().barsRetriever.plot(staff);
+            }
+
+            @Override
+            public void update ()
+            {
+                setEnabled(staff != null);
             }
         }
     }
@@ -452,7 +558,7 @@ public class PageMenu
             {
                 putValue(NAME, "Dump chord(s)");
                 putValue(SHORT_DESCRIPTION,
-                        "Dump the selected chord(s)");
+                         "Dump the selected chord(s)");
             }
 
             //~ Methods --------------------------------------------------------
@@ -543,7 +649,7 @@ public class PageMenu
             {
                 putValue(NAME, "Dump chords");
                 putValue(SHORT_DESCRIPTION,
-                        "Dump the chords of the selected slot");
+                         "Dump the chords of the selected slot");
             }
 
             //~ Methods --------------------------------------------------------
@@ -575,7 +681,7 @@ public class PageMenu
             {
                 putValue(NAME, "Dump voices");
                 putValue(SHORT_DESCRIPTION,
-                        "Dump the voices of the selected slot");
+                         "Dump the voices of the selected slot");
             }
 
             //~ Methods --------------------------------------------------------

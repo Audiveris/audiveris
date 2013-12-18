@@ -30,17 +30,21 @@ import omr.sig.Inter;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.LEFT;
 import static omr.util.HorizontalSide.RIGHT;
+import omr.util.Navigable;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
@@ -79,6 +83,7 @@ public class StaffProjector
 
     //~ Instance fields --------------------------------------------------------
     /** Underlying sheet. */
+    @Navigable(false)
     private final Sheet sheet;
 
     /** Related scale. */
@@ -139,104 +144,7 @@ public class StaffProjector
             computeValues();
         }
 
-        final XYSeriesCollection dataset = new XYSeriesCollection();
-        final int xMin = 0;
-        final int xMax = sheet.getWidth() - 1;
-
-        {
-            // Values
-            XYSeries valueSeries = new XYSeries("Cumuls");
-
-            for (int x = xMin; x <= xMax; x++) {
-                valueSeries.add(x, values[x]);
-            }
-
-            dataset.addSeries(valueSeries);
-        }
-
-        {
-            // Derivatives
-            XYSeries derivativeSeries = new XYSeries("Derivatives");
-
-            for (int x = xMin; x <= xMax; x++) {
-                derivativeSeries.add(x, derivative(x));
-            }
-
-            dataset.addSeries(derivativeSeries);
-        }
-
-        {
-            // BarPeak min threshold
-            XYSeries minSeries = new XYSeries("MinHeight");
-            minSeries.add(xMin, params.barThreshold);
-            minSeries.add(xMax, params.barThreshold);
-
-            dataset.addSeries(minSeries);
-        }
-
-        {
-            // Chunk threshold (assuming a 5-line staff)
-            XYSeries chunkSeries = new XYSeries("MaxChunk");
-            chunkSeries.add(xMin, params.chunkThreshold);
-            chunkSeries.add(xMax, params.chunkThreshold);
-            dataset.addSeries(chunkSeries);
-        }
-
-        {
-            // Theoretical staff height (assuming a 5-line staff)
-            XYSeries heightSeries = new XYSeries("Height");
-            int totalHeight = 4 * scale.getInterline();
-            heightSeries.add(xMin, totalHeight);
-            heightSeries.add(xMax, totalHeight);
-
-            dataset.addSeries(heightSeries);
-        }
-
-        {
-            final int nostaff = params.blankThreshold;
-            XYSeries holeSeries = new XYSeries("NoStaff");
-            holeSeries.add(xMin, nostaff);
-            holeSeries.add(xMax, nostaff);
-            dataset.addSeries(holeSeries);
-        }
-
-        {
-            // Cumulated staff lines (assuming a 5-line staff)
-            XYSeries linesSeries = new XYSeries("Lines");
-            linesSeries.add(xMin, params.linesThreshold);
-            linesSeries.add(xMax, params.linesThreshold);
-            dataset.addSeries(linesSeries);
-        }
-
-        {
-            // Zero
-            XYSeries zeroSeries = new XYSeries("Zero");
-            zeroSeries.add(xMin, 0);
-            zeroSeries.add(xMax, 0);
-            dataset.addSeries(zeroSeries);
-        }
-
-        // Chart
-        JFreeChart chart = ChartFactory.createXYLineChart(
-                sheet.getId() + " staff#" + staff.getId(), // Title
-                "Abscissae", // X-Axis label
-                "Counts", // Y-Axis label
-                dataset, // Dataset
-                PlotOrientation.VERTICAL, // orientation,
-                true, // Show legend
-                false, // Show tool tips
-                false // urls
-        );
-
-        // Hosting frame
-        ChartFrame frame = new ChartFrame(
-                sheet.getId() + " staff#" + staff.getId(),
-                chart,
-                true);
-        frame.pack();
-        frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        frame.setLocation(new Point(20 * staff.getId(), 20 * staff.getId()));
-        frame.setVisible(true);
+        new Plotter().plot();
     }
 
     //---------//
@@ -256,13 +164,33 @@ public class StaffProjector
         findPeaks();
 
         // Refine left and right abscissa values of staff
-        for (HorizontalSide side : HorizontalSide.values()) {
-            refineStaffAbscissa(side);
-        }
+        refineStaffSides();
 
         staff.setBarPeaks(peaks);
 
         return peaks;
+    }
+
+    //------------------//
+    // refineStaffSides //
+    //------------------//
+    /**
+     * Use remaining peaks to refine staff sides accordingly.
+     */
+    public void refineStaffSides ()
+    {
+        for (HorizontalSide side : HorizontalSide.values()) {
+            refineStaffSide(side);
+        }
+    }
+
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return "StaffProjector#" + staff.getId();
     }
 
     //---------------//
@@ -317,9 +245,31 @@ public class StaffProjector
         final double valueRange = totalHeight - minValue;
 
         // Compute precise start & stop abscissae
-        final int start = refinePeakSide(rawStart, rawStop, -1);
-        final int stop = refinePeakSide(rawStart, rawStop, +1);
+        Integer newStart = refinePeakSide(rawStart, rawStop, -1);
 
+        if (newStart == null) {
+            return null;
+        }
+
+        final int start = newStart;
+        Integer newStop = refinePeakSide(rawStart, rawStop, +1);
+
+        if (newStop == null) {
+            return null;
+        }
+
+        final int stop = newStop;
+
+        //        // Check ratio of black pixels in this area (relevant for thick peak)
+        //        int black = 0;
+        //
+        //        for (int x = start; x <= stop; x++) {
+        //            black += values[x];
+        //        }
+        //
+        //        int    area = totalHeight * (stop - start + 1);
+        //        double blackRatio = (double) black / area;
+        //
         // Compute chunk if any
         final int leftChunk = getChunk(start, -1);
         final int rightChunk = getChunk(stop, +1);
@@ -405,8 +355,9 @@ public class StaffProjector
     /**
      * Look for all "blank" regions without staff lines.
      * <p>
-     * We then select the region right before the staff and the region
-     * right after the staff, and populate the blanks map with these two ones.
+     * We then select the (wide) region right before the staff and the (wide)
+     * region right after the staff, and populate the blanks map with these two
+     * ones.
      */
     private void findBlanks ()
     {
@@ -526,8 +477,7 @@ public class StaffProjector
     private int getChunk (int xStart,
                           int dir)
     {
-        final int dx = params.barAbscissaMargin;
-        final int xEnd = xClamp(xStart + (dir * (1 + dx)));
+        final int xEnd = xClamp(xStart + (dir * (1 + params.barChunkDx)));
         int minValue = Integer.MAX_VALUE;
 
         for (int x = xStart + dir; (dir * (xEnd - x)) >= 0; x += dir) {
@@ -547,19 +497,24 @@ public class StaffProjector
      * @param xStart raw abscissa that starts peak
      * @param xStop  raw abscissa that stops peak
      * @param dir    -1 for going left, +1 for going right
+     * @return the best side abscissa, or null if none
      */
-    private int refinePeakSide (int xStart,
-                                int xStop,
-                                int dir)
+    private Integer refinePeakSide (int xStart,
+                                    int xStop,
+                                    int dir)
     {
         // Additional check range
-        final int dx = params.barAbscissaMargin;
+        final int dx = params.barRefineDx;
 
         // Beginning and ending x values
-        final int x1 = (dir > 0) ? xStart : xStop;
+        final int x1 = (dir > 0) ? xStop : xStart;
         final int x2 = (dir > 0) ? xClamp(xStop + dx) : xClamp(xStart - dx);
-        int bestDer = 0; // Best derivative so far
-        int bestX = -1; // X at best derivative
+
+        // X at best derivative
+        int bestX = -1;
+
+        // Best derivative so far
+        int bestDer = 0;
 
         for (int x = x1; (dir * (x2 - x)) >= 0; x += dir) {
             int der = derivative(x);
@@ -568,24 +523,38 @@ public class StaffProjector
                 bestDer = der;
                 bestX = x;
             }
+
+            // Check we are still higher than chunk level
+            int val = values[x];
+
+            if (val < params.chunkThreshold) {
+                break;
+            }
         }
 
-        return (dir > 0) ? (bestX - 1) : bestX;
+        if (Math.abs(bestDer) >= params.minDerivative) {
+            return (dir > 0) ? (bestX - 1) : bestX;
+        } else {
+            return null; // Invalid
+        }
     }
 
-    //---------------------//
-    // refineStaffAbscissa //
-    //---------------------//
+    //-----------------//
+    // refineStaffSide //
+    //-----------------//
     /**
-     * Using rough abscissa (defined at line ending point), try to
-     * extend it outwards.
-     * We use the last bar line peak encountered if any before the blank
-     * (no-line) region.
-     * If no such peak is found, we stop right before the blank region.
+     * Try to use the extreme peak on a given staff side, to refine the
+     * precise abscissa where the staff ends.
+     * <p>
+     * This extreme peak (first or last peak according to side) can be used as
+     * abscissa reference only if it is either beyond current staff end or
+     * sufficiently close to the end.
+     * If no such peak is found, we stop right before the blank region
+     * assuming that this is a measure with no outside bar.
      *
      * @param side which horizontal side to refine
      */
-    private void refineStaffAbscissa (HorizontalSide side)
+    private void refineStaffSide (HorizontalSide side)
     {
         final int dir = (side == LEFT) ? (-1) : 1;
         final int staffEnd = staff.getAbscissa(side);
@@ -596,7 +565,11 @@ public class StaffProjector
             final int peakMid = (peak.getStart() + peak.getStop()) / 2;
 
             // Check side position of peak wrt staff
-            if ((dir * (peakMid - staffEnd)) > 0) {
+            // Must be external or close internal
+            final int toPeak = peakMid - staffEnd;
+
+            if (((dir * toPeak) >= 0)
+                || (Math.abs(toPeak) <= params.maxBarToEnd)) {
                 logger.debug(
                         "Staff#{} {} set at peak {} (vs {})",
                         staff.getId(),
@@ -609,7 +582,7 @@ public class StaffProjector
             }
         }
 
-        // Here, no suitable peak was found, stop at blank region if any
+        // Here, no suitable peak was found, so stop at blank region if any
         Blank blank = blanks.get(side);
 
         if (blank != null) {
@@ -632,7 +605,7 @@ public class StaffProjector
     /**
      * Report the relevant blank region on desired staff side.
      * <p>
-     * We try to pickup a wide enough region if any.
+     * We try to pick up a wide enough region if any.
      * If not, we simply select the first one encountered among the widest ones.
      * <p>
      * TODO: The selection could be revised in a second phase performed at sheet
@@ -645,7 +618,6 @@ public class StaffProjector
     private Blank selectBlank (HorizontalSide side,
                                List<Blank> blanks)
     {
-        final int minWidth = params.minBlankWidth;
         final int dir = (side == LEFT) ? (-1) : 1;
         final int end = staff.getAbscissa(side) - dir;
 
@@ -665,7 +637,7 @@ public class StaffProjector
                 int width = blank.getWidth();
 
                 // Stop on first significant blank
-                if (width >= minWidth) {
+                if (width >= params.minBlankWidth) {
                     return blank;
                 }
 
@@ -720,9 +692,17 @@ public class StaffProjector
                 10,
                 "Abscissa margin for checks around staff");
 
-        final Scale.Fraction barAbscissaMargin = new Scale.Fraction(
+        final Scale.Fraction barChunkDx = new Scale.Fraction(
+                0.4,
+                "Abscissa margin for chunks check around bar");
+
+        final Scale.Fraction barRefineDx = new Scale.Fraction(
                 0.25,
-                "Abscissa margin for checks around bar");
+                "Abscissa margin for refining peak sides");
+
+        final Scale.Fraction minDerivative = new Scale.Fraction(
+                0.5,
+                "Minimum absolute derivative for peak side");
 
         final Scale.Fraction barThreshold = new Scale.Fraction(
                 3.0,
@@ -737,12 +717,16 @@ public class StaffProjector
                 "Maximum cumul value to detect chunk (on top of lines)");
 
         final Scale.LineFraction blankThreshold = new Scale.LineFraction(
-                1,
+                0.4,
                 "Maximum cumul value (in LineFraction) to detect noline region");
 
         final Scale.Fraction minBlankWidth = new Scale.Fraction(
-                0.25,
+                0.5,
                 "Minimum width for a blank region to end a staff side");
+
+        final Scale.Fraction maxBarToEnd = new Scale.Fraction(
+                3.0,
+                "Maximum dx between bar and end of staff");
 
     }
 
@@ -802,7 +786,11 @@ public class StaffProjector
 
         final int staffAbscissaMargin;
 
-        final int barAbscissaMargin;
+        final int barChunkDx;
+
+        final int barRefineDx;
+
+        final int minDerivative;
 
         final int barThreshold;
 
@@ -816,24 +804,162 @@ public class StaffProjector
 
         final int minBlankWidth;
 
+        final int maxBarToEnd;
+
         //~ Constructors -------------------------------------------------------
         public Parameters (Scale scale)
         {
             maxThinWidth = scale.toPixels(constants.maxThinWidth);
             staffAbscissaMargin = scale.toPixels(constants.staffAbscissaMargin);
-            barAbscissaMargin = scale.toPixels(constants.barAbscissaMargin);
+            barChunkDx = scale.toPixels(constants.barChunkDx);
+            barRefineDx = scale.toPixels(constants.barRefineDx);
+            minDerivative = scale.toPixels(constants.minDerivative);
             barThreshold = scale.toPixels(constants.barThreshold);
             gapThreshold = scale.toPixels(constants.gapThreshold);
             linesThreshold = 4 * scale.getMainFore();
             blankThreshold = (int) Math.rint(
                     scale.getMaxFore() * constants.blankThreshold.getValue());
             minBlankWidth = scale.toPixels(constants.minBlankWidth);
+            maxBarToEnd = scale.toPixels(constants.maxBarToEnd);
 
             // For chunk threshold the strategy is to use the largest value
             // among (4 times max fore) and (4 times mean fore) + fraction
             chunkThreshold = Math.max(
                     4 * scale.getMaxFore(),
                     linesThreshold + scale.toPixels(constants.chunkThreshold));
+        }
+    }
+
+    //---------//
+    // Plotter //
+    //---------//
+    /**
+     * Handles the display of projection chart.
+     */
+    private class Plotter
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final XYSeriesCollection dataset = new XYSeriesCollection();
+
+        // Chart
+        final JFreeChart chart = ChartFactory.createXYLineChart(
+                sheet.getId() + " staff#" + staff.getId(), // Title
+                "Abscissae", // X-Axis label
+                "Counts", // Y-Axis label
+                dataset, // Dataset
+                PlotOrientation.VERTICAL, // orientation,
+                true, // Show legend
+                false, // Show tool tips
+                false // urls
+        );
+
+        final XYPlot plot = (XYPlot) chart.getPlot();
+
+        final XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+
+        // Series index
+        int index = -1;
+
+        //~ Methods ------------------------------------------------------------
+        public void plot ()
+        {
+            plot.setRenderer(renderer);
+
+            final int xMin = 0;
+            final int xMax = sheet.getWidth() - 1;
+
+            {
+                // Values
+                XYSeries valueSeries = new XYSeries("Cumuls");
+
+                for (int x = xMin; x <= xMax; x++) {
+                    valueSeries.add(x, values[x]);
+                }
+
+                add(valueSeries, Color.RED, false);
+            }
+
+            {
+                // Derivatives
+                XYSeries derivativeSeries = new XYSeries("Derivatives");
+
+                for (int x = xMin; x <= xMax; x++) {
+                    derivativeSeries.add(x, derivative(x));
+                }
+
+                add(derivativeSeries, Color.BLUE, false);
+            }
+
+            {
+                // Theoretical staff height (assuming a 5-line staff)
+                XYSeries heightSeries = new XYSeries("StaffHeight");
+                int totalHeight = 4 * scale.getInterline();
+                heightSeries.add(xMin, totalHeight);
+                heightSeries.add(xMax, totalHeight);
+                add(heightSeries, Color.BLACK, true);
+            }
+
+            {
+                // BarPeak min threshold
+                XYSeries minSeries = new XYSeries("MinHeight");
+                minSeries.add(xMin, params.barThreshold);
+                minSeries.add(xMax, params.barThreshold);
+                add(minSeries, Color.GREEN, true);
+            }
+
+            {
+                // Chunk threshold (assuming a 5-line staff)
+                XYSeries chunkSeries = new XYSeries("MaxChunk");
+                chunkSeries.add(xMin, params.chunkThreshold);
+                chunkSeries.add(xMax, params.chunkThreshold);
+                add(chunkSeries, Color.YELLOW, true);
+            }
+
+            {
+                // Cumulated staff lines (assuming a 5-line staff)
+                XYSeries linesSeries = new XYSeries("Lines");
+                linesSeries.add(xMin, params.linesThreshold);
+                linesSeries.add(xMax, params.linesThreshold);
+                add(linesSeries, Color.MAGENTA, true);
+            }
+
+            {
+                // Threshold for no staff
+                final int nostaff = params.blankThreshold;
+                XYSeries holeSeries = new XYSeries("NoStaff");
+                holeSeries.add(xMin, nostaff);
+                holeSeries.add(xMax, nostaff);
+                add(holeSeries, Color.CYAN, true);
+            }
+
+            {
+                // Zero
+                XYSeries zeroSeries = new XYSeries("Zero");
+                zeroSeries.add(xMin, 0);
+                zeroSeries.add(xMax, 0);
+                add(zeroSeries, new Color(255, 255, 255, 100), true);
+            }
+
+            // Hosting frame
+            ChartFrame frame = new ChartFrame(
+                    sheet.getId() + " staff#" + staff.getId(),
+                    chart,
+                    true);
+            frame.pack();
+            frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+            frame.setLocation(
+                    new Point(20 * staff.getId(), 20 * staff.getId()));
+            frame.setVisible(true);
+        }
+
+        private void add (XYSeries series,
+                          Color color,
+                          boolean displayShapes)
+        {
+            dataset.addSeries(series);
+            renderer.setSeriesPaint(++index, color);
+            renderer.setSeriesShapesVisible(index, displayShapes);
         }
     }
 }
