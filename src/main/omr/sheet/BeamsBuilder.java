@@ -95,10 +95,13 @@ public class BeamsBuilder
     /** The related SIG. */
     private final SIGraph sig;
 
-    /** Beam spots for this system, sorted by abscissa. */
+    /** Spots already recognized as beams. */
+    private final List<Glyph> assignedSpots = new ArrayList<Glyph>();
+
+    /** Remaining beam spots candidates, sorted by abscissa. */
     private List<Glyph> sortedBeamSpots;
 
-    /** Vertical stem seeds for this system, sorted by abscissa. */
+    /** Vertical stem seeds, sorted by abscissa. */
     private List<Glyph> sortedSystemSeeds;
 
     /** Input image. */
@@ -120,10 +123,6 @@ public class BeamsBuilder
         sig = system.getSig();
         sheet = system.getSheet();
         params = new Parameters(sheet.getScale());
-
-        //        if (system.getId() == 1) {
-        //            Main.dumping.dump(params);
-        //        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -140,24 +139,18 @@ public class BeamsBuilder
                 .getSource(
                         Picture.SourceKey.STAFF_LINE_FREE);
 
-        // First, retrieve beams from spots
+        // First, retrieve beam candidates from spots
         sortedBeamSpots = getBeamSpots();
 
-        for (Glyph glyph : sortedBeamSpots) {
-            final String failure = checkBeamGlyph(glyph);
+        // Create initial beams by checking spots individually
+        createBeams();
 
-            if ((failure != null) && glyph.isVip()) {
-                logger.info("VIP beam#{} {}", glyph.getId(), failure);
-            }
-        }
-
-        // Second, extend beams as needed
-        sortedBeamSpots = getBeamSpots(); // Update
+        // Then, extend beams as possible
+        sortedBeamSpots.removeAll(assignedSpots);
         extendBeams();
 
-        // Third, retrieve beam hooks
-        sortedBeamSpots = getBeamSpots(); // Update
-
+        // Finally, retrieve beam hooks
+        sortedBeamSpots.removeAll(assignedSpots);
         buildHooks();
     }
 
@@ -175,54 +168,6 @@ public class BeamsBuilder
     public int maxStemBeamGapY ()
     {
         return params.maxStemBeamGapY;
-    }
-
-    //---------//
-    // mergeOf //
-    //---------//
-    /**
-     * (Try to) create a new FullAbstractBeamInter instance that
-     * represents a merge of the provided beams.
-     *
-     * @param one a beam
-     * @param two another beam
-     * @return the resulting beam, or null if failed
-     */
-    public FullBeamInter mergeOf (FullBeamInter one,
-                                  FullBeamInter two)
-    {
-        final Line2D oneMedian = one.getMedian();
-        final Line2D twoMedian = two.getMedian();
-
-        // Height
-        double oneWidth = oneMedian.getX2() - oneMedian.getX1();
-        double twoWidth = twoMedian.getX2() - twoMedian.getX1();
-        double height = ((one.getHeight() * oneWidth)
-                         + (two.getHeight() * twoWidth)) / (oneWidth
-                                                            + twoWidth);
-
-        // Median & width
-        final Line2D median;
-
-        if (oneMedian.getX1() < twoMedian.getX1()) {
-            median = new Line2D.Double(oneMedian.getP1(), twoMedian.getP2());
-        } else {
-            median = new Line2D.Double(twoMedian.getP1(), oneMedian.getP2());
-        }
-
-        BeamItem newItem = new BeamItem(median, height);
-
-        if (one.isVip() || two.isVip()) {
-            newItem.setVip();
-        }
-
-        Impacts impacts = computeBeamImpacts(newItem, true, true);
-
-        if (impacts != null) {
-            return new FullBeamInter(null, impacts, median, height);
-        } else {
-            return null;
-        }
     }
 
     //-------------//
@@ -361,7 +306,7 @@ public class BeamsBuilder
 
         // Compute items grade and create FullBeamInter instances when acceptable
         if (createBeamInters(items)) {
-            glyph.setShape(Shape.BEAM); // Mark it as already assigned to beam
+            assignedSpots.add(glyph);
 
             return null; // Mean: no failure
         } else {
@@ -440,7 +385,7 @@ public class BeamsBuilder
 
             sig.addVertex(hook);
             rawSystemBeams.add(hook);
-            glyph.setShape(Shape.BEAM_HOOK); // For visual check
+            assignedSpots.add(glyph);
 
             return null; // Mean: no failure
         } else {
@@ -595,6 +540,23 @@ public class BeamsBuilder
     }
 
     //-------------//
+    // createBeams //
+    //-------------//
+    /**
+     * Create initial beams, by checking each spot glyph individually.
+     */
+    private void createBeams ()
+    {
+        for (Glyph glyph : sortedBeamSpots) {
+            final String failure = checkBeamGlyph(glyph);
+
+            if ((failure != null) && glyph.isVip()) {
+                logger.info("VIP beam#{} {}", glyph.getId(), failure);
+            }
+        }
+    }
+
+    //-------------//
     // extendBeams //
     //-------------//
     /**
@@ -738,7 +700,7 @@ public class BeamsBuilder
     private boolean extendToBeam (FullBeamInter beam,
                                   HorizontalSide side)
     {
-        Area area = sideAreaOf(
+        Area luArea = sideAreaOf(
                 "-",
                 beam,
                 side,
@@ -748,7 +710,7 @@ public class BeamsBuilder
         List<Inter> others = sig.intersectedInters(
                 rawSystemBeams,
                 GeoOrder.NONE,
-                area);
+                luArea);
         others.remove(beam); // Safer
 
         if (!others.isEmpty()) {
@@ -762,6 +724,17 @@ public class BeamsBuilder
                         .ptLineDist(endPt);
 
                 if (dt <= params.maxBeamsGapY) {
+                    // Check black ratio in the middle area
+                    Area middleArea = middleArea(beam, other);
+                    AreaMask coreMask = new AreaMask(middleArea);
+                    WrappedInteger core = new WrappedInteger(0);
+                    int coreCount = coreMask.fore(core, pixelFilter);
+                    double coreRatio = (double) core.value / coreCount;
+
+                    if (coreRatio < params.minExtBlackRatio) {
+                        continue;
+                    }
+
                     FullBeamInter newBeam = mergeOf(beam, other);
 
                     if (newBeam != null) {
@@ -1010,15 +983,20 @@ public class BeamsBuilder
     //--------------//
     // getBeamSpots //
     //--------------//
+    /**
+     * Gather the spots that are candidates for beam.
+     *
+     * @return the initial set of spot glyph instances for the current system
+     */
     private List<Glyph> getBeamSpots ()
     {
-        // Spots for this system
+        // Spots as candidate beams for this system
         final List<Glyph> spots = new ArrayList<Glyph>();
 
         for (Glyph glyph : system.getGlyphs()) {
             final Shape shape = glyph.getShape();
 
-            if ((shape == Shape.BEAM_SPOT) || (shape == Shape.BEAM)) {
+            if (shape == Shape.BEAM_SPOT) {
                 spots.add(glyph);
             }
         }
@@ -1046,6 +1024,93 @@ public class BeamsBuilder
         }
 
         return seeds;
+    }
+
+    //---------//
+    // mergeOf //
+    //---------//
+    /**
+     * (Try to) create a new FullAbstractBeamInter instance that
+     * represents a merge of the provided beams.
+     *
+     * @param one a beam
+     * @param two another beam
+     * @return the resulting beam, or null if failed
+     */
+    private FullBeamInter mergeOf (FullBeamInter one,
+                                   FullBeamInter two)
+    {
+        final Line2D oneMedian = one.getMedian();
+        final Line2D twoMedian = two.getMedian();
+
+        // Height
+        double oneWidth = oneMedian.getX2() - oneMedian.getX1();
+        double twoWidth = twoMedian.getX2() - twoMedian.getX1();
+        double height = ((one.getHeight() * oneWidth)
+                         + (two.getHeight() * twoWidth)) / (oneWidth
+                                                            + twoWidth);
+
+        // Median & width
+        final Line2D median;
+
+        if (oneMedian.getX1() < twoMedian.getX1()) {
+            median = new Line2D.Double(oneMedian.getP1(), twoMedian.getP2());
+        } else {
+            median = new Line2D.Double(twoMedian.getP1(), oneMedian.getP2());
+        }
+
+        BeamItem newItem = new BeamItem(median, height);
+
+        if (one.isVip() || two.isVip()) {
+            newItem.setVip();
+        }
+
+        Impacts impacts = computeBeamImpacts(newItem, true, true);
+
+        if (impacts != null) {
+            return new FullBeamInter(null, impacts, median, height);
+        } else {
+            return null;
+        }
+    }
+
+    //------------//
+    // middleArea //
+    //------------//
+    /**
+     * Report the gap area between two beams.
+     * (The beams are merge candidates assumed to be co-linear)
+     *
+     * @param one a beam
+     * @param two another beam
+     * @return the area between them
+     */
+    private Area middleArea (FullBeamInter one,
+                             FullBeamInter two)
+    {
+        final Line2D oneMedian = one.getMedian();
+        final Line2D twoMedian = two.getMedian();
+
+        // Height
+        double oneWidth = oneMedian.getX2() - oneMedian.getX1();
+        double twoWidth = twoMedian.getX2() - twoMedian.getX1();
+        double height = ((one.getHeight() * oneWidth)
+                         + (two.getHeight() * twoWidth)) / (oneWidth
+                                                            + twoWidth);
+
+        // Median
+        final Line2D median;
+
+        if (oneMedian.getX1() < twoMedian.getX1()) {
+            median = new Line2D.Double(oneMedian.getP2(), twoMedian.getP1());
+        } else {
+            median = new Line2D.Double(twoMedian.getP2(), oneMedian.getP1());
+        }
+
+        return AreaUtil.horizontalParallelogram(
+                median.getP1(),
+                median.getP2(),
+                height);
     }
 
     //---------//
