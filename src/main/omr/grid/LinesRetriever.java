@@ -583,6 +583,9 @@ public class LinesRetriever
 
         // Flag short staves (side by side) if any
         staffManager.detectShortStaves();
+
+        sheet.getBench()
+                .recordStaveCount(staffManager.getStaffCount());
     }
 
     //------------//

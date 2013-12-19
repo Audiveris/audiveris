@@ -34,36 +34,36 @@ import java.util.TreeSet;
  * Class {@code ScoreBench} is in charge of recording all important information
  * related to the processing of a music score, and producing an output formatted
  * as "key = value" lines of text.
- *
- * <p>In order to cope with possible multiple recordings with the same radix, we
- * always add to a temporary property set, using numbered suffixes (.01, .02,
- * etc) so that no data is ever overwritten. The temporary set contains only
- * lines formatted as "radix.suffix = value".</p>
- *
- * <p>When the recordings are to be flushed, the temporary set is used to
+ * <p>
+ * In order to cope with possible multiple recordings with the same radix, we
+ * always add to a temporary property set, using numbered suffixes (".01",
+ * ".02", etc) so that no data is ever overwritten.
+ * The temporary set contains only lines formatted as "radix.suffix = value".
+ * <p>
+ * When the recordings are about to be flushed, the temporary set is used to
  * produce a clean set of external properties, according to the following
  * rules:<ul>
- *
- * <li>When only the .01 suffix exists for a given radix, then the externals
- * just contains the "radix = value" line, and the .01 suffix is not transferred
- * to the output.</li>
- *
+ * <li>When only the ".01" suffix exists for a given radix, then the externals
+ * just contains the "radix = value" line, and the ".01" suffix is not
+ * transferred to the output.</li>
  * <li>When more than the .01 suffix exist for a given radix, then these
  * intermediate "radix.suffix = value" pairs are copied to the externals as they
  * are. The last key/value pair is also used to set the "radix = value" pair in
  * the externals (so that the latest value is always accessible through its
  * simple radix)</li>
- *
  * <li>For a special kind of keys (step.[name].duration), the "radix = value"
  * line does not contain the latest intermediate value, but rather the sum of
  * all intermediate values</li></ul>
- *
- * <p>The recorded data can be flushed to disk on specific occasions, to make
+ * <p>
+ * The recorded data can be flushed to disk on specific occasions, to make
  * sure that no data ever get lost even in the case of step cancellation or
- * program interruption. <br/>In case of step cancellation the line
- * "whole.cancelled = true" is added to the externals. <br/>In case of program
- * interruption the line "whole.interrupted = true" is kept in the
- * externals.</p>
+ * program interruption.
+ * <br/>
+ * In case of step cancellation the line "whole.cancelled = true" is added
+ * to the externals.
+ * <br/>
+ * In case of program interruption the line "whole.interrupted = true" is
+ * kept in the externals.</p>
  *
  * @author Hervé Bitteur
  */
@@ -73,19 +73,20 @@ public class ScoreBench
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ScoreBench.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ScoreBench.class);
 
     /** Special key which indicates that an interruption has occurred */
     private static final String INTERRUPTION_KEY = "whole.interrupted";
 
     //~ Instance fields --------------------------------------------------------
-    /** The related score */
+    /** The related score. */
     private final Score score;
 
-    /** Time stamp when this instance was created */
+    /** Time stamp when this instance was created. */
     private final long startTime = System.currentTimeMillis();
 
-    /** Starting date */
+    /** Starting date. */
     private final Date date = new Date(startTime);
 
     //~ Constructors -----------------------------------------------------------
@@ -117,7 +118,7 @@ public class ScoreBench
     // flushBench //
     //------------//
     /**
-     * Flush the current content of bench to disk
+     * Flush the current content of bench to disk.
      */
     @Override
     public final synchronized void flushBench ()
@@ -145,15 +146,21 @@ public class ScoreBench
         addProp("whole.cancelled", "true");
     }
 
+    //-------------//
+    // recordDelta //
+    //-------------//
+    public void recordDelta (double delta)
+    {
+        addProp("score.delta", delta);
+    }
+
     //------------//
     // recordStep //
     //------------//
     public synchronized void recordStep (Step step,
                                          long duration)
     {
-        addProp(
-                "step." + step.getName().toLowerCase() + ".duration",
-                "" + duration);
+        addProp("step." + step.getName().toLowerCase() + ".duration", duration);
         flushBench();
     }
 
@@ -161,7 +168,7 @@ public class ScoreBench
     // store //
     //-------//
     /**
-     * Store this bench into an output stream
+     * Store this bench into an output stream.
      *
      * @param output   the output stream to be written
      * @param complete true if bench data must be finalized
@@ -176,7 +183,6 @@ public class ScoreBench
 
         // What do we do with the script data? and with app constants?
         // TBD
-
         // Insert global duration (up till now)
         long wholeDuration = System.currentTimeMillis() - startTime;
         externals.setProperty("whole.duration", "" + wholeDuration);
@@ -187,7 +193,7 @@ public class ScoreBench
         }
 
         // Sort and store to file
-        SortedSet<String> keys = new TreeSet<>();
+        SortedSet<String> keys = new TreeSet<String>();
 
         for (Object obj : externals.keySet()) {
             String key = (String) obj;
@@ -207,15 +213,15 @@ public class ScoreBench
     // cleanupProps //
     //--------------//
     /**
-     * Build the externals properties, radix by radix, playing with the key
-     * suffixes
+     * Build the externals properties, radix by radix, playing with
+     * the key suffixes.
      */
     private Properties cleanupProps ()
     {
         Properties externals = new Properties();
 
         // Retrieve key radices
-        Set<String> radices = new HashSet<>();
+        Set<String> radices = new HashSet<String>();
 
         for (Object obj : props.keySet()) {
             String key = (String) obj;

@@ -76,6 +76,9 @@ public class Skew
         }
 
         at.translate(dx, dy);
+
+        sheet.getBench()
+                .recordSkew(slope);
     }
 
     //~ Methods ----------------------------------------------------------------

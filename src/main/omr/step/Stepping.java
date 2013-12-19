@@ -518,10 +518,6 @@ public class Stepping
             for (Step step : stepSet) {
                 notifyMsg(sheet.getLogPrefix() + step);
                 doOneSheetStep(step, sheet, systems);
-//                Nest nest = sheet.getNest();
-//                if (nest != null) {
-//                    logger.info("{} {}", step, nest);
-//                }
             }
         } catch (StepException se) {
             logger.info("{}Processing stopped. {}",

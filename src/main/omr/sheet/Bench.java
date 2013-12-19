@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 
 /**
- * Class {@code Bench} defines the general features of a bench, used 
+ * Class {@code Bench} defines the general features of a bench, used
  * by each individual {@link SheetBench} and the containing {@link
  * ScoreBench}.
  *
@@ -45,6 +45,14 @@ public abstract class Bench
     }
 
     //~ Methods ----------------------------------------------------------------
+    //------------//
+    // flushBench //
+    //------------//
+    /**
+     * Flush the current content of bench to disk
+     */
+    protected abstract void flushBench ();
+
     //---------//
     // addProp //
     //---------//
@@ -74,13 +82,20 @@ public abstract class Bench
         logger.debug("addProp key:{} value:{}", key, value);
     }
 
-    //------------//
-    // flushBench //
-    //------------//
+    //---------//
+    // addProp //
+    //---------//
     /**
-     * Flush the current content of bench to disk
+     * AddProp with a number value.
+     *
+     * @param radix the provided radix
+     * @param value the property value
      */
-    protected abstract void flushBench ();
+    protected void addProp (String radix,
+                            Number value)
+    {
+        addProp(radix, value.toString());
+    }
 
     //-------//
     // keyOf //

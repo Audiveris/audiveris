@@ -23,10 +23,9 @@ import java.util.Date;
 /**
  * Class {@code SheetBench} records all important information related
  * to the processing of a music sheet.
- *
  * <p>
  * It delegates the actual recording to the containing score bench,
- * just prefixing the records with the sheet index</p>
+ * just prefixing the records with the sheet index.</p>
  *
  * @author Hervé Bitteur
  */
@@ -39,23 +38,20 @@ public class SheetBench
     private static final Logger logger = LoggerFactory.getLogger(
             SheetBench.class);
 
-    /** Special key which indicates that an interruption has occurred */
-    private static final String INTERRUPTION_KEY = "whole.interrupted";
-
     //~ Instance fields --------------------------------------------------------
-    /** The related sheet */
+    /** The related sheet. */
     private final Sheet sheet;
 
-    /** The prefix to use for this sheet */
+    /** The prefix to use for this sheet. */
     private final String sheetPrefix;
 
-    /** The related score */
+    /** The related score. */
     private final Score score;
 
-    /** Time stamp when this instance was created */
+    /** Time stamp when this instance was created. */
     private final long startTime = System.currentTimeMillis();
 
-    /** Starting date */
+    /** Starting date. */
     private final Date date = new Date(startTime);
 
     //~ Constructors -----------------------------------------------------------
@@ -101,14 +97,22 @@ public class SheetBench
         addProp("whole.cancelled", "true");
     }
 
+    //-------------//
+    // recordDelta //
+    //-------------//
+    public void recordDelta (double delta)
+    {
+        addProp("delta", delta);
+    }
+
     //----------------------//
     // recordImageDimension //
     //----------------------//
     public void recordImageDimension (int width,
                                       int height)
     {
-        addProp("image.width", "" + width);
-        addProp("image.height", "" + height);
+        addProp("image.width", width);
+        addProp("image.height", height);
     }
 
     //-----------------//
@@ -116,7 +120,7 @@ public class SheetBench
     //-----------------//
     public void recordPartCount (int partCount)
     {
-        addProp("parts", "" + partCount);
+        addProp("parts", partCount);
     }
 
     //-------------//
@@ -124,24 +128,20 @@ public class SheetBench
     //-------------//
     public void recordScale (Scale scale)
     {
-        addProp("scale.mainFore", "" + scale.getMainFore());
-        addProp("scale.interline", "" + scale.getInterline());
-        addProp("scale.maxFore", "" + scale.getMaxFore());
-        addProp("scale.maxInterline", "" + scale.getMaxInterline());
-        addProp("scale.minInterline", "" + scale.getMinInterline());
+        addProp("scale.mainFore", scale.getMainFore());
+        addProp("scale.interline", scale.getInterline());
+        addProp("scale.maxFore", scale.getMaxFore());
+        addProp("scale.maxInterline", scale.getMaxInterline());
+        addProp("scale.minInterline", scale.getMinInterline());
 
         if (scale.getSecondInterline() != null) {
-            addProp("scale.secondInterline", "" + scale.getSecondInterline());
-            addProp(
-                    "scale.maxSecondInterline",
-                    "" + scale.getMaxSecondInterline());
-            addProp(
-                    "scale.minSecondInterline",
-                    "" + scale.getMinSecondInterline());
+            addProp("scale.secondInterline", scale.getSecondInterline());
+            addProp("scale.maxSecondInterline", scale.getMaxSecondInterline());
+            addProp("scale.minSecondInterline", scale.getMinSecondInterline());
         }
 
-        addProp("scale.mainBeam", "" + scale.getMainBeam());
-        addProp("scale.mainStem", "" + scale.getMainStem());
+        addProp("scale.mainBeam", scale.getMainBeam());
+        addProp("scale.mainStem", scale.getMainStem());
     }
 
     //------------//
@@ -149,7 +149,7 @@ public class SheetBench
     //------------//
     public void recordSkew (double skew)
     {
-        addProp("skew", "" + skew);
+        addProp("skew", skew);
     }
 
     //------------------//
@@ -157,7 +157,7 @@ public class SheetBench
     //------------------//
     public void recordStaveCount (int staveCount)
     {
-        addProp("staves", "" + staveCount);
+        addProp("staves", staveCount);
     }
 
     //------------//
@@ -166,9 +166,7 @@ public class SheetBench
     public void recordStep (Step step,
                             long duration)
     {
-        addProp(
-                "step." + step.getName().toLowerCase() + ".duration",
-                "" + duration);
+        addProp("step." + step.getName().toLowerCase() + ".duration", duration);
         flushBench();
     }
 
@@ -177,7 +175,7 @@ public class SheetBench
     //-------------------//
     public void recordSystemCount (int systemCount)
     {
-        addProp("systems", "" + systemCount);
+        addProp("systems", systemCount);
     }
 
     //---------//
@@ -201,7 +199,7 @@ public class SheetBench
     // flushBench //
     //------------//
     /**
-     * Flush the score container
+     * Flush the score container.
      */
     @Override
     protected final void flushBench ()

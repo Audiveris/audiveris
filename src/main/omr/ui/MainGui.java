@@ -21,18 +21,20 @@ import omr.constant.Constant;
 import omr.constant.ConstantManager;
 import omr.constant.ConstantSet;
 
+import omr.image.jai.JaiLoader;
+
 import omr.log.LogPane;
 
 import omr.plugin.PluginsManager;
 
 import omr.score.Score;
 import omr.score.ScoreExporter;
+import omr.score.ScoresManager;
 
 import omr.selection.MouseMovement;
 import omr.selection.SheetEvent;
 
 import omr.sheet.Sheet;
-import omr.image.jai.JaiLoader;
 import omr.sheet.ui.SheetActions;
 import omr.sheet.ui.SheetsController;
 
@@ -370,29 +372,29 @@ public class MainGui
             final Sheet sheet = sheetEvent.getData();
             SwingUtilities.invokeLater(
                     new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    final StringBuilder sb = new StringBuilder();
+                    {
+                        @Override
+                        public void run ()
+                        {
+                            final StringBuilder sb = new StringBuilder();
 
-                    if (sheet != null) {
-                        Score score = sheet.getScore();
-                        // Frame title tells score name
-                        sb.append(score.getImageFile().getName());
-                    }
+                            if (sheet != null) {
+                                Score score = sheet.getScore();
+                                // Frame title tells score name
+                                sb.append(score.getImageFile().getName());
+                            }
 
-                    // Update frame title
-                    sb.append(" - ");
+                            // Update frame title
+                            sb.append(" - ");
 
-                    ResourceMap resource = Application.getInstance()
+                            ResourceMap resource = Application.getInstance()
                             .getContext()
                             .getResourceMap(
-                            getClass());
-                    sb.append(resource.getString("mainFrame.title"));
-                    frame.setTitle(sb.toString());
-                }
-            });
+                                    getClass());
+                            sb.append(resource.getString("mainFrame.title"));
+                            frame.setTitle(sb.toString());
+                        }
+                    });
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
@@ -531,6 +533,9 @@ public class MainGui
     {
         logger.debug("MainGui. 3/ready");
 
+        // Set exit listener
+        addExitListener(ScoresManager.getInstance().getExitListener());
+
         // Weakly listen to GUI Actions parameters
         PropertyChangeListener weak = new WeakPropertyChangeListener(this);
         GuiActions.getInstance()
@@ -589,21 +594,21 @@ public class MainGui
         // Define an exit listener
         addExitListener(
                 new ExitListener()
-        {
-            @Override
-            public boolean canExit (EventObject e)
-            {
-                return true;
-            }
+                {
+                    @Override
+                    public boolean canExit (EventObject e)
+                    {
+                        return true;
+                    }
 
-            @Override
-            public void willExit (EventObject e)
-            {
-                // Store latest constant values on disk
-                ConstantManager.getInstance()
+                    @Override
+                    public void willExit (EventObject e)
+                    {
+                        // Store latest constant values on disk
+                        ConstantManager.getInstance()
                         .storeResource();
-            }
-        });
+                    }
+                });
 
         // Here we go...
         show(frame);
@@ -684,7 +689,6 @@ public class MainGui
 
         // Suppress all internal borders, recursively
         ///UIUtilities.suppressBorders(frame.getContentPane());
-
         // Display the boards pane?
         if (GuiActions.getInstance()
                 .isBoardsDisplayed()) {

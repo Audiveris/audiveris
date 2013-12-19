@@ -39,8 +39,10 @@ import java.util.List;
 /**
  * Class {@code ScoresManager} is a singleton which provides
  * administrative features for score instances.
- * <p>It handles the collection of all loaded score instances.</p>
- * <p>It handles the history of scores previously loaded.</p>
+ * <p>
+ * It handles the collection of all loaded score instances.</p>
+ * <p>
+ * It handles the history of scores previously loaded.</p>
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
@@ -80,35 +82,43 @@ public class ScoresManager
      */
     private ScoresManager ()
     {
-        if (Main.getGui() != null) {
-            Main.getGui().addExitListener(
-                    new ExitListener()
-            {
-                @Override
-                public boolean canExit (EventObject e)
-                {
-                    // Are all scripts stored (or explicitly ignored)?
-                    for (Score score : instances) {
-                        if (!ScriptActions.checkStored(
-                                score.getScript())) {
-                            return false;
-                        }
-                    }
-
-                    return true;
-                }
-
-                @Override
-                public void willExit (EventObject e)
-                {
-                    // Close all sheets, to record their bench data
-                    closeAllScores();
-                }
-            });
-        }
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-----------------//
+    // getExitListener //
+    //-----------------//
+    /**
+     * The Exit listener meant for GUI.
+     *
+     * @return the listener to register
+     */
+    public ExitListener getExitListener ()
+    {
+        return new ExitListener()
+        {
+            @Override
+            public boolean canExit (EventObject e)
+            {
+                // Are all scripts stored (or explicitly ignored)?
+                for (Score score : instances) {
+                    if (!ScriptActions.checkStored(
+                            score.getScript())) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            @Override
+            public void willExit (EventObject e)
+            {
+                // Close all sheets, to record their bench data
+                closeAllScores();
+            }
+        };
+    }
     //-------------//
     // addInstance //
     //-------------//
