@@ -53,8 +53,6 @@ public class Steps
 
     public static final String GRID = "GRID";
 
-    public static final String SYSTEMS = "SYSTEMS";
-
     public static final String STEM_SEEDS = "STEM_SEEDS";
 
     public static final String BEAMS = "BEAMS";
@@ -102,7 +100,6 @@ public class Steps
         addStep(new BinaryStep());
         addStep(new ScaleStep());
         addStep(new GridStep());
-        addStep(new SystemsStep());
 
         addStep(new StemSeedsStep());
         addStep(new BeamsStep());

@@ -13,11 +13,12 @@ package omr.step;
 
 import omr.glyph.ui.SymbolsEditor;
 
+import omr.grid.LagWeaver;
+
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 import java.util.Collection;
-import omr.sig.ui.InterBoard;
 
 /**
  * Class {@code GridStep} implements <b>GRID</b> step, which
@@ -42,7 +43,7 @@ public class GridStep
                 Steps.GRID,
                 Level.SHEET_LEVEL,
                 Mandatory.MANDATORY,
-                "Dewarped",
+                DATA_TAB,
                 "Retrieve the grid of all systems");
     }
 
@@ -57,7 +58,7 @@ public class GridStep
 
         if (editor != null) {
             editor.refresh();
-        }        
+        }
     }
 
     //------//
@@ -71,5 +72,14 @@ public class GridStep
         sheet.createNest();
         sheet.getGridBuilder()
                 .buildInfo();
+
+        // Purge sections & runs of staff lines from hLag
+        // Cross-connect vertical & remaining horizontal sections
+        new LagWeaver(sheet).buildInfo();
+
+        // Populate systems
+        sheet.createSystemManager();
+        sheet.getSystemManager()
+                .populateSystems();
     }
 }

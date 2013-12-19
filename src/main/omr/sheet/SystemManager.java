@@ -496,7 +496,7 @@ public class SystemManager
                 .recordPartCount(partNb);
 
         if (sysNb > 0) {
-            sb.append(", ")
+            sb.append(" along ")
                     .append(sysNb)
                     .append(" system");
 
