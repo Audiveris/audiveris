@@ -1,28 +1,26 @@
 //----------------------------------------------------------------------------//
 //                                                                            //
-//                          B a r A l i g n m e n t                           //
+//                           B a r A l i g n m e n t                          //
 //                                                                            //
 //----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
 //----------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
-import omr.glyph.facets.Glyph;
+import omr.sig.BasicImpacts;
+import omr.sig.GradeImpacts;
 
-import omr.sheet.Sheet;
+import omr.util.VerticalSide;
 
-import omr.util.Navigable;
-
-import java.awt.geom.Point2D;
+import java.util.Objects;
 
 /**
- * Class {@code BarAlignment} is used to collect all bar lines within a
- * system which should be vertically aligned (typically at the end of a
- * measure), and to check for proper alignment.
+ * Class {@code BarAlignment} represents an alignment found between
+ * a bar peak in one staff and another bar peak in the staff below.
  *
  * @author Hervé Bitteur
  */
@@ -30,138 +28,89 @@ public class BarAlignment
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Related sheet. */
-    @Navigable(false)
-    private final Sheet sheet;
+    /** Bar peak in the upper staff. */
+    protected final BarPeak topPeak;
 
-    /** Used to flag a manually defined alignment. */
-    private boolean manual;
+    /** Bar peak in the lower staff. */
+    protected final BarPeak bottomPeak;
 
-    /** Vertical sequence of bars intersections with staves. */
-    private final StickIntersection[] inters;
+    /**
+     * Abscissa shift in pixels between de-skewed bottom peak and
+     * de-skewed top peak.
+     */
+    protected final double dx;
+
+    /** Connection quality. */
+    private final GradeImpacts impacts;
 
     //~ Constructors -----------------------------------------------------------
     /**
      * Creates a new BarAlignment object.
      *
-     * @param sheet      the related sheet
-     * @param staffCount the number of staves to check for consistency
+     * @param topPeak    peak in the upper staff
+     * @param bottomPeak peak in the lower staff
+     * @param dx         bottomPeak.x - topPeak.x (de-skewed abscissae)
+     * @param impacts    the alignment quality
      */
-    public BarAlignment (Sheet sheet,
-                         int staffCount)
+    public BarAlignment (BarPeak topPeak,
+                         BarPeak bottomPeak,
+                         double dx,
+                         GradeImpacts impacts)
     {
-        this.sheet = sheet;
-        inters = new StickIntersection[staffCount];
+        this.topPeak = topPeak;
+        this.bottomPeak = bottomPeak;
+        this.dx = dx;
+        this.impacts = impacts;
     }
 
     //~ Methods ----------------------------------------------------------------
-    //----------//
-    // addInter //
-    //----------//
-    /**
-     * Record an intersection for the given (staff) index
-     *
-     * @param index the (staff) index
-     * @param inter the intersection to record
-     */
-    public void addInter (int index,
-                          StickIntersection inter)
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
     {
-        inters[index] = inter;
-    }
+        if (obj instanceof BarAlignment) {
+            BarAlignment that = (BarAlignment) obj;
 
-    //----------//
-    // distance //
-    //----------//
-    /**
-     * Compute the horizontal distance between the provided intersection and
-     * this alignment, taking the global sheet skew into account.
-     *
-     * @param index the provided (staff) index
-     * @param inter the provided intersection
-     * @return the relative abscissa distance from this alignment to the
-     *         provided intersection
-     */
-    public Double distance (int index,
-                            StickIntersection inter)
-    {
-        for (int i = index - 1; i >= 0; i--) {
-            StickIntersection si = inters[i];
-
-            if (si != null) {
-                Point2D dskSi = sheet.getSkew()
-                        .deskewed(new Point2D.Double(si.x, si.y));
-                Point2D dskIt = sheet.getSkew()
-                        .deskewed(
-                        new Point2D.Double(inter.x, inter.y));
-
-                return dskIt.getX() - dskSi.getX();
-            }
+            return (topPeak == that.topPeak)
+                   && (bottomPeak == that.bottomPeak);
+        } else {
+            return false;
         }
-
-        // Could not measure anything
-        return null;
     }
 
-    //----------------//
-    // getFilledCount //
-    //----------------//
-    /**
-     * Report the number of intersections found for this bar alignment
-     *
-     * @return the percentage filled
-     */
-    public int getFilledCount ()
+    //------------//
+    // getImpacts //
+    //------------//
+    public GradeImpacts getImpacts ()
     {
-        int cells = 0;
+        return impacts;
+    }
 
-        for (StickIntersection inter : inters) {
-            if (inter != null) {
-                cells++;
-            }
+    //---------//
+    // getPeak //
+    //---------//
+    public BarPeak getPeak (VerticalSide side)
+    {
+        if (side == VerticalSide.TOP) {
+            return topPeak;
+        } else {
+            return bottomPeak;
         }
-
-        return cells;
-    }
-
-    //------------------//
-    // getIntersections //
-    //------------------//
-    /**
-     * Report the array of intersections found, one cell per staff.
-     *
-     * @return the intersections found (with null array cells for missing
-     *         intersections)
-     */
-    public StickIntersection[] getIntersections ()
-    {
-        return inters;
     }
 
     //----------//
-    // isManual //
+    // hashCode //
     //----------//
-    /**
-     * Report whether this alignment is manually defined or not.
-     *
-     * @return the manual flag
-     */
-    public boolean isManual ()
+    @Override
+    public int hashCode ()
     {
-        return manual;
-    }
+        int hash = 7;
+        hash = (97 * hash) + Objects.hashCode(this.topPeak);
+        hash = (97 * hash) + Objects.hashCode(this.bottomPeak);
 
-    //-----------//
-    // setManual //
-    //-----------//
-    /**
-     * Flag this alignment as a manual one.
-     *
-     * @param manual the manual flag to set
-     */
-    public void setManual (boolean manual)
-    {
-        this.manual = manual;
+        return hash;
     }
 
     //----------//
@@ -170,30 +119,52 @@ public class BarAlignment
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
+        StringBuilder sb = new StringBuilder();
         sb.append(getClass().getSimpleName());
-
-        sb.append(" ")
-                .append(getFilledCount())
-                .append("/")
-                .append(inters.length);
-
-        for (int i = 0; i < inters.length; i++) {
-            sb.append(" ")
-                    .append(i)
-                    .append(":");
-
-            if (inters[i] != null) {
-                Glyph stick = inters[i].getStickAncestor();
-                sb.append("#")
-                        .append(stick.getId());
-            } else {
-                sb.append("null");
-            }
-        }
-
+        sb.append("{");
+        sb.append(internals());
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
+    protected String internals ()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("top:Staff#")
+                .append(topPeak.getStaff().getId())
+                .append("-")
+                .append(topPeak);
+        sb.append(" bot:Staff#")
+                .append(bottomPeak.getStaff().getId())
+                .append("-")
+                .append(bottomPeak);
+        sb.append(String.format(" dx:%.1f", dx));
+
+        return sb.toString();
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //---------//
+    // Impacts //
+    //---------//
+    public static class Impacts
+            extends BasicImpacts
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        private static final String[] NAMES = new String[]{"align"};
+
+        private static final double[] WEIGHTS = new double[]{1};
+
+        //~ Constructors -------------------------------------------------------
+        public Impacts (double align)
+        {
+            super(NAMES, WEIGHTS);
+            setImpact(0, align);
+        }
     }
 }

@@ -52,10 +52,10 @@ import omr.sig.SIGraph;
 
 import omr.step.StepException;
 
+import omr.ui.Colors;
 import omr.ui.util.ItemRenderer;
+import omr.ui.util.UIUtil;
 
-import omr.util.HorizontalSide;
-import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
 import omr.util.StopWatch;
 import omr.util.VerticalSide;
@@ -66,9 +66,12 @@ import omr.util.WrappedInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Stroke;
+import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -79,9 +82,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -131,7 +132,7 @@ public class BarsRetriever
     private final List<StaffProjector> projectors = new ArrayList<StaffProjector>();
 
     /** All alignments found between bars across staves. */
-    private final Set<Alignment> alignments = new LinkedHashSet<Alignment>();
+    private final Set<BarAlignment> alignments = new LinkedHashSet<BarAlignment>();
 
     /** All connections found between bars across staves. */
     private final Set<BarConnection> connections = new LinkedHashSet<BarConnection>();
@@ -207,42 +208,47 @@ public class BarsRetriever
     @Override
     public void renderItems (Graphics2D g)
     {
-        //        if (!constants.showVerticalLines.isSet()) {
-        //            return;
-        //        }
-        //
-        //        final Rectangle clip = g.getClipBounds();
-        //
-        //        final Color oldColor = g.getColor();
-        //        g.setColor(Colors.GRID_BARLINE);
-        //
-        //        // Draw bar lines (only within staff height)
-        //        //TODO: limit to actual bar height? (to help visualize false bars)
-        //        for (StaffInfo staff : staffManager.getStaves()) {
-        //            for (BarPeak peak : staff.getBarPeaks()) {
-        //                Rectangle peakBox = new Rectangle(
-        //                    peak.getStart(),
-        //                    peak.getTop(),
-        //                    peak.getWidth(),
-        //                    peak.getBottom() - peak.getTop());
-        //
-        //                ///peakBox.grow(0, scale.getMainFore() / 2);
-        //                if (clip.intersects(peakBox)) {
-        //                    g.fill(peakBox);
-        //                }
-        //            }
-        //        }
-        //
-        //        // Draw Connections (outside of staff height)
-        //        for (BarConnection connection : connections) {
-        //            Area area = connection.getArea();
-        //
-        //            if (area.intersects(clip)) {
-        //                g.fill(area);
-        //            }
-        //        }
-        //
-        //        g.setColor(oldColor);
+        if (!constants.showVerticalLines.isSet()) {
+            return;
+        }
+
+        final Rectangle clip = g.getClipBounds();
+        final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+        final Color oldColor = g.getColor();
+        g.setColor(Colors.ENTITY_MINOR);
+
+        // Draw bar lines (only within staff height)
+        for (StaffInfo staff : staffManager.getStaves()) {
+            for (BarPeak peak : staff.getBarPeaks()) {
+                Rectangle peakBox = new Rectangle(
+                        peak.getStart(),
+                        peak.getTop(),
+                        peak.getWidth(),
+                        peak.getBottom() - peak.getTop());
+
+                if (clip.intersects(peakBox)) {
+                    double xMid = (peak.getStart() + peak.getStop()) / 2d;
+                    Line2D line = new Line2D.Double(
+                            xMid,
+                            peak.getTop(),
+                            xMid,
+                            peak.getBottom());
+                    g.draw(line);
+                }
+            }
+        }
+
+        // Draw Connections (outside of staff height)
+        for (BarConnection connection : connections) {
+            Line2D median = connection.getMedian();
+
+            if (median.intersects(clip)) {
+                g.draw(median);
+            }
+        }
+
+        g.setStroke(oldStroke);
+        g.setColor(oldColor);
     }
 
     //------------------//
@@ -269,23 +275,46 @@ public class BarsRetriever
         // Purge alignments incompatible with connections
         purgeAlignments();
 
-        // Purge long bars that do not connect staves
-        purgePeaks();
+        // Purge long peaks that do not connect staves
+        purgeLongPeaks();
 
         // Refine all staff side abscissae
         refineSides();
 
-        // Harmonize staves ends in the whole page
-        ///harmonizeEnds();
-        //
         // Create systems & parts from bar connections
         createSystemsAndParts();
+
+        // Purge alignments across systems, they are not relevant
+        purgeCrossAlignments();
 
         // Create barline interpretations within each system
         createBarlineInters();
 
         // Create bar connection across staves
         createBarConnectionInters();
+    }
+
+    //--------------//
+    // alignedPeaks //
+    //--------------//
+    /**
+     * Report the BarPeak instance(s) that are aligned with the
+     * provided peak, looking in the provided vertical side.
+     *
+     * @param peak the peak to check from
+     * @param side which side to look (from provided peak)
+     * @return the collection of peaks found, perhaps empty
+     */
+    private List<BarPeak> alignedPeaks (BarPeak peak,
+                                        VerticalSide side)
+    {
+        final List<BarPeak> found = new ArrayList<BarPeak>();
+
+        for (BarAlignment alignment : alignmentsOf(peak, side.opposite())) {
+            found.add(alignment.getPeak(side));
+        }
+
+        return found;
     }
 
     //--------------//
@@ -299,12 +328,12 @@ public class BarsRetriever
      * @param side the desired vertical side
      * @return the collection found, perhaps empty.
      */
-    private Set<Alignment> alignmentsOf (BarPeak peak,
-                                         VerticalSide side)
+    private Set<BarAlignment> alignmentsOf (BarPeak peak,
+                                            VerticalSide side)
     {
-        Set<Alignment> found = new HashSet<Alignment>();
+        Set<BarAlignment> found = new HashSet<BarAlignment>();
 
-        for (Alignment alignment : alignments) {
+        for (BarAlignment alignment : alignments) {
             if (alignment.getPeak(side) == peak) {
                 found.add(alignment);
             }
@@ -426,7 +455,7 @@ public class BarsRetriever
      * @param alignment the alignment to check.
      * @return the connection if OK, null otherwise
      */
-    private BarConnection checkConnection (Alignment alignment)
+    private BarConnection checkConnection (BarAlignment alignment)
     {
         PixelFilter pixelFilter = (PixelFilter) sheet.getPicture()
                 .getSource(
@@ -457,16 +486,15 @@ public class BarsRetriever
                                  - (data.whiteRatio / params.maxConnectionWhiteRatio);
             double gapImpact = 1
                                - ((double) data.gap / params.maxConnectionGap);
+            double alignImpact = alignment.getImpacts()
+                    .getGrade() / alignment.getImpacts()
+                    .getIntrinsicRatio();
             GradeImpacts impacts = new BarConnection.Impacts(
+                    alignImpact,
                     whiteImpact,
                     gapImpact);
 
-            return new BarConnection(
-                    alignment,
-                    scale.getMainFore(),
-                    data.whiteRatio,
-                    scale.pixelsToFrac(data.gap),
-                    impacts);
+            return new BarConnection(alignment, impacts);
         } else {
             return null;
         }
@@ -615,7 +643,7 @@ public class BarsRetriever
     //----------------//
     private void findAlignments ()
     {
-        // Check for bar lines joining across staves
+        // Check for bar peaks aligned across staves
         for (StaffInfo staff : staffManager.getStaves()) {
             for (VerticalSide side : VerticalSide.values()) {
                 List<StaffInfo> otherStaves = staffManager.vertNeighbors(
@@ -636,35 +664,25 @@ public class BarsRetriever
                     // Same peak kind: thin or thick
                     // Vertically aligned, taking sheet slope into account
                     for (StaffInfo otherStaff : otherStaves) {
-                        lookupPeaks(alignments, side, peak, otherStaff);
+                        lookupPeaks(peak, side, otherStaff);
                     }
                 }
             }
         }
 
-        for (Iterator<Alignment> it = alignments.iterator(); it.hasNext();) {
-            Alignment alignment = it.next();
+        // Check for bar peaks connected across staves
+        for (Iterator<BarAlignment> it = alignments.iterator(); it.hasNext();) {
+            BarAlignment alignment = it.next();
 
             // Look for concrete connection
             BarConnection connection = checkConnection(alignment);
 
             if (connection != null) {
                 connections.add(connection);
+                // Remove the underlying alignment
                 it.remove();
             }
         }
-
-        for (BarConnection connection : connections) {
-            logger.debug("{}", connection);
-        }
-
-        // Build sticks corresponding to retrieved bar peaks 
-        // We use filament factory (with proper thickness value) for each peak
-        // with filtered sections (h&v)
-        // Create BarlineInter instance for each of them
-        // Look for long bars that join staves (they are system or part bars)
-        // Other bars longer than staff height are discarded
-        // Bars that line up (within same system) are boosted.        
     }
 
     //--------------//
@@ -689,13 +707,21 @@ public class BarsRetriever
     /**
      * Use connections across staves to gather staves into systems
      * and parts.
+     * <p>
+     * A first connection between two staves make them system partners.
+     * A second connection between two staves makes them part partners, provided
+     * that the second connection is sufficiently abscissa-shifted from the
+     * first one.
      *
-     * @param systemTops systems starting staves
-     * @param partTops   parts starting staves
+     * @param systemTops (output) systems starting staves
+     * @param partTops   (output) parts starting staves
      */
     private void gatherStaves (Integer[] systemTops,
                                Integer[] partTops)
     {
+        BarConnection prevConnection = null;
+
+        // Connections are ordered per top staff then per abscissa.
         for (BarConnection connection : connections) {
             int top = connection.topPeak.getStaff()
                     .getId();
@@ -703,15 +729,25 @@ public class BarsRetriever
                     .getId();
 
             if (systemTops[top - 1] == null) {
+                // First connection ever between the 2 staves
                 systemTops[top - 1] = top;
             } else {
-                if (partTops[top - 1] == null) {
-                    partTops[top - 1] = top;
-                    partTops[bottom - 1] = top;
+                // Is this a truely separate second connection?
+                // Check horizontal gap with previous one
+                int gap = connection.topPeak.getStart()
+                          - prevConnection.topPeak.getStop() - 1;
+
+                if (gap > params.maxDoubleBarGap) {
+                    if (partTops[top - 1] == null) {
+                        partTops[top - 1] = top;
+                    }
+
+                    partTops[bottom - 1] = partTops[top - 1];
                 }
             }
 
             systemTops[bottom - 1] = systemTops[top - 1];
+            prevConnection = connection;
         }
 
         // Complete assignments
@@ -850,107 +886,6 @@ public class BarsRetriever
         return sections;
     }
 
-    //    //---------------//
-    //    // harmonizeEnds //
-    //    //---------------//
-    //    /**
-    //     * Make sure staves side ends are consistent across the whole page.
-    //     * <p>
-    //     * In a page, either all staves or none start with a left bar line.
-    //     * The same applies for potential right bar line.
-    //     * <p>
-    //     * With or without bar lines, staves starting and stopping abscissae are
-    //     * not random but organized in groups.
-    //     * Strategy: try to gather ends by rather vertical lines and detect abnormal
-    //     * points.
-    //     */
-    //    private void harmonizeEnds ()
-    //    {
-    //        Skew skew = sheet.getSkew();
-    //
-    //        // Check barline presence
-    //        for (HorizontalSide side : HorizontalSide.values()) {
-    //            List<Integer> withBar = new ArrayList<Integer>();
-    //            List<Integer> withoutBar = new ArrayList<Integer>();
-    //
-    //            for (StaffInfo staff : staffManager.getStaves()) {
-    //                int xStaff = staff.getAbscissa(side);
-    //                List<BarPeak> peaks = staff.getBarPeaks();
-    //                int index = (side == LEFT) ? 0 : (peaks.size() - 1);
-    //                BarPeak peak = peaks.get(index);
-    //
-    //                if ((xStaff >= peak.getStart()) && (xStaff <= peak.getStop())) {
-    //                    withBar.add(staff.getId());
-    //                } else {
-    //                    withoutBar.add(staff.getId());
-    //                }
-    //            }
-    //
-    //            logger.info("{} Bars:{} noBars:{}", side, withBar, withoutBar);
-    //        }
-    //
-    //        // Check staff start & stop abscissa
-    //        for (HorizontalSide side : HorizontalSide.values()) {
-    //            List<BasicLine> lines = new ArrayList<BasicLine>();
-    //            BasicLine line = null;
-    //            Double prevX = null;
-    //
-    //            for (StaffInfo staff : staffManager.getStaves()) {
-    //                int x = staff.getAbscissa(side);
-    //                FilamentLine staffLine = staff.getLines()
-    //                        .get(2);
-    //                Point2D end = new Point2D.Double(
-    //                        x,
-    //                        staffLine.getEndPoint(side).getY());
-    //                Point2D dskEnd = skew.deskewed(end);
-    //                double dskX = dskEnd.getX();
-    //                boolean shift = (prevX != null)
-    //                                && (Math.abs(dskX - prevX) > params.maxAlignmentDx);
-    //                logger.info(
-    //                        "{} staff#{} x:{} dskEnd:{} {}",
-    //                        side,
-    //                        staff.getId(),
-    //                        x,
-    //                        String.format("%.0f", dskX),
-    //                        shift ? String.format("SHIFT_DETECTED: %.0f", dskX - prevX)
-    //                        : "");
-    //
-    //                if (shift) {
-    //                    // We cannot keep on with the same line
-    //                    // Reuse another one or create a brand new one?
-    //                    line = null;
-    //
-    //                    for (ListIterator<BasicLine> it = lines.listIterator(
-    //                            lines.size() - 1); it.hasPrevious();) {
-    //                        BasicLine ln = it.previous();
-    //                        final double delta;
-    //
-    //                        if (ln.getNumberOfPoints() > 1) {
-    //                            delta = ln.distanceOf(end);
-    //                        } else {
-    //                            delta = ln.getMinAbscissa() - end.getX();
-    //                        }
-    //
-    //                        if (Math.abs(delta) <= (2 * params.maxAlignmentDx)) {
-    //                            line = ln;
-    //
-    //                            break;
-    //                        }
-    //                    }
-    //                }
-    //
-    //                if (line == null) {
-    //                    lines.add(line = new BasicLine());
-    //                }
-    //
-    //                line.includePoint(end);
-    //                prevX = dskX;
-    //            }
-    //
-    //            logger.info("{} lines: {}", lines.size(), lines);
-    //        }
-    //    }
-    //
     //-------------//
     // isConnected //
     //-------------//
@@ -959,14 +894,16 @@ public class BarsRetriever
      * vertical side.
      *
      * @param peak the peak to check
-     * @param side which vertical side
+     * @param side which vertical side to look for from peak
      * @return true if a compliant connection was found, false otherwise
      */
     private boolean isConnected (BarPeak peak,
                                  VerticalSide side)
     {
+        final VerticalSide opposite = side.opposite();
+
         for (BarConnection connection : connections) {
-            if (connection.getPeak(side) == peak) {
+            if (connection.getPeak(opposite) == peak) {
                 return true;
             }
         }
@@ -979,21 +916,21 @@ public class BarsRetriever
     //-------------//
     /**
      * Lookup in the provided staff for one or several peaks compliant
-     * with (de-skewed) abscissa and peak kind.
+     * with (de-skewed) peak abscissa and peak kind.
+     * This populates the 'alignments' set.
      *
-     * @param otherStaff the containing staff
-     * @param dskX       alignment required with this de-skewed abscissa value
-     * @param isThin     kind of bear peak
-     * @return the collection of candidates found
+     * @param peak       the reference peak
+     * @param side       vertical side with respect to reference peak
+     * @param otherStaff the other staff to be browsed for alignment with peak
      */
-    private void lookupPeaks (Set<Alignment> alignments,
+    private void lookupPeaks (BarPeak peak,
                               VerticalSide side,
-                              BarPeak peak,
                               StaffInfo otherStaff)
     {
         final Skew skew = sheet.getSkew();
-        int mid = (peak.getStart() + peak.getStop()) / 2;
-        double dsk = skew.deskewed(new Point(mid, peak.getOrdinate(side)))
+        final int mid = (peak.getStart() + peak.getStop()) / 2;
+        final double dsk = skew.deskewed(
+                new Point(mid, peak.getOrdinate(side)))
                 .getX();
 
         for (BarPeak otherPeak : otherStaff.getBarPeaks()) {
@@ -1007,12 +944,21 @@ public class BarsRetriever
                     : new Point(otherMid, otherPeak.getTop());
             double otherDsk = skew.deskewed(otherPt)
                     .getX();
-            double dx = scale.pixelsToFrac(dsk - otherDsk);
+            double dx = scale.pixelsToFrac(otherDsk - dsk);
 
             if (Math.abs(dx) <= constants.maxAlignmentDx.getValue()) {
-                Alignment alignment = (side == TOP)
-                        ? new Alignment(otherPeak, peak, -dx)
-                        : new Alignment(peak, otherPeak, dx);
+                double alignImpact = 1
+                                     - (Math.abs(dx) / constants.maxAlignmentDx.getValue());
+                GradeImpacts impacts = new BarAlignment.Impacts(
+                        alignImpact);
+                final BarAlignment alignment;
+
+                if (side == TOP) {
+                    alignment = new BarAlignment(otherPeak, peak, -dx, impacts);
+                } else {
+                    alignment = new BarAlignment(peak, otherPeak, dx, impacts);
+                }
+
                 alignments.add(alignment);
             }
         }
@@ -1041,7 +987,7 @@ public class BarsRetriever
         // Purge alignments vs connections
         for (BarConnection connection : connections) {
             for (VerticalSide side : VerticalSide.values()) {
-                for (Alignment alignment : alignmentsOf(
+                for (BarAlignment alignment : alignmentsOf(
                         connection.getPeak(side),
                         side)) {
                     alignments.remove(alignment);
@@ -1052,12 +998,12 @@ public class BarsRetriever
 
         // Check duplicate alignments (looking to top & bottom)
         for (VerticalSide side : VerticalSide.values()) {
-            Map<BarPeak, Alignment> map = new HashMap<BarPeak, Alignment>();
-            Set<Alignment> toRemove = new HashSet<Alignment>();
+            Map<BarPeak, BarAlignment> map = new HashMap<BarPeak, BarAlignment>();
+            Set<BarAlignment> toRemove = new HashSet<BarAlignment>();
 
-            for (Alignment alignment : alignments) {
+            for (BarAlignment alignment : alignments) {
                 BarPeak peak = alignment.getPeak(side);
-                Alignment otherAlignment = map.get(peak);
+                BarAlignment otherAlignment = map.get(peak);
 
                 if (otherAlignment != null) {
                     // We have a conflict here, make a decision
@@ -1084,29 +1030,82 @@ public class BarsRetriever
         }
     }
 
-    //------------//
-    // purgePeaks //
-    //------------//
+    //----------------------//
+    // purgeCrossAlignments //
+    //----------------------//
+    /**
+     * Only alignments within a system are meaningful.
+     */
+    private void purgeCrossAlignments ()
+    {
+        final Set<BarAlignment> toRemove = new HashSet<BarAlignment>();
+
+        for (BarAlignment alignment : alignments) {
+            final SystemInfo s1 = alignment.getPeak(TOP)
+                    .getStaff()
+                    .getSystem();
+            final SystemInfo s2 = alignment.getPeak(BOTTOM)
+                    .getStaff()
+                    .getSystem();
+
+            if (s1 != s2) {
+                toRemove.add(alignment);
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            logger.debug("Purging cross-system alignments{}", toRemove);
+            alignments.removeAll(toRemove);
+        }
+    }
+
+    //----------------//
+    // purgeLongPeaks //
+    //----------------//
     /**
      * Purge long thin bars (those getting above or below the related
      * staff) that do not connect staves.
      * Thick bars are not concerned by this test, because they cannot be
      * mistaken for stems and can appear to be extended because of brackets.
+     * <p>
+     * The check is relaxed for a bar which is aligned with another bar
+     * that exhibits no such length problem.
      */
-    private void purgePeaks ()
+    private void purgeLongPeaks ()
     {
-        for (StaffInfo staff : staffManager.getStaves()) {
-            for (Iterator<BarPeak> it = staff.getBarPeaks()
-                    .iterator(); it.hasNext();) {
-                BarPeak peak = it.next();
+        final Set<BarPeak> toRemove = new LinkedHashSet<BarPeak>();
 
-                if (peak.isThin()) {
-                    if ((peak.isAbove() && !isConnected(peak, BOTTOM))
-                        || (peak.isBelow() && !isConnected(peak, TOP))) {
-                        it.remove();
-                        logger.debug("Deleted long {}", peak);
+        for (StaffInfo staff : staffManager.getStaves()) {
+            toRemove.clear();
+
+            PeakLoop:
+            for (BarPeak peak : staff.getBarPeaks()) {
+                // Thick bars are safe
+                if (!peak.isThin()) {
+                    continue;
+                }
+
+                for (VerticalSide side : VerticalSide.values()) {
+                    if (peak.isBeyond(side) && !isConnected(peak, side)) {
+                        List<BarPeak> partners = alignedPeaks(peak, side);
+
+                        if (partners.size() == 1) {
+                            BarPeak partner = partners.get(0);
+
+                            if (!partner.isAbove() && !partner.isBelow()) {
+                                // Consider this bar as safe
+                                continue PeakLoop;
+                            }
+                        }
+
+                        toRemove.add(peak);
                     }
                 }
+            }
+
+            if (!toRemove.isEmpty()) {
+                logger.debug("T{} deleting longs {}", staff.getId(), toRemove);
+                staff.removeBarPeaks(toRemove);
             }
         }
     }
@@ -1138,98 +1137,6 @@ public class BarsRetriever
     }
 
     //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Alignment //
-    //-----------//
-    /**
-     * Handles an alignment found between a bar peak in one staff and
-     * another bar peak in the staff below.
-     */
-    public static class Alignment
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Bar peak in the upper staff. */
-        final BarPeak topPeak;
-
-        /** Bar peak in the lower staff. */
-        final BarPeak bottomPeak;
-
-        /** Alignment quality: abscissa shift (in interline). */
-        final double dx;
-
-        //~ Constructors -------------------------------------------------------
-        public Alignment (BarPeak topPeak,
-                          BarPeak bottomPeak,
-                          double dx)
-        {
-            this.topPeak = topPeak;
-            this.bottomPeak = bottomPeak;
-            this.dx = dx;
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public boolean equals (Object obj)
-        {
-            if (obj instanceof Alignment) {
-                Alignment that = (Alignment) obj;
-
-                return (topPeak == that.topPeak)
-                       && (bottomPeak == that.bottomPeak);
-            } else {
-                return false;
-            }
-        }
-
-        public BarPeak getPeak (VerticalSide side)
-        {
-            if (side == TOP) {
-                return topPeak;
-            } else {
-                return bottomPeak;
-            }
-        }
-
-        @Override
-        public int hashCode ()
-        {
-            int hash = 7;
-            hash = (97 * hash) + Objects.hashCode(this.topPeak);
-            hash = (97 * hash) + Objects.hashCode(this.bottomPeak);
-
-            return hash;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append(getClass().getSimpleName());
-            sb.append("{");
-            sb.append(internals());
-            sb.append("}");
-
-            return sb.toString();
-        }
-
-        protected String internals ()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append("top:Staff#")
-                    .append(topPeak.getStaff().getId())
-                    .append("-")
-                    .append(topPeak);
-            sb.append(" bot:Staff#")
-                    .append(bottomPeak.getStaff().getId())
-                    .append("-")
-                    .append(bottomPeak);
-            sb.append(String.format(" dx:%.1f", dx));
-
-            return sb.toString();
-        }
-    }
-
     //-----------//
     // Constants //
     //-----------//
@@ -1274,6 +1181,10 @@ public class BarsRetriever
                 0.5,
                 "Max extension of bar above or below staff line");
 
+        Scale.Fraction maxDoubleBarGap = new Scale.Fraction(
+                1.0,
+                "Max horizontal gap between two members of a double bar");
+
         // Constants for display
         //
         Constant.Boolean showVerticalLines = new Constant.Boolean(
@@ -1305,6 +1216,8 @@ public class BarsRetriever
 
         final double maxConnectionWhiteRatio;
 
+        final int maxDoubleBarGap;
+
         // Debug
         final List<Integer> vipSections;
 
@@ -1320,6 +1233,7 @@ public class BarsRetriever
             maxRunShift = scale.toPixels(constants.maxRunShift);
             maxBarExtension = scale.toPixels(constants.maxBarExtension);
             maxConnectionGap = scale.toPixels(constants.maxConnectionGap);
+            maxDoubleBarGap = scale.toPixels(constants.maxDoubleBarGap);
             maxConnectionWhiteRatio = constants.maxConnectionWhiteRatio.getValue();
 
             // VIPs
@@ -1336,3 +1250,104 @@ public class BarsRetriever
         }
     }
 }
+//    //---------------//
+//    // harmonizeEnds //
+//    //---------------//
+//    /**
+//     * Make sure staves side ends are consistent across the whole page.
+//     * <p>
+//     * In a page, either all staves or none start with a left bar line.
+//     * The same applies for potential right bar line.
+//     * <p>
+//     * With or without bar lines, staves starting and stopping abscissae are
+//     * not random but organized in groups.
+//     * Strategy: try to gather ends by rather vertical lines and detect abnormal
+//     * points.
+//     */
+//    private void harmonizeEnds ()
+//    {
+//        Skew skew = sheet.getSkew();
+//
+//        // Check barline presence
+//        for (HorizontalSide side : HorizontalSide.values()) {
+//            List<Integer> withBar = new ArrayList<Integer>();
+//            List<Integer> withoutBar = new ArrayList<Integer>();
+//
+//            for (StaffInfo staff : staffManager.getStaves()) {
+//                int xStaff = staff.getAbscissa(side);
+//                List<BarPeak> peaks = staff.getBarPeaks();
+//                int index = (side == LEFT) ? 0 : (peaks.size() - 1);
+//                BarPeak peak = peaks.get(index);
+//
+//                if ((xStaff >= peak.getStart()) && (xStaff <= peak.getStop())) {
+//                    withBar.add(staff.getId());
+//                } else {
+//                    withoutBar.add(staff.getId());
+//                }
+//            }
+//
+//            logger.info("{} Bars:{} noBars:{}", side, withBar, withoutBar);
+//        }
+//
+//        // Check staff start & stop abscissa
+//        for (HorizontalSide side : HorizontalSide.values()) {
+//            List<BasicLine> lines = new ArrayList<BasicLine>();
+//            BasicLine line = null;
+//            Double prevX = null;
+//
+//            for (StaffInfo staff : staffManager.getStaves()) {
+//                int x = staff.getAbscissa(side);
+//                FilamentLine staffLine = staff.getLines()
+//                        .get(2);
+//                Point2D end = new Point2D.Double(
+//                        x,
+//                        staffLine.getEndPoint(side).getY());
+//                Point2D dskEnd = skew.deskewed(end);
+//                double dskX = dskEnd.getX();
+//                boolean shift = (prevX != null)
+//                                && (Math.abs(dskX - prevX) > params.maxAlignmentDx);
+//                logger.info(
+//                        "{} staff#{} x:{} dskEnd:{} {}",
+//                        side,
+//                        staff.getId(),
+//                        x,
+//                        String.format("%.0f", dskX),
+//                        shift ? String.format("SHIFT_DETECTED: %.0f", dskX - prevX)
+//                        : "");
+//
+//                if (shift) {
+//                    // We cannot keep on with the same line
+//                    // Reuse another one or create a brand new one?
+//                    line = null;
+//
+//                    for (ListIterator<BasicLine> it = lines.listIterator(
+//                            lines.size() - 1); it.hasPrevious();) {
+//                        BasicLine ln = it.previous();
+//                        final double delta;
+//
+//                        if (ln.getNumberOfPoints() > 1) {
+//                            delta = ln.distanceOf(end);
+//                        } else {
+//                            delta = ln.getMinAbscissa() - end.getX();
+//                        }
+//
+//                        if (Math.abs(delta) <= (2 * params.maxAlignmentDx)) {
+//                            line = ln;
+//
+//                            break;
+//                        }
+//                    }
+//                }
+//
+//                if (line == null) {
+//                    lines.add(line = new BasicLine());
+//                }
+//
+//                line.includePoint(end);
+//                prevX = dskX;
+//            }
+//
+//            logger.info("{} lines: {}", lines.size(), lines);
+//        }
+//    }
+//

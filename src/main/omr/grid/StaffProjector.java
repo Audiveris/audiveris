@@ -109,7 +109,7 @@ public class StaffProjector
     private final List<BarPeak> peaks = new ArrayList<BarPeak>();
 
     /** Count of cumulated foreground pixels, indexed by abscissa. */
-    private int[] values;
+    private short[] values;
 
     //~ Constructors -----------------------------------------------------------
     /**
@@ -202,7 +202,7 @@ public class StaffProjector
      */
     private void computeValues ()
     {
-        values = new int[sheet.getWidth()];
+        values = new short[sheet.getWidth()];
 
         final FilamentLine firstLine = staff.getFirstLine();
         final FilamentLine lastLine = staff.getLastLine();
@@ -213,7 +213,7 @@ public class StaffProjector
         for (int x = xMin; x <= xMax; x++) {
             int yMin = firstLine.yAt(x);
             int yMax = lastLine.yAt(x);
-            int count = 0;
+            short count = 0;
 
             for (int y = yMin; y <= yMax; y++) {
                 if (pixelFilter.isFore(x, y)) {

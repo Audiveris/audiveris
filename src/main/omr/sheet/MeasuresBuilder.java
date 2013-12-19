@@ -17,7 +17,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.Glyph;
 
-import omr.grid.BarAlignment;
+import omr.grid.OldBarAlignment;
 import omr.grid.StaffInfo;
 import omr.grid.StickIntersection;
 import static omr.run.Orientation.*;
@@ -141,12 +141,12 @@ public class MeasuresBuilder
                     .clear();
         }
 
-        // Create measures out of BarAlignment instances
-        List<BarAlignment> alignments = system.getBarAlignments();
+        // Create measures out of OldBarAlignment instances
+        List<OldBarAlignment> alignments = system.getBarAlignments();
         int firstId = system.getFirstStaff()
                 .getId();
 
-        for (BarAlignment align : alignments) {
+        for (OldBarAlignment align : alignments) {
             if (logger.isDebugEnabled()) {
                 logger.debug(align.toString());
             }

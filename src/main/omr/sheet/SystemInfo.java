@@ -19,7 +19,7 @@ import omr.glyph.facets.Glyph;
 import omr.glyph.pattern.PatternsChecker;
 import omr.glyph.pattern.SlurInspector;
 
-import omr.grid.BarAlignment;
+import omr.grid.OldBarAlignment;
 import omr.grid.BarInfo;
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
@@ -154,7 +154,7 @@ public class SystemInfo
     private BarInfo rightBar;
 
     /** Bar alignments for this system */
-    private List<BarAlignment> barAlignments;
+    private List<OldBarAlignment> barAlignments;
 
     ///   HORIZONTALS   ////////////////////////////////////////////////////////
     /** Horizontal sections, assigned once for all to this system */
@@ -524,7 +524,7 @@ public class SystemInfo
      *
      * @return the barAlignments
      */
-    public List<BarAlignment> getBarAlignments ()
+    public List<OldBarAlignment> getBarAlignments ()
     {
         return barAlignments;
     }
@@ -1228,7 +1228,7 @@ public class SystemInfo
      *
      * @param barAlignments the barAlignments to set
      */
-    public void setBarAlignments (List<BarAlignment> barAlignments)
+    public void setBarAlignments (List<OldBarAlignment> barAlignments)
     {
         this.barAlignments = barAlignments;
     }

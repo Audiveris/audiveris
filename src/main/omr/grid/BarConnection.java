@@ -20,82 +20,98 @@ import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 
 /**
- * DOCUMENT ME!
+ * Class {@code BarConnection} represents a physical connection across
+ * staves between two bar lines.
+ * <p>
+ * It indicates that the two linked staves belong to the same system and/or
+ * part.
  *
- * @author TBD
- * @version TBD
+ * @author Hervé Bitteur
  */
 public class BarConnection
-        extends BarsRetriever.Alignment
+        extends BarAlignment
 {
     //~ Instance fields --------------------------------------------------------
 
-    /** Main staff line height. */
-    private final int mainFore;
+    /** Connection quality. */
+    private final GradeImpacts impacts;
 
-    /** Connection quality: white ratio. */
-    private final double whiteRatio;
-
-    /** Connection quality: largest gap (in interline). */
-    private final double gap;
-
+    /**
+     * The physical portion of the connection line, excluding the
+     * portion within staves.
+     */
     private Area area;
 
-    private final GradeImpacts impacts;
+    /** Median line. */
+    private Line2D median;
 
     //~ Constructors -----------------------------------------------------------
     /**
      * Creates a new BarConnection object.
      *
-     * @param alignment  DOCUMENT ME!
-     * @param mainFore   DOCUMENT ME!
-     * @param whiteRatio DOCUMENT ME!
-     * @param gap        DOCUMENT ME!
-     * @param impacts    DOCUMENT ME!
+     * @param alignment the underlying bar line alignment
+     * @param impacts   the connection quality
      */
-    public BarConnection (BarsRetriever.Alignment alignment,
-                          int mainFore,
-                          double whiteRatio,
-                          double gap,
+    public BarConnection (BarAlignment alignment,
                           GradeImpacts impacts)
     {
-        super(alignment.topPeak, alignment.bottomPeak, alignment.dx);
-        this.mainFore = mainFore;
-        this.whiteRatio = whiteRatio;
-        this.gap = gap;
+        super(
+                alignment.topPeak,
+                alignment.bottomPeak,
+                alignment.dx,
+                alignment.getImpacts());
         this.impacts = impacts;
     }
 
     //~ Methods ----------------------------------------------------------------
+    //---------//
+    // getArea //
+    //---------//
     public Area getArea ()
     {
         if (area == null) {
-            double width = Math.max(topPeak.getWidth(), bottomPeak.getWidth());
-            double xTop = (topPeak.getStart() + topPeak.getStop()) / 2d;
-            double xBot = (bottomPeak.getStart() + bottomPeak.getStop()) / 2d;
-            Line2D line = new Line2D.Double(
-                    xTop,
-                    topPeak.getBottom(),
-                    xBot,
-                    bottomPeak.getTop());
-            area = AreaUtil.verticalRibbon(line, width);
+            double width = (topPeak.getWidth() + bottomPeak.getWidth()) / 2d;
+            area = AreaUtil.verticalRibbon(getMedian(), width);
         }
 
         return area;
     }
 
+    //------------//
+    // getImpacts //
+    //------------//
+    @Override
     public GradeImpacts getImpacts ()
     {
         return impacts;
     }
 
+    //-----------/
+    // getMedian //
+    //-----------/
+    public Line2D getMedian ()
+    {
+        if (median == null) {
+            double xTop = (topPeak.getStart() + topPeak.getStop()) / 2d;
+            double xBot = (bottomPeak.getStart() + bottomPeak.getStop()) / 2d;
+            median = new Line2D.Double(
+                    xTop,
+                    topPeak.getBottom(),
+                    xBot,
+                    bottomPeak.getTop());
+        }
+
+        return median;
+    }
+
+    //-----------//
+    // internals //
+    //-----------//
     @Override
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(String.format(" white:%.0f", 100 * whiteRatio))
-                .append("%");
-        sb.append(String.format(" gap:%.1f", gap));
+        sb.append(impacts);
 
         return sb.toString();
     }
@@ -109,17 +125,21 @@ public class BarConnection
     {
         //~ Static fields/initializers -----------------------------------------
 
-        private static final String[] NAMES = new String[]{"white", "gap"};
+        private static final String[] NAMES = new String[]{
+            "align", "white", "gap"
+        };
 
-        private static final double[] WEIGHTS = new double[]{1, 1};
+        private static final double[] WEIGHTS = new double[]{1, 1, 1};
 
         //~ Constructors -------------------------------------------------------
-        public Impacts (double white,
+        public Impacts (double align,
+                        double white,
                         double gap)
         {
             super(NAMES, WEIGHTS);
-            setImpact(0, white);
-            setImpact(1, gap);
+            setImpact(0, align);
+            setImpact(1, white);
+            setImpact(2, gap);
         }
     }
 }

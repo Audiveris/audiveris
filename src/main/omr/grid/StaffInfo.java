@@ -45,6 +45,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -151,6 +152,9 @@ public class StaffInfo
 
     /** Sequence of bar lines. */
     private List<BarPeak> barPeaks;
+
+    /** Sequence of bar lines. */
+    private List<BarPeak> removedBarPeaks;
 
     /** Containing system. */
     @Navigable(false)
@@ -403,7 +407,7 @@ public class StaffInfo
      */
     public List<BarPeak> getBarPeaks ()
     {
-        return barPeaks;
+        return Collections.unmodifiableList(barPeaks);
     }
 
     //------------------//
@@ -909,6 +913,19 @@ public class StaffInfo
     public int removeAttachments (String prefix)
     {
         return attachments.removeAttachments(prefix);
+    }
+
+    //----------------//
+    // removeBarPeaks //
+    //----------------//
+    public void removeBarPeaks (Collection<BarPeak> toRemove)
+    {
+        if (removedBarPeaks == null) {
+            removedBarPeaks = new ArrayList<BarPeak>();
+        }
+
+        barPeaks.removeAll(toRemove);
+        removedBarPeaks.addAll(toRemove);
     }
 
     //--------------//
