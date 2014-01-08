@@ -220,6 +220,8 @@ public class NotesBuilder
             ch.addAll(processStaff(staff, false));
 
             // Finally, detect notes overlaps for current staff
+            Collections.sort(ch, Inter.byAbscissa);
+            purgeDuplicates(ch);
             flagOverlaps(ch);
         }
 
@@ -352,8 +354,6 @@ public class NotesBuilder
      */
     private void flagOverlaps (List<Inter> inters)
     {
-        Collections.sort(inters, Inter.byAbscissa);
-        
         for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
             Inter left = inters.get(i);
             Rectangle box = left.getBounds();
@@ -437,13 +437,15 @@ public class NotesBuilder
             } else {
                 // Both are present only if a further ledger exists in abscissa
                 //TODO: refine using width of template?
-                for (LedgerAdapter ledger : ledgers) {
-                    if ((x >= ledger.getLeftAbscissa())
-                        && (x <= ledger.getRightAbscissa())) {
-                        y.value = (int) Math.rint(
-                                (line.yAt((double) x) + ledger.yAt((double) x)) / 2);
+                if (Math.abs(pitch) > 5) {
+                    for (LedgerAdapter ledger : ledgers) {
+                        if ((x >= ledger.getLeftAbscissa())
+                            && (x <= ledger.getRightAbscissa())) {
+                            y.value = (int) Math.rint(
+                                    (line.yAt((double) x) + ledger.yAt((double) x)) / 2);
 
-                        return Lines.LINE_DOUBLE;
+                            return Lines.LINE_DOUBLE;
+                        }
                     }
                 }
 
@@ -742,6 +744,47 @@ public class NotesBuilder
         return ch;
     }
 
+    //-----------------//
+    // purgeDuplicates //
+    //-----------------//
+    private void purgeDuplicates (List<Inter> inters)
+    {
+        List<Inter> toRemove = new ArrayList<Inter>();
+
+        for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
+            Inter left = inters.get(i);
+            Rectangle leftBox = left.getBounds();
+            int xMax = (leftBox.x + leftBox.width) - 1;
+
+            for (Inter right : inters.subList(i + 1, inters.size())) {
+                Rectangle rightBox = right.getBounds();
+
+                if (leftBox.intersects(rightBox)) {
+                    if (left.isSameAs(right)) {
+                        toRemove.add(right);
+                    }
+                } else if (rightBox.x > xMax) {
+                    break;
+                }
+            }
+        }
+
+        if (!toRemove.isEmpty()) {
+            inters.removeAll(toRemove);
+
+            for (Inter inter : toRemove) {
+                if (inter.isVip()) {
+                    logger.info(
+                            "VIP purging {} at {}",
+                            inter,
+                            inter.getBounds());
+                }
+
+                sig.removeVertex(inter);
+            }
+        }
+    }
+
     //~ Inner Classes ----------------------------------------------------------
     //-----------//
     // Aggregate //
@@ -827,7 +870,6 @@ public class NotesBuilder
 
         private final WrappedInteger ord = new WrappedInteger(-1);
 
-        ///private final int[] yClosed = new int[1]; //new int[params.maxClosedDy];
         private final int[] yClosed = new int[params.maxClosedDy];
 
         private final int[] yOpen = new int[params.maxOpenDy];
@@ -857,7 +899,8 @@ public class NotesBuilder
             this.useSeeds = useSeeds;
 
             // Open line?
-            isOpen = ((pitch % 2) != 0) && (line2 == null);
+            isOpen = ((pitch % 2) != 0)
+                     && ((line2 == null) || (Math.abs(pitch) == 5));
 
             final StaffInfo staff = line.getStaff();
             ledgers = getLedgerAdapters(staff, pitch);
@@ -1006,6 +1049,14 @@ public class NotesBuilder
             return inters;
         }
 
+        //-----------//
+        // ordinates //
+        //-----------//
+        /**
+         * Report the y values to scan with template
+         *
+         * @return the range of y values
+         */
         private int[] ordinates ()
         {
             if (isOpen) {
@@ -1230,8 +1281,8 @@ public class NotesBuilder
         {
             maxMatchingDistance = constants.maxMatchingDistance.getValue();
             maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
-            maxClosedDy = scale.toPixels(constants.maxClosedDy);
-            maxOpenDy = scale.toPixels(constants.maxOpenDy);
+            maxClosedDy = Math.max(1, scale.toPixels(constants.maxClosedDy));
+            maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
         }
     }
 
@@ -1309,99 +1360,3 @@ public class NotesBuilder
         }
     }
 }
-//    //--------//
-//    // Tester //
-//    //--------//
-//    private class Tester
-//    {
-//        //~ Instance fields ----------------------------------------------------
-//
-//        private final Anchor anchor = Anchor.CENTER;
-//
-//        private final Shape shape;
-//
-//        private final Lines lines;
-//
-//        private final Rectangle focus;
-//
-//        private final int pitch;
-//
-//        //~ Constructors -------------------------------------------------------
-//        public Tester (Shape shape,
-//                       Lines lines,
-//                       Rectangle focus,
-//                       int pitch)
-//        {
-//            this.shape = shape;
-//            this.lines = lines;
-//            this.focus = focus;
-//            this.pitch = pitch;
-//        }
-//
-//        //~ Methods ------------------------------------------------------------
-//        private double test (int x,
-//                             int y)
-//        {
-//            double bestDistance = Double.MAX_VALUE;
-//            Template.Stems bestStems = null;
-//
-//            ///for (Template.Stems stems : Template.Stems.values()) {
-//            Template.Stems stems = Template.Stems.STEM_NONE;
-//            final Key key = new Key(shape, lines, stems);
-//            final Template tpl = catalog.getTemplate(key);
-//
-//            // Get match value for template located at (x,y)
-//            double d = tpl.evaluate(x, y, anchor, distances);
-//
-//            if (d < bestDistance) {
-//                bestDistance = d;
-//                bestStems = stems;
-//            }
-//
-//            logger.info("x:{} y:{} {}", x, y, bestStems);
-//
-//            return bestDistance;
-//        }
-//
-//        /**
-//         * Specific tests around provided location, with varying sizes.
-//         *
-//         * @param point
-//         */
-//        private void testLocations ()
-//        {
-//            double[][] table = new double[focus.width][focus.height];
-//
-//            // Try various locations, with standard interline size
-//            int bestX = 0;
-//            int bestY = 0;
-//            double bestD = Double.MAX_VALUE;
-//
-//            for (int iy = 0; iy < focus.height; iy++) {
-//                int y = focus.y + iy;
-//
-//                for (int ix = 0; ix < focus.width; ix++) {
-//                    int x = focus.x + ix;
-//                    double d = test(x, y);
-//                    table[ix][iy] = d;
-//
-//                    if (d < bestD) {
-//                        bestD = d;
-//                        bestX = x;
-//                        bestY = y;
-//                    }
-//                }
-//            }
-//
-//            Inter inter = createInter(
-//                    new PixelDistance(bestX, bestY, bestD),
-//                    anchor,
-//                    shape,
-//                    pitch);
-//
-//            TableUtil.dump(
-//                    focus.getLocation() + " best " + String.format("%.3f", bestD)
-//                    + " at (" + bestX + "," + bestY + ") " + inter,
-//                    table);
-//        }
-//    }

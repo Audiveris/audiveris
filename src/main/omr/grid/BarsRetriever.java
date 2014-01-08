@@ -439,7 +439,7 @@ public class BarsRetriever
             }
         }
 
-        watch.print();
+        ///watch.print();
     }
 
     //-----------------//

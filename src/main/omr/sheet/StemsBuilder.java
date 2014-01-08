@@ -23,7 +23,6 @@ import omr.glyph.ShapeSet;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
 
-import omr.image.Anchored;
 import omr.image.Anchored.Anchor;
 import omr.image.ShapeDescriptor;
 
@@ -979,11 +978,6 @@ public class StemsBuilder
                     if (grade >= StemInter.getMinGrade()) {
                         stemInter = new StemInter(stem, impacts);
                         sig.addVertex(stemInter);
-                    } else {
-                        logger.debug(
-                                "Too weak stem#{} grade: {}",
-                                stem.getId(),
-                                String.format("%.2f", grade));
                     }
                 }
 
@@ -1251,7 +1245,9 @@ public class StemsBuilder
             // includeItems //
             //--------------//
             /**
-             * Include the stem items, one after the other
+             * Include the stem items, one after the other.
+             * We may have insufficient clean value for first items (resulting
+             * in no intermediate StemInter created) but we must go on.
              *
              * @param items          the sequence of stem items
              * @param refY           the ordinate of head ref point
@@ -1279,7 +1275,7 @@ public class StemsBuilder
                             : ((itemBox.y + itemBox.height) - 1);
                     final double itemStart = (yDir > 0) ? Math.max(itemY, refY)
                             : Math.min(itemY, refY);
-                    final double yGap = Math.abs(itemStart - lastY);
+                    final double yGap = yDir * (itemStart - lastY);
 
                     if (yGap > params.maxYGap) {
                         break; // Too large gap
@@ -1290,7 +1286,9 @@ public class StemsBuilder
                     }
 
                     // Check minimum stem extension from head
-                    lastY = itemY + (yDir * (itemBox.height - 1));
+                    double itemStop = itemY + (yDir * (itemBox.height - 1));
+                    lastY = (yDir > 0) ? Math.max(lastY, itemStop)
+                            : Math.min(lastY, itemStop);
 
                     final double extension = Math.abs(lastY - refY);
 

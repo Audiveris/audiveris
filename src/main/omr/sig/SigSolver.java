@@ -20,6 +20,7 @@ import omr.math.GeoOrder;
 import omr.math.GeoUtil;
 
 import omr.sheet.SystemInfo;
+import static omr.sig.StemPortion.*;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
@@ -111,36 +112,33 @@ public class SigSolver
 
         // General overlap checks
         flagOverlaps();
-
         flagHeadInconsistency();
 
-        /** Count of modifications done in current iteration. */
-        int modifs;
-
-        /** Count of reductions performed. */
-        int reductions;
-
-        /** Count of deletions performed. */
-        int deletions;
+        int modifs; // modifications done in current iteration        
+        int reductions; // Count of reductions performed        
+        int deletions; // Count of deletions performed
 
         do {
             // First, remove all inters with too low contextual grade
-            contextualize();
-            deletions = sig.deleteWeakInters()
-                    .size();
-
-            if (logging) {
-                logger.info("S#{} deletions: {}", system.getId(), deletions);
-            }
+            deletions = purgeWeakInters();
 
             do {
                 modifs = 0;
                 // Detect lack of mandatory support relation for certain inters
                 modifs += checkHeads();
+                deletions += purgeWeakInters();
+                
                 modifs += checkBeams();
+                deletions += purgeWeakInters();
+                
                 modifs += checkHooks();
-                modifs += checkStems();
+                deletions += purgeWeakInters();
+                
                 modifs += checkLedgers();
+                deletions += purgeWeakInters();
+                
+                modifs += checkStems();
+                deletions += purgeWeakInters();
 
                 if (logging) {
                     logger.info("S#{} modifs: {}", system.getId(), modifs);
@@ -148,7 +146,6 @@ public class SigSolver
             } while (modifs > 0);
 
             // Remaining exclusions
-            contextualize();
             reductions = sig.reduceExclusions()
                     .size();
 
@@ -241,10 +238,6 @@ public class SigSolver
 
         for (HeadStemRelation rel : stemRels) {
             StemInter stem = (StemInter) sig.getEdgeTarget(rel);
-
-            if (head.isVip() && stem.isVip()) {
-                logger.warn("BINGO");
-            }
 
             // What is the stem direction? (up: dir < 0, down: dir > 0)
             int dir = stemDirection(stem);
@@ -452,17 +445,7 @@ public class SigSolver
             }
 
             if (!stemHasSingleHeadEnd(stem)) {
-                if (stem.isVip() || logger.isDebugEnabled()) {
-                    logger.info(
-                            "Deleting stem with heads at both ends {}",
-                            stem);
-                }
-
-                sig.removeVertex(stem);
-                it.remove();
                 modifs++;
-
-                continue;
             }
         }
 
@@ -582,10 +565,6 @@ public class SigSolver
                         Set<Relation> rels2 = sig.getAllEdges(right, left);
 
                         if (rels1.isEmpty() && rels2.isEmpty()) {
-                            if (left.isVip() || right.isVip()) {
-                                logger.info("Overlap {} & {}", left, right);
-                            }
-
                             sig.insertExclusion(
                                     left,
                                     right,
@@ -742,21 +721,33 @@ public class SigSolver
         return toRemove.size();
     }
 
+    //-----------------//
+    // purgeWeakInters //
+    //-----------------//
+    private int purgeWeakInters ()
+    {
+        contextualize();
+
+        return sig.deleteWeakInters()
+                .size();
+    }
+
     //---------------//
     // stemDirection //
     //---------------//
     /**
      * Report the direction of the provided stem.
      * <p>
-     * For this, we check what is found on each stem end (beam/flag or head).
+     * For this, we check what is found on each stem end (beam/flag or head)
+     * and use contextual grade to choose the best reference.
      *
      * @param stem the stem to check
      * @return -1 for stem up, +1 for stem down, 0 for unknown
      */
     private int stemDirection (StemInter stem)
     {
-        boolean up = false;
-        boolean down = false;
+        double up = 0;
+        double down = 0;
 
         for (Relation rel : sig.edgesOf(stem)) {
             if (rel instanceof HeadStemRelation) {
@@ -765,11 +756,13 @@ public class SigSolver
 
                 if (portion == StemPortion.STEM_BOTTOM) {
                     if (headStem.getHeadSide() == RIGHT) {
-                        up = true;
+                        Inter head = sig.getEdgeSource(rel);
+                        up = Math.max(up, head.getContextualGrade());
                     }
                 } else if (portion == StemPortion.STEM_TOP) {
                     if (headStem.getHeadSide() == LEFT) {
-                        down = true;
+                        Inter head = sig.getEdgeSource(rel);
+                        down = Math.max(down, head.getContextualGrade());
                     }
                 }
             } else if (rel instanceof BeamStemRelation) {
@@ -777,30 +770,18 @@ public class SigSolver
                 StemPortion portion = beamStem.getStemPortion();
 
                 if (portion == StemPortion.STEM_BOTTOM) {
-                    down = true;
+                    Inter beam = sig.getEdgeSource(rel);
+                    down = Math.max(down, beam.getContextualGrade());
                 } else if (portion == StemPortion.STEM_TOP) {
-                    up = true;
+                    Inter beam = sig.getEdgeSource(rel);
+                    up = Math.max(up, beam.getContextualGrade());
                 }
             }
 
             //TODO: one day, check for flag?
         }
 
-        if (up && down) {
-            // Non consistent
-            return 0;
-        }
-
-        if (up) {
-            return -1;
-        }
-
-        if (down) {
-            return +1;
-        }
-
-        // No info
-        return 0;
+        return Double.compare(down, up);
     }
 
     //--------------------//
@@ -839,25 +820,38 @@ public class SigSolver
      */
     private boolean stemHasSingleHeadEnd (StemInter stem)
     {
-        boolean hasTop = false;
-        boolean hasBottom = false;
+        final int dir = stemDirection(stem);
+
+        if (dir == 0) {
+            return true; // We cannot decide
+        }
+
+        final StemPortion forbidden = (dir > 0) ? STEM_BOTTOM : STEM_TOP;
+        final List<Relation> toRemove = new ArrayList<Relation>();
 
         for (Relation rel : sig.edgesOf(stem)) {
             if (rel instanceof HeadStemRelation) {
-                HeadStemRelation hsRel = (HeadStemRelation) rel;
-
                 // Check stem portion
+                HeadStemRelation hsRel = (HeadStemRelation) rel;
                 StemPortion portion = hsRel.getStemPortion();
-                HorizontalSide headSide = hsRel.getHeadSide();
 
-                if (portion == StemPortion.STEM_TOP) {
-                    hasTop = true;
-                } else if (portion == StemPortion.STEM_BOTTOM) {
-                    hasBottom = true;
+                if (portion == forbidden) {
+                    if (stem.isVip() || logger.isDebugEnabled()) {
+                        logger.info(
+                                "Cutting rel between {} and {}",
+                                stem,
+                                sig.getEdgeSource(rel));
+                    }
+
+                    toRemove.add(rel);
                 }
             }
         }
 
-        return !hasTop || !hasBottom;
+        if (!toRemove.isEmpty()) {
+            sig.removeAllEdges(toRemove);
+        }
+
+        return toRemove.isEmpty();
     }
 }

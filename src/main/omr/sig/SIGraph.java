@@ -285,17 +285,20 @@ public class SIGraph
      * Report all largest collections of non-conflicting partners
      * within the provided collection of interpretations.
      *
+     * @param focus  the inter instance for which partners are looked up
      * @param inters the provided collection of interpretations, with perhaps
      *               some mutual exclusion relations.
      * @return all the possible consistent partner collections, with no pair
      *         of concurrent interpretations in the same collection
      */
-    public List<List<Inter>> getPartners (List<Inter> inters)
+    public List<List<Inter>> getPartners (Inter focus,
+                                          List<Inter> inters)
     {
         int n = inters.size();
         Collections.sort(inters, Inter.byId);
 
-        List<List<Inter>> result = new ArrayList<List<Inter>>();
+        final List<Inter> stems = stemsOf(inters);
+        final List<List<Inter>> result = new ArrayList<List<Inter>>();
 
         // Map inter -> concurrents of inter (within the provided collection)
         Map<Inter, Set<Inter>> map = new HashMap<Inter, Set<Inter>>();
@@ -313,6 +316,17 @@ public class SIGraph
                     && inters.contains(concurrent)) {
                     concurrents.add(concurrent);
                     conflict = true;
+                }
+            }
+
+            if (focus instanceof AbstractNoteInter
+                && inter instanceof StemInter) {
+                // Flag all other stems, if any, as concurrents of this one
+                for (Inter stem : stems) {
+                    if ((stem != inter) && (inter.getId() < stem.getId())) {
+                        concurrents.add(stem);
+                        conflict = true;
+                    }
                 }
             }
         }
@@ -426,11 +440,10 @@ public class SIGraph
     //-------------//
     /**
      * Report the set of supporting relations the provided inter is
-     * involved as target
+     * involved in.
      *
      * @param inter the provided interpretation
-     * @return the set of supporting relations for inter, perhaps empty but not
-     *         null
+     * @return set of supporting relations for inter, maybe empty but not null
      */
     public Set<Support> getSupports (Inter inter)
     {
@@ -893,6 +906,13 @@ public class SIGraph
      * There may be mutual exclusion between some partners. In this case, we
      * identify all partitions of compatible partners and report the best
      * resulting contextual value among those partitions.
+     * <p>
+     * More difficult, some partners are in conflict only with respect to the
+     * inter instance between them: typically a note head with stem on right
+     * and stem on left with same direction. These stems are not in conflict
+     * per se, both can support the note head, but not jointly.
+     * In fact, a note head cannot be jointly supported by several head-stem
+     * relationships!
      *
      * @param inter    the inter whose contextual grade is to be computed
      * @param supports the set of supporting relations the inter is involved
@@ -928,8 +948,8 @@ public class SIGraph
         }
 
         // Check for mutual exclusion between 'others'
-        List<List<Inter>> seqs = getPartners(others);
-        double bestCp = 0;
+        List<List<Inter>> seqs = getPartners(inter, others);
+        double bestCg = 0;
         List<Inter> bestSeq = null;
 
         for (List<Inter> seq : seqs) {
@@ -945,23 +965,23 @@ public class SIGraph
                 partners[i] = other.getGrade();
             }
 
-            double cp = Grades.contextual(inter.getGrade(), partners, ratios);
+            double cg = Grades.contextual(inter.getGrade(), partners, ratios);
 
-            if (cp > bestCp) {
-                bestCp = cp;
+            if (cg > bestCg) {
+                bestCg = cg;
                 bestSeq = seq;
             }
         }
 
-        //        if (logging || inter.isVip()) {
-        //            logger.info(
-        //                    "VIP {} cp:{} {}",
-        //                    inter,
-        //                    String.format("%.3f", bestCp),
-        //                    supportsSeenFrom(inter, map, bestSeq));
-        //        }
-        //
-        return bestCp;
+        if (logging || inter.isVip()) {
+            logger.info(
+                    "VIP {} cg:{} {}",
+                    inter,
+                    String.format("%.3f", bestCg),
+                    supportsSeenFrom(inter, map, bestSeq));
+        }
+
+        return bestCg;
     }
 
     //------------//
@@ -990,6 +1010,22 @@ public class SIGraph
         }
 
         return inters;
+    }
+
+    //---------//
+    // stemsOf //
+    //---------//
+    private List<Inter> stemsOf (List<Inter> inters)
+    {
+        List<Inter> stems = new ArrayList<Inter>();
+
+        for (Inter inter : inters) {
+            if (inter instanceof StemInter) {
+                stems.add(inter);
+            }
+        }
+
+        return stems;
     }
 
     //------------------//

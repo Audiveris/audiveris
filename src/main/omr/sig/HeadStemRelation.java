@@ -174,7 +174,7 @@ public class HeadStemRelation
         //~ Instance fields ----------------------------------------------------
 
         final Constant.Ratio supportCoeff = new Constant.Ratio(
-                2, //5, BINGO
+                5,
                 "Value for coeff in support formula");
 
         final Scale.Fraction yGapMax = new Scale.Fraction(

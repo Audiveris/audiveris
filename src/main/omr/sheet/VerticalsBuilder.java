@@ -467,12 +467,12 @@ public class VerticalsBuilder
                 "Low clean length for a stem");
 
         Scale.Fraction gapHigh = new Scale.Fraction(
-                2.0,
+                0.5,
                 "High vertical gap between stem segments");
 
         Constant.Double slopeHigh = new Constant.Double(
                 "tangent",
-                0.2,
+                0.05,
                 "High difference with global slope");
 
         Scale.Fraction straightHigh = new Scale.Fraction(
@@ -810,8 +810,8 @@ public class VerticalsBuilder
             add(1, new SlopeCheck());
             add(1, new StraightCheck());
             add(2, new CleanCheck());
-            add(1, new BlackCheck()); // Needs CleanCheck output
-            add(1, new GapCheck()); // Needs CleanCheck output
+            add(1, new BlackCheck()); // Needs CleanCheck side output
+            add(3, new GapCheck()); // Needs CleanCheck side output
 
             if (logger.isDebugEnabled() && (system.getId() == 1)) {
                 dump();
