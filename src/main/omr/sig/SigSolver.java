@@ -33,10 +33,11 @@ import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
@@ -94,93 +95,6 @@ public class SigSolver
         }
     }
 
-    //--------//
-    // reduce //
-    //--------//
-    /**
-     * Reduce conflicting interpretations.
-     *
-     * @return the number of inters deleted
-     */
-    public int reduce ()
-    {
-        int reductions = 0;
-
-        // Browse stems. TODO: browse the other classes of inter as well
-        final List<Inter> stems = sig.inters(Shape.STEM);
-
-        while (!stems.isEmpty()) {
-            for (Iterator<Inter> it = stems.iterator(); it.hasNext();) {
-                StemInter stem = (StemInter) it.next();
-                it.remove();
-
-                boolean logging = stem.isVip();
-
-                // Do we have conflicts with other inters?
-                Set<Relation> exclusions = sig.getExclusions(stem);
-
-                if (exclusions.isEmpty()) {
-                    continue;
-                }
-
-                // Retrieve the set of conflicting inters 
-                //TODO: (just stems for the time being)
-                Set<Inter> concurrents = new LinkedHashSet<Inter>();
-
-                for (Relation rel : exclusions) {
-                    Inter source = sig.getEdgeSource(rel);
-
-                    if (source instanceof StemInter) {
-                        concurrents.add(source);
-                    }
-
-                    Inter target = sig.getEdgeTarget(rel);
-
-                    if (target instanceof StemInter) {
-                        concurrents.add(target);
-                    }
-                }
-
-                double bestCp = 0;
-                Inter bestInter = null;
-
-                for (Inter inter : concurrents) {
-                    double cp = inter.getContextualGrade();
-
-                    if (cp > bestCp) {
-                        bestCp = cp;
-                        bestInter = inter;
-                    }
-                }
-
-                if (logging) {
-                    logger.info(
-                            "Best {} cp:{}\n",
-                            bestInter,
-                            String.format("%.2f", bestCp));
-                }
-
-                stems.removeAll(concurrents);
-
-                // Purge SIG
-                concurrents.remove(bestInter);
-
-                for (Inter inter : concurrents) {
-                    if (inter.isVip()) {
-                        logger.info("{} reduced by {}", inter, stem);
-                    }
-
-                    sig.removeVertex(inter);
-                    reductions++;
-                }
-
-                break;
-            }
-        }
-
-        return reductions;
-    }
-
     //-------//
     // solve //
     //-------//
@@ -198,6 +112,8 @@ public class SigSolver
         // General overlap checks
         flagOverlaps();
 
+        flagHeadInconsistency();
+
         /** Count of modifications done in current iteration. */
         int modifs;
 
@@ -208,6 +124,15 @@ public class SigSolver
         int deletions;
 
         do {
+            // First, remove all inters with too low contextual grade
+            contextualize();
+            deletions = sig.deleteWeakInters()
+                    .size();
+
+            if (logging) {
+                logger.info("S#{} deletions: {}", system.getId(), deletions);
+            }
+
             do {
                 modifs = 0;
                 // Detect lack of mandatory support relation for certain inters
@@ -222,19 +147,13 @@ public class SigSolver
                 }
             } while (modifs > 0);
 
-            contextualize();
-            reductions = reduce();
-
-            if (logging) {
-                logger.info("S#{} reductions: {}", system.getId(), reductions);
-            }
-
             // Remaining exclusions
-            deletions = sig.reduceExclusions()
+            contextualize();
+            reductions = sig.reduceExclusions()
                     .size();
 
             if (logging) {
-                logger.info("S#{} deletions: {}", system.getId(), deletions);
+                logger.info("S#{} reductions: {}", system.getId(), reductions);
             }
         } while ((reductions > 0) || (deletions > 0));
     }
@@ -323,12 +242,12 @@ public class SigSolver
         for (HeadStemRelation rel : stemRels) {
             StemInter stem = (StemInter) sig.getEdgeTarget(rel);
 
-            // What is the stem direction? (up: dir < 0, down: dir > 0)
-            Integer dir = stemDirection(stem);
-
-            if (dir == null) {
-                continue; // Since we can't decide
+            if (head.isVip() && stem.isVip()) {
+                logger.warn("BINGO");
             }
+
+            // What is the stem direction? (up: dir < 0, down: dir > 0)
+            int dir = stemDirection(stem);
 
             // Side is normal?
             HorizontalSide headSide = rel.getHeadSide();
@@ -345,7 +264,8 @@ public class SigSolver
 
             // Target side and pitch of other head
             HorizontalSide targetSide = (headSide == LEFT) ? RIGHT : LEFT;
-            int targetPitch = pitch - dir;
+            int targetPitch = pitch
+                              + ((headSide == LEFT) ? 1 : (-1));
 
             // Look for presence of head on other side with target pitch
             Inter otherHead = stem.lookupHead(targetSide, targetPitch);
@@ -360,6 +280,7 @@ public class SigSolver
             }
 
             sig.removeEdge(rel);
+            sig.insertExclusion(head, stem, Exclusion.Cause.INCOMPATIBLE);
             modifs++;
         }
 
@@ -530,17 +451,91 @@ public class SigSolver
                 continue;
             }
 
-            //            if (!stemHasSingleHeadEnd(stem)) {
-            //                logger.warn("Deleting stem with head at both ends {}", stem);
-            //                sig.removeVertex(stem);
-            //                it.remove();
-            //                modifs++;
-            //
-            //                continue;
-            //            }
+            if (!stemHasSingleHeadEnd(stem)) {
+                if (stem.isVip() || logger.isDebugEnabled()) {
+                    logger.info(
+                            "Deleting stem with heads at both ends {}",
+                            stem);
+                }
+
+                sig.removeVertex(stem);
+                it.remove();
+                modifs++;
+
+                continue;
+            }
         }
 
         return modifs;
+    }
+
+    //---------//
+    // exclude //
+    //---------//
+    private void exclude (Set<Inter> set1,
+                          Set<Inter> set2)
+    {
+        for (Inter i1 : set1) {
+            for (Inter i2 : set2) {
+                sig.insertExclusion(i1, i2, Exclusion.Cause.INCOMPATIBLE);
+            }
+        }
+    }
+
+    //-----------------------//
+    // flagHeadInconsistency //
+    //-----------------------//
+    /**
+     * Flag inconsistency of note heads attached to a (good) stem
+     */
+    private void flagHeadInconsistency ()
+    {
+        List<Inter> stems = sig.inters(Shape.STEM);
+
+        for (Inter si : stems) {
+            if (!si.isGood()) {
+                continue;
+            }
+
+            Set<Class> classes = new HashSet<Class>();
+
+            for (Relation rel : sig.edgesOf(si)) {
+                if (rel instanceof HeadStemRelation) {
+                    classes.add(sig.getEdgeSource(rel).getClass());
+                }
+            }
+
+            if (classes.size() > 1) {
+                //logger.info("Several head classes around {} {}", si, classes);
+                Map<Class, Set<Inter>> heads = new HashMap<Class, Set<Inter>>();
+
+                for (Relation rel : sig.edgesOf(si)) {
+                    if (rel instanceof HeadStemRelation) {
+                        Inter head = sig.getEdgeSource(rel);
+                        Class classe = head.getClass();
+                        Set<Inter> set = heads.get(classe);
+
+                        if (set == null) {
+                            heads.put(classe, set = new HashSet<Inter>());
+                        }
+
+                        set.add(head);
+                    }
+                }
+
+                List<Class> clist = new ArrayList<Class>(heads.keySet());
+
+                for (int ic = 0; ic < (clist.size() - 1); ic++) {
+                    Class c1 = clist.get(ic);
+                    Set set1 = heads.get(c1);
+
+                    for (Class c2 : clist.subList(ic + 1, clist.size())) {
+                        Set set2 = heads.get(c2);
+                        exclude(set1, set2);
+                    }
+                }
+            }
+        }
     }
 
     //--------------//
@@ -756,9 +751,9 @@ public class SigSolver
      * For this, we check what is found on each stem end (beam/flag or head).
      *
      * @param stem the stem to check
-     * @return -1 for stem up, +1 for stem down, null for unknown
+     * @return -1 for stem up, +1 for stem down, 0 for unknown
      */
-    private Integer stemDirection (StemInter stem)
+    private int stemDirection (StemInter stem)
     {
         boolean up = false;
         boolean down = false;
@@ -769,9 +764,13 @@ public class SigSolver
                 StemPortion portion = headStem.getStemPortion();
 
                 if (portion == StemPortion.STEM_BOTTOM) {
-                    up = true;
+                    if (headStem.getHeadSide() == RIGHT) {
+                        up = true;
+                    }
                 } else if (portion == StemPortion.STEM_TOP) {
-                    down = true;
+                    if (headStem.getHeadSide() == LEFT) {
+                        down = true;
+                    }
                 }
             } else if (rel instanceof BeamStemRelation) {
                 BeamStemRelation beamStem = (BeamStemRelation) rel;
@@ -789,7 +788,7 @@ public class SigSolver
 
         if (up && down) {
             // Non consistent
-            return null;
+            return 0;
         }
 
         if (up) {
@@ -801,7 +800,7 @@ public class SigSolver
         }
 
         // No info
-        return null;
+        return 0;
     }
 
     //--------------------//
@@ -849,6 +848,7 @@ public class SigSolver
 
                 // Check stem portion
                 StemPortion portion = hsRel.getStemPortion();
+                HorizontalSide headSide = hsRel.getHeadSide();
 
                 if (portion == StemPortion.STEM_TOP) {
                     hasTop = true;

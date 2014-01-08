@@ -538,7 +538,7 @@ public class ShapeChecker
             }
         };
 
-        new Checker("Beams", shapesOf(BEAM, BEAM_2, BEAM_3))
+        new Checker("Beams", shapesOf(BEAM))
         {
             @Override
             public boolean check (SystemInfo system,
@@ -561,12 +561,12 @@ public class ShapeChecker
                     switch (nb) {
                     case 1:
                         return correctShape(system, glyph, eval, BEAM);
-
-                    case 2:
-                        return correctShape(system, glyph, eval, BEAM_2);
-
-                    case 3:
-                        return correctShape(system, glyph, eval, BEAM_3);
+//
+//                    case 2:
+//                        return correctShape(system, glyph, eval, BEAM_2);
+//
+//                    case 3:
+//                        return correctShape(system, glyph, eval, BEAM_3);
 
                     default:
                         ///logger.warn("Bad beam #" + glyph.getId() + " nb:" + nb);

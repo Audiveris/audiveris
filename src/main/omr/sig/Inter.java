@@ -136,6 +136,19 @@ public interface Inter
         }
     };
 
+    /**
+     * For comparing interpretations by decreasing grade.
+     */
+    public static final Comparator<Inter> byReverseGrade = new Comparator<Inter>()
+    {
+        @Override
+        public int compare (Inter i1,
+                            Inter i2)
+        {
+            return Double.compare(i2.getGrade(), i1.getGrade());
+        }
+    };
+
     static final Constants constants = new Constants();
 
     /** Ratio applied on intrinsic value, to leave room for contextual. */
@@ -143,6 +156,9 @@ public interface Inter
 
     /** The minimum grade to consider an interpretation as acceptable. */
     static double minGrade = intrinsicRatio * constants.minGrade.getValue();
+
+    /** The minimum contextual grade for an interpretation. */
+    static double minContextualGrade = constants.minContextualGrade.getValue();
 
     /** The minimum grade to consider an interpretation as good. */
     static double goodGrade = intrinsicRatio * constants.goodGrade.getValue();
@@ -324,9 +340,12 @@ public interface Inter
                 0.1,
                 "Default minimum interpretation grade");
 
+        final Constant.Ratio minContextualGrade = new Constant.Ratio(
+                0.5,
+                "Default minimum interpretation contextual grade");
+
         final Constant.Ratio goodGrade = new Constant.Ratio(
                 0.5,
                 "Default good interpretation grade");
-
     }
 }

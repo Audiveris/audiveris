@@ -15,14 +15,9 @@ import omr.glyph.Shape;
 
 import omr.math.TableUtil;
 
-import omr.ui.symbol.Alignment;
-import omr.ui.symbol.MusicFont;
-import omr.ui.symbol.ShapeSymbol;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -31,10 +26,38 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 /**
  * Class {@code Template} implements a template to be used for
  * matching evaluation on a distance transform image.
+ *
+ * <p>
+ * There are several topics to consider in a template specification
+ * (see {@link Key} class):<dl>
+ *
+ * <dt><b>Base shape</b></dt>
+ * <dd>Supported shapes are NOTEHEAD_BLACK, NOTEHEAD_VOID and WHOLE_NOTE.</dd>
+ *
+ * <dt><b>Half</b></dt>
+ * <dd>Height is constrained by interline. But to cope with variation in symbol
+ * width, we support separate detection of LEFT and RIGHT halves.</dd>
+ *
+ * <dt><b>Lines</b></dt>
+ * <dd>Staff lines and/or ledgers can be stuck to symbol, so we consider NONE,
+ * LINE_TOP, LINE_MIDDLE, LINE_BOTTOM and LINE_DOUBLE (top & bottom) for all
+ * supported shapes</dd>
+ *
+ * <dt><b>Stems</b></dt>
+ * <dd>Except for WHOLE_NOTE shape, symbols have stems portions stuck to them,
+ * so for a given half we consider NONE (for WHOLE_NOTE), LINE_TOP, LINE_BOTTOM
+ * and
+ * LINE_DOUBLE.</dd>
+ *
+ * <dt><b>Size</b></dt>
+ * <dd>Either standard size or small size (for cues and grace notes).</dd>
+ *
+ * </dl>
  *
  * @author Hervé Bitteur
  */
@@ -43,13 +66,47 @@ public class Template
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             Template.class);
 
+    //~ Enumerations -----------------------------------------------------------
+    public enum Lines
+    {
+        //~ Enumeration constant initializers ----------------------------------
+
+        /** No line at all. (for standard sizes) */
+        LINE_NONE,
+        /** Only one line above. */
+        LINE_TOP,
+        /** Only one line in the middle. (For even pitches) */
+        LINE_MIDDLE,
+        /** Only one line below. */
+        LINE_BOTTOM,
+        /** Two lines, one above and one below. */
+        LINE_DOUBLE;
+    }
+
+    public enum Stems
+    {
+        //~ Enumeration constant initializers ----------------------------------
+
+        /** No stem at all. (for wholes) */
+        STEM_NONE,
+        /** Stem on left, lower half. */
+        STEM_LEFT_BOTTOM,
+        /** Stem on left, full length. */
+        STEM_LEFT,
+        /** Stem on right, upper half. */
+        STEM_RIGHT_TOP,
+        /** Stem on right, full length. */
+        STEM_RIGHT,
+        /** Lower stem half on left and upper stem half on right. */
+        STEM_DOUBLE;
+    }
+
     //~ Instance fields --------------------------------------------------------
-    /** Template shape. */
-    private final Shape shape;
+    /** Template key. */
+    private final Key key;
 
     /** Collection of key points defined for this template. */
     private final Collection<PixelDistance> keyPoints;
@@ -64,9 +121,6 @@ public class Template
     private final Map<Anchor, Point> offsets = new EnumMap<Anchor, Point>(
             Anchor.class);
 
-    /** Image for nice drawing, if any. */
-    private final ShapeSymbol symbol;
-
     //~ Constructors -----------------------------------------------------------
     //----------//
     // Template //
@@ -74,29 +128,28 @@ public class Template
     /**
      * Creates a new Template object from a provided set of points.
      *
-     * @param shape     the template shape
+     * @param key       the template specification key
      * @param width     template width
      * @param height    template height
-     * @param keyPoints the set of defining points.
-     * @param symbol    the symbol to use for drawing, or null
+     * @param keyPoints the set of defining points
      */
-    public Template (Shape shape,
+    public Template (Key key,
                      int width,
                      int height,
-                     List<PixelDistance> keyPoints,
-                     ShapeSymbol symbol)
+                     List<PixelDistance> keyPoints)
     {
-        this.shape = shape;
+        this.key = key;
         this.keyPoints = new ArrayList<PixelDistance>(keyPoints);
         this.width = width;
         this.height = height;
-        this.symbol = symbol;
 
         // Define common basic anchors
         addAnchor(Anchor.CENTER, 0.5, 0.5);
         addAnchor(Anchor.TOP_LEFT, 0, 0);
         addAnchor(Anchor.MIDDLE_LEFT, 0, 0.5);
         addAnchor(Anchor.BOTTOM_LEFT, 0, 1);
+
+        ///dump();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -134,7 +187,7 @@ public class Template
             vals[pix.x][pix.y] = (int) Math.rint(pix.d);
         }
 
-        System.out.println("Template " + shape + ":");
+        System.out.println("Template " + key + ":");
 
         final String yFormat = TableUtil.printAbscissae(width, height, 3);
 
@@ -188,7 +241,7 @@ public class Template
                 logger.warn(
                         "No {} anchor defined for {} template",
                         anchor,
-                        shape);
+                        key);
             }
         }
 
@@ -201,7 +254,9 @@ public class Template
             total += (dist * dist);
         }
 
-        return Math.sqrt(total / keyPoints.size()) / distances.getNormalizer();
+        double res = Math.sqrt(total) / (keyPoints.size() * distances.getNormalizer());
+
+        return res;
     }
 
     //-------------//
@@ -226,6 +281,19 @@ public class Template
         return height;
     }
 
+    //--------//
+    // getKey //
+    //--------//
+    /**
+     * Report the specification key of the template.
+     *
+     * @return the template specification key
+     */
+    public Key getKey ()
+    {
+        return key;
+    }
+
     //-----------//
     // getOffset //
     //-----------//
@@ -238,23 +306,10 @@ public class Template
             logger.error(
                     "No offset defined for anchor {} in template {}",
                     anchor,
-                    shape);
+                    key);
         }
 
         return offset;
-    }
-
-    //----------//
-    // getShape //
-    //----------//
-    /**
-     * Report the underlying shape of the template.
-     *
-     * @return the template shape
-     */
-    public Shape getShape ()
-    {
-        return shape;
     }
 
     //----------//
@@ -264,43 +319,6 @@ public class Template
     public int getWidth ()
     {
         return width;
-    }
-
-    //--------//
-    // render //
-    //--------//
-    /**
-     * Render the template at location (x,y) in provided graphics
-     * environment.
-     *
-     * @param x         abscissa of template location
-     * @param y         ordinate of template location
-     * @param g         graphics environment
-     * @param musicFont the (properly scaled) music font to be used
-     */
-    public void render (int x,
-                        int y,
-                        Graphics2D g,
-                        MusicFont musicFont)
-    {
-        if (symbol != null) {
-            // Use the nice image built with MusicFont
-            symbol.paintSymbol(
-                    g,
-                    musicFont,
-                    new Point(x, y),
-                    Alignment.TOP_LEFT);
-        } else {
-            // Simplistic approach, just draw the foreground key points...
-            final int d = 1;
-            final int side = 1 + (2 * d);
-
-            for (PixelDistance pix : keyPoints) {
-                if (pix.d == 0) {
-                    g.fillRect((x + pix.x) - d, (y + pix.y) - d, side, side);
-                }
-            }
-        }
     }
 
     //----------//
@@ -313,7 +331,7 @@ public class Template
         sb.append(getClass().getSimpleName());
 
         sb.append(" ")
-                .append(shape);
+                .append(key);
 
         for (Entry<Anchor, Point> entry : offsets.entrySet()) {
             sb.append(" ")
@@ -328,21 +346,80 @@ public class Template
         sb.append(" keyPoints:")
                 .append(keyPoints.size());
 
-        //        for (PixelDistance pix : keyPoints) {
-        //            sb.append(" (")
-        //                    .append(pix.x)
-        //                    .append(",")
-        //                    .append(pix.y);
-        //
-        //            if (pix.d != 0) {
-        //                sb.append(",")
-        //                        .append(String.format("%.1f", pix.d));
-        //            }
-        //
-        //            sb.append(")");
-        //        }
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //~ Inner Classes ----------------------------------------------------------
+    //-----//
+    // Key //
+    //-----//
+    /**
+     * Key to define all template specifications.
+     */
+    public static class Key
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        public final Shape shape;
+
+        public final Lines lines;
+
+        public final Stems stems;
+
+        //~ Constructors -------------------------------------------------------
+        public Key (Shape shape,
+                    Lines lines,
+                    Stems stems)
+        {
+            this.shape = shape;
+            this.lines = lines;
+            this.stems = stems;
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (!(obj instanceof Key)) {
+                return false;
+            } else {
+                Key that = (Key) obj;
+
+                return (shape == that.shape) && (lines == that.lines)
+                       && (stems == that.stems);
+            }
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            int hash = 5;
+            hash = (97 * hash) + Objects.hashCode(this.shape);
+            hash = (97 * hash) + Objects.hashCode(this.lines);
+            hash = (97 * hash) + Objects.hashCode(this.stems);
+
+            return hash;
+        }
+
+        /**
+         * Key is formatted as shape-lines-stems.
+         *
+         * @return unique key name (for debugging)
+         */
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.append(shape);
+            sb.append("-")
+                    .append(lines);
+            sb.append("-")
+                    .append(stems);
+
+            return sb.toString();
+        }
     }
 }

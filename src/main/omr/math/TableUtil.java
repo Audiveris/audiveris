@@ -107,13 +107,13 @@ public class TableUtil
             System.out.println(title);
         }
 
-        final String yFormat = printAbscissae(width, height, 4);
+        final String yFormat = printAbscissae(width, height, 6);
 
         for (int y = 0; y < height; y++) {
             System.out.printf(yFormat, y);
 
             for (int x = 0; x < width; x++) {
-                System.out.printf("%4.1f", table[x][y]);
+                System.out.printf("%6.3f", table[x][y]);
             }
 
             System.out.println();

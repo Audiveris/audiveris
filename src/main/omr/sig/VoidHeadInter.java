@@ -13,6 +13,8 @@ package omr.sig;
 
 import omr.glyph.Shape;
 
+import omr.image.ShapeDescriptor;
+
 import java.awt.Rectangle;
 
 /**
@@ -32,14 +34,16 @@ public class VoidHeadInter
     /**
      * Creates a new VoidHeadInter object.
      *
-     * @param box     the object bounds
-     * @param impacts the grade details
-     * @param pitch   the note pitch
+     * @param descriptor the shape template descriptor
+     * @param box        the object bounds
+     * @param impacts    the grade details
+     * @param pitch      the note pitch
      */
-    public VoidHeadInter (Rectangle box,
+    public VoidHeadInter (ShapeDescriptor descriptor,
+                          Rectangle box,
                           GradeImpacts impacts,
                           int pitch)
     {
-        super(box, Shape.NOTEHEAD_VOID, impacts, pitch);
+        super(descriptor, box, Shape.NOTEHEAD_VOID, impacts, pitch);
     }
 }

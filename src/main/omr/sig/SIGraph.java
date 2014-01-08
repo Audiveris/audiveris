@@ -234,6 +234,34 @@ public class SIGraph
         return found;
     }
 
+    //------------------//
+    // deleteWeakInters //
+    //------------------//
+    /**
+     * Purge the inter instances for which the contextual grade is
+     * lower than minimum threshold.
+     *
+     * @return the set of inter instances purged
+     */
+    public Set<Inter> deleteWeakInters ()
+    {
+        Set<Inter> removed = new HashSet<Inter>();
+
+        for (Inter inter : vertexSet()) {
+            if (inter.getContextualGrade() < Inter.minContextualGrade) {
+                if (inter.isVip()) {
+                    logger.info("VIP deleted weak {}", inter);
+                }
+
+                removed.add(inter);
+            }
+        }
+
+        removeAllVertices(removed);
+
+        return removed;
+    }
+
     //---------------//
     // getExclusions //
     //---------------//

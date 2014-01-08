@@ -36,6 +36,7 @@ public class EvenStepSymbol
      * Creates a new EvenStepSymbol object.
      *
      * @param shape the underlying shape
+     * @param codes the codes for MusicFont characters
      */
     public EvenStepSymbol (Shape shape,
                            int... codes)

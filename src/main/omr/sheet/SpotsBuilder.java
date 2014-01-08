@@ -22,7 +22,6 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.image.GlobalFilter;
-import omr.image.ImageUtil;
 import omr.image.MorphoProcessor;
 import omr.image.PixelBuffer;
 import omr.image.PixelFilter;
@@ -231,7 +230,7 @@ public class SpotsBuilder
         BufferedImage closedImg = buffer.toBufferedImage();
 
         // Store buffer on disk for further manual analysis if any
-        ImageUtil.saveOnDisk(closedImg, sheet.getPage().getId() + ".spot");
+        ///ImageUtil.saveOnDisk(closedImg, sheet.getPage().getId() + ".spot");
 
         // Display the gray-level view of all spots
         if (Main.getGui() != null) {
@@ -277,7 +276,7 @@ public class SpotsBuilder
 
         final Constant.Integer binarizationThreshold = new Constant.Integer(
                 "pixel",
-                160,
+                140,
                 "Global threshold used for binarization of gray spots");
 
     }

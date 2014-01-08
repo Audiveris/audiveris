@@ -21,9 +21,8 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code TransformedSymbol} displays a baseShape symbol with the
- * application
- * on an AffineTransform
+ * Class {@code TransformedSymbol} displays a baseShape symbol with
+ * applying an AffineTransform.
  */
 public class TransformedSymbol
         extends ShapeSymbol

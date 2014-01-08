@@ -22,7 +22,10 @@ import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.GlyphComposition;
+
+import omr.image.Anchored;
+import omr.image.Anchored.Anchor;
+import omr.image.ShapeDescriptor;
 
 import omr.lag.Section;
 
@@ -35,6 +38,7 @@ import static omr.run.Orientation.*;
 import omr.run.Run;
 
 import omr.sig.AbstractBeamInter;
+import omr.sig.AbstractNoteInter;
 import omr.sig.BeamPortion;
 import omr.sig.BeamStemRelation;
 import omr.sig.Exclusion.Cause;
@@ -412,7 +416,6 @@ public class StemsBuilder
                 1.0,
                 "Maximum distance from section to target line,"
                 + " as ratio of typical stem width");
-
     }
 
     //------------//
@@ -428,9 +431,6 @@ public class StemsBuilder
 
         /** The head interpretation being processed. */
         private final Inter head;
-
-        /** Underlying glyph. */
-        private final Glyph headGlyph;
 
         /** Head bounding box. */
         private final Rectangle headBox;
@@ -448,7 +448,6 @@ public class StemsBuilder
         public HeadLinker (Inter head)
         {
             this.head = head;
-            headGlyph = head.getGlyph();
             headBox = head.getBounds();
         }
 
@@ -1099,18 +1098,22 @@ public class StemsBuilder
             /**
              * Compute head reference point for this corner (the point
              * where a stem could be connected).
-             * For best precision, we use the dimensions of MusicFont head
-             * symbol for proper scale, rather than the glyph underneath.
+             * For best precision, we use the related shape descriptor.
              *
              * @return the refPt
              */
             private Point2D getReferencePoint ()
             {
-                final Point center = GeoUtil.centerOf(headBox);
-                final double dx = xDir * headSymbolDim.width * 0.5;
-                final double dy = yDir * headSymbolDim.height * 0.45;
+                AbstractNoteInter note = (AbstractNoteInter) head;
+                ShapeDescriptor desc = note.getDescriptor();
+                Anchor anchor = (corner.hSide == LEFT)
+                        ? Anchor.LEFT_STEM : Anchor.RIGHT_STEM;
+                Point offset = desc.getOffset(anchor);
+                final Point ul = headBox.getLocation();
+                final double dx = offset.x;
+                final double dy = desc.getHeight() * (0.5 + (yDir * 0.45));
 
-                return new Point2D.Double(center.x + dx, center.y + dy);
+                return new Point2D.Double(ul.x + dx, ul.y + dy);
             }
 
             //-----------//

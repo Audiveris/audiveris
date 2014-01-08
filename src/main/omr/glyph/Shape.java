@@ -30,12 +30,14 @@ import java.util.List;
  * It is organized according to the Unicode Standard 4.0, with a few addition
  * for convenience only.
  *
- * <p>The enumeration begins with physical shapes (which are the
+ * <p>
+ * The enumeration begins with physical shapes (which are the
  * only ones usable for training) and ends with the logical shapes.
  * The method {@link #isTrainable()} can be used to disambiguate between
  * physical and logical shapes.</p>
  *
- * <p><b>Nota</b>: All the physical shapes <b>MUST</b> have different
+ * <p>
+ * <b>Nota</b>: All the physical shapes <b>MUST</b> have different
  * characteristics for the training to work correctly.
  * The ART evaluator uses moments that are invariant to translation, scaling
  * and rotation (and to symmetry as well).
@@ -48,13 +50,16 @@ import java.util.List;
  * FERMATA belong to the logical shapes.
  * All shapes whose name ends with "_set" are in this case.</p>
  *
- * <p>TODO: Perhaps we could simply combine the ART moments and some of the GEO
+ * <p>
+ * TODO: Perhaps we could simply combine the ART moments and some of the GEO
  * moments (at least n11, n12, n21), plus perhaps aspect, for a more
  * comprehensive set of features but a simpler approach.
  *
- * <p>As far as possible, a symbol should be generated for every shape.</p>
+ * <p>
+ * As far as possible, a symbol should be generated for every shape.</p>
  *
- * <p>A shape may have a related "decorated" symbol. For example the BREVE_REST
+ * <p>
+ * A shape may have a related "decorated" symbol. For example the BREVE_REST
  * is similar to a black rectangle which is used for training / recognition and
  * the related symbol is used for drawing in score view. However, in menu items,
  * it is displayed as a black rectangle surrounded by a staff line above and a
@@ -166,25 +171,22 @@ public enum Shape
     // Noteheads ---------------------------------------------------------------
     //
     NOTEHEAD_VOID("Hollow node head for halves", new Color(0xff9966)),
-    NOTEHEAD_VOID_2("Pack of two hollow node heads for halves", new Color(0xffcc00)),
-    NOTEHEAD_VOID_3("Pack of three hollow node heads for halves", new Color(0xffcc00)),
+    NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue", new Color(0xff4400)),
     NOTEHEAD_BLACK("Filled node head for quarters and less", new Color(0xffcc00)),
-    NOTEHEAD_BLACK_2("Pack of two filled node heads for quarters and less", new Color(0xff9966)),
-    NOTEHEAD_BLACK_3("Pack of three filled node heads for quarters and less", new Color(0xff9966)),
+    NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue", new Color(0xff4400)),
     //
     // Notes -------------------------------------------------------------------
     //
     BREVE("Double Whole"),
     WHOLE_NOTE("Hollow node head for wholes"),
-    WHOLE_NOTE_2("Pack of two hollow node heads for wholes"),
-    WHOLE_NOTE_3("Pack of three hollow node heads for wholes"),
+    WHOLE_NOTE_SMALL("Small hollow node head for grace or cue wholes"),
     //
     // Beams and slurs ---------------------------------------------------------
     //
     BEAM("Beam between two stems"),
-    BEAM_2("Pack of 2 beams"),
-    BEAM_3("Pack of 3 beams"),
+    BEAM_SMALL("Small beam for cue notes"),
     BEAM_HOOK("Hook of a beam attached on one stem"),
+    BEAM_HOOK_SMALL("Small hook of a beam for cue notes"),
     SLUR("Slur tying notes", new Color(0xbb8888)),
     //
     // Articulation ------------------------------------------------------------
@@ -222,7 +224,7 @@ public enum Shape
     // Ornaments ---------------------------------------------------------------
     //
     GRACE_NOTE_SLASH("Grace Note with a Slash"),
-    GRACE_NOTE("Grace Note"),
+    GRACE_NOTE("Grace Note with no slash"),
     TR("Trill"),
     TURN_SLASH("Turn with a Slash"),
     MORDENT("Mordent"),
@@ -309,13 +311,6 @@ public enum Shape
     //
     KEY_FLAT_1("One Flat"),
     KEY_SHARP_1("One Sharp"),
-    //
-    // Shapes for match templates ----------------------------------------------
-    //
-    WHOLE_ODD("Whole note on odd step (between 2 lines)"),
-    WHOLE_EVEN("Whole note on even step (crossed by a line)"),
-    VOID_ODD("Void note head on odd step (between 2 lines)"),
-    VOID_EVEN("Void note head on even step (crossed by a line)"),
     //
     // Other stuff -------------------------------------------------------------
     //
@@ -505,6 +500,18 @@ public enum Shape
         return (this == FLAT) || ShapeSet.FlatKeys.contains(this);
     }
 
+    //---------//
+    // isSmall //
+    //---------//
+    /**
+     * Check whether the shape is a small note, meant for cue or grace.
+     *
+     * @return true if small (black/void/whole)
+     */
+    public boolean isSmall ()
+    {
+        return ShapeSet.SmallNotes.contains(this);
+    }
     //-------------//
     // isTrainable //
     //-------------//

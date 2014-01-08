@@ -48,87 +48,107 @@ public class ShapeSet
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        ShapeSet.class);
+            ShapeSet.class);
 
     /** Specific single symbol for part of time signature (such as 4) */
     public static final List<Shape> PartialTimes = Arrays.asList(
-        TIME_ZERO,
-        TIME_ONE,
-        TIME_TWO,
-        TIME_THREE,
-        TIME_FOUR,
-        TIME_FIVE,
-        TIME_SIX,
-        TIME_SEVEN,
-        TIME_EIGHT,
-        TIME_NINE,
-        TIME_TWELVE,
-        TIME_SIXTEEN);
+            TIME_ZERO,
+            TIME_ONE,
+            TIME_TWO,
+            TIME_THREE,
+            TIME_FOUR,
+            TIME_FIVE,
+            TIME_SIX,
+            TIME_SEVEN,
+            TIME_EIGHT,
+            TIME_NINE,
+            TIME_TWELVE,
+            TIME_SIXTEEN);
 
     /** Specific multi-symbol for full time signature (such as 4/4 or C) */
     public static final EnumSet<Shape> FullTimes = EnumSet.of(
-        TIME_FOUR_FOUR,
-        TIME_TWO_TWO,
-        TIME_TWO_FOUR,
-        TIME_THREE_FOUR,
-        TIME_SIX_EIGHT,
-        COMMON_TIME,
-        CUT_TIME,
-        CUSTOM_TIME);
+            TIME_FOUR_FOUR,
+            TIME_TWO_TWO,
+            TIME_TWO_FOUR,
+            TIME_THREE_FOUR,
+            TIME_SIX_EIGHT,
+            COMMON_TIME,
+            CUT_TIME,
+            CUSTOM_TIME);
 
     /** All sorts of F clefs */
     public static final EnumSet<Shape> BassClefs = EnumSet.of(
-        F_CLEF,
-        F_CLEF_SMALL,
-        F_CLEF_8VA,
-        F_CLEF_8VB);
+            F_CLEF,
+            F_CLEF_SMALL,
+            F_CLEF_8VA,
+            F_CLEF_8VB);
 
     /** All sorts of G clefs */
     public static final EnumSet<Shape> TrebleClefs = EnumSet.of(
-        G_CLEF,
-        G_CLEF_SMALL,
-        G_CLEF_8VA,
-        G_CLEF_8VB);
+            G_CLEF,
+            G_CLEF_SMALL,
+            G_CLEF_8VA,
+            G_CLEF_8VB);
 
     /** All sorts of flag sets */
     public static final EnumSet<Shape> FlagSets = EnumSet.of(
-        FLAG_1_set,
-        FLAG_2_set,
-        FLAG_3_set,
-        FLAG_4_set,
-        FLAG_5_set);
+            FLAG_1_set,
+            FLAG_2_set,
+            FLAG_3_set,
+            FLAG_4_set,
+            FLAG_5_set);
 
     /** All SHARP-based keys */
     public static final EnumSet<Shape> SharpKeys = EnumSet.of(
-        KEY_SHARP_1,
-        KEY_SHARP_2,
-        KEY_SHARP_3,
-        KEY_SHARP_4,
-        KEY_SHARP_5,
-        KEY_SHARP_6,
-        KEY_SHARP_7);
+            KEY_SHARP_1,
+            KEY_SHARP_2,
+            KEY_SHARP_3,
+            KEY_SHARP_4,
+            KEY_SHARP_5,
+            KEY_SHARP_6,
+            KEY_SHARP_7);
 
     /** All FLAT-based keys */
     public static final EnumSet<Shape> FlatKeys = EnumSet.of(
-        KEY_FLAT_1,
-        KEY_FLAT_2,
-        KEY_FLAT_3,
-        KEY_FLAT_4,
-        KEY_FLAT_5,
-        KEY_FLAT_6,
-        KEY_FLAT_7);
+            KEY_FLAT_1,
+            KEY_FLAT_2,
+            KEY_FLAT_3,
+            KEY_FLAT_4,
+            KEY_FLAT_5,
+            KEY_FLAT_6,
+            KEY_FLAT_7);
 
     /** All black note heads */
     public static final EnumSet<Shape> BlackNoteHeads = EnumSet.of(
-        NOTEHEAD_BLACK,
-        NOTEHEAD_BLACK_2,
-        NOTEHEAD_BLACK_3);
+            NOTEHEAD_BLACK,
+            NOTEHEAD_BLACK_SMALL);
 
     /** All void note heads */
     public static final EnumSet<Shape> VoidNoteHeads = EnumSet.of(
-        NOTEHEAD_VOID,
-        NOTEHEAD_VOID_2,
-        NOTEHEAD_VOID_3);
+            NOTEHEAD_VOID,
+            NOTEHEAD_VOID_SMALL);
+
+    /** All small notes. (for cue/grace) */
+    public static final EnumSet<Shape> SmallNotes = EnumSet.of(
+            NOTEHEAD_BLACK_SMALL,
+            NOTEHEAD_VOID_SMALL,
+            WHOLE_NOTE_SMALL);
+
+    /** All notes handled by template matching. */
+    public static final EnumSet<Shape> TemplateNotes = EnumSet.of(
+            NOTEHEAD_BLACK,
+          ///  NOTEHEAD_BLACK_SMALL,
+            NOTEHEAD_VOID,
+            ///  NOTEHEAD_VOID_SMALL,
+            WHOLE_NOTE); //,
+    ///  WHOLE_NOTE_SMALL);
+
+    /** All stem-based notes handled by template matching. */
+    public static final EnumSet<Shape> StemTemplateNotes = EnumSet.of(
+            NOTEHEAD_BLACK,
+          ///  NOTEHEAD_BLACK_SMALL,
+            NOTEHEAD_VOID);
+            ///  NOTEHEAD_VOID_SMALL,
 
     /**
      * Predefined instances of ShapeSet.
@@ -138,33 +158,36 @@ public class ShapeSet
      * which lists precisely all set members.
      */
     public static final ShapeSet Accidentals = new ShapeSet(
-        SHARP,
-        new Color(0x9933ff),
-        shapesOf(FLAT, NATURAL, SHARP, DOUBLE_SHARP, DOUBLE_FLAT));
-    public static final ShapeSet       Articulations = new ShapeSet(
-        ARPEGGIATO,
-        new Color(0xff6699),
-        shapesOf(
+            SHARP,
+            new Color(0x9933ff),
+            shapesOf(FLAT, NATURAL, SHARP, DOUBLE_SHARP, DOUBLE_FLAT));
+
+    public static final ShapeSet Articulations = new ShapeSet(
+            ARPEGGIATO,
+            new Color(0xff6699),
+            shapesOf(
             ACCENT,
             TENUTO,
             STACCATO,
             STACCATISSIMO,
             STRONG_ACCENT,
             ARPEGGIATO));
-    public static final ShapeSet       Attributes = new ShapeSet(
-        PEDAL_MARK,
-        new Color(0x000000),
-        shapesOf(
+
+    public static final ShapeSet Attributes = new ShapeSet(
+            PEDAL_MARK,
+            new Color(0x000000),
+            shapesOf(
             OTTAVA_ALTA,
             OTTAVA_BASSA,
             PEDAL_MARK,
             PEDAL_UP_MARK,
             TUPLET_THREE,
             TUPLET_SIX));
-    public static final ShapeSet       Barlines = new ShapeSet(
-        LEFT_REPEAT_SIGN,
-        new Color(0x0000ff),
-        shapesOf(
+
+    public static final ShapeSet Barlines = new ShapeSet(
+            LEFT_REPEAT_SIGN,
+            new Color(0x0000ff),
+            shapesOf(
             PART_DEFINING_BARLINE,
             THIN_BARLINE,
             THICK_BARLINE,
@@ -176,18 +199,21 @@ public class ShapeSet
             BACK_TO_BACK_REPEAT_SIGN,
             THIN_CONNECTION,
             THICK_CONNECTION));
-    public static final ShapeSet       Beams = new ShapeSet(
-        BEAM,
-        new Color(0x33ffff),
-        shapesOf(BEAM, BEAM_2, BEAM_3, BEAM_HOOK));
-    public static final ShapeSet       Clefs = new ShapeSet(
-        G_CLEF,
-        new Color(0xcc00cc),
-        shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
-    public static final ShapeSet       Dynamics = new ShapeSet(
-        DYNAMICS_F,
-        new Color(0x009999),
-        shapesOf(
+
+    public static final ShapeSet Beams = new ShapeSet(
+            BEAM,
+            new Color(0x33ffff),
+            shapesOf(BEAM, BEAM_HOOK));
+
+    public static final ShapeSet Clefs = new ShapeSet(
+            G_CLEF,
+            new Color(0xcc00cc),
+            shapesOf(TrebleClefs, BassClefs, shapesOf(C_CLEF, PERCUSSION_CLEF)));
+
+    public static final ShapeSet Dynamics = new ShapeSet(
+            DYNAMICS_F,
+            new Color(0x009999),
+            shapesOf(
             DYNAMICS_CHAR_M,
             DYNAMICS_CHAR_R,
             DYNAMICS_CHAR_S,
@@ -211,10 +237,11 @@ public class ShapeSet
             DYNAMICS_SFZ,
             CRESCENDO,
             DECRESCENDO));
-    public static final ShapeSet       Flags = new ShapeSet(
-        FLAG_1,
-        new Color(0x99cc00),
-        shapesOf(
+
+    public static final ShapeSet Flags = new ShapeSet(
+            FLAG_1,
+            new Color(0x99cc00),
+            shapesOf(
             FLAG_1,
             FLAG_1_UP,
             FLAG_2,
@@ -225,18 +252,21 @@ public class ShapeSet
             FLAG_4_UP,
             FLAG_5,
             FLAG_5_UP));
-    public static final ShapeSet       Keys = new ShapeSet(
-        KEY_SHARP_3,
-        new Color(0x00ffff),
-        shapesOf(FlatKeys, SharpKeys));
-    public static final ShapeSet       NoteHeads = new ShapeSet(
-        NOTEHEAD_BLACK,
-        new Color(0xffcc00),
-        shapesOf(BlackNoteHeads, VoidNoteHeads));
-    public static final ShapeSet       Markers = new ShapeSet(
-        CODA,
-        new Color(0x888888),
-        shapesOf(
+
+    public static final ShapeSet Keys = new ShapeSet(
+            KEY_SHARP_3,
+            new Color(0x00ffff),
+            shapesOf(FlatKeys, SharpKeys));
+
+    public static final ShapeSet NoteHeads = new ShapeSet(
+            NOTEHEAD_BLACK,
+            new Color(0xffcc00),
+            shapesOf(BlackNoteHeads, VoidNoteHeads));
+
+    public static final ShapeSet Markers = new ShapeSet(
+            CODA,
+            new Color(0x888888),
+            shapesOf(
             DAL_SEGNO,
             DA_CAPO,
             SEGNO,
@@ -245,14 +275,16 @@ public class ShapeSet
             CAESURA,
             BRACE,
             BRACKET));
-    public static final ShapeSet       Notes = new ShapeSet(
-        BREVE,
-        new Color(0xff66cc),
-        shapesOf(BREVE, WHOLE_NOTE, WHOLE_NOTE_2, WHOLE_NOTE_3));
-    public static final ShapeSet       Ornaments = new ShapeSet(
-        MORDENT,
-        new Color(0xcc3300),
-        shapesOf(
+
+    public static final ShapeSet Notes = new ShapeSet(
+            BREVE,
+            new Color(0xff66cc),
+            shapesOf(BREVE, WHOLE_NOTE, WHOLE_NOTE_SMALL));
+
+    public static final ShapeSet Ornaments = new ShapeSet(
+            MORDENT,
+            new Color(0xcc3300),
+            shapesOf(
             GRACE_NOTE_SLASH,
             GRACE_NOTE,
             TR,
@@ -262,10 +294,11 @@ public class ShapeSet
             TURN_SLASH,
             MORDENT,
             INVERTED_MORDENT));
-    public static final ShapeSet       Rests = new ShapeSet(
-        QUARTER_REST,
-        new Color(0x99ff66),
-        shapesOf(
+
+    public static final ShapeSet Rests = new ShapeSet(
+            QUARTER_REST,
+            new Color(0x99ff66),
+            shapesOf(
             LONG_REST,
             BREVE_REST,
             WHOLE_REST,
@@ -276,14 +309,16 @@ public class ShapeSet
             ONE_32ND_REST,
             ONE_64TH_REST,
             ONE_128TH_REST));
-    public static final ShapeSet       Times = new ShapeSet(
-        TIME_FOUR_FOUR,
-        new Color(0xcc3300),
-        shapesOf(PartialTimes, FullTimes));
-    public static final ShapeSet       Physicals = new ShapeSet(
-        LEDGER,
-        new Color(0x9999ff),
-        shapesOf(
+
+    public static final ShapeSet Times = new ShapeSet(
+            TIME_FOUR_FOUR,
+            new Color(0xcc3300),
+            shapesOf(PartialTimes, FullTimes));
+
+    public static final ShapeSet Physicals = new ShapeSet(
+            LEDGER,
+            new Color(0x9999ff),
+            shapesOf(
             TEXT,
             CHARACTER,
             CLUTTER,
@@ -301,36 +336,36 @@ public class ShapeSet
     // =========================================================================
     /** All physical shapes. Here the use of EnumSet.range is OK */
     public static final EnumSet<Shape> allPhysicalShapes = EnumSet.range(
-        Shape.values()[0],
-        LAST_PHYSICAL_SHAPE);
+            Shape.values()[0],
+            LAST_PHYSICAL_SHAPE);
 
     /** Symbols that can be attached to a stem */
     public static final EnumSet<Shape> StemSymbols = EnumSet.copyOf(
-        shapesOf(NoteHeads.getShapes(), Flags.getShapes(), Beams.getShapes()));
+            shapesOf(NoteHeads.getShapes(), Flags.getShapes(), Beams.getShapes()));
 
     /** Pedals */
     public static final EnumSet<Shape> Pedals = EnumSet.of(
-        PEDAL_MARK,
-        PEDAL_UP_MARK);
+            PEDAL_MARK,
+            PEDAL_UP_MARK);
 
     /** Tuplets */
     public static final EnumSet<Shape> Tuplets = EnumSet.of(
-        TUPLET_THREE,
-        TUPLET_SIX);
+            TUPLET_THREE,
+            TUPLET_SIX);
 
     /** All variants of dot */
     public static final EnumSet<Shape> Dots = EnumSet.of(
-        DOT_set,
-        AUGMENTATION_DOT,
-        STACCATO,
-        REPEAT_DOT);
+            DOT_set,
+            AUGMENTATION_DOT,
+            STACCATO,
+            REPEAT_DOT);
 
     /** Clefs ottava (alta or bassa) */
     public static final EnumSet<Shape> OttavaClefs = EnumSet.of(
-        G_CLEF_8VA,
-        G_CLEF_8VB,
-        F_CLEF_8VA,
-        F_CLEF_8VB);
+            G_CLEF_8VA,
+            G_CLEF_8VB,
+            F_CLEF_8VA,
+            F_CLEF_8VB);
 
     static {
         // Make sure all the shape colors are defined
@@ -341,7 +376,6 @@ public class ShapeSet
     }
 
     //~ Instance fields --------------------------------------------------------
-
     //
     /** Name of the set */
     private String name;
@@ -362,7 +396,6 @@ public class ShapeSet
     private Constant.Color constantColor;
 
     //~ Constructors -----------------------------------------------------------
-
     //----------//
     // ShapeSet //
     //----------//
@@ -373,8 +406,8 @@ public class ShapeSet
      * @param color  the default color assigned
      * @param shapes the provided collection of shapes
      */
-    public ShapeSet (Shape             rep,
-                     Color             color,
+    public ShapeSet (Shape rep,
+                     Color color,
                      Collection<Shape> shapes)
     {
         // The representative shape
@@ -396,7 +429,6 @@ public class ShapeSet
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //-----------------//
     // addAllShapeSets //
     //-----------------//
@@ -408,14 +440,14 @@ public class ShapeSet
      *                 JPopupMenu)
      * @param listener the listener for notification of user selection
      */
-    public static void addAllShapeSets (JComponent     top,
+    public static void addAllShapeSets (JComponent top,
                                         ActionListener listener)
     {
         // All ranges of glyph shapes
         for (Field field : ShapeSet.class.getDeclaredFields()) {
             if (field.getType() == ShapeSet.class) {
                 JMenuItem menuItem = new JMenuItem(field.getName());
-                ShapeSet  set = valueOf(field.getName());
+                ShapeSet set = valueOf(field.getName());
                 addColoredItem(top, menuItem, set.getColor());
                 menuItem.addActionListener(listener);
             }
@@ -433,14 +465,14 @@ public class ShapeSet
      *                 JPopupMenu)
      * @param listener the listener for notification of user selection
      */
-    public static void addAllShapes (JComponent     top,
+    public static void addAllShapes (JComponent top,
                                      ActionListener listener)
     {
         // All ranges of glyph shapes
         for (Field field : ShapeSet.class.getDeclaredFields()) {
             if (field.getType() == ShapeSet.class) {
                 ShapeSet set = ShapeSet.valueOf(field.getName());
-                JMenu    menu = new JMenu(field.getName());
+                JMenu menu = new JMenu(field.getName());
 
                 if (set.rep != null) {
                     menu.setIcon(set.rep.getDecoratedSymbol());
@@ -466,15 +498,15 @@ public class ShapeSet
      *                 JPopupMenu)
      * @param listener the listener for notification of user selection
      */
-    public static void addSetShapes (ShapeSet       set,
-                                     JComponent     top,
+    public static void addSetShapes (ShapeSet set,
+                                     JComponent top,
                                      ActionListener listener)
     {
         // All shapes in the given range
         for (Shape shape : set.getSortedShapes()) {
             JMenuItem menuItem = new JMenuItem(
-                shape.toString(),
-                shape.getDecoratedSymbol());
+                    shape.toString(),
+                    shape.getDecoratedSymbol());
             addColoredItem(top, menuItem, shape.getColor());
 
             menuItem.setToolTipText(shape.getDescription());
@@ -554,8 +586,8 @@ public class ShapeSet
     public static Collection<Shape> shapesOf (Collection<Shape> col)
     {
         Collection<Shape> shapes = (col instanceof List)
-                                   ? new ArrayList<Shape>()
-                                   : EnumSet.noneOf(Shape.class);
+                ? new ArrayList<Shape>()
+                : EnumSet.noneOf(Shape.class);
 
         shapes.addAll(col);
 
@@ -576,8 +608,8 @@ public class ShapeSet
                                               Collection<Shape> col2)
     {
         Collection<Shape> shapes = (col1 instanceof List)
-                                   ? new ArrayList<Shape>()
-                                   : EnumSet.noneOf(Shape.class);
+                ? new ArrayList<Shape>()
+                : EnumSet.noneOf(Shape.class);
 
         shapes.addAll(col1);
         shapes.addAll(col2);
@@ -601,8 +633,8 @@ public class ShapeSet
                                               Collection<Shape> col3)
     {
         Collection<Shape> shapes = (col1 instanceof List)
-                                   ? new ArrayList<Shape>()
-                                   : EnumSet.noneOf(Shape.class);
+                ? new ArrayList<Shape>()
+                : EnumSet.noneOf(Shape.class);
 
         shapes.addAll(col1);
         shapes.addAll(col2);
@@ -691,7 +723,7 @@ public class ShapeSet
      */
     public static String[] getPhysicalShapeNames ()
     {
-        int      shapeCount = 1 + LAST_PHYSICAL_SHAPE.ordinal();
+        int shapeCount = 1 + LAST_PHYSICAL_SHAPE.ordinal();
         String[] names = new String[shapeCount];
 
         for (Shape shape : allPhysicalShapes) {
@@ -761,8 +793,8 @@ public class ShapeSet
     // addColoredItem //
     //----------------//
     private static void addColoredItem (JComponent top,
-                                        JMenuItem  item,
-                                        Color      color)
+                                        JMenuItem item,
+                                        Color color)
     {
         if (color != null) {
             item.setForeground(color);
@@ -794,10 +826,10 @@ public class ShapeSet
         this.name = name;
 
         constantColor = new Constant.Color(
-            getClass().getName(),
-            name + ".color",
-            Constant.Color.encodeColor(color),
-            "Color code for set " + name);
+                getClass().getName(),
+                name + ".color",
+                Constant.Color.encodeColor(color),
+                "Color code for set " + name);
 
         // Check for a user-modified value
         if (!constantColor.isSourceValue()) {
@@ -806,7 +838,6 @@ public class ShapeSet
     }
 
     //~ Inner Classes ----------------------------------------------------------
-
     //------//
     // Sets //
     //------//
@@ -816,7 +847,8 @@ public class ShapeSet
         //~ Static fields/initializers -----------------------------------------
 
         static final Map<String, ShapeSet> map = new HashMap<String, ShapeSet>();
-        static final List<ShapeSet>        setList = new ArrayList<ShapeSet>();
+
+        static final List<ShapeSet> setList = new ArrayList<ShapeSet>();
 
         static {
             for (Field field : ShapeSet.class.getDeclaredFields()) {
@@ -833,7 +865,6 @@ public class ShapeSet
         }
 
         //~ Constructors -------------------------------------------------------
-
         private Sets ()
         {
         }

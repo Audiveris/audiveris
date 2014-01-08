@@ -36,7 +36,7 @@ import java.io.IOException;
  */
 public class ShapeSymbol
         extends BasicSymbol
-        implements Symbol, Transferable
+        implements Transferable
 {
     //~ Static fields/initializers ---------------------------------------------
 

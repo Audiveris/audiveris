@@ -18,6 +18,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
+import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.FilamentLine;
@@ -28,8 +29,10 @@ import omr.image.Anchored.Anchor;
 import static omr.image.Anchored.Anchor.*;
 import omr.image.DistanceTable;
 import omr.image.PixelDistance;
-import omr.image.Template;
+import omr.image.ShapeDescriptor;
+import omr.image.Template.Lines;
 import omr.image.TemplateFactory;
+import omr.image.TemplateFactory.Catalog;
 
 import omr.math.GeoOrder;
 import omr.math.GeoPath;
@@ -46,7 +49,6 @@ import static omr.sig.AbstractNoteInter.shrink;
 import omr.sig.BlackHeadInter;
 import omr.sig.Exclusion;
 import omr.sig.GradeImpacts;
-import omr.sig.Grades;
 import omr.sig.Inter;
 import omr.sig.LedgerInter;
 import omr.sig.SIGraph;
@@ -56,6 +58,7 @@ import omr.sig.WholeInter;
 import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.StopWatch;
+import omr.util.WrappedInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,16 +73,14 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
 /**
  * Class {@code NotesBuilder} retrieves the void note heads, the black
- * note heads and the whole notes for a system.
+ * note heads, the grace notes and the whole notes for a system.
  * <p>
  * It uses a distance matching approach which works well for such symbols that
  * exhibit a fixed shape, with a combination of foreground and background
@@ -91,8 +92,8 @@ import java.util.SortedSet;
  * <li>We cannot fully use stems, since at this time we just have vertical seeds
  * and not all stems will contain seeds. However, if a vertical seed exists
  * nearby we can use it to evaluate a note candidate at proper location.</li>
- * <li>We can reasonably skip the locations where a (good) beam has been
- * detected.</li>
+ * <li>We can reasonably skip the locations where a (good) beam or a (good) bar
+ * line has been detected.</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -106,40 +107,22 @@ public class NotesBuilder
     private static final Logger logger = LoggerFactory.getLogger(
             NotesBuilder.class);
 
-    /**
-     * Shapes that occur right on staff lines or ledgers.
-     * Pitch value is even, they are crossed by a horizontal line.
-     */
-    private static final List<Shape> evens = Arrays.asList(
-            Shape.VOID_EVEN,
-            Shape.WHOLE_EVEN,
-            Shape.NOTEHEAD_BLACK);
-
-    /**
-     * Shapes that occur between staff lines or ledgers.
-     * Pitch value is odd, they are not crossed by any horizontal line.
-     */
-    private static final List<Shape> odds = Arrays.asList(
-            Shape.VOID_ODD,
-            Shape.WHOLE_ODD,
-            Shape.NOTEHEAD_BLACK);
-
     /** Shapes that cannot occur near stem. */
     private static final List<Shape> noStems = Arrays.asList(
-            Shape.THICK_BARLINE,
-            Shape.THIN_BARLINE,
-            Shape.WHOLE_ODD,
-            Shape.WHOLE_EVEN);
+            Shape.WHOLE_NOTE,
+            Shape.WHOLE_NOTE_SMALL);
 
     /** Shapes of note competitors. */
-    private static final List<Shape> competingShapes = Arrays.asList(
-            Shape.THICK_BARLINE,
-            Shape.THIN_BARLINE,
-            Shape.BEAM,
-            Shape.BEAM_HOOK);
-
-    /** The template factory singleton. */
-    private static TemplateFactory factory = TemplateFactory.getInstance();
+    private static final Set<Shape> competingShapes = EnumSet.copyOf(
+            Arrays.asList(
+                    Shape.THICK_BARLINE,
+                    Shape.THIN_BARLINE,
+                    Shape.THICK_CONNECTION,
+                    Shape.THIN_CONNECTION,
+                    Shape.BEAM,
+                    Shape.BEAM_HOOK,
+                    Shape.BEAM_SMALL,
+                    Shape.BEAM_HOOK_SMALL));
 
     //~ Instance fields --------------------------------------------------------
     /** The dedicated system. */
@@ -162,10 +145,10 @@ public class NotesBuilder
     private final Parameters params;
 
     /** Minimum width of templates. */
-    private final int minTemplateWidth;
+    private int minTemplateWidth = 0; // TODO
 
     /** The <b>properly scaled</b> templates to use. */
-    private final Map<Shape, Template> templates = new HashMap<Shape, Template>();
+    private Catalog catalog;
 
     /** The distance table to use. */
     private DistanceTable distances;
@@ -198,8 +181,6 @@ public class NotesBuilder
         if ((system.getId() == 1) && constants.printParameters.isSet()) {
             Main.dumping.dump(params);
         }
-
-        minTemplateWidth = buildTemplates();
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -208,7 +189,7 @@ public class NotesBuilder
     //------------//
     /**
      * Retrieve all void heads, black heads and whole notes in the
-     * system.
+     * system both for standard and small (cue/grace) sizes.
      */
     public void buildNotes ()
     {
@@ -221,16 +202,24 @@ public class NotesBuilder
             logger.debug("Staff #{}", staff.getId());
             watch.start("Staff #" + staff.getId());
 
+            final int interline = staff.getSpecificScale()
+                    .getInterline();
+            catalog = TemplateFactory.getInstance()
+                    .getCatalog(interline);
+
+            List<Inter> ch = new ArrayList<Inter>();
+
             // First, process all seed-based heads for the staff
-            List<Inter> ch = processStaff(staff, true);
+            ch.addAll(processStaff(staff, true));
 
             // Consider seed-based heads as competitors for plain x-based heads
-            //            systemCompetitors.addAll(ch);
-            //            Collections.sort(systemCompetitors, Inter.byOrdinate);
-            // Second, process x-based heads for the staff
+            systemCompetitors.addAll(ch);
+            Collections.sort(systemCompetitors, Inter.byOrdinate);
+
+            // Second, process x-based notes for the staff
             ch.addAll(processStaff(staff, false));
 
-            // Finally, detect heads overlaps for current staff
+            // Finally, detect notes overlaps for current staff
             flagOverlaps(ch);
         }
 
@@ -239,30 +228,48 @@ public class NotesBuilder
         }
     }
 
-    //----------------//
-    // buildTemplates //
-    //----------------//
-    /**
-     * Populate the map of desired templates, scaled at proper value.
-     *
-     * @return the map to use for template matching
-     */
-    private int buildTemplates ()
+    //------------------//
+    // aggregateMatches //
+    //------------------//
+    private List<Inter> aggregateMatches (List<Inter> inters)
     {
-        final int interline = scale.getInterline();
-        int minWidth = Integer.MAX_VALUE;
+        // Sort by decreasing grade
+        Collections.sort(inters, Inter.byReverseGrade);
 
-        final Set<Shape> allShapes = new HashSet<Shape>();
-        allShapes.addAll(evens);
-        allShapes.addAll(odds);
+        // Gather matches per close locations
+        // Avoid duplicate locations
+        List<Aggregate> aggregates = new ArrayList<Aggregate>();
 
-        for (Shape shape : allShapes) {
-            Template tpl = factory.getTemplate(shape, interline);
-            minWidth = Math.min(minWidth, tpl.getWidth());
-            templates.put(shape, tpl);
+        for (Inter inter : inters) {
+            // Check among already filtered locations for similar location
+            Aggregate aggregate = null;
+
+            for (Aggregate ag : aggregates) {
+                Point loc = GeoUtil.centerOf(inter.getBounds());
+                int dx = loc.x - ag.point.x;
+
+                if (Math.abs(dx) <= params.maxTemplateDx) {
+                    aggregate = ag;
+
+                    break;
+                }
+            }
+
+            if (aggregate == null) {
+                aggregate = new Aggregate();
+                aggregates.add(aggregate);
+            }
+
+            aggregate.add(inter);
         }
 
-        return minWidth;
+        List<Inter> filtered = new ArrayList<Inter>();
+
+        for (Aggregate ag : aggregates) {
+            filtered.add(ag.getMainInter());
+        }
+
+        return filtered;
     }
 
     //-------------//
@@ -282,113 +289,53 @@ public class NotesBuilder
                                Shape shape,
                                int pitch)
     {
-        final Template tpl = templates.get(shape);
-        final Rectangle box = tpl.getBoundsAt(loc.x, loc.y, anchor);
+        final ShapeDescriptor desc = catalog.getDescriptor(shape);
+        final Rectangle box = desc.getBoundsAt(loc.x, loc.y, anchor);
         final double distImpact = 1
                                   - (loc.d / params.maxMatchingDistance);
-        final GradeImpacts impacts = new AbstractNoteInter.Impacts(distImpact);
+        final GradeImpacts impacts = new AbstractNoteInter.Impacts(
+                distImpact);
         final double grade = impacts.getGrade();
 
         // Is grade acceptable?
-        if (grade < AbstractInter.getMinGrade()) {
-            logger.debug(
-                    "Too weak {} dist: {} grade: {} at {}",
-                    shape,
-                    String.format("%.3f", loc.d),
-                    String.format("%.2f", grade),
-                    box);
+        if (grade >= AbstractInter.getMinGrade()) {
+            switch (desc.getShape()) {
+            case NOTEHEAD_BLACK:
+                return new BlackHeadInter(desc, box, impacts, pitch);
 
-            return null;
-        } else {
-            final Inter inter = createNoteInter(shape, box, impacts, pitch);
-            sig.addVertex(inter);
+            case NOTEHEAD_VOID:
+                return new VoidHeadInter(desc, box, impacts, pitch);
 
-            if (logger.isDebugEnabled()) {
-                logger.info(
-                        "Created {} at {} dist:{}",
-                        inter,
-                        GeoUtil.centerOf(box),
-                        String.format("%.3f", loc.d));
+            case WHOLE_NOTE:
+                return new WholeInter(desc, box, impacts, pitch);
             }
 
-            return inter;
+            logger.error("No root shape for " + desc.getShape());
         }
-    }
-
-    //-----------------//
-    // createNoteInter //
-    //-----------------//
-    /**
-     * Create proper inter for provided shape.
-     *
-     * @param shape   the shape used for the template
-     * @param box     the template bounds
-     * @param impacts the assignment details
-     * @param pitch   note pitch
-     * @return the created inter
-     */
-    private Inter createNoteInter (Shape shape,
-                                   Rectangle box,
-                                   GradeImpacts impacts,
-                                   int pitch)
-    {
-        switch (shape) {
-        case NOTEHEAD_BLACK:
-            return new BlackHeadInter(box, impacts, pitch);
-
-        case VOID_ODD:
-        case VOID_EVEN:
-            return new VoidHeadInter(box, impacts, pitch);
-
-        case WHOLE_ODD:
-        case WHOLE_EVEN:
-            return new WholeInter(box, impacts, pitch);
-        }
-        assert false : "No root shape for " + shape;
 
         return null;
     }
 
-    //---------------//
-    // filterMatches //
-    //---------------//
-    private List<PixelDistance> filterMatches (List<PixelDistance> rawLocs)
+    //---------------------//
+    // filterSeedConflicts //
+    //---------------------//
+    /**
+     * Check the provided collection of x-based inter instances with
+     * conflicting seed-based inter instances.
+     *
+     * @param inters      x-based instances
+     * @param competitors all competitors, including seed-based inter instances
+     * @return the filtered x-based instances
+     */
+    private List<Inter> filterSeedConflicts (List<Inter> inters,
+                                             List<Inter> competitors)
     {
-        // Sort by increasing template distance
-        Collections.sort(rawLocs);
+        List<Inter> filtered = new ArrayList<Inter>();
 
-        // Gather matches per close locations
-        // Avoid duplicate locations
-        List<Aggregate> aggregates = new ArrayList<Aggregate>();
-
-        for (PixelDistance loc : rawLocs) {
-            // Check among already filtered locations for similar location
-            Aggregate aggregate = null;
-
-            for (Aggregate ag : aggregates) {
-                Point p = ag.point;
-                int dx = loc.x - p.x;
-                int dy = loc.y - p.y;
-
-                if (Math.abs(dx) <= params.maxTemplateDelta) {
-                    aggregate = ag;
-
-                    break;
-                }
+        for (Inter inter : inters) {
+            if (!overlapSeed(inter, competitors)) {
+                filtered.add(inter);
             }
-
-            if (aggregate == null) {
-                aggregate = new Aggregate();
-                aggregates.add(aggregate);
-            }
-
-            aggregate.add(loc);
-        }
-
-        List<PixelDistance> filtered = new ArrayList<PixelDistance>();
-
-        for (Aggregate ag : aggregates) {
-            filtered.add(ag.getMeanLocation());
         }
 
         return filtered;
@@ -398,15 +345,15 @@ public class NotesBuilder
     // flagOverlaps //
     //--------------//
     /**
-     * In the provided list of interpretations, detect and flag as
+     * In the provided list of note interpretations, detect and flag as
      * such the overlapping ones.
      *
      * @param inters the provided interpretations (for a staff)
      */
     private void flagOverlaps (List<Inter> inters)
     {
-        purgeDuplicates(inters);
-
+        Collections.sort(inters, Inter.byAbscissa);
+        
         for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
             Inter left = inters.get(i);
             Rectangle box = left.getBounds();
@@ -446,15 +393,131 @@ public class NotesBuilder
         List<Inter> kept = new ArrayList<Inter>();
 
         for (Inter inter : rawComps) {
+            //TODO: perhaps useless since all competitors are "good"?
             if (inter.isGood()) {
                 kept.add(inter);
             }
         }
 
-        // Sort by abscissa for easier lookup
+        // Sort by abscissa for more efficient lookup
         Collections.sort(kept, Inter.byAbscissa);
 
         return kept;
+    }
+
+    //--------------//
+    // getConfigAtX //
+    //--------------//
+    /**
+     * Determine the exact lines configuration and ordinate.
+     *
+     * @param x       current abscissa value
+     * @param line    main line
+     * @param line2   secondary line, if any
+     * @param ledgers sequence of ledgers nearby, if any
+     * @param pitch   pitch value
+     * @param y       (output) most precise ordinate value
+     * @return the lines configuration
+     */
+    private Lines getConfigAtX (int x,
+                                LineAdapter line,
+                                LineAdapter line2,
+                                List<LedgerAdapter> ledgers,
+                                int pitch,
+                                WrappedInteger y)
+    {
+        // Determine lines config according to ledgers if outside staff
+        final boolean isOutside = Math.abs(pitch) > 4;
+
+        if (isOutside) {
+            if ((pitch % 2) == 0) {
+                y.value = line.yAt(x);
+
+                return Lines.LINE_MIDDLE;
+            } else {
+                // Both are present only if a further ledger exists in abscissa
+                //TODO: refine using width of template?
+                for (LedgerAdapter ledger : ledgers) {
+                    if ((x >= ledger.getLeftAbscissa())
+                        && (x <= ledger.getRightAbscissa())) {
+                        y.value = (int) Math.rint(
+                                (line.yAt((double) x) + ledger.yAt((double) x)) / 2);
+
+                        return Lines.LINE_DOUBLE;
+                    }
+                }
+
+                if (pitch > 0) {
+                    y.value = (int) Math.rint(
+                            line.yAt((double) x) + (scale.getInterline() / 2d));
+
+                    // Top is always present
+                    return Lines.LINE_TOP;
+                } else {
+                    // Bottom is always present
+                    y.value = (int) Math.rint(
+                            line.yAt((double) x) - (scale.getInterline() / 2d));
+
+                    return Lines.LINE_BOTTOM;
+                }
+            }
+        } else {
+            // Within staff lines, compute ordinate precisely
+            if (line2 != null) {
+                y.value = (int) Math.rint(
+                        (line.yAt((double) x) + line2.yAt((double) x)) / 2);
+            } else {
+                y.value = line.yAt(x);
+            }
+
+            return ((pitch % 2) == 0) ? Lines.LINE_MIDDLE : Lines.LINE_DOUBLE;
+        }
+    }
+
+    //-------------------//
+    // getLedgerAdapters //
+    //-------------------//
+    /**
+     * Report the sequence of adapters for all ledgers found
+     * immediately further from staff from the provided pitch.
+     *
+     * @param staff staff at hand
+     * @param pitch pitch of current location (assumed to be odd)
+     * @return the proper list of ledger adapters
+     */
+    private List<LedgerAdapter> getLedgerAdapters (StaffInfo staff,
+                                                   final int pitch)
+    {
+        if (((pitch % 2) == 0) || (Math.abs(pitch) <= 4)) {
+            return Collections.emptyList();
+        }
+
+        List<LedgerAdapter> list = new ArrayList<LedgerAdapter>();
+
+        // Check for ledgers
+        final int dir = Integer.signum(pitch);
+        final int targetPitch = pitch + dir;
+        int p = dir * 4;
+
+        for (int i = dir;; i += dir) {
+            SortedSet<LedgerInter> set = staff.getLedgers(i);
+
+            if ((set == null) || set.isEmpty()) {
+                break;
+            }
+
+            p += (2 * dir);
+
+            if (p == targetPitch) {
+                for (LedgerInter ledger : set) {
+                    list.add(new LedgerAdapter(staff, null, ledger.getGlyph()));
+                }
+
+                break;
+            }
+        }
+
+        return list;
     }
 
     //---------------//
@@ -526,228 +589,6 @@ public class NotesBuilder
         return seeds;
     }
 
-    //--------//
-    // lookup //
-    //--------//
-    /**
-     * Lookup a line in the provided direction for note candidates,
-     * skipping the location already used by (good) competitors.
-     * <p>
-     * Abscissae tied to stem seeds are tried on left and right sides for void
-     * and black heads only (no whole notes).
-     * All abscissae within line range are tried for all symbols (void and black
-     * heads, whole notes), but seed-tied locations are given priority over
-     * these ones.
-     *
-     * @param prefix   a prefix used to avoid name collision between ledgers
-     * @param staff    the containing staff
-     * @param line     adapter to the line (staff line or ledger)
-     * @param dir      the desired direction (-1: above, 0: on line, 1: below)
-     * @param pitch    step pitch step position
-     * @param useSeeds true for seed-based heads, false for x-based heads
-     */
-    private List<Inter> lookup (LineAdapter line,
-                                int dir,
-                                int pitch,
-                                boolean useSeeds)
-    {
-        StaffInfo staff = line.getStaff();
-
-        // Competitors for this horizontal slice
-        final double ratio = AbstractNoteInter.getShrinkVertRatio();
-        final double above = (scale.getInterline() * (dir - ratio)) / 2;
-        final double below = (scale.getInterline() * (dir + ratio)) / 2;
-        final Area area = line.getArea(above, below);
-
-        if (constants.allowAttachments.isSet()) {
-            staff.addAttachment(line.getPrefix() + "#" + pitch, area);
-        }
-
-        List<Inter> competitors = getCompetitorsSlice(area);
-        logger.debug("lookup step: {} comps: {}", pitch, competitors.size());
-
-        // Inters created for this line
-        final List<Inter> createdInters = new ArrayList<Inter>();
-
-        if (useSeeds) {
-            // Inters tied to stem seeds
-            createdInters.addAll(
-                    lookupSeeds(area, line, dir, pitch, competitors));
-        } else {
-            // Inters not tied to stem seeds
-            createdInters.addAll(lookupRange(line, dir, pitch, competitors));
-        }
-
-        return createdInters;
-    }
-
-    //-------------//
-    // lookupRange //
-    //-------------//
-    /**
-     * Lookup an area, using all abscissae in line range.
-     *
-     * @param area        the slice to browse
-     * @param line        adapter to the underlying line (staff line or ledger)
-     * @param dir         direction from the line
-     * @param pitch       pitch position
-     * @param competitors collection of existing competing symbols
-     * @return the list of created interpretations
-     * @see #lookupSeeds
-     */
-    private List<Inter> lookupRange (LineAdapter line,
-                                     int dir,
-                                     int pitch,
-                                     List<Inter> competitors)
-    {
-        final List<Inter> createdInters = new ArrayList<Inter>();
-
-        /** Shapes to look for */
-        final List<Shape> shapes = (dir == 0) ? evens : odds;
-
-        /** Template anchor to use */
-        final Anchor anchor = (dir == 0) ? MIDDLE_LEFT
-                : ((dir < 0) ? BOTTOM_LEFT : TOP_LEFT);
-
-        /** Abscissa range for scan */
-        final int scanLeft = Math.max(
-                line.getLeftAbscissa(),
-                (int) line.getStaff().getDmzEnd());
-        final int scanRight = line.getRightAbscissa()
-                              - minTemplateWidth;
-
-        /** The shape-based locations found */
-        final Map<Shape, List<PixelDistance>> locations = new HashMap<Shape, List<PixelDistance>>();
-
-        for (Shape shape : shapes) {
-            locations.put(shape, new ArrayList<PixelDistance>());
-        }
-
-        // Scan
-        for (int x = scanLeft; x <= scanRight; x++) {
-            final int y = line.yAt(x);
-
-            for (Shape shape : shapes) {
-                final Template tpl = templates.get(shape);
-                final Rectangle tplBox = tpl.getBoundsAt(x, y, anchor);
-                final Rectangle2D smallBox = shrink(tplBox);
-
-                // Skip if location already used by good object (beam, black head)
-                if (!overlap(smallBox, competitors)) {
-                    final List<PixelDistance> locs = locations.get(shape);
-
-                    // Get match value for template located at (x,y)
-                    final double dist = tpl.evaluate(x, y, anchor, distances);
-
-                    if (dist <= params.maxMatchingDistance) {
-                        locs.add(new PixelDistance(x, y, dist));
-                    }
-                }
-            }
-        }
-
-        // Filter
-        for (Shape shape : shapes) {
-            List<PixelDistance> locs = locations.get(shape);
-            locs = filterMatches(locs);
-
-            if (!locs.isEmpty()) {
-                for (PixelDistance loc : locs) {
-                    Inter inter = createInter(loc, anchor, shape, pitch);
-
-                    if (inter != null) {
-                        createdInters.add(inter);
-                    }
-                }
-            }
-        }
-
-        return createdInters;
-    }
-
-    //-------------//
-    // lookupSeeds //
-    //-------------//
-    /**
-     * Lookup an area, only at abscissae tied to existing stem seeds.
-     * Whole notes cannot be searched for at these locations.
-     *
-     * @param area        the slice to browse
-     * @param line        adapter to the underlying line (staff line or ledger)
-     * @param dir         vertical direction from the line
-     * @param pitch       pitch position
-     * @param competitors collection of existing competing symbols
-     * @return the list of created interpretations
-     * @see #lookupRange
-     */
-    private List<Inter> lookupSeeds (Area area,
-                                     LineAdapter line,
-                                     int dir,
-                                     int pitch,
-                                     List<Inter> competitors)
-    {
-        final List<Inter> createdInters = new ArrayList<Inter>();
-
-        // Shapes to look for
-        final List<Shape> shapes = new ArrayList<Shape>(
-                (dir == 0) ? evens : odds);
-        shapes.removeAll(noStems);
-
-        // Intersected seeds in the area
-        final List<Glyph> seeds = getSeedsSlice(area);
-
-        // Use one anchor for each horizontal side of the stem seed
-        final Anchor[] anchors = new Anchor[]{
-            // On left of stem
-            (dir == 0) ? LEFT_STEM : ((dir < 0) ? BOTTOM_LEFT_STEM : TOP_LEFT_STEM),
-            // On right of stem
-            (dir == 0) ? RIGHT_STEM : ((dir < 0) ? BOTTOM_RIGHT_STEM : TOP_RIGHT_STEM)
-        };
-
-        for (Glyph seed : seeds) {
-            // Compute precise stem link point
-            // x value is imposed by seed alignment, y value by line
-            int x = GeoUtil.centerOf(seed.getBounds()).x; // Rough x value
-            final int y = line.yAt(x); // Precise y value
-            final Point2D top = seed.getStartPoint(Orientation.VERTICAL);
-            final Point2D bot = seed.getStopPoint(Orientation.VERTICAL);
-            final Point2D pt = LineUtil.intersectionAtY(top, bot, y);
-            x = (int) Math.rint(pt.getX()); // Precise x value
-
-            for (Anchor anchor : anchors) {
-                for (Shape shape : shapes) {
-                    final Template tpl = templates.get(shape);
-                    final Rectangle tplBox = tpl.getBoundsAt(x, y, anchor);
-                    final Rectangle2D smallBox = shrink(tplBox);
-
-                    // Skip if location already used by good object (beam, black head)
-                    if (!overlap(smallBox, competitors)) {
-                        final double dist = tpl.evaluate(
-                                x,
-                                y,
-                                anchor,
-                                distances);
-
-                        if (dist <= params.maxMatchingDistance) {
-                            PixelDistance loc = new PixelDistance(x, y, dist);
-                            Inter inter = createInter(
-                                    loc,
-                                    anchor,
-                                    shape,
-                                    pitch);
-
-                            if (inter != null) {
-                                createdInters.add(inter);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return createdInters;
-    }
-
     //---------//
     // overlap //
     //---------//
@@ -764,6 +605,10 @@ public class NotesBuilder
         final double xMax = box.getMaxX();
 
         for (Inter comp : competitors) {
+            if (comp instanceof AbstractNoteInter) {
+                continue;
+            }
+
             if (comp.getArea() != null) {
                 if (comp.getArea()
                         .intersects(box)) {
@@ -783,15 +628,56 @@ public class NotesBuilder
         return false;
     }
 
+    //-------------//
+    // overlapSeed //
+    //-------------//
+    /**
+     * We check overlap with seed-based note and return true only when
+     * the overlapping seed-based inter has a better grade
+     *
+     * @param inter       the x-based inter to check
+     * @param competitors abscissa-sorted slice of competitors, including
+     *                    seed-based inter instances
+     * @return true if real conflict found
+     */
+    private boolean overlapSeed (Inter inter,
+                                 List<Inter> competitors)
+    {
+        final Rectangle box = inter.getBounds();
+        final double grade = inter.getGrade();
+        final double xMax = box.getMaxX();
+
+        for (Inter comp : competitors) {
+            if (!(comp instanceof AbstractNoteInter)) {
+                continue;
+            }
+
+            Rectangle cBox = comp.getBounds();
+
+            if (cBox.intersects(box)) {
+                if (comp.getGrade() >= grade) {
+                    return true;
+                }
+            } else if (cBox.x > xMax) {
+                break;
+            }
+        }
+
+        return false;
+    }
+
     //--------------//
     // processStaff //
     //--------------//
     /**
      * Retrieve notes along the provided staff.
+     * <p>
+     * Pay attention to adjust ordinate as precisely as possible in the middle
+     * of staff or ledger lines.
      *
      * @param staff the staff to process
      * @param seeds should we stick to stem seeds or not?
-     * @return the list of created heads
+     * @return the list of created notes
      */
     private List<Inter> processStaff (StaffInfo staff,
                                       boolean seeds)
@@ -799,21 +685,28 @@ public class NotesBuilder
         List<Inter> ch = new ArrayList<Inter>(); // Created heads
 
         // Use all staff lines
-        boolean isFirstLine = true;
         int pitch = -5; // Current pitch
+        LineAdapter prevAdapter = null;
+        Browser browser;
 
-        for (LineInfo line : staff.getLines()) {
+        for (FilamentLine line : staff.getLines()) {
             LineAdapter adapter = new StaffLineAdapter(staff, line);
 
-            // For first line only, look right above
-            if (isFirstLine) {
-                isFirstLine = false;
-                ch.addAll(lookup(adapter, -1, pitch++, seeds));
+            // Look above line
+            browser = new Browser(adapter, prevAdapter, -1, pitch++, seeds);
+            ch.addAll(browser.lookup());
+
+            // Look exactly on line
+            browser = new Browser(adapter, null, 0, pitch++, seeds);
+            ch.addAll(browser.lookup());
+
+            // For the last line only, look just below line
+            if (pitch == 5) {
+                browser = new Browser(adapter, null, 1, pitch++, seeds);
+                ch.addAll(browser.lookup());
             }
 
-            // Look right on line, then just below
-            ch.addAll(lookup(adapter, 0, pitch++, seeds));
-            ch.addAll(lookup(adapter, +1, pitch++, seeds));
+            prevAdapter = adapter;
         }
 
         // Use all ledgers, above staff, then below staff
@@ -832,57 +725,21 @@ public class NotesBuilder
 
                 for (LedgerInter ledger : set) {
                     String p = "" + c++;
-                    LineAdapter adapter = new LedgerAdapter(
-                            staff,
-                            p,
-                            ledger.getGlyph());
+                    Glyph glyph = ledger.getGlyph();
+                    LineAdapter adapter = new LedgerAdapter(staff, p, glyph);
                     // Look right on ledger, then just further from staff
-                    ch.addAll(lookup(adapter, 0, pitch, seeds));
-                    ch.addAll(lookup(adapter, dir, pitch + dir, seeds));
+                    browser = new Browser(adapter, null, 0, pitch, seeds);
+                    ch.addAll(browser.lookup());
+
+                    // Look just further from staff
+                    int pitch2 = pitch + dir;
+                    browser = new Browser(adapter, null, dir, pitch2, seeds);
+                    ch.addAll(browser.lookup());
                 }
             }
         }
 
         return ch;
-    }
-
-    //-----------------//
-    // purgeDuplicates //
-    //-----------------//
-    private void purgeDuplicates (List<Inter> inters)
-    {
-        List<Inter> toRemove = new ArrayList<Inter>();
-        Collections.sort(inters, Inter.byAbscissa);
-
-        for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
-            Inter left = inters.get(i);
-            Rectangle leftBox = left.getBounds();
-            int xMax = (leftBox.x + leftBox.width) - 1;
-
-            for (Inter right : inters.subList(i + 1, inters.size())) {
-                Rectangle rightBox = right.getBounds();
-
-                if (leftBox.intersects(rightBox)) {
-                    if (left.isSameAs(right)) {
-                        toRemove.add(right);
-                    }
-                } else if (rightBox.x > xMax) {
-                    break;
-                }
-            }
-        }
-
-        if (!toRemove.isEmpty()) {
-            inters.removeAll(toRemove);
-
-            for (Inter inter : toRemove) {
-                if (inter.isVip()) {
-                    logger.info("Purging {} at {}", inter, inter.getBounds());
-                }
-
-                sig.removeVertex(inter);
-            }
-        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -898,24 +755,19 @@ public class NotesBuilder
 
         Point point;
 
-        List<PixelDistance> matches = new ArrayList<PixelDistance>();
+        List<Inter> matches = new ArrayList<Inter>();
 
         //~ Methods ------------------------------------------------------------
-        public void add (PixelDistance match)
+        public void add (Inter inter)
         {
             if (point == null) {
-                point = new Point(match.x, match.y);
+                point = GeoUtil.centerOf(inter.getBounds());
             }
 
-            matches.add(match);
+            matches.add(inter);
         }
 
-        /**
-         * Use barycenter (with weights decreasing with distance? no!)
-         *
-         * @return a mean location
-         */
-        public PixelDistance getMeanLocation ()
+        public Inter getMainInter ()
         {
             return matches.get(0);
         }
@@ -938,13 +790,241 @@ public class NotesBuilder
                     .append(matches.size())
                     .append(" matches: ");
 
-            for (PixelDistance match : matches) {
+            for (Inter match : matches) {
                 sb.append(match);
             }
 
             sb.append("}");
 
             return sb.toString();
+        }
+    }
+
+    //---------//
+    // Browser //
+    //---------//
+    private class Browser
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final LineAdapter line;
+
+        private final LineAdapter line2;
+
+        private final int dir;
+
+        private final int pitch;
+
+        private final boolean useSeeds;
+
+        private final boolean isOpen;
+
+        private final Area area;
+
+        private final List<Inter> competitors;
+
+        private final List<LedgerAdapter> ledgers;
+
+        private final WrappedInteger ord = new WrappedInteger(-1);
+
+        ///private final int[] yClosed = new int[1]; //new int[params.maxClosedDy];
+        private final int[] yClosed = new int[params.maxClosedDy];
+
+        private final int[] yOpen = new int[params.maxOpenDy];
+
+        private List<Inter> inters = new ArrayList<Inter>();
+
+        //~ Constructors -------------------------------------------------------
+        /**
+         * Create a Browser, dedicated to a staff line or ledger.
+         *
+         * @param line     adapter to the main line
+         * @param line2    adapter to secondary line, if any
+         * @param dir      direction WRT main line
+         * @param pitch    pitch position value
+         * @param useSeeds true for seed-based notes, false for x-based notes
+         */
+        public Browser (LineAdapter line,
+                        LineAdapter line2,
+                        int dir,
+                        int pitch,
+                        boolean useSeeds)
+        {
+            this.line = line;
+            this.line2 = line2;
+            this.dir = dir;
+            this.pitch = pitch;
+            this.useSeeds = useSeeds;
+
+            // Open line?
+            isOpen = ((pitch % 2) != 0) && (line2 == null);
+
+            final StaffInfo staff = line.getStaff();
+            ledgers = getLedgerAdapters(staff, pitch);
+
+            // Retrieve competitors for this horizontal slice
+            final double ratio = AbstractNoteInter.getShrinkVertRatio();
+            final double above = (scale.getInterline() * (dir - ratio)) / 2;
+            final double below = (scale.getInterline() * (dir + ratio)) / 2;
+            area = line.getArea(above, below);
+
+            if (constants.allowAttachments.isSet()) {
+                staff.addAttachment(line.getPrefix() + "#" + pitch, area);
+            }
+
+            competitors = getCompetitorsSlice(area);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        public List<Inter> lookup ()
+        {
+            return useSeeds ? lookupSeeds() : lookupRange();
+        }
+
+        //------//
+        // eval //
+        //------//
+        private Inter eval (Shape shape,
+                            int x,
+                            int y,
+                            Anchor anchor,
+                            Lines lines)
+        {
+            final ShapeDescriptor desc = catalog.getDescriptor(shape);
+            final Rectangle tplBox = desc.getBoundsAt(x, y, anchor);
+            final Rectangle2D smallBox = shrink(tplBox);
+
+            // Skip if location already used by good object (beam, etc)
+            if (overlap(smallBox, competitors)) {
+                return null;
+            }
+
+            // Then try all variants for the shape and keep the best dist
+            Lines l = shape.isSmall() ? lines
+                    : ((lines == Lines.LINE_MIDDLE) ? Lines.LINE_MIDDLE
+                    : Lines.LINE_NONE);
+            double dist = desc.evaluate(x, y, anchor, distances, l);
+
+            if (dist > params.maxMatchingDistance) {
+                return null;
+            }
+
+            PixelDistance loc = new PixelDistance(x, y, dist);
+
+            return createInter(loc, anchor, shape, pitch);
+        }
+
+        //-------------//
+        // lookupRange //
+        //-------------//
+        private List<Inter> lookupRange ()
+        {
+            // Template anchor to use
+            final Anchor anchor = MIDDLE_LEFT;
+
+            // Abscissa range for scan
+            final int scanLeft = Math.max(
+                    line.getLeftAbscissa(),
+                    (int) line.getStaff().getDmzEnd());
+            final int scanRight = line.getRightAbscissa() - minTemplateWidth;
+
+            // Scan from left to right
+            for (int x = scanLeft; x <= scanRight; x++) {
+                Lines lines = getConfigAtX(x, line, line2, ledgers, pitch, ord);
+
+                for (int y : ordinates()) {
+                    for (Shape shape : ShapeSet.TemplateNotes) {
+                        Inter inter = eval(shape, x, y, anchor, lines);
+
+                        if (inter != null) {
+                            inters.add(inter);
+                        }
+                    }
+                }
+            }
+
+            // Aggregate matching inters
+            inters = aggregateMatches(inters);
+
+            // Check conflict with seed-based instances
+            inters = filterSeedConflicts(inters, competitors);
+
+            for (Inter inter : inters) {
+                sig.addVertex(inter);
+            }
+
+            return inters;
+        }
+
+        //-------------//
+        // lookupSeeds //
+        //-------------//
+        private List<Inter> lookupSeeds ()
+        {
+            // Intersected seeds in the area
+            final List<Glyph> seeds = getSeedsSlice(area);
+
+            // Use one anchor for each horizontal side of the stem seed
+            final Anchor[] anchors = new Anchor[]{LEFT_STEM, RIGHT_STEM};
+
+            for (Glyph seed : seeds) {
+                // Compute precise stem link point
+                // x value is imposed by seed alignment, y value by line
+                int x = GeoUtil.centerOf(seed.getBounds()).x; // Rough x value
+                int y0 = line.yAt(x); // Rather good y value
+                final Point2D top = seed.getStartPoint(Orientation.VERTICAL);
+                final Point2D bot = seed.getStopPoint(Orientation.VERTICAL);
+                final Point2D pt = LineUtil.intersectionAtY(top, bot, y0);
+                x = (int) Math.rint(pt.getX()); // Precise x value
+
+                Lines lines = getConfigAtX(x, line, line2, ledgers, pitch, ord);
+
+                for (Anchor anchor : anchors) {
+                    // For each stem side, keep only the best shape
+                    Inter bestInter = null;
+
+                    for (int y : ordinates()) {
+                        for (Shape shape : ShapeSet.StemTemplateNotes) {
+                            Inter inter = eval(shape, x, y, anchor, lines);
+
+                            if (inter != null) {
+                                if ((bestInter == null)
+                                    || (bestInter.getGrade() < inter.getGrade())) {
+                                    bestInter = inter;
+                                }
+                            }
+                        }
+                    }
+
+                    if (bestInter != null) {
+                        sig.addVertex(bestInter);
+                        inters.add(bestInter);
+                    }
+                }
+            }
+
+            return inters;
+        }
+
+        private int[] ordinates ()
+        {
+            if (isOpen) {
+                for (int i = 0; i < yOpen.length; i++) {
+                    yOpen[i] = ord.value + (dir * i);
+                }
+
+                return yOpen;
+            } else {
+                for (int i = 0; i < yClosed.length; i++) {
+                    if ((i % 2) == 0) {
+                        yClosed[i] = ord.value - (i / 2);
+                    } else {
+                        yClosed[i] = ord.value + ((i + 1) / 2);
+                    }
+                }
+
+                return yClosed;
+            }
         }
     }
 
@@ -970,12 +1050,20 @@ public class NotesBuilder
 
         final Constant.Double maxMatchingDistance = new Constant.Double(
                 "distance",
-                1.25,
+                0.08,
                 "Maximum matching distance");
 
-        final Scale.Fraction maxTemplateDelta = new Scale.Fraction(
-                0.75,
-                "Maximum dx or dy between similar template instances");
+        final Scale.Fraction maxTemplateDx = new Scale.Fraction(
+                0.375,
+                "Maximum dx between similar template instances");
+
+        final Scale.Fraction maxClosedDy = new Scale.Fraction(
+                0.2,
+                "Extension allowed in y for closed lines");
+
+        final Scale.Fraction maxOpenDy = new Scale.Fraction(
+                0.25,
+                "Extension allowed in y for open lines");
 
         final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
                 0.7,
@@ -984,34 +1072,6 @@ public class NotesBuilder
         final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
                 0.5,
                 "Shrink vertical ratio to apply when checking for overlap");
-
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final double maxMatchingDistance;
-
-        final int maxTemplateDelta;
-
-        //~ Constructors -------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
-        {
-            maxMatchingDistance = constants.maxMatchingDistance.getValue();
-            maxTemplateDelta = scale.toPixels(constants.maxTemplateDelta);
-        }
     }
 
     //---------------//
@@ -1072,8 +1132,14 @@ public class NotesBuilder
         @Override
         public int yAt (int x)
         {
-            return (int) Math.rint(
-                    LineUtil.intersectionAtX(left, right, x).getY());
+            return (int) Math.rint(yAt((double) x));
+        }
+
+        @Override
+        public double yAt (double x)
+        {
+            return LineUtil.intersectionAtX(left, right, x)
+                    .getY();
         }
     }
 
@@ -1131,6 +1197,42 @@ public class NotesBuilder
 
         /** Report the ordinate at provided abscissa. */
         public abstract int yAt (int x);
+
+        /** Report the precise ordinate at provided precise abscissa. */
+        public abstract double yAt (double x);
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final double maxMatchingDistance;
+
+        final int maxTemplateDx;
+
+        final int maxClosedDy;
+
+        final int maxOpenDy;
+
+        //~ Constructors -------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (Scale scale)
+        {
+            maxMatchingDistance = constants.maxMatchingDistance.getValue();
+            maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
+            maxClosedDy = scale.toPixels(constants.maxClosedDy);
+            maxOpenDy = scale.toPixels(constants.maxOpenDy);
+        }
     }
 
     //------------------//
@@ -1199,5 +1301,107 @@ public class NotesBuilder
         {
             return line.yAt(x);
         }
+
+        @Override
+        public double yAt (double x)
+        {
+            return line.yAt(x);
+        }
     }
 }
+//    //--------//
+//    // Tester //
+//    //--------//
+//    private class Tester
+//    {
+//        //~ Instance fields ----------------------------------------------------
+//
+//        private final Anchor anchor = Anchor.CENTER;
+//
+//        private final Shape shape;
+//
+//        private final Lines lines;
+//
+//        private final Rectangle focus;
+//
+//        private final int pitch;
+//
+//        //~ Constructors -------------------------------------------------------
+//        public Tester (Shape shape,
+//                       Lines lines,
+//                       Rectangle focus,
+//                       int pitch)
+//        {
+//            this.shape = shape;
+//            this.lines = lines;
+//            this.focus = focus;
+//            this.pitch = pitch;
+//        }
+//
+//        //~ Methods ------------------------------------------------------------
+//        private double test (int x,
+//                             int y)
+//        {
+//            double bestDistance = Double.MAX_VALUE;
+//            Template.Stems bestStems = null;
+//
+//            ///for (Template.Stems stems : Template.Stems.values()) {
+//            Template.Stems stems = Template.Stems.STEM_NONE;
+//            final Key key = new Key(shape, lines, stems);
+//            final Template tpl = catalog.getTemplate(key);
+//
+//            // Get match value for template located at (x,y)
+//            double d = tpl.evaluate(x, y, anchor, distances);
+//
+//            if (d < bestDistance) {
+//                bestDistance = d;
+//                bestStems = stems;
+//            }
+//
+//            logger.info("x:{} y:{} {}", x, y, bestStems);
+//
+//            return bestDistance;
+//        }
+//
+//        /**
+//         * Specific tests around provided location, with varying sizes.
+//         *
+//         * @param point
+//         */
+//        private void testLocations ()
+//        {
+//            double[][] table = new double[focus.width][focus.height];
+//
+//            // Try various locations, with standard interline size
+//            int bestX = 0;
+//            int bestY = 0;
+//            double bestD = Double.MAX_VALUE;
+//
+//            for (int iy = 0; iy < focus.height; iy++) {
+//                int y = focus.y + iy;
+//
+//                for (int ix = 0; ix < focus.width; ix++) {
+//                    int x = focus.x + ix;
+//                    double d = test(x, y);
+//                    table[ix][iy] = d;
+//
+//                    if (d < bestD) {
+//                        bestD = d;
+//                        bestX = x;
+//                        bestY = y;
+//                    }
+//                }
+//            }
+//
+//            Inter inter = createInter(
+//                    new PixelDistance(bestX, bestY, bestD),
+//                    anchor,
+//                    shape,
+//                    pitch);
+//
+//            TableUtil.dump(
+//                    focus.getLocation() + " best " + String.format("%.3f", bestD)
+//                    + " at (" + bestX + "," + bestY + ") " + inter,
+//                    table);
+//        }
+//    }

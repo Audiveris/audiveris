@@ -40,7 +40,7 @@ public class Alignment
             Vertical.TOP,
             Horizontal.RIGHT);
 
-    /** Pre-defined alignment on middle center of symbol */
+    /** Pre-defined alignment on middle left of symbol */
     public static final Alignment MIDDLE_LEFT = new Alignment(
             Vertical.MIDDLE,
             Horizontal.LEFT);
@@ -50,7 +50,7 @@ public class Alignment
             Vertical.MIDDLE,
             Horizontal.CENTER);
 
-    /** Pre-defined alignment on middle center of symbol */
+    /** Pre-defined alignment on middle right of symbol */
     public static final Alignment MIDDLE_RIGHT = new Alignment(
             Vertical.MIDDLE,
             Horizontal.RIGHT);

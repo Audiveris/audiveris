@@ -155,9 +155,9 @@ public class Symbols
     private static void assignDecoratedSymbols ()
     {
         dec.put(BEAM, new BeamSymbol(1, BEAM));
-        dec.put(BEAM_2, new BeamSymbol(2, BEAM_2));
-        dec.put(BEAM_3, new BeamSymbol(3, BEAM_3));
+        //TODO: add BEAM_SMALL?
         dec.put(BEAM_HOOK, new BeamHookSymbol());
+        //TODO: add BEAM_HOOK_SMALL?
         dec.put(BRACE, new BraceSymbol(false));
         dec.put(BRACKET, new BracketSymbol(false));
         dec.put(BREVE_REST, new RestSymbol(BREVE_REST, true, 227));
@@ -192,6 +192,7 @@ public class Symbols
         map(DYNAMICS_FZ, 90);
         map(DYNAMICS_SF, 83);
         map(NOTEHEAD_BLACK, 207);
+        //TODO: add NOTEHEAD_BLACK_SMALL
         map(TIME_ZERO, 48);
         map(EIGHTH_REST, 228);
         map(RIGHT_REPEAT_SIGN, 125);
@@ -305,8 +306,6 @@ public class Symbols
         map(MORDENT, 109);
         map(NATURAL, 110);
         sym.put(NON_DRAGGABLE, new NonDraggableSymbol(192));
-        heads(2, NOTEHEAD_BLACK_2, 207);
-        heads(3, NOTEHEAD_BLACK_3, 207);
         //        map(NO_LEGAL_TIME);
         //        sym.put(
         //            OLD_QUARTER_REST,
@@ -374,19 +373,11 @@ public class Symbols
                 ShapeSymbol.quadrantRotateOne));
 
         heads(1, NOTEHEAD_VOID, 250);
-        heads(2, NOTEHEAD_VOID_2, 250);
-        heads(3, NOTEHEAD_VOID_3, 250);
+        //TODO: add NOTEHEAD_VOID_SMALL
         heads(1, WHOLE_NOTE, 119);
-        heads(2, WHOLE_NOTE_2, 119);
-        heads(3, WHOLE_NOTE_3, 119);
+        //TODO: add WHOLE_NOTE_SMALL
         sym.put(WHOLE_REST, new RestSymbol(WHOLE_REST, false, 183));
         sym.put(WEDGE_set, new CrescendoSymbol(false, CRESCENDO));
-        
-        // For template matching
-        sym.put(VOID_ODD, getSymbol(NOTEHEAD_VOID));
-        sym.put(VOID_EVEN, new EvenStepSymbol(NOTEHEAD_VOID, 250));
-        sym.put(WHOLE_ODD, getSymbol(WHOLE_NOTE));
-        sym.put(WHOLE_EVEN, new EvenStepSymbol(WHOLE_NOTE, 119));
     }
 
     //- Convenient methods -----------------------------------------------------

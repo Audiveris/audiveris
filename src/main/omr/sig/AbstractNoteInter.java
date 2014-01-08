@@ -15,7 +15,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+
+import omr.image.ShapeDescriptor;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -34,6 +35,9 @@ public class AbstractNoteInter
     private static final Constants constants = new Constants();
 
     //~ Instance fields --------------------------------------------------------
+    /** Shape template descriptor. */
+    protected final ShapeDescriptor descriptor;
+
     /** Pitch step. */
     protected final int pitch;
 
@@ -41,52 +45,42 @@ public class AbstractNoteInter
     /**
      * Creates a new AbstractNoteInter object.
      *
-     * @param box   the object bounds
-     * @param shape the underlying shape
-     * @param grade the inter intrinsic grade
-     * @param pitch the note pitch
+     * @param descriptor the shape template descriptor
+     * @param box        the object bounds
+     * @param shape      the underlying shape
+     * @param grade      the inter intrinsic grade
+     * @param pitch      the note pitch
      */
-    public AbstractNoteInter (Rectangle box,
+    public AbstractNoteInter (ShapeDescriptor descriptor,
+                              Rectangle box,
                               Shape shape,
                               double grade,
                               int pitch)
     {
         super(box, shape, grade);
-        this.pitch = pitch;
-    }
-    /**
-     * Creates a new AbstractNoteInter object.
-     *
-     * @param box   the object bounds
-     * @param shape the underlying shape
-     * @param impacts the grade details
-     * @param pitch the note pitch
-     */
-    public AbstractNoteInter (Rectangle box,
-                              Shape shape,
-                              GradeImpacts impacts,
-                              int pitch)
-    {
-        super(box, shape, impacts.getGrade());
-        setImpacts(impacts);
+
+        this.descriptor = descriptor;
         this.pitch = pitch;
     }
 
     /**
      * Creates a new AbstractNoteInter object.
      *
-     * @param glyph   the underlying glyph
-     * @param shape   the related shape
-     * @param impacts the grade details
-     * @param pitch   the note pitch
+     * @param descriptor the shape template descriptor
+     * @param box        the object bounds
+     * @param shape      the underlying shape
+     * @param impacts    the grade details
+     * @param pitch      the note pitch
      */
-    public AbstractNoteInter (Glyph glyph,
+    public AbstractNoteInter (ShapeDescriptor descriptor,
+                              Rectangle box,
                               Shape shape,
                               GradeImpacts impacts,
                               int pitch)
     {
-        super(glyph, shape, impacts.getGrade());
+        super(box, shape, impacts.getGrade());
         setImpacts(impacts);
+        this.descriptor = descriptor;
         this.pitch = pitch;
     }
 
@@ -137,6 +131,14 @@ public class AbstractNoteInter
                 newHeight);
     }
 
+    //---------------//
+    // getDescriptor //
+    //---------------//
+    public ShapeDescriptor getDescriptor ()
+    {
+        return descriptor;
+    }
+
     //----------//
     // getPitch //
     //----------//
@@ -149,6 +151,26 @@ public class AbstractNoteInter
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //---------//
+    // Impacts //
+    //---------//
+    public static class Impacts
+            extends BasicImpacts
+    {
+        //~ Static fields/initializers -----------------------------------------
+
+        private static final String[] NAMES = new String[]{"dist"};
+
+        private static final double[] WEIGHTS = new double[]{1};
+
+        //~ Constructors -------------------------------------------------------
+        public Impacts (double dist)
+        {
+            super(NAMES, WEIGHTS);
+            setImpact(0, dist);
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
@@ -164,26 +186,5 @@ public class AbstractNoteInter
         final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
                 0.5,
                 "Vertical shrink ratio to apply when checking note overlap");
-
-    }
-    
-    //---------//
-    // Impacts //
-    //---------//
-    public static class Impacts
-    extends BasicImpacts
-    {
-              //~ Static fields/initializers -----------------------------------------
-
-        private static final String[] NAMES = new String[]{"dist"};
-
-        private static final double[] WEIGHTS = new double[]{1};
-
-        //~ Constructors -------------------------------------------------------
-        public Impacts (double dist)
-        {
-            super(NAMES, WEIGHTS);
-            setImpact(0, dist);
-        }
     }
 }

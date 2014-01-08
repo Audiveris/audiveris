@@ -92,9 +92,12 @@ public class ChamferMatchingTest
         System.out.println("match");
 
         Template template = TemplateFactory.getInstance()
+                .getCatalog(14)
                 .getTemplate(
-                Shape.NOTEHEAD_BLACK,
-                14);
+                        new Template.Key(
+                                Shape.NOTEHEAD_BLACK,
+                                Template.Lines.LINE_NONE,
+                                Template.Stems.STEM_NONE));
         template.dump();
 
         PixelBuffer image = createImage(imageRows);

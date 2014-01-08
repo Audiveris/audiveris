@@ -404,7 +404,7 @@ public class VerticalsBuilder
                 BasicGlyph.class);
 
         // Adjust factory parameters
-        factory.setMaxThickness(scale.getMainStem());
+        factory.setMaxThickness(scale.getMainStem() + 1); // A bit more
         factory.setMaxOverlapDeltaPos(constants.maxOverlapDeltaPos);
         factory.setMaxOverlapSpace(constants.maxOverlapSpace);
         factory.setMaxCoordGap(constants.maxCoordGap);
@@ -483,7 +483,6 @@ public class VerticalsBuilder
                 "cotangent",
                 0.1,
                 "Maximum cotangent for interactive check of a stem candidate");
-
     }
 
     //--------------//

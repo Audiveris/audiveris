@@ -12,7 +12,8 @@
 package omr.sig;
 
 import omr.glyph.Shape;
-import omr.glyph.facets.Glyph;
+
+import omr.image.ShapeDescriptor;
 
 import java.awt.Rectangle;
 
@@ -34,15 +35,17 @@ public class BlackHeadInter
      * Creates a new BlackHeadInter object from a distance-matching
      * retrieval.
      *
-     * @param box   the object bounds
-     * @param impacts the grade details
-     * @param pitch the note pitch
+     * @param descriptor the shape template descriptor
+     * @param box        the object bounds
+     * @param impacts    the grade details
+     * @param pitch      the note pitch
      */
-    public BlackHeadInter (Rectangle box,
+    public BlackHeadInter (ShapeDescriptor descriptor,
+                           Rectangle box,
                            GradeImpacts impacts,
                            int pitch)
     {
-        super(box, Shape.NOTEHEAD_BLACK, impacts, pitch);
+        super(descriptor, box, Shape.NOTEHEAD_BLACK, impacts, pitch);
     }
 
     //~ Methods ----------------------------------------------------------------

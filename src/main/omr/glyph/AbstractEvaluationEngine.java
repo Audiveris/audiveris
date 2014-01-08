@@ -420,7 +420,7 @@ public abstract class AbstractEvaluationEngine
                                    + " in " + uri
                                    + ", please retrain from scratch";
                 logger.warn(msg);
-                JOptionPane.showMessageDialog(null, msg);
+                /////TODO: JOptionPane.showMessageDialog(null, msg);
 
                 obj = null;
             } else {

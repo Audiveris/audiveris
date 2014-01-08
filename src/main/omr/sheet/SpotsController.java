@@ -60,8 +60,6 @@ public class SpotsController
             Shape.BEAM_SPOT,
             Shape.HEAD_SPOT,
             Shape.BEAM,
-            Shape.BEAM_2,
-            Shape.BEAM_3,
             Shape.NOTEHEAD_BLACK,
             Shape.NOTEHEAD_VOID);
 

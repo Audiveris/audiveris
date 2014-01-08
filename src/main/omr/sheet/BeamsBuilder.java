@@ -33,6 +33,7 @@ import omr.run.Orientation;
 import omr.sig.AbstractBeamInter;
 import omr.sig.AbstractBeamInter.Impacts;
 import omr.sig.BeamHookInter;
+import omr.sig.Exclusion;
 import omr.sig.FullBeamInter;
 import omr.sig.Inter;
 import omr.sig.SIGraph;
@@ -414,7 +415,7 @@ public class BeamsBuilder
                 above,
                 below,
                 params.minBeamWidth,
-                params.minLargeBeamWidth);
+                params.largeBeamWidth);
     }
 
     //--------------------//
@@ -434,7 +435,7 @@ public class BeamsBuilder
                 true,
                 true,
                 params.minHookWidth,
-                params.minLargeHookWidth);
+                params.maxHookWidth);
     }
 
     //----------------//
@@ -501,8 +502,11 @@ public class BeamsBuilder
     // createBeamInters //
     //------------------//
     /**
-     * Create the resulting FullAbstractBeamInter instances, one for each good
-     * item.
+     * Create the resulting FullBeamInter instances, one for
+     * each good item.
+     * <p>
+     * Nota: for beams whose width lies between minBeamWidth and maxHookWidth,
+     * we should create both interpretations.
      *
      * @param beamItems the items retrieved (from a glyph)
      * @return true if at least one good item was found
@@ -514,6 +518,31 @@ public class BeamsBuilder
 
         for (BeamItem item : items) {
             final int idx = items.indexOf(item);
+            double itemWidth = item.median.getX2()
+                               - item.median.getX1();
+            BeamHookInter hook = null;
+
+            if (itemWidth <= params.maxHookWidth) {
+                logger.debug("Create hook with {}", item);
+
+                Impacts impacts = computeHookImpacts(item);
+
+                if (impacts != null) {
+                    success = true;
+                    hook = new BeamHookInter(
+                            null,
+                            impacts,
+                            item.median,
+                            item.height);
+
+                    if (item.isVip()) {
+                        hook.setVip();
+                    }
+
+                    sig.addVertex(hook);
+                }
+            }
+
             Impacts impacts = computeBeamImpacts(
                     item,
                     idx == 0, // Check above only for first item
@@ -533,6 +562,11 @@ public class BeamsBuilder
                 }
 
                 sig.addVertex(beam);
+
+                // Exclusion between beam and hook, if any
+                if (hook != null) {
+                    sig.insertExclusion(hook, beam, Exclusion.Cause.OVERLAP);
+                }
             }
         }
 
@@ -584,7 +618,7 @@ public class BeamsBuilder
                 continue;
             }
 
-            final FullBeamInter beam = (FullBeamInter) inter;
+            final AbstractBeamInter beam = (AbstractBeamInter) inter;
 
             if (beam.isVip()) {
                 logger.info("VIP extendBeams for {}", beam);
@@ -614,7 +648,7 @@ public class BeamsBuilder
      * @param side the horizontal side
      * @return true if extension was done, false otherwise
      */
-    private boolean extendInParallel (FullBeamInter beam,
+    private boolean extendInParallel (AbstractBeamInter beam,
                                       HorizontalSide side)
     {
         final boolean logging = beam.isVip() || logger.isDebugEnabled();
@@ -642,7 +676,7 @@ public class BeamsBuilder
             final Point2D endPt = (side == LEFT) ? median.getP1() : median.getP2();
 
             for (Inter ib : others) {
-                FullBeamInter other = (FullBeamInter) ib;
+                AbstractBeamInter other = (AbstractBeamInter) ib;
 
                 if (logging) {
                     logger.info("{} found parallel {}", beam, other);
@@ -697,7 +731,7 @@ public class BeamsBuilder
      * @param side the horizontal side
      * @return true if extension was done, false otherwise
      */
-    private boolean extendToBeam (FullBeamInter beam,
+    private boolean extendToBeam (AbstractBeamInter beam,
                                   HorizontalSide side)
     {
         Area luArea = sideAreaOf(
@@ -719,7 +753,7 @@ public class BeamsBuilder
             final Point2D endPt = (side == LEFT) ? median.getP1() : median.getP2();
 
             for (Inter ib : others) {
-                FullBeamInter other = (FullBeamInter) ib;
+                AbstractBeamInter other = (AbstractBeamInter) ib;
                 double dt = other.getMedian()
                         .ptLineDist(endPt);
 
@@ -777,7 +811,7 @@ public class BeamsBuilder
      * @param extPt the targeted extension point
      * @return true if extension was done, false otherwise
      */
-    private boolean extendToPoint (FullBeamInter beam,
+    private boolean extendToPoint (AbstractBeamInter beam,
                                    HorizontalSide side,
                                    Point2D extPt)
     {
@@ -877,7 +911,7 @@ public class BeamsBuilder
      * @param side the horizontal side
      * @return true if extension was done, false otherwise
      */
-    private boolean extendToSpot (FullBeamInter beam,
+    private boolean extendToSpot (AbstractBeamInter beam,
                                   HorizontalSide side)
     {
         final boolean logging = beam.isVip() || logger.isDebugEnabled();
@@ -937,7 +971,7 @@ public class BeamsBuilder
      * @param side the horizontal side
      * @return true if extension was done, false otherwise
      */
-    private boolean extendToStem (FullBeamInter beam,
+    private boolean extendToStem (AbstractBeamInter beam,
                                   HorizontalSide side)
     {
         final boolean logging = beam.isVip() || logger.isDebugEnabled();
@@ -1037,8 +1071,8 @@ public class BeamsBuilder
      * @param two another beam
      * @return the resulting beam, or null if failed
      */
-    private FullBeamInter mergeOf (FullBeamInter one,
-                                   FullBeamInter two)
+    private FullBeamInter mergeOf (AbstractBeamInter one,
+                                   AbstractBeamInter two)
     {
         final Line2D oneMedian = one.getMedian();
         final Line2D twoMedian = two.getMedian();
@@ -1085,8 +1119,8 @@ public class BeamsBuilder
      * @param two another beam
      * @return the area between them
      */
-    private Area middleArea (FullBeamInter one,
-                             FullBeamInter two)
+    private Area middleArea (AbstractBeamInter one,
+                             AbstractBeamInter two)
     {
         final Line2D oneMedian = one.getMedian();
         final Line2D twoMedian = two.getMedian();
@@ -1168,7 +1202,7 @@ public class BeamsBuilder
      * @return the area
      */
     private Area sideAreaOf (String kind,
-                             FullBeamInter beam,
+                             AbstractBeamInter beam,
                              HorizontalSide side,
                              double extDy,
                              double extDx,
@@ -1210,9 +1244,17 @@ public class BeamsBuilder
                 1.5,
                 "Minimum width for a beam");
 
+        final Scale.Fraction largeBeamWidth = new Scale.Fraction(
+                4.0,
+                "Width for a large beam");
+
         final Scale.Fraction minHookWidth = new Scale.Fraction(
                 0.8,
                 "Minimum width for a beam hook");
+
+        final Scale.Fraction maxHookWidth = new Scale.Fraction(
+                2.0,
+                "Maximum width for a beam hook");
 
         final Constant.Ratio minBeamHeightRatio = new Constant.Ratio(
                 0.75,
@@ -1250,14 +1292,6 @@ public class BeamsBuilder
                 0.15,
                 "Vertical belt margin checked around beam");
 
-        final Scale.Fraction minLargeBeamWidth = new Scale.Fraction(
-                4.0,
-                "Minimum width for a large beam");
-
-        final Scale.Fraction minLargeHookWidth = new Scale.Fraction(
-                2.0,
-                "Minimum width for a large beam hook");
-
         final Constant.Double maxBeamSlope = new Constant.Double(
                 "tangent",
                 1.0,
@@ -1288,7 +1322,6 @@ public class BeamsBuilder
         final Constant.Ratio minExtBlackRatio = new Constant.Ratio(
                 0.5,
                 "Minimum ratio of black pixels inside beam extension");
-
     }
 
     //------------//
@@ -1303,7 +1336,11 @@ public class BeamsBuilder
 
         final int minBeamWidth;
 
+        final int largeBeamWidth;
+
         final int minHookWidth;
+
+        final int maxHookWidth;
 
         final double minBeamHeight;
 
@@ -1322,10 +1359,6 @@ public class BeamsBuilder
         final int beltMarginDx;
 
         final int beltMarginDy;
-
-        final int minLargeBeamWidth;
-
-        final int minLargeHookWidth;
 
         final double maxBeamSlope;
 
@@ -1360,8 +1393,8 @@ public class BeamsBuilder
             maxExtensionToSpot = scale.toPixels(constants.maxExtensionToSpot);
             beltMarginDx = scale.toPixels(constants.beltMarginDx);
             beltMarginDy = scale.toPixels(constants.beltMarginDy);
-            minLargeBeamWidth = scale.toPixels(constants.minLargeBeamWidth);
-            minLargeHookWidth = scale.toPixels(constants.minLargeHookWidth);
+            largeBeamWidth = scale.toPixels(constants.largeBeamWidth);
+            maxHookWidth = scale.toPixels(constants.maxHookWidth);
             maxBeamSlope = constants.maxBeamSlope.getValue();
             maxBorderSlopeGap = constants.maxBorderSlopeGap.getValue();
             maxBeamSlopeGap = constants.maxBeamSlopeGap.getValue();

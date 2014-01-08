@@ -561,45 +561,45 @@ public class Note
     public static Shape getActualShape (Shape base,
                                         int card)
     {
-        switch (card) {
-        case 3:
-
-            switch (base) {
-            case NOTEHEAD_VOID:
-                return NOTEHEAD_VOID_3;
-
-            case NOTEHEAD_BLACK:
-                return NOTEHEAD_BLACK_3;
-
-            case WHOLE_NOTE:
-                return WHOLE_NOTE_3;
-
-            default:
-                return null;
-            }
-
-        case 2:
-
-            switch (base) {
-            case NOTEHEAD_VOID:
-                return NOTEHEAD_VOID_2;
-
-            case NOTEHEAD_BLACK:
-                return NOTEHEAD_BLACK_2;
-
-            case WHOLE_NOTE:
-                return WHOLE_NOTE_2;
-
-            default:
-                return null;
-            }
-
-        case 1:
+//        switch (card) {
+//        case 3:
+//
+//            switch (base) {
+//            case NOTEHEAD_VOID:
+//                return NOTEHEAD_VOID_3;
+//
+//            case NOTEHEAD_BLACK:
+//                return NOTEHEAD_BLACK_3;
+//
+//            case WHOLE_NOTE:
+//                return WHOLE_NOTE_3;
+//
+//            default:
+//                return null;
+//            }
+//
+//        case 2:
+//
+//            switch (base) {
+//            case NOTEHEAD_VOID:
+//                return NOTEHEAD_VOID_2;
+//
+//            case NOTEHEAD_BLACK:
+//                return NOTEHEAD_BLACK_2;
+//
+//            case WHOLE_NOTE:
+//                return WHOLE_NOTE_2;
+//
+//            default:
+//                return null;
+//            }
+//
+//        case 1:
             return base;
-
-        default:
-            return null;
-        }
+//
+//        default:
+//            return null;
+//        }
     }
 
     //----------//
@@ -1108,25 +1108,25 @@ public class Note
     //-------------//
     private static Shape baseShapeOf (Shape shape)
     {
-        switch (shape) {
-        case NOTEHEAD_BLACK:
-        case NOTEHEAD_BLACK_2:
-        case NOTEHEAD_BLACK_3:
-            return Shape.NOTEHEAD_BLACK;
-
-        case NOTEHEAD_VOID:
-        case NOTEHEAD_VOID_2:
-        case NOTEHEAD_VOID_3:
-            return Shape.NOTEHEAD_VOID;
-
-        case WHOLE_NOTE:
-        case WHOLE_NOTE_2:
-        case WHOLE_NOTE_3:
-            return Shape.WHOLE_NOTE;
-
-        default:
+//        switch (shape) {
+//        case NOTEHEAD_BLACK:
+//        case NOTEHEAD_BLACK_2:
+//        case NOTEHEAD_BLACK_3:
+//            return Shape.NOTEHEAD_BLACK;
+//
+//        case NOTEHEAD_VOID:
+//        case NOTEHEAD_VOID_2:
+//        case NOTEHEAD_VOID_3:
+//            return Shape.NOTEHEAD_VOID;
+//
+//        case WHOLE_NOTE:
+//        case WHOLE_NOTE_2:
+//        case WHOLE_NOTE_3:
+//            return Shape.WHOLE_NOTE;
+//
+//        default:
             return shape;
-        }
+//        }
     }
 
     //------------//
@@ -1182,20 +1182,20 @@ public class Note
     //------------//
     public static int packCardOf (Shape shape)
     {
-        switch (shape) {
-        case NOTEHEAD_VOID_3:
-        case NOTEHEAD_BLACK_3:
-        case WHOLE_NOTE_3:
-            return 3;
-
-        case NOTEHEAD_VOID_2:
-        case NOTEHEAD_BLACK_2:
-        case WHOLE_NOTE_2:
-            return 2;
-
-        default:
+//        switch (shape) {
+//        case NOTEHEAD_VOID_3:
+//        case NOTEHEAD_BLACK_3:
+//        case WHOLE_NOTE_3:
+//            return 3;
+//
+//        case NOTEHEAD_VOID_2:
+//        case NOTEHEAD_BLACK_2:
+//        case WHOLE_NOTE_2:
+//            return 2;
+//
+//        default:
             return 1;
-        }
+//        }
     }
 
     //~ Inner Classes ----------------------------------------------------------

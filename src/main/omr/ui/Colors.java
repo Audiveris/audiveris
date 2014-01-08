@@ -88,7 +88,7 @@ public class Colors
     public static final Color MUSIC_SYMBOLS = new Color(170, 255, 170, alpha);
 
     /** Rubber rectangle */
-    public static final Color RUBBER_RECT = Color.black;
+    public static final Color RUBBER_RECT = Color.RED;
 
     /** Rubber rule / cross */
     public static final Color RUBBER_RULE = new Color(255, 0, 0, 100);

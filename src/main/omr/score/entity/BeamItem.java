@@ -431,22 +431,22 @@ public class BeamItem
      */
     private static int packCardOf (Shape shape)
     {
-        switch (shape) {
-        case BEAM_3:
-            return 3;
-
-        case BEAM_2:
-            return 2;
-
-        case BEAM:
-        case BEAM_HOOK:
+//        switch (shape) {
+//        case BEAM_3:
+//            return 3;
+//
+//        case BEAM_2:
+//            return 2;
+//
+//        case BEAM:
+//        case BEAM_HOOK:
             return 1;
-
-        default:
-            logger.error("Use of BeamItem.packCardOf with shape {}", shape);
-
-            return 0;
-        }
+//
+//        default:
+//            logger.error("Use of BeamItem.packCardOf with shape {}", shape);
+//
+//            return 0;
+//        }
     }
 
     //~ Inner Classes ----------------------------------------------------------
