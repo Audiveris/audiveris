@@ -935,10 +935,10 @@ public class NotesBuilder
         {
             final ShapeDescriptor desc = catalog.getDescriptor(shape);
             final Rectangle tplBox = desc.getBoundsAt(x, y, anchor);
-            final Rectangle2D smallBox = shrink(tplBox);
 
             // Skip if location already used by good object (beam, etc)
-            if (overlap(smallBox, competitors)) {
+            //TODO: perhaps use a slightly fattened box?
+            if (overlap(tplBox, competitors)) {
                 return null;
             }
 
@@ -1053,7 +1053,8 @@ public class NotesBuilder
         // ordinates //
         //-----------//
         /**
-         * Report the y values to scan with template
+         * Report the y values to scan with template.
+         * TODO: harmonize definition of yOpen & yClosed?
          *
          * @return the range of y values
          */
@@ -1061,7 +1062,7 @@ public class NotesBuilder
         {
             if (isOpen) {
                 for (int i = 0; i < yOpen.length; i++) {
-                    yOpen[i] = ord.value + (dir * i);
+                    yOpen[i] = ord.value + (dir * (i - 1));
                 }
 
                 return yOpen;

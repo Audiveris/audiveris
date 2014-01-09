@@ -186,7 +186,7 @@ public class HeadStemRelation
                 "Maximum horizontal overlap between stem & head");
 
         final Scale.Fraction xOutGapMax = new Scale.Fraction(
-                0.2,
+                0.3,
                 "Maximum horizontal gap between stem & head");
 
     }
