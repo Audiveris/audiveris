@@ -319,6 +319,8 @@ public class SIGraph
                 }
             }
 
+            //TODO: this is a hack that should be removed when
+            // multiple stems for a head are correctly filtered out.
             if (focus instanceof AbstractNoteInter
                 && inter instanceof StemInter) {
                 // Flag all other stems, if any, as concurrents of this one
@@ -924,10 +926,6 @@ public class SIGraph
                                            Collection<? extends Support> supports,
                                            boolean logging)
     {
-        if (inter.isVip()) {
-            logger.info("VIP computeContextualGrade for {}", inter);
-        }
-
         List<Inter> others = new ArrayList<Inter>();
         Map<Inter, Support> map = new HashMap<Inter, Support>();
 
@@ -973,7 +971,7 @@ public class SIGraph
             }
         }
 
-        if (logging || inter.isVip()) {
+        if (logging) {
             logger.info(
                     "VIP {} cg:{} {}",
                     inter,

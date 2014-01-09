@@ -127,16 +127,16 @@ public class SigSolver
                 // Detect lack of mandatory support relation for certain inters
                 modifs += checkHeads();
                 deletions += purgeWeakInters();
-                
+
                 modifs += checkBeams();
                 deletions += purgeWeakInters();
-                
+
                 modifs += checkHooks();
                 deletions += purgeWeakInters();
-                
+
                 modifs += checkLedgers();
                 deletions += purgeWeakInters();
-                
+
                 modifs += checkStems();
                 deletions += purgeWeakInters();
 
@@ -218,7 +218,7 @@ public class SigSolver
     //---------------//
     /**
      * If head is on the wrong side of the stem, check if there is a
-     * head on the other side one step further.
+     * head on the other side, located one or two step(s) further.
      *
      * @param head the head inter (black or void)
      * @return the number of modifications done
@@ -236,6 +236,7 @@ public class SigSolver
             }
         }
 
+        RelsLoop:
         for (HeadStemRelation rel : stemRels) {
             StemInter stem = (StemInter) sig.getEdgeTarget(rel);
 
@@ -250,26 +251,24 @@ public class SigSolver
                 continue; // It's OK
             }
 
-            // Pitch of the head
-            int pitch = (head instanceof BlackHeadInter)
-                    ? ((BlackHeadInter) head).getPitch()
-                    : ((VoidHeadInter) head).getPitch();
+            // Pitch of the note head
+            int pitch = ((AbstractNoteInter) head).getPitch();
 
-            // Target side and pitch of other head
-            HorizontalSide targetSide = (headSide == LEFT) ? RIGHT : LEFT;
-            int targetPitch = pitch
-                              + ((headSide == LEFT) ? 1 : (-1));
-
+            // Target side and target pitches of other head
             // Look for presence of head on other side with target pitch
-            Inter otherHead = stem.lookupHead(targetSide, targetPitch);
+            HorizontalSide targetSide = (headSide == LEFT) ? RIGHT : LEFT;
 
-            if (otherHead != null) {
-                continue; // OK
+            for (int s : new int[]{1, 2}) {
+                int targetPitch = pitch + ((headSide == LEFT) ? s : (-s));
+
+                if (stem.lookupHead(targetSide, targetPitch) != null) {
+                    continue RelsLoop; // OK
+                }
             }
 
             // We have a bad head+stem couple, let's remove the relationship
             if (head.isVip() || logger.isDebugEnabled()) {
-                logger.info("Incompatibility between {} and {}", head, stem);
+                logger.info("Wrong side for {} on {}", head, stem);
             }
 
             sig.removeEdge(rel);
@@ -296,13 +295,9 @@ public class SigSolver
         for (Iterator<Inter> it = heads.iterator(); it.hasNext();) {
             final Inter head = it.next();
 
-            if (head.isVip()) {
-                logger.info("VIP checkHeads for {}", head);
-            }
-
             if (!headHasStem(head)) {
                 if (head.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Deleting head lacking stem {}", head);
+                    logger.info("No stem for {}", head);
                 }
 
                 sig.removeVertex(head);

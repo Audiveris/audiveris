@@ -466,8 +466,7 @@ public class ShapeDescriptor
     //------------------//
     private void buildAllVariants ()
     {
-        /** Properly scaled music font. */
-        final MusicFont font = getFont(this.interline + 1); // BINGO +1
+        final MusicFont font = getFont(this.interline);
 
         if (isSmall) {
             // For small size, we need to play with lines

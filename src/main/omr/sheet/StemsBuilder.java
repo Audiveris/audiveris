@@ -49,6 +49,7 @@ import omr.sig.Relation;
 import omr.sig.SIGraph;
 import omr.sig.StemInter;
 import omr.sig.StemPortion;
+import static omr.sig.StemPortion.*;
 import omr.sig.WholeInter;
 
 import omr.ui.symbol.MusicFont;
@@ -255,17 +256,73 @@ public class StemsBuilder
         // Second phase, look for reuse of existing stems interpretations
         watch.start("phase #2");
         systemStems = sig.inters(Shape.STEM);
+        Collections.sort(systemStems, Inter.byAbscissa);
 
         for (Inter head : systemHeads) {
             new HeadLinker(head).reuseAllCorners();
         }
 
-        // Finally, handle stems mutual exclusions
+        // Handle stems mutual exclusions
         watch.start("exclusions");
         performMutualExclusions();
 
+        // Check carefully multiple stem links on same head
+        for (Inter head : systemHeads) {
+            checkMultipleStems(head);
+        }
+
         if (constants.printWatch.isSet()) {
             watch.print();
+        }
+    }
+
+    //--------------------//
+    // checkMultipleStems //
+    //--------------------//
+    /**
+     * A head can have links to two stems (non mutually exclusive)
+     * only when these stems are compatible (head is on stem ends with
+     * one stem on bottom left and one stem on top right).
+     * <p>
+     * Otherwise, we must clean up the configuration.
+     * If there is a link with zero yGap, it has priority over non-zero yGap
+     * that are generally due to stem extension. So cut the non-zero links.
+     * If there are two zero yGaps, if they are opposed on normal sides, it's
+     * ok.
+     * If not, cut the link to the one not on normal side.
+     * If there are two non-zero yGaps, cut the one with larger yGap.
+     *
+     * @param head the note head to check
+     */
+    private void checkMultipleStems (Inter head)
+    {
+        // Retrieve all nearby stems
+        List<Inter> allStems = new ArrayList<Inter>();
+
+        for (Relation rel : sig.edgesOf(head)) {
+            if (rel instanceof HeadStemRelation) {
+                allStems.add(sig.getEdgeTarget(rel));
+            }
+        }
+
+        // List of non-conflicting stems ensembles
+        List<List<Inter>> partners = sig.getPartners(null, allStems);
+        ShareChecker checker = null;
+
+        for (List<Inter> ensemble : partners) {
+            if (ensemble.size() <= 1) {
+                continue;
+            }
+
+            if (head.isVip()) {
+                logger.info("{} with multiple stems {}", head, ensemble);
+            }
+
+            if (checker == null) {
+                checker = new ShareChecker(head);
+            }
+
+            checker.check(ensemble);
         }
     }
 
@@ -341,6 +398,7 @@ public class StemsBuilder
     //---------------------------//
     private void performStemNoteExclusions (List<Inter> stems)
     {
+        //TODO: include SMALL notes as well
         List<Inter> notes = sig.inters(
                 ShapeSet.shapesOf(
                         ShapeSet.NoteHeads.getShapes(),
@@ -415,6 +473,10 @@ public class StemsBuilder
                 1.0,
                 "Maximum distance from section to target line,"
                 + " as ratio of typical stem width");
+
+        final Scale.Fraction yGapTiny = new Scale.Fraction(
+                0.1,
+                "Maximum vertical tiny gap between stem & head");
     }
 
     //------------//
@@ -594,10 +656,10 @@ public class StemsBuilder
              */
             public void link ()
             {
-                if (head.isVip()) {
-                    logger.info("VIP link {} {}", head, corner);
-                }
-
+                //                if (head.isVip()) {
+                //                    logger.info("VIP link {} {}", head, corner);
+                //                }
+                //
                 // Compute target end of stem
                 Rectangle systemBox = system.getBounds();
                 int sysY = (yDir > 0) ? (systemBox.y + systemBox.height)
@@ -1759,6 +1821,142 @@ public class StemsBuilder
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);
             }
+        }
+    }
+
+    //--------------//
+    // ShareChecker //
+    //--------------//
+    /**
+     * Checks and cleans up an ensemble of stems around a head.
+     */
+    private class ShareChecker
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final Inter head;
+
+        private final List<HeadStemRelation> rels = new ArrayList<HeadStemRelation>();
+
+        //~ Constructors -------------------------------------------------------
+        public ShareChecker (Inter head)
+        {
+            this.head = head;
+        }
+
+        //~ Methods ------------------------------------------------------------
+        public void check (List<Inter> stems)
+        {
+            // Retrieve stem relations
+            rels.clear();
+
+            for (Inter stem : stems) {
+                HeadStemRelation rel = (HeadStemRelation) sig.getRelation(
+                        head,
+                        stem,
+                        HeadStemRelation.class);
+
+                if (rel != null) {
+                    rels.add(rel);
+                }
+            }
+
+            // Get down to a maximum of 2 stems
+            while (rels.size() > 2) {
+                if (!discardLargeGap()) {
+                    discardWeakerStem();
+                }
+            }
+
+            // If not canonical, discard one of the stem link
+            if (!isCanonicalShare()) {
+                if (!discardLargeGap()) {
+                    discardWeakerStem();
+                }
+            }
+        }
+
+        /**
+         * Discard the stem link with largest y gap, if any
+         *
+         * @return true if such stem link was found
+         */
+        private boolean discardLargeGap ()
+        {
+            double worstGap = 0;
+            HeadStemRelation worstRel = null;
+
+            for (HeadStemRelation rel : rels) {
+                double yGap = rel.getYDistance();
+
+                if (worstGap < yGap) {
+                    worstGap = yGap;
+                    worstRel = rel;
+                }
+            }
+
+            if (worstGap > constants.yGapTiny.getValue()) {
+                rels.remove(worstRel);
+                sig.removeEdge(worstRel);
+
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        /**
+         * Discard the link to the stem with lower intrinsic grade.
+         */
+        private void discardWeakerStem ()
+        {
+            double worstGrade = Double.MAX_VALUE;
+            HeadStemRelation worstRel = null;
+
+            for (HeadStemRelation rel : rels) {
+                double grade = sig.getEdgeTarget(rel)
+                        .getGrade();
+
+                if (worstGrade > grade) {
+                    worstGrade = grade;
+                    worstRel = rel;
+                }
+            }
+
+            rels.remove(worstRel);
+            sig.removeEdge(worstRel);
+        }
+
+        /**
+         * Check whether this is the canonical "shared" config.
+         * (STEM_TOP on head LEFT and STEM_BOTTOM on head RIGHT)
+         *
+         * @return true if canonical
+         */
+        private boolean isCanonicalShare ()
+        {
+            boolean left = false;
+            boolean right = false;
+
+            for (HeadStemRelation rel : rels) {
+                StemPortion portion = rel.getStemPortion();
+                HorizontalSide side = rel.getHeadSide();
+                double yGap = rel.getYDistance();
+
+                if (yGap <= constants.yGapTiny.getValue()) {
+                    if (portion == STEM_TOP) {
+                        if (side == LEFT) {
+                            left = true;
+                        }
+                    } else if (portion == STEM_BOTTOM) {
+                        if (side == RIGHT) {
+                            right = true;
+                        }
+                    }
+                }
+            }
+
+            return left && right;
         }
     }
 }
