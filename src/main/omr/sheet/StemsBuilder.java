@@ -1184,17 +1184,12 @@ public class StemsBuilder
             {
                 AbstractNoteInter note = (AbstractNoteInter) head;
                 ShapeDescriptor desc = note.getDescriptor();
-                Anchor anchor = (corner.hSide == LEFT)
-                        ? Anchor.LEFT_STEM : Anchor.RIGHT_STEM;
+                Anchor anchor = corner.stemAnchor();
                 Point offset = desc.getOffset(anchor);
-                final Point ul = headBox.getLocation();
-                final double dx = offset.x;
 
-                //TODO: This might be wrong for SMALL notes
-                //TODO: plus, this duplicates descriptor offsets!!!
-                final double dy = desc.getHeight() * (0.5 + (yDir * 0.45));
-
-                return new Point2D.Double(ul.x + dx, ul.y + dy);
+                final Point ref = headBox.getLocation();
+                ref.translate(offset.x, offset.y);
+                return ref;
             }
 
             //-----------//

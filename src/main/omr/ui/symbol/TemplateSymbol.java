@@ -13,6 +13,7 @@ package omr.ui.symbol;
 
 import omr.glyph.Shape;
 
+import omr.image.Template;
 import omr.image.Template.Key;
 import static omr.ui.symbol.Alignment.*;
 
@@ -27,11 +28,11 @@ import java.awt.geom.Rectangle2D;
  * Class {@code TemplateSymbol} defines a symbol meant only for
  * template matching.
  * <p>
- * TODO: Symbol must depend on interhasLine of course, PLUS hasLine thickness
+ * TODO: Symbol must depend on interline of course, PLUS hasLine thickness
  * and
  * perhaps stem thickness as well.
  * This implies that a set of templates will likely be defined per page
- * (interhasLine, hasLine, stem).
+ * (interline, hasLine, stem).
  * Beware, ledgers are often a bit thicker than staff hasLines.
  *
  * @author Hervé Bitteur
@@ -41,10 +42,10 @@ public class TemplateSymbol
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Affine Transform for small shapes. */
+    /** Affine Transform for small symbol shapes. */
     private static final AffineTransform smallAt = AffineTransform.getScaleInstance(
-            0.67,
-            0.67);
+            Template.smallRatio,
+            Template.smallRatio);
 
     //~ Instance fields --------------------------------------------------------
     protected final Key key;

@@ -16,24 +16,13 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.image.AreaMask;
-import omr.image.ImageUtil;
-import omr.image.MorphoProcessor;
 import omr.image.PixelBuffer;
 import omr.image.PixelFilter;
-import omr.image.StructureElement;
-
-import omr.lag.BasicLag;
-import omr.lag.JunctionRatioPolicy;
-import omr.lag.Lag;
-import omr.lag.Lags;
-import omr.lag.Section;
-import omr.lag.SectionsBuilder;
+import omr.image.Template;
 
 import omr.math.AreaUtil;
 import omr.math.GeoOrder;
@@ -42,9 +31,6 @@ import omr.math.Line;
 import omr.math.LineUtil;
 
 import omr.run.Orientation;
-import omr.run.RunsTable;
-import omr.run.RunsTableFactory;
-import static omr.sheet.SpotsBuilder.SPOT_ORIENTATION;
 
 import omr.sig.AbstractBeamInter;
 import omr.sig.AbstractBeamInter.Impacts;
@@ -56,7 +42,6 @@ import omr.sig.Inter;
 import omr.sig.Relation;
 import omr.sig.SIGraph;
 import omr.sig.SmallBeamInter;
-import omr.sig.StemInter;
 
 import omr.util.Corner;
 import omr.util.HorizontalSide;
@@ -87,6 +72,9 @@ import java.util.List;
  * The retrieval is performed on the collection of spots produced by closing
  * the blurred initial image with a disk-shape structure element whose diameter
  * is just slightly smaller than the typical beam height.
+ * <p>
+ * {@link #buildBeams()} retrieves standard beams.
+ * {@link #buildCueBeams()} retrieves cue beams.
  *
  * @author Hervé Bitteur
  */
@@ -276,7 +264,7 @@ public class BeamsBuilder
                 .getMainBeam();
 
         if (isCue) {
-            double ratio = params.cueRatio;
+            double ratio = Template.smallRatio;
             minBeamWidth = (int) Math.rint(ratio * minBeamWidth);
             minBeamHeight *= ratio;
             typicalHeight = (int) Math.rint(ratio * typicalHeight);
@@ -1152,6 +1140,12 @@ public class BeamsBuilder
     //------------------//
     // getCueAggregates //
     //------------------//
+    /**
+     * Gather the cue heads and stems regions into aggregates of at
+     * least two heads (and stems).
+     *
+     * @return the aggregates retrieved
+     */
     private List<CueAggregate> getCueAggregates ()
     {
         List<CueAggregate> aggregates = new ArrayList<CueAggregate>();
@@ -1175,7 +1169,7 @@ public class BeamsBuilder
         }
 
         Collections.sort(smallBlacks, Inter.byAbscissa);
-        logger.info("S#{} cues:{}", system.getId(), smallBlacks);
+        logger.debug("S#{} cues:{}", system.getId(), smallBlacks);
 
         // Look for aggregates of close instances
         for (Inter head : smallBlacks) {
@@ -1215,7 +1209,7 @@ public class BeamsBuilder
             for (int i = 0; i < aggregates.size(); i++) {
                 CueAggregate aggregate = aggregates.get(i);
                 aggregate.identify(i);
-                logger.info("{}", aggregate);
+                logger.debug("{}", aggregate);
             }
         }
 
@@ -1529,12 +1523,6 @@ public class BeamsBuilder
                 0.5,
                 "Minimum ratio of black pixels inside beam extension");
 
-        // All constants below relate to cue beams
-        //
-        final Constant.Ratio cueRatio = new Constant.Ratio(
-                0.67,
-                "Ratio to apply to cue beams");
-
         final Scale.Fraction cueXMargin = new Scale.Fraction(
                 2.0,
                 "Abscissa margin to aggregate cues");
@@ -1661,6 +1649,11 @@ public class BeamsBuilder
             system.stemsBuilder.linkCueBeams(head, corner, stem, beams);
         }
 
+        /**
+         * Retrieve cue glyph instances out of an aggregate snapshot.
+         *
+         * @return the list of glyph instances found
+         */
         private List<Glyph> getCueGlyphs ()
         {
             Scale scale = sheet.getScale();
@@ -1681,71 +1674,18 @@ public class BeamsBuilder
                     Picture.SourceKey.BINARY);
             buffer = buffer.getCopy(box);
 
-            //            GaussianGrayFilter gaussianFilter = new GaussianGrayFilter(1);
-            //            buffer = gaussianFilter.filter(buffer);
-            ///buffer.dump("snapshot");
-            int[] offset = {0, 0};
-            int beam = (int) Math.rint(0.67 * scale.getMainBeam());
-            final double diameter = beam * 0.8;
-            final float radius = (float) (diameter - 1) / 2;
+            int beam = (int) Math.rint(
+                    Template.smallRatio * scale.getMainBeam());
 
-            //            logger.info(
-            //                    "{}Spots retrieval beam: {}, diameter: {} ...",
-            //                    sheet.getLogPrefix(),
-            //                    beam,
-            //                    String.format("%.1f", diameter));
-            StructureElement se = new StructureElement(0, 1, radius, offset);
-            MorphoProcessor mp = new MorphoProcessor(se);
-
-            mp.close(buffer);
-            // Store buffer on disk for further manual analysis if any
-            ImageUtil.saveOnDisk(
-                    buffer.toBufferedImage(),
-                    sheet.getPage().getId() + "-" + id + ".cuespot");
-
-            //            buffer = new PixelBuffer(new GlobalFilter(buffer, 140));
-            //
-            //            // Store buffer on disk for further manual analysis if any
-            //            ImageUtil.saveOnDisk(
-            //                    buffer.toBufferedImage(),
-            //                    sheet.getPage().getId() + "-S" + system.getId() + ".bcuespot");
-            // Retrieve relevant spot glyphs in it
-            RunsTable table = new RunsTableFactory(
-                    SPOT_ORIENTATION,
-                    buffer,
-                    0).createTable("cuespot");
-
-            // Build the spotLag out of spots runs
-            Lag cueLag = new BasicLag(
-                    Lags.SPOT_LAG,
-                    SPOT_ORIENTATION);
-
-            SectionsBuilder sectionsBuilder = new SectionsBuilder(
-                    cueLag,
-                    new JunctionRatioPolicy());
-            List<Section> sections = sectionsBuilder.createSections(
-                    table,
-                    false);
-            Point trans = box.getLocation();
-
-            for (Section section : sections) {
-                section.translate(trans);
-            }
-
-            logger.debug("Sections: {}", cueLag.getSections().size());
-
-            GlyphNest nest = sheet.getNest();
-            List<Glyph> glyphs = nest.retrieveGlyphs(
-                    cueLag.getSections(),
-                    GlyphLayer.SPOT,
-                    true,
-                    Glyph.Linking.NO_LINK);
-
-            sheet.setLag(Lags.CUE_SPOT_LAG, cueLag);
-
-            return glyphs;
+            return sheet.getSpotsBuilder()
+                    .buildSpots(buffer, box.getLocation(), beam, id);
         }
 
+        /**
+         * Retrieve the global stem direction in the aggregate.
+         *
+         * @return the global direction found, 0 otherwise
+         */
         private int getDirection ()
         {
             Integer dir = null;
@@ -1807,7 +1747,10 @@ public class BeamsBuilder
                         logger.info("VIP cue#{} {}", glyph.getId(), failure);
                     }
                 } else {
-                    logger.info("Glyph#{} -> {}", glyph.getId(), glyphBeams);
+                    if (glyph.isVip()) {
+                        logger.debug("{} -> {}", glyph.idString(), glyphBeams);
+                    }
+
                     beams.addAll(glyphBeams);
                 }
             }
@@ -1875,8 +1818,6 @@ public class BeamsBuilder
 
         final double minExtBlackRatio;
 
-        final double cueRatio;
-
         final int cueXMargin;
 
         final int cueYMargin;
@@ -1915,7 +1856,6 @@ public class BeamsBuilder
             maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
             minCoreBlackRatio = constants.minCoreBlackRatio.getValue();
             minExtBlackRatio = constants.minExtBlackRatio.getValue();
-            cueRatio = constants.cueRatio.getValue();
             cueXMargin = scale.toPixels(constants.cueXMargin);
             cueYMargin = scale.toPixels(constants.cueYMargin);
             cueBoxDx = scale.toPixels(constants.cueBoxDx);

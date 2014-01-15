@@ -37,22 +37,16 @@ import java.util.Objects;
  * (see {@link Key} class):<dl>
  *
  * <dt><b>Base shape</b></dt>
- * <dd>Supported shapes are NOTEHEAD_BLACK, NOTEHEAD_VOID and WHOLE_NOTE.</dd>
- *
- * <dt><b>Half</b></dt>
- * <dd>Height is constrained by interhasLine. But to cope with variation in symbol
- width, we support separate detection of LEFT and RIGHT halves.</dd>
+ * <dd>Supported shapes are NOTEHEAD_BLACK, NOTEHEAD_VOID and WHOLE_NOTE and
+ * their small (cue) counterparts</dd>
  *
  * <dt><b>Lines</b></dt>
- * <dd>Staff hasLines and/or ledgers can be stuck to symbol, so we consider NONE,
- LINE_TOP, LINE_MIDDLE, LINE_BOTTOM and LINE_DOUBLE (top & bottom) for all
- * supported shapes</dd>
+ * <dd>Staff lines and/or ledgers can cross the symbol in the middle, so regions
+ * for top or bottom lines are disabled for template matching. </dd>
  *
  * <dt><b>Stems</b></dt>
- * <dd>Except for WHOLE_NOTE shape, symbols have stems portions stuck to them,
- * so for a given half we consider NONE (for WHOLE_NOTE), LINE_TOP, LINE_BOTTOM
- * and
- * LINE_DOUBLE.</dd>
+ * <dd>Experience has shown that stem presence or absence is not reliable, so
+ * potential stem regions are disabled for template matching.</dd>
  *
  * <dt><b>Size</b></dt>
  * <dd>Either standard size or small size (for cues and grace notes).</dd>
@@ -68,41 +62,9 @@ public class Template
 
     private static final Logger logger = LoggerFactory.getLogger(
             Template.class);
-
-    //~ Enumerations -----------------------------------------------------------
-    public enum Lines
-    {
-        //~ Enumeration constant initializers ----------------------------------
-
-        /** No hasLine at all. (for standard sizes) */
-        LINE_NONE,
-        /** Only one hasLine above. */
-        LINE_TOP,
-        /** Only one hasLine in the middle. (For even pitches) */
-        LINE_MIDDLE,
-        /** Only one hasLine below. */
-        LINE_BOTTOM,
-        /** Two hasLines, one above and one below. */
-        LINE_DOUBLE;
-    }
-
-    public enum Stems
-    {
-        //~ Enumeration constant initializers ----------------------------------
-
-        /** No stem at all. (for wholes) */
-        STEM_NONE,
-        /** Stem on left, lower half. */
-        STEM_LEFT_BOTTOM,
-        /** Stem on left, full length. */
-        STEM_LEFT,
-        /** Stem on right, upper half. */
-        STEM_RIGHT_TOP,
-        /** Stem on right, full length. */
-        STEM_RIGHT,
-        /** Lower stem half on left and upper stem half on right. */
-        STEM_DOUBLE;
-    }
+    
+    /** Ratio applied to small symbols (cue / grace). */
+    public static final double smallRatio = 0.67;
 
     //~ Instance fields --------------------------------------------------------
     /** Template key. */
@@ -111,13 +73,17 @@ public class Template
     /** Collection of key points defined for this template. */
     private final Collection<PixelDistance> keyPoints;
 
-    /** Template width. */
+    /** Template width. (perhaps larger than the symbol width) */
     private final int width;
 
-    /** Template height. */
+    /** Template height. (perhaps larger than the symbol height) */
     private final int height;
 
-    /** Offsets to anchors, if any. */
+    /** 
+     * Offsets to defined anchors. 
+     * An offset is defined as the translation from template upper left corner
+     * to the precise anchor location in the symbol.
+     */
     private final Map<Anchor, Point> offsets = new EnumMap<Anchor, Point>(
             Anchor.class);
 
@@ -126,7 +92,7 @@ public class Template
     // Template //
     //----------//
     /**
-     * Creates a new Template object from a provided set of points.
+     * Creates a new Template object with a provided set of points.
      *
      * @param key       the template specification key
      * @param width     template width
@@ -145,11 +111,10 @@ public class Template
 
         // Define common basic anchors
         addAnchor(Anchor.CENTER, 0.5, 0.5);
-        addAnchor(Anchor.TOP_LEFT, 0, 0);
-        addAnchor(Anchor.MIDDLE_LEFT, 0, 0.5);
-        addAnchor(Anchor.BOTTOM_LEFT, 0, 1);
-
-        ///dump();
+        
+        // Beware: This is OK only if symbol width = template width
+        // To be overwritten if condition is no longer true
+        addAnchor(Anchor.MIDDLE_LEFT, 0, 0.5); 
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -392,8 +357,9 @@ public class Template
         public int hashCode ()
         {
             int hash = 7;
-            hash = 37 * hash + Objects.hashCode(this.shape);
-            hash = 37 * hash + (this.hasLine ? 1 : 0);
+            hash = (37 * hash) + Objects.hashCode(this.shape);
+            hash = (37 * hash) + (this.hasLine ? 1 : 0);
+
             return hash;
         }
 

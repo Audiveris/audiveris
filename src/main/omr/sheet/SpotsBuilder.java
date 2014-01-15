@@ -22,6 +22,7 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.image.GlobalFilter;
+import omr.image.ImageUtil;
 import omr.image.MorphoProcessor;
 import omr.image.PixelBuffer;
 import omr.image.PixelFilter;
@@ -31,6 +32,7 @@ import omr.lag.BasicLag;
 import omr.lag.JunctionRatioPolicy;
 import omr.lag.Lag;
 import omr.lag.Lags;
+import omr.lag.Section;
 import omr.lag.SectionsBuilder;
 
 import omr.run.Orientation;
@@ -53,8 +55,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code SpotsBuilder} performs morphology analysis on
- * initial image to retrieve major spots that compose beams.
+ * Class {@code SpotsBuilder} performs morphology analysis to retrieve
+ * the major spots that compose beams.
+ * <p>
+ * It can work on a whole page or on a snapshot of cues aggregate.
  *
  * @author Hervé Bitteur
  */
@@ -76,14 +80,8 @@ public class SpotsBuilder
     /** Related sheet. */
     private final Sheet sheet;
 
-    /** Spots runs. */
-    private RunsTable spotTable;
-
     /** Spots lag. */
-    private Lag spotLag;
-
-    /** To measure elapsed time. */
-    private final StopWatch watch = new StopWatch("SpotsBuilder");
+    private final Lag spotLag;
 
     //~ Constructors -----------------------------------------------------------
     //--------------//
@@ -97,20 +95,48 @@ public class SpotsBuilder
     public SpotsBuilder (Sheet sheet)
     {
         this.sheet = sheet;
+
+        // Create the spotLag
+        spotLag = new BasicLag(Lags.SPOT_LAG, SPOT_ORIENTATION);
+        sheet.setLag(Lags.SPOT_LAG, spotLag);
     }
 
     //~ Methods ----------------------------------------------------------------
-    //------------//
-    // buildSpots //
-    //------------//
-    public void buildSpots ()
-    {
-        try {
-            // Retrieve major spots
-            spotTable = retrieveSpots();
 
-            // Allocate sections & glyphs for spots
-            buildSpotGlyphs();
+    //----------------//
+    // buildPageSpots //
+    //----------------//
+    /**
+     * Retrieve all spots from a page.
+     * All spots are dispatched among their containing system(s).
+     */
+    public void buildPageSpots ()
+    {
+        final StopWatch watch = new StopWatch("buildPageSpots");
+
+        try {
+            watch.start("gaussianBuffer");
+
+            // We need a copy of image that we can overwrite. 
+            Picture picture = sheet.getPicture();
+            PixelBuffer buffer = (PixelBuffer) picture.getSource(
+                    Picture.SourceKey.GAUSSIAN);
+
+            // Retrieve major spots
+            watch.start("buildSpots");
+
+            Scale scale = sheet.getScale();
+            int beam = scale.getMainBeam();
+            List<Glyph> spots = buildSpots(buffer, null, beam, null);
+
+            // Dispatch spots per system(s)
+            dispatchPageSpots(spots);
+
+            // Display on all spot glyphs
+            SpotsController spotController = new SpotsController(
+                    sheet,
+                    spotLag);
+            spotController.refresh();
         } catch (Exception ex) {
             logger.warn("Error building spots", ex);
         } finally {
@@ -120,50 +146,116 @@ public class SpotsBuilder
         }
     }
 
-    //-----------------//
-    // buildSpotGlyphs //
-    //-----------------//
-    private void buildSpotGlyphs ()
+    //------------//
+    // buildSpots //
+    //------------//
+    /**
+     * Build spots out of the provided buffer.
+     *
+     * @param buffer provided buffer (it will be modified)
+     * @param offset buffer offset WRT page coordinates, or null
+     * @param beam   typical beam height
+     * @param cueId  cue id, null for page
+     * @return the collection of spots retrieved
+     */
+    public List<Glyph> buildSpots (PixelBuffer buffer,
+                                   Point offset,
+                                   int beam,
+                                   String cueId)
     {
-        logger.debug("Run sequences: {}", spotTable.getSize());
+        final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
+        final float radius = (float) (diameter - 1) / 2;
+        logger.info(
+                "{}Spots retrieval beam: {}, diameter: {} ...",
+                sheet.getLogPrefix(),
+                beam,
+                String.format("%.1f", diameter));
 
-        // Build the spotLag out of spots runs
-        spotLag = new BasicLag(Lags.SPOT_LAG, SPOT_ORIENTATION);
+        final int[] seOffset = {0, 0};
+        StructureElement se = new StructureElement(0, 1, radius, seOffset);
+        new MorphoProcessor(se).close(buffer);
 
+        // Visual check
+        final String pageId = sheet.getPage()
+                .getId();
+
+        if (cueId == null) {
+            BufferedImage img = buffer.toBufferedImage();
+
+            // Store buffer on disk?
+            if (constants.keepPageSpots.isSet()) {
+                ImageUtil.saveOnDisk(img, pageId + ".spot");
+            }
+
+            // Display the gray-level view of all spots
+            if (Main.getGui() != null) {
+                ImageView imageView = new ImageView(sheet, img);
+                sheet.getAssembly()
+                        .addViewTab(
+                                "SpotView",
+                                imageView,
+                                new BoardsPane(new PixelBoard(sheet)));
+            }
+        } else {
+            if (constants.keepCueSpots.isSet()) {
+                BufferedImage img = buffer.toBufferedImage();
+                ImageUtil.saveOnDisk(img, pageId + "." + cueId + ".spot");
+            }
+        }
+
+        // Binarize the spots via a global filter (no illumination problem)
+        final PixelFilter source = new GlobalFilter(
+                buffer,
+                constants.binarizationThreshold.getValue());
+
+        // Runs
+        RunsTable spotTable = new RunsTableFactory(
+                SPOT_ORIENTATION,
+                source,
+                0).createTable("spot");
+
+        // Sections
         SectionsBuilder sectionsBuilder = new SectionsBuilder(
                 spotLag,
                 new JunctionRatioPolicy());
-        sectionsBuilder.createSections(spotTable, false);
-        logger.debug("Sections: {}", spotLag.getSections().size());
+        List<Section> sections = sectionsBuilder.createSections(
+                spotTable,
+                false);
 
+        if (offset != null) {
+            for (Section section : sections) {
+                section.translate(offset);
+            }
+        }
+
+        // Glyphs
         GlyphNest nest = sheet.getNest();
         List<Glyph> glyphs = nest.retrieveGlyphs(
-                spotLag.getSections(),
+                sections,
                 GlyphLayer.SPOT,
                 true,
                 Glyph.Linking.NO_LINK);
 
-        sheet.setLag(Lags.SPOT_LAG, spotLag);
-
-        // Dispatch spots per system, keeping only those within system width
-        dispatchSpots(glyphs);
-
-        // Display on all spot glyphs
-        SpotsController spotController = new SpotsController(sheet, spotLag);
-        spotController.refresh();
+        return glyphs;
     }
 
-    //---------------//
-    // dispatchSpots //
-    //---------------//
-    private void dispatchSpots (List<Glyph> glyphs)
+    //-------------------//
+    // dispatchPageSpots //
+    //-------------------//
+    /**
+     * Dispatch page spots according to their containing system(s),
+     * and keeping only those within system width.
+     *
+     * @param spots the spots to dispatch
+     */
+    private void dispatchPageSpots (List<Glyph> spots)
     {
         int count = 0;
 
         List<SystemInfo> relevants = new ArrayList<SystemInfo>();
         SystemManager systemManager = sheet.getSystemManager();
 
-        for (Glyph glyph : glyphs) {
+        for (Glyph glyph : spots) {
             Point center = glyph.getCentroid();
             systemManager.getSystemsOf(center, relevants);
 
@@ -187,66 +279,7 @@ public class SpotsBuilder
         logger.info("{}Spots retrieved: {}", sheet.getLogPrefix(), count);
     }
 
-    //---------------//
-    // retrieveSpots //
-    //---------------//
-    private RunsTable retrieveSpots ()
-    {
-        // We need a copy of image that we can overwrite. 
-        Picture picture = sheet.getPicture();
-        PixelBuffer buffer = (PixelBuffer) picture.getSource(
-                Picture.SourceKey.GAUSSIAN);
-
-        watch.start("spots");
-
-        int[] offset = {0, 0};
-        Scale scale = sheet.getScale();
-        int beam = scale.getMainBeam();
-
-        final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
-        final float radius = (float) (diameter - 1) / 2;
-        logger.info(
-                "{}Spots retrieval beam: {}, diameter: {} ...",
-                sheet.getLogPrefix(),
-                beam,
-                String.format("%.1f", diameter));
-
-        StructureElement se = new StructureElement(0, 1, radius, offset);
-        MorphoProcessor mp = new MorphoProcessor(se);
-
-        mp.close(buffer);
-
-        BufferedImage closedImg = buffer.toBufferedImage();
-
-        // Store buffer on disk for further manual analysis if any
-        ///ImageUtil.saveOnDisk(closedImg, sheet.getPage().getId() + ".spot");
-        
-        // Display the gray-level view of all spots
-        if (Main.getGui() != null) {
-            ImageView imageView = new ImageView(sheet, closedImg);
-            sheet.getAssembly()
-                    .addViewTab(
-                            "SpotView",
-                            imageView,
-                            new BoardsPane(new PixelBoard(sheet)));
-        }
-
-        // Binarize the spots via a global filter (no illumination problem)
-        final PixelFilter source = new GlobalFilter(
-                buffer,
-                constants.binarizationThreshold.getValue());
-
-        // Get and display thresholded spots
-        RunsTable table = new RunsTableFactory(SPOT_ORIENTATION, source, 0).createTable(
-                "spot");
-
-        //        sheet.getRunsViewer()
-        //                .display(table);
-        return table;
-    }
-
     //~ Inner Classes ----------------------------------------------------------
-    //
     //-----------//
     // Constants //
     //-----------//
@@ -258,6 +291,14 @@ public class SpotsBuilder
         final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
+
+        final Constant.Boolean keepPageSpots = new Constant.Boolean(
+                false,
+                "Should we store page spot images on disk?");
+
+        final Constant.Boolean keepCueSpots = new Constant.Boolean(
+                false,
+                "Should we store cue spot images on disk?");
 
         final Constant.Ratio beamCircleDiameterRatio = new Constant.Ratio(
                 0.8,

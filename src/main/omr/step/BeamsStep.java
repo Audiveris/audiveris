@@ -71,6 +71,6 @@ public class BeamsStep
     {
         // Retrieve significant spots for the whole sheet
         sheet.getSpotsBuilder()
-                .buildSpots();
+                .buildPageSpots();
     }
 }

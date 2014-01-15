@@ -11,17 +11,12 @@
 // </editor-fold>
 package omr.math;
 
-import omr.WellKnowns;
-
+import omr.image.ImageUtil;
 import omr.image.PixelBuffer;
 import omr.image.Table;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
-import java.io.File;
-import java.io.IOException;
-
-import javax.imageio.ImageIO;
 
 /**
  * Class {@code TableUtil} gathers utilities to dump basic table
@@ -265,103 +260,12 @@ public class TableUtil
             }
         }
 
-        try {
-            ImageIO.write(
-                    img,
-                    "png",
-                    new File(WellKnowns.TEMP_FOLDER, id + ".png"));
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-
-        //
-        //        // Try to find separation
-        //        //        int[][]    dists = toInt(table);
-        //        //        WatershedGrayLevel instance = new WatershedGrayLevel(dists, false);
-        //        //        int                step = 1;
-        //        //        boolean[][]        lines = instance.process(step);
-        //        //        dump("Lines", lines);
-        //        for (int y = 540; y < 544; y++) {
-        //            System.out.printf(
-        //                    "y:%4d d0:%3d d1:%3d d2:%3d %n",
-        //                    y,
-        //                    table[0][y],
-        //                    table[1][y],
-        //                    table[2][y]);
-        //        }
-        //
-        //        //            for (int x = 0; x < width; x++) {
-        //        //                if (lines[x][y]) {
-        //        //                    //image[x][y] = true;
-        //        //                    System.out.printf("x:%5d y:%5d");
-        //        //                }
-        //        //            }
-        //        //        }
-        //        for (int yStart : new int[]{541, 963, 1386, 1830, 2253, 2682}) {
-        //            Point seed = new Point(0, yStart);
-        //            System.out.println("\nseed = " + seed);
-        //
-        //            /** Abscissa offsets of the 5 eastern neighbors. */
-        //            final int[] dx = new int[]{1, 1, 1, 0, 0};
-        //
-        //            /** Ordinate offsets of the 5 eastern neighbors. */
-        //            final int[] dy = new int[]{0, -1, 1, -1, 1};
-        //
-        //            while (true) {
-        //                // Examine distances on right side (plus just above and below)
-        //                // Choose the smallest one
-        //                // If there are several smallest values, keep them as alternatives
-        //                int curDist = table[seed.x][seed.y];
-        //
-        //                // Determine column of cells with same or better distance
-        //                int y = seed.y;
-        //
-        //                for (y = y - 1; y >= 0; y--) {
-        //                    if (table[seed.x][y] < curDist) {
-        //                        break;
-        //                    }
-        //                }
-        //
-        //                int yTop = y;
-        //                y = seed.y;
-        //
-        //                for (y = y + 1; y < height; y++) {
-        //                    if (table[seed.x][y] < curDist) {
-        //                        break;
-        //                    }
-        //                }
-        //
-        //                int yBot = y;
-        //
-        //                // Look for best value
-        //                int bestDist = 0;
-        //                int bestY = -1;
-        //
-        //                for (y = yTop - 1; y <= (yBot + 1); y++) {
-        //                    int x = seed.x + 1;
-        //                    int d = table[x][y];
-        //
-        //                    if (bestDist < d) {
-        //                        bestDist = d;
-        //                        bestY = y;
-        //                    }
-        //                }
-        //
-        //                seed.x += 1;
-        //                seed.y = bestY;
-        //                System.out.printf(
-        //                        "x:%4d y:%4d d:%3d%n",
-        //                        seed.x,
-        //                        seed.y,
-        //                        bestDist);
-        //
-        //                if (seed.x == (width - 1)) {
-        //                    break;
-        //                }
-        //            }
-        //        }
+        ImageUtil.saveOnDisk(img, id);
     }
 
+    //-------//
+    // toInt //
+    //-------//
     private static int[][] toInt (double[][] doubles)
     {
         final int width = doubles.length;

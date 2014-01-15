@@ -34,39 +34,31 @@ public interface Anchored
          */
         CENTER,
         /**
-         * Upper left corner.
-         */
-        TOP_LEFT,
-        /**
-         * Middle left corner.
+         * X at symbol left abscissa, Y at middle.
          */
         MIDDLE_LEFT,
         /**
-         * Lower left corner.
-         */
-        BOTTOM_LEFT,
-        /**
-         * X at left stem, Y at top.
+         * X at symbol left stem, Y at high stem ordinate.
          */
         TOP_LEFT_STEM,
         /**
-         * X at left stem, Y at middle.
+         * X at symbol left stem, Y at middle.
          */
         LEFT_STEM,
         /**
-         * X at left stem, Y at bottom.
+         * X at symbol right stem, Y at low stem ordinate.
          */
         BOTTOM_LEFT_STEM,
         /**
-         * X at right stem, Y at top.
+         * X at symbol right stem, Y at high stem ordinate.
          */
         TOP_RIGHT_STEM,
         /**
-         * X at right stem, Y at middle.
+         * X at symbol right stem, Y at middle.
          */
         RIGHT_STEM,
         /**
-         * X at right stem, Y at bottom.
+         * X at symbol right stem, Y at low stem ordinate.
          */
         BOTTOM_RIGHT_STEM;
 

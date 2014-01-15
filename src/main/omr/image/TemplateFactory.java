@@ -59,10 +59,10 @@ public class TemplateFactory
     // getCatalog //
     //------------//
     /**
-     * Report the template catalog dedicated to the provided interhasLine.
+     * Report the template catalog dedicated to the provided interline.
      *
-     * @param interline provided interhasLine
-     * @return the catalog of all templates for the interhasLine value
+     * @param interline provided interline
+     * @return the catalog of all templates for the interline value
      */
     public Catalog getCatalog (int interline)
     {
@@ -95,7 +95,7 @@ public class TemplateFactory
     // Catalog //
     //---------//
     /**
-     * Handles all templates or a given interhasLine value.
+     * Handles all templates or a given interline value.
      */
     public static class Catalog
     {

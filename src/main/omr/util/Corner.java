@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.util;
 
+import omr.image.Anchored.Anchor;
 import static omr.util.HorizontalSide.*;
 import static omr.util.VerticalSide.*;
 
@@ -66,6 +67,27 @@ public class Corner
     public int getId ()
     {
         return values.indexOf(this);
+    }
+
+    public Anchor stemAnchor ()
+    {
+        if (this == TOP_LEFT) {
+            return Anchor.TOP_LEFT_STEM;
+        }
+
+        if (this == TOP_RIGHT) {
+            return Anchor.TOP_RIGHT_STEM;
+        }
+
+        if (this == BOTTOM_LEFT) {
+            return Anchor.BOTTOM_LEFT_STEM;
+        }
+
+        if (this == BOTTOM_RIGHT) {
+            return Anchor.BOTTOM_RIGHT_STEM;
+        }
+
+        return null;
     }
 
     @Override

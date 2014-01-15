@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.image;
 
-import omr.WellKnowns;
-
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
@@ -33,8 +31,6 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -44,15 +40,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.imageio.ImageIO;
-
 /**
  * Class {@code ShapeDescriptor} handles all the templates for a shape
- * at a given global interhasLine value.
+ * at a given global interline value.
  * <p>
- * It gathers all relevant template variants (they may depend on hasLines and
- * stems
- * configurations).
+ * It gathers all relevant template variants (they depend on line config).
  * All these variants share the same physical dimension (width * height).
  * <p>
  * TODO: Support could be added for slightly different widths, if so needed.
@@ -250,25 +242,43 @@ public class ShapeDescriptor
      */
     private void addAnchors (Template template)
     {
-        //TODO: review the offset Y for small notes
+        // Add anchors for potential stems on left and right sides
+        final double dy = constants.stemDy.getValue();
+        final double top;
+        final double bot;
+
         switch (template.getKey().shape) {
         case NOTEHEAD_VOID:
-        case NOTEHEAD_VOID_SMALL:
         case NOTEHEAD_BLACK:
-        case NOTEHEAD_BLACK_SMALL:
-            // Add anchors for potential stems on left and right sides
-            template.addAnchor(Template.Anchor.TOP_LEFT_STEM, 0.05, 0.0);
-            template.addAnchor(Template.Anchor.LEFT_STEM, 0.05, 0.5);
-            template.addAnchor(Template.Anchor.BOTTOM_LEFT_STEM, 0.05, 1.0);
+            top = dy;
+            bot = 1 - dy;
 
-            template.addAnchor(Template.Anchor.TOP_RIGHT_STEM, 0.95, 0.0);
-            template.addAnchor(Template.Anchor.RIGHT_STEM, 0.95, 0.5);
-            template.addAnchor(Template.Anchor.BOTTOM_RIGHT_STEM, 0.95, 1.0);
+            break;
+
+        case NOTEHEAD_VOID_SMALL:
+        case NOTEHEAD_BLACK_SMALL:
+            top = 0.5 - (Template.smallRatio * (0.5 - dy));
+            bot = 0.5 + (Template.smallRatio * (0.5 - dy));
 
             break;
 
         default:
+
+            // WHOLE_NOTE & WHOLE_NOTE_SMALL are not concerned
+            return;
         }
+
+        final double dx = constants.stemDx.getValue();
+        final double left = dx;
+        final double right = 1 - dx;
+
+        template.addAnchor(Template.Anchor.TOP_LEFT_STEM, left, top);
+        template.addAnchor(Template.Anchor.LEFT_STEM, left, 0.5);
+        template.addAnchor(Template.Anchor.BOTTOM_LEFT_STEM, left, bot);
+
+        template.addAnchor(Template.Anchor.TOP_RIGHT_STEM, right, top);
+        template.addAnchor(Template.Anchor.RIGHT_STEM, right, 0.5);
+        template.addAnchor(Template.Anchor.BOTTOM_RIGHT_STEM, right, bot);
     }
 
     //----------//
@@ -445,30 +455,11 @@ public class ShapeDescriptor
     private Template createTemplate (Key key,
                                      MusicFont font)
     {
+        // Get symbol image painted on template rectangle
         final TemplateSymbol symbol = new TemplateSymbol(key, getCode(key));
         final BufferedImage img = symbol.buildImage(font);
-        //
-        //        // Store a copy on disk for visual check?
-        //        if (constants.keepTemplates.isSet()) {
-        //            try {
-        //                File file = new File(WellKnowns.TEMP_FOLDER, key + ".sym.png");
-        //                ImageIO.write(img, "png", file);
-        //            } catch (IOException ex) {
-        //                logger.warn("Error storing template", ex);
-        //            }
-        //        }
         binarize(img, 127);
 
-        //        // Store a copy on disk for visual check?
-        //        if (constants.keepTemplates.isSet()) {
-        //            try {
-        //                File file = new File(WellKnowns.TEMP_FOLDER, key + ".symb.png");
-        //                ImageIO.write(img, "png", file);
-        //            } catch (IOException ex) {
-        //                logger.warn("Error storing template", ex);
-        //            }
-        //        }
-        //
         // Distances to foreground
         final Table distances = computeDistances(img, key);
 
@@ -480,14 +471,7 @@ public class ShapeDescriptor
 
         // Store a copy on disk for visual check?
         if (constants.keepTemplates.isSet()) {
-            try {
-                File file = new File(
-                        WellKnowns.TEMP_FOLDER,
-                        key + ".tpl" + interline + ".png");
-                ImageIO.write(img, "png", file);
-            } catch (IOException ex) {
-                logger.warn("Error storing template", ex);
-            }
+            ImageUtil.saveOnDisk(img, key + ".tpl" + interline);
         }
 
         // Generate key points for relevant pixels (fore, holes or back)
@@ -785,5 +769,13 @@ public class ShapeDescriptor
         final Constant.Boolean keepTemplates = new Constant.Boolean(
                 false,
                 "Should we keep the templates images?");
+
+        final Constant.Ratio stemDx = new Constant.Ratio(
+                0.05,
+                "Abscissa of stem anchor WRT symbol width");
+
+        final Constant.Ratio stemDy = new Constant.Ratio(
+                0.15,
+                "Ordinate of stem anchor WRT symbol height");
     }
 }

@@ -624,22 +624,22 @@ public class NotesBuilder
         // Use all staff lines
         int pitch = -5; // Current pitch
         LineAdapter prevAdapter = null;
-        Browser browser;
+        Scanner browser;
 
         for (FilamentLine line : staff.getLines()) {
             LineAdapter adapter = new StaffLineAdapter(staff, line);
 
             // Look above line
-            browser = new Browser(adapter, prevAdapter, -1, pitch++, seeds);
+            browser = new Scanner(adapter, prevAdapter, -1, pitch++, seeds);
             ch.addAll(browser.lookup());
 
             // Look exactly on line
-            browser = new Browser(adapter, null, 0, pitch++, seeds);
+            browser = new Scanner(adapter, null, 0, pitch++, seeds);
             ch.addAll(browser.lookup());
 
             // For the last line only, look just below line
             if (pitch == 5) {
-                browser = new Browser(adapter, null, 1, pitch++, seeds);
+                browser = new Scanner(adapter, null, 1, pitch++, seeds);
                 ch.addAll(browser.lookup());
             }
 
@@ -665,12 +665,12 @@ public class NotesBuilder
                     Glyph glyph = ledger.getGlyph();
                     LineAdapter adapter = new LedgerAdapter(staff, p, glyph);
                     // Look right on ledger, then just further from staff
-                    browser = new Browser(adapter, null, 0, pitch, seeds);
+                    browser = new Scanner(adapter, null, 0, pitch, seeds);
                     ch.addAll(browser.lookup());
 
                     // Look just further from staff
                     int pitch2 = pitch + dir;
-                    browser = new Browser(adapter, null, dir, pitch2, seeds);
+                    browser = new Scanner(adapter, null, dir, pitch2, seeds);
                     ch.addAll(browser.lookup());
                 }
             }
@@ -916,10 +916,79 @@ public class NotesBuilder
         }
     }
 
+    //---------------//
+    // LedgerAdapter //
+    //---------------//
+    /**
+     * Adapter for Ledger.
+     */
+    private class LedgerAdapter
+            extends LineAdapter
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final Glyph ledger;
+
+        private final Point2D left;
+
+        private final Point2D right;
+
+        //~ Constructors -------------------------------------------------------
+        public LedgerAdapter (StaffInfo staff,
+                              String prefix,
+                              Glyph ledger)
+        {
+            super(staff, prefix);
+            this.ledger = ledger;
+            left = ledger.getStartPoint(Orientation.HORIZONTAL);
+            right = ledger.getStopPoint(Orientation.HORIZONTAL);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        @Override
+        public Area getArea (double above,
+                             double below)
+        {
+            Path2D path = new Path2D.Double();
+            path.moveTo(left.getX(), left.getY() + above);
+            path.lineTo(right.getX(), right.getY() + above);
+            path.lineTo(right.getX(), right.getY() + below + 1);
+            path.lineTo(left.getX(), left.getY() + below + 1);
+            path.closePath();
+
+            return new Area(path);
+        }
+
+        @Override
+        public int getLeftAbscissa ()
+        {
+            return (int) Math.ceil(left.getX());
+        }
+
+        @Override
+        public int getRightAbscissa ()
+        {
+            return (int) Math.floor(right.getX());
+        }
+
+        @Override
+        public int yAt (int x)
+        {
+            return (int) Math.rint(yAt((double) x));
+        }
+
+        @Override
+        public double yAt (double x)
+        {
+            return LineUtil.intersectionAtX(left, right, x)
+                    .getY();
+        }
+    }
+
     //---------//
-    // Browser //
+    // Scanner //
     //---------//
-    private class Browser
+    private class Scanner
     {
         //~ Instance fields ----------------------------------------------------
 
@@ -951,7 +1020,7 @@ public class NotesBuilder
 
         //~ Constructors -------------------------------------------------------
         /**
-         * Create a Browser, dedicated to a staff line or ledger.
+         * Create a Scanner, dedicated to a staff line or ledger.
          *
          * @param line     adapter to the main line
          * @param line2    adapter to secondary line, if any
@@ -959,7 +1028,7 @@ public class NotesBuilder
          * @param pitch    pitch position value
          * @param useSeeds true for seed-based notes, false for x-based notes
          */
-        public Browser (LineAdapter line,
+        public Scanner (LineAdapter line,
                         LineAdapter line2,
                         int dir,
                         int pitch,
@@ -1201,75 +1270,6 @@ public class NotesBuilder
 
                 return yClosed;
             }
-        }
-    }
-
-    //---------------//
-    // LedgerAdapter //
-    //---------------//
-    /**
-     * Adapter for Ledger.
-     */
-    private class LedgerAdapter
-            extends LineAdapter
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final Glyph ledger;
-
-        private final Point2D left;
-
-        private final Point2D right;
-
-        //~ Constructors -------------------------------------------------------
-        public LedgerAdapter (StaffInfo staff,
-                              String prefix,
-                              Glyph ledger)
-        {
-            super(staff, prefix);
-            this.ledger = ledger;
-            left = ledger.getStartPoint(Orientation.HORIZONTAL);
-            right = ledger.getStopPoint(Orientation.HORIZONTAL);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public Area getArea (double above,
-                             double below)
-        {
-            Path2D path = new Path2D.Double();
-            path.moveTo(left.getX(), left.getY() + above);
-            path.lineTo(right.getX(), right.getY() + above);
-            path.lineTo(right.getX(), right.getY() + below + 1);
-            path.lineTo(left.getX(), left.getY() + below + 1);
-            path.closePath();
-
-            return new Area(path);
-        }
-
-        @Override
-        public int getLeftAbscissa ()
-        {
-            return (int) Math.ceil(left.getX());
-        }
-
-        @Override
-        public int getRightAbscissa ()
-        {
-            return (int) Math.floor(right.getX());
-        }
-
-        @Override
-        public int yAt (int x)
-        {
-            return (int) Math.rint(yAt((double) x));
-        }
-
-        @Override
-        public double yAt (double x)
-        {
-            return LineUtil.intersectionAtX(left, right, x)
-                    .getY();
         }
     }
 
