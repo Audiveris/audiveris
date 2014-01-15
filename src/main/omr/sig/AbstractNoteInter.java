@@ -42,27 +42,27 @@ public class AbstractNoteInter
     protected final int pitch;
 
     //~ Constructors -----------------------------------------------------------
-    /**
-     * Creates a new AbstractNoteInter object.
-     *
-     * @param descriptor the shape template descriptor
-     * @param box        the object bounds
-     * @param shape      the underlying shape
-     * @param grade      the inter intrinsic grade
-     * @param pitch      the note pitch
-     */
-    public AbstractNoteInter (ShapeDescriptor descriptor,
-                              Rectangle box,
-                              Shape shape,
-                              double grade,
-                              int pitch)
-    {
-        super(box, shape, grade);
-
-        this.descriptor = descriptor;
-        this.pitch = pitch;
-    }
-
+//    /**
+//     * Creates a new AbstractNoteInter object.
+//     *
+//     * @param descriptor the shape template descriptor
+//     * @param box        the object bounds
+//     * @param shape      the underlying shape
+//     * @param grade      the inter intrinsic grade
+//     * @param pitch      the note pitch
+//     */
+//    public AbstractNoteInter (ShapeDescriptor descriptor,
+//                              Rectangle box,
+//                              Shape shape,
+//                              double grade,
+//                              int pitch)
+//    {
+//        super(box, shape, grade);
+//
+//        this.descriptor = descriptor;
+//        this.pitch = pitch;
+//    }
+//
     /**
      * Creates a new AbstractNoteInter object.
      *

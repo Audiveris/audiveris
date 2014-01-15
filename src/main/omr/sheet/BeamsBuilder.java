@@ -16,11 +16,24 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.GlyphLayer;
+import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.image.AreaMask;
+import omr.image.ImageUtil;
+import omr.image.MorphoProcessor;
+import omr.image.PixelBuffer;
 import omr.image.PixelFilter;
+import omr.image.StructureElement;
+
+import omr.lag.BasicLag;
+import omr.lag.JunctionRatioPolicy;
+import omr.lag.Lag;
+import omr.lag.Lags;
+import omr.lag.Section;
+import omr.lag.SectionsBuilder;
 
 import omr.math.AreaUtil;
 import omr.math.GeoOrder;
@@ -29,18 +42,27 @@ import omr.math.Line;
 import omr.math.LineUtil;
 
 import omr.run.Orientation;
+import omr.run.RunsTable;
+import omr.run.RunsTableFactory;
+import static omr.sheet.SpotsBuilder.SPOT_ORIENTATION;
 
 import omr.sig.AbstractBeamInter;
 import omr.sig.AbstractBeamInter.Impacts;
 import omr.sig.BeamHookInter;
 import omr.sig.Exclusion;
 import omr.sig.FullBeamInter;
+import omr.sig.HeadStemRelation;
 import omr.sig.Inter;
+import omr.sig.Relation;
 import omr.sig.SIGraph;
+import omr.sig.SmallBeamInter;
+import omr.sig.StemInter;
 
+import omr.util.Corner;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.Navigable;
+import omr.util.Predicate;
 import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
 import omr.util.WrappedInteger;
@@ -54,6 +76,8 @@ import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -146,7 +170,7 @@ public class BeamsBuilder
         // Create initial beams by checking spots individually
         createBeams();
 
-        // Then, extend beams as possible
+        // Then, extend beams as much as possible
         sortedBeamSpots.removeAll(assignedSpots);
         extendBeams();
 
@@ -155,20 +179,20 @@ public class BeamsBuilder
         buildHooks();
     }
 
-    //-----------------//
-    // maxStemBeamGapX //
-    //-----------------//
-    public int maxStemBeamGapX ()
+    //---------------//
+    // buildCueBeams //
+    //---------------//
+    /**
+     * Find possible cue beams interpretations around identified cue
+     * notes and stems.
+     */
+    public void buildCueBeams ()
     {
-        return params.maxStemBeamGapX;
-    }
+        List<CueAggregate> aggregates = getCueAggregates();
 
-    //-----------------//
-    // maxStemBeamGapY //
-    //-----------------//
-    public int maxStemBeamGapY ()
-    {
-        return params.maxStemBeamGapY;
+        for (CueAggregate aggregate : aggregates) {
+            aggregate.process();
+        }
     }
 
     //-------------//
@@ -237,19 +261,36 @@ public class BeamsBuilder
      * Check the provided glyph as a beam candidate.
      *
      * @param glyph the glyph to check
+     * @param isCue true for a small beam candidate
+     * @param beams (output) to be appended by created beam inters
      * @return the failure description if not successful, null otherwise
      */
-    private String checkBeamGlyph (Glyph glyph)
+    private String checkBeamGlyph (Glyph glyph,
+                                   boolean isCue,
+                                   List<Inter> beams)
     {
+        // Specific params
+        int minBeamWidth = params.minBeamWidth;
+        double minBeamHeight = params.minBeamHeight;
+        int typicalHeight = sheet.getScale()
+                .getMainBeam();
+
+        if (isCue) {
+            double ratio = params.cueRatio;
+            minBeamWidth = (int) Math.rint(ratio * minBeamWidth);
+            minBeamHeight *= ratio;
+            typicalHeight = (int) Math.rint(ratio * typicalHeight);
+        }
+
         final Rectangle box = glyph.getBounds();
         final Line glyphLine = glyph.getLine();
 
         if (glyph.isVip()) {
-            logger.info("VIP checkBeamGlyph {}", glyph);
+            logger.info("VIP checkBeamGlyph {} cue:{}", glyph, isCue);
         }
 
         // Minimum width
-        if (box.width < params.minBeamWidth) {
+        if (box.width < minBeamWidth) {
             return "too narrow";
         }
 
@@ -257,7 +298,7 @@ public class BeamsBuilder
         final double meanHeight = glyph.getMeanThickness(
                 Orientation.HORIZONTAL);
 
-        if (meanHeight < params.minBeamHeight) {
+        if (meanHeight < minBeamHeight) {
             return "too slim";
         }
 
@@ -271,21 +312,19 @@ public class BeamsBuilder
         }
 
         // Check straight lines of north and south borders
-        final BeamItems items = new BeamItems(
-                system,
-                glyph,
-                params.minBeamWidth);
-        final Double meanStraight = items.computeLines();
+        final BeamItems items;
+        items = new BeamItems(glyph, minBeamWidth, typicalHeight);
 
-        if ((meanStraight == null)
-            || (meanStraight > params.maxDistanceToBorder)) {
+        final Double meanDist = items.computeLines();
+
+        if ((meanDist == null) || (meanDist > params.maxDistanceToBorder)) {
             return "wavy or inconsistent borders";
         }
 
         // Check structure width
         final double structWidth = items.getWidth();
 
-        if (structWidth < params.minBeamWidth) {
+        if (structWidth < minBeamWidth) {
             return "too narrow borders";
         }
 
@@ -305,13 +344,25 @@ public class BeamsBuilder
         // Check stuck beams and split them if necessary
         items.splitItems();
 
-        // Compute items grade and create FullBeamInter instances when acceptable
-        if (createBeamInters(items)) {
-            assignedSpots.add(glyph);
+        // Compute items grade and create Inter instances when acceptable
+        if (isCue) {
+            List<Inter> cues = createSmallBeamInters(items, meanDist);
 
-            return null; // Mean: no failure
+            if (!cues.isEmpty()) {
+                beams.addAll(cues);
+
+                return null;
+            } else {
+                return "no good item";
+            }
         } else {
-            return "no good item";
+            if (createBeamInters(items, meanDist)) {
+                assignedSpots.add(glyph);
+
+                return null; // This means no failure
+            } else {
+                return "no good item";
+            }
         }
     }
 
@@ -339,18 +390,21 @@ public class BeamsBuilder
         }
 
         final Rectangle box = glyph.getBounds();
+        final double distImpact = ((Impacts) beam.getImpacts()).getDistImpact();
 
         // Minimum width
         if (box.width < params.minHookWidth) {
             return "too narrow";
         }
 
-        // Minimum mean height
+        // Minimum & maximum mean hook height
         final double meanHeight = glyph.getMeanThickness(
                 Orientation.HORIZONTAL);
 
         if (meanHeight < params.minBeamHeight) {
             return "too slim";
+        } else if (meanHeight > params.maxHookHeight) {
+            return "too thick";
         }
 
         // Define hook item
@@ -371,7 +425,7 @@ public class BeamsBuilder
         }
 
         // Compute core & belt impacts
-        Impacts impacts = computeHookImpacts(item);
+        Impacts impacts = computeHookImpacts(item, distImpact);
 
         if (impacts != null) {
             BeamHookInter hook = new BeamHookInter(
@@ -401,21 +455,24 @@ public class BeamsBuilder
      * Compute the grade details for the provided BeamItem, targeting
      * a FullAbstractBeamInter.
      *
-     * @param item  the isolated beam item
-     * @param above true to check above beam item
-     * @param below true to check below beam item
+     * @param item     the isolated beam item
+     * @param above    true to check above beam item
+     * @param below    true to check below beam item
+     * @param meanDist average distance to border
      * @return the impacts if successful, null otherwise
      */
     private Impacts computeBeamImpacts (BeamItem item,
                                         boolean above,
-                                        boolean below)
+                                        boolean below,
+                                        double meanDist)
     {
         return computeImpacts(
                 item,
                 above,
                 below,
                 params.minBeamWidth,
-                params.largeBeamWidth);
+                params.largeBeamWidth,
+                meanDist);
     }
 
     //--------------------//
@@ -425,17 +482,20 @@ public class BeamsBuilder
      * Compute the grade details for the provided BeamItem, targeting
      * a BeamHookInter.
      *
-     * @param item the isolated beam item
+     * @param item     the isolated beam item
+     * @param meanDist average distance to border
      * @return the impacts if successful, null otherwise
      */
-    private Impacts computeHookImpacts (BeamItem item)
+    private Impacts computeHookImpacts (BeamItem item,
+                                        double meanDist)
     {
         return computeImpacts(
                 item,
                 true,
                 true,
                 params.minHookWidth,
-                params.maxHookWidth);
+                params.maxHookWidth,
+                meanDist);
     }
 
     //----------------//
@@ -449,13 +509,15 @@ public class BeamsBuilder
      * @param below         true to check below beam item
      * @param minWidth      minimum acceptable width
      * @param minLargeWidth minimum large width
+     * @param meanDist      average distance to border
      * @return the impacts if successful, null otherwise
      */
     private Impacts computeImpacts (BeamItem item,
                                     boolean above,
                                     boolean below,
                                     int minWidth,
-                                    int minLargeWidth)
+                                    int minLargeWidth,
+                                    double meanDist)
     {
         Area coreArea = item.getCoreArea();
         AreaMask coreMask = new AreaMask(coreArea);
@@ -494,8 +556,9 @@ public class BeamsBuilder
         double coreImpact = (coreRatio - params.minCoreBlackRatio) / (1
                                                                       - params.minCoreBlackRatio);
         double beltImpact = 1 - (beltRatio / params.maxBeltBlackRatio);
+        double distImpact = 1 - (meanDist / params.maxDistanceToBorder);
 
-        return new Impacts(widthImpact, coreImpact, beltImpact);
+        return new Impacts(widthImpact, coreImpact, beltImpact, distImpact);
     }
 
     //------------------//
@@ -509,9 +572,11 @@ public class BeamsBuilder
      * we should create both interpretations.
      *
      * @param beamItems the items retrieved (from a glyph)
+     * @param meanDist  average distance to border
      * @return true if at least one good item was found
      */
-    private boolean createBeamInters (BeamItems beamItems)
+    private boolean createBeamInters (BeamItems beamItems,
+                                      double meanDist)
     {
         boolean success = false;
         List<BeamItem> items = beamItems.getItems();
@@ -525,7 +590,7 @@ public class BeamsBuilder
             if (itemWidth <= params.maxHookWidth) {
                 logger.debug("Create hook with {}", item);
 
-                Impacts impacts = computeHookImpacts(item);
+                Impacts impacts = computeHookImpacts(item, meanDist);
 
                 if (impacts != null) {
                     success = true;
@@ -546,7 +611,8 @@ public class BeamsBuilder
             Impacts impacts = computeBeamImpacts(
                     item,
                     idx == 0, // Check above only for first item
-                    idx == (items.size() - 1)); // Check below only for last item
+                    idx == (items.size() - 1), // Check below only for last item
+                    meanDist);
 
             if (impacts != null) {
                 success = true;
@@ -582,12 +648,56 @@ public class BeamsBuilder
     private void createBeams ()
     {
         for (Glyph glyph : sortedBeamSpots) {
-            final String failure = checkBeamGlyph(glyph);
+            final String failure = checkBeamGlyph(glyph, false, null);
 
             if ((failure != null) && glyph.isVip()) {
                 logger.info("VIP beam#{} {}", glyph.getId(), failure);
             }
         }
+    }
+
+    //-----------------------//
+    // createSmallBeamInters //
+    //-----------------------//
+    /**
+     * Create the resulting SmallBeamInter instances, one for
+     * each good item.
+     *
+     * @param beamItems the items retrieved (from a glyph)
+     * @param meanDist  average distance to border
+     * @return the list of inter instances created
+     */
+    private List<Inter> createSmallBeamInters (BeamItems beamItems,
+                                               double meanDist)
+    {
+        List<Inter> beams = new ArrayList<Inter>();
+        List<BeamItem> items = beamItems.getItems();
+
+        for (BeamItem item : items) {
+            final int idx = items.indexOf(item);
+            Impacts impacts = computeBeamImpacts(
+                    item,
+                    idx == 0, // Check above only for first item
+                    idx == (items.size() - 1), // Check below only for last item
+                    meanDist);
+
+            if (impacts != null) {
+                SmallBeamInter beam = new SmallBeamInter(
+                        null,
+                        impacts,
+                        item.median,
+                        item.height);
+
+                if (item.isVip()) {
+                    beam.setVip();
+                }
+
+                sig.addVertex(beam);
+                beams.add(beam);
+            }
+        }
+
+        return beams;
     }
 
     //-------------//
@@ -859,13 +969,14 @@ public class BeamsBuilder
         }
 
         // Impacts
+        final double distImpact = ((Impacts) beam.getImpacts()).getDistImpact();
         BeamItem newItem = new BeamItem(newMedian, height);
 
         if (beam.isVip()) {
             newItem.setVip();
         }
 
-        Impacts impacts = computeBeamImpacts(newItem, true, true);
+        Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact);
 
         if (impacts != null) {
             FullBeamInter newBeam = new FullBeamInter(
@@ -1038,6 +1149,79 @@ public class BeamsBuilder
         return spots;
     }
 
+    //------------------//
+    // getCueAggregates //
+    //------------------//
+    private List<CueAggregate> getCueAggregates ()
+    {
+        List<CueAggregate> aggregates = new ArrayList<CueAggregate>();
+
+        // We look for collections of good cue black heads + stem, close enough
+        // to be able to be connected by a cue beam.
+        List<Inter> smallBlacks = sig.inters(
+                new Predicate<Inter>()
+                {
+                    @Override
+                    public boolean check (Inter inter)
+                    {
+                        return !inter.isDeleted()
+                               && (inter.getShape() == Shape.NOTEHEAD_BLACK_SMALL)
+                               && (inter.getContextualGrade() >= Inter.minContextualGrade);
+                    }
+                });
+
+        if (smallBlacks.isEmpty()) {
+            return aggregates;
+        }
+
+        Collections.sort(smallBlacks, Inter.byAbscissa);
+        logger.info("S#{} cues:{}", system.getId(), smallBlacks);
+
+        // Look for aggregates of close instances
+        for (Inter head : smallBlacks) {
+            Inter stem = stemOf(head);
+            Rectangle headBox = head.getBounds();
+            headBox.grow(params.cueXMargin, params.cueYMargin);
+
+            // Check among existing aggregates
+            CueAggregate aggregate = null;
+
+            for (CueAggregate ag : aggregates) {
+                if (ag.bounds.intersects(headBox)) {
+                    aggregate = ag;
+
+                    break;
+                }
+            }
+
+            if (aggregate == null) {
+                aggregate = new CueAggregate();
+                aggregates.add(aggregate);
+            }
+
+            aggregate.add(head, stem);
+        }
+
+        // Purge aggregates with a single head
+        for (Iterator<CueAggregate> it = aggregates.iterator(); it.hasNext();) {
+            CueAggregate ag = it.next();
+
+            if (ag.heads.size() == 1) {
+                it.remove();
+            }
+        }
+
+        if (!aggregates.isEmpty()) {
+            for (int i = 0; i < aggregates.size(); i++) {
+                CueAggregate aggregate = aggregates.get(i);
+                aggregate.identify(i);
+                logger.info("{}", aggregate);
+            }
+        }
+
+        return aggregates;
+    }
+
     //----------------//
     // getSystemSeeds //
     //----------------//
@@ -1077,6 +1261,10 @@ public class BeamsBuilder
         final Line2D oneMedian = one.getMedian();
         final Line2D twoMedian = two.getMedian();
 
+        // Mean dist
+        double distImpact = (((Impacts) one.getImpacts()).getDistImpact()
+                             + ((Impacts) two.getImpacts()).getDistImpact()) / 2;
+
         // Height
         double oneWidth = oneMedian.getX2() - oneMedian.getX1();
         double twoWidth = twoMedian.getX2() - twoMedian.getX1();
@@ -1099,7 +1287,7 @@ public class BeamsBuilder
             newItem.setVip();
         }
 
-        Impacts impacts = computeBeamImpacts(newItem, true, true);
+        Impacts impacts = computeBeamImpacts(newItem, true, true, distImpact);
 
         if (impacts != null) {
             return new FullBeamInter(null, impacts, median, height);
@@ -1226,6 +1414,20 @@ public class BeamsBuilder
         return area;
     }
 
+    //--------//
+    // stemOf //
+    //--------//
+    private Inter stemOf (Inter head)
+    {
+        for (Relation rel : sig.edgesOf(head)) {
+            if (rel instanceof HeadStemRelation) {
+                return sig.getEdgeTarget(rel);
+            }
+        }
+
+        return null;
+    }
+
     //~ Inner Classes ----------------------------------------------------------
     //
     //-----------//
@@ -1259,6 +1461,10 @@ public class BeamsBuilder
         final Constant.Ratio minBeamHeightRatio = new Constant.Ratio(
                 0.75,
                 "Minimum height for a beam, specified as ratio of typical beam");
+
+        final Constant.Ratio maxHookHeightRatio = new Constant.Ratio(
+                1.25,
+                "Maximum height for a hook, specified as ratio of typical beam");
 
         final Scale.Fraction maxBeamsGapX = new Scale.Fraction(
                 1.0,
@@ -1308,20 +1514,313 @@ public class BeamsBuilder
                 "Maximum delta slope between beams of a group");
 
         final Scale.Fraction maxDistanceToBorder = new Scale.Fraction(
-                0.15,
+                0.1,
                 "Maximum mean distance to average beam border");
 
         final Constant.Ratio maxBeltBlackRatio = new Constant.Ratio(
-                0.5,
+                0.4,
                 "Maximum ratio of black pixels around beam");
 
         final Constant.Ratio minCoreBlackRatio = new Constant.Ratio(
-                0.7,
+                0.75,
                 "Minimum ratio of black pixels inside beam");
 
         final Constant.Ratio minExtBlackRatio = new Constant.Ratio(
                 0.5,
                 "Minimum ratio of black pixels inside beam extension");
+
+        // All constants below relate to cue beams
+        //
+        final Constant.Ratio cueRatio = new Constant.Ratio(
+                0.67,
+                "Ratio to apply to cue beams");
+
+        final Scale.Fraction cueXMargin = new Scale.Fraction(
+                2.0,
+                "Abscissa margin to aggregate cues");
+
+        final Scale.Fraction cueYMargin = new Scale.Fraction(
+                3.0,
+                "Ordinate margin to aggregate cues");
+
+        final Scale.Fraction cueBoxDx = new Scale.Fraction(
+                0.25,
+                "Abscissa expansion of aggregate box");
+
+        final Scale.Fraction cueBoxDy = new Scale.Fraction(
+                1.0,
+                "Ordinate shift of aggregate box");
+    }
+
+    //--------------//
+    // CueAggregate //
+    //--------------//
+    /**
+     * Describes an aggregate of cue notes.
+     * We assume that within a cue aggregate, the layout is rather simple:
+     * - all stems have the same direction.
+     */
+    private class CueAggregate
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        /** Unique Id. (in page) */
+        private String id = "";
+
+        /** Bounds of the aggregate. */
+        private Rectangle bounds;
+
+        /** Sequence of cue heads. */
+        private final List<Inter> heads = new ArrayList<Inter>();
+
+        /** Sequence of stems. (parallel to heads list) */
+        private final List<Inter> stems = new ArrayList<Inter>();
+
+        /** Global stem direction. (up:-1, down:+1, mixed/unknown:0) */
+        private int globalDir = 0;
+
+        //~ Methods ------------------------------------------------------------
+        public void add (Inter head,
+                         Inter stem)
+        {
+            // Head/Stem box
+            Rectangle hsBox = head.getBounds()
+                    .union(stem.getBounds());
+
+            if (bounds == null) {
+                bounds = hsBox;
+            } else {
+                bounds.add(hsBox);
+            }
+
+            heads.add(head);
+            stems.add(stem);
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("{");
+            sb.append(id);
+
+            if (bounds != null) {
+                sb.append(" bounds:")
+                        .append(bounds);
+            }
+
+            for (int i = 0; i < heads.size(); i++) {
+                sb.append(" ")
+                        .append(heads.get(i))
+                        .append("+")
+                        .append(stems.get(i));
+            }
+
+            sb.append("}");
+
+            return sb.toString();
+        }
+
+        /**
+         * (Try to) connect the provided stem to compatible beams.
+         *
+         * @param stem     the provided stem
+         * @param allBeams the collection of beams identified
+         */
+        private void connectStemToBeams (Inter stem,
+                                         List<Inter> allBeams,
+                                         Inter head)
+        {
+            // Which head corner?
+            if (globalDir == 0) {
+                return;
+            }
+
+            final Corner corner;
+            int headX = GeoUtil.centerOf(head.getBounds()).x;
+            int stemX = GeoUtil.centerOf(stem.getBounds()).x;
+
+            if (headX <= stemX) {
+                corner = (globalDir < 0) ? Corner.TOP_LEFT : Corner.BOTTOM_LEFT;
+            } else {
+                corner = (globalDir < 0) ? Corner.TOP_RIGHT : Corner.BOTTOM_RIGHT;
+            }
+
+            // Limit to beams that cross stem vertical line
+            List<Inter> beams = new ArrayList<Inter>();
+            Rectangle fatStemBox = stem.getBounds();
+            fatStemBox.grow(params.cueBoxDx, 0);
+            fatStemBox.y = bounds.y;
+            fatStemBox.height = bounds.height;
+
+            for (Inter beam : allBeams) {
+                if (fatStemBox.intersects(beam.getBounds())) {
+                    beams.add(beam);
+                }
+            }
+
+            system.stemsBuilder.linkCueBeams(head, corner, stem, beams);
+        }
+
+        private List<Glyph> getCueGlyphs ()
+        {
+            Scale scale = sheet.getScale();
+
+            // Expand aggregate bounds using global direction
+            Rectangle box = new Rectangle(bounds);
+            box.grow(params.cueBoxDx, 0);
+
+            if (globalDir != 0) {
+                box.y += (globalDir * params.cueBoxDy);
+            } else {
+                box.grow(0, params.cueBoxDy);
+            }
+
+            // Take a small snapshot of binary image and apply morphology
+            Picture picture = sheet.getPicture();
+            PixelBuffer buffer = (PixelBuffer) picture.getSource(
+                    Picture.SourceKey.BINARY);
+            buffer = buffer.getCopy(box);
+
+            //            GaussianGrayFilter gaussianFilter = new GaussianGrayFilter(1);
+            //            buffer = gaussianFilter.filter(buffer);
+            ///buffer.dump("snapshot");
+            int[] offset = {0, 0};
+            int beam = (int) Math.rint(0.67 * scale.getMainBeam());
+            final double diameter = beam * 0.8;
+            final float radius = (float) (diameter - 1) / 2;
+
+            //            logger.info(
+            //                    "{}Spots retrieval beam: {}, diameter: {} ...",
+            //                    sheet.getLogPrefix(),
+            //                    beam,
+            //                    String.format("%.1f", diameter));
+            StructureElement se = new StructureElement(0, 1, radius, offset);
+            MorphoProcessor mp = new MorphoProcessor(se);
+
+            mp.close(buffer);
+            // Store buffer on disk for further manual analysis if any
+            ImageUtil.saveOnDisk(
+                    buffer.toBufferedImage(),
+                    sheet.getPage().getId() + "-" + id + ".cuespot");
+
+            //            buffer = new PixelBuffer(new GlobalFilter(buffer, 140));
+            //
+            //            // Store buffer on disk for further manual analysis if any
+            //            ImageUtil.saveOnDisk(
+            //                    buffer.toBufferedImage(),
+            //                    sheet.getPage().getId() + "-S" + system.getId() + ".bcuespot");
+            // Retrieve relevant spot glyphs in it
+            RunsTable table = new RunsTableFactory(
+                    SPOT_ORIENTATION,
+                    buffer,
+                    0).createTable("cuespot");
+
+            // Build the spotLag out of spots runs
+            Lag cueLag = new BasicLag(
+                    Lags.SPOT_LAG,
+                    SPOT_ORIENTATION);
+
+            SectionsBuilder sectionsBuilder = new SectionsBuilder(
+                    cueLag,
+                    new JunctionRatioPolicy());
+            List<Section> sections = sectionsBuilder.createSections(
+                    table,
+                    false);
+            Point trans = box.getLocation();
+
+            for (Section section : sections) {
+                section.translate(trans);
+            }
+
+            logger.debug("Sections: {}", cueLag.getSections().size());
+
+            GlyphNest nest = sheet.getNest();
+            List<Glyph> glyphs = nest.retrieveGlyphs(
+                    cueLag.getSections(),
+                    GlyphLayer.SPOT,
+                    true,
+                    Glyph.Linking.NO_LINK);
+
+            sheet.setLag(Lags.CUE_SPOT_LAG, cueLag);
+
+            return glyphs;
+        }
+
+        private int getDirection ()
+        {
+            Integer dir = null;
+
+            for (int i = 0; i < heads.size(); i++) {
+                final Inter head = heads.get(i);
+                final int headY = GeoUtil.centerOf(head.getBounds()).y;
+                final Inter stem = stems.get(i);
+                final Rectangle stemBox = stem.getBounds();
+
+                // Consider relative position is reliable only if head center
+                // is found in upper quarter or lower quarter of stem height
+                final int quarter = (int) Math.rint(stemBox.height / 4.0);
+
+                if (headY >= ((stemBox.y + stemBox.height) - quarter)) {
+                    if (dir == null) {
+                        dir = -1;
+                    } else if (dir > 0) {
+                        return 0;
+                    }
+                } else if (headY <= (stemBox.y + quarter)) {
+                    if (dir == null) {
+                        dir = 1;
+                    } else if (dir < 0) {
+                        return 0;
+                    }
+                }
+            }
+
+            return (dir != null) ? dir : 0;
+        }
+
+        private void identify (int index)
+        {
+            id = "S" + system.getId() + "A" + (index + 1);
+        }
+
+        private void process ()
+        {
+            // Determine stem direction in the aggregate
+            globalDir = getDirection();
+
+            if (globalDir == 0) {
+                logger.warn("Mixed or unknown direction in cues {}", this);
+            }
+
+            // Retrieve candidate glyphs from spots
+            List<Glyph> glyphs = getCueGlyphs();
+
+            // Retrieve beams from candidate glyphs
+            List<Inter> beams = new ArrayList<Inter>();
+
+            for (Glyph glyph : glyphs) {
+                List<Inter> glyphBeams = new ArrayList<Inter>();
+                final String failure = checkBeamGlyph(glyph, true, glyphBeams);
+
+                if (failure != null) {
+                    if (glyph.isVip()) {
+                        logger.info("VIP cue#{} {}", glyph.getId(), failure);
+                    }
+                } else {
+                    logger.info("Glyph#{} -> {}", glyph.getId(), glyphBeams);
+                    beams.addAll(glyphBeams);
+                }
+            }
+
+            // Link stems & beams as possible
+            if (!beams.isEmpty()) {
+                for (int i = 0; i < heads.size(); i++) {
+                    final Inter head = heads.get(i);
+                    final Inter stem = stems.get(i);
+                    connectStemToBeams(stem, beams, head);
+                }
+            }
+        }
     }
 
     //------------//
@@ -1343,6 +1842,8 @@ public class BeamsBuilder
         final int maxHookWidth;
 
         final double minBeamHeight;
+
+        final double maxHookHeight;
 
         final int maxBeamsGapX;
 
@@ -1374,6 +1875,16 @@ public class BeamsBuilder
 
         final double minExtBlackRatio;
 
+        final double cueRatio;
+
+        final int cueXMargin;
+
+        final int cueYMargin;
+
+        final int cueBoxDx;
+
+        final int cueBoxDy;
+
         //~ Constructors -------------------------------------------------------
         /**
          * Creates a new Parameters object.
@@ -1385,6 +1896,7 @@ public class BeamsBuilder
             minBeamWidth = scale.toPixels(constants.minBeamWidth);
             minHookWidth = scale.toPixels(constants.minHookWidth);
             minBeamHeight = scale.getMainBeam() * constants.minBeamHeightRatio.getValue();
+            maxHookHeight = scale.getMainBeam() * constants.maxHookHeightRatio.getValue();
             maxBeamsGapX = scale.toPixels(constants.maxBeamsGapX);
             maxBeamsGapY = scale.toPixels(constants.maxBeamsGapY);
             maxStemBeamGapX = scale.toPixels(constants.maxStemBeamGapX);
@@ -1403,6 +1915,11 @@ public class BeamsBuilder
             maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
             minCoreBlackRatio = constants.minCoreBlackRatio.getValue();
             minExtBlackRatio = constants.minExtBlackRatio.getValue();
+            cueRatio = constants.cueRatio.getValue();
+            cueXMargin = scale.toPixels(constants.cueXMargin);
+            cueYMargin = scale.toPixels(constants.cueYMargin);
+            cueBoxDx = scale.toPixels(constants.cueBoxDx);
+            cueBoxDy = scale.toPixels(constants.cueBoxDy);
 
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);

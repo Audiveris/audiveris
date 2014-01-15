@@ -17,14 +17,10 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
-import static omr.glyph.Shape.NOTEHEAD_VOID;
-import static omr.glyph.Shape.WHOLE_NOTE;
+import static omr.glyph.Shape.*;
 
 import omr.image.Anchored.Anchor;
 import omr.image.Template.Key;
-import omr.image.Template.Lines;
-import omr.image.Template.Stems;
-import static omr.image.Template.Stems.*;
 
 import omr.ui.symbol.MusicFont;
 import static omr.ui.symbol.MusicFont.getFont;
@@ -42,17 +38,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 
 /**
  * Class {@code ShapeDescriptor} handles all the templates for a shape
- * at a given global interline value.
+ * at a given global interhasLine value.
  * <p>
- * It gathers all relevant template variants (they may depend on lines and stems
+ * It gathers all relevant template variants (they may depend on hasLines and
+ * stems
  * configurations).
  * All these variants share the same physical dimension (width * height).
  * <p>
@@ -69,22 +68,27 @@ public class ShapeDescriptor
     private static final Logger logger = LoggerFactory.getLogger(
             ShapeDescriptor.class);
 
+    /** All shapes with hole(s). */
+    private static final EnumSet shapesWithHoles = EnumSet.of(
+            NOTEHEAD_VOID,
+            NOTEHEAD_VOID_SMALL,
+            WHOLE_NOTE,
+            WHOLE_NOTE_SMALL);
+
     /** Color for foreground pixels. */
     private static final int BLACK = Color.BLACK.getRGB();
 
     /** Color for background pixels. */
-    private static final int WHITE = Color.WHITE.getRGB();
+    private static final int RED = Color.RED.getRGB();
 
     /** Color for hole pixels. */
     private static final int GREEN = Color.GREEN.getRGB();
 
-    /** Color for background pixels (fully transparent). */
+    /** Color for irrelevant pixels (fully transparent). */
     private static final int TRANS = new Color(0, 0, 0, 0).getRGB();
 
     //~ Instance fields --------------------------------------------------------
     private final Shape shape;
-
-    private final boolean isSmall;
 
     private final int interline;
 
@@ -106,7 +110,6 @@ public class ShapeDescriptor
     {
         this.shape = shape;
         this.interline = interline;
-        isSmall = shape.isSmall();
 
         buildAllVariants();
     }
@@ -123,19 +126,19 @@ public class ShapeDescriptor
      * @param y         location ordinate
      * @param anchor    location WRT template
      * @param distances table of distances
-     * @param lines     specific lines configuration, if any
+     * @param line      use of middle hasLine or not
      * @return the best distance found
      */
     public double evaluate (int x,
                             int y,
                             Anchor anchor,
                             DistanceTable distances,
-                            Lines lines)
+                            boolean line)
     {
         double best = Double.MAX_VALUE;
 
         for (Entry<Key, Template> entry : variants.entrySet()) {
-            if ((lines == null) || (lines == entry.getKey().lines)) {
+            if (entry.getKey().hasLine == line) {
                 best = Math.min(
                         best,
                         entry.getValue().evaluate(x, y, anchor, distances));
@@ -235,11 +238,150 @@ public class ShapeDescriptor
         return sb.toString();
     }
 
+    //------------//
+    // addAnchors //
+    //------------//
+    /**
+     * Add specific anchors to the template.
+     * All templates get basic anchors at construction time, but some may need
+     * additional anchors.
+     *
+     * @param template the template to populate
+     */
+    private void addAnchors (Template template)
+    {
+        //TODO: review the offset Y for small notes
+        switch (template.getKey().shape) {
+        case NOTEHEAD_VOID:
+        case NOTEHEAD_VOID_SMALL:
+        case NOTEHEAD_BLACK:
+        case NOTEHEAD_BLACK_SMALL:
+            // Add anchors for potential stems on left and right sides
+            template.addAnchor(Template.Anchor.TOP_LEFT_STEM, 0.05, 0.0);
+            template.addAnchor(Template.Anchor.LEFT_STEM, 0.05, 0.5);
+            template.addAnchor(Template.Anchor.BOTTOM_LEFT_STEM, 0.05, 1.0);
+
+            template.addAnchor(Template.Anchor.TOP_RIGHT_STEM, 0.95, 0.0);
+            template.addAnchor(Template.Anchor.RIGHT_STEM, 0.95, 0.5);
+            template.addAnchor(Template.Anchor.BOTTOM_RIGHT_STEM, 0.95, 1.0);
+
+            break;
+
+        default:
+        }
+    }
+
+    //----------//
+    // addHoles //
+    //----------//
+    /**
+     * Background pixels inside a given shape must be recognized as
+     * such.
+     * <p>
+     * Such pixels are marked with a specific color (green foreground) so that
+     * the template can measure their distance to (black) foreground.
+     *
+     * @param img   the source image
+     * @param lines the hasLines configuration
+     */
+    private void addHoles (BufferedImage img,
+                           boolean line)
+    {
+        if (shapesWithHoles.contains(shape)) {
+            // Identify holes
+            final List<Point> holeSeeds = new ArrayList<Point>();
+
+            if (line) {
+                // We have a ledger in the middle, with holes above and below
+                if ((shape == WHOLE_NOTE) || (shape == WHOLE_NOTE_SMALL)) {
+                    holeSeeds.add(
+                            new Point(
+                                    (int) Math.rint(img.getWidth() * 0.5),
+                                    (int) Math.rint(img.getHeight() * 0.33)));
+                    holeSeeds.add(
+                            new Point(
+                                    (int) Math.rint(img.getWidth() * 0.5),
+                                    (int) Math.rint(img.getHeight() * 0.67)));
+                } else {
+                    holeSeeds.add(
+                            new Point(
+                                    (int) Math.rint(img.getWidth() * 0.7),
+                                    (int) Math.rint(img.getHeight() * 0.33)));
+                    holeSeeds.add(
+                            new Point(
+                                    (int) Math.rint(img.getWidth() * 0.2),
+                                    (int) Math.rint(img.getHeight() * 0.6)));
+                }
+            } else {
+                // We have no ledger, just a big hole in the center
+                holeSeeds.add(
+                        new Point(img.getWidth() / 2, img.getHeight() / 2));
+            }
+
+            // Fill the holes if any with green color
+            FloodFiller floodFiller = new FloodFiller(img);
+
+            for (Point seed : holeSeeds) {
+                // Background (red) -> background (green)
+                floodFiller.fill(seed.x, seed.y, RED, GREEN);
+            }
+        }
+    }
+
+    //----------//
+    // binarize //
+    //----------//
+    /**
+     * Use only fully black or fully transparent pixels
+     *
+     * @param img       the source image
+     * @param threshold alpha level to separate relevant from irrelevant pixels
+     */
+    private void binarize (BufferedImage img,
+                           int threshold)
+    {
+        for (int y = 0, h = img.getHeight(); y < h; y++) {
+            for (int x = 0, w = img.getWidth(); x < w; x++) {
+                Color pix = new Color(img.getRGB(x, y), true);
+
+                if (pix.getAlpha() >= threshold) {
+                    Color color = new Color(pix.getRGB(), false);
+
+                    if (color.getRed() >= threshold) {
+                        img.setRGB(x, y, RED);
+                    } else {
+                        img.setRGB(x, y, BLACK);
+                    }
+                } else {
+                    img.setRGB(x, y, TRANS);
+                }
+            }
+        }
+    }
+
+    //------------------//
+    // buildAllVariants //
+    //------------------//
+    private void buildAllVariants ()
+    {
+        final MusicFont font = getFont(interline);
+
+        for (boolean line : new boolean[]{false, true}) {
+            Key key = new Key(shape, line);
+            Template tpl = createTemplate(key, font);
+            putTemplate(key, tpl);
+        }
+    }
+
     //------------------//
     // computeDistances //
     //------------------//
     /**
      * Compute all distances to nearest foreground pixel.
+     * For this we work as if there was a foreground rectangle right around
+     * the image.
+     * Similarly, the non-relevant pixels are assumed to be foreground.
+     * This is to allow the detection of reliable background key points.
      *
      * @param img the source image
      * @param key the template specs
@@ -248,19 +390,31 @@ public class ShapeDescriptor
     private static Table computeDistances (BufferedImage img,
                                            Key key)
     {
-        // Retrieve foreground pixels (those with pix == 0)
+        // Retrieve foreground pixels
         final int width = img.getWidth();
         final int height = img.getHeight();
-        final boolean[][] fore = new boolean[width][height];
+        final boolean[][] fore = new boolean[width + 2][height + 2];
 
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                Color pix = new Color(img.getRGB(x, y), true);
+        // Fill with img foreground pixels and irrelevant pixels
+        for (int y = 1; y < (height + 1); y++) {
+            for (int x = 1; x < (width + 1); x++) {
+                Color pix = new Color(img.getRGB(x - 1, y - 1), true);
 
-                if (pix.getAlpha() == 255) {
+                if (pix.equals(Color.BLACK) || (pix.getAlpha() == 0)) {
                     fore[x][y] = true;
                 }
             }
+        }
+
+        // Surround with a rectangle of foreground pixels
+        for (int y = 0; y < (height + 2); y++) {
+            fore[0][y] = true;
+            fore[width + 1][y] = true;
+        }
+
+        for (int x = 0; x < (width + 2); x++) {
+            fore[x][0] = true;
+            fore[x][height + 1] = true;
         }
 
         // Compute template distance transform
@@ -270,7 +424,201 @@ public class ShapeDescriptor
             distances.dump(key + "  distances");
         }
 
+        // Trim the distance table of its surrounding rectangle?
         return distances;
+    }
+
+    //----------------//
+    // createTemplate //
+    //----------------//
+    /**
+     * Build a template for desired shape and size, based on
+     * MusicFont.
+     * TODO: Implement a better way to select representative key points
+     * perhaps using a skeleton for foreground and another skeleton for
+     * holes?
+     *
+     * @param key  full identification of the template
+     * @param font the underlying music font properly scaled
+     * @return the brand new template
+     */
+    private Template createTemplate (Key key,
+                                     MusicFont font)
+    {
+        final TemplateSymbol symbol = new TemplateSymbol(key, getCode(key));
+        final BufferedImage img = symbol.buildImage(font);
+        //
+        //        // Store a copy on disk for visual check?
+        //        if (constants.keepTemplates.isSet()) {
+        //            try {
+        //                File file = new File(WellKnowns.TEMP_FOLDER, key + ".sym.png");
+        //                ImageIO.write(img, "png", file);
+        //            } catch (IOException ex) {
+        //                logger.warn("Error storing template", ex);
+        //            }
+        //        }
+        binarize(img, 127);
+
+        //        // Store a copy on disk for visual check?
+        //        if (constants.keepTemplates.isSet()) {
+        //            try {
+        //                File file = new File(WellKnowns.TEMP_FOLDER, key + ".symb.png");
+        //                ImageIO.write(img, "png", file);
+        //            } catch (IOException ex) {
+        //                logger.warn("Error storing template", ex);
+        //            }
+        //        }
+        //
+        // Distances to foreground
+        final Table distances = computeDistances(img, key);
+
+        // Add holes if any
+        addHoles(img, key.hasLine);
+
+        // Flag non-relevant pixels
+        flagIrrelevantPixels(img, distances);
+
+        // Store a copy on disk for visual check?
+        if (constants.keepTemplates.isSet()) {
+            try {
+                File file = new File(
+                        WellKnowns.TEMP_FOLDER,
+                        key + ".tpl" + interline + ".png");
+                ImageIO.write(img, "png", file);
+            } catch (IOException ex) {
+                logger.warn("Error storing template", ex);
+            }
+        }
+
+        // Generate key points for relevant pixels (fore, holes or back)
+        final List<PixelDistance> keyPoints = getKeyPoints(img, distances);
+
+        // Generate the template instance
+        Template template = new Template(
+                key,
+                img.getWidth(),
+                img.getHeight(),
+                keyPoints);
+
+        // Add specific anchor points, if any
+        addAnchors(template);
+
+        if (logger.isDebugEnabled()) {
+            logger.info("Created {}", template);
+            template.dump();
+        }
+
+        return template;
+    }
+
+    //----------------------//
+    // flagIrrelevantPixels //
+    //----------------------//
+    /**
+     * Some pixels in (non-hole) background regions must be set as non
+     * relevant.
+     * They are roughly the "exterior" half of these regions, where the distance
+     * to foreground would be impacted by the presence of nearby stem or staff /
+     * ledger line.
+     * Only the "interior" half of such region is relevant, for its distance to
+     * foreground is not dependent upon the presence of stem or line.
+     *
+     * @param img the image to modify
+     */
+    private void flagIrrelevantPixels (BufferedImage img,
+                                       Table distances)
+    {
+        // First browse from each foreground pixel in the 4 directions to first
+        // non-foreground pixel. If this pixel is relevant and non-hole, flag it
+        // as a border pixel.
+        Set<Point> borders = getBorders(img);
+
+        // Then, extend each border pixel in the 4 directions as long as the
+        // distance read for the pixel increases.
+        Table extensions = getExtensions(borders, img, distances);
+
+        // The border pixels and extensions compose the relevant part of
+        // (non-hole background) regions.
+        // Flag the other (non-hole) background pixels as irrelevant
+        for (int y = 0, h = img.getHeight(); y < h; y++) {
+            for (int x = 0, w = img.getWidth(); x < w; x++) {
+                // Check (non-hole) background pixel
+                if (img.getRGB(x, y) == RED) {
+                    if (extensions.getValue(x, y) != 1) {
+                        img.setRGB(x, y, TRANS);
+                    }
+                }
+            }
+        }
+    }
+
+    //------------//
+    // getBorders //
+    //------------//
+    private Set<Point> getBorders (BufferedImage img)
+    {
+        final Set<Point> borders = new HashSet<Point>();
+
+        for (int y = 0, h = img.getHeight(); y < h; y++) {
+            for (int x = 0, w = img.getWidth(); x < w; x++) {
+                // Check foreground pixel
+                if (img.getRGB(x, y) == BLACK) {
+                    // North
+                    for (int ny = y - 1; ny >= 0; ny--) {
+                        int pix = img.getRGB(x, ny);
+
+                        if (pix != BLACK) {
+                            if (pix == RED) {
+                                borders.add(new Point(x, ny));
+                            }
+
+                            break;
+                        }
+                    }
+
+                    // South
+                    for (int ny = y + 1; ny < h; ny++) {
+                        int pix = img.getRGB(x, ny);
+
+                        if (pix != BLACK) {
+                            if (pix == RED) {
+                                borders.add(new Point(x, ny));
+                            }
+
+                            break;
+                        }
+                    }
+
+                    // West
+                    for (int nx = x - 1; nx >= 0; nx--) {
+                        int pix = img.getRGB(nx, y);
+
+                        if (pix != BLACK) {
+                            if (pix == RED) {
+                                borders.add(new Point(nx, y));
+                            }
+
+                            break;
+                        }
+                    }
+
+                    // East
+                    for (int nx = x + 1; nx < w; nx++) {
+                        int pix = img.getRGB(nx, y);
+
+                        if (pix != BLACK) {
+                            if (pix == RED) {
+                                borders.add(new Point(nx, y));
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return borders;
     }
 
     //---------//
@@ -297,6 +645,82 @@ public class ShapeDescriptor
         return 0;
     }
 
+    //---------------//
+    // getExtensions //
+    //---------------//
+    private Table getExtensions (Set<Point> borders,
+                                 BufferedImage img,
+                                 Table distances)
+    {
+        Table ext = new Table.UnsignedByte(img.getWidth(), img.getHeight());
+        ext.fill(0);
+
+        final int w = img.getWidth();
+        final int h = img.getHeight();
+
+        for (Point p : borders) {
+            ext.setValue(p.x, p.y, 1);
+
+            int dist = distances.getValue(p.x + 1, p.y + 1);
+
+            // North
+            for (int ny = p.y - 1; ny >= 0; ny--) {
+                int d = distances.getValue(p.x + 1, ny + 1);
+
+                if (d > dist) {
+                    dist = d;
+                    ext.setValue(p.x, ny, 1);
+                } else {
+                    break;
+                }
+            }
+
+            // South
+            dist = distances.getValue(p.x + 1, p.y + 1);
+
+            for (int ny = p.y + 1; ny < h; ny++) {
+                int d = distances.getValue(p.x + 1, ny + 1);
+
+                if (d > dist) {
+                    dist = d;
+                    ext.setValue(p.x, ny, 1);
+                } else {
+                    break;
+                }
+            }
+
+            // West
+            dist = distances.getValue(p.x + 1, p.y + 1);
+
+            for (int nx = p.x - 1; nx >= 0; nx--) {
+                int d = distances.getValue(nx + 1, p.y + 1);
+
+                if (d > dist) {
+                    dist = d;
+                    ext.setValue(nx, p.y, 1);
+                } else {
+                    break;
+                }
+            }
+
+            // East
+            dist = distances.getValue(p.x + 1, p.y + 1);
+
+            for (int nx = p.x + 1; nx < w; nx++) {
+                int d = distances.getValue(nx + 1, p.y + 1);
+
+                if (d > dist) {
+                    dist = d;
+                    ext.setValue(nx, p.y, 1);
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return ext;
+    }
+
     //--------------//
     // getKeyPoints //
     //--------------//
@@ -308,7 +732,7 @@ public class ShapeDescriptor
      * TODO: We could carefully select a subset of these locations?
      *
      * @param img       the template source image
-     * @param distances the template distances
+     * @param distances the template distances (extended on each direction)
      * @return the collection of key locations, with their corresponding
      *         distance value
      */
@@ -322,239 +746,31 @@ public class ShapeDescriptor
             for (int x = 0, w = img.getWidth(); x < w; x++) {
                 Color pix = new Color(img.getRGB(x, y), true);
 
-                // Select only relevant pixels (black or green)
+                // Select only relevant pixels
                 if (pix.getAlpha() == 255) {
-                    if (pix.getGreen() == 0) {
-                        // True foreground, so dist to nearest foreground is 0
-                        keyPoints.add(new PixelDistance(x, y, 0));
-                    } else {
-                        // Hole pixel, so use dist to nearest foreground
+                    if (pix.getGreen() != 0) {
+                        // Green = hole, use dist to nearest foreground
                         keyPoints.add(
-                                new PixelDistance(x, y, distances.getValue(x, y)));
+                                new PixelDistance(
+                                        x,
+                                        y,
+                                        distances.getValue(x + 1, y + 1)));
+                    } else if (pix.getRed() != 0) {
+                        // Red = background, use dist to nearest foreground
+                        keyPoints.add(
+                                new PixelDistance(
+                                        x,
+                                        y,
+                                        distances.getValue(x + 1, y + 1)));
+                    } else {
+                        // Black = foreground,  dist to nearest foreground is 0
+                        keyPoints.add(new PixelDistance(x, y, 0));
                     }
                 }
             }
         }
 
         return keyPoints;
-    }
-
-    //------------//
-    // addAnchors //
-    //------------//
-    /**
-     * Add specific anchors to the template.
-     * All templates get basic anchors at construction time, but some may need
-     * additional anchors.
-     *
-     * @param template the template to populate
-     */
-    private void addAnchors (Template template)
-    {
-        switch (template.getKey().shape) {
-        case NOTEHEAD_VOID:
-        case NOTEHEAD_VOID_SMALL:
-        case NOTEHEAD_BLACK:
-        case NOTEHEAD_BLACK_SMALL:
-            // Add anchors for potential stems on left and right sides
-            template.addAnchor(Template.Anchor.TOP_LEFT_STEM, 0.05, 0.0);
-            template.addAnchor(Template.Anchor.LEFT_STEM, 0.05, 0.5);
-            template.addAnchor(Template.Anchor.BOTTOM_LEFT_STEM, 0.05, 1.0);
-
-            template.addAnchor(Template.Anchor.TOP_RIGHT_STEM, 0.95, 0.0);
-            template.addAnchor(Template.Anchor.RIGHT_STEM, 0.95, 0.5);
-            template.addAnchor(Template.Anchor.BOTTOM_RIGHT_STEM, 0.95, 1.0);
-
-            break;
-
-        default:
-        }
-    }
-
-    //    //----------//
-    //    // binarize //
-    //    //----------//
-    //    /**
-    //     * Use only fully black or fully white pixels
-    //     *
-    //     * @param img       the source image
-    //     * @param threshold level to separate foreground and background
-    //     */
-    //    private static void binarize (BufferedImage img,
-    //                                  int threshold)
-    //    {
-    //        for (int y = 0, h = img.getHeight(); y < h; y++) {
-    //            for (int x = 0, w = img.getWidth(); x < w; x++) {
-    //                Color pix = new Color(img.getRGB(x, y), true);
-    //                img.setRGB(x, y, (pix.getRed() < threshold) ? BLACK : WHITE);
-    //            }
-    //        }
-    //    }
-    //----------//
-    // addHoles //
-    //----------//
-    /**
-     * Background pixels inside a given shape must be recognized as
-     * such.
-     * <p>
-     * Nota: This feature is limited to standard size shapes.
-     * Such pixels are marked with a specific color (green foreground) so that
-     * the template can measure their distance to (black) foreground.
-     *
-     * @param img   the source image
-     * @param shape the template shape
-     * @param lines the lines configuration
-     */
-    private void addHoles (BufferedImage img,
-                           Shape shape,
-                           Lines lines)
-    {
-        if (EnumSet.of(NOTEHEAD_VOID, WHOLE_NOTE)
-                .contains(shape)) {
-            // Identify holes
-            final List<Point> holeSeeds = new ArrayList<Point>();
-
-            if (lines == Lines.LINE_MIDDLE) {
-                // We have a ledger in the middle, with holes above and below
-                holeSeeds.add(
-                        new Point(
-                                (int) Math.rint(img.getWidth() * 0.6),
-                                (int) Math.rint(img.getHeight() * 0.33)));
-                holeSeeds.add(
-                        new Point(
-                                (int) Math.rint(img.getWidth() * 0.4),
-                                (int) Math.rint(img.getHeight() * 0.67)));
-            } else {
-                // We have no ledger, just a big hole in the center
-                holeSeeds.add(
-                        new Point(img.getWidth() / 2, img.getHeight() / 2));
-            }
-
-            // Fill the holes if any with green color
-            FloodFiller floodFiller = new FloodFiller(img);
-
-            for (Point seed : holeSeeds) {
-                // Background (transparent) -> green (foreground)
-                floodFiller.fill(seed.x, seed.y, TRANS, GREEN);
-            }
-        }
-    }
-
-    //----------//
-    // binarize //
-    //----------//
-    /**
-     * Use only fully black or fully transparent pixels
-     *
-     * @param img       the source image
-     * @param threshold alpha level to separate foreground and background
-     */
-    private void binarize (BufferedImage img,
-                           int threshold)
-    {
-        //TODO: this won't work for small shapes because of their background
-        for (int y = 0, h = img.getHeight(); y < h; y++) {
-            for (int x = 0, w = img.getWidth(); x < w; x++) {
-                Color pix = new Color(img.getRGB(x, y), true);
-                img.setRGB(x, y, (pix.getAlpha() >= threshold) ? BLACK : TRANS);
-            }
-        }
-    }
-
-    //------------------//
-    // buildAllVariants //
-    //------------------//
-    private void buildAllVariants ()
-    {
-        final MusicFont font = getFont(this.interline);
-
-        if (isSmall) {
-            // For small size, we need to play with lines
-            // and perhaps with stems as well
-            for (Stems stems : Template.Stems.values()) {
-                // No stem for whole notes
-                if ((shape == Shape.WHOLE_NOTE) && (stems != STEM_NONE)) {
-                    continue;
-                }
-
-                for (Lines lines : EnumSet.complementOf(
-                        EnumSet.of(Lines.LINE_NONE))) {
-                    Key key = new Key(shape, lines, stems);
-                    Template tpl = createTemplate(key, font);
-                    putTemplate(key, tpl);
-                }
-            }
-        } else {
-            // For standard size, we don't use stems
-            // and just middle line or none
-            Stems stems = Stems.STEM_NONE;
-
-            for (Lines lines : EnumSet.of(Lines.LINE_NONE, Lines.LINE_MIDDLE)) {
-                Key key = new Key(shape, lines, stems);
-                Template tpl = createTemplate(key, font);
-                putTemplate(key, tpl);
-            }
-        }
-    }
-
-    //----------------//
-    // createTemplate //
-    //----------------//
-    /**
-     * Build a template for desired shape and size, based on
-     * MusicFont.
-     * TODO: Implement a better way to select representative key points
-     * perhaps using a skeleton for foreground and another skeleton for
-     * holes?
-     *
-     * @param key  full identification of the template
-     * @param font the underlying music font properly scaled
-     * @return the brand new template
-     */
-    private Template createTemplate (Key key,
-                                     MusicFont font)
-    {
-        final TemplateSymbol symbol = new TemplateSymbol(key, getCode(key));
-
-        // Get a B&W image (no gray)
-        final BufferedImage img = symbol.buildImage(font);
-        binarize(img, 100);
-
-        // Distances to foreground
-        final Table distances = computeDistances(img, key);
-
-        // Add holes if any
-        addHoles(img, shape, key.lines);
-
-        // Store a copy on disk for visual check?
-        if (constants.keepTemplates.isSet()) {
-            try {
-                File file = new File(WellKnowns.TEMP_FOLDER, key + ".tpl.png");
-                ImageIO.write(img, "png", file);
-            } catch (IOException ex) {
-                logger.warn("Error storing template", ex);
-            }
-        }
-
-        // Generate key points (for both foreground and holes)
-        final List<PixelDistance> keyPoints = getKeyPoints(img, distances);
-
-        // Generate the template instance
-        Template template = new Template(
-                key,
-                img.getWidth(),
-                img.getHeight(),
-                keyPoints);
-
-        // Add specific anchor points, if any
-        addAnchors(template);
-
-        if (logger.isDebugEnabled()) {
-            logger.info("Created {}", template);
-            template.dump();
-        }
-
-        return template;
     }
 
     //~ Inner Classes ----------------------------------------------------------

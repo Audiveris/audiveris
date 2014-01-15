@@ -192,7 +192,7 @@ public class Symbols
         map(DYNAMICS_FZ, 90);
         map(DYNAMICS_SF, 83);
         map(NOTEHEAD_BLACK, 207);
-        //TODO: add NOTEHEAD_BLACK_SMALL
+        small(NOTEHEAD_BLACK_SMALL, 207);
         map(TIME_ZERO, 48);
         map(EIGHTH_REST, 228);
         map(RIGHT_REPEAT_SIGN, 125);
@@ -372,10 +372,10 @@ public class Symbols
                 TURN,
                 ShapeSymbol.quadrantRotateOne));
 
-        heads(1, NOTEHEAD_VOID, 250);
-        //TODO: add NOTEHEAD_VOID_SMALL
-        heads(1, WHOLE_NOTE, 119);
-        //TODO: add WHOLE_NOTE_SMALL
+        map(NOTEHEAD_VOID, 250);
+        small(NOTEHEAD_VOID_SMALL, 250);
+        map(WHOLE_NOTE, 119);
+        small( WHOLE_NOTE_SMALL, 119);
         sym.put(WHOLE_REST, new RestSymbol(WHOLE_REST, false, 183));
         sym.put(WEDGE_set, new CrescendoSymbol(false, CRESCENDO));
     }

@@ -114,7 +114,7 @@ public class GaussianGrayFilter
             final int offset = y * width;
 
             for (int x = 0; x < width; x++) {
-                inPixels[offset + x] = (byte) input.getPixel(x, y);
+                inPixels[offset + x] = (byte) input.getValue(x, y);
             }
         }
 
@@ -126,7 +126,7 @@ public class GaussianGrayFilter
             final int offset = y * width;
 
             for (int x = 0; x < width; x++) {
-                output.setPixel(x, y, inPixels[offset + x] & 0xff);
+                output.setValue(x, y, inPixels[offset + x] & 0xff);
             }
         }
     }

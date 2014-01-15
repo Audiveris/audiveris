@@ -78,7 +78,7 @@ public class MedianGrayFilter
 
                 for (int i = x - rad; i <= (x + rad); i++) {
                     for (int j = y - rad; j <= (y + rad); j++) {
-                        int val = input.getPixel(i, j);
+                        int val = input.getValue(i, j);
                         histogram[val]++;
                     }
                 }
@@ -94,7 +94,7 @@ public class MedianGrayFilter
                     median--;
                 }
 
-                output.setPixel(x, y, median + 1);
+                output.setValue(x, y, median + 1);
             }
         }
     }

@@ -64,7 +64,7 @@ public class BufferedSource
     }
 
     @Override
-    public int getPixel (int x,
+    public int getValue (int x,
                          int y)
     {
         raster.getPixel(x, y, pixelArray);

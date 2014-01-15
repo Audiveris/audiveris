@@ -137,18 +137,18 @@ public class ShapeSet
     /** All notes handled by template matching. */
     public static final EnumSet<Shape> TemplateNotes = EnumSet.of(
             NOTEHEAD_BLACK,
-          ///  NOTEHEAD_BLACK_SMALL,
+            NOTEHEAD_BLACK_SMALL,
             NOTEHEAD_VOID,
-            ///  NOTEHEAD_VOID_SMALL,
-            WHOLE_NOTE); //,
-    ///  WHOLE_NOTE_SMALL);
+            NOTEHEAD_VOID_SMALL,
+            WHOLE_NOTE,
+            WHOLE_NOTE_SMALL);
 
     /** All stem-based notes handled by template matching. */
     public static final EnumSet<Shape> StemTemplateNotes = EnumSet.of(
             NOTEHEAD_BLACK,
-          ///  NOTEHEAD_BLACK_SMALL,
-            NOTEHEAD_VOID);
-            ///  NOTEHEAD_VOID_SMALL,
+            NOTEHEAD_BLACK_SMALL,
+            NOTEHEAD_VOID,
+            NOTEHEAD_VOID_SMALL);
 
     /**
      * Predefined instances of ShapeSet.
@@ -203,7 +203,7 @@ public class ShapeSet
     public static final ShapeSet Beams = new ShapeSet(
             BEAM,
             new Color(0x33ffff),
-            shapesOf(BEAM, BEAM_HOOK));
+            shapesOf(BEAM, BEAM_SMALL, BEAM_HOOK));
 
     public static final ShapeSet Clefs = new ShapeSet(
             G_CLEF,

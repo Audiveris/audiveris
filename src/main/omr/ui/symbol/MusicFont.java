@@ -191,10 +191,12 @@ public class MusicFont
          * Nota: Adding 1 to interline gives best results with current font.
          * So this is performed in this central location.
          */
-        MusicFont font = sizeMap.get(interline); //  + 1); BINGO
+        interline += 1;
+        
+        MusicFont font = sizeMap.get(interline);
 
         if (font == null) {
-            font = new MusicFont(4 + 4 * interline, interline);
+            font = new MusicFont(4 * interline, interline);
             sizeMap.put(interline, font);
         }
 

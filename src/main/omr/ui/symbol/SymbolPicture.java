@@ -90,10 +90,10 @@ public class SymbolPicture
     }
 
     //----------//
-    // getPixel //
+    // getValue //
     //----------//
     @Override
-    public final int getPixel (int x,
+    public final int getValue (int x,
                                int y)
     {
         int index = x + (y * width);
@@ -122,6 +122,6 @@ public class SymbolPicture
     public boolean isFore (int x,
                            int y)
     {
-        return getPixel(x, y) <= maxForeground;
+        return getValue(x, y) <= maxForeground;
     }
 }

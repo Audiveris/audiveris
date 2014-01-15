@@ -30,7 +30,6 @@ import static omr.image.Anchored.Anchor.*;
 import omr.image.DistanceTable;
 import omr.image.PixelDistance;
 import omr.image.ShapeDescriptor;
-import omr.image.Template.Lines;
 import omr.image.TemplateFactory;
 import omr.image.TemplateFactory.Catalog;
 
@@ -45,20 +44,21 @@ import omr.run.Orientation;
 
 import omr.sig.AbstractInter;
 import omr.sig.AbstractNoteInter;
-import static omr.sig.AbstractNoteInter.shrink;
 import omr.sig.BlackHeadInter;
 import omr.sig.Exclusion;
 import omr.sig.GradeImpacts;
 import omr.sig.Inter;
 import omr.sig.LedgerInter;
 import omr.sig.SIGraph;
+import omr.sig.SmallBlackHeadInter;
+import omr.sig.SmallVoidHeadInter;
+import omr.sig.SmallWholeInter;
 import omr.sig.VoidHeadInter;
 import omr.sig.WholeInter;
 
 import omr.util.Navigable;
 import omr.util.Predicate;
 import omr.util.StopWatch;
-import omr.util.WrappedInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,11 +106,6 @@ public class NotesBuilder
 
     private static final Logger logger = LoggerFactory.getLogger(
             NotesBuilder.class);
-
-    /** Shapes that cannot occur near stem. */
-    private static final List<Shape> noStems = Arrays.asList(
-            Shape.WHOLE_NOTE,
-            Shape.WHOLE_NOTE_SMALL);
 
     /** Shapes of note competitors. */
     private static final Set<Shape> competingShapes = EnumSet.copyOf(
@@ -212,7 +207,7 @@ public class NotesBuilder
             // First, process all seed-based heads for the staff
             ch.addAll(processStaff(staff, true));
 
-            // Consider seed-based heads as competitors for plain x-based heads
+            // Consider seed-based heads as special competitors for x-based notes
             systemCompetitors.addAll(ch);
             Collections.sort(systemCompetitors, Inter.byOrdinate);
 
@@ -300,20 +295,31 @@ public class NotesBuilder
         final double grade = impacts.getGrade();
 
         // Is grade acceptable?
-        if (grade >= AbstractInter.getMinGrade()) {
-            switch (desc.getShape()) {
-            case NOTEHEAD_BLACK:
-                return new BlackHeadInter(desc, box, impacts, pitch);
-
-            case NOTEHEAD_VOID:
-                return new VoidHeadInter(desc, box, impacts, pitch);
-
-            case WHOLE_NOTE:
-                return new WholeInter(desc, box, impacts, pitch);
-            }
-
-            logger.error("No root shape for " + desc.getShape());
+        if (grade < AbstractInter.getMinGrade()) {
+            return null;
         }
+
+        switch (desc.getShape()) {
+        case NOTEHEAD_BLACK:
+            return new BlackHeadInter(desc, box, impacts, pitch);
+
+        case NOTEHEAD_BLACK_SMALL:
+            return new SmallBlackHeadInter(desc, box, impacts, pitch);
+
+        case NOTEHEAD_VOID:
+            return new VoidHeadInter(desc, box, impacts, pitch);
+
+        case NOTEHEAD_VOID_SMALL:
+            return new SmallVoidHeadInter(desc, box, impacts, pitch);
+
+        case WHOLE_NOTE:
+            return new WholeInter(desc, box, impacts, pitch);
+
+        case WHOLE_NOTE_SMALL:
+            return new SmallWholeInter(desc, box, impacts, pitch);
+        }
+
+        logger.error("No root shape for " + desc.getShape());
 
         return null;
     }
@@ -403,77 +409,6 @@ public class NotesBuilder
         Collections.sort(kept, Inter.byAbscissa);
 
         return kept;
-    }
-
-    //--------------//
-    // getConfigAtX //
-    //--------------//
-    /**
-     * Determine the exact lines configuration and ordinate.
-     *
-     * @param x       current abscissa value
-     * @param line    main line
-     * @param line2   secondary line, if any
-     * @param ledgers sequence of ledgers nearby, if any
-     * @param pitch   pitch value
-     * @param y       (output) most precise ordinate value
-     * @return the lines configuration
-     */
-    private Lines getConfigAtX (int x,
-                                LineAdapter line,
-                                LineAdapter line2,
-                                List<LedgerAdapter> ledgers,
-                                int pitch,
-                                WrappedInteger y)
-    {
-        // Determine lines config according to ledgers if outside staff
-        final boolean isOutside = Math.abs(pitch) > 4;
-
-        if (isOutside) {
-            if ((pitch % 2) == 0) {
-                y.value = line.yAt(x);
-
-                return Lines.LINE_MIDDLE;
-            } else {
-                // Both are present only if a further ledger exists in abscissa
-                //TODO: refine using width of template?
-                if (Math.abs(pitch) > 5) {
-                    for (LedgerAdapter ledger : ledgers) {
-                        if ((x >= ledger.getLeftAbscissa())
-                            && (x <= ledger.getRightAbscissa())) {
-                            y.value = (int) Math.rint(
-                                    (line.yAt((double) x) + ledger.yAt((double) x)) / 2);
-
-                            return Lines.LINE_DOUBLE;
-                        }
-                    }
-                }
-
-                if (pitch > 0) {
-                    y.value = (int) Math.rint(
-                            line.yAt((double) x) + (scale.getInterline() / 2d));
-
-                    // Top is always present
-                    return Lines.LINE_TOP;
-                } else {
-                    // Bottom is always present
-                    y.value = (int) Math.rint(
-                            line.yAt((double) x) - (scale.getInterline() / 2d));
-
-                    return Lines.LINE_BOTTOM;
-                }
-            }
-        } else {
-            // Within staff lines, compute ordinate precisely
-            if (line2 != null) {
-                y.value = (int) Math.rint(
-                        (line.yAt((double) x) + line2.yAt((double) x)) / 2);
-            } else {
-                y.value = line.yAt(x);
-            }
-
-            return ((pitch % 2) == 0) ? Lines.LINE_MIDDLE : Lines.LINE_DOUBLE;
-        }
     }
 
     //-------------------//
@@ -786,6 +721,111 @@ public class NotesBuilder
     }
 
     //~ Inner Classes ----------------------------------------------------------
+    //-------------//
+    // LineAdapter //
+    //-------------//
+    /**
+     * Such adapter is needed to interact with staff LineInfo or ledger
+     * glyph line in a consistent way.
+     */
+    private abstract static class LineAdapter
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        private final StaffInfo staff;
+
+        private final String prefix;
+
+        //~ Constructors -------------------------------------------------------
+        public LineAdapter (StaffInfo staff,
+                            String prefix)
+        {
+            this.staff = staff;
+            this.prefix = prefix;
+        }
+
+        //~ Methods ------------------------------------------------------------
+        /**
+         * Report the competitors lookup area, according to limits above
+         * and below, defined as ordinate shifts relative to the
+         * reference line.
+         *
+         * @param above offset (positive or negative) from line to top limit.
+         * @param below offset (positive or negative) from line to bottom limit.
+         */
+        public abstract Area getArea (double above,
+                                      double below);
+
+        /** Report the abscissa at beginning of line. */
+        public abstract int getLeftAbscissa ();
+
+        /** Report the abscissa at end of line. */
+        public abstract int getRightAbscissa ();
+
+        /** Report the ordinate at provided abscissa. */
+        public abstract int yAt (int x);
+
+        /** Report the precise ordinate at provided precise abscissa. */
+        public abstract double yAt (double x);
+
+        /** Needed to allow various attachments on the same staff. */
+        public String getPrefix ()
+        {
+            return prefix;
+        }
+
+        public StaffInfo getStaff ()
+        {
+            return staff;
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
+
+        final Constant.Boolean printParameters = new Constant.Boolean(
+                false,
+                "Should we print out the class parameters?");
+
+        final Constant.Boolean allowAttachments = new Constant.Boolean(
+                false,
+                "Should we allow staff attachments for created areas?");
+
+        final Constant.Double maxMatchingDistance = new Constant.Double(
+                "distance",
+                0.08,
+                "Maximum matching distance");
+
+        final Scale.Fraction maxTemplateDx = new Scale.Fraction(
+                0.375,
+                "Maximum dx between similar template instances");
+
+        final Scale.Fraction maxClosedDy = new Scale.Fraction(
+                0.2,
+                "Extension allowed in y for closed lines");
+
+        final Scale.Fraction maxOpenDy = new Scale.Fraction(
+                0.25,
+                "Extension allowed in y for open lines");
+
+        final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
+                0.7,
+                "Shrink horizontal ratio to apply when checking for overlap");
+
+        final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
+                0.5,
+                "Shrink vertical ratio to apply when checking for overlap");
+    }
+
     //-----------//
     // Aggregate //
     //-----------//
@@ -843,6 +883,39 @@ public class NotesBuilder
         }
     }
 
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final double maxMatchingDistance;
+
+        final int maxTemplateDx;
+
+        final int maxClosedDy;
+
+        final int maxOpenDy;
+
+        //~ Constructors -------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (Scale scale)
+        {
+            maxMatchingDistance = constants.maxMatchingDistance.getValue();
+            maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
+            maxClosedDy = Math.max(1, scale.toPixels(constants.maxClosedDy));
+            maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
+        }
+    }
+
     //---------//
     // Browser //
     //---------//
@@ -860,6 +933,8 @@ public class NotesBuilder
 
         private final boolean useSeeds;
 
+        private final boolean hasLine;
+
         private final boolean isOpen;
 
         private final Area area;
@@ -867,8 +942,6 @@ public class NotesBuilder
         private final List<Inter> competitors;
 
         private final List<LedgerAdapter> ledgers;
-
-        private final WrappedInteger ord = new WrappedInteger(-1);
 
         private final int[] yClosed = new int[params.maxClosedDy];
 
@@ -897,6 +970,9 @@ public class NotesBuilder
             this.dir = dir;
             this.pitch = pitch;
             this.useSeeds = useSeeds;
+
+            // Middle line?
+            hasLine = (pitch % 2) == 0;
 
             // Open line?
             isOpen = ((pitch % 2) != 0)
@@ -930,8 +1006,7 @@ public class NotesBuilder
         private Inter eval (Shape shape,
                             int x,
                             int y,
-                            Anchor anchor,
-                            Lines lines)
+                            Anchor anchor)
         {
             final ShapeDescriptor desc = catalog.getDescriptor(shape);
             final Rectangle tplBox = desc.getBoundsAt(x, y, anchor);
@@ -942,11 +1017,8 @@ public class NotesBuilder
                 return null;
             }
 
-            // Then try all variants for the shape and keep the best dist
-            Lines l = shape.isSmall() ? lines
-                    : ((lines == Lines.LINE_MIDDLE) ? Lines.LINE_MIDDLE
-                    : Lines.LINE_NONE);
-            double dist = desc.evaluate(x, y, anchor, distances, l);
+            // Then try (all variants for) the shape and keep the best dist
+            double dist = desc.evaluate(x, y, anchor, distances, hasLine);
 
             if (dist > params.maxMatchingDistance) {
                 return null;
@@ -955,6 +1027,58 @@ public class NotesBuilder
             PixelDistance loc = new PixelDistance(x, y, dist);
 
             return createInter(loc, anchor, shape, pitch);
+        }
+
+        //------------------------//
+        // getTheoreticalOrdinate //
+        //------------------------//
+        /**
+         * Determine the theoretical ordinate.
+         *
+         * @param x current abscissa value
+         * @return the most probable ordinate value
+         */
+        private int getTheoreticalOrdinate (int x)
+        {
+            // Determine lines config according to ledgers if outside staff
+            final boolean isOutside = Math.abs(pitch) > 4;
+
+            if (isOutside) {
+                if ((pitch % 2) == 0) {
+                    return line.yAt(x);
+                } else {
+                    // Both are present only if a further ledger exists in abscissa
+                    //TODO: refine using width of template?
+                    if (Math.abs(pitch) > 5) {
+                        for (LedgerAdapter ledger : ledgers) {
+                            if ((x >= ledger.getLeftAbscissa())
+                                && (x <= ledger.getRightAbscissa())) {
+                                return (int) Math.rint(
+                                        (line.yAt((double) x)
+                                         + ledger.yAt(
+                                        (double) x)) / 2);
+                            }
+                        }
+                    }
+
+                    if (pitch > 0) {
+                        return (int) Math.rint(
+                                line.yAt((double) x) + (scale.getInterline() / 2d));
+                    } else {
+                        // Bottom is always present
+                        return (int) Math.rint(
+                                line.yAt((double) x) - (scale.getInterline() / 2d));
+                    }
+                }
+            } else {
+                // Within staff lines, compute ordinate precisely
+                if (line2 != null) {
+                    return (int) Math.rint(
+                            (line.yAt((double) x) + line2.yAt((double) x)) / 2d);
+                } else {
+                    return line.yAt(x);
+                }
+            }
         }
 
         //-------------//
@@ -973,11 +1097,11 @@ public class NotesBuilder
 
             // Scan from left to right
             for (int x = scanLeft; x <= scanRight; x++) {
-                Lines lines = getConfigAtX(x, line, line2, ledgers, pitch, ord);
+                final int ord = getTheoreticalOrdinate(x);
 
-                for (int y : ordinates()) {
+                for (int y : ordinates(ord)) {
                     for (Shape shape : ShapeSet.TemplateNotes) {
-                        Inter inter = eval(shape, x, y, anchor, lines);
+                        Inter inter = eval(shape, x, y, anchor);
 
                         if (inter != null) {
                             inters.add(inter);
@@ -1020,15 +1144,15 @@ public class NotesBuilder
                 final Point2D pt = LineUtil.intersectionAtY(top, bot, y0);
                 x = (int) Math.rint(pt.getX()); // Precise x value
 
-                Lines lines = getConfigAtX(x, line, line2, ledgers, pitch, ord);
+                final int ord = getTheoreticalOrdinate(x);
 
                 for (Anchor anchor : anchors) {
                     // For each stem side, keep only the best shape
                     Inter bestInter = null;
 
-                    for (int y : ordinates()) {
+                    for (int y : ordinates(ord)) {
                         for (Shape shape : ShapeSet.StemTemplateNotes) {
-                            Inter inter = eval(shape, x, y, anchor, lines);
+                            Inter inter = eval(shape, x, y, anchor);
 
                             if (inter != null) {
                                 if ((bestInter == null)
@@ -1058,72 +1182,26 @@ public class NotesBuilder
          *
          * @return the range of y values
          */
-        private int[] ordinates ()
+        private int[] ordinates (int ord)
         {
             if (isOpen) {
                 for (int i = 0; i < yOpen.length; i++) {
-                    yOpen[i] = ord.value + (dir * (i - 1));
+                    yOpen[i] = ord + (dir * (i - 1));
                 }
 
                 return yOpen;
             } else {
                 for (int i = 0; i < yClosed.length; i++) {
                     if ((i % 2) == 0) {
-                        yClosed[i] = ord.value - (i / 2);
+                        yClosed[i] = ord - (i / 2);
                     } else {
-                        yClosed[i] = ord.value + ((i + 1) / 2);
+                        yClosed[i] = ord + ((i + 1) / 2);
                     }
                 }
 
                 return yClosed;
             }
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
-
-        final Constant.Boolean printParameters = new Constant.Boolean(
-                false,
-                "Should we print out the class parameters?");
-
-        final Constant.Boolean allowAttachments = new Constant.Boolean(
-                false,
-                "Should we allow staff attachments for created areas?");
-
-        final Constant.Double maxMatchingDistance = new Constant.Double(
-                "distance",
-                0.08,
-                "Maximum matching distance");
-
-        final Scale.Fraction maxTemplateDx = new Scale.Fraction(
-                0.375,
-                "Maximum dx between similar template instances");
-
-        final Scale.Fraction maxClosedDy = new Scale.Fraction(
-                0.2,
-                "Extension allowed in y for closed lines");
-
-        final Scale.Fraction maxOpenDy = new Scale.Fraction(
-                0.25,
-                "Extension allowed in y for open lines");
-
-        final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
-                0.7,
-                "Shrink horizontal ratio to apply when checking for overlap");
-
-        final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
-                0.5,
-                "Shrink vertical ratio to apply when checking for overlap");
     }
 
     //---------------//
@@ -1192,98 +1270,6 @@ public class NotesBuilder
         {
             return LineUtil.intersectionAtX(left, right, x)
                     .getY();
-        }
-    }
-
-    //-------------//
-    // LineAdapter //
-    //-------------//
-    /**
-     * Such adapter is needed to interact with staff LineInfo or ledger
-     * glyph line in a consistent way.
-     */
-    private abstract static class LineAdapter
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final StaffInfo staff;
-
-        private final String prefix;
-
-        //~ Constructors -------------------------------------------------------
-        public LineAdapter (StaffInfo staff,
-                            String prefix)
-        {
-            this.staff = staff;
-            this.prefix = prefix;
-        }
-
-        //~ Methods ------------------------------------------------------------
-        /**
-         * Report the competitors lookup area, according to limits above
-         * and below, defined as ordinate shifts relative to the
-         * reference line.
-         *
-         * @param above offset (positive or negative) from line to top limit.
-         * @param below offset (positive or negative) from line to bottom limit.
-         */
-        public abstract Area getArea (double above,
-                                      double below);
-
-        /** Report the abscissa at beginning of line. */
-        public abstract int getLeftAbscissa ();
-
-        /** Needed to allow various attachments on the same staff. */
-        public String getPrefix ()
-        {
-            return prefix;
-        }
-
-        /** Report the abscissa at end of line. */
-        public abstract int getRightAbscissa ();
-
-        public StaffInfo getStaff ()
-        {
-            return staff;
-        }
-
-        /** Report the ordinate at provided abscissa. */
-        public abstract int yAt (int x);
-
-        /** Report the precise ordinate at provided precise abscissa. */
-        public abstract double yAt (double x);
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final double maxMatchingDistance;
-
-        final int maxTemplateDx;
-
-        final int maxClosedDy;
-
-        final int maxOpenDy;
-
-        //~ Constructors -------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
-        {
-            maxMatchingDistance = constants.maxMatchingDistance.getValue();
-            maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
-            maxClosedDy = Math.max(1, scale.toPixels(constants.maxClosedDy));
-            maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
         }
     }
 

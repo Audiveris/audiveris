@@ -681,12 +681,12 @@ public class FilamentsFactory
                     new Object[]{scale, layer});
 
             if (section != null) {
-                fil.addSection(section, GlyphComposition.Linking.LINK);
+                fil.addSection(section, GlyphComposition.Linking.NO_LINK);
                 section.setProcessed(true);
             }
 
-            return nest.registerGlyph(fil); // Not really useful
-            ///return fil;
+            ///return nest.registerGlyph(fil); // Not really useful, but harmful
+            return fil;
         } catch (Exception ex) {
             logger.error(null, ex);
 
@@ -733,8 +733,6 @@ public class FilamentsFactory
             filaments.add(fil);
 
             if (logger.isDebugEnabled() || section.isVip() || nest.isVip(fil)) {
-                logger.info("VIP created {} with {}", fil, section);
-
                 if (section.isVip() || nest.isVip(fil)) {
                     fil.setVip();
                 }
@@ -789,7 +787,7 @@ public class FilamentsFactory
                         section,
                         GlyphComposition.Linking.NO_LINK);
                 section.setProcessed(true);
-                sectionGlyph = nest.registerGlyph(sectionGlyph); // Not really useful
+                ///sectionGlyph = nest.registerGlyph(sectionGlyph); // Not really useful
                 sectionGlyphs.add(sectionGlyph);
 
                 if (section.isVip() || nest.isVip(sectionGlyph)) {
@@ -1030,6 +1028,7 @@ public class FilamentsFactory
             //                logger.warn("About to re-register {}", fil);
             //            }
             Glyph regGlyph = nest.registerGlyph(fil); // Really useful
+            regGlyph.linkAllSections();
             updated.add(regGlyph);
         }
 

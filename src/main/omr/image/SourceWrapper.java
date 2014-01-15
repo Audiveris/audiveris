@@ -47,13 +47,13 @@ public class SourceWrapper
     }
 
     //----------//
-    // getPixel //
+    // getValue //
     //----------//
     @Override
-    public int getPixel (int x,
+    public int getValue (int x,
                          int y)
     {
-        return source.getPixel(x, y);
+        return source.getValue(x, y);
     }
 
     //----------//

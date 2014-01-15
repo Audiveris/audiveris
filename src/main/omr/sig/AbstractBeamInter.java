@@ -130,15 +130,6 @@ public abstract class AbstractBeamInter
         return median;
     }
 
-    //--------//
-    // isGood //
-    //--------//
-    @Override
-    public boolean isGood ()
-    {
-        return grade >= 0.5; //TODO: use constant
-    }
-
     //~ Inner Classes ----------------------------------------------------------
     //---------//
     // Impacts //
@@ -149,20 +140,29 @@ public abstract class AbstractBeamInter
         //~ Static fields/initializers -----------------------------------------
 
         private static final String[] NAMES = new String[]{
-            "width", "core", "belt"
+            "width", "core", "belt",
+            "dist"
         };
 
-        private static final double[] WEIGHTS = new double[]{0.5, 2, 2};
+        private static final double[] WEIGHTS = new double[]{0.5, 2, 2, 2};
 
         //~ Constructors -------------------------------------------------------
         public Impacts (double width,
                         double core,
-                        double belt)
+                        double belt,
+                        double dist)
         {
             super(NAMES, WEIGHTS);
             setImpact(0, width);
             setImpact(1, core);
             setImpact(2, belt);
+            setImpact(3, dist);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        public double getDistImpact ()
+        {
+            return getImpact(3);
         }
     }
 }

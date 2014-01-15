@@ -134,7 +134,7 @@ public class RunsTableTest
     }
 
     /**
-     * Test of getPixel method, of class RunsTable.
+     * Test of getValue method, of class RunsTable.
      */
     @Test
     public void testGetPixel ()
@@ -145,7 +145,7 @@ public class RunsTableTest
         int y = 0;
         RunsTable instance = createHorizontalInstance();
         int expResult = level;
-        int result = instance.getPixel(x, y);
+        int result = instance.getValue(x, y);
         assertEquals(expResult, result);
     }
 

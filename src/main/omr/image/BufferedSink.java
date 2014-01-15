@@ -61,7 +61,7 @@ public class BufferedSink
     }
 
     @Override
-    public void setPixel (int x,
+    public void setValue (int x,
                           int y,
                           int val)
     {

@@ -42,7 +42,7 @@ class BasicAdministration
     protected boolean vip;
 
     /** Related id string. (pre-built once for all) */
-    protected String idString;
+    protected String idString = "glyph#" + 0;
 
     //~ Constructors -----------------------------------------------------------
     //---------------------//

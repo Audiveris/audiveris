@@ -196,6 +196,17 @@ public class StemsBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
+    //--------------//
+    // linkCueBeams //
+    //--------------//
+    public void linkCueBeams (Inter head,
+                              Corner corner,
+                              Inter stem,
+                              List<Inter> beams)
+    {
+        new HeadLinker(head).linkCueCorner(corner, beams, (StemInter) stem);
+    }
+
     //
     //-----------//
     // linkStems //
@@ -242,8 +253,7 @@ public class StemsBuilder
         Collections.sort(systemBeams, Inter.byAbscissa);
 
         // The sorted head interpretations for this system
-        systemHeads = sig.inters(
-                Arrays.asList(Shape.NOTEHEAD_BLACK, Shape.NOTEHEAD_VOID));
+        systemHeads = sig.inters(ShapeSet.StemTemplateNotes);
         Collections.sort(systemHeads, Inter.byAbscissa);
 
         // First phase, look around heads for stems (and beams if any)
@@ -526,6 +536,16 @@ public class StemsBuilder
             }
         }
 
+        //---------------//
+        // linkCueCorner //
+        //---------------//
+        public void linkCueCorner (Corner corner,
+                                   List<Inter> beams,
+                                   StemInter stem)
+        {
+            new CornerLinker(corner).linkCue(beams, stem);
+        }
+
         //-----------------//
         // reuseAllCorners //
         //-----------------//
@@ -622,7 +642,7 @@ public class StemsBuilder
             private Point2D targetPt;
 
             /** The look up area for the corner. */
-            private final Area area;
+            private Area area;
 
             /** The stems seeds found in the corner. */
             private List<Glyph> seeds;
@@ -641,7 +661,6 @@ public class StemsBuilder
                 xDir = (corner.hSide == RIGHT) ? 1 : (-1);
                 yDir = (corner.vSide == BOTTOM) ? 1 : (-1);
                 refPt = getReferencePoint();
-                area = getLuArea();
             }
 
             //~ Methods --------------------------------------------------------
@@ -660,20 +679,29 @@ public class StemsBuilder
                 //                    logger.info("VIP link {} {}", head, corner);
                 //                }
                 //
+                area = getLuArea();
+
                 // Compute target end of stem
                 Rectangle systemBox = system.getBounds();
                 int sysY = (yDir > 0) ? (systemBox.y + systemBox.height)
                         : systemBox.y;
                 targetPt = getTargetPt(new Line2D.Double(0, sysY, 100, sysY));
 
-                // Look for beams in the corner
+                // Look for beams and beam hooks in the corner
+                List<Inter> candidates = sig.intersectedInters(
+                        neighborBeams,
+                        GeoOrder.BY_ABSCISSA,
+                        area);
+
                 List<AbstractBeamInter> beams = new ArrayList<AbstractBeamInter>();
-                int goodIndex = lookupBeams(beams);
+                int groupStart = lookupBeams(
+                        beams,
+                        candidates);
 
                 // If we have a good beam, stop at the end of beam group
                 // using the good beam for the target point
-                if (goodIndex != -1) {
-                    targetPt = getTargetPt(getLimit(beams.get(goodIndex)));
+                if (groupStart != -1) {
+                    targetPt = getTargetPt(getLimit(beams.get(groupStart)));
                 }
 
                 Line2D line = new Line2D.Double(refPt, targetPt);
@@ -719,43 +747,25 @@ public class StemsBuilder
 
                 // Beam - Stem connection(s)?
                 if (!beams.isEmpty() && !stems.isEmpty()) {
-                    for (int i = 0; i < beams.size(); i++) {
-                        AbstractBeamInter beam = beams.get(i);
-
-                        for (StemInter stem : stems) {
-                            BeamStemRelation rel = connectBeamStem(beam, stem);
-
-                            if (rel == null) {
-                                continue;
-                            }
-
-                            if ((i == goodIndex)
-                                && (goodIndex < (beams.size() - 1))) {
-                                // Extend stem connection till end of beam group
-                                for (AbstractBeamInter next : beams.subList(
-                                        goodIndex + 1,
-                                        beams.size())) {
-                                    BeamStemRelation r = (BeamStemRelation) sig.getRelation(
-                                            next,
-                                            stem,
-                                            BeamStemRelation.class);
-
-                                    if (r == null) {
-                                        r = new BeamStemRelation();
-                                        r.setStemPortion(rel.getStemPortion());
-                                        r.setBeamPortion(rel.getBeamPortion());
-                                        r.setGrade(rel.getGrade());
-                                        sig.addEdge(next, stem, r);
-                                    }
-                                }
-                            }
-                        }
-
-                        if (i == goodIndex) {
-                            break;
-                        }
-                    }
+                    linkBeamsAndStems(beams, groupStart, stems);
                 }
+            }
+
+            /**
+             * Specific link for cue (head & beam).
+             */
+            public void linkCue (List<Inter> candidates,
+                                 StemInter stem)
+            {
+                // Look for beams in the corner
+                List<AbstractBeamInter> beams = new ArrayList<AbstractBeamInter>();
+                int groupStart = lookupBeams(
+                        beams,
+                        candidates);
+                linkBeamsAndStems(
+                        beams,
+                        groupStart,
+                        Collections.singletonList(stem));
             }
 
             //-------//
@@ -767,6 +777,8 @@ public class StemsBuilder
              */
             public void reuse ()
             {
+                area = getLuArea();
+
                 // Look for stems inters that intersect the lookup area
                 List<Inter> stems = sig.intersectedInters(
                         neighborStems,
@@ -780,9 +792,9 @@ public class StemsBuilder
                 }
             }
 
-            //---------------//
-            // areCompatible //
-            //---------------//
+            //--------------------//
+            // areGroupCompatible //
+            //--------------------//
             /**
              * Check whether the two beams can be consecutive beams
              * in the same beam group, using ordinate gap.
@@ -791,8 +803,8 @@ public class StemsBuilder
              * @param two following beam, in 'dir' direction
              * @return true if OK
              */
-            private boolean areCompatible (AbstractBeamInter one,
-                                           AbstractBeamInter two)
+            private boolean areGroupCompatible (AbstractBeamInter one,
+                                                AbstractBeamInter two)
             {
                 // Vertical gap?
                 Point2D onePt = getTargetPt(one.getMedian());
@@ -1167,6 +1179,9 @@ public class StemsBuilder
                 Point offset = desc.getOffset(anchor);
                 final Point ul = headBox.getLocation();
                 final double dx = offset.x;
+
+                //TODO: This might be wrong for SMALL notes
+                //TODO: plus, this duplicates descriptor offsets!!!
                 final double dy = desc.getHeight() * (0.5 + (yDir * 0.45));
 
                 return new Point2D.Double(ul.x + dx, ul.y + dy);
@@ -1371,6 +1386,48 @@ public class StemsBuilder
                 return allStemInters;
             }
 
+            private void linkBeamsAndStems (List<AbstractBeamInter> beams,
+                                            int groupStart,
+                                            List<StemInter> stems)
+            {
+                for (int i = 0; i < beams.size(); i++) {
+                    AbstractBeamInter beam = beams.get(i);
+
+                    for (StemInter stem : stems) {
+                        BeamStemRelation rel = connectBeamStem(beam, stem);
+
+                        if (rel == null) {
+                            continue;
+                        }
+
+                        if ((i == groupStart)
+                            && (groupStart < (beams.size() - 1))) {
+                            // Extend stem connection till end of beam group
+                            for (AbstractBeamInter next : beams.subList(
+                                    groupStart + 1,
+                                    beams.size())) {
+                                BeamStemRelation r = (BeamStemRelation) sig.getRelation(
+                                        next,
+                                        stem,
+                                        BeamStemRelation.class);
+
+                                if (r == null) {
+                                    r = new BeamStemRelation();
+                                    r.setStemPortion(rel.getStemPortion());
+                                    r.setBeamPortion(rel.getBeamPortion());
+                                    r.setGrade(rel.getGrade());
+                                    sig.addEdge(next, stem, r);
+                                }
+                            }
+                        }
+                    }
+
+                    if (i == groupStart) {
+                        break;
+                    }
+                }
+            }
+
             //-------------//
             // lookupBeams //
             //-------------//
@@ -1378,21 +1435,18 @@ public class StemsBuilder
              * Look for beam interpretations in the lookup area.
              * We stop at (group of) first good beam interpretation, if any.
              *
-             * @param beams (output) list to be populated, ordered by distance
-             *              from head
+             * @param beams      (output) list to be populated, ordered by
+             *                   distance
+             *                   from head
+             * @param candidates (input) collection of candidate beams
              * @return index of first good beam in the beams list
              */
-            private int lookupBeams (List<AbstractBeamInter> beams)
+            private int lookupBeams (List<AbstractBeamInter> beams,
+                                     List<Inter> candidates)
             {
-                // Look for beams and beam hooks in the corner
-                List<Inter> allbeams = sig.intersectedInters(
-                        neighborBeams,
-                        GeoOrder.BY_ABSCISSA,
-                        area);
-
-                // Sort beams by distance from head
+                // Sort candidates by distance from head
                 Collections.sort(
-                        allbeams,
+                        candidates,
                         new Comparator<Inter>()
                 {
                     @Override
@@ -1416,7 +1470,7 @@ public class StemsBuilder
                 AbstractBeamInter goodBeam = null;
 
                 BeamLoop:
-                for (Inter inter : allbeams) {
+                for (Inter inter : candidates) {
                     AbstractBeamInter beam = (AbstractBeamInter) inter;
 
                     if (goodBeam == null) {
@@ -1454,7 +1508,7 @@ public class StemsBuilder
                         AbstractBeamInter lastBeam = beams.get(
                                 beams.size() - 1);
 
-                        if (areCompatible(lastBeam, beam)) {
+                        if (areGroupCompatible(lastBeam, beam)) {
                             beams.add(beam);
                         } else {
                             break BeamLoop;

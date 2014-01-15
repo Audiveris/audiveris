@@ -92,7 +92,7 @@ public class ChamferDistanceTest
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 char c = rows[y].charAt(x);
-                img.setPixel(x, y, (c == 'X') ? 0 : 255);
+                img.setValue(x, y, (c == 'X') ? 0 : 255);
             }
         }
 

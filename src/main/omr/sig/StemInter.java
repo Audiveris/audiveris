@@ -42,6 +42,14 @@ public class StemInter
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    public static double getMinGrade ()
+    {
+        return AbstractInter.getMinGrade();
+    }
+
     //--------//
     // accept //
     //--------//
@@ -49,14 +57,6 @@ public class StemInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
-    }
-
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    public static double getMinGrade ()
-    {
-        return AbstractInter.getMinGrade();
     }
 
     //------------//
@@ -76,26 +76,18 @@ public class StemInter
     {
         for (Relation rel : sig.edgesOf(this)) {
             if (rel instanceof HeadStemRelation) {
-                Inter head = sig.getEdgeSource(rel);
+                HeadStemRelation hsRel = (HeadStemRelation) rel;
 
                 // Check side
-                HorizontalSide headSide = ((HeadStemRelation) rel).getHeadSide();
+                if (hsRel.getHeadSide() == side) {
+                    // Check itch
+                    AbstractNoteInter head = (AbstractNoteInter) sig.getEdgeSource(
+                            rel);
 
-                if (headSide != side) {
-                    continue;
+                    if (head.getPitch() == pitch) {
+                        return head;
+                    }
                 }
-
-                // Check pitch
-                int headPitch = (head instanceof BlackHeadInter)
-                        ? ((BlackHeadInter) head).getPitch()
-                        : ((VoidHeadInter) head).getPitch();
-
-                if (headPitch != pitch) {
-                    continue;
-                }
-
-                // Got it!
-                return head;
             }
         }
 

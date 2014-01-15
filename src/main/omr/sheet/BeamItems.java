@@ -67,17 +67,14 @@ public class BeamItems
     };
 
     //~ Instance fields --------------------------------------------------------
-    /** Containing system. */
-    private final SystemInfo system;
-
-    /** Minimum acceptable width for a beam in this sheet. */
-    private final int minBeamWidth;
-
     /** Underlying glyph. */
     private final Glyph glyph;
 
-    /** The typical beam height in the sheet. */
-    private final int typicalHeight;
+    /** Minimum acceptable width for a beam. */
+    private final int minBeamWidth;
+
+    /** The typical beam height. */
+    private final int typicalBeamHeight;
 
     /** Sequence of items retrieved for the same glyph. */
     private final List<BeamItem> items = new ArrayList<BeamItem>();
@@ -89,21 +86,17 @@ public class BeamItems
     /**
      * Creates a new BeamItems object.
      *
-     * @param system       containing system
-     * @param glyph        the candidate glyph
-     * @param minBeamWidth minimum width for a beam (in pixels)
+     * @param glyph             the candidate glyph
+     * @param minBeamWidth      minimum width for a beam (in pixels)
+     * @param typicalBeamHeight typical height for a beam (in pixels)
      */
-    public BeamItems (SystemInfo system,
-                      Glyph glyph,
-                      int minBeamWidth)
+    public BeamItems (Glyph glyph,
+                      int minBeamWidth,
+                      int typicalBeamHeight)
     {
-        this.system = system;
         this.glyph = glyph;
         this.minBeamWidth = minBeamWidth;
-
-        typicalHeight = system.getSheet()
-                .getScale()
-                .getMainBeam();
+        this.typicalBeamHeight = typicalBeamHeight;
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -326,7 +319,7 @@ public class BeamItems
     {
         final double meanHeight = glyph.getMeanThickness(
                 Orientation.HORIZONTAL);
-        final double ratio = meanHeight / typicalHeight;
+        final double ratio = meanHeight / typicalBeamHeight;
         final int targetCount = (int) Math.rint(ratio);
 
         // Typical case: 2 beams are stuck (beamCount = 1, targetCount = 2)
@@ -338,7 +331,7 @@ public class BeamItems
 
         // Create the middle lines with proper vertical gap
         BeamItem item = items.get(0);
-        double gutter = item.height - (2 * typicalHeight);
+        double gutter = item.height - (2 * typicalBeamHeight);
 
         if (gutter < 0) {
             if (glyph.isVip()) {
@@ -470,7 +463,7 @@ public class BeamItems
         // Retrieve groups of dy values, roughly separated by beam height
         // Each group will correspond to a separate beam
 
-        final double delta = typicalHeight * 0.75; //TODO: use a constant?
+        final double delta = typicalBeamHeight * 0.75; //TODO: use a constant?
         final List<BasicLine> lines = new ArrayList<BasicLine>();
         Barycenter dys = new Barycenter();
         BasicLine line = null;

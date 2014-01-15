@@ -214,9 +214,9 @@ public class RunsTableFactory
                                    int pos)
         {
             if (swapNeeded) {
-                return source.getPixel(pos, coord);
+                return source.getValue(pos, coord);
             } else {
-                return source.getPixel(coord, pos);
+                return source.getValue(coord, pos);
             }
         }
 

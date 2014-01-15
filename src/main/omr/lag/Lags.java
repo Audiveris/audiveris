@@ -31,17 +31,14 @@ public class Lags
     /** Vertical (partial) lag. It complements hLag. */
     public static final String VLAG = "vLag";
 
-    /** Horizontal out-of-staves lag. */
+    /** Horizontal out-of-staves lag. (for ledgers and endings) */
     public static final String FULL_HLAG = "fullHLag";
 
-    /** Spot lag. */
+    /** Spot lag. (for beams) */
     public static final String SPOT_LAG = "spotLag";
 
-    /** Head Lag. */
-    public static final String HEAD_LAG = "headLag";
-
-    /** Split lag. */
-    public static final String SPLIT_LAG = "splitLag";
+    /** Small Spot lag. (for small beams: cue/grace notes */
+    public static final String CUE_SPOT_LAG = "cueSpotLag";
 
     //~ Methods ----------------------------------------------------------------
     //-------------//

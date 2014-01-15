@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.ui.symbol;
 
+import omr.glyph.Shape;
+
 import omr.image.Template.Key;
 import static omr.ui.symbol.Alignment.*;
 
@@ -20,17 +22,17 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.Rectangle2D.Float;
 
 /**
  * Class {@code TemplateSymbol} defines a symbol meant only for
  * template matching.
  * <p>
- * TODO: Symbol must depend on interline of course, PLUS line thickness and
+ * TODO: Symbol must depend on interhasLine of course, PLUS hasLine thickness
+ * and
  * perhaps stem thickness as well.
- * This implies that a set of templates will likely be defined per page 
- * (interline, line, stem).
- * Beware, ledgers are often a bit thicker than staff lines.
+ * This implies that a set of templates will likely be defined per page
+ * (interhasLine, hasLine, stem).
+ * Beware, ledgers are often a bit thicker than staff hasLines.
  *
  * @author Hervé Bitteur
  */
@@ -102,98 +104,42 @@ public class TemplateSymbol
                           Alignment alignment)
     {
         final MyParams p = (MyParams) params;
-        final float shortHeight = p.rect.height * 0.4f;
-        final float longHeight = p.rect.height * 0.6f;
 
-        // Background for small shapes
-        if (isSmall) {
-            final Color oldColor = g.getColor();
-            g.setColor(Color.GREEN);
-            g.fill(p.rect);
-            g.setColor(oldColor);
+        // Background
+        g.setColor(Color.RED);
+
+        if ((key.shape == Shape.WHOLE_NOTE_SMALL)
+            || (key.shape == Shape.WHOLE_NOTE)) {
+            g.fill(
+                    new Rectangle2D.Float(
+                            p.rect.x,
+                            p.rect.y + (p.line / 2),
+                            p.rect.width,
+                            p.rect.height - p.line));
+        } else {
+            g.fill(
+                    new Rectangle2D.Float(
+                            p.rect.x + (p.stem / 2),
+                            p.rect.y + (p.line / 2),
+                            p.rect.width - p.stem,
+                            p.rect.height - p.line));
         }
+
+        g.setColor(Color.BLACK);
 
         // Naked symbol
         Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
         MusicFont.paint(g, p.layout, loc, AREA_CENTER);
 
-        // Line(s)/ledger(s)
-        Rectangle2D rect;
-
-        switch (key.lines) {
-        case LINE_TOP:
-            loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-            g.fill(
-                    new Float(loc.x, loc.y - (p.line / 2), p.rect.width, p.line));
-
-            break;
-
-        case LINE_MIDDLE:
+        // Middle line?
+        if (key.hasLine) {
             loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
             g.fill(
-                    new Float(loc.x, loc.y - (p.line / 2), p.rect.width, p.line));
-
-            break;
-
-        case LINE_BOTTOM:
-            loc = alignment.translatedPoint(BOTTOM_LEFT, p.rect, location);
-            g.fill(
-                    new Float(loc.x, loc.y - (p.line / 2), p.rect.width, p.line));
-
-            break;
-
-        case LINE_DOUBLE:
-            loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-            g.fill(
-                    new Float(loc.x, loc.y - (p.line / 2), p.rect.width, p.line));
-            loc = alignment.translatedPoint(BOTTOM_LEFT, p.rect, location);
-            g.fill(
-                    new Float(loc.x, loc.y - (p.line / 2), p.rect.width, p.line));
-
-        default:
-        case LINE_NONE:
-        }
-
-        // Stem(s) portion(s)
-        if (!isSmall) {
-            return; // No stem variants with standard size shape
-        }
-
-        switch (key.stems) {
-        case STEM_LEFT_BOTTOM:
-            loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-            g.fill(new Float(loc.x, loc.y + longHeight, p.stem, shortHeight));
-
-            break;
-
-        case STEM_LEFT:
-            loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-            g.fill(new Float(loc.x, loc.y, p.stem, p.rect.height));
-
-            break;
-
-        case STEM_RIGHT_TOP:
-            loc = alignment.translatedPoint(TOP_RIGHT, p.rect, location);
-            g.fill(new Float(loc.x - p.stem, loc.y, p.stem, shortHeight));
-
-            break;
-
-        case STEM_RIGHT:
-            loc = alignment.translatedPoint(TOP_RIGHT, p.rect, location);
-            g.fill(new Float(loc.x - p.stem, loc.y, p.stem, p.rect.height));
-
-            break;
-
-        case STEM_DOUBLE:
-            loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
-            g.fill(new Float(loc.x, loc.y + longHeight, p.stem, shortHeight));
-            loc = alignment.translatedPoint(TOP_RIGHT, p.rect, location);
-            g.fill(new Float(loc.x - p.stem, loc.y, p.stem, shortHeight));
-
-            break;
-
-        default:
-        case STEM_NONE:
+                    new Rectangle2D.Float(
+                            loc.x,
+                            loc.y - (p.line / 2),
+                            p.rect.width,
+                            p.line));
         }
     }
 

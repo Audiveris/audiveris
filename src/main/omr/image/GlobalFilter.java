@@ -99,7 +99,7 @@ public class GlobalFilter
     public boolean isFore (int x,
                            int y)
     {
-        return source.getPixel(x, y) <= threshold;
+        return source.getValue(x, y) <= threshold;
     }
 
     //~ Inner Classes ----------------------------------------------------------

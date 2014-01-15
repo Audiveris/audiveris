@@ -57,11 +57,7 @@ public class SpotsController
 
     /** Set of shapes of interest. */
     private static final EnumSet<Shape> relevantShapes = EnumSet.of(
-            Shape.BEAM_SPOT,
-            Shape.HEAD_SPOT,
-            Shape.BEAM,
-            Shape.NOTEHEAD_BLACK,
-            Shape.NOTEHEAD_VOID);
+            Shape.BEAM_SPOT);
 
     //~ Instance fields --------------------------------------------------------
     private final Lag[] lags;

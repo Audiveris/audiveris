@@ -145,7 +145,7 @@ public class SheetDiff
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 if (in.isFore(x, y) != out.isFore(x, y)) {
-                    xor.setPixel(x, y, 0);
+                    xor.setValue(x, y, 0);
                 }
             }
         }

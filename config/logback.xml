@@ -42,6 +42,7 @@
     </root>
     
     <!-- Define DEBUG loggers here below: -->
+<!--    <logger name="omr.image.ShapeDescriptor" level="DEBUG"/>-->
 <!--    <logger name="omr.step.Stepping" level="DEBUG"/>-->
 <!--    <logger name="omr.check.CheckSuite" level="DEBUG"/>-->
 <!--    <logger name="omr.sheet.VerticalsBuilder" level="DEBUG"/>-->

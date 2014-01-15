@@ -96,7 +96,7 @@ public class WatershedGrayLevelTest
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 char c = rows[y].charAt(x);
-                img.setPixel(x, y, (c == 'X') ? 0 : 255);
+                img.setValue(x, y, (c == 'X') ? 0 : 255);
             }
         }
 
@@ -109,7 +109,7 @@ public class WatershedGrayLevelTest
         for (int y = 0, h = img.getHeight(); y < h; y++) {
             for (int x = 0, w = img.getWidth(); x < w; x++) {
                 if (lines[x][y]) {
-                    img.setPixel(x, y, PixelSource.BACKGROUND);
+                    img.setValue(x, y, PixelSource.BACKGROUND);
                 }
             }
         }

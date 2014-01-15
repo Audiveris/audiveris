@@ -176,7 +176,7 @@ public class RunsTable
 
             for (int col = 0; col < buffer.getWidth(); col++) {
                 sb.append(
-                        (buffer.getPixel(col, row) == BACKGROUND) ? '-' : 'X');
+                        (buffer.getValue(col, row) == BACKGROUND) ? '-' : 'X');
             }
 
             sb.append(String.format("|%n"));
@@ -214,7 +214,7 @@ public class RunsTable
 
                 for (Run run : seq) {
                     for (int c = run.getStart(); c <= run.getStop(); c++) {
-                        buffer.setPixel(c, row, 0);
+                        buffer.setValue(c, row, 0);
                     }
                 }
             }
@@ -229,7 +229,7 @@ public class RunsTable
                 for (Run run : seq) {
                     for (int col = run.getStart(); col <= run.getStop();
                             col++) {
-                        buffer.setPixel(row, col, 0);
+                        buffer.setValue(row, col, 0);
                     }
                 }
             }
@@ -287,7 +287,7 @@ public class RunsTable
     }
 
     //----------//
-    // getPixel //
+    // getValue //
     //----------//
     /**
      * {@inheritDoc}
@@ -303,7 +303,7 @@ public class RunsTable
      * @return the pixel gray level
      */
     @Override
-    public final int getPixel (int x,
+    public final int getValue (int x,
                                int y)
     {
         Run run = getRunAt(x, y);

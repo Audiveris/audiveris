@@ -240,7 +240,7 @@ public class Picture
             sb.append("|");
 
             for (int x = xMin; x <= xMax; x++) {
-                int pix = source.getPixel(x, y);
+                int pix = source.getValue(x, y);
 
                 if (pix == 255) { // White background
                     sb.append("   .");
@@ -431,7 +431,7 @@ public class Picture
                     && (pt.x < getWidth())
                     && (pt.y >= 0)
                     && (pt.y < getHeight())) {
-                    level = Integer.valueOf(initialSource.getPixel(pt.x, pt.y));
+                    level = Integer.valueOf(initialSource.getValue(pt.x, pt.y));
                 }
             }
 
@@ -547,7 +547,7 @@ public class Picture
     //------------------//
     // gaussianFiltered //
     //------------------//
-    private PixelBuffer gaussianFiltered (PixelSource src)
+    public PixelBuffer gaussianFiltered (PixelSource src)
     {
         StopWatch watch = new StopWatch("Gaussian");
 

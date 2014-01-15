@@ -40,12 +40,12 @@ import java.util.Objects;
  * <dd>Supported shapes are NOTEHEAD_BLACK, NOTEHEAD_VOID and WHOLE_NOTE.</dd>
  *
  * <dt><b>Half</b></dt>
- * <dd>Height is constrained by interline. But to cope with variation in symbol
- * width, we support separate detection of LEFT and RIGHT halves.</dd>
+ * <dd>Height is constrained by interhasLine. But to cope with variation in symbol
+ width, we support separate detection of LEFT and RIGHT halves.</dd>
  *
  * <dt><b>Lines</b></dt>
- * <dd>Staff lines and/or ledgers can be stuck to symbol, so we consider NONE,
- * LINE_TOP, LINE_MIDDLE, LINE_BOTTOM and LINE_DOUBLE (top & bottom) for all
+ * <dd>Staff hasLines and/or ledgers can be stuck to symbol, so we consider NONE,
+ LINE_TOP, LINE_MIDDLE, LINE_BOTTOM and LINE_DOUBLE (top & bottom) for all
  * supported shapes</dd>
  *
  * <dt><b>Stems</b></dt>
@@ -74,15 +74,15 @@ public class Template
     {
         //~ Enumeration constant initializers ----------------------------------
 
-        /** No line at all. (for standard sizes) */
+        /** No hasLine at all. (for standard sizes) */
         LINE_NONE,
-        /** Only one line above. */
+        /** Only one hasLine above. */
         LINE_TOP,
-        /** Only one line in the middle. (For even pitches) */
+        /** Only one hasLine in the middle. (For even pitches) */
         LINE_MIDDLE,
-        /** Only one line below. */
+        /** Only one hasLine below. */
         LINE_BOTTOM,
-        /** Two lines, one above and one below. */
+        /** Two hasLines, one above and one below. */
         LINE_DOUBLE;
     }
 
@@ -364,18 +364,15 @@ public class Template
 
         public final Shape shape;
 
-        public final Lines lines;
-
-        public final Stems stems;
+        /** Middle hasLine or not. */
+        public final boolean hasLine;
 
         //~ Constructors -------------------------------------------------------
         public Key (Shape shape,
-                    Lines lines,
-                    Stems stems)
+                    boolean line)
         {
             this.shape = shape;
-            this.lines = lines;
-            this.stems = stems;
+            this.hasLine = line;
         }
 
         //~ Methods ------------------------------------------------------------
@@ -387,26 +384,23 @@ public class Template
             } else {
                 Key that = (Key) obj;
 
-                return (shape == that.shape) && (lines == that.lines)
-                       && (stems == that.stems);
+                return (shape == that.shape) && (hasLine == that.hasLine);
             }
         }
 
         @Override
         public int hashCode ()
         {
-            int hash = 5;
-            hash = (97 * hash) + Objects.hashCode(this.shape);
-            hash = (97 * hash) + Objects.hashCode(this.lines);
-            hash = (97 * hash) + Objects.hashCode(this.stems);
-
+            int hash = 7;
+            hash = 37 * hash + Objects.hashCode(this.shape);
+            hash = 37 * hash + (this.hasLine ? 1 : 0);
             return hash;
         }
 
         /**
-         * Key is formatted as shape-lines-stems.
+         * Key is formatted as shape[-hasLine].
          *
-         * @return unique key name (for debugging)
+         * @return unique key name
          */
         @Override
         public String toString ()
@@ -414,10 +408,10 @@ public class Template
             StringBuilder sb = new StringBuilder();
 
             sb.append(shape);
-            sb.append("-")
-                    .append(lines);
-            sb.append("-")
-                    .append(stems);
+
+            if (hasLine) {
+                sb.append("-LINE");
+            }
 
             return sb.toString();
         }

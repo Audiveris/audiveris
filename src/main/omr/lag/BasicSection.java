@@ -11,8 +11,6 @@
 // </editor-fold>
 package omr.lag;
 
-import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -461,7 +459,7 @@ public class BasicSection
 
             for (Run run : runs) {
                 for (int y = run.getStart(); y <= run.getStop(); y++) {
-                    buf.setPixel(x, y - box.y, 0);
+                    buf.setValue(x, y - box.y, 0);
                 }
 
                 x += 1;
@@ -471,7 +469,7 @@ public class BasicSection
 
             for (Run run : runs) {
                 for (int x = run.getStart(); x <= run.getStop(); x++) {
-                    buf.setPixel(x - box.x, y, 0);
+                    buf.setValue(x - box.x, y, 0);
                 }
 
                 y += 1;
@@ -1266,8 +1264,6 @@ public class BasicSection
     @Override
     public void setGlyph (Glyph glyph)
     {
-        this.glyph = glyph;
-
         if (isVip()) {
             logger.info("VIP {} linkedTo {}", this, glyph);
 
@@ -1275,6 +1271,8 @@ public class BasicSection
                 glyph.setVip();
             }
         }
+        
+        this.glyph = glyph;
     }
 
     //----------//

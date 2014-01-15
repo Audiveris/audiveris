@@ -94,10 +94,7 @@ public class ChamferMatchingTest
         Template template = TemplateFactory.getInstance()
                 .getCatalog(14)
                 .getTemplate(
-                        new Template.Key(
-                                Shape.NOTEHEAD_BLACK,
-                                Template.Lines.LINE_NONE,
-                                Template.Stems.STEM_NONE));
+                        new Template.Key(Shape.NOTEHEAD_BLACK, false));
         template.dump();
 
         PixelBuffer image = createImage(imageRows);
@@ -125,7 +122,7 @@ public class ChamferMatchingTest
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 char c = rows[y].charAt(x);
-                img.setPixel(x, y, (c == 'X') ? 0 : 255);
+                img.setValue(x, y, (c == 'X') ? 0 : 255);
             }
         }
 

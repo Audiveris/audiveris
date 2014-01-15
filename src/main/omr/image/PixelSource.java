@@ -45,7 +45,7 @@ public interface PixelSource
      * @return the pixel value using range 0..255 (0/black for foreground,
      *         255/white for background)
      */
-    int getPixel (int x,
+    int getValue (int x,
                   int y);
 
     /**

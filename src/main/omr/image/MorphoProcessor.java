@@ -99,7 +99,7 @@ public class MorphoProcessor
         //  IJ.log("pg: "+pg.length);
         int sz = pg.length; //se.getWidth()*se.getHeight();
 
-        byte[] pixels = (byte[]) ip.getPixels();
+        byte[] pixels = (byte[]) ip.getValues();
         byte[] newpix = new byte[pixels.length];
         byte[] newpix2 = new byte[pixels.length];
         int[] wnd = new int[sz];
@@ -156,7 +156,7 @@ public class MorphoProcessor
         //  IJ.log("pg: "+pg.length);
         int sz = pg.length; //se.getWidth()*se.getHeight();
 
-        byte[] pixels = (byte[]) ip.getPixels();
+        byte[] pixels = (byte[]) ip.getValues();
         int[] wnd = new int[sz];
 
         byte[] newpix = new byte[pixels.length];
@@ -189,9 +189,9 @@ public class MorphoProcessor
         int min = -32767; //,k=0,x=0,y=0;
 
         int sz = pg.length; //se.getWidth()*se.getHeight();
-        // byte[] p=(byte[])ip.convertToByte(false).getPixels();
+        // byte[] p=(byte[])ip.convertToByte(false).getValues();
 
-        byte[] pixels = (byte[]) ip.getPixels();
+        byte[] pixels = (byte[]) ip.getValues();
 
         int[] wnd = new int[sz];
 
@@ -224,7 +224,7 @@ public class MorphoProcessor
         int max = 32767; //,k=0,x=0,y=0;
 
         //int pgzise=pg.length;
-        byte[] pixels = (byte[]) ip.getPixels();
+        byte[] pixels = (byte[]) ip.getValues();
         byte[] newpix = new byte[pixels.length];
 
         //String s="", s2="";
@@ -320,7 +320,7 @@ public class MorphoProcessor
 
         int sz = pg.length;
 
-        byte[] pixels = (byte[]) ip.getPixels();
+        byte[] pixels = (byte[]) ip.getValues();
         byte[] newpix = new byte[pixels.length];
         byte[] newpix2 = new byte[pixels.length];
         int[] wnd = new int[sz];

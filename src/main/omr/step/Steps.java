@@ -63,6 +63,8 @@ public class Steps
 
     public static final String STEM_LINKS = "STEM_LINKS";
 
+    public static final String CUE_BEAMS = "CUE_BEAMS";
+
     public static final String RESOLUTION = "RESOLUTION";
 
     public static final String TEXTS = "TEXTS";
@@ -100,13 +102,13 @@ public class Steps
         addStep(new BinaryStep());
         addStep(new ScaleStep());
         addStep(new GridStep());
-
         addStep(new StemSeedsStep());
         addStep(new BeamsStep());
         addStep(new LedgersStep());
         addStep(new NotesStep());
         addStep(new StemLinksStep());
         addStep(new ResolutionStep());
+        addStep(new CueBeamsStep());
 
         //        addStep(new TextsStep());
         addNoStep(SYMBOLS);

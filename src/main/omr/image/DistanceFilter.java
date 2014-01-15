@@ -51,7 +51,7 @@ public class DistanceFilter
     }
 
     @Override
-    public int getPixel (int x,
+    public int getValue (int x,
                          int y)
     {
         throw new UnsupportedOperationException("Not supported yet.");

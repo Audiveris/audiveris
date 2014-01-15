@@ -54,8 +54,7 @@ import java.util.List;
 
 /**
  * Class {@code SpotsBuilder} performs morphology analysis on
- * initial image to retrieve major spots that compose black note heads
- * and beams.
+ * initial image to retrieve major spots that compose beams.
  *
  * @author Hervé Bitteur
  */
@@ -146,21 +145,11 @@ public class SpotsBuilder
 
         sheet.setLag(Lags.SPOT_LAG, spotLag);
 
-        Lag headLag = new BasicLag(Lags.HEAD_LAG, SPOT_ORIENTATION);
-        sheet.setLag(Lags.HEAD_LAG, headLag);
-
-        Lag splitLag = new BasicLag(Lags.SPLIT_LAG, SPOT_ORIENTATION);
-        sheet.setLag(Lags.SPLIT_LAG, splitLag);
-
         // Dispatch spots per system, keeping only those within system width
         dispatchSpots(glyphs);
 
         // Display on all spot glyphs
-        SpotsController spotController = new SpotsController(
-                sheet,
-                spotLag,
-                headLag,
-                splitLag);
+        SpotsController spotController = new SpotsController(sheet, spotLag);
         spotController.refresh();
     }
 
@@ -231,7 +220,7 @@ public class SpotsBuilder
 
         // Store buffer on disk for further manual analysis if any
         ///ImageUtil.saveOnDisk(closedImg, sheet.getPage().getId() + ".spot");
-
+        
         // Display the gray-level view of all spots
         if (Main.getGui() != null) {
             ImageView imageView = new ImageView(sheet, closedImg);
@@ -278,6 +267,5 @@ public class SpotsBuilder
                 "pixel",
                 140,
                 "Global threshold used for binarization of gray spots");
-
     }
 }

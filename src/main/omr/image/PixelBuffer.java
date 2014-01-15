@@ -13,8 +13,6 @@ package omr.image;
 
 import static omr.image.PixelSource.BACKGROUND;
 
-import omr.math.TableUtil;
-
 import omr.util.StopWatch;
 
 import net.jcip.annotations.ThreadSafe;
@@ -24,10 +22,10 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import java.util.Arrays;
 
 /**
  * Class {@code PixelBuffer} handles a plain rectangular buffer of
@@ -38,6 +36,7 @@ import java.util.Arrays;
  */
 @ThreadSafe
 public class PixelBuffer
+        extends Table.UnsignedByte
         implements PixelFilter, PixelSink
 {
     //~ Static fields/initializers ---------------------------------------------
@@ -45,16 +44,6 @@ public class PixelBuffer
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             PixelBuffer.class);
-
-    //~ Instance fields --------------------------------------------------------
-    /** Width of the table */
-    private final int width;
-
-    /** Height of the table */
-    private final int height;
-
-    /** Underlying buffer */
-    private final byte[] buffer;
 
     //~ Constructors -----------------------------------------------------------
     //-------------//
@@ -67,13 +56,10 @@ public class PixelBuffer
      */
     public PixelBuffer (Dimension dimension)
     {
-        width = dimension.width;
-        height = dimension.height;
-
-        buffer = new byte[width * height];
+        super(dimension.width, dimension.height);
 
         // Initialize the whole buffer with background color value
-        Arrays.fill(buffer, (byte) BACKGROUND);
+        fill(BACKGROUND);
     }
 
     //-------------//
@@ -100,7 +86,7 @@ public class PixelBuffer
             for (int y = 0; y < height; y++) {
                 raster.getPixel(x, y, pixel);
                 // We use just the first band
-                setPixel(x, y, pixel[0]);
+                setValue(x, y, pixel[0]);
             }
         }
 
@@ -125,7 +111,7 @@ public class PixelBuffer
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 if (filter.isFore(x, y)) {
-                    setPixel(x, y, 0);
+                    setValue(x, y, 0);
                 }
             }
         }
@@ -133,35 +119,7 @@ public class PixelBuffer
         ///watch.print();
     }
 
-    //-------------//
-    // PixelBuffer //
-    //-------------//
-    /**
-     * Clone a PixelBuffer.
-     *
-     * @param buf the buffer to clone
-     */
-    public PixelBuffer (PixelBuffer buf)
-    {
-        this(new Dimension(buf.getWidth(), buf.getHeight()));
-
-        final StopWatch watch = new StopWatch("PixelBuffer");
-        watch.start("copy");
-
-        System.arraycopy(buf.buffer, 0, buffer, 0, buffer.length);
-
-        ///watch.print();
-    }
-
     //~ Methods ----------------------------------------------------------------
-    //------//
-    // dump //
-    //------//
-    public void dump (String title)
-    {
-        TableUtil.dump(title, this);
-    }
-
     //------------//
     // getContext //
     //------------//
@@ -172,40 +130,29 @@ public class PixelBuffer
         return new Context(BACKGROUND / 2);
     }
 
-    //-----------//
-    // getHeight //
-    //-----------//
+    //---------//
+    // getCopy //
+    //---------//
     @Override
-    public int getHeight ()
+    public PixelBuffer getCopy (Rectangle roi)
     {
-        return height;
-    }
+        PixelBuffer copy;
 
-    //----------//
-    // getPixel //
-    //----------//
-    @Override
-    public int getPixel (int x,
-                         int y)
-    {
-        return buffer[(y * width) + x] & 0xff;
-    }
+        if (roi == null) {
+            copy = new PixelBuffer(new Dimension(width, height));
+            System.arraycopy(data, 0, copy.data, 0, data.length);
+        } else {
+            checkRoi(roi);
 
-    //-----------//
-    // getPixels //
-    //-----------//
-    public byte[] getPixels ()
-    {
-        return buffer;
-    }
+            copy = new PixelBuffer(new Dimension(roi.width, roi.height));
 
-    //----------//
-    // getWidth //
-    //----------//
-    @Override
-    public int getWidth ()
-    {
-        return width;
+            for (int y = 0; y < roi.height; y++) {
+                int p = ((y + roi.y) * width) + roi.x;
+                System.arraycopy(data, p, copy.data, y * roi.width, roi.width);
+            }
+        }
+
+        return copy;
     }
 
     //--------------//
@@ -223,10 +170,10 @@ public class PixelBuffer
     {
         for (int x = 0, w = that.getWidth(); x < w; x++) {
             for (int y = 0, h = that.getHeight(); y < h; y++) {
-                int val = that.getPixel(x, y);
+                int val = that.getValue(x, y);
 
                 if (val != BACKGROUND) {
-                    this.setPixel(x + origin.x, y + origin.y, val);
+                    this.setValue(x + origin.x, y + origin.y, val);
                 }
             }
         }
@@ -239,18 +186,7 @@ public class PixelBuffer
     public boolean isFore (int x,
                            int y)
     {
-        return getPixel(x, y) < 225;
-    }
-
-    //----------//
-    // setPixel //
-    //----------//
-    @Override
-    public final void setPixel (int x,
-                                int y,
-                                int val)
-    {
-        buffer[(y * width) + x] = (byte) val;
+        return getValue(x, y) < 225;
     }
 
     //-----------------//
@@ -270,7 +206,7 @@ public class PixelBuffer
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                pixel[0] = getPixel(x, y);
+                pixel[0] = getValue(x, y);
                 raster.setPixel(x, y, pixel);
             }
         }

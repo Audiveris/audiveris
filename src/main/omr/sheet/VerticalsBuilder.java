@@ -239,7 +239,7 @@ public class VerticalsBuilder
             stick = system.registerGlyph(stick);
 
             if (stick.isVip()) {
-                logger.info("VIP checkVerticals for {}", stick);
+                logger.info("VIP checkVerticals for {} in system#{}", stick, system.getId());
             }
 
             // Check seed is not in DMZ

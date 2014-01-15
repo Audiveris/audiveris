@@ -42,7 +42,7 @@ public interface PixelSink
      * @param y   pixel ordinate
      * @param val new pixel value, assumed to be in range 0..255
      */
-    void setPixel (int x,
+    void setValue (int x,
                    int y,
                    int val);
 }

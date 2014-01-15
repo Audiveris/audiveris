@@ -176,7 +176,7 @@ public abstract class AdaptiveFilter
 
         for (int ix = xMin; ix <= xMax; ix++) {
             for (int iy = yMin; iy <= yMax; iy++) {
-                pop.includeValue(source.getPixel(ix, iy));
+                pop.includeValue(source.getValue(ix, iy));
             }
         }
 
@@ -206,7 +206,7 @@ public abstract class AdaptiveFilter
 
         double threshold = getThreshold(mean, stdDev);
 
-        int pixValue = source.getPixel(x, y);
+        int pixValue = source.getValue(x, y);
         boolean isFore = pixValue <= threshold;
 
         return isFore;
@@ -381,7 +381,7 @@ public abstract class AdaptiveFilter
             for (int y = 0; y < height; y++) {
                 long left = prevColumn[y];
 
-                long pix = getPixel(x, y);
+                long pix = getValue(x, y);
 
                 if (squared) {
                     pix *= pix;

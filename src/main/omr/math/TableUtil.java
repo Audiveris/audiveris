@@ -142,7 +142,7 @@ public class TableUtil
             System.out.printf(yFormat, y);
 
             for (int x = 0; x < width; x++) {
-                System.out.printf("%4d", buf.getPixel(x, y));
+                System.out.printf("%4d", buf.getValue(x, y));
             }
 
             System.out.println();
