@@ -15,8 +15,8 @@ import omr.check.Failure;
 
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphLayer;
-import omr.glyph.GlyphSignature;
 import omr.glyph.GlyphNest;
+import omr.glyph.GlyphSignature;
 import omr.glyph.Shape;
 
 import omr.image.PixelBuffer;
@@ -1001,7 +1001,7 @@ public class BasicGlyph
         sb.append("{")
                 .append(getClass().getSimpleName())
                 .append("#")
-                .append(this.getId());
+                .append(getId());
 
         sb.append(internalsString());
 
@@ -1059,7 +1059,7 @@ public class BasicGlyph
      */
     protected String internalsString ()
     {
-        StringBuilder sb = new StringBuilder(25);
+        StringBuilder sb = new StringBuilder();
 
         if (getShape() != null) {
             sb.append(" ")
@@ -1077,11 +1077,17 @@ public class BasicGlyph
                     .append(getPartOf().getId());
         }
 
-        if (getCentroid() != null) {
-            sb.append(" centroid=[")
-                    .append(getCentroid().x)
+        Rectangle box = getBounds();
+
+        if (box != null) {
+            sb.append(" bounds=[")
+                    .append(box.x)
                     .append(",")
-                    .append(getCentroid().y)
+                    .append(box.y)
+                    .append(",")
+                    .append(box.width)
+                    .append(",")
+                    .append(box.height)
                     .append("]");
         }
 

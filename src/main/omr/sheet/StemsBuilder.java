@@ -98,7 +98,7 @@ import java.util.List;
  * However we can be much more strict for the horizontal gap of the connection.
  * <p>
  * A stem can be the aggregation of several items: stem seeds (built from
- * long vertical sticks) and chunks (glyphs built from suitable sections found
+ * long vertical sticks) and chunks (built from suitable sections found
  * in the corner), all being separated by vertical gaps.
  * Up to which point should we try to accept vertical gaps and increase a stem
  * length starting from a head?<ol>
@@ -115,7 +115,7 @@ import java.util.List;
  * <p>
  * TODO: We could analyze in the whole page the population of "good" stems to
  * come up with most common stem lengths according to stem configurations,
- * and support stem interpretations that match these most common lengths.
+ * and boost stem interpretations that match these most common lengths.
  * More precisely, the length that goes from last head to end of stem (if this
  * end is free from beam or flag) should be rather constant between stems.
  * <p>
@@ -199,6 +199,16 @@ public class StemsBuilder
     //--------------//
     // linkCueBeams //
     //--------------//
+    /**
+     * We reuse this class to connect a stem to potential cue beams.
+     * Logic is rather simple for cue configurations. To be refined with a
+     * stem reuse to support multiple cue heads on one stem.
+     *
+     * @param head   cue head
+     * @param corner head corner for connection
+     * @param stem   cue stem
+     * @param beams  cue beams candidates
+     */
     public void linkCueBeams (Inter head,
                               Corner corner,
                               Inter stem,
@@ -480,8 +490,8 @@ public class StemsBuilder
                 + " as ratio of typical stem width");
 
         final Constant.Ratio maxSectionJitter = new Constant.Ratio(
-                1.0,
-                "Maximum distance from section to target line,"
+                0.5,
+                "Maximum distance from section center to target line,"
                 + " as ratio of typical stem width");
 
         final Scale.Fraction yGapTiny = new Scale.Fraction(
@@ -675,10 +685,10 @@ public class StemsBuilder
              */
             public void link ()
             {
-                //                if (head.isVip()) {
-                //                    logger.info("VIP link {} {}", head, corner);
-                //                }
-                //
+                if (head.isVip()) {
+                    logger.info("VIP link {} {}", head, corner);
+                }
+
                 area = getLuArea();
 
                 // Compute target end of stem
