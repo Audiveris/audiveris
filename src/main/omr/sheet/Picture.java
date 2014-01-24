@@ -106,8 +106,9 @@ public class Picture
         MEDIAN,
         /** The source with staff
          * lines removed. */
-        STAFF_LINE_FREE;
-
+        STAFF_LINE_FREE,
+        /** The image skeleton. */
+        SKELETON;
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -257,6 +258,32 @@ public class Picture
         logger.info(sb.toString());
     }
 
+    //------------------//
+    // gaussianFiltered //
+    //------------------//
+    public PixelBuffer gaussianFiltered (PixelSource src)
+    {
+        StopWatch watch = new StopWatch("Gaussian");
+
+        try {
+            watch.start("Filter " + src.getWidth() + "x" + src.getHeight());
+
+            final int radius = constants.gaussianRadius.getValue();
+            logger.info(
+                    "{}Image blurred with gaussian kernel radius: {}",
+                    sheet.getLogPrefix(),
+                    radius);
+
+            GaussianGrayFilter gaussianFilter = new GaussianGrayFilter(radius);
+
+            return gaussianFilter.filter(src);
+        } finally {
+            if (constants.printWatch.isSet()) {
+                watch.print();
+            }
+        }
+    }
+
     //--------------//
     // getDimension //
     //--------------//
@@ -367,6 +394,9 @@ public class Picture
                                 sheet.getLag(Lags.VLAG));
 
                         break;
+
+                    case SKELETON:
+                        src = new Skeletonizer(sheet).buildSkeleton();
                     }
 
                     sources.put(key, src);
@@ -544,32 +574,6 @@ public class Picture
         }
     }
 
-    //------------------//
-    // gaussianFiltered //
-    //------------------//
-    public PixelBuffer gaussianFiltered (PixelSource src)
-    {
-        StopWatch watch = new StopWatch("Gaussian");
-
-        try {
-            watch.start("Filter " + src.getWidth() + "x" + src.getHeight());
-
-            final int radius = constants.gaussianRadius.getValue();
-            logger.info(
-                    "{}Image blurred with gaussian kernel radius: {}",
-                    sheet.getLogPrefix(),
-                    radius);
-
-            GaussianGrayFilter gaussianFilter = new GaussianGrayFilter(radius);
-
-            return gaussianFilter.filter(src);
-        } finally {
-            if (constants.printWatch.isSet()) {
-                watch.print();
-            }
-        }
-    }
-
     //----------------//
     // medianFiltered //
     //----------------//
@@ -626,6 +630,5 @@ public class Picture
                 "pixels",
                 1,
                 "Radius of Median filtering kernel (1 for 3x3, 2 for 5x5)");
-
     }
 }

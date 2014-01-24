@@ -27,6 +27,9 @@ public interface PixelSource
     /** Default value for background pixel. */
     public static final int BACKGROUND = 255;
 
+    /** Default value for foreground pixel. */
+    public static final int FOREGROUND = 0;
+
     //~ Methods ----------------------------------------------------------------
     /**
      * Report the height of the rectangular source

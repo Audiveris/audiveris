@@ -34,18 +34,21 @@ public class LineUtil
     // bisector //
     //----------//
     /**
-     * Return the bisector (french: médiatrice) of the provided segment
+     * Return the bisector (french: médiatrice) of the segment defined
+     * by the two provided points
      *
-     * @param segment the provided segment
+     * @param p1 first provided point
+     * @param p2 second provided point
      * @return (a segment on) the bisector
      */
-    public static Line2D bisector (Line2D segment)
+    public static Line2D bisector (Point2D p1,
+                                   Point2D p2)
     {
-        double x1 = segment.getX1();
-        double y1 = segment.getY1();
+        double x1 = p1.getX();
+        double y1 = p1.getY();
 
-        double hdx = (segment.getX2() - x1) / 2;
-        double hdy = (segment.getY2() - y1) / 2;
+        double hdx = (p2.getX() - x1) / 2;
+        double hdy = (p2.getY() - y1) / 2;
 
         // Use middle as reference point
         double mx = x1 + hdx;
@@ -57,6 +60,20 @@ public class LineUtil
         double y4 = my + hdx;
 
         return new Line2D.Double(x3, y3, x4, y4);
+    }
+
+    //----------//
+    // bisector //
+    //----------//
+    /**
+     * Return the bisector (french: médiatrice) of the provided segment
+     *
+     * @param segment the provided segment
+     * @return (a segment on) the bisector
+     */
+    public static Line2D bisector (Line2D segment)
+    {
+        return bisector(segment.getP1(), segment.getP2());
     }
 
     //------------------//

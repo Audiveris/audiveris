@@ -62,7 +62,7 @@ public class Template
 
     private static final Logger logger = LoggerFactory.getLogger(
             Template.class);
-    
+
     /** Ratio applied to small symbols (cue / grace). */
     public static final double smallRatio = 0.67;
 
@@ -79,8 +79,8 @@ public class Template
     /** Template height. (perhaps larger than the symbol height) */
     private final int height;
 
-    /** 
-     * Offsets to defined anchors. 
+    /**
+     * Offsets to defined anchors.
      * An offset is defined as the translation from template upper left corner
      * to the precise anchor location in the symbol.
      */
@@ -111,10 +111,10 @@ public class Template
 
         // Define common basic anchors
         addAnchor(Anchor.CENTER, 0.5, 0.5);
-        
+
         // Beware: This is OK only if symbol width = template width
         // To be overwritten if condition is no longer true
-        addAnchor(Anchor.MIDDLE_LEFT, 0, 0.5); 
+        addAnchor(Anchor.MIDDLE_LEFT, 0, 0.5);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -213,13 +213,24 @@ public class Template
         // Loop through template key positions and read related distance.
         // Compute the mean value on all distances read
         double total = 0;
+        final int imgWidth = distances.getWidth();
+        final int imgHeight = distances.getHeight();
+        int outers = 0;
 
         for (PixelDistance pix : keyPoints) {
-            double dist = distances.getValue(x + pix.x, y + pix.y) - pix.d;
-            total += (dist * dist);
+            int nx = x + pix.x;
+            int ny = y + pix.y;
+
+            if ((nx < 0) || (nx >= imgWidth) || (ny < 0) || (ny >= imgHeight)) {
+                // Tested point is out of image, ignore it
+                outers++;
+            } else {
+                double dist = distances.getValue(nx, ny) - pix.d;
+                total += (dist * dist);
+            }
         }
 
-        double res = Math.sqrt(total) / (keyPoints.size() * distances.getNormalizer());
+        double res = Math.sqrt(total) / ((keyPoints.size() - outers) * distances.getNormalizer());
 
         return res;
     }

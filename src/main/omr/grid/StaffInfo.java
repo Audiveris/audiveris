@@ -498,7 +498,7 @@ public class StaffInfo
      * @param point the provided point
      * @return the closest line found
      */
-    public LineInfo getClosestLine (Point2D point)
+    public FilamentLine getClosestLine (Point2D point)
     {
         double pos = pitchPositionOf(point);
         int idx = (int) Math.rint((pos + (lines.size() - 1)) / 2);

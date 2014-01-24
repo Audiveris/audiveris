@@ -41,6 +41,7 @@ import omr.run.RunsTableFactory;
 
 import omr.sheet.ui.ImageView;
 import omr.sheet.ui.PixelBoard;
+import omr.sheet.ui.ScrollImageView;
 
 import omr.ui.BoardsPane;
 
@@ -102,7 +103,6 @@ public class SpotsBuilder
     }
 
     //~ Methods ----------------------------------------------------------------
-
     //----------------//
     // buildPageSpots //
     //----------------//
@@ -133,10 +133,12 @@ public class SpotsBuilder
             dispatchPageSpots(spots);
 
             // Display on all spot glyphs
-            SpotsController spotController = new SpotsController(
-                    sheet,
-                    spotLag);
-            spotController.refresh();
+            if (Main.getGui() != null) {
+                SpotsController spotController = new SpotsController(
+                        sheet,
+                        spotLag);
+                spotController.refresh();
+            }
         } catch (Exception ex) {
             logger.warn("Error building spots", ex);
         } finally {
@@ -189,11 +191,10 @@ public class SpotsBuilder
 
             // Display the gray-level view of all spots
             if (Main.getGui() != null) {
-                ImageView imageView = new ImageView(sheet, img);
                 sheet.getAssembly()
                         .addViewTab(
                                 "SpotView",
-                                imageView,
+                                new ScrollImageView(sheet, new ImageView(img)),
                                 new BoardsPane(new PixelBoard(sheet)));
             }
         } else {

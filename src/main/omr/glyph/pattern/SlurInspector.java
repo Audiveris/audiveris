@@ -21,7 +21,6 @@ import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.BasicGlyph;
-import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 

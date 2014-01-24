@@ -54,7 +54,7 @@ public class ScrollView
     protected RubberPanel view;
 
     // The concrete UI component
-    private JScrollPane component = new JScrollPane();
+    private final JScrollPane component = new JScrollPane();
 
     //~ Constructors -----------------------------------------------------------
     //------------//

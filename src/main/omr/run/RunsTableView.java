@@ -27,7 +27,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.List;
 
 /**
  * Class {@code RunsTableView} displays a view on an underlying runs

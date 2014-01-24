@@ -63,9 +63,11 @@ public class Steps
 
     public static final String STEM_LINKS = "STEM_LINKS";
 
+    public static final String RESOLUTION = "RESOLUTION";
+
     public static final String CUE_BEAMS = "CUE_BEAMS";
 
-    public static final String RESOLUTION = "RESOLUTION";
+    public static final String SLURS = "SLURS";
 
     public static final String TEXTS = "TEXTS";
 
@@ -109,6 +111,7 @@ public class Steps
         addStep(new StemLinksStep());
         addStep(new ResolutionStep());
         addStep(new CueBeamsStep());
+        addStep(new SlursStep());
 
         //        addStep(new TextsStep());
         addNoStep(SYMBOLS);

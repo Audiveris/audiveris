@@ -1739,6 +1739,7 @@ public class BeamsBuilder
             List<Inter> beams = new ArrayList<Inter>();
 
             for (Glyph glyph : glyphs) {
+                glyph.setShape(Shape.BEAM_SPOT);
                 List<Inter> glyphBeams = new ArrayList<Inter>();
                 final String failure = checkBeamGlyph(glyph, true, glyphBeams);
 

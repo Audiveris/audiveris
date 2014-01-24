@@ -14,10 +14,12 @@ package omr.math;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import static java.lang.Math.*;
+import java.util.Collection;
 
 /**
  * Class {@code BasicLine} is a basic Line implementation which switches
@@ -127,8 +129,8 @@ public class BasicLine
     // BasicLine //
     //-----------//
     /**
-     * Creates a line (and immediately compute its coefficients), as the least
-     * square fitted line on the provided points population.
+     * Create a line (and immediately compute its coefficients),
+     * as the least square fitted line on the provided points.
      *
      * @param xVals abscissas of the points
      * @param yVals ordinates of the points
@@ -158,6 +160,33 @@ public class BasicLine
         // Include all defining points
         for (int i = xVals.length - 1; i >= 0; i--) {
             includePoint(xVals[i], yVals[i]);
+        }
+
+        checkLineParameters();
+    }
+
+    //-----------//
+    // BasicLine //
+    //-----------//
+    /**
+     * Create a line (and immediately compute its coefficients),
+     * as the least square fitted line on the provided points.
+     *
+     * @param points collection of points
+     */
+    public BasicLine (Collection<Point> points)
+    {
+        this();
+
+        // Checks for parameter validity
+        if ((points == null) || (points.size() < 2)) {
+            throw new IllegalArgumentException(
+                    "Points collection is null or too small");
+        }
+
+        // Include all defining points
+        for (Point point : points) {
+            includePoint(point.x, point.y);
         }
 
         checkLineParameters();
