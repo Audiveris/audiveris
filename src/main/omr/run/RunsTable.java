@@ -11,7 +11,6 @@
 // </editor-fold>
 package omr.run;
 
-import omr.image.PixelBuffer;
 import omr.image.PixelSource;
 
 import omr.selection.LocationEvent;
@@ -21,6 +20,8 @@ import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
 
 import omr.util.Predicate;
+
+import ij.process.ByteProcessor;
 
 import org.bushe.swing.event.EventSubscriber;
 
@@ -109,6 +110,103 @@ public class RunsTable
     }
 
     //~ Methods ----------------------------------------------------------------
+    //--------------------//
+    // cutLocationService //
+    //--------------------//
+    public void cutLocationService (SelectionService locationService)
+    {
+        for (Class<?> eventClass : eventsRead) {
+            locationService.unsubscribe(eventClass, this);
+        }
+    }
+
+    //----------//
+    // get //
+    //----------//
+    /**
+     * {@inheritDoc}
+     *
+     * <br><b>Beware</b>, this implementation is not efficient enough
+     * for bulk operations.
+     * For such needs, a much more efficient way is to first
+     * retrieve a full buffer, via {@link #getBuffer()} method, then use this
+     * temporary buffer as the {@link PixelSource} instead of this table.
+     *
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return the pixel gray level
+     */
+    @Override
+    public final int get (int x,
+                          int y)
+    {
+        Run run = getRunAt(x, y);
+
+        return (run != null) ? run.getLevel() : BACKGROUND;
+    }
+
+    //----------//
+    // getRunAt //
+    //----------//
+    /**
+     * Report the run found at given coordinates, if any.
+     *
+     * @param x absolute abscissa
+     * @param y absolute ordinate
+     * @return the run found, or null otherwise
+     */
+    public final Run getRunAt (int x,
+                               int y)
+    {
+        Point oPt = orientation.oriented(new Point(x, y));
+
+        // Protection
+        if ((oPt.y < 0) || (oPt.y >= runs.size())) {
+            return null;
+        }
+
+        List<Run> seq = getSequence(oPt.y);
+
+        for (Run run : seq) {
+            if (run.getStart() > oPt.x) {
+                return null;
+            }
+
+            if (run.getStop() >= oPt.x) {
+                return run;
+            }
+        }
+
+        return null;
+    }
+
+    //-------------//
+    // getSequence //
+    //-------------//
+    /**
+     * Report the sequence of runs at a given index
+     *
+     * @param index the desired index
+     * @return the MODIFIABLE sequence of rows
+     */
+    public final List<Run> getSequence (int index)
+    {
+        return runs.get(index);
+    }
+
+    //---------//
+    // getSize //
+    //---------//
+    /**
+     * Report the number of sequences of runs in the table
+     *
+     * @return the table size (in terms of sequences)
+     */
+    public final int getSize ()
+    {
+        return runs.size();
+    }
+
     //------//
     // copy //
     //------//
@@ -160,7 +258,7 @@ public class RunsTable
         sb.append(String.format("%s%n", this));
 
         // Prepare output buffer
-        PixelBuffer buffer = getBuffer();
+        ByteProcessor buffer = getBuffer();
 
         // Print the buffer
         sb.append('+');
@@ -175,8 +273,7 @@ public class RunsTable
             sb.append('|');
 
             for (int col = 0; col < buffer.getWidth(); col++) {
-                sb.append(
-                        (buffer.getValue(col, row) == BACKGROUND) ? '-' : 'X');
+                sb.append((buffer.get(col, row) == BACKGROUND) ? '-' : 'X');
             }
 
             sb.append(String.format("|%n"));
@@ -201,10 +298,13 @@ public class RunsTable
      *
      * @return the filled buffer
      */
-    public PixelBuffer getBuffer ()
+    public ByteProcessor getBuffer ()
     {
         // Prepare output buffer
-        PixelBuffer buffer = new PixelBuffer(dimension);
+        ByteProcessor buffer = new ByteProcessor(
+                dimension.width,
+                dimension.height);
+        buffer.invert();
 
         switch (orientation) {
         case HORIZONTAL:
@@ -214,7 +314,7 @@ public class RunsTable
 
                 for (Run run : seq) {
                     for (int c = run.getStart(); c <= run.getStop(); c++) {
-                        buffer.setValue(c, row, 0);
+                        buffer.set(c, row, 0);
                     }
                 }
             }
@@ -229,7 +329,7 @@ public class RunsTable
                 for (Run run : seq) {
                     for (int col = run.getStart(); col <= run.getStop();
                             col++) {
-                        buffer.setValue(row, col, 0);
+                        buffer.set(row, col, 0);
                     }
                 }
             }
@@ -286,66 +386,6 @@ public class RunsTable
         return orientation;
     }
 
-    //----------//
-    // getValue //
-    //----------//
-    /**
-     * {@inheritDoc}
-     *
-     * <br><b>Beware</b>, this implementation is not efficient enough
-     * for bulk operations.
-     * For such needs, a much more efficient way is to first
-     * retrieve a full buffer, via {@link #getBuffer()} method, then use this
-     * temporary buffer as the {@link PixelSource} instead of this table.
-     *
-     * @param x absolute abscissa
-     * @param y absolute ordinate
-     * @return the pixel gray level
-     */
-    @Override
-    public final int getValue (int x,
-                               int y)
-    {
-        Run run = getRunAt(x, y);
-
-        return (run != null) ? run.getLevel() : BACKGROUND;
-    }
-
-    //----------//
-    // getRunAt //
-    //----------//
-    /**
-     * Report the run found at given coordinates, if any.
-     *
-     * @param x absolute abscissa
-     * @param y absolute ordinate
-     * @return the run found, or null otherwise
-     */
-    public final Run getRunAt (int x,
-                               int y)
-    {
-        Point oPt = orientation.oriented(new Point(x, y));
-
-        // Protection
-        if ((oPt.y < 0) || (oPt.y >= runs.size())) {
-            return null;
-        }
-
-        List<Run> seq = getSequence(oPt.y);
-
-        for (Run run : seq) {
-            if (run.getStart() > oPt.x) {
-                return null;
-            }
-
-            if (run.getStop() >= oPt.x) {
-                return run;
-            }
-        }
-
-        return null;
-    }
-
     //-------------//
     // getRunCount //
     //-------------//
@@ -378,43 +418,6 @@ public class RunsTable
     public SelectionService getRunService ()
     {
         return runService;
-    }
-
-    //-------------//
-    // getSequence //
-    //-------------//
-    /**
-     * Report the sequence of runs at a given index
-     *
-     * @param index the desired index
-     * @return the MODIFIABLE sequence of rows
-     */
-    public final List<Run> getSequence (int index)
-    {
-        return runs.get(index);
-    }
-
-    //---------//
-    // getSize //
-    //---------//
-    /**
-     * Report the number of sequences of runs in the table
-     *
-     * @return the table size (in terms of sequences)
-     */
-    public final int getSize ()
-    {
-        return runs.size();
-    }
-
-    //--------------------//
-    // cutLocationService //
-    //--------------------//
-    public void cutLocationService (SelectionService locationService)
-    {
-        for (Class<?> eventClass : eventsRead) {
-            locationService.unsubscribe(eventClass, this);
-        }
     }
 
     //----------//

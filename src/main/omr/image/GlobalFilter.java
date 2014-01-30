@@ -14,6 +14,8 @@ package omr.image;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import ij.process.ByteProcessor;
+
 import net.jcip.annotations.ThreadSafe;
 
 /**
@@ -29,11 +31,9 @@ public class GlobalFilter
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
     //~ Instance fields --------------------------------------------------------
-    //
     /** Global threshold. */
     private final int threshold;
 
@@ -48,7 +48,7 @@ public class GlobalFilter
      * @param source    the underlying source of raw pixels
      * @param threshold maximum gray level of foreground pixel
      */
-    public GlobalFilter (PixelSource source,
+    public GlobalFilter (ByteProcessor source,
                          int threshold)
     {
         super(source);
@@ -72,6 +72,16 @@ public class GlobalFilter
         return constants.defaultThreshold.getValue();
     }
 
+    // -------//
+    // isFore //
+    // -------//
+    @Override
+    public boolean isFore (int x,
+                           int y)
+    {
+        return source.get(x, y) <= threshold;
+    }
+
     //---------------------//
     // setDefaultThreshold //
     //---------------------//
@@ -80,7 +90,29 @@ public class GlobalFilter
         constants.defaultThreshold.setValue(threshold);
     }
 
-    //
+    //---------------//
+    // filteredImage //
+    //---------------//
+    @Override
+    public ByteProcessor filteredImage ()
+    {
+        ByteProcessor ip = new ByteProcessor(
+                source.getWidth(),
+                source.getHeight());
+
+        for (int y = 0, h = ip.getHeight(); y < h; y++) {
+            for (int x = 0, w = ip.getWidth(); x < w; x++) {
+                if (isFore(x, y)) {
+                    ip.set(x, y, FOREGROUND);
+                } else {
+                    ip.set(x, y, BACKGROUND);
+                }
+            }
+        }
+
+        return ip;
+    }
+
     //------------//
     // getContext //
     //------------//
@@ -88,18 +120,7 @@ public class GlobalFilter
     public Context getContext (int x,
                                int y)
     {
-        return new Context(threshold);
-    }
-
-    //
-    // -------//
-    // isFore //
-    // -------//
-    @Override
-    public boolean isFore (int x,
-                           int y)
-    {
-        return source.getValue(x, y) <= threshold;
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -115,6 +136,5 @@ public class GlobalFilter
                 "GrayLevel",
                 140,
                 "Default threshold value (in 0..255)");
-
     }
 }

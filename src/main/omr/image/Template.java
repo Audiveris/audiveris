@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
 
 /**
  * Class {@code Template} implements a template to be used for
@@ -60,11 +62,13 @@ public class Template
 {
     //~ Static fields/initializers ---------------------------------------------
 
+    private static final Constants constants = new Constants();
+
     private static final Logger logger = LoggerFactory.getLogger(
             Template.class);
 
     /** Ratio applied to small symbols (cue / grace). */
-    public static final double smallRatio = 0.67;
+    public static final double smallRatio = constants.smallRatio.getValue();
 
     //~ Instance fields --------------------------------------------------------
     /** Template key. */
@@ -392,5 +396,17 @@ public class Template
 
             return sb.toString();
         }
+    }
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final Constant.Ratio smallRatio = new Constant.Ratio(
+                0.67,
+                "Global ratio applied to small (cue/grace) templates");
     }
 }

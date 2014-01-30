@@ -17,8 +17,6 @@ import static omr.WellKnowns.LINE_SEPARATOR;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.image.PixelFilter;
-
 import omr.math.Histogram;
 import omr.math.Histogram.HistoEntry;
 import omr.math.Histogram.MaxEntry;
@@ -37,6 +35,8 @@ import omr.sheet.ui.SheetsController;
 import omr.step.StepException;
 
 import omr.util.StopWatch;
+
+import ij.process.ByteProcessor;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
@@ -204,7 +204,7 @@ public class ScaleBuilder
             Picture picture = sheet.getPicture();
 
             // Retrieve the whole table of foreground runs
-            PixelFilter binaryFilter = (PixelFilter) picture.getSource(
+            ByteProcessor binaryFilter = picture.getSource(
                     Picture.SourceKey.BINARY);
 
             watch.start("Global vertical lag");
@@ -663,7 +663,6 @@ public class ScaleBuilder
         final Constant.Ratio stemAsForeRatio = new Constant.Ratio(
                 1.0,
                 "Default stem thickness defined as ratio of foreground peak");
-
     }
 
     //-----------------//

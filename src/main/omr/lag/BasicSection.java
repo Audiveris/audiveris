@@ -11,12 +11,12 @@
 // </editor-fold>
 package omr.lag;
 
+import ij.process.ByteProcessor;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.graph.BasicVertex;
 
-import omr.image.PixelBuffer;
 
 import omr.math.Barycenter;
 import omr.math.BasicLine;
@@ -451,7 +451,7 @@ public class BasicSection
     // fillImage //
     //-----------//
     @Override
-    public void fillImage (PixelBuffer buf,
+    public void fillImage (ByteProcessor buf,
                            Rectangle   box)
     {
         if (isVertical()) {
@@ -459,7 +459,7 @@ public class BasicSection
 
             for (Run run : runs) {
                 for (int y = run.getStart(); y <= run.getStop(); y++) {
-                    buf.setValue(x, y - box.y, 0);
+                    buf.set(x, y - box.y, 0);
                 }
 
                 x += 1;
@@ -469,7 +469,7 @@ public class BasicSection
 
             for (Run run : runs) {
                 for (int x = run.getStart(); x <= run.getStop(); x++) {
-                    buf.setValue(x - box.x, y, 0);
+                    buf.set(x - box.x, y, 0);
                 }
 
                 y += 1;

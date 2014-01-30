@@ -13,9 +13,9 @@ package omr.image;
 
 import omr.math.TableUtil;
 
-import org.junit.Test;
+import ij.process.ByteProcessor;
 
-import java.awt.Dimension;
+import org.junit.Test;
 
 /**
  *
@@ -41,7 +41,7 @@ public class WatershedGrayLevelTest
     {
         System.out.println("process");
 
-        PixelBuffer image = createImage();
+        ByteProcessor image = createImage();
         TableUtil.dump("input:", image);
 
         Table dists = new ChamferDistance.Short().computeToBack(image);
@@ -57,7 +57,7 @@ public class WatershedGrayLevelTest
         TableUtil.dump("regions", image);
     }
 
-    private PixelBuffer createImage ()
+    private ByteProcessor createImage ()
     {
         String[] rows = new String[]{
             "                              ",
@@ -91,25 +91,25 @@ public class WatershedGrayLevelTest
         };
         final int width = rows[0].length();
         final int height = rows.length;
-        final PixelBuffer img = new PixelBuffer(new Dimension(width, height));
+        final ByteProcessor img = new ByteProcessor(width, height);
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 char c = rows[y].charAt(x);
-                img.setValue(x, y, (c == 'X') ? 0 : 255);
+                img.set(x, y, (c == 'X') ? 0 : 255);
             }
         }
 
         return img;
     }
 
-    private void merge (PixelBuffer img,
+    private void merge (ByteProcessor img,
                         boolean[][] lines)
     {
         for (int y = 0, h = img.getHeight(); y < h; y++) {
             for (int x = 0, w = img.getWidth(); x < w; x++) {
                 if (lines[x][y]) {
-                    img.setValue(x, y, PixelSource.BACKGROUND);
+                    img.set(x, y, PixelSource.BACKGROUND);
                 }
             }
         }

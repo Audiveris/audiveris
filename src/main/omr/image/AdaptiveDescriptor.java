@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.image;
 
+import ij.process.ByteProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,13 +106,13 @@ public class AdaptiveDescriptor
     // getFilter //
     //-----------//
     @Override
-    public PixelFilter getFilter (PixelSource source)
+    public PixelFilter getFilter (ByteProcessor source)
     {
         Class<?> classe = AdaptiveFilter.getImplementationClass();
 
         try {
             Constructor cons = classe.getConstructor(
-                    new Class[]{PixelSource.class, double.class, double.class});
+                    new Class[]{ByteProcessor.class, double.class, double.class});
 
             return (PixelFilter) cons.newInstance(
                     source,

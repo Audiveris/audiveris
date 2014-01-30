@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.image;
 
+import ij.process.ByteProcessor;
 import java.awt.image.Kernel;
 
 /**
@@ -101,8 +102,8 @@ public class GaussianGrayFilter
     // filter //
     //--------//
     @Override
-    public void filter (PixelSource input,
-                        PixelSink output)
+    public void filter (ByteProcessor input,
+                        ByteProcessor output)
     {
         final int width = input.getWidth();
         final int height = input.getHeight();
@@ -114,7 +115,7 @@ public class GaussianGrayFilter
             final int offset = y * width;
 
             for (int x = 0; x < width; x++) {
-                inPixels[offset + x] = (byte) input.getValue(x, y);
+                inPixels[offset + x] = (byte) input.get(x, y);
             }
         }
 
@@ -126,7 +127,7 @@ public class GaussianGrayFilter
             final int offset = y * width;
 
             for (int x = 0; x < width; x++) {
-                output.setValue(x, y, inPixels[offset + x] & 0xff);
+                output.set(x, y, inPixels[offset + x] & 0xff);
             }
         }
     }

@@ -20,8 +20,6 @@ import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.image.AreaMask;
-import omr.image.PixelBuffer;
-import omr.image.PixelFilter;
 import omr.image.Template;
 
 import omr.math.AreaUtil;
@@ -51,6 +49,8 @@ import omr.util.Predicate;
 import omr.util.VerticalSide;
 import static omr.util.VerticalSide.*;
 import omr.util.WrappedInteger;
+
+import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +118,7 @@ public class BeamsBuilder
     private List<Glyph> sortedSystemSeeds;
 
     /** Input image. */
-    private PixelFilter pixelFilter;
+    private ByteProcessor pixelFilter;
 
     //~ Constructors -----------------------------------------------------------
     //--------------//
@@ -148,9 +148,8 @@ public class BeamsBuilder
     public void buildBeams ()
     {
         // Cache input image
-        pixelFilter = (PixelFilter) sheet.getPicture()
-                .getSource(
-                        Picture.SourceKey.STAFF_LINE_FREE);
+        pixelFilter = sheet.getPicture()
+                .getSource(Picture.SourceKey.STAFF_LINE_FREE);
 
         // First, retrieve beam candidates from spots
         sortedBeamSpots = getBeamSpots();
@@ -1538,6 +1537,114 @@ public class BeamsBuilder
         final Scale.Fraction cueBoxDy = new Scale.Fraction(
                 1.0,
                 "Ordinate shift of aggregate box");
+
+        final Constant.Ratio cueBeamRatio = new Constant.Ratio(
+                0.6,
+                "Ratio applied for cue beams height");
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final int minBeamWidth;
+
+        final int largeBeamWidth;
+
+        final int minHookWidth;
+
+        final int maxHookWidth;
+
+        final double minBeamHeight;
+
+        final double maxHookHeight;
+
+        final int maxBeamsGapX;
+
+        final int maxBeamsGapY;
+
+        final int maxStemBeamGapX;
+
+        final int maxStemBeamGapY;
+
+        final int maxExtensionToStem;
+
+        final int maxExtensionToSpot;
+
+        final int beltMarginDx;
+
+        final int beltMarginDy;
+
+        final double maxBeamSlope;
+
+        final double maxBorderSlopeGap;
+
+        final double maxBeamSlopeGap;
+
+        final double maxDistanceToBorder;
+
+        final double maxBeltBlackRatio;
+
+        final double minCoreBlackRatio;
+
+        final double minExtBlackRatio;
+
+        final int cueXMargin;
+
+        final int cueYMargin;
+
+        final int cueBoxDx;
+
+        final int cueBoxDy;
+        
+        final double cueBeamRatio;
+
+        //~ Constructors -------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (Scale scale)
+        {
+            minBeamWidth = scale.toPixels(constants.minBeamWidth);
+            minHookWidth = scale.toPixels(constants.minHookWidth);
+            minBeamHeight = scale.getMainBeam() * constants.minBeamHeightRatio.getValue();
+            maxHookHeight = scale.getMainBeam() * constants.maxHookHeightRatio.getValue();
+            maxBeamsGapX = scale.toPixels(constants.maxBeamsGapX);
+            maxBeamsGapY = scale.toPixels(constants.maxBeamsGapY);
+            maxStemBeamGapX = scale.toPixels(constants.maxStemBeamGapX);
+            maxStemBeamGapY = scale.toPixels(constants.maxStemBeamGapY);
+            maxExtensionToStem = scale.toPixels(constants.maxExtensionToStem);
+            maxExtensionToSpot = scale.toPixels(constants.maxExtensionToSpot);
+            beltMarginDx = scale.toPixels(constants.beltMarginDx);
+            beltMarginDy = scale.toPixels(constants.beltMarginDy);
+            largeBeamWidth = scale.toPixels(constants.largeBeamWidth);
+            maxHookWidth = scale.toPixels(constants.maxHookWidth);
+            maxBeamSlope = constants.maxBeamSlope.getValue();
+            maxBorderSlopeGap = constants.maxBorderSlopeGap.getValue();
+            maxBeamSlopeGap = constants.maxBeamSlopeGap.getValue();
+            maxDistanceToBorder = scale.toPixelsDouble(
+                    constants.maxDistanceToBorder);
+            maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
+            minCoreBlackRatio = constants.minCoreBlackRatio.getValue();
+            minExtBlackRatio = constants.minExtBlackRatio.getValue();
+            cueXMargin = scale.toPixels(constants.cueXMargin);
+            cueYMargin = scale.toPixels(constants.cueYMargin);
+            cueBoxDx = scale.toPixels(constants.cueBoxDx);
+            cueBoxDy = scale.toPixels(constants.cueBoxDy);
+            cueBeamRatio = constants.cueBeamRatio.getValue();
+
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
+            }
+        }
     }
 
     //--------------//
@@ -1668,17 +1775,22 @@ public class BeamsBuilder
                 box.grow(0, params.cueBoxDy);
             }
 
-            // Take a small snapshot of binary image and apply morphology
+            // Take a small *COPY* of binary image and apply morphology
             Picture picture = sheet.getPicture();
-            PixelBuffer buffer = (PixelBuffer) picture.getSource(
-                    Picture.SourceKey.BINARY);
-            buffer = buffer.getCopy(box);
+            ByteProcessor whole = picture.getSource(Picture.SourceKey.BINARY);
+            ByteProcessor buf = new ByteProcessor(box.width, box.height);
 
-            int beam = (int) Math.rint(
-                    Template.smallRatio * scale.getMainBeam());
+            for (int y = 0; y < box.height; y++) {
+                for (int x = 0; x < box.width; x++) {
+                    int val = whole.get(box.x + x, box.y + y);
+                    buf.set(x, y, val);
+                }
+            }
+
+            double beam = params.cueBeamRatio * scale.getMainBeam();
 
             return sheet.getSpotsBuilder()
-                    .buildSpots(buffer, box.getLocation(), beam, id);
+                    .buildSpots(buf, box.getLocation(), beam, id);
         }
 
         /**
@@ -1729,7 +1841,9 @@ public class BeamsBuilder
             globalDir = getDirection();
 
             if (globalDir == 0) {
-                logger.warn("Mixed or unknown direction in cues {}", this);
+                logger.info("Mixed or unknown direction in cue area {}", this);
+
+                return;
             }
 
             // Retrieve candidate glyphs from spots
@@ -1740,6 +1854,7 @@ public class BeamsBuilder
 
             for (Glyph glyph : glyphs) {
                 glyph.setShape(Shape.BEAM_SPOT);
+
                 List<Inter> glyphBeams = new ArrayList<Inter>();
                 final String failure = checkBeamGlyph(glyph, true, glyphBeams);
 
@@ -1763,107 +1878,6 @@ public class BeamsBuilder
                     final Inter stem = stems.get(i);
                     connectStemToBeams(stem, beams, head);
                 }
-            }
-        }
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final int minBeamWidth;
-
-        final int largeBeamWidth;
-
-        final int minHookWidth;
-
-        final int maxHookWidth;
-
-        final double minBeamHeight;
-
-        final double maxHookHeight;
-
-        final int maxBeamsGapX;
-
-        final int maxBeamsGapY;
-
-        final int maxStemBeamGapX;
-
-        final int maxStemBeamGapY;
-
-        final int maxExtensionToStem;
-
-        final int maxExtensionToSpot;
-
-        final int beltMarginDx;
-
-        final int beltMarginDy;
-
-        final double maxBeamSlope;
-
-        final double maxBorderSlopeGap;
-
-        final double maxBeamSlopeGap;
-
-        final double maxDistanceToBorder;
-
-        final double maxBeltBlackRatio;
-
-        final double minCoreBlackRatio;
-
-        final double minExtBlackRatio;
-
-        final int cueXMargin;
-
-        final int cueYMargin;
-
-        final int cueBoxDx;
-
-        final int cueBoxDy;
-
-        //~ Constructors -------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
-        {
-            minBeamWidth = scale.toPixels(constants.minBeamWidth);
-            minHookWidth = scale.toPixels(constants.minHookWidth);
-            minBeamHeight = scale.getMainBeam() * constants.minBeamHeightRatio.getValue();
-            maxHookHeight = scale.getMainBeam() * constants.maxHookHeightRatio.getValue();
-            maxBeamsGapX = scale.toPixels(constants.maxBeamsGapX);
-            maxBeamsGapY = scale.toPixels(constants.maxBeamsGapY);
-            maxStemBeamGapX = scale.toPixels(constants.maxStemBeamGapX);
-            maxStemBeamGapY = scale.toPixels(constants.maxStemBeamGapY);
-            maxExtensionToStem = scale.toPixels(constants.maxExtensionToStem);
-            maxExtensionToSpot = scale.toPixels(constants.maxExtensionToSpot);
-            beltMarginDx = scale.toPixels(constants.beltMarginDx);
-            beltMarginDy = scale.toPixels(constants.beltMarginDy);
-            largeBeamWidth = scale.toPixels(constants.largeBeamWidth);
-            maxHookWidth = scale.toPixels(constants.maxHookWidth);
-            maxBeamSlope = constants.maxBeamSlope.getValue();
-            maxBorderSlopeGap = constants.maxBorderSlopeGap.getValue();
-            maxBeamSlopeGap = constants.maxBeamSlopeGap.getValue();
-            maxDistanceToBorder = scale.toPixelsDouble(
-                    constants.maxDistanceToBorder);
-            maxBeltBlackRatio = constants.maxBeltBlackRatio.getValue();
-            minCoreBlackRatio = constants.minCoreBlackRatio.getValue();
-            minExtBlackRatio = constants.minExtBlackRatio.getValue();
-            cueXMargin = scale.toPixels(constants.cueXMargin);
-            cueYMargin = scale.toPixels(constants.cueYMargin);
-            cueBoxDx = scale.toPixels(constants.cueBoxDx);
-            cueBoxDy = scale.toPixels(constants.cueBoxDy);
-
-            if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
             }
         }
     }

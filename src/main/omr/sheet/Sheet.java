@@ -80,6 +80,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1210,7 +1211,7 @@ public class Sheet
             return;
         }
 
-        final List<Inter> inters = new ArrayList<Inter>();
+        final Set<Inter> inters = new LinkedHashSet<Inter>();
         for (SystemInfo system : systemManager.getSystemsOf(rect.getLocation())) {
             SIGraph sig = system.getSig();
 
@@ -1226,7 +1227,8 @@ public class Sheet
         }
 
         // Publish inters found (perhaps none)
-        locationService.publish(new InterListEvent(this, hint, movement, inters));
+        locationService.publish(new InterListEvent(this, hint, movement,
+                                                   new ArrayList<Inter>(inters)));
     }
 
     //-------------//

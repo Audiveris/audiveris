@@ -32,7 +32,6 @@ public enum FilterKind
     /** Implementing class. */
     public final Class<?> classe;
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             FilterKind.class);
 

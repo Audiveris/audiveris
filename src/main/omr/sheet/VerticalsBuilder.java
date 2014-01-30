@@ -29,8 +29,6 @@ import omr.glyph.facets.Glyph;
 import omr.grid.FilamentsFactory;
 import omr.grid.StaffInfo;
 
-import omr.image.PixelFilter;
-
 import omr.lag.Section;
 
 import omr.math.LineUtil;
@@ -45,6 +43,8 @@ import omr.step.Step;
 import omr.step.StepException;
 
 import omr.util.Predicate;
+
+import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,7 +122,7 @@ public class VerticalsBuilder
     private final double typicalWidth;
 
     /** Input image. (with staves removed) */
-    private PixelFilter pixelFilter;
+    private ByteProcessor pixelFilter;
 
     /** Suite of checks for a vertical seed. */
     private final SeedCheckSuite suite = new SeedCheckSuite();
@@ -173,8 +173,7 @@ public class VerticalsBuilder
     {
         // Cache input image
         Picture picture = sheet.getPicture();
-        pixelFilter = (PixelFilter) picture.getSource(
-                Picture.SourceKey.STAFF_LINE_FREE);
+        pixelFilter = picture.getSource(Picture.SourceKey.STAFF_LINE_FREE);
 
         // Retrieve candidates
         List<Glyph> candidates = retrieveCandidates();
@@ -239,7 +238,10 @@ public class VerticalsBuilder
             stick = system.registerGlyph(stick);
 
             if (stick.isVip()) {
-                logger.info("VIP checkVerticals for {} in system#{}", stick, system.getId());
+                logger.info(
+                        "VIP checkVerticals for {} in system#{}",
+                        stick,
+                        system.getId());
             }
 
             // Check seed is not in DMZ
@@ -314,7 +316,7 @@ public class VerticalsBuilder
             boolean empty = true;
 
             for (int x = leftLimit; x <= rightLimit; x++) {
-                if (pixelFilter.isFore(x, y)) {
+                if (pixelFilter.get(x, y) == 0) {
                     empty = false;
 
                     break;
@@ -331,7 +333,7 @@ public class VerticalsBuilder
             boolean onLeft = true;
 
             for (int x = leftLimit; x >= (leftLimit - dx); x--) {
-                if (!pixelFilter.isFore(x, y)) {
+                if (pixelFilter.get(x, y) != 0) {
                     onLeft = false;
 
                     break;
@@ -342,7 +344,7 @@ public class VerticalsBuilder
             boolean onRight = true;
 
             for (int x = rightLimit; x <= (rightLimit + dx); x++) {
-                if (!pixelFilter.isFore(x, y)) {
+                if (pixelFilter.get(x, y) != 0) {
                     onRight = false;
 
                     break;
@@ -656,7 +658,7 @@ public class VerticalsBuilder
                     boolean empty = true;
 
                     for (int x = leftLimit; x <= rightLimit; x++) {
-                        if (pixelFilter.isFore(x, y)) {
+                        if (pixelFilter.get(x, y) == 0) {
                             empty = false;
 
                             break;
@@ -683,7 +685,7 @@ public class VerticalsBuilder
                 boolean onLeft = true;
 
                 for (int x = leftLimit; x >= (leftLimit - dx); x--) {
-                    if (!pixelFilter.isFore(x, y)) {
+                    if (pixelFilter.get(x, y) != 0) {
                         onLeft = false;
 
                         break;
@@ -694,7 +696,7 @@ public class VerticalsBuilder
                 boolean onRight = true;
 
                 for (int x = rightLimit; x <= (rightLimit + dx); x++) {
-                    if (!pixelFilter.isFore(x, y)) {
+                    if (pixelFilter.get(x, y) != 0) {
                         onRight = false;
 
                         break;

@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.image;
 
+import ij.process.ByteProcessor;
 import omr.lag.Roi;
 
 
@@ -146,7 +147,7 @@ public class GrayMorphology
      *
      * @param ip the ImageProcessor
      */
-    public void run (PixelBuffer ip)
+    public void run (ByteProcessor ip)
     {
         //IJ.log( "options SE "+strelitems[options]+ " "+ constitems[options]);
         int eltype = constitems[options];
@@ -297,7 +298,7 @@ public class GrayMorphology
 //        return true;
 //    }
 
-    private void doOptions (PixelBuffer ip,
+    private void doOptions (ByteProcessor ip,
                             MorphoProcessor mp,
                             int morphoptions)
     {

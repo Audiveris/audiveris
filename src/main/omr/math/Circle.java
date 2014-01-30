@@ -25,10 +25,19 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code Circle} handles a circle (or a portion of circle)
- * which approximates a collection of data points.
+ * Class {@code Circle} handles a portion of circle which approximates
+ * a collection of points.
  * Besides usual characteristics of a circle (center, radius), and of a circle
- * arc (start and stop angles) it also defines the approximating bezier curve.
+ * arc (start and stop angles), it also defines the approximating Bézier curve.
+ * <p>
+ * Start and stop angles are defined clock-wise, with value of stop angle
+ * always greater than or equal to start angle.
+ * <p>
+ * Bézier curve is defined from left to right, so that left point is P1 and
+ * right point is P2.
+ * <p>
+ * If arc shape is /--\, then startAngle relates to P1 and stopAngle to P2.
+ * If arc shape is \--/, then startAngle relates to P2 and stopAngle to P1.
  *
  * @author Hervé Bitteur
  */
@@ -36,40 +45,32 @@ public class Circle
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Circle.class);
 
-    /** Size for matrices used to compute the circle */
-    private static final int dim = 4;
+    /** Size for matrices used to compute the circle. */
+    private static final int DIM = 4;
 
     //~ Instance fields --------------------------------------------------------
-    /** Mean algebraic distance between circle and the defining points */
-    private double distance;
-
-    // Circle characteristics
-    /** Center */
+    /** Center. */
     private Point2D.Double center;
 
-    /** Radius */
+    /** Radius. */
     private Double radius;
 
-    /** Starting limit of circle arc */
+    /** Mean algebraic distance between circle and defining points. */
+    private double distance;
+
+    /** Starting angle of circle arc. (stopAngle >= startAngle) */
     private Double startAngle;
 
-    /** Stopping limit of circle arc */
+    /** Stopping angle of circle arc. (stopAngle >= startAngle) */
     private Double stopAngle;
 
-    /** Bezier curve for circle arc */
-    private CubicCurve2D.Double curve;
+    /** Flag set when ending points were swapped. */
+    private boolean isSwapped;
 
-    // Bounding coordinates
-    private double xMax = Double.MIN_VALUE;
-
-    private double yMax = Double.MIN_VALUE;
-
-    private double xMin = Double.MAX_VALUE;
-
-    private double yMin = Double.MAX_VALUE;
+    /** Bézier curve for circle arc. */
+    private CubicCurve2D curve;
 
     //~ Constructors -----------------------------------------------------------
     //--------//
@@ -183,7 +184,7 @@ public class Circle
             sum += (delta * delta);
         }
 
-        return distance = Math.sqrt(sum) / nbPoints;
+        return distance = sqrt(sum) / nbPoints;
     }
 
     //-----------//
@@ -207,7 +208,7 @@ public class Circle
      *
      * @return the Bezier curve
      */
-    public CubicCurve2D.Double getCurve ()
+    public CubicCurve2D getCurve ()
     {
         if (curve == null) {
             computeCurve();
@@ -268,6 +269,19 @@ public class Circle
         return stopAngle;
     }
 
+    //-----------//
+    // isSwapped //
+    //-----------//
+    /**
+     * Tell whether the ending points had to be swapped.
+     *
+     * @return true if swapped
+     */
+    public boolean isSwapped ()
+    {
+        return isSwapped;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -294,6 +308,9 @@ public class Circle
         return sb.toString();
     }
 
+    //---------//
+    // angleOf //
+    //---------//
     private double angleOf (double x,
                             double y)
     {
@@ -406,6 +423,7 @@ public class Circle
             // Swap first and last
             startAngle = la;
             stopAngle = fa;
+            isSwapped = true;
         } else {
             startAngle = fa;
             stopAngle = la;
@@ -452,7 +470,7 @@ public class Circle
         // Rotation
         final double theta = (startAngle + stopAngle) / 2;
 
-        ///System.out.println("angleDeg/2=" + Math.toDegrees(theta));
+        ///System.out.println("angleDeg/2=" + toDegrees(theta));
         final Matrix rotation = new Matrix(
                 new double[][]{
                     {cos(theta), -sin(theta), 0},
@@ -534,11 +552,6 @@ public class Circle
                     M0.get(0, 0),
                     M0.get(1, 0));
         }
-
-        //        System.out.println(" P1=" + curve.getP1());
-        //        System.out.println("CP1=" + curve.getCtrlP1());
-        //        System.out.println("CP2=" + curve.getCtrlP2());
-        //        System.out.println(" P2=" + curve.getP2());
     }
 
     //-----------------//
@@ -558,12 +571,11 @@ public class Circle
         double sum = 0;
 
         for (int i = 0; i < nbPoints; i++) {
-            double delta = Math.hypot(x[i] - center.x, y[i] - center.y)
-                           - radius;
+            double delta = hypot(x[i] - center.x, y[i] - center.y) - radius;
             sum += (delta * delta);
         }
 
-        return Math.sqrt(sum) / nbPoints;
+        return sqrt(sum) / nbPoints;
     }
 
     //--------------//
@@ -583,7 +595,7 @@ public class Circle
         Line2D bisector1 = LineUtil.bisector(first, middle);
         Line2D bisector2 = LineUtil.bisector(middle, last);
         center = LineUtil.intersection(bisector1, bisector2);
-        radius = Math.hypot(
+        radius = hypot(
                 center.getX() - middle.getX(),
                 center.getY() - middle.getY());
     }
@@ -617,8 +629,8 @@ public class Circle
             throw new IllegalArgumentException("Less than 3 defining points");
         }
 
-        //  Build the design matrix, and remember the bounding box
-        Matrix design = new Matrix(nbPoints, dim);
+        //  Build the design matrix
+        Matrix design = new Matrix(nbPoints, DIM);
 
         for (int i = 0; i < nbPoints; i++) {
             final double tx = x[i];
@@ -627,22 +639,6 @@ public class Circle
             design.set(i, 1, tx);
             design.set(i, 2, ty);
             design.set(i, 3, 1);
-
-            if (tx > xMax) {
-                xMax = tx;
-            }
-
-            if (tx < xMin) {
-                xMin = tx;
-            }
-
-            if (ty > yMax) {
-                yMax = ty;
-            }
-
-            if (ty < yMin) {
-                yMin = ty;
-            }
         }
 
         ///print(design, "design");
@@ -653,23 +649,23 @@ public class Circle
         ///print(scatter, "scatter");
         //  Let's impose A = 1
         //  So let's swap the first column with the Lambda.C' column
-        Matrix first = new Matrix(dim, 1);
+        Matrix first = new Matrix(DIM, 1);
 
-        for (int i = 0; i < dim; i++) {
+        for (int i = 0; i < DIM; i++) {
             first.set(i, 0, -scatter.get(0, i));
         }
 
-        Matrix newScatter = new Matrix(dim, dim);
+        Matrix newScatter = new Matrix(DIM, DIM);
 
-        for (int i = 0; i < dim; i++) {
-            for (int j = 1; j < dim; j++) {
+        for (int i = 0; i < DIM; i++) {
+            for (int j = 1; j < DIM; j++) {
                 newScatter.set(i, j - 1, scatter.get(i, j));
             }
 
-            newScatter.set(i, dim - 1, 0.0);
+            newScatter.set(i, DIM - 1, 0.0);
         }
 
-        newScatter.set(0, dim - 1, -0.5);
+        newScatter.set(0, DIM - 1, -0.5);
 
         ///print(newScatter, "newScatter");
         //  Solution [D E F lambda]
@@ -687,6 +683,6 @@ public class Circle
 
         // Compute center & radius
         center = new Point2D.Double(-D / 2, -E / 2);
-        radius = Math.sqrt(((center.x * center.x) + (center.y * center.y)) - F);
+        radius = sqrt(((center.x * center.x) + (center.y * center.y)) - F);
     }
 }

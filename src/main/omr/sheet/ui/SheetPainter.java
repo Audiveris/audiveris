@@ -36,6 +36,7 @@ import omr.sig.Inter;
 import omr.sig.InterVisitor;
 import omr.sig.LedgerInter;
 import omr.sig.SIGraph;
+import omr.sig.SlurInter;
 import omr.sig.StemInter;
 
 import omr.ui.Colors;
@@ -56,6 +57,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Stroke;
+import java.awt.geom.CubicCurve2D;
 import java.util.ConcurrentModificationException;
 
 /**
@@ -70,16 +72,17 @@ import java.util.ConcurrentModificationException;
  * @author Hervé Bitteur
  */
 public class SheetPainter
-        extends AbstractScoreVisitor
-        implements InterVisitor
+    extends AbstractScoreVisitor
+    implements InterVisitor
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-            SheetPainter.class);
+        SheetPainter.class);
 
     //~ Instance fields --------------------------------------------------------
+
     /** Graphic context. */
     private final Graphics2D g;
 
@@ -88,13 +91,13 @@ public class SheetPainter
 
     /** Alpha composite for interpretations. */
     private final AlphaComposite composite = AlphaComposite.getInstance(
-            AlphaComposite.SRC_OVER,
-            0.5f);
+        AlphaComposite.SRC_OVER,
+        0.5f);
 
     /** Default full composite. */
     private final AlphaComposite fullComposite = AlphaComposite.getInstance(
-            AlphaComposite.SRC_OVER,
-            1f);
+        AlphaComposite.SRC_OVER,
+        1f);
 
     /** Saved stroke for restoration at the end of the painting. */
     private Stroke oldStroke;
@@ -118,6 +121,7 @@ public class SheetPainter
     private final Stroke stemStroke;
 
     //~ Constructors -----------------------------------------------------------
+
     //--------------//
     // SheetPainter //
     //--------------//
@@ -130,19 +134,20 @@ public class SheetPainter
      *                 as possible to input image
      */
     public SheetPainter (Graphics g,
-                         boolean enriched)
+                         boolean  enriched)
     {
         this.g = (Graphics2D) g;
         this.clip = g.getClipBounds();
         this.enriched = enriched;
 
         stemStroke = new BasicStroke(
-                3f,
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND);
+            3f,
+            BasicStroke.CAP_ROUND,
+            BasicStroke.JOIN_ROUND);
     }
 
     //~ Methods ----------------------------------------------------------------
+
     //---------------//
     // visit Measure //
     //---------------//
@@ -153,13 +158,13 @@ public class SheetPainter
             // Render the measure ending barline
             if (measure.getBarline() != null) {
                 measure.getBarline()
-                        .renderLine(g);
+                       .renderLine(g);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + measure,
-                    ex);
+                getClass().getSimpleName() + " Error visiting " + measure,
+                ex);
         }
 
         // Nothing lower than measure
@@ -177,16 +182,16 @@ public class SheetPainter
             scale = page.getScale();
 
             ledgerStroke = new BasicStroke(
-                    sheet.getScale().getMainFore(),
-                    BasicStroke.CAP_ROUND,
-                    BasicStroke.JOIN_ROUND);
+                sheet.getScale().getMainFore(),
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND);
 
             // Determine staff lines parameters
             int lineThickness = scale.getMainFore();
             lineStroke = new BasicStroke(
-                    lineThickness,
-                    BasicStroke.CAP_ROUND,
-                    BasicStroke.JOIN_ROUND);
+                lineThickness,
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND);
 
             if (enriched) {
                 oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
@@ -199,7 +204,7 @@ public class SheetPainter
             g.setColor(Color.BLACK);
 
             if (!page.getSystems()
-                    .isEmpty()) {
+                     .isEmpty()) {
                 // Small protection about changing data...
                 if (sheet.getScale() == null) {
                     return false;
@@ -213,13 +218,13 @@ public class SheetPainter
             } else {
                 // Render what we have got so far
                 sheet.getStaffManager()
-                        .render(g);
+                     .render(g);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + page,
-                    ex);
+                getClass().getSimpleName() + " Error visiting " + page,
+                ex);
         } finally {
             g.setStroke(oldStroke);
         }
@@ -237,13 +242,13 @@ public class SheetPainter
             // Render the part starting barline, if any
             if (part.getStartingBarline() != null) {
                 part.getStartingBarline()
-                        .renderLine(g);
+                    .renderLine(g);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
             logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + part,
-                    ex);
+                getClass().getSimpleName() + " Error visiting " + part,
+                ex);
         }
 
         return true;
@@ -265,8 +270,8 @@ public class SheetPainter
             return false;
         } catch (Exception ex) {
             logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + system,
-                    ex);
+                getClass().getSimpleName() + " Error visiting " + system,
+                ex);
 
             return false;
         }
@@ -321,9 +326,9 @@ public class SheetPainter
             return false;
         } catch (Exception ex) {
             logger.warn(
-                    getClass().getSimpleName() + " Error visiting "
-                    + systemInfo.idString(),
-                    ex);
+                getClass().getSimpleName() + " Error visiting " +
+                systemInfo.idString(),
+                ex);
         }
 
         return false;
@@ -338,9 +343,9 @@ public class SheetPainter
         setColor(inter);
 
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
-        Glyph glyph = inter.getGlyph();
-        Point center = (glyph != null) ? glyph.getCentroid()
-                : GeoUtil.centerOf(inter.getBounds());
+        Glyph       glyph = inter.getGlyph();
+        Point       center = (glyph != null) ? glyph.getCentroid()
+                             : GeoUtil.centerOf(inter.getBounds());
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
     }
 
@@ -356,7 +361,7 @@ public class SheetPainter
         g.setStroke(stemStroke);
 
         stem.getGlyph()
-                .renderLine(g);
+            .renderLine(g);
 
         g.setStroke(oldStroke);
     }
@@ -370,15 +375,29 @@ public class SheetPainter
         setColor(ledger);
         ///g.setStroke(ledgerStroke);
         g.setStroke(
-                new BasicStroke(
-                        (float) ledger.getGlyph().getMeanThickness(
-                                Orientation.HORIZONTAL),
-                        BasicStroke.CAP_ROUND,
-                        BasicStroke.JOIN_ROUND));
+            new BasicStroke(
+                (float) ledger.getGlyph().getMeanThickness(
+                    Orientation.HORIZONTAL),
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND));
 
         ledger.getGlyph()
-                .renderLine(g);
+              .renderLine(g);
+        g.setStroke(oldStroke);
+    }
 
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (SlurInter slur)
+    {
+        setColor(slur);
+        g.setStroke(lineStroke);
+        CubicCurve2D curve = slur.getInfo()
+                                 .getCircle()
+                                 .getCurve();
+        g.draw(curve);
         g.setStroke(oldStroke);
     }
 
@@ -434,15 +453,15 @@ public class SheetPainter
 
                 if (symbol == null) {
                     systemInfo.getScoreSystem()
-                            .addError(
-                                    glyph,
-                                    "No symbol for " + glyph.idString());
+                              .addError(
+                        glyph,
+                        "No symbol for " + glyph.idString());
                 } else {
                     symbol.paintSymbol(
-                            g,
-                            musicFont,
-                            glyph.getAreaCenter(),
-                            Alignment.AREA_CENTER);
+                        g,
+                        musicFont,
+                        glyph.getAreaCenter(),
+                        Alignment.AREA_CENTER);
                 }
             }
         }
@@ -464,7 +483,7 @@ public class SheetPainter
         if (enriched) {
             // Shape base color
             final Color base = inter.getShape()
-                    .getColor();
+                                    .getColor();
 
             // Alpha value based on grade: 0..1 -> 0..255
             // Prefer contextual grade when available
@@ -474,14 +493,14 @@ public class SheetPainter
                 grade = inter.getGrade();
             }
 
-            final int alpha = Math.min(
-                    255,
-                    Math.max(0, (int) Math.rint(255 * grade)));
+            final int   alpha = Math.min(
+                255,
+                Math.max(0, (int) Math.rint(255 * grade)));
             final Color color = new Color(
-                    base.getRed(),
-                    base.getGreen(),
-                    base.getBlue(),
-                    alpha);
+                base.getRed(),
+                base.getGreen(),
+                base.getBlue(),
+                alpha);
             g.setColor(color);
         }
     }

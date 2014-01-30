@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.text;
 
+import ij.process.ByteProcessor;
 import omr.constant.ConstantSet;
 
 import omr.glyph.Glyphs;
@@ -19,15 +20,12 @@ import omr.glyph.facets.Glyph;
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
 
-import omr.image.PixelBuffer;
-
 import omr.lag.Section;
 
 import omr.math.GeoPath;
 import omr.math.ReversePathIterator;
 
 import omr.score.entity.Page;
-
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
@@ -41,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -120,8 +119,10 @@ public class TextScanner
 
         // Generate an image with these glyphs
         final Rectangle bounds = system.getBounds();
-        final PixelBuffer image = new PixelBuffer(
-                bounds.getSize());
+        final BufferedImage bi = new BufferedImage(
+                bounds.width, bounds.height, BufferedImage.TYPE_BYTE_GRAY);
+        final ByteProcessor image = new ByteProcessor(bi);
+        image.invert();
 
         for (Glyph glyph : allGlyphs) {
             allSections.addAll(glyph.getMembers());
@@ -132,7 +133,7 @@ public class TextScanner
 
         // Perform OCR on image
         final List<TextLine> lines = TextBuilder.getOcr().recognize(
-                image.toBufferedImage(),
+                bi,
                 bounds.getLocation(),
                 language,
                 OCR.LayoutMode.MULTI_BLOCK,
@@ -144,8 +145,8 @@ public class TextScanner
             List<TextLine> newLines = textBuilder.recomposeLines(lines);
 
             textBuilder.mapGlyphs(newLines,
-                    allSections,
-                    language);
+                                  allSections,
+                                  language);
         } else {
             logger.info("{} No line", system.idString());
         }
@@ -175,7 +176,7 @@ public class TextScanner
 
         // Discard glyphs that intersect a stave core area
         return Glyphs.lookupGlyphs(system.getGlyphs(),
-                new Predicate<Glyph>()
+                                   new Predicate<Glyph>()
         {
             @Override
             public boolean check (Glyph glyph)
@@ -224,7 +225,7 @@ public class TextScanner
                 // All tests are OK
                 return true;
             }
-        });
+                                   });
     }
 
     //----------------//
@@ -276,20 +277,19 @@ public class TextScanner
     private GeoPath getStaffContour (StaffInfo staff)
     {
         GeoPath topLimit = getSampledLine(staff.getFirstLine(),
-                -params.marginAbove);
+                                          -params.marginAbove);
         GeoPath botLimit = getSampledLine(staff.getLastLine(),
-                params.marginBelow);
+                                          params.marginBelow);
 
         GeoPath contour = new GeoPath();
         contour.append(topLimit, false);
         contour.append(ReversePathIterator.getReversePathIterator(botLimit),
-                true);
+                       true);
         contour.closePath();
 
         // For visual check
         ///staff.addAttachment("core", contour);
         ///logger.info("Staff#{} contour:{}", staff.getId(), contour.toString());
-
         return contour;
     }
 

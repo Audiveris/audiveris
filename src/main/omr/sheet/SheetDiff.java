@@ -16,13 +16,8 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.image.BufferedSource;
 import omr.image.GlobalFilter;
 import omr.image.ImageUtil;
-import omr.image.MedianGrayFilter;
-import omr.image.PixelBuffer;
-import omr.image.PixelFilter;
-import omr.image.PixelSource;
 
 import omr.run.RunsTable;
 
@@ -41,12 +36,13 @@ import omr.ui.view.ScrollView;
 import omr.util.StopWatch;
 import omr.util.WeakPropertyChangeListener;
 
+import ij.process.ByteProcessor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -86,7 +82,6 @@ public class SheetDiff
          * False recognized entities.
          * Output data not found in input. */
         FALSE_POSITIVES;
-
     }
 
     //~ Instance fields --------------------------------------------------------
@@ -124,28 +119,28 @@ public class SheetDiff
         final StopWatch watch = new StopWatch("computeDiff");
         final int width = sheet.getWidth();
         final int height = sheet.getHeight();
-        final PixelFilter in = new GlobalFilter(
+        final ByteProcessor in = new GlobalFilter(
                 sheet.getPicture().getSource(Picture.SourceKey.BINARY),
-                constants.binaryThreshold.getValue());
+                constants.binaryThreshold.getValue()).filteredImage();
 
         watch.start("count input");
         inputCount = getInputCount();
 
         watch.start("output");
 
-        final PixelFilter out = new GlobalFilter(
-                new BufferedSource(getOutput()),
-                constants.binaryThreshold.getValue());
+        ByteProcessor out = new ByteProcessor(getOutput());
+        out.threshold(constants.binaryThreshold.getValue());
 
         // Compute input XOR output
         watch.start("xor");
 
-        final PixelBuffer xor = new PixelBuffer(new Dimension(width, height));
+        final ByteProcessor xor = new ByteProcessor(width, height);
+        xor.invert();
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                if (in.isFore(x, y) != out.isFore(x, y)) {
-                    xor.setValue(x, y, 0);
+                if (in.get(x, y) != out.get(x, y)) {
+                    xor.set(x, y, 0);
                 }
             }
         }
@@ -153,16 +148,16 @@ public class SheetDiff
         // Filter the data
         watch.start("median filter");
 
-        final PixelBuffer filtered = new PixelBuffer(
-                new Dimension(width, height));
-        new MedianGrayFilter(1).filter(xor, filtered);
+        xor.medianFilter();
 
-        //        watch.start("filtered to disk");
-        //        ImageUtil.saveOnDisk(filtered.toBufferedImage(), sheet.getPage().getId() + ".filtered");
+        watch.start("filtered to disk");
+        ImageUtil.saveOnDisk(
+                xor.getBufferedImage(),
+                sheet.getPage().getId() + ".filtered");
         watch.start("count filtered");
 
         // Count all filtered differences
-        final int count = getForeCount(filtered);
+        final int count = getForeCount(xor);
         final double ratio = (double) count / inputCount;
 
         logger.info(
@@ -180,7 +175,7 @@ public class SheetDiff
             sheet.getAssembly()
                     .addViewTab(
                             Step.DIFF_TAB,
-                            new ScrollView(new MyView(filtered)),
+                            new ScrollView(new MyView(xor)),
                             new BoardsPane(new PixelBoard(sheet)));
         }
 
@@ -204,9 +199,9 @@ public class SheetDiff
 
         watch.start("input");
 
-        final PixelSource source = sheet.getPicture()
+        final ByteProcessor source = sheet.getPicture()
                 .getSource(Picture.SourceKey.BINARY);
-        final BufferedImage input = ((PixelBuffer) source).toBufferedImage();
+        final BufferedImage input = source.getBufferedImage();
 
         watch.start("inputCount");
         getInputCount();
@@ -256,13 +251,12 @@ public class SheetDiff
     {
         BufferedImage img = getImage(kind);
 
-        ///ImageUtil.saveOnDisk(img, sheet.getPage().getId() + "." + kind);
-        final BufferedSource source = new BufferedSource(img);
-        final PixelFilter filter = new GlobalFilter(
-                source,
-                constants.binaryThreshold.getValue());
+        ImageUtil.saveOnDisk(img, sheet.getPage().getId() + "." + kind);
 
-        final int count = getForeCount(filter);
+        final ByteProcessor source = new ByteProcessor(img);
+        source.threshold(constants.binaryThreshold.getValue());
+
+        final int count = getForeCount(source);
 
         return count;
     }
@@ -348,7 +342,7 @@ public class SheetDiff
      * @param filter the binary image
      * @return the number of foreground pixels
      */
-    private int getForeCount (PixelFilter filter)
+    private int getForeCount (ByteProcessor filter)
     {
         final int width = filter.getWidth();
         final int height = filter.getHeight();
@@ -356,7 +350,7 @@ public class SheetDiff
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                if (filter.isFore(x, y)) {
+                if (filter.get(x, y) == 0) {
                     count++;
                 }
             }
@@ -376,10 +370,9 @@ public class SheetDiff
     private int getInputCount ()
     {
         if (inputCount == null) {
-            PixelSource source = sheet.getPicture()
+            ByteProcessor source = sheet.getPicture()
                     .getSource(Picture.SourceKey.BINARY);
-            PixelFilter filter = (PixelFilter) source;
-            inputCount = getForeCount(filter);
+            inputCount = getForeCount(source);
         }
 
         return inputCount;
@@ -389,7 +382,7 @@ public class SheetDiff
     // getOutput //
     //-----------//
     /**
-     * Report the BufferedImage painted with recongized entities.
+     * Report the BufferedImage painted with recognized entities.
      *
      * @return the output image
      */
@@ -432,7 +425,6 @@ public class SheetDiff
                 "gray level",
                 127,
                 "Global threshold to binarize delta results");
-
     }
 
     //--------//
@@ -447,7 +439,7 @@ public class SheetDiff
         private final BufferedImage img;
 
         //~ Constructors -------------------------------------------------------
-        public MyView (PixelBuffer filtered)
+        public MyView (ByteProcessor filtered)
         {
             setModelSize(sheet.getDimension());
 
@@ -459,7 +451,7 @@ public class SheetDiff
                     .addPropertyChangeListener(
                             new WeakPropertyChangeListener(this));
 
-            img = filtered.toBufferedImage();
+            img = filtered.getBufferedImage();
         }
 
         //~ Methods ------------------------------------------------------------

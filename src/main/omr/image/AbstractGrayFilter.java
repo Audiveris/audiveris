@@ -13,7 +13,8 @@ package omr.image;
 
 import omr.util.StopWatch;
 
-import java.awt.Dimension;
+import ij.process.ByteProcessor;
+
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 
@@ -37,8 +38,8 @@ public abstract class AbstractGrayFilter
      * @param input  the input image
      * @param output the output image.
      */
-    public abstract void filter (final PixelSource input,
-                                 final PixelSink output);
+    public abstract void filter (final ByteProcessor input,
+                                 final ByteProcessor output);
 
     //--------//
     // filter //
@@ -66,7 +67,7 @@ public abstract class AbstractGrayFilter
                 input.getHeight(),
                 BufferedImage.TYPE_BYTE_GRAY);
 
-        filter(new BufferedSource(input), new BufferedSink(output));
+        filter(new ByteProcessor(input), new ByteProcessor(output));
 
         return output;
     }
@@ -80,17 +81,17 @@ public abstract class AbstractGrayFilter
      * @param input the input image
      * @return the filtered image
      */
-    public PixelBuffer filter (final PixelSource input)
+    public ByteProcessor filter (final ByteProcessor input)
     {
-        final PixelBuffer output = new PixelBuffer(
-                new Dimension(input.getWidth(), input.getHeight()));
+        final ByteProcessor output = new ByteProcessor(
+                input.getWidth(),
+                input.getHeight());
         StopWatch watch = new StopWatch(getClass().getSimpleName());
         watch.start("filter");
 
         filter(input, output);
 
         ///watch.print();
-
         return output;
     }
 }

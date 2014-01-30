@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.image;
 
+
 /**
  * Interface {@code PixelSource} defines the operations expected
  * from a rectangular pixel source.
@@ -31,12 +32,6 @@ public interface PixelSource
     public static final int FOREGROUND = 0;
 
     //~ Methods ----------------------------------------------------------------
-    /**
-     * Report the height of the rectangular source
-     *
-     * @return the source height
-     */
-    int getHeight ();
 
     /**
      * Report the pixel element, as read at location (x, y) in the
@@ -48,8 +43,15 @@ public interface PixelSource
      * @return the pixel value using range 0..255 (0/black for foreground,
      *         255/white for background)
      */
-    int getValue (int x,
-                  int y);
+    int get (int x,
+             int y);
+
+    /**
+     * Report the height of the rectangular source
+     *
+     * @return the source height
+     */
+    int getHeight ();
 
     /**
      * Report the width of the rectangular source.

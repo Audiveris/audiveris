@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.image;
 
+import ij.process.ByteProcessor;
 import static omr.image.PixelSource.BACKGROUND;
 
 import omr.util.StopWatch;
@@ -117,6 +118,19 @@ public class PixelBuffer
         }
 
         ///watch.print();
+    }
+
+    @Override
+    public ByteProcessor filteredImage ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public int get (int x,
+                    int y)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     //~ Methods ----------------------------------------------------------------

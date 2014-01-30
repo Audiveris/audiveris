@@ -15,10 +15,11 @@ import omr.constant.ConstantSet;
 
 import omr.util.Param;
 
+import ij.process.ByteProcessor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -35,23 +36,13 @@ public abstract class FilterDescriptor
     private static final Constants constants = new Constants();
 
     /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(FilterDescriptor.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            FilterDescriptor.class);
 
     /** Default param. */
     public static final Param<FilterDescriptor> defaultFilter = new Default();
 
     //~ Methods ----------------------------------------------------------------
-    //
-    //---------//
-    // getKind //
-    //---------//
-    /**
-     * Report the kind of filter used.
-     *
-     * @return the filter kind
-     */
-    public abstract FilterKind getKind ();
-
     //----------------//
     // getDefaultKind //
     //----------------//
@@ -78,7 +69,18 @@ public abstract class FilterDescriptor
      * @param source the underlying pixel source
      * @return the filter instance, ready to use
      */
-    public abstract PixelFilter getFilter (PixelSource source);
+    public abstract PixelFilter getFilter (ByteProcessor source);
+
+    //
+    //---------//
+    // getKind //
+    //---------//
+    /**
+     * Report the kind of filter used.
+     *
+     * @return the filter kind
+     */
+    public abstract FilterKind getKind ();
 
     //--------//
     // equals //
@@ -96,6 +98,7 @@ public abstract class FilterDescriptor
     public int hashCode ()
     {
         int hash = 5;
+
         return hash;
     }
 
@@ -136,7 +139,6 @@ public abstract class FilterDescriptor
         FilterKind.Constant defaultKind = new FilterKind.Constant(
                 FilterKind.ADAPTIVE,
                 "Default kind of PixelFilter");
-
     }
 
     //---------//
@@ -145,6 +147,7 @@ public abstract class FilterDescriptor
     private static class Default
             extends Param<FilterDescriptor>
     {
+        //~ Methods ------------------------------------------------------------
 
         @Override
         public FilterDescriptor getSpecific ()
@@ -162,12 +165,7 @@ public abstract class FilterDescriptor
                 } else {
                     logger.error(method + " must be static");
                 }
-
-            } catch (NoSuchMethodException |
-                    SecurityException |
-                    IllegalAccessException |
-                    IllegalArgumentException |
-                    InvocationTargetException ex) {
+            } catch (Exception ex) {
                 logger.warn("Could not call " + method, ex);
             }
 
@@ -177,19 +175,25 @@ public abstract class FilterDescriptor
         @Override
         public boolean setSpecific (FilterDescriptor specific)
         {
-            if (!getSpecific().equals(specific)) {
+            if (!getSpecific()
+                    .equals(specific)) {
                 FilterKind kind = specific.getKind();
                 FilterDescriptor.setDefaultKind(kind);
 
                 switch (kind) {
                 case GLOBAL:
+
                     GlobalDescriptor gDesc = (GlobalDescriptor) specific;
                     GlobalFilter.setDefaultThreshold(gDesc.threshold);
+
                     break;
+
                 case ADAPTIVE:
+
                     AdaptiveDescriptor aDesc = (AdaptiveDescriptor) specific;
                     AdaptiveFilter.setDefaultMeanCoeff(aDesc.meanCoeff);
                     AdaptiveFilter.setDefaultStdDevCoeff(aDesc.stdDevCoeff);
+
                     break;
                 }
 

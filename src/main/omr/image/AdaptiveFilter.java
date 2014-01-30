@@ -16,6 +16,8 @@ import omr.constant.ConstantSet;
 
 import omr.math.Population;
 
+import ij.process.ByteProcessor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,16 +28,19 @@ import java.util.Arrays;
  * {@code PixelFilter} which provides foreground information based on
  * mean value and standard deviation in pixel neighborhood.
  *
- * <p>See work of Sauvola et al.<a
+ * <p>
+ * See work of Sauvola et al.<a
  * href="http://www.mediateam.oulu.fi/publications/pdf/24.p">
  * here</a>.
  *
- * <p>The mean value and the standard deviation value are provided thanks to
+ * <p>
+ * The mean value and the standard deviation value are provided thanks to
  * underlying integrals {@link Tile} instances.
  * The precise tile size and behavior is the responsibility of subclasses of
  * this class.
  *
- * <p> See work of Shafait et al. <a
+ * <p>
+ * See work of Shafait et al. <a
  * href="http://www.dfki.uni-kl.de/~shafait/papers/Shafait-efficient-binarization-SPIE08.pdf">
  * here</a>.
  *
@@ -110,9 +115,11 @@ public abstract class AdaptiveFilter
     /**
      * Create an adaptive wrapper on a pixel source.
      *
-     * @param source the underlying source of raw pixels
+     * @param source      the underlying source of raw pixels
+     * @param meanCoeff   coefficient for mean variable
+     * @param stdDevCoeff coefficient for standard deviation value
      */
-    public AdaptiveFilter (PixelSource source,
+    public AdaptiveFilter (ByteProcessor source,
                            double meanCoeff,
                            double stdDevCoeff)
     {
@@ -123,36 +130,27 @@ public abstract class AdaptiveFilter
     }
 
     //~ Methods ----------------------------------------------------------------
-    //---------------------//
-    // getDefaultMeanCoeff //
-    //---------------------//
-    public static double getDefaultMeanCoeff ()
+    //---------------//
+    // filteredImage //
+    //---------------//
+    @Override
+    public ByteProcessor filteredImage ()
     {
-        return constants.meanCoeff.getValue();
-    }
+        ByteProcessor ip = new ByteProcessor(
+                source.getWidth(),
+                source.getHeight());
 
-    //-----------------------//
-    // getDefaultStdDevCoeff //
-    //-----------------------//
-    public static double getDefaultStdDevCoeff ()
-    {
-        return constants.stdDevCoeff.getValue();
-    }
+        for (int x = 0, w = ip.getWidth(); x < w; x++) {
+            for (int y = 0, h = ip.getHeight(); y < h; y++) {
+                if (isFore(x, y)) {
+                    ip.set(x, y, FOREGROUND);
+                } else {
+                    ip.set(x, y, BACKGROUND);
+                }
+            }
+        }
 
-    //---------------------//
-    // setDefaultMeanCoeff //
-    //---------------------//
-    public static void setDefaultMeanCoeff (double meanCoeff)
-    {
-        constants.meanCoeff.setValue(meanCoeff);
-    }
-
-    //-----------------------//
-    // setDefaultStdDevCoeff //
-    //-----------------------//
-    public static void setDefaultStdDevCoeff (double stdDevCoeff)
-    {
-        constants.stdDevCoeff.setValue(stdDevCoeff);
+        return ip;
     }
 
     //------------//
@@ -176,7 +174,7 @@ public abstract class AdaptiveFilter
 
         for (int ix = xMin; ix <= xMax; ix++) {
             for (int iy = yMin; iy <= yMax; iy++) {
-                pop.includeValue(source.getValue(ix, iy));
+                pop.includeValue(source.get(ix, iy));
             }
         }
 
@@ -189,6 +187,22 @@ public abstract class AdaptiveFilter
         } else {
             return null;
         }
+    }
+
+    //---------------------//
+    // getDefaultMeanCoeff //
+    //---------------------//
+    public static double getDefaultMeanCoeff ()
+    {
+        return constants.meanCoeff.getValue();
+    }
+
+    //-----------------------//
+    // getDefaultStdDevCoeff //
+    //-----------------------//
+    public static double getDefaultStdDevCoeff ()
+    {
+        return constants.stdDevCoeff.getValue();
     }
 
     //
@@ -206,10 +220,26 @@ public abstract class AdaptiveFilter
 
         double threshold = getThreshold(mean, stdDev);
 
-        int pixValue = source.getValue(x, y);
+        int pixValue = source.get(x, y);
         boolean isFore = pixValue <= threshold;
 
         return isFore;
+    }
+
+    //---------------------//
+    // setDefaultMeanCoeff //
+    //---------------------//
+    public static void setDefaultMeanCoeff (double meanCoeff)
+    {
+        constants.meanCoeff.setValue(meanCoeff);
+    }
+
+    //-----------------------//
+    // setDefaultStdDevCoeff //
+    //-----------------------//
+    public static void setDefaultStdDevCoeff (double stdDevCoeff)
+    {
+        constants.stdDevCoeff.setValue(stdDevCoeff);
     }
 
     //------------------//
@@ -381,7 +411,7 @@ public abstract class AdaptiveFilter
             for (int y = 0; y < height; y++) {
                 long left = prevColumn[y];
 
-                long pix = getValue(x, y);
+                long pix = get(x, y);
 
                 if (squared) {
                     pix *= pix;
@@ -431,6 +461,5 @@ public abstract class AdaptiveFilter
         Constant.String className = new Constant.String(
                 "omr.image.VerticalFilter",
                 "omr.image.VerticalFilter or omr.image.RandomFilter");
-
     }
 }

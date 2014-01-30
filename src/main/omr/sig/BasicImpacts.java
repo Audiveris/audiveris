@@ -40,8 +40,11 @@ public class BasicImpacts
     public BasicImpacts (String[] names,
                          double[] weights)
     {
-        assert names.length == weights.length : "Arrays for names & weights"
-                                                + " have different lengths";
+        if (names.length != weights.length) {
+            throw new IllegalArgumentException(
+                    "Arrays for names & weights have different lengths");
+        }
+
         this.names = names;
         this.weights = weights;
 

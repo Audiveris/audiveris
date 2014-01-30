@@ -30,8 +30,6 @@ import omr.grid.FilamentsFactory;
 import omr.grid.LineInfo;
 import omr.grid.StaffInfo;
 
-import omr.image.PixelFilter;
-
 import omr.lag.Section;
 
 import omr.math.GeoUtil;
@@ -55,6 +53,8 @@ import omr.step.Step;
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
 import omr.util.Predicate;
+
+import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,7 +141,7 @@ public class HorizontalsBuilder
     private List<Inter> systemBeams;
 
     /** Input image. (with staves removed) */
-    private PixelFilter pixelFilter;
+    private ByteProcessor pixelFilter;
 
     //~ Constructors -----------------------------------------------------------
     //--------------------//
@@ -184,8 +184,7 @@ public class HorizontalsBuilder
         try {
             // Cache input image
             Picture picture = sheet.getPicture();
-            pixelFilter = (PixelFilter) picture.getSource(
-                    Picture.SourceKey.STAFF_LINE_FREE);
+            pixelFilter = picture.getSource(Picture.SourceKey.STAFF_LINE_FREE);
 
             // Retrieve the (good) system beams
             systemBeams = getGoodBeams();
@@ -261,25 +260,6 @@ public class HorizontalsBuilder
         } else {
             return null;
         }
-    }
-
-    //-----------//
-    // getMiddle //
-    //-----------//
-    /**
-     * Retrieve the middle point of a stick, assumed rather horizontal.
-     *
-     * @param stick the stick to process
-     * @return the middle point
-     */
-    private static Point2D getMiddle (Glyph stick)
-    {
-        final Point2D startPoint = stick.getStartPoint(HORIZONTAL);
-        final Point2D stopPoint = stick.getStopPoint(HORIZONTAL);
-
-        return new Point2D.Double(
-                (startPoint.getX() + stopPoint.getX()) / 2,
-                (startPoint.getY() + stopPoint.getY()) / 2);
     }
 
     //-------------//
@@ -464,6 +444,25 @@ public class HorizontalsBuilder
         Collections.sort(beams, Inter.byAbscissa);
 
         return beams;
+    }
+
+    //-----------//
+    // getMiddle //
+    //-----------//
+    /**
+     * Retrieve the middle point of a stick, assumed rather horizontal.
+     *
+     * @param stick the stick to process
+     * @return the middle point
+     */
+    private static Point2D getMiddle (Glyph stick)
+    {
+        final Point2D startPoint = stick.getStartPoint(HORIZONTAL);
+        final Point2D stopPoint = stick.getStopPoint(HORIZONTAL);
+
+        return new Point2D.Double(
+                (startPoint.getX() + stopPoint.getX()) / 2,
+                (startPoint.getY() + stopPoint.getY()) / 2);
     }
 
     //---------------//
@@ -821,7 +820,80 @@ public class HorizontalsBuilder
         Scale.Fraction maxInterLedgerDy = new Scale.Fraction(
                 0.2,
                 "Maximum inter-ledger ordinate gap");
+    }
 
+    //-------------//
+    // IndexTarget //
+    //-------------//
+    private static class IndexTarget
+    {
+        //~ Instance fields ----------------------------------------------------
+
+        final int index;
+
+        final double target;
+
+        //~ Constructors -------------------------------------------------------
+        public IndexTarget (int index,
+                            double target)
+        {
+            this.index = index;
+            this.target = target;
+        }
+    }
+
+    //----------------//
+    // ConvexityCheck //
+    //----------------//
+    private class ConvexityCheck
+            extends Check<GlyphContext>
+    {
+        //~ Constructors -------------------------------------------------------
+
+        public ConvexityCheck ()
+        {
+            super(
+                    "Convex",
+                    "Check number of convex stick ends",
+                    constants.convexityLow,
+                    Constant.Double.TWO,
+                    true,
+                    TOO_CONCAVE);
+        }
+
+        //~ Methods ------------------------------------------------------------
+        // Retrieve the density
+        @Override
+        protected double getValue (GlyphContext context)
+        {
+            Glyph stick = context.stick;
+            Rectangle box = stick.getBounds();
+            int convexities = 0;
+
+            // On each end of the stick, we check that pixels just above and
+            // just below are white, so that stick slightly points out.
+            // We use the stick bounds, whatever the precise geometry inside.
+            //
+            //  X                                                         X
+            //  +---------------------------------------------------------+
+            //  |                                                         |
+            //  |                                                         |
+            //  +---------------------------------------------------------+
+            //  X                                                         X
+            //
+            for (HorizontalSide hSide : HorizontalSide.values()) {
+                int x = (hSide == LEFT) ? box.x : ((box.x + box.width) - 1);
+                boolean topFore = pixelFilter.get(x, box.y - 1) == 0;
+                boolean bottomFore = pixelFilter.get(x, box.y + box.height) == 0;
+                boolean isConvex = !(topFore || bottomFore);
+
+                if (isConvex) {
+                    convexities++;
+                }
+            }
+
+            return convexities;
+        }
     }
 
     //--------------//
@@ -872,80 +944,6 @@ public class HorizontalsBuilder
         }
     }
 
-    //----------------//
-    // ConvexityCheck //
-    //----------------//
-    private class ConvexityCheck
-            extends Check<GlyphContext>
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public ConvexityCheck ()
-        {
-            super(
-                    "Convex",
-                    "Check number of convex stick ends",
-                    constants.convexityLow,
-                    Constant.Double.TWO,
-                    true,
-                    TOO_CONCAVE);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        // Retrieve the density
-        @Override
-        protected double getValue (GlyphContext context)
-        {
-            Glyph stick = context.stick;
-            Rectangle box = stick.getBounds();
-            int convexities = 0;
-
-            // On each end of the stick, we check that pixels just above and
-            // just below are white, so that stick slightly points out.
-            // We use the stick bounds, whatever the precise geometry inside.
-            //
-            //  X                                                         X
-            //  +---------------------------------------------------------+
-            //  |                                                         |
-            //  |                                                         |
-            //  +---------------------------------------------------------+
-            //  X                                                         X
-            //
-            for (HorizontalSide hSide : HorizontalSide.values()) {
-                int x = (hSide == LEFT) ? box.x : ((box.x + box.width) - 1);
-                boolean topFore = pixelFilter.isFore(x, box.y - 1);
-                boolean bottomFore = pixelFilter.isFore(x, box.y + box.height);
-                boolean isConvex = !(topFore || bottomFore);
-
-                if (isConvex) {
-                    convexities++;
-                }
-            }
-
-            return convexities;
-        }
-    }
-
-    //-------------//
-    // IndexTarget //
-    //-------------//
-    private static class IndexTarget
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final int index;
-
-        final double target;
-
-        //~ Constructors -------------------------------------------------------
-        public IndexTarget (int index,
-                            double target)
-        {
-            this.index = index;
-            this.target = target;
-        }
-    }
-
     //------------------//
     // LedgerCheckBoard //
     //------------------//
@@ -986,7 +984,9 @@ public class HorizontalsBuilder
                         // Check if there is a staff line or ledger for reference
                         // For this we have to operate from some relevant system
                         SystemManager systemManager = sheet.getSystemManager();
-                        for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+
+                        for (SystemInfo system : systemManager.getSystemsOf(
+                                glyph)) {
                             IndexTarget it = system.horizontalsBuilder.getLedgerTarget(
                                     glyph);
 

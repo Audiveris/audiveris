@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.image;
 
+import ij.process.ByteProcessor;
+
 /**
  * Class {@code SourceWrapper} wraps a PixelSource.
  *
@@ -22,20 +24,30 @@ public class SourceWrapper
     //~ Instance fields --------------------------------------------------------
 
     /** Underlying pixel source. */
-    protected final PixelSource source;
+    protected final ByteProcessor source;
 
     //~ Constructors -----------------------------------------------------------
     /**
      * Creates a new SourceWrapper object.
      *
-     * @param source DOCUMENT ME!
+     * @param source the pixel source
      */
-    public SourceWrapper (PixelSource source)
+    public SourceWrapper (ByteProcessor source)
     {
         this.source = source;
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-----//
+    // get //
+    //-----//
+    @Override
+    public int get (int x,
+                    int y)
+    {
+        return source.get(x, y);
+    }
+
     //
     //-----------//
     // getHeight //
@@ -44,16 +56,6 @@ public class SourceWrapper
     public int getHeight ()
     {
         return source.getHeight();
-    }
-
-    //----------//
-    // getValue //
-    //----------//
-    @Override
-    public int getValue (int x,
-                         int y)
-    {
-        return source.getValue(x, y);
     }
 
     //----------//

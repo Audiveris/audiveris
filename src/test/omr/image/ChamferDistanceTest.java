@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.image;
 
+import ij.process.ByteProcessor;
 import omr.math.TableUtil;
 
 import org.junit.Test;
@@ -41,7 +42,7 @@ public class ChamferDistanceTest
     {
         System.out.println("compute");
 
-        PixelBuffer input = createImage();
+        ByteProcessor input = createImage();
         TableUtil.dump("Initial:", input);
 
         ChamferDistance instance = new ChamferDistance.Integer();
@@ -53,7 +54,7 @@ public class ChamferDistanceTest
         TableUtil.dump("Distances to back:", toBack);
     }
 
-    private PixelBuffer createImage ()
+    private ByteProcessor createImage ()
     {
         String[] rows = new String[]{
             "                              ",
@@ -87,12 +88,12 @@ public class ChamferDistanceTest
         };
         final int width = rows[0].length();
         final int height = rows.length;
-        final PixelBuffer img = new PixelBuffer(new Dimension(width, height));
+        final ByteProcessor img = new ByteProcessor(width, height);
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 char c = rows[y].charAt(x);
-                img.setValue(x, y, (c == 'X') ? 0 : 255);
+                img.set(x, y, (c == 'X') ? 0 : 255);
             }
         }
 

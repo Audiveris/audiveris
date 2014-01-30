@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.image;
 
+import ij.process.ByteProcessor;
+
 /**
  * Class {@code DistanceFilter} implements a {@link PixelFilter} on
  * top of a distance image.
@@ -38,6 +40,19 @@ public class DistanceFilter
 
     //~ Methods ----------------------------------------------------------------
     @Override
+    public ByteProcessor filteredImage ()
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public int get (int x,
+                    int y)
+    {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
     public Context getContext (int x,
                                int y)
     {
@@ -48,13 +63,6 @@ public class DistanceFilter
     public int getHeight ()
     {
         return distances.getHeight();
-    }
-
-    @Override
-    public int getValue (int x,
-                         int y)
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

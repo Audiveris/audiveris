@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.lag;
 
-import omr.image.PixelBuffer;
+import ij.process.ByteProcessor;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -51,11 +51,12 @@ public class Lags
      * @param lags the contributing lags
      * @return the populated buffer
      */
-    public static PixelBuffer buildBuffer (Dimension dim,
-                                           Lag... lags)
+    public static ByteProcessor buildBuffer (Dimension dim,
+                                             Lag... lags)
     {
         final Rectangle box = new Rectangle(0, 0, dim.width, dim.height);
-        final PixelBuffer buf = new PixelBuffer(dim);
+        final ByteProcessor buf = new ByteProcessor(dim.width, dim.height);
+        buf.invert();
 
         for (Lag lag : lags) {
             for (Section section : lag.getSections()) {

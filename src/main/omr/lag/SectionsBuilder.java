@@ -11,8 +11,7 @@
 // </editor-fold>
 package omr.lag;
 
-import java.awt.Point;
-import omr.image.PixelFilter;
+import ij.process.ByteProcessor;
 import omr.run.Run;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
@@ -170,7 +169,7 @@ public class SectionsBuilder
      * @return the list of created sections
      */
     public List<Section> createSections (String name,
-                                         PixelFilter source,
+                                         ByteProcessor source,
                                          int minRunLength)
     {
         // Define a proper table factory
@@ -339,10 +338,10 @@ public class SectionsBuilder
         case 1: // Continue if consistent
             if (junctionPolicy.consistentRun(overlapRun, section)) {
                 logger.debug("Perhaps extending section {} with run {}",
-                        section, overlapRun);
+                             section, overlapRun);
             } else {
                 logger.debug("Incompatible height between {} and run {}",
-                        section, overlapRun);
+                             section, overlapRun);
                 finish(section);
             }
             break;

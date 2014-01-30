@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.image;
 
+import ij.process.ByteProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +88,7 @@ public class MorphoProcessor
      * @param ip the ImageProcessor
      *
      * */
-    public void close (PixelBuffer ip)
+    public void close (ByteProcessor ip)
     {
         int width = ip.getWidth();
         int height = ip.getHeight();
@@ -99,7 +100,7 @@ public class MorphoProcessor
         //  IJ.log("pg: "+pg.length);
         int sz = pg.length; //se.getWidth()*se.getHeight();
 
-        byte[] pixels = (byte[]) ip.getValues();
+        byte[] pixels = (byte[]) ip.getPixels();
         byte[] newpix = new byte[pixels.length];
         byte[] newpix2 = new byte[pixels.length];
         int[] wnd = new int[sz];
@@ -146,7 +147,7 @@ public class MorphoProcessor
      *
      * @param ip the ImageProcessor
      */
-    public void dilate (PixelBuffer ip)
+    public void dilate (ByteProcessor ip)
     {
         int width = ip.getWidth();
         int height = ip.getHeight();
@@ -156,7 +157,7 @@ public class MorphoProcessor
         //  IJ.log("pg: "+pg.length);
         int sz = pg.length; //se.getWidth()*se.getHeight();
 
-        byte[] pixels = (byte[]) ip.getValues();
+        byte[] pixels = (byte[]) ip.getPixels();
         int[] wnd = new int[sz];
 
         byte[] newpix = new byte[pixels.length];
@@ -182,7 +183,7 @@ public class MorphoProcessor
      *
      * @param ip the ImageProcessor
      */
-    public void erode (PixelBuffer ip)
+    public void erode (ByteProcessor ip)
     {
         int width = ip.getWidth();
         int height = ip.getHeight();
@@ -191,7 +192,7 @@ public class MorphoProcessor
         int sz = pg.length; //se.getWidth()*se.getHeight();
         // byte[] p=(byte[])ip.convertToByte(false).getValues();
 
-        byte[] pixels = (byte[]) ip.getValues();
+        byte[] pixels = (byte[]) ip.getPixels();
 
         int[] wnd = new int[sz];
 
@@ -215,7 +216,7 @@ public class MorphoProcessor
      *
      * @param ip the ImageProcessor
      */
-    public void fclose (PixelBuffer ip)
+    public void fclose (ByteProcessor ip)
     {
         //fastDilate(ip,se);
         //fastErode(ip,se);
@@ -224,7 +225,7 @@ public class MorphoProcessor
         int max = 32767; //,k=0,x=0,y=0;
 
         //int pgzise=pg.length;
-        byte[] pixels = (byte[]) ip.getValues();
+        byte[] pixels = (byte[]) ip.getPixels();
         byte[] newpix = new byte[pixels.length];
 
         //String s="", s2="";
@@ -308,7 +309,7 @@ public class MorphoProcessor
      *
      * @param ip the ImageProcessor
      */
-    public void open (PixelBuffer ip)
+    public void open (ByteProcessor ip)
     {
         int width = ip.getWidth();
         int height = ip.getHeight();
@@ -320,7 +321,7 @@ public class MorphoProcessor
 
         int sz = pg.length;
 
-        byte[] pixels = (byte[]) ip.getValues();
+        byte[] pixels = (byte[]) ip.getPixels();
         byte[] newpix = new byte[pixels.length];
         byte[] newpix2 = new byte[pixels.length];
         int[] wnd = new int[sz];

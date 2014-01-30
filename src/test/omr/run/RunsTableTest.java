@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.run;
 
+import ij.process.ByteProcessor;
 import omr.image.GlobalFilter;
 import static omr.run.Orientation.*;
 
@@ -134,7 +135,7 @@ public class RunsTableTest
     }
 
     /**
-     * Test of getValue method, of class RunsTable.
+     * Test of get method, of class RunsTable.
      */
     @Test
     public void testGetPixel ()
@@ -145,7 +146,7 @@ public class RunsTableTest
         int y = 0;
         RunsTable instance = createHorizontalInstance();
         int expResult = level;
-        int result = instance.getValue(x, y);
+        int result = instance.get(x, y);
         assertEquals(expResult, result);
     }
 
@@ -339,8 +340,10 @@ public class RunsTableTest
     private RunsTable createVerticalInstance ()
     {
         RunsTable hori = createHorizontalInstance();
+        ByteProcessor buffer = hori.getBuffer();
+        GlobalFilter filter = new GlobalFilter(buffer, 127);
         RunsTableFactory factory = new RunsTableFactory(
-                VERTICAL, new GlobalFilter(hori, 127), 0);
+                VERTICAL, filter.filteredImage(), 0);
 
         return factory.createTable("vert");
     }

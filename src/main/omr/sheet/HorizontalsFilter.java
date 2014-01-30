@@ -103,8 +103,7 @@ public class HorizontalsFilter
 
         final RunsTable hugeHoriTable = new RunsTableFactory(
                 HORIZONTAL,
-                (PixelFilter) sheet.getPicture().getSource(
-                        Picture.SourceKey.BINARY),
+                sheet.getPicture().getSource(Picture.SourceKey.BINARY),
                 minRunLength).createTable("huge-hori", filter);
 
         final Lag lag = new BasicLag(
@@ -118,7 +117,8 @@ public class HorizontalsFilter
         sectionsBuilder.createSections(hugeHoriTable, true);
 
         sheet.setLag(Lags.FULL_HLAG, lag);
-        sheet.getSystemManager().dispatchHorizontalHugeSections();
+        sheet.getSystemManager()
+                .dispatchHorizontalHugeSections();
 
         if (Main.getGui() != null) {
             // Display a view on this lag
@@ -147,6 +147,5 @@ public class HorizontalsFilter
         Scale.Fraction minRunLength = new Scale.Fraction(
                 1.0,
                 "Minimum length for a ledger run");
-
     }
 }

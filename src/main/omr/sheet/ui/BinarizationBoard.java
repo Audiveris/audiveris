@@ -15,7 +15,6 @@ import omr.image.AdaptiveFilter;
 import omr.image.AdaptiveFilter.AdaptiveContext;
 import omr.image.FilterDescriptor;
 import omr.image.PixelFilter;
-import omr.image.PixelSource;
 import omr.image.RandomFilter;
 
 import omr.selection.LocationEvent;
@@ -32,6 +31,8 @@ import omr.ui.util.Panel;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
+import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,7 +134,7 @@ public class BinarizationBoard
                     FilterDescriptor desc = sheet.getPage()
                             .getFilterParam()
                             .getTarget();
-                    PixelSource source = sheet.getPicture()
+                    ByteProcessor source = sheet.getPicture()
                             .getSource(
                                     Picture.SourceKey.INITIAL);
                     PixelFilter filter = desc.getFilter(source);

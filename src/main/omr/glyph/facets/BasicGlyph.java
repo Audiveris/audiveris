@@ -19,8 +19,6 @@ import omr.glyph.GlyphNest;
 import omr.glyph.GlyphSignature;
 import omr.glyph.Shape;
 
-import omr.image.PixelBuffer;
-
 import omr.lag.Lag;
 import omr.lag.Section;
 
@@ -37,7 +35,6 @@ import omr.score.entity.PartNode;
 import omr.score.entity.TimeRational;
 
 import omr.sheet.Scale;
-import omr.sheet.SystemInfo;
 
 import omr.sig.Inter;
 
@@ -47,6 +44,8 @@ import omr.text.TextWord;
 
 import omr.util.HorizontalSide;
 import omr.util.Predicate;
+
+import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -424,7 +423,7 @@ public class BasicGlyph
     }
 
     @Override
-    public PixelBuffer getImage ()
+    public ByteProcessor getImage ()
     {
         return display.getImage();
     }

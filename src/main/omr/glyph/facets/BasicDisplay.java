@@ -14,17 +14,16 @@ package omr.glyph.facets;
 import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
 
-import omr.image.PixelBuffer;
-
 import omr.lag.BasicSection;
 import omr.lag.Section;
 
 import omr.ui.Colors;
 
+import ij.process.ByteProcessor;
+
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
@@ -151,11 +150,12 @@ class BasicDisplay
     // getImage //
     //----------//
     @Override
-    public PixelBuffer getImage ()
+    public ByteProcessor getImage ()
     {
         // Determine the bounding box
         final Rectangle box = glyph.getBounds();
-        final PixelBuffer image = new PixelBuffer(box.getSize());
+        final ByteProcessor image = new ByteProcessor(box.width, box.height);
+        image.invert();
 
         // Now paint each section in black foreground
         for (Section section : glyph.getMembers()) {

@@ -13,12 +13,9 @@ package omr.glyph.facets;
 
 import omr.glyph.ui.AttachmentHolder;
 
-import omr.image.PixelBuffer;
-
-import omr.lag.Section;
+import ij.process.ByteProcessor;
 
 import java.awt.Color;
-import java.util.Collection;
 
 /**
  * Interface {@code GlyphDisplay} defines the facet which handles the
@@ -52,5 +49,5 @@ interface GlyphDisplay
      *
      * @return a black & white image (contour box size )
      */
-    PixelBuffer getImage ();
+    ByteProcessor getImage ();
 }

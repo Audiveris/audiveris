@@ -16,6 +16,8 @@ import omr.constant.ConstantSet;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
+import omr.grid.StaffInfo;
+
 import omr.math.GeoUtil;
 
 import omr.score.visitor.AbstractScoreVisitor;
@@ -31,6 +33,7 @@ import omr.sig.Inter;
 import omr.sig.InterVisitor;
 import omr.sig.LedgerInter;
 import omr.sig.SIGraph;
+import omr.sig.SlurInter;
 import omr.sig.StemInter;
 
 import omr.ui.symbol.Alignment;
@@ -44,8 +47,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Class {@code PageEraser} erases selected shapes on the provided
@@ -71,6 +74,9 @@ public class PageEraser
     // Specific font for music symbols
     private final MusicFont musicFont;
 
+    // Vertical margin added above and below any staff DMZ
+    private final int dmzDyMargin;
+
     //~ Constructors -----------------------------------------------------------
     /**
      * Creates a new PageEraser object.
@@ -84,10 +90,12 @@ public class PageEraser
         this.g = g;
         this.sheet = sheet;
 
-        // Properly scaled font (sufficiently enlarged)
+        // Properly scaled font
         Scale scale = sheet.getScale();
         int symbolSize = scale.toPixels(constants.symbolSize);
         musicFont = MusicFont.getFont(symbolSize);
+
+        dmzDyMargin = scale.toPixels(constants.staffVerticalMargin);
 
         g.setColor(Color.WHITE);
 
@@ -106,7 +114,7 @@ public class PageEraser
      *
      * @param shapes the shapes to process
      */
-    public void erase (final Set<Shape> shapes)
+    public void erase (final Collection<Shape> shapes)
     {
         for (SystemInfo system : sheet.getSystems()) {
             SIGraph sig = system.getSig();
@@ -125,6 +133,11 @@ public class PageEraser
 
             for (Inter inter : goodies) {
                 inter.accept(this);
+            }
+
+            // Erase each staff DMZ
+            for (StaffInfo staff : system.getStaves()) {
+                eraseDmz(staff);
             }
         }
     }
@@ -156,6 +169,11 @@ public class PageEraser
     }
 
     @Override
+    public void visit (SlurInter inter)
+    {
+    }
+
+    @Override
     public void visit (BarlineInter inter)
     {
     }
@@ -163,6 +181,24 @@ public class PageEraser
     @Override
     public void visit (BarConnectionInter inter)
     {
+    }
+
+    //----------//
+    // eraseDmz //
+    //----------//
+    /**
+     * Erase from image the DMZ part of a staff
+     *
+     * @param staff the staff to process
+     */
+    private void eraseDmz (StaffInfo staff)
+    {
+        int dmzEnd = staff.getDmzEnd();
+        int top = staff.getFirstLine()
+                .yAt(dmzEnd) - dmzDyMargin;
+        int bot = staff.getLastLine()
+                .yAt(dmzEnd) + dmzDyMargin;
+        g.fillRect(0, top, dmzEnd, bot - top + 1);
     }
 
     //~ Inner Classes ----------------------------------------------------------
@@ -175,7 +211,11 @@ public class PageEraser
         //~ Instance fields ----------------------------------------------------
 
         final Scale.Fraction symbolSize = new Scale.Fraction(
-                1.0, //1.25,
+                1.0,
                 "Symbols size to use for eraser");
+
+        final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
+                2.0,
+                "Margin erased above & below staff DMZ area");
     }
 }

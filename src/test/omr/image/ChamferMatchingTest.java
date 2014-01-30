@@ -15,9 +15,10 @@ import omr.glyph.Shape;
 
 import omr.math.TableUtil;
 
+import ij.process.ByteProcessor;
+
 import org.junit.Test;
 
-import java.awt.Dimension;
 import java.util.Collections;
 import java.util.List;
 
@@ -97,7 +98,7 @@ public class ChamferMatchingTest
                         new Template.Key(Shape.NOTEHEAD_BLACK, false));
         template.dump();
 
-        PixelBuffer image = createImage(imageRows);
+        ByteProcessor image = createImage(imageRows);
         TableUtil.dump("Image:", image);
 
         DistanceTable distances = new ChamferDistance.Short().computeToFore(
@@ -113,16 +114,16 @@ public class ChamferMatchingTest
         printBest(locs);
     }
 
-    private PixelBuffer createImage (String[] rows)
+    private ByteProcessor createImage (String[] rows)
     {
         final int width = rows[0].length();
         final int height = rows.length;
-        final PixelBuffer img = new PixelBuffer(new Dimension(width, height));
+        final ByteProcessor img = new ByteProcessor(width, height);
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 char c = rows[y].charAt(x);
-                img.setValue(x, y, (c == 'X') ? 0 : 255);
+                img.set(x, y, (c == 'X') ? 0 : 255);
             }
         }
 

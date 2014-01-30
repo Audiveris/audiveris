@@ -13,11 +13,12 @@ package omr.step;
 
 import omr.image.ChamferDistance;
 import omr.image.DistanceTable;
-import omr.image.PixelFilter;
 
 import omr.sheet.Picture;
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
+import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,14 +33,15 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class NotesStep
-        extends AbstractSystemStep
+    extends AbstractSystemStep
 {
     //~ Static fields/initializers ---------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(
-            NotesStep.class);
+        NotesStep.class);
 
     //~ Constructors -----------------------------------------------------------
+
     //-----------//
     // NotesStep //
     //-----------//
@@ -49,20 +51,21 @@ public class NotesStep
     public NotesStep ()
     {
         super(
-                Steps.NOTES,
-                Level.SHEET_LEVEL,
-                Mandatory.MANDATORY,
-                DATA_TAB,
-                "Retrieve note heads & whole notes");
+            Steps.NOTES,
+            Level.SHEET_LEVEL,
+            Mandatory.MANDATORY,
+            DATA_TAB,
+            "Retrieve note heads & whole notes");
     }
 
     //~ Methods ----------------------------------------------------------------
+
     //----------//
     // doSystem //
     //----------//
     @Override
     public void doSystem (SystemInfo system)
-            throws StepException
+        throws StepException
     {
         system.notesBuilder.buildNotes();
     }
@@ -76,12 +79,11 @@ public class NotesStep
      */
     @Override
     protected void doProlog (Collection<SystemInfo> systems,
-                             Sheet sheet)
-            throws StepException
+                             Sheet                  sheet)
+        throws StepException
     {
-        Picture picture = sheet.getPicture();
-        PixelFilter buffer = (PixelFilter) picture.getSource(
-                Picture.SourceKey.BINARY);
+        Picture       picture = sheet.getPicture();
+        ByteProcessor buffer = picture.getSource(Picture.SourceKey.BINARY);
         DistanceTable table = new ChamferDistance.Short().computeToFore(buffer);
         sheet.setDistanceImage(table);
     }

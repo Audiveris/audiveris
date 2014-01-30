@@ -11,9 +11,9 @@
 // </editor-fold>
 package omr.grid;
 
+import ij.process.ByteProcessor;
 import omr.constant.ConstantSet;
 
-import omr.image.PixelFilter;
 
 import omr.math.AreaUtil;
 import omr.math.AreaUtil.CoreData;
@@ -96,7 +96,7 @@ public class StaffProjector
     private final StaffInfo staff;
 
     /** Pixel source. */
-    private final PixelFilter pixelFilter;
+    private final ByteProcessor pixelFilter;
 
     /** All blank regions found. */
     private final List<Blank> allBlanks = new ArrayList<Blank>();
@@ -125,7 +125,7 @@ public class StaffProjector
         this.staff = staff;
 
         Picture picture = sheet.getPicture();
-        pixelFilter = (PixelFilter) picture.getSource(Picture.SourceKey.BINARY);
+        pixelFilter = picture.getSource(Picture.SourceKey.BINARY);
 
         scale = sheet.getScale();
         params = new Parameters(scale);
@@ -216,7 +216,7 @@ public class StaffProjector
             short count = 0;
 
             for (int y = yMin; y <= yMax; y++) {
-                if (pixelFilter.isFore(x, y)) {
+                if (pixelFilter.get(x, y) == 0) {
                     count++;
                 }
             }

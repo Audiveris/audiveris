@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.image;
 
+import ij.process.ByteProcessor;
+
 /**
  * Interface {@code PixelFilter} reports the foreground pixels of a
  * {@link PixelSource}.
@@ -21,6 +23,13 @@ public interface PixelFilter
         extends PixelSource
 {
     //~ Methods ----------------------------------------------------------------
+
+    /**
+     * Run the filter on source image and report the filtered image.
+     *
+     * @return the filtered image
+     */
+    ByteProcessor filteredImage ();
 
     /**
      * Report the source context at provided location.

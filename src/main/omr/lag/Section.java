@@ -15,8 +15,6 @@ import omr.glyph.facets.Glyph;
 
 import omr.graph.Vertex;
 
-import omr.image.PixelBuffer;
-
 import omr.lag.ui.SectionView;
 
 import omr.math.Barycenter;
@@ -28,6 +26,8 @@ import omr.run.Oriented;
 import omr.run.Run;
 
 import omr.util.Vip;
+
+import ij.process.ByteProcessor;
 
 import java.awt.Point;
 import java.awt.Polygon;
@@ -189,7 +189,7 @@ public interface Section
      * @param im  the image to populate with this section
      * @param box absolute bounding box (used as image coordinates reference)
      */
-    public void fillImage (PixelBuffer im,
+    public void fillImage (ByteProcessor im,
                            Rectangle box);
 
     /**

@@ -11,13 +11,14 @@
 // </editor-fold>
 package omr.image;
 
+import ij.process.ByteProcessor;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code GlobalDescriptor} describes an {@link GlobalFilter}
+ * Class {@code GlobalDescriptor} describes a {@link GlobalFilter}
  *
  * @author Hervé Bitteur
  */
@@ -83,7 +84,7 @@ public class GlobalDescriptor
     // getFilter //
     //-----------//
     @Override
-    public PixelFilter getFilter (PixelSource source)
+    public PixelFilter getFilter (ByteProcessor source)
     {
         return new GlobalFilter(source, threshold);
     }

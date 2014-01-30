@@ -213,7 +213,7 @@ public class Score
      * Create as many pages (and related sheets) as there are images
      * in the input image file.
      *
-     * @param pageIds set of page ids (1-based) explicitly included.
+     * @param pageIds set of page IDs (1-based) explicitly included.
      *                if set is empty or null all pages are loaded
      */
     public void createPages (SortedSet<Integer> pageIds)

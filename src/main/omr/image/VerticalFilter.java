@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.image;
 
+import ij.process.ByteProcessor;
+
 import net.jcip.annotations.NotThreadSafe;
 
 import org.slf4j.Logger;
@@ -60,16 +62,17 @@ import org.slf4j.LoggerFactory;
  */
 @NotThreadSafe
 public class VerticalFilter
-        extends AdaptiveFilter
-        implements PixelFilter
+    extends AdaptiveFilter
+    implements PixelFilter
 {
     //~ Static fields/initializers ---------------------------------------------
 
     /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-            VerticalFilter.class);
+        VerticalFilter.class);
 
     //~ Constructors -----------------------------------------------------------
+
     //
     //----------------//
     // VerticalFilter //
@@ -81,20 +84,21 @@ public class VerticalFilter
      * @param meanCoeff   the coefficient for mean value
      * @param stdDevCoeff the coefficient for standard deviation value
      */
-    public VerticalFilter (PixelSource source,
-                           double meanCoeff,
-                           double stdDevCoeff)
+    public VerticalFilter (ByteProcessor source,
+                           double        meanCoeff,
+                           double        stdDevCoeff)
     {
         super(source, meanCoeff, stdDevCoeff);
 
         // Prepare tiles
         tile = new MyTile( /* squared => */
-                false);
+        false);
         sqrTile = new MyTile( /* squared => */
-                true);
+        true);
     }
 
     //~ Methods ----------------------------------------------------------------
+
     //
     //----------------------//
     // getDefaultDescriptor //
@@ -105,6 +109,7 @@ public class VerticalFilter
     }
 
     //~ Inner Classes ----------------------------------------------------------
+
     //
     //--------//
     // MyTile //
@@ -113,7 +118,7 @@ public class VerticalFilter
      * A tile as a circular buffer limited by window width.
      */
     private class MyTile
-            extends Tile
+        extends Tile
     {
         //~ Constructors -------------------------------------------------------
 
@@ -123,6 +128,7 @@ public class VerticalFilter
         }
 
         //~ Methods ------------------------------------------------------------
+
         @Override
         protected void shiftTile (int x2)
         {

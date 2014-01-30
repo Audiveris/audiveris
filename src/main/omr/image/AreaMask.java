@@ -13,6 +13,8 @@ package omr.image;
 
 import omr.util.Wrapper;
 
+import ij.process.ByteProcessor;
+
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 
@@ -82,7 +84,7 @@ public class AreaMask
      * @return the total number of points in the mask area
      */
     public int fore (final Wrapper<Integer> fore,
-                     final PixelFilter filter)
+                     final ByteProcessor filter)
     {
         fore.value = 0;
 
@@ -93,7 +95,7 @@ public class AreaMask
                     public void process (int x,
                                          int y)
                     {
-                        if (filter.isFore(x, y)) {
+                        if (filter.get(x, y) == 0) {
                             fore.value++;
                         }
                     }

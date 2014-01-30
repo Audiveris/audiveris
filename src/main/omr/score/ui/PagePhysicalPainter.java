@@ -68,9 +68,11 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ConcurrentModificationException;
+import omr.sig.SlurInter;
 
 /**
  * Class {@code PagePhysicalPainter} paints the recognized page
@@ -662,6 +664,21 @@ public class PagePhysicalPainter
         ledger.getGlyph()
                 .renderLine(g);
 
+        g.setStroke(defaultStroke);
+    }
+
+    //-------//
+    // visit //
+    //-------//
+    @Override
+    public void visit (SlurInter slur)
+    {
+        setColor(slur);
+        g.setStroke(lineStroke);
+        CubicCurve2D curve = slur.getInfo()
+                                 .getCircle()
+                                 .getCurve();
+        g.draw(curve);
         g.setStroke(defaultStroke);
     }
 

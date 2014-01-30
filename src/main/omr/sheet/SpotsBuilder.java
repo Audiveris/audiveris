@@ -21,11 +21,8 @@ import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
-import omr.image.GlobalFilter;
 import omr.image.ImageUtil;
 import omr.image.MorphoProcessor;
-import omr.image.PixelBuffer;
-import omr.image.PixelFilter;
 import omr.image.StructureElement;
 
 import omr.lag.BasicLag;
@@ -47,6 +44,8 @@ import omr.ui.BoardsPane;
 
 import omr.util.StopWatch;
 
+import ij.process.ByteProcessor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,10 +66,8 @@ public class SpotsBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             SpotsBuilder.class);
 
@@ -119,7 +116,7 @@ public class SpotsBuilder
 
             // We need a copy of image that we can overwrite. 
             Picture picture = sheet.getPicture();
-            PixelBuffer buffer = (PixelBuffer) picture.getSource(
+            ByteProcessor buffer = picture.getSource(
                     Picture.SourceKey.GAUSSIAN);
 
             // Retrieve major spots
@@ -160,9 +157,9 @@ public class SpotsBuilder
      * @param cueId  cue id, null for page
      * @return the collection of spots retrieved
      */
-    public List<Glyph> buildSpots (PixelBuffer buffer,
+    public List<Glyph> buildSpots (ByteProcessor buffer,
                                    Point offset,
-                                   int beam,
+                                   double beam,
                                    String cueId)
     {
         final double diameter = beam * constants.beamCircleDiameterRatio.getValue();
@@ -170,7 +167,7 @@ public class SpotsBuilder
         logger.info(
                 "{}Spots retrieval beam: {}, diameter: {} ...",
                 sheet.getLogPrefix(),
-                beam,
+                String.format("%.1f", beam),
                 String.format("%.1f", diameter));
 
         final int[] seOffset = {0, 0};
@@ -182,7 +179,7 @@ public class SpotsBuilder
                 .getId();
 
         if (cueId == null) {
-            BufferedImage img = buffer.toBufferedImage();
+            BufferedImage img = buffer.getBufferedImage();
 
             // Store buffer on disk?
             if (constants.keepPageSpots.isSet()) {
@@ -199,20 +196,18 @@ public class SpotsBuilder
             }
         } else {
             if (constants.keepCueSpots.isSet()) {
-                BufferedImage img = buffer.toBufferedImage();
+                BufferedImage img = buffer.getBufferedImage();
                 ImageUtil.saveOnDisk(img, pageId + "." + cueId + ".spot");
             }
         }
 
         // Binarize the spots via a global filter (no illumination problem)
-        final PixelFilter source = new GlobalFilter(
-                buffer,
-                constants.binarizationThreshold.getValue());
+        buffer.threshold(constants.binarizationThreshold.getValue());
 
         // Runs
         RunsTable spotTable = new RunsTableFactory(
                 SPOT_ORIENTATION,
-                source,
+                buffer,
                 0).createTable("spot");
 
         // Sections

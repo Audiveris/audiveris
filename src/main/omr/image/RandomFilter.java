@@ -11,6 +11,8 @@
 // </editor-fold>
 package omr.image;
 
+import ij.process.ByteProcessor;
+
 import net.jcip.annotations.ThreadSafe;
 
 import org.slf4j.Logger;
@@ -21,7 +23,8 @@ import org.slf4j.LoggerFactory;
  * {@link AdaptiveFilter} which computes mean and standard
  * deviation values based on pre-populated tables of integrals.
  *
- * <p>This implementation is ThreadSafe and provides fast random access to any
+ * <p>
+ * This implementation is ThreadSafe and provides fast random access to any
  * location in constant time.
  * The drawback is that each of the two underlying tables of integrals needs
  * 8 bytes per image pixel.
@@ -36,7 +39,6 @@ public class RandomFilter
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             RandomFilter.class);
 
@@ -52,7 +54,7 @@ public class RandomFilter
      * @param meanCoeff   the coefficient for mean value
      * @param stdDevCoeff the coefficient for standard deviation value
      */
-    public RandomFilter (PixelSource source,
+    public RandomFilter (ByteProcessor source,
                          double meanCoeff,
                          double stdDevCoeff)
     {

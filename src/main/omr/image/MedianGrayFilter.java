@@ -11,6 +11,7 @@
 // </editor-fold>
 package omr.image;
 
+import ij.process.ByteProcessor;
 import java.util.Arrays;
 
 /**
@@ -44,8 +45,8 @@ public class MedianGrayFilter
     // filter //
     //--------//
     @Override
-    public void filter (final PixelSource input,
-                        final PixelSink output)
+    public void filter (final ByteProcessor input,
+                        final ByteProcessor output)
     {
         final int width = input.getWidth();
         final int height = input.getHeight();
@@ -78,7 +79,7 @@ public class MedianGrayFilter
 
                 for (int i = x - rad; i <= (x + rad); i++) {
                     for (int j = y - rad; j <= (y + rad); j++) {
-                        int val = input.getValue(i, j);
+                        int val = input.get(i, j);
                         histogram[val]++;
                     }
                 }
@@ -94,7 +95,7 @@ public class MedianGrayFilter
                     median--;
                 }
 
-                output.setValue(x, y, median + 1);
+                output.set(x, y, median + 1);
             }
         }
     }

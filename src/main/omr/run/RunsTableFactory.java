@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.run;
 
-import omr.image.PixelFilter;
+import ij.process.ByteProcessor;
 
 import net.jcip.annotations.NotThreadSafe;
 import net.jcip.annotations.ThreadSafe;
@@ -40,7 +40,7 @@ public class RunsTableFactory
     //~ Instance fields --------------------------------------------------------
     //
     /** The source to read runs of pixels from. */
-    private final PixelFilter source;
+    private final ByteProcessor source;
 
     /** The desired orientation. */
     private final Orientation orientation;
@@ -69,7 +69,7 @@ public class RunsTableFactory
      * @param minLength   the minimum length for each run
      */
     public RunsTableFactory (Orientation orientation,
-                             PixelFilter source,
+                             ByteProcessor source,
                              int minLength)
     {
         this.orientation = orientation;
@@ -214,9 +214,9 @@ public class RunsTableFactory
                                    int pos)
         {
             if (swapNeeded) {
-                return source.getValue(pos, coord);
+                return source.get(pos, coord);
             } else {
-                return source.getValue(coord, pos);
+                return source.get(coord, pos);
             }
         }
 
@@ -228,9 +228,9 @@ public class RunsTableFactory
                                      int pos)
         {
             if (swapNeeded) {
-                return source.isFore(pos, coord);
+                return source.get(pos, coord) == 0;
             } else {
-                return source.isFore(coord, pos);
+                return source.get(coord, pos) == 0;
             }
         }
 

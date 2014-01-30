@@ -24,12 +24,14 @@ import omr.run.Orientation;
 
 import omr.ui.symbol.MusicFont;
 import omr.ui.symbol.ShapeSymbol;
-import omr.ui.symbol.SymbolPicture;
+
+import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
 
 /**
  * Class {@code SymbolGlyph} is an artificial glyph, built from a
@@ -81,13 +83,13 @@ public class SymbolGlyph
         image = symbol.buildImage(MusicFont.getFont(interline));
 
         /** Build a dedicated SymbolPicture */
-        SymbolPicture symbolPicture = new SymbolPicture(image);
+        ByteProcessor buffer = createBuffer(image);
 
         /** Build related vertical lag */
         Lag iLag = new BasicLag("iLag", Orientation.VERTICAL);
 
         new SectionsBuilder(iLag, new JunctionAllPolicy()) // catch all
-                .createSections("symbol", symbolPicture, 0); // minRunLength = 0
+                .createSections("symbol", buffer, 0); // minRunLength = 0
 
         // Retrieve the whole glyph made of all sections
         for (Section section : iLag.getSections()) {
@@ -118,5 +120,34 @@ public class SymbolGlyph
         if (logger.isDebugEnabled()) {
             logger.debug(dumpOf());
         }
+    }
+
+    //~ Methods ----------------------------------------------------------------
+    //--------------//
+    // createBuffer //
+    //--------------//
+    private ByteProcessor createBuffer (BufferedImage img)
+    {
+        DataBuffer dataBuffer = img.getData()
+                .getDataBuffer();
+        ByteProcessor buf = new ByteProcessor(img.getWidth(), img.getHeight());
+
+        for (int y = 0, h = img.getHeight(); y < h; y++) {
+            for (int x = 0, w = img.getWidth(); x < w; x++) {
+                int index = x + (y * w);
+                int elem = dataBuffer.getElem(index);
+
+                // ShapeSymbol instances use alpha channel as the pixel level
+                // With 0 as totally transparent so background (255)
+                // And with 255 as totally opaque so foreground (0)
+                int val = 255 - (elem >>> 24);
+                buf.set(x, y, val);
+            }
+        }
+
+        //TODO: binarize?
+        buf.threshold(216);
+
+        return buf;
     }
 }

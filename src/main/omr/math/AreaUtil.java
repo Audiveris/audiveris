@@ -11,7 +11,7 @@
 // </editor-fold>
 package omr.math;
 
-import omr.image.PixelFilter;
+import ij.process.ByteProcessor;
 
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
@@ -71,7 +71,7 @@ public class AreaUtil
      * @param rightLimit limit on right side
      * @return the CoreData measured
      */
-    public static CoreData verticalCore (PixelFilter filter,
+    public static CoreData verticalCore (ByteProcessor filter,
                                          GeoPath leftLimit,
                                          GeoPath rightLimit)
     {
@@ -92,7 +92,7 @@ public class AreaUtil
             boolean empty = true;
 
             for (int x = xMin; x <= xMax; x++) {
-                if (filter.isFore(x, y)) {
+                if (filter.get(x, y) == 0) {
                     empty = false;
 
                     break;
