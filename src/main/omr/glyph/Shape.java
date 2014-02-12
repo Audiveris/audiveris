@@ -187,7 +187,7 @@ public enum Shape
     BEAM_SMALL("Small beam for cue notes"),
     BEAM_HOOK("Hook of a beam attached on one stem"),
     BEAM_HOOK_SMALL("Small hook of a beam for cue notes"),
-    SLUR("Slur tying notes", new Color(0xbb8888)),
+    SLUR("Slur tying notes", new Color(0xff4444)),
     //
     // Articulation ------------------------------------------------------------
     //

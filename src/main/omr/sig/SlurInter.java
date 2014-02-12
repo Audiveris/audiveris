@@ -15,6 +15,8 @@ import omr.glyph.Shape;
 
 import omr.sheet.SlurInfo;
 
+import java.awt.geom.Area;
+
 /**
  * Class {@code SlurInter} represents a slur interpretation.
  *
@@ -41,6 +43,21 @@ public class SlurInter
         super(info.getBounds(), Shape.SLUR, impacts.getGrade());
         setImpacts(impacts);
         this.info = info;
+        
+        // To debug extension areas
+        {
+            Area area = info.getExtArea(true);
+
+            if (area != null) {
+                addAttachment("FE", area);
+            }
+
+            area = info.getExtArea(false);
+
+            if (area != null) {
+                addAttachment("LE", area);
+            }
+        }
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -61,8 +78,7 @@ public class SlurInter
     {
         StringBuilder sb = new StringBuilder(super.getDetails());
 
-        sb.append(" ")
-                .append(info);
+        sb.append(" ").append(info);
 
         return sb.toString();
     }

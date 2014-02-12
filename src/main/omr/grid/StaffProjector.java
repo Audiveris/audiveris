@@ -721,7 +721,7 @@ public class StaffProjector
                 "Maximum cumul value (in LineFraction) to detect noline region");
 
         final Scale.Fraction minBlankWidth = new Scale.Fraction(
-                0.5,
+                0.4,
                 "Minimum width for a blank region to end a staff side");
 
         final Scale.Fraction maxBarToEnd = new Scale.Fraction(

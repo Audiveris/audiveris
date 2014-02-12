@@ -11,6 +11,9 @@
 // </editor-fold>
 package omr.image;
 
+import omr.constant.Constant;
+import omr.constant.ConstantSet;
+
 import omr.glyph.Shape;
 
 import omr.math.TableUtil;
@@ -27,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import omr.constant.Constant;
-import omr.constant.ConstantSet;
 
 /**
  * Class {@code Template} implements a template to be used for
@@ -83,6 +84,9 @@ public class Template
     /** Template height. (perhaps larger than the symbol height) */
     private final int height;
 
+    /** Symbols bounds within template. (perhaps smaller than tpl bounds) */
+    private final Rectangle symbolBounds;
+
     /**
      * Offsets to defined anchors.
      * An offset is defined as the translation from template upper left corner
@@ -98,27 +102,23 @@ public class Template
     /**
      * Creates a new Template object with a provided set of points.
      *
-     * @param key       the template specification key
-     * @param width     template width
-     * @param height    template height
-     * @param keyPoints the set of defining points
+     * @param key          the template specification key
+     * @param width        template width
+     * @param height       template height
+     * @param symbolBounds bounds of symbol within template
+     * @param keyPoints    the set of defining points
      */
     public Template (Key key,
                      int width,
                      int height,
+                     Rectangle symbolBounds,
                      List<PixelDistance> keyPoints)
     {
         this.key = key;
         this.keyPoints = new ArrayList<PixelDistance>(keyPoints);
         this.width = width;
         this.height = height;
-
-        // Define common basic anchors
-        addAnchor(Anchor.CENTER, 0.5, 0.5);
-
-        // Beware: This is OK only if symbol width = template width
-        // To be overwritten if condition is no longer true
-        addAnchor(Anchor.MIDDLE_LEFT, 0, 0.5);
+        this.symbolBounds = new Rectangle(symbolBounds);
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -292,6 +292,42 @@ public class Template
         return offset;
     }
 
+    //-----------------//
+    // getSymbolBounds //
+    //-----------------//
+    /**
+     * Report the symbol bounds <b>within</b> the template.
+     *
+     * @return the symbolBounds
+     */
+    public Rectangle getSymbolBounds ()
+    {
+        return symbolBounds;
+    }
+
+    //-------------------//
+    // getSymbolBoundsAt //
+    //-------------------//
+    /**
+     * Report the symbol bounds when positioning anchor
+     * at location (x,y).
+     *
+     * @param x      abscissa for anchor
+     * @param y      ordinate for anchor
+     * @param anchor chosen anchor
+     * @return the corresponding symbol bounds
+     */
+    public Rectangle getSymbolBoundsAt (int x,
+                                        int y,
+                                        Anchor anchor)
+    {
+        Rectangle tplBox = getBoundsAt(x, y, anchor);
+        Rectangle symBox = new Rectangle(symbolBounds);
+        symBox.translate(tplBox.x, tplBox.y);
+
+        return symBox;
+    }
+
     //----------//
     // getWidth //
     //----------//
@@ -307,11 +343,20 @@ public class Template
     @Override
     public String toString ()
     {
-        StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName());
+        StringBuilder sb = new StringBuilder("{Template");
 
         sb.append(" ")
                 .append(key);
+
+        sb.append(" w:")
+                .append(width)
+                .append(",h:")
+                .append(height);
+
+        if ((symbolBounds.width != width) || (symbolBounds.height != height)) {
+            sb.append(" sym:")
+                    .append(symbolBounds);
+        }
 
         for (Entry<Anchor, Point> entry : offsets.entrySet()) {
             sb.append(" ")
@@ -397,6 +442,7 @@ public class Template
             return sb.toString();
         }
     }
+
     //-----------//
     // Constants //
     //-----------//

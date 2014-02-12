@@ -61,7 +61,6 @@ public interface Anchored
          * X at symbol right stem, Y at low stem ordinate.
          */
         BOTTOM_RIGHT_STEM;
-
     }
 
     //~ Methods ----------------------------------------------------------------
@@ -79,8 +78,8 @@ public interface Anchored
                     double yRatio);
 
     /**
-     * Report the rectangular bounds when positioning anchor at
-     * location (x,y).
+     * Report the rectangular bounds when positioning anchor
+     * at location (x,y).
      *
      * @param x      abscissa for anchor
      * @param y      ordinate for anchor

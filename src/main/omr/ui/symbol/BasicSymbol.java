@@ -42,14 +42,13 @@ public class BasicSymbol
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
     protected static final Logger logger = LoggerFactory.getLogger(
             BasicSymbol.class);
 
-    /** Painting origin for images */
+    /** Painting origin for images. */
     protected static final Point ORIGIN = new Point(0, 0);
 
-    /** A transformation to flip horizontally (x' = -x) */
+    /** A transformation to flip horizontally (x' = -x). */
     protected static final AffineTransform horizontalFlip = new AffineTransform(
             -1, // m00 (x' = -x)
             0, //  m01
@@ -58,7 +57,7 @@ public class BasicSymbol
             0, //  m11
             0); // m12
 
-    /** A transformation to flip vertically (y' = -y) */
+    /** A transformation to flip vertically (y' = -y). */
     protected static final AffineTransform verticalFlip = new AffineTransform(
             1, // m00 (x' = x)
             0, //  m01
@@ -67,33 +66,33 @@ public class BasicSymbol
             0, //  m11
             0); // m12
 
-    /** A transformation to turn 1 quadrant clockwise */
+    /** A transformation to turn 1 quadrant clockwise. */
     protected static final AffineTransform quadrantRotateOne = AffineTransform.getQuadrantRotateInstance(
             1);
 
-    /** A transformation to turn 2 quadrants clockwise */
+    /** A transformation to turn 2 quadrants clockwise. */
     protected static final AffineTransform quadrantRotateTwo = AffineTransform.getQuadrantRotateInstance(
             2);
 
-    /** A transformation for really small icon display */
+    /** A transformation for really small icon display. */
     protected static AffineTransform tiny = AffineTransform.getScaleInstance(
             0.5,
             0.5);
 
     //~ Instance fields --------------------------------------------------------
-    /** To flag an icon symbol */
+    /** To flag an icon symbol. */
     protected final boolean isIcon;
 
-    /** Sequence of point codes */
+    /** Sequence of point codes. */
     public final int[] codes;
 
-    /** Related image, corresponding to standard interline */
+    /** Related image, corresponding to standard interline. */
     private BufferedImage image;
 
-    /** Pre-scaled symbol for icon display */
+    /** Pre-scaled symbol for icon display. */
     protected BasicSymbol icon;
 
-    /** Image dimension corresponding to standard interline */
+    /** Image dimension corresponding to standard interline. */
     private Dimension dimension;
 
     //~ Constructors -----------------------------------------------------------
@@ -145,34 +144,23 @@ public class BasicSymbol
         // Paint the image
         Graphics2D g = (Graphics2D) img.getGraphics();
         g.setColor(OmrFont.defaultImageColor);
-
-        // Anti-aliasing
         g.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_OFF);
-                ///RenderingHints.VALUE_ANTIALIAS_ON);
-
         paint(g, p, ORIGIN, TOP_LEFT);
 
         return img;
     }
-    
+
     //--------------//
     // getDimension //
     //--------------//
     @Override
-    public Dimension getDimension(MusicFont font)
+    public Dimension getDimension (MusicFont font)
     {
         Params p = getParams(font);
-        return new Dimension(p.rect.width, p.rect.height);
-    }
 
-    //-----------//
-    // getString //
-    //-----------//
-    public final String getString ()
-    {
-        return new String(codes, 0, codes.length);
+        return new Dimension(p.rect.width, p.rect.height);
     }
 
     //---------------//
@@ -222,6 +210,28 @@ public class BasicSymbol
     public Point getRefPoint (Rectangle box)
     {
         return new Point(box.x + (box.width / 2), box.y + (box.height / 2));
+    }
+
+    //-----------//
+    // getString //
+    //-----------//
+    public final String getString ()
+    {
+        return new String(codes, 0, codes.length);
+    }
+
+    //-----------------//
+    // getSymbolHeight //
+    //-----------------//
+    /**
+     * Report the symbol height (which is by default the image height)
+     * for a standard interline.
+     *
+     * @return the symbol height
+     */
+    public int getSymbolHeight ()
+    {
+        return getHeight();
     }
 
     //-----------//
@@ -303,25 +313,6 @@ public class BasicSymbol
         return dimension;
     }
 
-    //    //--------------//
-    //    // getDimension //
-    //    //--------------//
-    //    /**
-    //     * Report what would be the bounding dimension of the symbol,
-    //     * if painted with the provided font.
-    //     *
-    //     * @return the potential size of the painted symbol
-    //     */
-    //    protected Dimension getDimension (MusicFont font)
-    //    {
-    //        Dimension dim = getDimension();
-    //        double ratio = font.getSize2D() / MusicFont.baseMusicFont.getSize2D();
-    //
-    //        return new Dimension(
-    //                (int) Math.ceil(dim.width * ratio),
-    //                (int) Math.ceil(dim.height * ratio));
-    //    }
-    //
     //-----------//
     // getHeight //
     //-----------//
@@ -520,6 +511,5 @@ public class BasicSymbol
 
         /** Image bounds. */
         Rectangle rect;
-
     }
 }

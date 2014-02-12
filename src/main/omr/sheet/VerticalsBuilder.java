@@ -647,9 +647,9 @@ public class VerticalsBuilder
             }
 
             for (int y = yMin; y <= yMax; y++) {
-                final int leftLimit = (int) Math.rint(
+                final int leftLimit = (int) Math.ceil(
                         LineUtil.intersectionAtY(leftLine, y).getX());
-                final int rightLimit = (int) Math.rint(
+                final int rightLimit = (int) Math.floor(
                         LineUtil.intersectionAtY(rightLine, y).getX());
 
                 // Make sure the stem row is not empty
@@ -813,7 +813,7 @@ public class VerticalsBuilder
             add(1, new StraightCheck());
             add(2, new CleanCheck());
             add(1, new BlackCheck()); // Needs CleanCheck side output
-            add(3, new GapCheck()); // Needs CleanCheck side output
+            add(5, new GapCheck()); // Needs CleanCheck side output
 
             if (logger.isDebugEnabled() && (system.getId() == 1)) {
                 dump();

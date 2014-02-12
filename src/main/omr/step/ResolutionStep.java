@@ -64,6 +64,6 @@ public class ResolutionStep
         // picture.disposeSource(BINARY);
         picture.disposeSource(GAUSSIAN);
         picture.disposeSource(MEDIAN);
-        picture.disposeSource(STAFF_LINE_FREE);
+        ///picture.disposeSource(STAFF_LINE_FREE);
     }
 }

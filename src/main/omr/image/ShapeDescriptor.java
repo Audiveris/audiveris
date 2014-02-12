@@ -16,6 +16,7 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
+import omr.glyph.ShapeSet;
 
 import omr.image.Anchored.Anchor;
 import omr.image.Template.Key;
@@ -86,9 +87,9 @@ public class ShapeDescriptor
 
     private final Map<Key, Template> variants = new HashMap<Key, Template>();
 
-    private int width = -1;
+    private int width = -1; // Template width
 
-    private int height = -1;
+    private int height = -1; // Template height
 
     //~ Constructors -----------------------------------------------------------
     /**
@@ -140,22 +141,6 @@ public class ShapeDescriptor
         return best;
     }
 
-    //-------------//
-    // getBoundsAt //
-    //-------------//
-    public Rectangle getBoundsAt (int x,
-                                  int y,
-                                  Anchored.Anchor anchor)
-    {
-        for (Template tpl : variants.values()) {
-            final Point offset = tpl.getOffset(anchor);
-
-            return new Rectangle(x - offset.x, y - offset.y, width, height);
-        }
-
-        return null;
-    }
-
     //-----------//
     // getHeight //
     //-----------//
@@ -184,12 +169,58 @@ public class ShapeDescriptor
         return shape;
     }
 
+    //-------------------//
+    // getSymbolBoundsAt //
+    //-------------------//
+    /**
+     * Report the symbol bounds, which may be smaller than the template
+     * bounds, because of margins.
+     *
+     * @param x      abscissa for anchor
+     * @param y      ordinate for anchor
+     * @param anchor reference for (x, y)
+     * @return the template bounds
+     */
+    public Rectangle getSymbolBoundsAt (int x,
+                                        int y,
+                                        Anchored.Anchor anchor)
+    {
+        for (Template tpl : variants.values()) {
+            return tpl.getSymbolBoundsAt(x, y, anchor);
+        }
+
+        return null;
+    }
+
     //-------------//
     // getTemplate //
     //-------------//
     public Template getTemplate (Key key)
     {
         return variants.get(key);
+    }
+
+    //---------------------//
+    // getTemplateBoundsAt //
+    //---------------------//
+    /**
+     * Report the template bounds, which may be larger than the symbol
+     * bounds, because of margins.
+     *
+     * @param x      abscissa for anchor
+     * @param y      ordinate for anchor
+     * @param anchor reference for (x, y)
+     * @return the template bounds
+     */
+    public Rectangle getTemplateBoundsAt (int x,
+                                          int y,
+                                          Anchored.Anchor anchor)
+    {
+        for (Template tpl : variants.values()) {
+            return tpl.getBoundsAt(x, y, anchor);
+        }
+
+        return null;
     }
 
     //----------//
@@ -207,8 +238,6 @@ public class ShapeDescriptor
                              Template tpl)
     {
         variants.put(key, tpl);
-        width = tpl.getWidth();
-        height = tpl.getHeight();
     }
 
     //----------//
@@ -230,6 +259,137 @@ public class ShapeDescriptor
         return sb.toString();
     }
 
+    //------------------//
+    // computeDistances //
+    //------------------//
+    /**
+     * Compute all distances to nearest foreground pixel.
+     * For this we work as if there was a foreground rectangle right around
+     * the image.
+     * Similarly, the non-relevant pixels are assumed to be foreground.
+     * This is to allow the detection of reliable background key points.
+     *
+     * @param img the source image
+     * @param key the template specs
+     * @return the table of distances to foreground
+     */
+    private static Table computeDistances (BufferedImage img,
+                                           Key key)
+    {
+        // Retrieve foreground pixels
+        final int width = img.getWidth();
+        final int height = img.getHeight();
+        final boolean[][] fore = new boolean[width + 2][height + 2];
+
+        // Fill with img foreground pixels and irrelevant pixels
+        for (int y = 1; y < (height + 1); y++) {
+            for (int x = 1; x < (width + 1); x++) {
+                Color pix = new Color(img.getRGB(x - 1, y - 1), true);
+
+                if (pix.equals(Color.BLACK) || (pix.getAlpha() == 0)) {
+                    fore[x][y] = true;
+                }
+            }
+        }
+
+        // Surround with a rectangle of foreground pixels
+        for (int y = 0; y < (height + 2); y++) {
+            fore[0][y] = true;
+            fore[width + 1][y] = true;
+        }
+
+        for (int x = 0; x < (width + 2); x++) {
+            fore[x][0] = true;
+            fore[x][height + 1] = true;
+        }
+
+        // Compute template distance transform
+        final Table distances = new ChamferDistance.Short().compute(fore);
+
+        if (logger.isDebugEnabled()) {
+            distances.dump(key + "  distances");
+        }
+
+        // Trim the distance table of its surrounding rectangle?
+        return distances;
+    }
+
+    //---------//
+    // getCode //
+    //---------//
+    private static int getCode (Key key)
+    {
+        switch (key.shape) {
+        case NOTEHEAD_BLACK:
+        case NOTEHEAD_BLACK_SMALL:
+            return 207;
+
+        case NOTEHEAD_VOID:
+        case NOTEHEAD_VOID_SMALL:
+            return 250;
+
+        case WHOLE_NOTE:
+        case WHOLE_NOTE_SMALL:
+            return 119;
+        }
+
+        logger.error(key.shape + " is not supported!");
+
+        return 0;
+    }
+
+    //--------------//
+    // getKeyPoints //
+    //--------------//
+    /**
+     * Build the collection of key points to be used for matching
+     * tests.
+     * These are the locations where the image distance value will be checked
+     * against the recorded template distance value.
+     * TODO: We could carefully select a subset of these locations?
+     *
+     * @param img       the template source image
+     * @param distances the template distances (extended on each direction)
+     * @return the collection of key locations, with their corresponding
+     *         distance value
+     */
+    private static List<PixelDistance> getKeyPoints (BufferedImage img,
+                                                     Table distances)
+    {
+        // Generate key points
+        List<PixelDistance> keyPoints = new ArrayList<PixelDistance>();
+
+        for (int y = 0, h = img.getHeight(); y < h; y++) {
+            for (int x = 0, w = img.getWidth(); x < w; x++) {
+                Color pix = new Color(img.getRGB(x, y), true);
+
+                // Select only relevant pixels
+                if (pix.getAlpha() == 255) {
+                    if (pix.getGreen() != 0) {
+                        // Green = hole, use dist to nearest foreground
+                        keyPoints.add(
+                                new PixelDistance(
+                                        x,
+                                        y,
+                                        distances.getValue(x + 1, y + 1)));
+                    } else if (pix.getRed() != 0) {
+                        // Red = background, use dist to nearest foreground
+                        keyPoints.add(
+                                new PixelDistance(
+                                        x,
+                                        y,
+                                        distances.getValue(x + 1, y + 1)));
+                    } else {
+                        // Black = foreground,  dist to nearest foreground is 0
+                        keyPoints.add(new PixelDistance(x, y, 0));
+                    }
+                }
+            }
+        }
+
+        return keyPoints;
+    }
+
     //------------//
     // addAnchors //
     //------------//
@@ -242,43 +402,40 @@ public class ShapeDescriptor
      */
     private void addAnchors (Template template)
     {
-        // Add anchors for potential stems on left and right sides
-        final double dy = constants.stemDy.getValue();
-        final double top;
-        final double bot;
+        // Symbol bounds (relative to template origin)
+        Rectangle sym = template.getSymbolBounds();
 
-        switch (template.getKey().shape) {
-        case NOTEHEAD_VOID:
-        case NOTEHEAD_BLACK:
-            top = dy;
-            bot = 1 - dy;
+        // Define common basic anchors
+        template.addAnchor(
+                Anchor.CENTER,
+                (sym.x + (0.5 * (sym.width - 1))) / width,
+                (sym.y + (0.5 * (sym.height - 1))) / height);
+        template.addAnchor(
+                Anchor.MIDDLE_LEFT,
+                (double) sym.x / width,
+                (sym.y + (0.5 * (sym.height - 1))) / height);
 
-            break;
-
-        case NOTEHEAD_VOID_SMALL:
-        case NOTEHEAD_BLACK_SMALL:
-            top = 0.5 - (Template.smallRatio * (0.5 - dy));
-            bot = 0.5 + (Template.smallRatio * (0.5 - dy));
-
-            break;
-
-        default:
-
-            // WHOLE_NOTE & WHOLE_NOTE_SMALL are not concerned
+        // WHOLE_NOTE & WHOLE_NOTE_SMALL are not concerned further
+        if (ShapeSet.Notes.contains(template.getKey().shape)) {
             return;
         }
 
+        // Add anchors for potential stems on left and right sides
         final double dx = constants.stemDx.getValue();
-        final double left = dx;
-        final double right = 1 - dx;
+        final double left = (sym.x + (dx * (sym.width - 1))) / width;
+        final double right = (sym.x + ((1 - dx) * (sym.width - 1))) / width;
 
-        template.addAnchor(Template.Anchor.TOP_LEFT_STEM, left, top);
-        template.addAnchor(Template.Anchor.LEFT_STEM, left, 0.5);
-        template.addAnchor(Template.Anchor.BOTTOM_LEFT_STEM, left, bot);
+        final double dy = constants.stemDy.getValue();
+        final double top = (sym.y + (dy * (sym.height - 1))) / height;
+        final double bottom = (sym.y + ((1 - dy) * (sym.height - 1))) / height;
 
-        template.addAnchor(Template.Anchor.TOP_RIGHT_STEM, right, top);
-        template.addAnchor(Template.Anchor.RIGHT_STEM, right, 0.5);
-        template.addAnchor(Template.Anchor.BOTTOM_RIGHT_STEM, right, bot);
+        template.addAnchor(Anchor.TOP_LEFT_STEM, left, top);
+        template.addAnchor(Anchor.LEFT_STEM, left, 0.5);
+        template.addAnchor(Anchor.BOTTOM_LEFT_STEM, left, bottom);
+
+        template.addAnchor(Anchor.TOP_RIGHT_STEM, right, top);
+        template.addAnchor(Anchor.RIGHT_STEM, right, 0.5);
+        template.addAnchor(Anchor.BOTTOM_RIGHT_STEM, right, bottom);
     }
 
     //----------//
@@ -383,61 +540,6 @@ public class ShapeDescriptor
         }
     }
 
-    //------------------//
-    // computeDistances //
-    //------------------//
-    /**
-     * Compute all distances to nearest foreground pixel.
-     * For this we work as if there was a foreground rectangle right around
-     * the image.
-     * Similarly, the non-relevant pixels are assumed to be foreground.
-     * This is to allow the detection of reliable background key points.
-     *
-     * @param img the source image
-     * @param key the template specs
-     * @return the table of distances to foreground
-     */
-    private static Table computeDistances (BufferedImage img,
-                                           Key key)
-    {
-        // Retrieve foreground pixels
-        final int width = img.getWidth();
-        final int height = img.getHeight();
-        final boolean[][] fore = new boolean[width + 2][height + 2];
-
-        // Fill with img foreground pixels and irrelevant pixels
-        for (int y = 1; y < (height + 1); y++) {
-            for (int x = 1; x < (width + 1); x++) {
-                Color pix = new Color(img.getRGB(x - 1, y - 1), true);
-
-                if (pix.equals(Color.BLACK) || (pix.getAlpha() == 0)) {
-                    fore[x][y] = true;
-                }
-            }
-        }
-
-        // Surround with a rectangle of foreground pixels
-        for (int y = 0; y < (height + 2); y++) {
-            fore[0][y] = true;
-            fore[width + 1][y] = true;
-        }
-
-        for (int x = 0; x < (width + 2); x++) {
-            fore[x][0] = true;
-            fore[x][height + 1] = true;
-        }
-
-        // Compute template distance transform
-        final Table distances = new ChamferDistance.Short().compute(fore);
-
-        if (logger.isDebugEnabled()) {
-            distances.dump(key + "  distances");
-        }
-
-        // Trim the distance table of its surrounding rectangle?
-        return distances;
-    }
-
     //----------------//
     // createTemplate //
     //----------------//
@@ -458,6 +560,9 @@ public class ShapeDescriptor
         // Get symbol image painted on template rectangle
         final TemplateSymbol symbol = new TemplateSymbol(key, getCode(key));
         final BufferedImage img = symbol.buildImage(font);
+        width = img.getWidth();
+        height = img.getHeight();
+
         binarize(img, 127);
 
         // Distances to foreground
@@ -480,8 +585,9 @@ public class ShapeDescriptor
         // Generate the template instance
         Template template = new Template(
                 key,
-                img.getWidth(),
-                img.getHeight(),
+                width,
+                height,
+                symbol.getSymbolBounds(font),
                 keyPoints);
 
         // Add specific anchor points, if any
@@ -605,30 +711,6 @@ public class ShapeDescriptor
         return borders;
     }
 
-    //---------//
-    // getCode //
-    //---------//
-    private static int getCode (Key key)
-    {
-        switch (key.shape) {
-        case NOTEHEAD_BLACK:
-        case NOTEHEAD_BLACK_SMALL:
-            return 207;
-
-        case NOTEHEAD_VOID:
-        case NOTEHEAD_VOID_SMALL:
-            return 250;
-
-        case WHOLE_NOTE:
-        case WHOLE_NOTE_SMALL:
-            return 119;
-        }
-
-        logger.error(key.shape + " is not supported!");
-
-        return 0;
-    }
-
     //---------------//
     // getExtensions //
     //---------------//
@@ -705,58 +787,6 @@ public class ShapeDescriptor
         return ext;
     }
 
-    //--------------//
-    // getKeyPoints //
-    //--------------//
-    /**
-     * Build the collection of key points to be used for matching
-     * tests.
-     * These are the locations where the image distance value will be checked
-     * against the recorded template distance value.
-     * TODO: We could carefully select a subset of these locations?
-     *
-     * @param img       the template source image
-     * @param distances the template distances (extended on each direction)
-     * @return the collection of key locations, with their corresponding
-     *         distance value
-     */
-    private static List<PixelDistance> getKeyPoints (BufferedImage img,
-                                                     Table distances)
-    {
-        // Generate key points
-        List<PixelDistance> keyPoints = new ArrayList<PixelDistance>();
-
-        for (int y = 0, h = img.getHeight(); y < h; y++) {
-            for (int x = 0, w = img.getWidth(); x < w; x++) {
-                Color pix = new Color(img.getRGB(x, y), true);
-
-                // Select only relevant pixels
-                if (pix.getAlpha() == 255) {
-                    if (pix.getGreen() != 0) {
-                        // Green = hole, use dist to nearest foreground
-                        keyPoints.add(
-                                new PixelDistance(
-                                        x,
-                                        y,
-                                        distances.getValue(x + 1, y + 1)));
-                    } else if (pix.getRed() != 0) {
-                        // Red = background, use dist to nearest foreground
-                        keyPoints.add(
-                                new PixelDistance(
-                                        x,
-                                        y,
-                                        distances.getValue(x + 1, y + 1)));
-                    } else {
-                        // Black = foreground,  dist to nearest foreground is 0
-                        keyPoints.add(new PixelDistance(x, y, 0));
-                    }
-                }
-            }
-        }
-
-        return keyPoints;
-    }
-
     //~ Inner Classes ----------------------------------------------------------
     //-----------//
     // Constants //
@@ -772,10 +802,10 @@ public class ShapeDescriptor
 
         final Constant.Ratio stemDx = new Constant.Ratio(
                 0.05,
-                "Abscissa of stem anchor WRT symbol width");
+                "(Ratio) abscissa of stem anchor WRT symbol width");
 
         final Constant.Ratio stemDy = new Constant.Ratio(
                 0.15,
-                "Ordinate of stem anchor WRT symbol height");
+                "(Ratio) ordinate of stem anchor WRT symbol height");
     }
 }

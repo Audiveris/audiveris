@@ -39,6 +39,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.Line2D;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -211,6 +212,36 @@ public class SystemManager
             Area area = system.getArea();
 
             if ((area != null) && area.contains(point)) {
+                found.add(system);
+            }
+        }
+
+        return found;
+    }
+
+    //--------------//
+    // getSystemsOf //
+    //--------------//
+    /**
+     * Report the systems that intersect the provided rectangle
+     *
+     * @param rect the provided rectangle
+     * @param found (output) list to be populated (allocated if null)
+     * @return the containing systems info, perhaps empty but not null
+     */
+    public List<SystemInfo> getSystemsOf (Rectangle2D rect,
+                                          List<SystemInfo> found)
+    {
+        if (found != null) {
+            found.clear();
+        } else {
+            found = new ArrayList<SystemInfo>();
+        }
+
+        for (SystemInfo system : systems) {
+            Area area = system.getArea();
+
+            if ((area != null) && area.intersects(rect)) {
                 found.add(system);
             }
         }

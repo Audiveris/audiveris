@@ -32,7 +32,6 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Rectangle;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -361,7 +360,7 @@ public class SigSolver
         List<Inter> allNotes = sig.inters(
                 ShapeSet.shapesOf(
                         ShapeSet.NoteHeads.getShapes(),
-                        Arrays.asList(Shape.WHOLE_NOTE)));
+                        ShapeSet.Notes.getShapes()));
         Collections.sort(allNotes, Inter.byAbscissa);
 
         int modifs = 0;

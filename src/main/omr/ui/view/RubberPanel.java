@@ -45,17 +45,20 @@ import javax.swing.event.ChangeListener;
  * Class {@code RubberPanel} is a combination of two linked entities:
  * a {@link Zoom} and a {@link Rubber}.
  *
- * <p>Its <i>paintComponent</i> method is declared final to ensure that the
+ * <p>
+ * Its <i>paintComponent</i> method is declared final to ensure that the
  * rendering is done in proper sequence, with the rubber rectangle rendered at
  * the end on top of any other stuff. Any specific rendering required by a
  * subclass is performed by overriding the {@link #render} method.
  *
- * <p>The Zoom instance and the Rubber instance can be provided separately,
+ * <p>
+ * The Zoom instance and the Rubber instance can be provided separately,
  * after this RubberPanel has been constructed. This is meant for cases
  * where the same Zoom and Rubber instances are shared by several views, as in
  * the {@link omr.sheet.ui.SheetAssembly} example.
  *
- * <p>When using this class, we have to provide our own Zoom instance, either at
+ * <p>
+ * When using this class, we have to provide our own Zoom instance, either at
  * construction time by using the proper constructor or later by using the {@link
  * #setZoom} method. The class then registers itself as an observer of the
  * Zoom instance, to be notified when the zoom ratio is modified.
@@ -178,6 +181,20 @@ public class RubberPanel
                                  MouseMovement movement)
     {
         // Nothing by default
+    }
+
+    //-------------//
+    // selectPoint //
+    //-------------//
+    /**
+     * Convenient method to simulate a user point selection and focus.
+     *
+     * @param point the point to focus upon
+     */
+    public void selectPoint (Point point)
+    {
+        pointSelected(point, MouseMovement.PRESSING);
+        showFocusLocation(new Rectangle(point), true);
     }
 
     //--------------//
@@ -337,16 +354,16 @@ public class RubberPanel
             // Then, adjust zoom ratio to fit the rectangle size
             SwingUtilities.invokeLater(
                     new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    Rectangle vr = getVisibleRect();
-                    double zoomX = (double) vr.width / (double) rect.width;
-                    double zoomY = (double) vr.height / (double) rect.height;
-                    zoom.setRatio(Math.min(zoomX, zoomY));
-                }
-            });
+                    {
+                        @Override
+                        public void run ()
+                        {
+                            Rectangle vr = getVisibleRect();
+                            double zoomX = (double) vr.width / (double) rect.width;
+                            double zoomY = (double) vr.height / (double) rect.height;
+                            zoom.setRatio(Math.min(zoomX, zoomY));
+                        }
+                    });
         }
     }
 
@@ -368,7 +385,8 @@ public class RubberPanel
      * it makes the selected location visible in the display, through the
      * method {@link #showFocusLocation}.</li> </ol>
      *
-     * <p><b>Nota</b>: Setting the location selection does not
+     * <p>
+     * <b>Nota</b>: Setting the location selection does not
      * automatically register this view on the selection object. If
      * such registering is needed, it must be done manually through method
      * {@link #subscribe}. (TODO: Question: Why?)
@@ -639,6 +657,5 @@ public class RubberPanel
         PixelCount focusMargin = new PixelCount(
                 20,
                 "Margin visible around a focus");
-
     }
 }

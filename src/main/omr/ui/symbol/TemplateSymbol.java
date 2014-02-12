@@ -28,12 +28,11 @@ import java.awt.geom.Rectangle2D;
  * Class {@code TemplateSymbol} defines a symbol meant only for
  * template matching.
  * <p>
- * TODO: Symbol must depend on interline of course, PLUS hasLine thickness
- * and
- * perhaps stem thickness as well.
+ * TODO: Symbol must depend on interline of course, PLUS line thickness
+ * and perhaps stem thickness as well.
  * This implies that a set of templates will likely be defined per page
- * (interline, hasLine, stem).
- * Beware, ledgers are often a bit thicker than staff hasLines.
+ * (interline, line, stem).
+ * Beware, ledgers are often a bit thicker than staff lines.
  *
  * @author Hervé Bitteur
  */
@@ -68,6 +67,14 @@ public class TemplateSymbol
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-----------------//
+    // getSymbolBounds //
+    //-----------------//
+    public Rectangle getSymbolBounds (MusicFont font)
+    {
+        return getParams(font).symbolRect;
+    }
+
     //-----------//
     // getParams //
     //-----------//
@@ -87,10 +94,15 @@ public class TemplateSymbol
 
         p.line = interline * 0.2f;
 
-        Rectangle2D r = p.layout.getBounds();
-        p.rect = new Rectangle(
-                (int) Math.rint(r.getWidth()),
-                isSmall ? interline : (int) Math.rint(r.getHeight()));
+        final Rectangle2D r = p.layout.getBounds();
+        final int symWidth = (int) Math.rint(r.getWidth());
+        final int symHeight = (int) Math.rint(r.getHeight());
+        p.rect = new Rectangle(symWidth, isSmall ? interline : symHeight);
+        p.symbolRect = new Rectangle(
+                0,
+                (interline - symHeight) / 2,
+                symWidth,
+                symHeight);
 
         return p;
     }
@@ -152,6 +164,8 @@ public class TemplateSymbol
             extends Params
     {
         //~ Instance fields ----------------------------------------------------
+
+        Rectangle symbolRect; // Bounds for symbol inside image
 
         float line; // Thickness of a ledger or staff line
 

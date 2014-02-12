@@ -28,16 +28,16 @@ import java.util.List;
  * Class {@code Circle} handles a portion of circle which approximates
  * a collection of points.
  * Besides usual characteristics of a circle (center, radius), and of a circle
- * arc (start and stop angles), it also defines the approximating Bézier curve.
+ * arc (start and stop angles defined in -PI..+PI), it also defines the
+ * rotation from first to last as counter-clockwise (ccw) or not.
+ * First and last angles can be swapped via reverse() method.
  * <p>
- * Start and stop angles are defined clock-wise, with value of stop angle
- * always greater than or equal to start angle.
+ * The approximating Bézier curve is always defined from left to right, so that
+ * left point is P1 and right point is P2.
  * <p>
- * Bézier curve is defined from left to right, so that left point is P1 and
- * right point is P2.
+ * If arc shape is /--\ it is said above.
+ * If arc shape is \--/ it is said below.
  * <p>
- * If arc shape is /--\, then startAngle relates to P1 and stopAngle to P2.
- * If arc shape is \--/, then startAngle relates to P2 and stopAngle to P1.
  *
  * @author Hervé Bitteur
  */
@@ -60,14 +60,17 @@ public class Circle
     /** Mean algebraic distance between circle and defining points. */
     private double distance;
 
-    /** Starting angle of circle arc. (stopAngle >= startAngle) */
-    private Double startAngle;
+    /** Starting angle of circle arc. */
+    private Double firstAngle;
 
-    /** Stopping angle of circle arc. (stopAngle >= startAngle) */
-    private Double stopAngle;
+    /** Stopping angle of circle arc. */
+    private Double lastAngle;
 
-    /** Flag set when ending points were swapped. */
-    private boolean isSwapped;
+    /** Turning counter-clockwise when going from first to last?. */
+    private int ccw;
+
+    /** Above or below. */
+    private boolean above;
 
     /** Bézier curve for circle arc. */
     private CubicCurve2D curve;
@@ -77,11 +80,35 @@ public class Circle
     // Circle //
     //--------//
     /**
+     * Clone a circle
+     *
+     * @param that the original circle
+     */
+    public Circle (Circle that)
+    {
+        if (that.center != null) {
+            center = new Point2D.Double(that.center.getX(), that.center.getY());
+        }
+
+        radius = that.radius;
+        distance = that.distance;
+        firstAngle = that.firstAngle;
+        lastAngle = that.lastAngle;
+        ccw = that.ccw;
+        above = that.above;
+        curve = that.curve;
+    }
+
+    //--------//
+    // Circle //
+    //--------//
+    /**
      * Creates a new instance of Circle, defined by a set of points.
      *
      * @param xx array of abscissae
      * @param yy array of ordinates
      */
+    @Deprecated
     public Circle (double[] xx,
                    double[] yy)
     {
@@ -133,6 +160,7 @@ public class Circle
      * @param xx     array of abscissae (including the defining points)
      * @param yy     array of ordinates (including the defining points)
      */
+    @Deprecated
     public Circle (Point2D left,
                    Point2D middle,
                    Point2D right,
@@ -163,6 +191,19 @@ public class Circle
     }
 
     //~ Methods ----------------------------------------------------------------
+    //-----//
+    // ccw //
+    //-----//
+    /**
+     * Report +1 for an arc turning counter-clockwise, -1 clockwise.
+     *
+     * @return +1 for CCW, -1 for not CCW
+     */
+    public int ccw ()
+    {
+        return ccw;
+    }
+
     //-----------------//
     // computeDistance //
     //-----------------//
@@ -187,6 +228,43 @@ public class Circle
         return distance = sqrt(sum) / nbPoints;
     }
 
+    //----------//
+    // getAngle //
+    //----------//
+    /**
+     * Report the angle at desired end of the circle arc.
+     *
+     * @return the angle, in radians within -PI..PI
+     */
+    public Double getAngle (boolean reverse)
+    {
+        if (reverse) {
+            return firstAngle;
+        } else {
+            return lastAngle;
+        }
+    }
+
+    //-------------//
+    // getArcAngle //
+    //-------------//
+    /**
+     * Report the positive length of arc from first to last.
+     *
+     * @return the positive arc, in radians within 0..2*PI
+     */
+    public double getArcAngle ()
+    {
+        double arc = (ccw == 1) ? (firstAngle - lastAngle)
+                : (lastAngle - firstAngle);
+
+        if (arc < 0) {
+            arc += (2 * PI);
+        }
+
+        return arc;
+    }
+
     //-----------//
     // getCenter //
     //-----------//
@@ -204,9 +282,10 @@ public class Circle
     // getCurve //
     //----------//
     /**
-     * Report the Bezier curve which best approximates the circle arc.
+     * Report the left-to-right Bézier curve which best approximates
+     * the circle arc.
      *
-     * @return the Bezier curve
+     * @return the Bézier curve
      */
     public CubicCurve2D getCurve ()
     {
@@ -230,6 +309,74 @@ public class Circle
         return distance;
     }
 
+    //---------------//
+    // getFirstAngle //
+    //---------------//
+    /**
+     * Report the angle at start of the circle arc.
+     *
+     * @return the starting angle, in radians within -PI..PI
+     */
+    public Double getFirstAngle ()
+    {
+        return firstAngle;
+    }
+
+    //--------------//
+    // getLastAngle //
+    //--------------//
+    /**
+     * Report the angle at stop of the circle arc.
+     *
+     * @return the stopping angle, in radians within -PI..PI
+     */
+    public Double getLastAngle ()
+    {
+        return lastAngle;
+    }
+
+    //-------------//
+    // getMidAngle //
+    //-------------//
+    /**
+     * Report the angle at middle of arc
+     *
+     * @return the mid angle, in radians within -PI..PI
+     */
+    public double getMidAngle ()
+    {
+        double halfArc = getArcAngle() / 2;
+        double mid = (ccw == 1) ? (firstAngle - halfArc) : (firstAngle
+                                                            + halfArc);
+
+        if (mid < -PI) {
+            mid += (2 * PI);
+        }
+
+        if (mid > PI) {
+            mid -= (2 * PI);
+        }
+
+        return mid;
+    }
+
+    //----------------//
+    // getMiddlePoint //
+    //----------------//
+    /**
+     * Report the half-way point on Bézier curve.
+     *
+     * @return the middle of the curve arc
+     */
+    public Point2D getMiddlePoint ()
+    {
+        CubicCurve2D c = getCurve();
+
+        return new Point2D.Double(
+                (c.getX1() + (3 * c.getCtrlX1()) + (3 * c.getCtrlX2()) + c.getX2()) / 8,
+                (c.getY1() + (3 * c.getCtrlY1()) + (3 * c.getCtrlY2()) + c.getY2()) / 8);
+    }
+
     //-----------//
     // getRadius //
     //-----------//
@@ -243,43 +390,27 @@ public class Circle
         return radius;
     }
 
-    //---------------//
-    // getStartAngle //
-    //---------------//
     /**
-     * Report the angle at start of the circle arc.
-     *
-     * @return the starting angle, in radians
+     * @return the above
      */
-    public Double getStartAngle ()
+    public boolean isAbove ()
     {
-        return startAngle;
+        return above;
     }
 
-    //--------------//
-    // getStopAngle //
-    //--------------//
+    //---------//
+    // reverse //
+    //---------//
     /**
-     * Report the angle at stop of the circle arc.
-     *
-     * @return the stopping angle, in radians
+     * Swap first and last angles (and CCW accordingly).
      */
-    public Double getStopAngle ()
+    public void reverse ()
     {
-        return stopAngle;
-    }
+        Double temp = firstAngle;
+        firstAngle = lastAngle;
+        lastAngle = temp;
 
-    //-----------//
-    // isSwapped //
-    //-----------//
-    /**
-     * Tell whether the ending points had to be swapped.
-     *
-     * @return true if swapped
-     */
-    public boolean isSwapped ()
-    {
-        return isSwapped;
+        ccw = -ccw;
     }
 
     //----------//
@@ -295,12 +426,12 @@ public class Circle
         sb.append(String.format(" center[%.1f,%.1f]", center.x, center.y));
         sb.append(String.format(" radius=%.1f", radius));
 
-        if ((startAngle != null) && (stopAngle != null)) {
+        if ((firstAngle != null) && (lastAngle != null)) {
             sb.append(
                     String.format(
                             " degrees=(%.0f,%.0f)",
-                            toDegrees(startAngle),
-                            toDegrees(stopAngle)));
+                            toDegrees(firstAngle),
+                            toDegrees(lastAngle)));
         }
 
         sb.append("}");
@@ -389,8 +520,8 @@ public class Circle
                 stop += (2 * PI);
             }
 
-            startAngle = start;
-            stopAngle = stop;
+            firstAngle = start;
+            lastAngle = stop;
 
             //            System.out.println(
             //                "emptyIdx=" + emptyIdx + " startDeg=" +
@@ -406,40 +537,11 @@ public class Circle
                                 Point2D middle,
                                 Point2D last)
     {
-        // Angles are in -PI .. + PI
-        double fa = angleOf(first.getX(), first.getY());
-        double ma = angleOf(middle.getX(), middle.getY());
-        double la = angleOf(last.getX(), last.getY());
-
-        if (la < fa) {
-            la += (2 * PI);
-        }
-
-        if (ma < fa) {
-            ma += (2 * PI);
-        }
-
-        if (ma > la) {
-            // Swap first and last
-            startAngle = la;
-            stopAngle = fa;
-            isSwapped = true;
-        } else {
-            startAngle = fa;
-            stopAngle = la;
-        }
-
-        if (startAngle > PI) {
-            startAngle -= (2 * PI);
-        }
-
-        if (stopAngle > PI) {
-            stopAngle -= (2 * PI);
-        }
-
-        if (stopAngle < startAngle) {
-            stopAngle += (2 * PI);
-        }
+        // Angles are in -PI .. +PI
+        firstAngle = angleOf(first.getX(), first.getY());
+        lastAngle = angleOf(last.getX(), last.getY());
+        ccw = new Line2D.Double(first, middle).relativeCCW(last);
+        above = (first.getX() < last.getX()) ? (ccw == -1) : (ccw == 1);
     }
 
     //--------------//
@@ -447,17 +549,18 @@ public class Circle
     //--------------//
     /**
      * Compute the bézier points for the circle arc.
+     * The Bézier curves always goes from left to right.
      */
     private void computeCurve ()
     {
         // Make sure we do have an arc defined, rather than a full circle
-        if (((stopAngle == null) || (stopAngle.isNaN()))
-            || ((startAngle == null) || (startAngle.isNaN()))) {
+        if (((lastAngle == null) || (lastAngle.isNaN()))
+            || ((firstAngle == null) || (firstAngle.isNaN()))) {
             return;
         }
 
         // Bezier points for circle arc, centered at origin, with radius 1
-        double arc = stopAngle - startAngle;
+        double arc = getArcAngle();
         double x0 = cos(arc / 2);
         double y0 = sin(arc / 2);
         double x1 = (4 - x0) / 3;
@@ -468,7 +571,7 @@ public class Circle
         double y3 = -y0;
 
         // Rotation
-        final double theta = (startAngle + stopAngle) / 2;
+        final double theta = getMidAngle();
 
         ///System.out.println("angleDeg/2=" + toDegrees(theta));
         final Matrix rotation = new Matrix(
@@ -495,8 +598,7 @@ public class Circle
                 });
 
         // Composite operation
-        final Matrix op = translation.times(scaling)
-                .times(rotation);
+        final Matrix op = translation.times(scaling).times(rotation);
 
         final Matrix M0 = op.times(
                 new Matrix(
@@ -643,8 +745,7 @@ public class Circle
 
         ///print(design, "design");
         //  Build the scatter matrix
-        Matrix scatter = design.transpose()
-                .times(design);
+        Matrix scatter = design.transpose().times(design);
 
         ///print(scatter, "scatter");
         //  Let's impose A = 1

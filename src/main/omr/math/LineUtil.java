@@ -39,7 +39,7 @@ public class LineUtil
      *
      * @param p1 first provided point
      * @param p2 second provided point
-     * @return (a segment on) the bisector
+     * @return (a segment on) the bisector (p3p4 is p1p2 turned 90° clockwise)
      */
     public static Line2D bisector (Point2D p1,
                                    Point2D p2)

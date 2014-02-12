@@ -46,6 +46,7 @@ import omr.sig.Inter;
 import omr.sig.InterVisitor;
 import omr.sig.LedgerInter;
 import omr.sig.SIGraph;
+import omr.sig.SlurInter;
 import omr.sig.StemInter;
 
 import omr.ui.Colors;
@@ -72,7 +73,6 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ConcurrentModificationException;
-import omr.sig.SlurInter;
 
 /**
  * Class {@code PagePhysicalPainter} paints the recognized page
@@ -663,7 +663,6 @@ public class PagePhysicalPainter
 
         ledger.getGlyph()
                 .renderLine(g);
-
         g.setStroke(defaultStroke);
     }
 
@@ -675,9 +674,10 @@ public class PagePhysicalPainter
     {
         setColor(slur);
         g.setStroke(lineStroke);
+
         CubicCurve2D curve = slur.getInfo()
-                                 .getCircle()
-                                 .getCurve();
+                .getCircle()
+                .getCurve();
         g.draw(curve);
         g.setStroke(defaultStroke);
     }
