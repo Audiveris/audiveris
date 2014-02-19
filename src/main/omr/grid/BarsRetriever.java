@@ -44,8 +44,10 @@ import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
 
 import omr.sig.BarConnectionInter;
+import omr.sig.BarConnectionRelation;
 import omr.sig.BarlineInter;
 import omr.sig.GradeImpacts;
+import omr.sig.Relation;
 import omr.sig.SIGraph;
 
 import omr.step.StepException;
@@ -191,8 +193,7 @@ public class BarsRetriever
         final int index = staff.getId() - 1;
 
         if (index < projectors.size()) {
-            projectors.get(index)
-                    .plot();
+            projectors.get(index).plot();
         }
     }
 
@@ -287,10 +288,10 @@ public class BarsRetriever
         purgeCrossAlignments();
 
         // Create barline interpretations within each system
-        createBarlineInters();
+        Map<BarPeak, BarlineInter> interMap = createBarlineInters();
 
         // Create bar connection across staves
-        createBarConnectionInters();
+        createBarConnectionInters(interMap);
     }
 
     //--------------//
@@ -456,8 +457,8 @@ public class BarsRetriever
      */
     private BarConnection checkConnection (BarAlignment alignment)
     {
-        ByteProcessor pixelFilter = sheet.getPicture()
-                .getSource(Picture.SourceKey.BINARY);
+        ByteProcessor pixelFilter = sheet.getPicture().getSource(
+                Picture.SourceKey.BINARY);
         BarPeak p1 = alignment.topPeak;
         BarPeak p2 = alignment.bottomPeak;
 
@@ -484,8 +485,7 @@ public class BarsRetriever
                                  - (data.whiteRatio / params.maxConnectionWhiteRatio);
             double gapImpact = 1
                                - ((double) data.gap / params.maxConnectionGap);
-            double alignImpact = alignment.getImpacts()
-                    .getGrade() / alignment.getImpacts()
+            double alignImpact = alignment.getImpacts().getGrade() / alignment.getImpacts()
                     .getIntrinsicRatio();
             GradeImpacts impacts = new BarConnection.Impacts(
                     alignImpact,
@@ -501,26 +501,33 @@ public class BarsRetriever
     //---------------------------//
     // createBarConnectionInters //
     //---------------------------//
-    private void createBarConnectionInters ()
+    private void createBarConnectionInters (Map<BarPeak, BarlineInter> interMap)
     {
         for (BarConnection connection : connections) {
-            BarPeak peak = connection.topPeak;
-            SystemInfo system = peak.getStaff()
-                    .getSystem();
+            BarPeak topPeak = connection.topPeak;
+            SystemInfo system = topPeak.getStaff().getSystem();
             SIGraph sig = system.getSig();
             BarConnectionInter inter = new BarConnectionInter(
                     connection,
-                    peak.isThin() ? Shape.THIN_CONNECTION : Shape.THICK_CONNECTION,
+                    topPeak.isThin() ? Shape.THIN_CONNECTION : Shape.THICK_CONNECTION,
                     connection.getImpacts());
             sig.addVertex(inter);
+
+            // Also, connected bars support each other
+            Relation bcRel = new BarConnectionRelation(connection.getImpacts());
+            BarPeak bottomPeak = connection.bottomPeak;
+            sig.addEdge(interMap.get(topPeak), interMap.get(bottomPeak), bcRel);
         }
     }
 
     //---------------------//
     // createBarlineInters //
     //---------------------//
-    private void createBarlineInters ()
+    private Map<BarPeak, BarlineInter> createBarlineInters ()
     {
+        // Map peak -> barlineInter
+        Map<BarPeak, BarlineInter> interMap = new HashMap<BarPeak, BarlineInter>();
+
         for (SystemInfo system : sheet.getSystems()) {
             SIGraph sig = system.getSig();
 
@@ -539,9 +546,12 @@ public class BarsRetriever
                             median,
                             peak.getWidth());
                     sig.addVertex(inter);
+                    interMap.put(peak, inter);
                 }
             }
         }
+
+        return interMap;
     }
 
     //-------------//
@@ -555,8 +565,7 @@ public class BarsRetriever
     private void createParts (Integer[] partTops)
     {
         for (SystemInfo system : sheet.getSystems()) {
-            system.getParts()
-                    .clear(); // Start from scratch
+            system.getParts().clear(); // Start from scratch
 
             int partTop = -1;
             PartInfo part = null;
@@ -651,8 +660,7 @@ public class BarsRetriever
                 // Make sure there are other staves on this side
                 // and they are "short-wise compatible" with current staff
                 if (otherStaves.isEmpty()
-                    || (otherStaves.get(0)
-                        .isShort() != staff.isShort())) {
+                    || (otherStaves.get(0).isShort() != staff.isShort())) {
                     continue;
                 }
 
@@ -721,10 +729,8 @@ public class BarsRetriever
 
         // Connections are ordered per top staff then per abscissa.
         for (BarConnection connection : connections) {
-            int top = connection.topPeak.getStaff()
-                    .getId();
-            int bottom = connection.bottomPeak.getStaff()
-                    .getId();
+            int top = connection.topPeak.getStaff().getId();
+            int bottom = connection.bottomPeak.getStaff().getId();
 
             if (systemTops[top - 1] == null) {
                 // First connection ever between the 2 staves
@@ -928,8 +934,7 @@ public class BarsRetriever
         final Skew skew = sheet.getSkew();
         final int mid = (peak.getStart() + peak.getStop()) / 2;
         final double dsk = skew.deskewed(
-                new Point(mid, peak.getOrdinate(side)))
-                .getX();
+                new Point(mid, peak.getOrdinate(side))).getX();
 
         for (BarPeak otherPeak : otherStaff.getBarPeaks()) {
             if (otherPeak.isThin() != peak.isThin()) {
@@ -940,8 +945,7 @@ public class BarsRetriever
             Point otherPt = (side == TOP)
                     ? new Point(otherMid, otherPeak.getBottom())
                     : new Point(otherMid, otherPeak.getTop());
-            double otherDsk = skew.deskewed(otherPt)
-                    .getX();
+            double otherDsk = skew.deskewed(otherPt).getX();
             double dx = scale.pixelsToFrac(otherDsk - dsk);
 
             if (Math.abs(dx) <= constants.maxAlignmentDx.getValue()) {
@@ -972,7 +976,7 @@ public class BarsRetriever
      * Any connection is given priority against conflicting alignment (simply
      * because connection was validated by presence of enough black pixels in
      * the inter-staff region)</li>
-     * <li>Remove duplicates: in the collection of alignments a peak can
+     * <li>Remove duplicates: in the collection of alignments a peak should
      * appear at most once as top and at most once as bottom.
      * In case of conflict, use alignment quality to disambiguate.
      * TODO: A more complex approach to disambiguate could use detection of pair
@@ -1039,11 +1043,8 @@ public class BarsRetriever
         final Set<BarAlignment> toRemove = new HashSet<BarAlignment>();
 
         for (BarAlignment alignment : alignments) {
-            final SystemInfo s1 = alignment.getPeak(TOP)
-                    .getStaff()
-                    .getSystem();
-            final SystemInfo s2 = alignment.getPeak(BOTTOM)
-                    .getStaff()
+            final SystemInfo s1 = alignment.getPeak(TOP).getStaff().getSystem();
+            final SystemInfo s2 = alignment.getPeak(BOTTOM).getStaff()
                     .getSystem();
 
             if (s1 != s2) {
@@ -1063,6 +1064,7 @@ public class BarsRetriever
     /**
      * Purge long thin bars (those getting above or below the related
      * staff) that do not connect staves.
+     * <p>
      * Thick bars are not concerned by this test, because they cannot be
      * mistaken for stems and can appear to be extended because of brackets.
      * <p>

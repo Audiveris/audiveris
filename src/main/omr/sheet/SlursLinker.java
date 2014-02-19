@@ -150,8 +150,8 @@ public class SlursLinker
     private void defineAreaPair (SlurInter slur)
     {
         SlurInfo info = slur.getInfo();
-        Point first = info.getFirstPoint();
-        Point last = info.getLastPoint();
+        Point first = info.getEnd(true);
+        Point last = info.getEnd(false);
         int vDir = info.isAbove() ? 1 : (-1);
         int hDir = Integer.signum(last.x - first.x);
         Point2D mid = new Point2D.Double(
@@ -168,7 +168,8 @@ public class SlursLinker
         Point2D lastBase;
 
         // Qualify the slur as horizontal or vertical
-        if (abs(LineUtil.getSlope(first, last)) <= params.slopeSeparator) {
+        if (abs(LineUtil.getSlope(first, last)) <= params.slopeSeparator ||
+            abs(first.getX() - last.getX()) >= params.wideSlurWidth) {
             // Horizontal: Use base parallel to slur
             info.setHorizontal(true);
             firstExt = extension(mid, first, params.coverageHExt);
@@ -261,12 +262,14 @@ public class SlursLinker
         lastPath.closePath();
 
         Area firstArea = new Area(firstPath);
-        info.setFirstArea(firstArea);
+        info.setArea(firstArea, true);
         slur.addAttachment("F", firstArea);
+        ///info.addAttachment("F", firstArea); // Useful?
 
         Area lastArea = new Area(lastPath);
-        info.setLastArea(lastArea);
+        info.setArea(lastArea, false);
         slur.addAttachment("L", lastArea);
+        ///info.addAttachment("L", lastArea); // Useful?
     }
 
     //-----------//
@@ -345,7 +348,7 @@ public class SlursLinker
                 "Internal abscissa of horizontal slur coverage");
 
         final Scale.Fraction coverageHDepth = new Scale.Fraction(
-                3.0,
+                4.0,
                 "Vertical extension of horizontal slur coverage");
 
         final Scale.Fraction coverageVExt = new Scale.Fraction(
@@ -371,8 +374,12 @@ public class SlursLinker
                 "Maximum slope for an orphan slur");
 
         final Scale.Fraction maxOrphanDx = new Scale.Fraction(
-                4.0,
+                5.0,
                 "Maximum dx to staff end for an orphan slur");
+
+        final Scale.Fraction wideSlurWidth = new Scale.Fraction(
+                6.0,
+                "Minimum width to be a wide slur");
     }
 
     ///Map<SlurInfo, Map<HorizontalSide, NoteLink>> connections;
@@ -403,6 +410,8 @@ public class SlursLinker
         final double maxOrphanSlope;
 
         final int maxOrphanDx;
+        
+        final int wideSlurWidth;
 
         //~ Constructors -------------------------------------------------------
         /**
@@ -421,6 +430,7 @@ public class SlursLinker
             slopeSeparator = constants.slopeSeparator.getValue();
             maxOrphanSlope = constants.maxOrphanSlope.getValue();
             maxOrphanDx = scale.toPixels(constants.maxOrphanDx);
+            wideSlurWidth = scale.toPixels(constants.wideSlurWidth);
 
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);
@@ -592,8 +602,8 @@ public class SlursLinker
                     // Check if slur is rather horizontal
                     if (abs(
                             LineUtil.getSlope(
-                                    info.getFirstPoint(),
-                                    info.getLastPoint())) > params.maxOrphanSlope) {
+                                    info.getEnd(true),
+                                    info.getEnd(false))) > params.maxOrphanSlope) {
                         logger.debug("{} too sloped orphan", slur);
 
                         return false;

@@ -713,7 +713,7 @@ public class StaffProjector
                 "Maximum vertical gap length in a bar");
 
         final Scale.Fraction chunkThreshold = new Scale.Fraction(
-                0.5,
+                0.75,
                 "Maximum cumul value to detect chunk (on top of lines)");
 
         final Scale.LineFraction blankThreshold = new Scale.LineFraction(

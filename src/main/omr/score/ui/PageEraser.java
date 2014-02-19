@@ -43,10 +43,12 @@ import omr.ui.symbol.Symbols;
 
 import omr.util.Predicate;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.util.Collection;
 import java.util.List;
 
@@ -77,6 +79,12 @@ public class PageEraser
     // Vertical margin added above and below any staff DMZ
     private final int dmzDyMargin;
 
+    // Original stroke
+    private final Stroke defaultStroke;
+
+    // Stroke for stems
+    private final Stroke stemStroke;
+
     //~ Constructors -----------------------------------------------------------
     /**
      * Creates a new PageEraser object.
@@ -96,6 +104,12 @@ public class PageEraser
         musicFont = MusicFont.getFont(symbolSize);
 
         dmzDyMargin = scale.toPixels(constants.staffVerticalMargin);
+
+        defaultStroke = g.getStroke();
+        stemStroke = new BasicStroke(
+                (float) scale.getMainStem(),
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND);
 
         g.setColor(Color.WHITE);
 
@@ -161,6 +175,11 @@ public class PageEraser
     @Override
     public void visit (StemInter inter)
     {
+        g.setStroke(stemStroke);
+
+        inter.getGlyph().renderLine(g);
+
+        g.setStroke(defaultStroke);
     }
 
     @Override
@@ -176,11 +195,13 @@ public class PageEraser
     @Override
     public void visit (BarlineInter inter)
     {
+        g.fill(inter.getArea());
     }
 
     @Override
     public void visit (BarConnectionInter inter)
     {
+        g.fill(inter.getArea());
     }
 
     //----------//
@@ -194,10 +215,8 @@ public class PageEraser
     private void eraseDmz (StaffInfo staff)
     {
         int dmzEnd = staff.getDmzEnd();
-        int top = staff.getFirstLine()
-                .yAt(dmzEnd) - dmzDyMargin;
-        int bot = staff.getLastLine()
-                .yAt(dmzEnd) + dmzDyMargin;
+        int top = staff.getFirstLine().yAt(dmzEnd) - dmzDyMargin;
+        int bot = staff.getLastLine().yAt(dmzEnd) + dmzDyMargin;
         g.fillRect(0, top, dmzEnd, bot - top + 1);
     }
 
@@ -211,7 +230,7 @@ public class PageEraser
         //~ Instance fields ----------------------------------------------------
 
         final Scale.Fraction symbolSize = new Scale.Fraction(
-                1.0,
+                1.1,
                 "Symbols size to use for eraser");
 
         final Scale.Fraction staffVerticalMargin = new Scale.Fraction(

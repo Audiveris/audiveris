@@ -46,6 +46,7 @@ import omr.sig.SlurInter.Impacts;
 
 import omr.ui.BoardsPane;
 import omr.ui.util.ItemRenderer;
+import omr.ui.util.UIUtil;
 
 import omr.util.Navigable;
 import omr.util.StopWatch;
@@ -96,8 +97,7 @@ public class SlursBuilder
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    private static final Point[] breakPoints = new Point[]{
-        ///new Point(772, 785)
+    private static final Point[] breakPoints = new Point[]{ ///new Point(234, 871)
     }; // BINGO
 
     private static final Constants constants = new Constants();
@@ -215,6 +215,9 @@ public class SlursBuilder
     /** The skeleton buffer. */
     private final ByteProcessor buf;
 
+    /** All slur infos created. */
+    private final List<SlurInfo> pageInfos = new ArrayList<SlurInfo>();
+
     /** All slurs retrieved. */
     private final List<SlurInter> pageSlurs = new ArrayList<SlurInter>();
 
@@ -278,27 +281,24 @@ public class SlursBuilder
         watch.print();
     }
 
-    //-------//
-    // sinSq //
-    //-------//
-    /** Sin**2 of angle between (p0,p1) & (p0,p2). */
-    private static double sinSq (int x0,
-                                 int y0,
-                                 int x1,
-                                 int y1,
-                                 int x2,
-                                 int y2)
+    //------------//
+    // areSimilar //
+    //------------//
+    /**
+     * Check whether the provided circles have similar radius
+     *
+     * @param c1 a circle
+     * @param c2 another circle
+     * @return true if similar
+     */
+    private boolean areSimilar (Circle c1,
+                                Circle c2)
     {
-        x1 -= x0;
-        y1 -= y0;
-        x2 -= x0;
-        y2 -= y0;
+        double r1 = c1.getRadius();
+        double r2 = c2.getRadius();
+        double difRatio = abs(r1 - r2) / (max(r1, r2));
 
-        double vect = (x1 * y2) - (x2 * y1);
-        double l1Sq = (x1 * x1) + (y1 * y1);
-        double l2Sq = (x2 * x2) + (y2 * y2);
-
-        return (vect * vect) / (l1Sq * l2Sq);
+        return difRatio <= params.similarRadiusRatio;
     }
 
     //---------------//
@@ -313,8 +313,10 @@ public class SlursBuilder
     {
         // First, get a skeleton of binary image
         Picture picture = sheet.getPicture();
-        ByteProcessor buffer = picture.getSource(Picture.SourceKey.BINARY);
-        ///ByteProcessor buffer = picture.getSource(Picture.SourceKey.STAFF_LINE_FREE);
+
+        ///ByteProcessor buffer = picture.getSource(Picture.SourceKey.BINARY);
+        ByteProcessor buffer = picture.getSource(
+                Picture.SourceKey.STAFF_LINE_FREE);
         buffer = (ByteProcessor) buffer.duplicate();
         buffer.skeletonize();
 
@@ -325,6 +327,11 @@ public class SlursBuilder
         PageEraser eraser = new PageEraser(g, sheet);
         eraser.erase(
                 Arrays.asList(
+                        Shape.THICK_BARLINE,
+                        Shape.THIN_BARLINE,
+                        Shape.THIN_CONNECTION,
+                        Shape.THICK_CONNECTION,
+                        Shape.STEM,
                         Shape.WHOLE_NOTE,
                         Shape.WHOLE_NOTE_SMALL,
                         Shape.NOTEHEAD_BLACK,
@@ -372,6 +379,10 @@ public class SlursBuilder
      */
     private void checkBreak (Arc arc)
     {
+        if (arc == null) {
+            return;
+        }
+
         for (Point pt : breakPoints) {
             if (pt.equals(arc.getEnd(false)) || pt.equals(arc.getEnd(true))) {
                 view.selectPoint(arc.getEnd(true));
@@ -419,10 +430,23 @@ public class SlursBuilder
             return null;
         }
 
-        // Now compute precise circle
+        // Now compute "precise" circle
         try {
-            Circle circle = new Circle(points);
-            double dist = circle.getDistance();
+            Circle fitted = new Circle(points);
+
+            // Check circle radius is rather similar to rough radius
+            // If not, keep the rough one.
+            final Circle circle;
+            final double dist;
+
+            if (areSimilar(fitted, rough)) {
+                circle = fitted;
+                dist = circle.getDistance();
+            } else {
+                circle = rough;
+                dist = rough.computeDistance(points);
+                rough.setDistance(dist);
+            }
 
             if (dist > params.maxArcsDistance) {
                 logger.debug("Bad circle fit {} at {}", dist, p0);
@@ -430,9 +454,9 @@ public class SlursBuilder
                 return null;
             }
 
-            logger.debug("{} to {} Circle {}", p0, p2, circle);
+            logger.debug("{} to {} Circle {}", p0, p2, rough);
 
-            return circle;
+            return rough;
         } catch (Exception ex) {
             logger.debug("Could not compute circle {} at {}", p0);
 
@@ -552,6 +576,29 @@ public class SlursBuilder
                && ((maxDy - minDy) < params.minStaffLineDistance);
     }
 
+    //-------//
+    // sinSq //
+    //-------//
+    /** Sin**2 of angle between (p0,p1) & (p0,p2). */
+    private static double sinSq (int x0,
+                                 int y0,
+                                 int x1,
+                                 int y1,
+                                 int x2,
+                                 int y2)
+    {
+        x1 -= x0;
+        y1 -= y0;
+        x2 -= x0;
+        y2 -= y0;
+
+        double vect = (x1 * y2) - (x2 * y1);
+        double l1Sq = (x1 * x1) + (y1 * y1);
+        double l2Sq = (x2 * x2) + (y2 * y2);
+
+        return (vect * vect) / (l1Sq * l2Sq);
+    }
+
     //~ Inner Classes ----------------------------------------------------------
     //-----------//
     // Constants //
@@ -565,30 +612,55 @@ public class SlursBuilder
                 false,
                 "Should we store skeleton images on disk?");
 
+        final Constant.Ratio similarRadiusRatio = new Constant.Ratio(
+                0.25,
+                "Maximum difference ratio between radius of similar circles");
+
         final Constant.Double maxAlpha = new Constant.Double(
                 "degree",
-                3,
+                2.5,
                 "Maximum angle (in degrees) for 3 points colinearity");
+
+        final Constant.Double maxIncidence = new Constant.Double(
+                "degree",
+                45,
+                "Maximum incidence angle (in degrees) for staff tangency");
 
         final Scale.Fraction arcMinQuorum = new Scale.Fraction(
                 1.5,
                 "Minimum arc length for quorum");
 
         final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
-                0.5,
+                1.0,
                 "Minimum arc length for starting a slur build");
+
+        final Scale.Fraction maxStaffLineDy = new Scale.Fraction(
+                0.2,
+                "Vertical distance to closest staff line to detect tangency");
 
         final Scale.Fraction maxLineDistance = new Scale.Fraction(
                 0.1,
                 "Maximum distance from straight line");
 
         final Scale.Fraction maxSlurDistance = new Scale.Fraction(
-                0.009,
+                0.07,
                 "Maximum circle distance for final slur");
 
+        final Scale.Fraction maxExtDistance = new Scale.Fraction(
+                0.35,
+                "Maximum circle distance for extension arc");
+
         final Scale.Fraction maxArcsDistance = new Scale.Fraction(
-                0.011,
+                0.15,
                 "Maximum circle distance for intermediate arcs");
+
+        final Scale.Fraction arcCheckLength = new Scale.Fraction(
+                3,
+                "Number of points checked for extension arc");
+
+        final Scale.Fraction sideCircleLength = new Scale.Fraction(
+                7,
+                "Number of points for side osculatory circle");
 
         final Scale.Fraction minCircleRadius = new Scale.Fraction(
                 0.5,
@@ -626,13 +698,33 @@ public class SlursBuilder
                 5.0,
                 "Maximum length for a staff arc");
 
-        final Scale.Fraction maxGapLength = new Scale.Fraction(
-                0.25,
-                "Maximum length for white gap between arcs");
+        final Scale.Fraction gapBoxLength = new Scale.Fraction(
+                0.5,
+                "Length for gap box");
 
-        final Scale.Fraction maxGapDelta = new Scale.Fraction(
-                0.125,
-                "Maximum side delta for white gap between arcs");
+        final Scale.Fraction gapBoxDeltaIn = new Scale.Fraction(
+                0.15,
+                "Delta for gap box on slur side");
+
+        final Scale.Fraction gapBoxDeltaOut = new Scale.Fraction(
+                0.3,
+                "Delta for gap box on extension side");
+
+        final Scale.Fraction lineBoxLength = new Scale.Fraction(
+                1.75,
+                "Length for box across staff line");
+
+        final Scale.Fraction lineBoxIn = new Scale.Fraction(
+                0.2,
+                "Overlap for line box on slur side");
+
+        final Scale.Fraction lineBoxDeltaIn = new Scale.Fraction(
+                0.2,
+                "Delta for line box on slur side");
+
+        final Scale.Fraction lineBoxDeltaOut = new Scale.Fraction(
+                0.3,
+                "Delta for line box on extension side");
 
         final Constant.Double maxArcAngleHigh = new Constant.Double(
                 "degree",
@@ -674,15 +766,27 @@ public class SlursBuilder
     {
         //~ Instance fields ----------------------------------------------------
 
+        final double similarRadiusRatio;
+
+        final int sideCircleLength;
+
+        final int arcCheckLength;
+
         final double maxSinSq;
 
         final int arcMinQuorum;
 
         final int arcMinSeedLength;
 
+        final double maxStaffLineDy;
+
+        final double maxIncidence;
+
         final double maxLineDistance;
 
         final double maxSlurDistance;
+
+        final double maxExtDistance;
 
         final double maxArcsDistance;
 
@@ -714,9 +818,19 @@ public class SlursBuilder
 
         final int maxStaffArcLength;
 
-        final double maxGapLength;
+        final double gapBoxLength;
 
-        final double maxGapDelta;
+        final double gapBoxDeltaIn;
+
+        final double gapBoxDeltaOut;
+
+        final double lineBoxLength;
+
+        final double lineBoxIn;
+
+        final double lineBoxDeltaIn;
+
+        final double lineBoxDeltaOut;
 
         final double quorumRatio;
 
@@ -730,11 +844,17 @@ public class SlursBuilder
         {
             double maxSin = sin(toRadians(constants.maxAlpha.getValue()));
 
+            similarRadiusRatio = constants.similarRadiusRatio.getValue();
+            sideCircleLength = scale.toPixels(constants.sideCircleLength);
+            arcCheckLength = scale.toPixels(constants.arcCheckLength);
             maxSinSq = maxSin * maxSin;
             arcMinQuorum = scale.toPixels(constants.arcMinQuorum);
             arcMinSeedLength = scale.toPixels(constants.arcMinSeedLength);
+            maxStaffLineDy = scale.toPixelsDouble(constants.maxStaffLineDy);
+            maxIncidence = toRadians(constants.maxIncidence.getValue());
             maxLineDistance = scale.toPixelsDouble(constants.maxLineDistance);
             maxSlurDistance = scale.toPixelsDouble(constants.maxSlurDistance);
+            maxExtDistance = scale.toPixelsDouble(constants.maxExtDistance);
             maxArcsDistance = scale.toPixelsDouble(constants.maxArcsDistance);
             minCircleRadius = scale.toPixelsDouble(constants.minCircleRadius);
             maxCircleRadius = scale.toPixelsDouble(constants.maxCircleRadius);
@@ -754,8 +874,13 @@ public class SlursBuilder
                     constants.minStaffLineDistance);
             minStaffArcLength = scale.toPixels(constants.minStaffArcLength);
             maxStaffArcLength = scale.toPixels(constants.maxStaffArcLength);
-            maxGapLength = scale.toPixels(constants.maxGapLength);
-            maxGapDelta = scale.toPixels(constants.maxGapDelta);
+            gapBoxLength = scale.toPixels(constants.gapBoxLength);
+            gapBoxDeltaIn = scale.toPixels(constants.gapBoxDeltaIn);
+            gapBoxDeltaOut = scale.toPixels(constants.gapBoxDeltaOut);
+            lineBoxLength = scale.toPixels(constants.lineBoxLength);
+            lineBoxIn = scale.toPixels(constants.lineBoxIn);
+            lineBoxDeltaIn = scale.toPixels(constants.lineBoxDeltaIn);
+            lineBoxDeltaOut = scale.toPixels(constants.lineBoxDeltaOut);
             quorumRatio = constants.quorumRatio.getValue();
 
             if (logger.isDebugEnabled()) {
@@ -799,8 +924,18 @@ public class SlursBuilder
     //--------------//
     /**
      * Retrieve all arcs and remember the interesting ones in arcsMap.
-     * Each arc has its two ending points flagged with a specific color to
+     * Each arc has its two ending points flagged with a specific gray value to
      * remember the arc shape.
+     * <pre>
+     * - scanImage()              // Scan the whole image for arc starts
+     *   + scanJunction()         // Scan arcs leaving a junction point
+     *   |   + scanArc()
+     *   + scanArc()              // Scan one arc
+     *       + walkAlong()        // Walk till arc end (forward or backward)
+     *       |   + move()         // Move just one pixel
+     *       + determineShape()   // Determine the global arc shape
+     *       + storeShape()       // Store arc shape in its ending pixels
+     * </pre>
      */
     private class ArcRetriever
     {
@@ -817,13 +952,70 @@ public class SlursBuilder
 
         //~ Methods ------------------------------------------------------------
         /**
+         * Scan the whole image.
+         */
+        public void scanImage ()
+        {
+            for (int x = 1, w = buf.getWidth(); x < w; x++) {
+                for (int y = 1, h = buf.getHeight(); y < h; y++) {
+                    int pix = buf.get(x, y);
+
+                    if (pix == ARC) {
+                        // Basic arc pixel, not yet processed, scan full arc
+                        scanArc(x, y, null, 0);
+                    } else if (isJunction(pix)) {
+                        // Junction pixel, scan arcs linked to this junction point
+                        if (!isJunctionProcessed(pix)) {
+                            scanJunction(x, y);
+                        }
+                    }
+                }
+            }
+
+            // Sort arcsEnds by abscissa
+            Collections.sort(
+                    arcsEnds,
+                    new Comparator<Point>()
+            {
+                @Override
+                public int compare (Point p1,
+                                    Point p2)
+                {
+                    return Integer.compare(p1.x, p2.x);
+                }
+                    });
+        }
+
+        /**
+         * Record one more point into arc sequence
+         *
+         * @param reverse scan orientation
+         */
+        private void addPoint (Arc arc,
+                               int cx,
+                               int cy,
+                               boolean reverse)
+        {
+            List<Point> points = arc.points;
+
+            if (reverse) {
+                points.add(0, new Point(cx, cy));
+            } else {
+                points.add(new Point(cx, cy));
+            }
+
+            buf.set(cx, cy, PROCESSED);
+        }
+
+        /**
          * Determine shape for this arc.
          *
          * @param arc arc to evaluate
          * @return the shape classification
          */
-        public ArcShape determineShape (Arc arc)
+        private ArcShape determineShape (Arc arc)
         {
+            ///checkBreak(arc);
             List<Point> points = arc.points;
 
             // Too short?
@@ -891,53 +1083,6 @@ public class SlursBuilder
         }
 
         /**
-         * Walk along the arc in the desired orientation, starting at
-         * (x,y) point, until no more incremental move is possible.
-         *
-         * @param x       starting abscissa
-         * @param y       starting ordinate
-         * @param reverse normal (-> stop) or reverse orientation (-> start)
-         * @param lastDir arrival at (x,y) if any, 0 if none
-         */
-        public void walk (Arc arc,
-                          int x,
-                          int y,
-                          boolean reverse,
-                          int lastDir)
-        {
-            this.lastDir = lastDir;
-            cx = x;
-            cy = y;
-
-            Status status;
-
-            while (Status.CONTINUE == (status = move(arc, cx, cy, reverse))) {
-                addPoint(arc, cx, cy, reverse);
-            }
-        }
-
-        /**
-         * Record one more point into arc sequence
-         *
-         * @param reverse scan orientation
-         */
-        private void addPoint (Arc arc,
-                               int cx,
-                               int cy,
-                               boolean reverse)
-        {
-            List<Point> points = arc.points;
-
-            if (reverse) {
-                points.add(0, new Point(cx, cy));
-            } else {
-                points.add(new Point(cx, cy));
-            }
-
-            buf.set(cx, cy, PROCESSED);
-        }
-
-        /**
          * Update display to show the arc points as "discarded".
          */
         private void hide (Arc arc)
@@ -975,13 +1120,7 @@ public class SlursBuilder
                 if (isJunction(pix)) {
                     // End of scan for this orientation
                     Point junctionPt = new Point(cx, cy);
-
-                    if (reverse) {
-                        arc.setStartJunction(junctionPt);
-                    } else {
-                        arc.setStopJunction(junctionPt);
-                    }
-
+                    arc.setJunction(junctionPt, reverse);
                     lastDir = dir;
 
                     return Status.SWITCH;
@@ -1026,7 +1165,7 @@ public class SlursBuilder
             addPoint(arc, x, y, false);
 
             // Scan arc on normal side -> stopJunction
-            walk(arc, x, y, false, lastDir);
+            walkAlong(arc, x, y, false, lastDir);
 
             // Scan arc on reverse side -> startJunction if needed
             // If we scanned from a junction, startJunction is already set
@@ -1034,11 +1173,11 @@ public class SlursBuilder
                 // Set lastDir as the opposite of initial starting dir
                 if (arc.points.size() > 1) {
                     lastDir = getDir(arc.points.get(1), arc.points.get(0));
-                } else if (arc.getStopJunction() != null) {
-                    lastDir = getDir(arc.getStopJunction(), arc.points.get(0));
+                } else if (arc.getJunction(false) != null) {
+                    lastDir = getDir(arc.getJunction(false), arc.points.get(0));
                 }
 
-                walk(arc, x, y, true, lastDir);
+                walkAlong(arc, x, y, true, lastDir);
             }
 
             // Check arc shape
@@ -1048,17 +1187,11 @@ public class SlursBuilder
             if (shape.isSlurRelevant()) {
                 Point first = arc.points.get(0);
                 arcsMap.put(first, arc);
-
-                if (arc.getStartJunction() == null) {
-                    arcsEnds.add(first);
-                }
+                arcsEnds.add(first);
 
                 Point last = arc.points.get(arc.points.size() - 1);
                 arcsMap.put(last, arc);
-
-                if (arc.getStopJunction() == null) {
-                    arcsEnds.add(last);
-                }
+                arcsEnds.add(last);
 
                 return arc;
             } else {
@@ -1066,41 +1199,6 @@ public class SlursBuilder
 
                 return null;
             }
-        }
-
-        /**
-         * Scan the whole image.
-         */
-        private void scanImage ()
-        {
-            for (int x = 1, w = buf.getWidth(); x < w; x++) {
-                for (int y = 1, h = buf.getHeight(); y < h; y++) {
-                    int pix = buf.get(x, y);
-
-                    if (pix == ARC) {
-                        // Basic arc pixel, not yet processed, scan full arc
-                        scanArc(x, y, null, 0);
-                    } else if (isJunction(pix)) {
-                        // Junction pixel, scan arcs linked to this junction point
-                        if (!isJunctionProcessed(pix)) {
-                            scanJunction(x, y);
-                        }
-                    }
-                }
-            }
-
-            // Sort arcsEnds by abscissa
-            Collections.sort(
-                    arcsEnds,
-                    new Comparator<Point>()
-            {
-                @Override
-                public int compare (Point p1,
-                                    Point p2)
-                {
-                    return Integer.compare(p1.x, p2.x);
-                }
-                    });
         }
 
         /**
@@ -1154,6 +1252,34 @@ public class SlursBuilder
             Point last = points.get(points.size() - 1);
             buf.set(first.x, first.y, PROCESSED + shape.ordinal());
             buf.set(last.x, last.y, PROCESSED + shape.ordinal());
+        }
+
+        /**
+         * Walk along the arc in the desired orientation, starting at
+         * (x,y) point, until no more incremental move is possible.
+         * Detect the end of a straight line (either horizontal or vertical)
+         * and insert an artificial junction point.
+         *
+         * @param xStart  starting abscissa
+         * @param yStart  starting ordinate
+         * @param reverse normal (-> stop) or reverse orientation (-> start)
+         * @param lastDir arrival at (x,y) if any, 0 if none
+         */
+        private void walkAlong (Arc arc,
+                                int xStart,
+                                int yStart,
+                                boolean reverse,
+                                int lastDir)
+        {
+            this.lastDir = lastDir;
+            cx = xStart;
+            cy = yStart;
+
+            Status status;
+
+            while (Status.CONTINUE == (status = move(arc, cx, cy, reverse))) {
+                addPoint(arc, cx, cy, reverse);
+            }
         }
     }
 
@@ -1320,6 +1446,8 @@ public class SlursBuilder
         @Override
         protected void renderItems (Graphics2D g)
         {
+            final Rectangle clip = g.getClipBounds();
+
             // Additional renderers if any
             for (ItemRenderer renderer : sheet.getItemRenderers()) {
                 renderer.renderItems(g);
@@ -1333,6 +1461,27 @@ public class SlursBuilder
                     g.fillRect(p.x, p.y, 1, 1);
                 }
             }
+
+            // Render info attachments
+            Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
+
+            for (SlurInfo info : pageInfos) {
+                info.renderAttachments(g);
+
+                //                Circle circle = info.getCircle();
+                //
+                //                if (circle != null) {
+                //                    double r = circle.getRadius();
+                //                    Point2D c = circle.getCenter();
+                //                    g.drawOval(
+                //                            (int) rint(c.getX() - r),
+                //                            (int) rint(c.getY() - r),
+                //                            (int) rint(2 * r),
+                //                            (int) rint(2 * r));
+                //                }
+            }
+
+            g.setStroke(oldStroke);
 
             // Render slurs points
             g.setColor(new Color(255, 0, 0, 50));
@@ -1355,12 +1504,29 @@ public class SlursBuilder
             g.setStroke(lineStroke);
 
             for (SlurInter slur : pageSlurs) {
-                CubicCurve2D curve = slur.getInfo().getCircle().getCurve();
+                SlurInfo info = slur.getInfo();
+                CubicCurve2D curve = slur.getInfo().getCurve();
 
                 if (curve != null) {
-                    g.draw(curve);
-                } else {
-                    logger.info("No curve for {}", slur);
+                    if ((clip == null) || clip.intersects(curve.getBounds())) {
+                        g.draw(curve);
+                    }
+                }
+
+                // Draw osculatory portions, if any
+                if (info.getSideCircle(true) != info.getSideCircle(false)) {
+                    Color oldColor = g.getColor();
+                    g.setColor(new Color(255, 255, 0, 100));
+
+                    for (boolean rev : new boolean[]{true, false}) {
+                        Circle sideCircle = info.getSideCircle(rev);
+
+                        if (sideCircle != null) {
+                            g.draw(sideCircle.getCurve());
+                        }
+                    }
+
+                    g.setColor(oldColor);
                 }
             }
         }
@@ -1429,7 +1595,7 @@ public class SlursBuilder
             // Extend slur seeds as much as possible through junction points
             List<Arc> relevants = getSeedArcs();
 
-            // Build slurs from initial seed
+            // Build slurs from initial SLUR seed
             maxLength = null;
 
             for (Arc arc : relevants) {
@@ -1438,9 +1604,9 @@ public class SlursBuilder
                 }
             }
 
-            // Build slurs from no initial seed
+            // Build slurs from no initial SLUR seed
             // Since arcs are sorted by decreasing length, extension should
-            // never try to include an arc longer than initial one.
+            // never try to include an arc longer than the initial one.
             for (Arc arc : relevants) {
                 if (!arc.assigned && (arc.shape != ArcShape.SLUR)) {
                     maxLength = arc.getLength();
@@ -1453,7 +1619,7 @@ public class SlursBuilder
 
         /**
          * Try to append one arc to an existing slur and thus create
-         * a new slur.
+         * a new slur instance.
          *
          * @param arc
          * @param slur
@@ -1464,27 +1630,125 @@ public class SlursBuilder
                                  SlurInfo slur,
                                  Set<Arc> browsed)
         {
-            if ((arc != null) && !arc.assigned && !browsed.contains(arc)) {
-                if ((maxLength != null) && (arc.getLength() > maxLength)) {
-                    return null;
-                }
-
-                slur.checkArcOrientation(arc, reverse);
-
-                // Check extension is compatible with slur side circle
-                List<Arc> allArcs = slur.getAllArcs(arc, reverse);
-                Circle extendedCircle = getSlurCircle(allArcs);
-
-                if (extendedCircle != null) {
-                    int id = ++globalSlurId;
-                    SlurInfo s = new SlurInfo(id, allArcs, extendedCircle);
-                    logger.debug("slur#{} extended as {}", id, s);
-
-                    return s;
-                }
+            if ((arc == null) || arc.assigned || browsed.contains(arc)) {
+                return null;
             }
 
-            return null;
+            if ((maxLength != null) && (arc.getLength() > maxLength)) {
+                return null;
+            }
+
+            slur.checkArcOrientation(arc, reverse);
+
+            // Check extension is compatible with slur (side) circle
+            // Use slur side circle to check position of arc WRT circle
+            // If OK, allocate a new slur
+            Circle sideCircle = slur.getSideCircle(reverse);
+
+            if (sideCircle == null) {
+                return null;
+            }
+
+            double dist = arcDistance(sideCircle, arc);
+
+            if (dist <= params.maxExtDistance) {
+                // Check new side circle
+                Circle newSideCircle = null;
+                List<Arc> arcs = slur.getAllArcs(arc, reverse);
+                List<Point> pts = slur.pointsOf(arcs);
+
+                if (pts.size() >= params.sideCircleLength) {
+                    // Side CCW cannot change with respect to slur CCW
+                    newSideCircle = slur.computeSideCircle(pts, reverse);
+
+                    if (newSideCircle == null) {
+                        return null;
+                    }
+
+                    if (slur.getCircle() != null) {
+                        if (newSideCircle.ccw() != slur.getCircle().ccw()) {
+                            return null;
+                        }
+                    }
+                }
+
+                int id = ++globalSlurId;
+                SlurInfo s = new SlurInfo(
+                        id,
+                        arcs,
+                        null,
+                        params.sideCircleLength);
+                pageInfos.add(s);
+
+                //                logger.info(
+                //                    "Slur#{} extended as {} dist:{}",
+                //                    slur.getId(),
+                //                    s,
+                //                    String.format("%.3f", dist));
+                //
+                if (newSideCircle != null) {
+                    s.setSideCircle(newSideCircle, reverse);
+                }
+
+                if (slur.hasSideCircle(!reverse)) {
+                    s.setSideCircle(slur.getSideCircle(!reverse), !reverse);
+                }
+
+                Circle sc = getCircle(pts);
+                s.setCircle(sc);
+
+                return s;
+            } else {
+                //                logger.info(
+                //                    "Slur#{} could not add {} dist:{}",
+                //                    slur.getId(),
+                //                    arc,
+                //                    String.format("%.3f", dist));
+                //
+                return null;
+            }
+        }
+
+        /**
+         * Measure the mean distance from additional arc to provided
+         * circle (a slur side circle).
+         * <p>
+         * Not all arc points are checked, only the ones close to slur end.
+         *
+         * @param circle the reference circle
+         * @param arc    the additional arc to be checked for compatibility
+         * @return the average distance of arc points to circle
+         */
+        private double arcDistance (Circle circle,
+                                    Arc arc)
+        {
+            double radius = circle.getRadius();
+            Point2D.Double center = circle.getCenter();
+            int np = 0;
+            double sum = 0;
+
+            // Include junction between slur & arc, if any
+            Point junction = arc.getJunction(!reverse);
+
+            if (junction != null) {
+                double dx = junction.x - center.x;
+                double dy = junction.y - center.y;
+                sum += ((dx * dx) + (dy * dy));
+                np++;
+            }
+
+            // Check initial arc points
+            //TODO: what about the rest of arc points? use a global fit?
+            for (Point p : arc.getSidePoints(params.arcCheckLength, !reverse)) {
+                double dx = p.x - center.x;
+                double dy = p.y - center.y;
+                sum += ((dx * dx) + (dy * dy));
+                np++;
+            }
+
+            double meanRadius = sqrt(sum / np);
+
+            return Math.abs(meanRadius - radius);
         }
 
         /**
@@ -1500,9 +1764,18 @@ public class SlursBuilder
             clump.clear();
 
             int id = ++globalSlurId;
-            SlurInfo seed = new SlurInfo(id, Arrays.asList(arc), arc.circle);
-            logger.debug("trying slur {}", seed);
+            SlurInfo seed = new SlurInfo(
+                    id,
+                    Arrays.asList(arc),
+                    arc.circle,
+                    params.sideCircleLength);
+            pageInfos.add(seed);
 
+            if (arc.circle == null) {
+                seed.setCircle(getCircle(seed.pointsOf(Arrays.asList(arc))));
+            }
+
+            //            logger.info("----------------------------\nbuildSlur {}", seed);
             // Extensions in "normal" orientation of the seed
             reverse = false;
             extend(seed, seed.getArcs());
@@ -1511,6 +1784,7 @@ public class SlursBuilder
             reverse = true;
 
             for (SlurInfo slur : new LinkedHashSet<SlurInfo>(clump)) {
+                slur.setCrossedLine(null);
                 extend(slur, slur.getArcs());
             }
 
@@ -1533,6 +1807,7 @@ public class SlursBuilder
             // Try selection based on quorum length and grade
             weed(inters);
 
+            ///register(inters); // For debug
             // Check embraced notes
             // Delegate final selection to SlursLinker
             SlurInter selected = slursLinker.prune(inters);
@@ -1554,16 +1829,10 @@ public class SlursBuilder
         private Impacts computeImpacts (SlurInfo slur)
         {
             // Distance to circle
-            Circle circle = slur.getCircle();
+            Circle circle = needCircle(slur);
 
             if (circle == null) {
-                circle = getSlurCircle(slur.getArcs());
-
-                if (circle == null) {
-                    return null;
-                }
-
-                slur.setCircle(circle);
+                return null;
             }
 
             if (circle.getDistance() > params.maxSlurDistance) {
@@ -1655,50 +1924,75 @@ public class SlursBuilder
         }
 
         /**
-         * Define extension area on current orientation.
-         * (as defined by 'reverse')
+         * Define extension area on desired side of the slur, in order
+         * to catch candidate slur extensions.
+         * (side is defined by 'reverse' current value)
+         * <p>
+         * Shape and size of lookup area depend highly on the potential
+         * crossing of a staff line.
          *
-         * @param inter the slur to extend
+         * @param inter  the slur to extend
+         * @param tgLine slur tangent staff line, if any
          * @return the extension lookup area
          */
-        private Area defineExtArea (SlurInfo info)
+        private Area defineExtArea (SlurInfo info,
+                                    FilamentLine tgLine)
         {
-            Circle circle = info.getCircle();
+            Point se = info.getEnd(reverse);
+            Point2D uv = getEndVector(info);
+            GeoPath path;
 
-            if (circle == null) {
-                circle = getSlurCircle(info.getArcs());
-
-                if (circle == null) {
+            if (tgLine != null) {
+                int xDir = (uv.getX() > 0) ? 1 : (-1);
+                double lg = xDir * params.lineBoxLength;
+                double dx = xDir * params.lineBoxIn;
+                int yDir = (uv.getY() > 0) ? 1 : (-1);
+                double dl1 = yDir * params.lineBoxDeltaIn;
+                double dl2 = yDir * params.lineBoxDeltaOut;
+                double yLine = tgLine.yAt(se.x);
+                path = new GeoPath(
+                        new Line2D.Double(
+                                new Point2D.Double(se.x - dx, yLine),
+                                new Point2D.Double(se.x - dx, yLine + dl1)));
+                yLine = tgLine.yAt(se.x + lg);
+                path.append(
+                        new Line2D.Double(
+                                new Point2D.Double(se.x + lg, yLine + dl2),
+                                new Point2D.Double(se.x + lg, yLine)),
+                        true);
+            } else {
+                if (uv == null) {
                     return null;
                 }
 
-                info.setCircle(circle);
+                double dl1 = params.gapBoxDeltaIn;
+                Point2D dlVect = new Point2D.Double(
+                        -dl1 * uv.getY(),
+                        dl1 * uv.getX());
+                path = new GeoPath(
+                        new Line2D.Double(
+                                PointUtil.addition(se, dlVect),
+                                PointUtil.subtraction(se, dlVect)));
+
+                double lg = params.gapBoxLength;
+                Point2D lgVect = new Point2D.Double(
+                        lg * uv.getX(),
+                        lg * uv.getY());
+                Point2D se2 = PointUtil.addition(se, lgVect);
+                double dl2 = params.gapBoxDeltaOut;
+                dlVect = new Point2D.Double(-dl2 * uv.getY(), dl2 * uv.getX());
+                path.append(
+                        new Line2D.Double(
+                                PointUtil.subtraction(se2, dlVect),
+                                PointUtil.addition(se2, dlVect)),
+                        true);
             }
 
-            Point se = info.getEnd(reverse);
-            int dir = reverse ? circle.ccw() : (-circle.ccw());
-            double angle = circle.getAngle(reverse);
-
-            // Unit vector that extends slur end
-            Point2D uv = new Point2D.Double(
-                    -dir * sin(angle),
-                    dir * cos(angle));
-            double lg = params.maxGapLength;
-            Point2D lgVect = new Point2D.Double(lg * uv.getX(), lg * uv.getY());
-            double dl = params.maxGapDelta;
-            Point2D dlVect = new Point2D.Double(
-                    -dl * uv.getY(),
-                    dl * uv.getX());
-            Point2D seIn = PointUtil.addition(se, dlVect);
-            Point2D seOut = PointUtil.subtraction(se, dlVect);
-            GeoPath path = new GeoPath(new Line2D.Double(seIn, seOut));
-            Point2D seIn2 = PointUtil.addition(seIn, lgVect);
-            Point2D seOut2 = PointUtil.addition(seOut, lgVect);
-            path.append(new Line2D.Double(seOut2, seIn2), true);
             path.closePath();
 
             Area area = new Area(path);
             info.setExtArea(area, reverse);
+            info.addAttachment(reverse ? "t" : "f", area);
 
             return area;
         }
@@ -1715,24 +2009,36 @@ public class SlursBuilder
         {
             Set<Arc> browsed = new LinkedHashSet<Arc>(pastArcs);
             clump.add(slur);
-            slur.getSlurJunctions();
+            slur.retrieveJunctions();
 
             List<SlurInfo> newSlurs = new ArrayList<SlurInfo>();
 
-            Point pivot = reverse ? slur.getStartJunction()
-                    : slur.getStopJunction();
+            // Check whether this slur end is getting tangent to a staff line
+            FilamentLine tgLine = getTangentLine(slur);
 
-            if (pivot != null) {
-                // Check beyond pivot: scan arcs ending at pivot
-                scanPivot(slur, pivot, browsed, newSlurs);
+            if (tgLine != null) {
+                // Check beyond staff line: scan arcs ending in extension window
+                scanGap(slur, browsed, newSlurs, tgLine);
             } else {
-                // Check beyond gap: scan arcs ending in extension window
-                scanGap(slur, browsed, newSlurs);
+                Point pivot = slur.getJunction(reverse);
+
+                if (pivot != null) {
+                    // Check beyond pivot: scan arcs ending at pivot
+                    scanPivot(slur, pivot, browsed, newSlurs);
+                } else {
+                    // Check beyond gap: scan arcs ending in extension window
+                    scanGap(slur, browsed, newSlurs, null);
+                }
             }
 
             if (!newSlurs.isEmpty()) {
                 for (SlurInfo s : newSlurs) {
                     browsed.add(s.getEndArc(reverse));
+
+                    if ((s.getCrossedLine() == null)
+                        && (slur.getCrossedLine() != null)) {
+                        s.setCrossedLine(slur.getCrossedLine());
+                    }
                 }
 
                 for (SlurInfo s : newSlurs) {
@@ -1759,6 +2065,28 @@ public class SlursBuilder
         }
 
         /**
+         * Report the unit vector at slur end, based on global slur
+         * circle.
+         *
+         * @param info slur
+         * @return the vector which extends the slur end
+         */
+        private Point2D getEndVector (SlurInfo info)
+        {
+            Circle circle = needCircle(info);
+
+            if (circle == null) {
+                return null;
+            }
+
+            int dir = reverse ? circle.ccw() : (-circle.ccw());
+            double angle = circle.getAngle(reverse);
+
+            // Unit vector that extends slur end
+            return new Point2D.Double(-dir * sin(angle), dir * cos(angle));
+        }
+
+        /**
          * Build the arcs that can be used to start slur building.
          * They contain only arcs with relevant shape and of sufficient length.
          *
@@ -1766,17 +2094,18 @@ public class SlursBuilder
          */
         private List<Arc> getSeedArcs ()
         {
-            List<Arc> arcs = new ArrayList<Arc>();
+            Set<Arc> set = new HashSet<Arc>();
 
             for (Arc arc : arcsMap.values()) {
                 if (arc.getLength() >= params.arcMinSeedLength) {
                     arc.checkOrientation();
-                    arcs.add(arc);
+                    set.add(arc);
                 }
             }
 
+            List<Arc> list = new ArrayList<Arc>(set);
             Collections.sort(
-                    arcs,
+                    list,
                     new Comparator<Arc>()
             {
                 @Override
@@ -1789,29 +2118,80 @@ public class SlursBuilder
                 }
                     });
 
-            return arcs;
+            return list;
         }
 
         /**
-         * Retrieve the approximating circle portion for this slur
+         * Check whether the slur end is getting tangent to staff line.
+         * Use vertical distance from slur end to closest staff line.
+         * Use global slur circle to confirm crossing.
          *
-         * @param allArcs the sequence of arcs
-         * @return approximating circle portion, if successful, null otherwise
+         * @param slur the slur to check (on current side)
+         * @return the tangent staff line
          */
-        private Circle getSlurCircle (List<Arc> allArcs)
+        private FilamentLine getTangentLine (SlurInfo slur)
         {
-            List<Point> allPoints = new ArrayList<Point>();
+            // Distance from slur end to closest staff line
+            Point se = slur.getEnd(reverse);
+            StaffInfo staff = staffManager.getStaffAt(se);
+            FilamentLine line = staff.getClosestLine(se);
 
-            for (int i = 0, na = allArcs.size(); i < na; i++) {
-                Arc arc = allArcs.get(i);
-                allPoints.addAll(arc.points);
-
-                if ((i < (na - 1)) && (arc.getStopJunction() != null)) {
-                    allPoints.add(arc.getStopJunction());
-                }
+            if (line == slur.getCrossedLine()) {
+                return null; // Already crossed
             }
 
-            return getCircle(allPoints);
+            double dy = line.yAt(se.x) - se.y;
+
+            if (abs(dy) > params.maxStaffLineDy) {
+                logger.debug("End ({},{}] far from staff line", se.x, se.y);
+
+                return null;
+            }
+
+            // General direction of slur end WRT staff line
+            Point2D uv = getEndVector(slur);
+
+            if (uv == null) {
+                return null;
+            }
+
+            try {
+                // There may be not computable midPoint
+                Point2D midPoint = slur.getMidPoint();
+                double backDy = line.yAt(midPoint.getX()) - midPoint.getY();
+                boolean crossing = (uv.getY() * backDy) > 0;
+                Circle gc = slur.getCircle();
+                double incidence = gc.getAngle(reverse)
+                                   - ((gc.ccw() * PI) / 2);
+
+                if (crossing && (abs(incidence) <= params.maxIncidence)) {
+                    //                logger.info(
+                    //                        "End ({},{}] line tangent degrees: {}",
+                    //                        se.x,
+                    //                        se.y,
+                    //                        String.format("%.0f", toDegrees(incidence)));
+                    //                view.selectPoint(se);
+                    return line;
+                }
+            } catch (Exception ex) {
+            }
+
+            return null;
+        }
+
+        //------------//
+        // needCircle //
+        //------------//
+        private Circle needCircle (SlurInfo slur)
+        {
+            Circle circle = slur.getCircle();
+
+            if (circle == null) {
+                circle = getCircle(slur.pointsOf(slur.getArcs()));
+                slur.setCircle(circle);
+            }
+
+            return circle;
         }
 
         /**
@@ -1864,13 +2244,15 @@ public class SlursBuilder
          * @param slur     the slur to extend
          * @param browsed  arcs already browsed (kept or not)
          * @param newSlurs (output) to be populated with new slurs found
+         * @param tgLine   tangent staff line if any
          */
         private void scanGap (SlurInfo slur,
                               Set<Arc> browsed,
-                              List<SlurInfo> newSlurs)
+                              List<SlurInfo> newSlurs,
+                              FilamentLine tgLine)
         {
             // Look for arcs ends in extension window
-            Area area = defineExtArea(slur);
+            Area area = defineExtArea(slur, tgLine);
 
             if (area != null) {
                 Rectangle box = area.getBounds();
@@ -1880,11 +2262,17 @@ public class SlursBuilder
                     if (area.contains(end)) {
                         Arc arc = arcsMap.get(end);
 
-                        if (!arc.assigned) {
+                        if (!arc.assigned && !browsed.contains(arc)) {
+                            checkBreak(arc);
+
                             SlurInfo sl = addArc(arc, slur, browsed);
 
                             if (sl != null) {
                                 newSlurs.add(sl);
+
+                                if (tgLine != null) {
+                                    sl.setCrossedLine(tgLine);
+                                }
                             }
                         }
                     } else if (end.x > xMax) {
@@ -1912,8 +2300,7 @@ public class SlursBuilder
             final Arc endArc = slur.getEndArc(reverse);
             final Point prevPoint = (!endArc.points.isEmpty())
                     ? endArc.getEnd(reverse)
-                    : (reverse ? endArc.getStopJunction()
-                    : endArc.getStartJunction());
+                    : endArc.getJunction(reverse);
             final int lastDir = getDir(prevPoint, pivot);
 
             // Try to go past this pivot, keeping only the acceptable possibilities
@@ -2002,7 +2389,7 @@ public class SlursBuilder
             // Make sure all slurs in clump are left-right oriented
             SlurInfo info = longest.getInfo();
 
-            if (info.getFirstPoint().x > info.getLastPoint().x) {
+            if (info.getEnd(true).x > info.getEnd(false).x) {
                 // Reverse ALL arcs & slurs of the clump
                 Set<Arc> allArcs = new HashSet<Arc>();
 

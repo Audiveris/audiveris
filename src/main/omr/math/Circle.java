@@ -208,9 +208,10 @@ public class Circle
     // computeDistance //
     //-----------------//
     /**
-     * Compute the mean quadratic distance of all points to the circle.
+     * Compute the mean quadratic distance of all provided points to
+     * the circle.
      *
-     * @param points the collection of all defining points
+     * @param points the provided points
      * @return the mean quadratic distance
      */
     public double computeDistance (Collection<? extends Point2D> points)
@@ -225,7 +226,7 @@ public class Circle
             sum += (delta * delta);
         }
 
-        return distance = sqrt(sum) / nbPoints;
+        return distance = sqrt(sum / nbPoints);
     }
 
     //----------//
@@ -307,6 +308,19 @@ public class Circle
     public double getDistance ()
     {
         return distance;
+    }
+
+    //-------------//
+    // getDistance //
+    //-------------//
+    /**
+     * Record the mean distance (useful for 2-point definitions)
+     *
+     * @param distance the computed mean distance
+     */
+    public void setDistance (double distance)
+    {
+        this.distance = distance;
     }
 
     //---------------//
@@ -422,6 +436,7 @@ public class Circle
         StringBuilder sb = new StringBuilder();
 
         sb.append("{Circle");
+        sb.append(" ccw=").append(ccw);
         sb.append(String.format(" dist=%.4f", distance));
         sb.append(String.format(" center[%.1f,%.1f]", center.x, center.y));
         sb.append(String.format(" radius=%.1f", radius));

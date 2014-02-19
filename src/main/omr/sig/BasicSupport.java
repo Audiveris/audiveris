@@ -155,7 +155,7 @@ public class BasicSupport
                 "Minimum support relation grade");
 
         final Constant.Ratio defaultSupportCoeff = new Constant.Ratio(
-                10,
+                5,
                 "Default value for coeff in support formula: 1 + coeff*grade");
 
     }

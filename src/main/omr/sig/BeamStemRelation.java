@@ -97,12 +97,6 @@ public class BeamStemRelation
     }
 
     @Override
-    public GradeImpacts getImpacts ()
-    {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public String getName ()
     {
         return "Beam-Stem";
