@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            S I G r a p h T e s t                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      S I G r a p h T e s t                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
@@ -45,11 +45,11 @@ import javax.swing.JScrollPane;
  */
 public class SIGraphTest
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static JGraphModelAdapter<Inter, Relation> jgAdapter;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SIGraphTest object.
      */
@@ -57,7 +57,7 @@ public class SIGraphTest
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * An alternative starting point for this demo, to also allow running this
      * applet as an application.
@@ -143,8 +143,7 @@ public class SIGraphTest
         Map nested = facade.createNestedMap(true, true);
 
         // Apply the results to the actual graph
-        jgraph.getGraphLayoutCache()
-                .edit(nested);
+        jgraph.getGraphLayoutCache().edit(nested);
     }
 
     @SuppressWarnings("unchecked")
@@ -170,14 +169,14 @@ public class SIGraphTest
         jgAdapter.edit(cellAttr, null, null, null);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // BasicInter //
     //------------//
     private static class BasicInter
             extends AbstractInter
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public BasicInter (Shape shape,
                            double grade)
@@ -196,11 +195,11 @@ public class SIGraphTest
             extends DefaultListenableGraph<Inter, Relation>
             implements UndirectedGraph<Inter, Relation>
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final long serialVersionUID = 1L;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         ListenableGraph ()
         {
             super(new Multigraph<Inter, Relation>(Relation.class));

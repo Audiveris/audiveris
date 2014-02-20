@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                   W a t e r s h e d G r a y L e v e l T e s t              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                             W a t e r s h e d G r a y L e v e l T e s t                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -23,7 +23,7 @@ import org.junit.Test;
  */
 public class WatershedGrayLevelTest
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new WatershedGrayLevelTest object.
@@ -32,7 +32,7 @@ public class WatershedGrayLevelTest
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of process method, of class WatershedGrayLevel.
      */

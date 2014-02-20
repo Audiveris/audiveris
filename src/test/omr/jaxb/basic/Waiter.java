@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                W a i t e r                                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                          W a i t e r                                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.jaxb.basic;
 
@@ -20,7 +20,6 @@ import javax.xml.bind.annotation.*;
  * DOCUMENT ME!
  *
  * @author Hervé Bitteur
- * @version $Id$
  */
 @XmlAccessorType(XmlAccessType.NONE)
 //@XmlType(propOrder =  {
@@ -31,7 +30,7 @@ import javax.xml.bind.annotation.*;
 @XmlRootElement
 public class Waiter
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** A simple id */
     @XmlAttribute
@@ -67,22 +66,10 @@ public class Waiter
     /** not accessed directly */
     public String[] titles;
 
-    //~ Methods ----------------------------------------------------------------
-
-    public void setDays (List<Day> days)
-    {
-        this.days = days;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     public List<Day> getDays ()
     {
         return days;
-    }
-
-    @XmlElement(name = "location")
-    public void setPoint (MyPoint mp)
-    {
-        location = mp.getPoint();
     }
 
     public MyPoint getPoint ()
@@ -90,17 +77,28 @@ public class Waiter
         return new MyPoint(location);
     }
 
-//    public void setTitles (String[] titles)
-//    {
-//        System.out.println("setTitles");
-//        this.titles = titles;
-//    }
-
+    //    public void setTitles (String[] titles)
+    //    {
+    //        System.out.println("setTitles");
+    //        this.titles = titles;
+    //    }
     @XmlElementWrapper(name = "titles")
     @XmlElement(name = "title")
     public String[] getTitles ()
     {
         System.out.println("getTitles");
+
         return titles;
+    }
+
+    public void setDays (List<Day> days)
+    {
+        this.days = days;
+    }
+
+    @XmlElement(name = "location")
+    public void setPoint (MyPoint mp)
+    {
+        location = mp.getPoint();
     }
 }

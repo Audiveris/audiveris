@@ -1,28 +1,54 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    T e s t C o m p o n e n t E v e n t                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              T e s t C o m p o n e n t E v e n t                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui;
 
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
 
+/**
+ * DOCUMENT ME!
+ *
+ * @author Hervé Bitteur
+ */
 public class TestComponentEvent
         extends ComponentAdapter
         implements ChangeListener
 {
+    //~ Instance fields ----------------------------------------------------------------------------
+
     JFrame frame = new JFrame(getClass().getName().toString());
+
     JTabbedPane tabbedPane = new JTabbedPane();
+
     JButton button = new JButton(new ToggleAction());
+
+    //~ Methods ------------------------------------------------------------------------------------
+    public void componentHidden (ComponentEvent e)
+    {
+        System.out.println("Hidden" + " " + e.getComponent().getName());
+    }
+
+    public void componentShown (ComponentEvent e)
+    {
+        System.out.println("Shown" + " " + e.getComponent().getName());
+
+        if (e.getComponent() == tabbedPane) {
+            System.out.println("Forcing selection to tab " + tabbedPane.getSelectedIndex());
+            tabbedPane.setSelectedIndex(tabbedPane.getSelectedIndex());
+        }
+    }
 
     public static void main (String... args)
     {
@@ -33,6 +59,7 @@ public class TestComponentEvent
     {
         frame.setName("LaFrame");
         frame.addComponentListener(this);
+
         Container pane = frame.getContentPane();
         pane.setLayout(new BorderLayout());
 
@@ -58,6 +85,14 @@ public class TestComponentEvent
         System.out.println("**** Frame shown ****");
     }
 
+    public void stateChanged (ChangeEvent e)
+    {
+        // This is for tabbed pane
+        System.out.println(
+                "Changed " + e.getSource().getClass().getName() + " to "
+                + tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()));
+    }
+
     private void createTab (int index)
     {
         JPanel tab = new JPanel();
@@ -67,29 +102,15 @@ public class TestComponentEvent
         tabbedPane.addTab(tab.getName(), tab);
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     class ToggleAction
             extends AbstractAction
     {
-        public void actionPerformed(ActionEvent e) {
+        //~ Methods --------------------------------------------------------------------------------
+
+        public void actionPerformed (ActionEvent e)
+        {
             tabbedPane.setVisible(!tabbedPane.isVisible());
         }
-    }
-
-    public void componentShown(ComponentEvent e) {
-        System.out.println("Shown" + " " + e.getComponent().getName());
-        if (e.getComponent() == tabbedPane) {
-            System.out.println("Forcing selection to tab " + tabbedPane.getSelectedIndex());
-            tabbedPane.setSelectedIndex(tabbedPane.getSelectedIndex());
-        }
-    }
-
-    public void componentHidden(ComponentEvent e) {
-        System.out.println("Hidden" + " " + e.getComponent().getName());
-    }
-
-    public void stateChanged(ChangeEvent e) {
-        // This is for tabbed pane
-        System.out.println("Changed " + e.getSource().getClass().getName()
-        + " to " + tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()));
     }
 }

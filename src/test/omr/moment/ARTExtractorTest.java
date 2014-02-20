@@ -16,9 +16,9 @@ import org.junit.*;
  * @author Hervé Bitteur
  */
 public class ARTExtractorTest
-    extends MomentsExtractorTest<ARTMoments>
+        extends MomentsExtractorTest<ARTMoments>
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new ARTExtractorTest object.
@@ -27,17 +27,14 @@ public class ARTExtractorTest
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of generate method, of class ARTMoments.
      */
     @Test
     public void testAllShapes ()
-        throws Exception
+            throws Exception
     {
-        super.testAllShapes(
-            new BasicARTExtractor(),
-            BasicARTMoments.class);
+        super.testAllShapes(new BasicARTExtractor(), BasicARTMoments.class);
     }
 }

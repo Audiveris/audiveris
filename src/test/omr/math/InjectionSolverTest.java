@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                   I n j e c t i o n S o l v e r T e s t                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                             I n j e c t i o n S o l v e r T e s t                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -15,20 +15,24 @@ import junit.framework.*;
 
 /**
  *
- * @author Etiolles
+ * @author Hervé Bitteur
  */
 public class InjectionSolverTest
-    extends TestCase
+        extends TestCase
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
+    /**
+     * Creates a new InjectionSolverTest object.
+     *
+     * @param testName DOCUMENT ME!
+     */
     public InjectionSolverTest (String testName)
     {
         super(testName);
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of solve method, of class omr.math.InjectionSolver.
      */
@@ -38,31 +42,33 @@ public class InjectionSolverTest
 
         InjectionSolver instance = new InjectionSolver(3, 3, new MyDistance());
 
-        int[]     expResult = new int[] { 0, 1, 2 };
-        int[]     result = instance.solve();
+        int[] expResult = new int[]{0, 1, 2};
+        int[] result = instance.solve();
 
         //assertEquals(expResult, result);
     }
 
     protected void setUp ()
-        throws Exception
+            throws Exception
     {
     }
 
     protected void tearDown ()
-        throws Exception
+            throws Exception
     {
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     public static class MyDistance
-        implements InjectionSolver.Distance
+            implements InjectionSolver.Distance
     {
+        //~ Constructors ---------------------------------------------------------------------------
+
         public MyDistance ()
         {
         }
 
+        //~ Methods --------------------------------------------------------------------------------
         public int getDistance (int in,
                                 int ip)
         {

@@ -17,6 +17,8 @@ import omr.run.RunsTable;
 
 import omr.util.BaseTestCase;
 
+import org.junit.BeforeClass;
+
 import java.awt.Dimension;
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,7 +32,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import org.junit.BeforeClass;
 
 /**
  * Class {@code SectionBindingTest} tests the marshalling / unmarshalling of
@@ -41,10 +42,11 @@ import org.junit.BeforeClass;
 public class SectionBindingTest
         extends BaseTestCase
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final File dir = new File("data/temp");
 
+    //~ Instance fields ----------------------------------------------------------------------------
     private final File fileNameVertical = new File(dir, "section.vertical.xml");
 
     private final File fileNameHorizontal = new File(dir, "section.horizontal.xml");
@@ -62,17 +64,17 @@ public class SectionBindingTest
 
     RunsTable hTable;
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     @BeforeClass
     public static void createTempFolder ()
     {
         dir.mkdirs();
     }
+
     //-----------//
     // testGlyph //
     //-----------//
-
     public void testGlyph ()
             throws JAXBException, FileNotFoundException
     {
@@ -85,25 +87,17 @@ public class SectionBindingTest
         sh.append(createRun(hTable, p++, 102, 20));
         sh.append(createRun(hTable, p++, 102, 20));
 
-        SortedSet<Section> sections = new TreeSet<>();
+        SortedSet<Section> sections = new TreeSet<Section>();
         sections.add(sv);
         sections.add(sh);
 
-        GlyphValue value = new GlyphValue(
-                Shape.BREVE,
-                20,
-                1,
-                0,
-                false,
-                0.5,
-                sections);
+        GlyphValue value = new GlyphValue(Shape.BREVE, 20, 1, 0, false, 0.5, sections);
 
         Marshaller m = jaxbContext.createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.marshal(value, new FileOutputStream(fileNameValue));
         System.out.println("Marshalled to " + fileNameValue);
-        
-        
+
         Unmarshaller um = jaxbContext.createUnmarshaller();
         InputStream is = new FileInputStream(fileNameValue);
         GlyphValue newValue = (GlyphValue) um.unmarshal(is);
@@ -117,7 +111,6 @@ public class SectionBindingTest
         for (Section s : glyph.getMembers()) {
             System.out.println("member: " + s);
         }
-        
     }
 
     //----------------//
@@ -127,9 +120,7 @@ public class SectionBindingTest
             throws JAXBException, FileNotFoundException
     {
         int p = 180;
-        Section section = hLag.createSection(
-                180,
-                createRun(hTable, p++, 100, 10));
+        Section section = hLag.createSection(180, createRun(hTable, p++, 100, 10));
         section.append(createRun(hTable, p++, 102, 20));
         section.append(createRun(hTable, p++, 102, 20));
         section.append(createRun(hTable, p++, 102, 20));
@@ -138,13 +129,12 @@ public class SectionBindingTest
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.marshal(section, new FileOutputStream(fileNameHorizontal));
         System.out.println("Marshalled to " + fileNameHorizontal);
-        
+
         Unmarshaller um = jaxbContext.createUnmarshaller();
         InputStream is = new FileInputStream(fileNameHorizontal);
         Section newSection = (Section) um.unmarshal(is);
         System.out.println("Unmarshalled from " + fileNameHorizontal);
         System.out.println("Section: " + newSection);
-        
     }
 
     //--------------//
@@ -160,13 +150,12 @@ public class SectionBindingTest
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.marshal(section, new FileOutputStream(fileNameVertical));
         System.out.println("Marshalled to " + fileNameVertical);
-        
+
         Unmarshaller um = jaxbContext.createUnmarshaller();
         InputStream is = new FileInputStream(fileNameVertical);
         Section newSection = (Section) um.unmarshal(is);
         System.out.println("Unmarshalled from " + fileNameVertical);
         System.out.println("Section: " + newSection);
-        
     }
 
     //-------//
@@ -179,17 +168,11 @@ public class SectionBindingTest
         jaxbContext = JAXBContext.newInstance(GlyphValue.class);
 
         vLag = new BasicLag("My Vertical Lag", Orientation.VERTICAL);
-        vTable = new RunsTable(
-                "Vert Runs",
-                Orientation.VERTICAL,
-                new Dimension(100, 200)); // Absolute
+        vTable = new RunsTable("Vert Runs", Orientation.VERTICAL, new Dimension(100, 200)); // Absolute
         vLag.setRuns(vTable);
 
         hLag = new BasicLag("My Horizontal Lag", Orientation.HORIZONTAL);
-        hTable = new RunsTable(
-                "Hori Runs",
-                Orientation.HORIZONTAL,
-                new Dimension(100, 200)); // Absolute
+        hTable = new RunsTable("Hori Runs", Orientation.HORIZONTAL, new Dimension(100, 200)); // Absolute
         hLag.setRuns(hTable);
     }
 
@@ -203,8 +186,7 @@ public class SectionBindingTest
     {
         Run run = new Run(start, length, 127);
 
-        table.getSequence(alignment)
-                .add(run);
+        table.getSequence(alignment).add(run);
 
         return run;
     }

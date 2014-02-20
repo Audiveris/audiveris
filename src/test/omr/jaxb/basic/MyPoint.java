@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               M y P o i n t                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         M y P o i n t                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.jaxb.basic;
 
@@ -17,18 +17,17 @@ import javax.xml.bind.annotation.*;
 
 /**
  *
- * @author hb115668
+ * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "point")
 public class MyPoint
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private Point p;
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     /** Creates a new instance of MyPoint */
     public MyPoint ()
     {
@@ -45,11 +44,20 @@ public class MyPoint
         this.p = p;
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     public Point getPoint ()
     {
         return p;
+    }
+
+    public int getX ()
+    {
+        return p.x;
+    }
+
+    public int getY ()
+    {
+        return p.y;
     }
 
     @XmlElement
@@ -58,19 +66,9 @@ public class MyPoint
         p.x = x;
     }
 
-    public int getX ()
-    {
-        return p.x;
-    }
-
     @XmlElement
     public void setY (int y)
     {
         p.y = y;
-    }
-
-    public int getY ()
-    {
-        return p.y;
     }
 }

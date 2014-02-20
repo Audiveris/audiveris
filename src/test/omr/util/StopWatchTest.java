@@ -12,13 +12,13 @@ import org.junit.Test;
  */
 public class StopWatchTest
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     StopWatch instance = new StopWatch("Utility Watch");
-    int       j;
 
-    //~ Constructors -----------------------------------------------------------
+    int j;
 
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StopWatchTest object.
      */
@@ -26,14 +26,32 @@ public class StopWatchTest
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     @Test
     public void testOne ()
     {
         System.out.println("void");
         instance.start("task #1");
 
+        instance.print();
+    }
+
+    @Test
+    public void testOverlap ()
+    {
+        System.out.println("overlap");
+
+        instance.start("task #1");
+        waste();
+
+        instance.start("task #2");
+        waste();
+        waste();
+
+        instance.start("task #3");
+        waste();
+        waste();
+        waste();
         instance.print();
     }
 
@@ -51,25 +69,6 @@ public class StopWatchTest
         waste();
         instance.stop();
 
-        instance.start("task #3");
-        waste();
-        waste();
-        waste();
-        instance.print();
-    }
-
-    @Test
-    public void testOverlap ()
-    {
-        System.out.println("overlap");
-
-        instance.start("task #1");
-        waste();
-        
-        instance.start("task #2");
-        waste();
-        waste();
-        
         instance.start("task #3");
         waste();
         waste();

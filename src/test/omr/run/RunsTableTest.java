@@ -1,20 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         R u n s T a b l e T e s t                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   R u n s T a b l e T e s t                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.run;
 
-import ij.process.ByteProcessor;
 import omr.image.GlobalFilter;
 import static omr.run.Orientation.*;
 
+import ij.process.ByteProcessor;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -24,17 +24,17 @@ import java.util.List;
 
 /**
  *
- * @author Etiolles
+ * @author Hervé Bitteur
  */
 public class RunsTableTest
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Dimension dim = new Dimension(10, 5);
 
     private static final int level = 0;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new RunsTableTest object.
      */
@@ -42,7 +42,7 @@ public class RunsTableTest
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // testClone //
     //-----------//
@@ -163,7 +163,7 @@ public class RunsTableTest
 
         int index = 0;
         RunsTable instance = createHorizontalInstance();
-        List<Run> expResult = new ArrayList<>();
+        List<Run> expResult = new ArrayList<Run>();
         expResult.add(new Run(1, 2, level));
         expResult.add(new Run(5, 3, level));
 
@@ -233,57 +233,57 @@ public class RunsTableTest
     //        assertEquals(expResult, result);
     //        fail("The test case is a prototype.");
     //    }
-//    /**
-//     * Test of isIdentical method, of class RunsTable.
-//     */
-//    @Test
-//    public void testIsIdentical ()
-//    {
-//        System.out.println("isIdentical");
-//
-//        RunsTable that = createHorizontalInstance();
-//        RunsTable instance = createHorizontalInstance();
-//        boolean   expResult = true;
-//        boolean   result = instance.isIdentical(that);
-//        assertEquals(expResult, result);
-//    }
-//    //-----------//
-//    // testPurge //
-//    //-----------//
-//    /**
-//     * Test of purge method, of class RunsTable.
-//     */
-//    @Test
-//    public void testPurge ()
-//    {
-//        System.out.println("purge");
-//
-//        Predicate<Run> predicate = new Predicate<Run>() {
-//            public boolean check (Run run)
-//            {
-//                return run.getLength() > 2;
-//            }
-//        };
-//
-//        String    name = "purge";
-//        System.out.println("HORIZONTAL");
-//        RunsTable instance = createHorizontalInstance();
-//        instance.dump(System.out);
-//
-//        RunsTable purge = instance.purge(predicate, name);
-//
-//        purge.dump(System.out);
-//        instance.dump(System.out);
-//
-//        System.out.println("VERTICAL");
-//        instance = createVerticalInstance();
-//        instance.dump(System.out);
-//
-//        purge = instance.purge(predicate, name);
-//
-//        purge.dump(System.out);
-//        instance.dump(System.out);
-//    }
+    //    /**
+    //     * Test of isIdentical method, of class RunsTable.
+    //     */
+    //    @Test
+    //    public void testIsIdentical ()
+    //    {
+    //        System.out.println("isIdentical");
+    //
+    //        RunsTable that = createHorizontalInstance();
+    //        RunsTable instance = createHorizontalInstance();
+    //        boolean   expResult = true;
+    //        boolean   result = instance.isIdentical(that);
+    //        assertEquals(expResult, result);
+    //    }
+    //    //-----------//
+    //    // testPurge //
+    //    //-----------//
+    //    /**
+    //     * Test of purge method, of class RunsTable.
+    //     */
+    //    @Test
+    //    public void testPurge ()
+    //    {
+    //        System.out.println("purge");
+    //
+    //        Predicate<Run> predicate = new Predicate<Run>() {
+    //            public boolean check (Run run)
+    //            {
+    //                return run.getLength() > 2;
+    //            }
+    //        };
+    //
+    //        String    name = "purge";
+    //        System.out.println("HORIZONTAL");
+    //        RunsTable instance = createHorizontalInstance();
+    //        instance.dump(System.out);
+    //
+    //        RunsTable purge = instance.purge(predicate, name);
+    //
+    //        purge.dump(System.out);
+    //        instance.dump(System.out);
+    //
+    //        System.out.println("VERTICAL");
+    //        instance = createVerticalInstance();
+    //        instance.dump(System.out);
+    //
+    //        purge = instance.purge(predicate, name);
+    //
+    //        purge.dump(System.out);
+    //        instance.dump(System.out);
+    //    }
     //--------------//
     // testToString //
     //--------------//
@@ -342,8 +342,7 @@ public class RunsTableTest
         RunsTable hori = createHorizontalInstance();
         ByteProcessor buffer = hori.getBuffer();
         GlobalFilter filter = new GlobalFilter(buffer, 127);
-        RunsTableFactory factory = new RunsTableFactory(
-                VERTICAL, filter.filteredImage(), 0);
+        RunsTableFactory factory = new RunsTableFactory(VERTICAL, filter.filteredImage(), 0);
 
         return factory.createTable("vert");
     }

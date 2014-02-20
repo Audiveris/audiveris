@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         H i s t o g r a m T e s t                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   H i s t o g r a m T e s t                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -36,15 +36,17 @@ import java.util.TreeSet;
  */
 public class HistogramTest
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
-    private IntegerHistogram              histo;
-    private Set<Integer>                  keySet;
-    private Set<Integer>                  valueSet;
-    private List<Entry<Integer, Integer>> expMaxima = new ArrayList<>();
+    private IntegerHistogram histo;
 
-    //~ Constructors -----------------------------------------------------------
+    private Set<Integer> keySet;
 
+    private Set<Integer> valueSet;
+
+    private List<Entry<Integer, Integer>> expMaxima = new ArrayList<Entry<Integer, Integer>>();
+
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new HistogramTest object.
      */
@@ -52,8 +54,7 @@ public class HistogramTest
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of bucketSet method, of class Histogram.
      */
@@ -63,8 +64,8 @@ public class HistogramTest
         System.out.println("bucketSet");
 
         Histogram<Integer> instance = createHistogram();
-        Set<Integer>       expResult = keySet;
-        Set                result = instance.bucketSet();
+        Set<Integer> expResult = keySet;
+        Set result = instance.bucketSet();
         assertEquals(expResult, result);
     }
 
@@ -104,7 +105,7 @@ public class HistogramTest
     {
         System.out.println("entrySet");
 
-        Histogram<Integer>               instance = createHistogram();
+        Histogram<Integer> instance = createHistogram();
         Set<Map.Entry<Integer, Integer>> result = instance.entrySet();
         assertEquals(instance.size(), result.size());
 
@@ -124,8 +125,8 @@ public class HistogramTest
         System.out.println("firstBucket");
 
         Histogram<Integer> instance = createHistogram();
-        int                expResult = 3;
-        int                result = instance.firstBucket();
+        int expResult = 3;
+        int result = instance.firstBucket();
         assertEquals(expResult, result);
     }
 
@@ -137,10 +138,10 @@ public class HistogramTest
     {
         System.out.println("getCount");
 
-        int                bucket = 4;
+        int bucket = 4;
         Histogram<Integer> instance = createHistogram();
-        int                expResult = 10;
-        int                result = instance.getCount(bucket);
+        int expResult = 10;
+        int result = instance.getCount(bucket);
         assertEquals(expResult, result);
     }
 
@@ -153,8 +154,8 @@ public class HistogramTest
         System.out.println("getMaxBucket");
 
         Histogram instance = createHistogram();
-        int    expResult = 5;
-        Number    result = instance.getMaxBucket();
+        int expResult = 5;
+        Number result = instance.getMaxBucket();
         assertEquals(expResult, result);
     }
 
@@ -167,8 +168,8 @@ public class HistogramTest
         System.out.println("getMaxCount");
 
         Histogram<Integer> instance = createHistogram();
-        int                expResult = 12;
-        int                result = instance.getMaxCount();
+        int expResult = 12;
+        int result = instance.getMaxCount();
         assertEquals(expResult, result);
     }
 
@@ -180,17 +181,14 @@ public class HistogramTest
     {
         System.out.println("getPeaks");
 
-        int                minCount = 6;
+        int minCount = 6;
         Histogram<Integer> instance = createHistogram();
         instance.print(System.out);
 
         List<PeakEntry<Integer>> expResult = Arrays.asList(
-            new PeakEntry<>(new Peak<>(4, 5, 5), 12.0),
-            new PeakEntry<>(new Peak<>(10, 10, 10), 6.0));
-        List<PeakEntry<Integer>> result = instance.getPeaks(
-            minCount,
-            true,
-            true);
+                new PeakEntry<Integer>(new Peak<Integer>(4, 5, 5), 12.0),
+                new PeakEntry<Integer>(new Peak<Integer>(10, 10, 10), 6.0));
+        List<PeakEntry<Integer>> result = instance.getPeaks(minCount, true, true);
         System.out.println("result: " + result);
 
         assertEquals(expResult.size(), result.size());
@@ -214,8 +212,8 @@ public class HistogramTest
         System.out.println("getTotalCount");
 
         Histogram<Integer> instance = createHistogram();
-        int                expResult = 33;
-        int                result = instance.getTotalCount();
+        int expResult = 33;
+        int result = instance.getTotalCount();
         assertEquals(expResult, result);
     }
 
@@ -227,8 +225,8 @@ public class HistogramTest
     {
         System.out.println("increaseCount");
 
-        int                bucket = 10;
-        int                delta = 50;
+        int bucket = 10;
+        int delta = 50;
         Histogram<Integer> instance = createHistogram();
         instance.increaseCount(bucket, delta);
 
@@ -246,8 +244,8 @@ public class HistogramTest
         System.out.println("lastBucket");
 
         Histogram<Integer> instance = createHistogram();
-        int                expResult = 11;
-        int                result = instance.lastBucket();
+        int expResult = 11;
+        int result = instance.lastBucket();
         assertEquals(expResult, result);
     }
 
@@ -259,7 +257,7 @@ public class HistogramTest
     {
         System.out.println("print");
 
-        PrintStream        stream = System.out;
+        PrintStream stream = System.out;
         Histogram<Integer> instance = createHistogram();
         instance.print(stream);
     }
@@ -273,8 +271,8 @@ public class HistogramTest
         System.out.println("size");
 
         Histogram<Integer> instance = createHistogram();
-        int                expResult = keySet.size();
-        int                result = instance.size();
+        int expResult = keySet.size();
+        int result = instance.size();
         assertEquals(expResult, result);
     }
 
@@ -286,7 +284,7 @@ public class HistogramTest
     {
         System.out.println("values");
 
-        Histogram<Integer>  instance = createHistogram();
+        Histogram<Integer> instance = createHistogram();
         Collection<Integer> expResult = valueSet;
         Collection<Integer> result = instance.values();
         assertEquals(expResult.size(), result.size());
@@ -300,8 +298,8 @@ public class HistogramTest
     }
 
     //- Asserts ----------------------------------------------------------------
-    private int assertAreSameLength (List   expecteds,
-                                     List   actuals,
+    private int assertAreSameLength (List expecteds,
+                                     List actuals,
                                      String header)
     {
         if (expecteds == null) {
@@ -317,8 +315,8 @@ public class HistogramTest
 
         if (actualsLength != expectedsLength) {
             Assert.fail(
-                header + "list lengths differed, expected.length=" +
-                expectedsLength + " actual.length=" + actualsLength);
+                    header + "list lengths differed, expected.length=" + expectedsLength
+                    + " actual.length=" + actualsLength);
         }
 
         return expectedsLength;
@@ -327,10 +325,8 @@ public class HistogramTest
     private void assertElementsEqual (Entry<Integer, Integer> expected,
                                       Entry<Integer, Integer> actual)
     {
-        if ((expected.getKey() != actual.getKey()) ||
-            (expected.getValue() != actual.getValue())) {
-            throw new AssertionError(
-                "Expected: " + expected + " Actual: " + actual);
+        if ((expected.getKey() != actual.getKey()) || (expected.getValue() != actual.getValue())) {
+            throw new AssertionError("Expected: " + expected + " Actual: " + actual);
         }
     }
 
@@ -344,10 +340,10 @@ public class HistogramTest
         histo.increaseCount(10, 6);
         histo.increaseCount(11, 0);
 
-        keySet = new TreeSet<>();
+        keySet = new TreeSet<Integer>();
         keySet.addAll(Arrays.asList(3, 4, 5, 8, 10, 11));
 
-        valueSet = new LinkedHashSet<>();
+        valueSet = new LinkedHashSet<Integer>();
         valueSet.addAll(Arrays.asList(2, 10, 12, 3, 6, 0));
 
         return histo;

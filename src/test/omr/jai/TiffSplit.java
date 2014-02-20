@@ -23,36 +23,39 @@ import javax.imageio.stream.ImageOutputStream;
  */
 public class TiffSplit
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
-    public static void main (String... args)
-        throws Exception
+    private TiffSplit ()
     {
-        String                ext = "tif";
-        StopWatch             watch = new StopWatch(
-            "Reading tif / Writing " + ext);
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    public static void main (String... args)
+            throws Exception
+    {
+        String ext = "tif";
+        StopWatch watch = new StopWatch("Reading tif / Writing " + ext);
 
         // Input file
-        String                fileName = "D0394228.tif";
-        File                  inputFile = new File(fileName);
-        ImageInputStream      iis = ImageIO.createImageInputStream(inputFile);
+        String fileName = "D0394228.tif";
+        File inputFile = new File(fileName);
+        ImageInputStream iis = ImageIO.createImageInputStream(inputFile);
 
         // Reader
         Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
-        ImageReader           reader = readers.next();
+        ImageReader reader = readers.next();
         reader.setInput(iis);
 
         // Number of images
-        int                   number = reader.getNumImages(true);
+        int number = reader.getNumImages(true);
 
         // Writer
-        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(
-            ext);
-        ImageWriter           writer = writers.next();
+        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(ext);
+        ImageWriter writer = writers.next();
 
-        ImageOutputStream     ios = null;
-        BufferedImage         img = null;
-        File                  outputFile = null;
+        ImageOutputStream ios = null;
+        BufferedImage img = null;
+        File outputFile = null;
 
         for (int i = 0; i < number; i++) {
             watch.start("Reading " + i);
@@ -69,9 +72,5 @@ public class TiffSplit
         }
 
         watch.print();
-    }
-
-    private TiffSplit ()
-    {
     }
 }

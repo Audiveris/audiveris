@@ -1,14 +1,15 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         A u d i v e r i s T e s t                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   A u d i v e r i s T e s t                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -20,17 +21,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Test for multiple calls of Audiveris
+ *
  * @author Hervé Bitteur
  */
 public class AudiverisTest
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-        AudiverisTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(AudiverisTest.class);
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AudiverisTest object.
      */
@@ -38,27 +38,26 @@ public class AudiverisTest
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-
-    @BeforeClass
-    public static void setUpClass ()
-        throws Exception
-    {
-    }
-
-    @AfterClass
-    public static void tearDownClass ()
-        throws Exception
-    {
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     @Before
     public void setUp ()
     {
     }
 
+    @BeforeClass
+    public static void setUpClass ()
+            throws Exception
+    {
+    }
+
     @After
     public void tearDown ()
+    {
+    }
+
+    @AfterClass
+    public static void tearDownClass ()
+            throws Exception
     {
     }
 
@@ -70,14 +69,13 @@ public class AudiverisTest
     {
         System.out.println("testMultipleCalls");
 
-        String[] args1 = new String[] {
-                             "-batch", "-step", "EXPORT", "-input",
-                             "data/examples/chula.png"
-                         };
-        String[] args2 = new String[] {
-                             "-batch", "-step", "EXPORT", "-input",
-                             "data/examples/batuque.png", "data/examples/allegretto.png"
-                         };
+        String[] args1 = new String[]{
+            "-batch", "-step", "EXPORT", "-input", "data/examples/chula.png"
+        };
+        String[] args2 = new String[]{
+            "-batch", "-step", "EXPORT", "-input", "data/examples/batuque.png",
+            "data/examples/allegretto.png"
+        };
         System.out.println("firstCall to Audiveris.main()");
         logger.info("firstCall to Audiveris.main()");
         Audiveris.main(args1);

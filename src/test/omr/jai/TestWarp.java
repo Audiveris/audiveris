@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              T e s t W a r p                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        T e s t W a r p                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.jai;
 
@@ -33,25 +33,23 @@ import javax.swing.*;
  * @author Hervé Bitteur
  */
 public class TestWarp
-    extends JPanel
+        extends JPanel
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    
-    private static final Logger logger = LoggerFactory.getLogger(
-        TestWarp.class);
+    private static final Logger logger = LoggerFactory.getLogger(TestWarp.class);
 
     /** Identity */
     private static final AffineTransform identity = new AffineTransform();
 
-    //~ Instance fields --------------------------------------------------------
-
+    //~ Instance fields ----------------------------------------------------------------------------
     private RenderedImage srcImage;
+
     private RenderedImage dstImage;
-    private Dimension     dimension;
 
-    //~ Constructors -----------------------------------------------------------
+    private Dimension dimension;
 
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // TestWarp //
     //----------//
@@ -71,22 +69,15 @@ public class TestWarp
         //        float[]        yCoeffs = new float[] { 0f, -0.02f, 1.5f };
         //        Warp           warp = new WarpAffine(xCoeffs, yCoeffs);
         //
-        int            xStep = 500;
-        int            xNumCells = 2;
-        int            yStep = 500;
-        int            yNumCells = 1;
-        float[]        warpPositions = new float[] {
-                                           -100f, 0f, 500f, 100f, 1000f, 0f, // top line
-        0f, 500f, 500f, 500f, 1000f, 500f
-                                       }; // bot line
-        Warp           warp = new WarpGrid(
-            0,
-            xStep,
-            xNumCells,
-            0,
-            yStep,
-            yNumCells,
-            warpPositions);
+        int xStep = 500;
+        int xNumCells = 2;
+        int yStep = 500;
+        int yNumCells = 1;
+        float[] warpPositions = new float[]{
+            -100f, 0f, 500f, 100f, 1000f, 0f, // top line
+            0f, 500f, 500f, 500f, 1000f, 500f
+        }; // bot line
+        Warp warp = new WarpGrid(0, xStep, xNumCells, 0, yStep, yNumCells, warpPositions);
         ParameterBlock pb = new ParameterBlock();
         pb.addSource(invert(srcImage));
         pb.add(warp);
@@ -95,15 +86,14 @@ public class TestWarp
         ((PlanarImage) dstImage).getTiles();
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // main //
     //------//
     public static void main (String... args)
     {
-        JFrame      frame = new JFrame("TestWarp");
-        TestWarp    panel = new TestWarp("examples/Baroque.png");
+        JFrame frame = new JFrame("TestWarp");
+        TestWarp panel = new TestWarp("examples/Baroque.png");
         JScrollPane scrollPane = new JScrollPane(panel);
 
         frame.add(scrollPane);
@@ -129,18 +119,6 @@ public class TestWarp
         }
     }
 
-    //--------//
-    // invert //
-    //--------//
-    private static RenderedImage invert (RenderedImage image)
-    {
-        return JAI.create(
-            "Invert",
-            new ParameterBlock().addSource(image).add(null).add(null).add(null).add(
-                null).add(null),
-            null);
-    }
-
     //--------------//
     // buildPattern //
     //--------------//
@@ -149,13 +127,10 @@ public class TestWarp
                                         int dx,
                                         int dy)
     {
-        int           width = cols * dx;
-        int           height = rows * dy;
-        BufferedImage img = new BufferedImage(
-            width,
-            height,
-            BufferedImage.TYPE_BYTE_GRAY);
-        Graphics2D    g = (Graphics2D) img.getGraphics();
+        int width = cols * dx;
+        int height = rows * dy;
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        Graphics2D g = (Graphics2D) img.getGraphics();
         g.setColor(Color.BLACK);
 
         for (int ir = 0; ir < rows; ir++) {
@@ -169,5 +144,16 @@ public class TestWarp
         }
 
         return img;
+    }
+
+    //--------//
+    // invert //
+    //--------//
+    private static RenderedImage invert (RenderedImage image)
+    {
+        return JAI.create(
+                "Invert",
+                new ParameterBlock().addSource(image).add(null).add(null).add(null).add(null).add(null),
+                null);
     }
 }

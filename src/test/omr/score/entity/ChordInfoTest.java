@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          C h o r d I n f o T e s t                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    C h o r d I n f o T e s t                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -33,14 +33,12 @@ import java.io.PrintWriter;
  */
 public class ChordInfoTest
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Store output in dedicated file. */
-    private static final PrintWriter out = getPrintWriter(
-        new File("data/temp/tests.log"));
+    private static final PrintWriter out = getPrintWriter(new File("data/temp/tests.log"));
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     @Test
     public void test_01 ()
     {
@@ -52,18 +50,14 @@ public class ChordInfoTest
     public void test_02 ()
     {
         final String s = "D°7";
-        t(
-            s,
-            new ChordInfo(s, new Pitch(D), new Kind(DIMINISHED_SEVENTH, "°7")));
+        t(s, new ChordInfo(s, new Pitch(D), new Kind(DIMINISHED_SEVENTH, "°7")));
     }
 
     @Test
     public void test_03 ()
     {
         final String s = "D\u00F8";
-        t(
-            s,
-            new ChordInfo(s, new Pitch(D), new Kind(HALF_DIMINISHED, "\u00F8")));
+        t(s, new ChordInfo(s, new Pitch(D), new Kind(HALF_DIMINISHED, "\u00F8")));
     }
 
     @Test
@@ -98,13 +92,7 @@ public class ChordInfoTest
     public void test_08 ()
     {
         final String s = "G6/D";
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(G),
-                new Kind(MAJOR_SIXTH, "6"),
-                new Pitch(D)));
+        t(s, new ChordInfo(s, new Pitch(G), new Kind(MAJOR_SIXTH, "6"), new Pitch(D)));
     }
 
     @Test
@@ -199,12 +187,7 @@ public class ChordInfoTest
     public void test_17 ()
     {
         final String s = "B" + DELTA;
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(B),
-                new Kind(MAJOR_SEVENTH, DELTA, true)));
+        t(s, new ChordInfo(s, new Pitch(B), new Kind(MAJOR_SEVENTH, DELTA, true)));
     }
 
     @Test
@@ -218,25 +201,14 @@ public class ChordInfoTest
     public void test_19 ()
     {
         final String s = "B" + DELTA + "7";
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(B),
-                new Kind(MAJOR_SEVENTH, DELTA + "7", true)));
+        t(s, new ChordInfo(s, new Pitch(B), new Kind(MAJOR_SEVENTH, DELTA + "7", true)));
     }
 
     @Test
     public void test_20 ()
     {
         final String s = "BMaj7/D#";
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(B),
-                new Kind(MAJOR_SEVENTH, "Maj7"),
-                new Pitch(D, 1)));
+        t(s, new ChordInfo(s, new Pitch(B), new Kind(MAJOR_SEVENTH, "Maj7"), new Pitch(D, 1)));
     }
 
     @Test
@@ -250,30 +222,21 @@ public class ChordInfoTest
     public void test_22 ()
     {
         final String s = "Asus2";
-        t(
-            s,
-            new ChordInfo(s, new Pitch(A), new Kind(SUSPENDED_SECOND, "sus2")));
+        t(s, new ChordInfo(s, new Pitch(A), new Kind(SUSPENDED_SECOND, "sus2")));
     }
 
     @Test
     public void test_23 ()
     {
         final String s = "ASUS2";
-        t(
-            s,
-            new ChordInfo(s, new Pitch(A), new Kind(SUSPENDED_SECOND, "SUS2")));
+        t(s, new ChordInfo(s, new Pitch(A), new Kind(SUSPENDED_SECOND, "SUS2")));
     }
 
     @Test
     public void test_24 ()
     {
         final String s = "Dbsus4";
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(D, -1),
-                new Kind(SUSPENDED_FOURTH, "sus4")));
+        t(s, new ChordInfo(s, new Pitch(D, -1), new Kind(SUSPENDED_FOURTH, "sus4")));
     }
 
     @Test
@@ -288,8 +251,8 @@ public class ChordInfoTest
     {
         final String s = "C#7sus4";
         t(
-            s,
-            new ChordInfo(
+                s,
+                new ChordInfo(
                 s,
                 new Pitch(C, 1),
                 new Kind(SUSPENDED_FOURTH, "7sus4"),
@@ -301,12 +264,8 @@ public class ChordInfoTest
     {
         final String s = "A(9)";
         t(
-            s,
-            new ChordInfo(
                 s,
-                new Pitch(A),
-                new Kind(MAJOR, "", false, true),
-                new Degree(9, 0, ADD)));
+                new ChordInfo(s, new Pitch(A), new Kind(MAJOR, "", false, true), new Degree(9, 0, ADD)));
     }
 
     @Test
@@ -321,8 +280,8 @@ public class ChordInfoTest
     {
         final String s = "A7(b5)";
         t(
-            s,
-            new ChordInfo(
+                s,
+                new ChordInfo(
                 s,
                 new Pitch(A),
                 new Kind(DOMINANT, "7", false, true),
@@ -334,8 +293,8 @@ public class ChordInfoTest
     {
         final String s = "Am7b13";
         t(
-            s,
-            new ChordInfo(
+                s,
+                new ChordInfo(
                 s,
                 new Pitch(A),
                 new Kind(MINOR_SEVENTH, "m7b13"),
@@ -347,12 +306,8 @@ public class ChordInfoTest
     {
         final String s = "A(#9)";
         t(
-            s,
-            new ChordInfo(
                 s,
-                new Pitch(A),
-                new Kind(MAJOR, "", false, true),
-                new Degree(9, 1, ADD)));
+                new ChordInfo(s, new Pitch(A), new Kind(MAJOR, "", false, true), new Degree(9, 1, ADD)));
     }
 
     @Test
@@ -360,8 +315,8 @@ public class ChordInfoTest
     {
         final String s = "B7(#11b9)";
         t(
-            s,
-            new ChordInfo(
+                s,
+                new ChordInfo(
                 s,
                 new Pitch(B),
                 new Kind(DOMINANT, "7", false, true),
@@ -409,8 +364,8 @@ public class ChordInfoTest
     {
         final String s = "Dm(b5)";
         t(
-            s,
-            new ChordInfo(
+                s,
+                new ChordInfo(
                 s,
                 new Pitch(D),
                 new Kind(MINOR, "m", false, true),
@@ -428,66 +383,42 @@ public class ChordInfoTest
     public void test_40 ()
     {
         final String s = "C°7";
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(C),
-                new Kind(DIMINISHED_SEVENTH, "°7", false, false)));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(DIMINISHED_SEVENTH, "°7", false, false)));
     }
 
     @Test
     public void test_41 ()
     {
         final String s = "C+7";
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(C),
-                new Kind(AUGMENTED_SEVENTH, "+7", true)));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(AUGMENTED_SEVENTH, "+7", true)));
     }
 
     @Test
     public void test_42 ()
     {
         final String s = "C\u00F8";
-        t(
-            s,
-            new ChordInfo(s, new Pitch(C), new Kind(HALF_DIMINISHED, "\u00F8")));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(HALF_DIMINISHED, "\u00F8")));
     }
 
     @Test
     public void test_43 ()
     {
         final String s = "Cmin(maj7)";
-        t(
-            s,
-            new ChordInfo(s, new Pitch(C), new Kind(MAJOR_MINOR, "min(maj7)")));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(MAJOR_MINOR, "min(maj7)")));
     }
 
     @Test
     public void test_44 ()
     {
         final String s = "Cmin(" + DELTA + "7)";
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(C),
-                new Kind(MAJOR_MINOR, "min(" + DELTA + "7)")));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(MAJOR_MINOR, "min(" + DELTA + "7)")));
     }
 
     @Test
     public void test_45 ()
     {
         final String s = "C-(" + DELTA + "7)";
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(C),
-                new Kind(MAJOR_MINOR, "-(" + DELTA + "7)", true)));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(MAJOR_MINOR, "-(" + DELTA + "7)", true)));
     }
 
     @Test
@@ -508,12 +439,7 @@ public class ChordInfoTest
     public void test_48 ()
     {
         final String s = "C" + DELTA + "6";
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(C),
-                new Kind(MAJOR_SIXTH, DELTA + "6", true)));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(MAJOR_SIXTH, DELTA + "6", true)));
     }
 
     @Test
@@ -555,12 +481,7 @@ public class ChordInfoTest
     public void test_54 ()
     {
         final String s = "C" + DELTA + "9";
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(C),
-                new Kind(MAJOR_NINTH, DELTA + "9", true)));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(MAJOR_NINTH, DELTA + "9", true)));
     }
 
     @Test
@@ -595,12 +516,7 @@ public class ChordInfoTest
     public void test_59 ()
     {
         final String s = "C" + DELTA + "11";
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(C),
-                new Kind(MAJOR_11_TH, DELTA + "11", true)));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(MAJOR_11_TH, DELTA + "11", true)));
     }
 
     @Test
@@ -614,9 +530,7 @@ public class ChordInfoTest
     public void test_61 ()
     {
         final String s = "C-11";
-        t(
-            s,
-            new ChordInfo(s, new Pitch(C), new Kind(MINOR_11_TH, "-11", true)));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(MINOR_11_TH, "-11", true)));
     }
 
     @Test
@@ -644,12 +558,7 @@ public class ChordInfoTest
     public void test_65 ()
     {
         final String s = "C" + DELTA + "13";
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(C),
-                new Kind(MAJOR_13_TH, DELTA + "13", true)));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(MAJOR_13_TH, DELTA + "13", true)));
     }
 
     @Test
@@ -663,27 +572,21 @@ public class ChordInfoTest
     public void test_67 ()
     {
         final String s = "C-13";
-        t(
-            s,
-            new ChordInfo(s, new Pitch(C), new Kind(MINOR_13_TH, "-13", true)));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(MINOR_13_TH, "-13", true)));
     }
 
     @Test
     public void test_68 ()
     {
         final String s = "Csus2";
-        t(
-            s,
-            new ChordInfo(s, new Pitch(C), new Kind(SUSPENDED_SECOND, "sus2")));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(SUSPENDED_SECOND, "sus2")));
     }
 
     @Test
     public void test_69 ()
     {
         final String s = "Csus4";
-        t(
-            s,
-            new ChordInfo(s, new Pitch(C), new Kind(SUSPENDED_FOURTH, "sus4")));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(SUSPENDED_FOURTH, "sus4")));
     }
 
     @Test
@@ -718,12 +621,7 @@ public class ChordInfoTest
     public void test_74 ()
     {
         final String s = "C" + DELTA;
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(C),
-                new Kind(MAJOR_SEVENTH, DELTA, true)));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(MAJOR_SEVENTH, DELTA, true)));
     }
 
     @Test
@@ -737,9 +635,7 @@ public class ChordInfoTest
     public void test_76 ()
     {
         final String s = "C-7";
-        t(
-            s,
-            new ChordInfo(s, new Pitch(C), new Kind(MINOR_SEVENTH, "-7", true)));
+        t(s, new ChordInfo(s, new Pitch(C), new Kind(MINOR_SEVENTH, "-7", true)));
     }
 
     // Chords from "The Girl from Ipanema"
@@ -748,9 +644,7 @@ public class ChordInfoTest
     public void tgfi_01 ()
     {
         final String s = "A-7";
-        t(
-            s,
-            new ChordInfo(s, new Pitch(A), new Kind(MINOR_SEVENTH, "-7", true)));
+        t(s, new ChordInfo(s, new Pitch(A), new Kind(MINOR_SEVENTH, "-7", true)));
     }
 
     @Test
@@ -760,66 +654,58 @@ public class ChordInfoTest
         t(s, new ChordInfo(s, new Pitch(D), new Kind(MINOR, "-", true)));
     }
 
-//    @Test
-//    public void tgfi_03 ()
-//    {
-//        final String s = "D-" + DELTA + "7";
-//        t(
-//            s,
-//            new ChordInfo(
-//                s,
-//                new Pitch(D),
-//                new Kind(MAJOR_MINOR, "-" + DELTA + "7", true)));
-//    }
-//
+    //    @Test
+    //    public void tgfi_03 ()
+    //    {
+    //        final String s = "D-" + DELTA + "7";
+    //        t(
+    //            s,
+    //            new ChordInfo(
+    //                s,
+    //                new Pitch(D),
+    //                new Kind(MAJOR_MINOR, "-" + DELTA + "7", true)));
+    //    }
+    //
     @Test
     public void tgfi_04 ()
     {
         final String s = "D-7";
-        t(
-            s,
-            new ChordInfo(s, new Pitch(D), new Kind(MINOR_SEVENTH, "-7", true)));
+        t(s, new ChordInfo(s, new Pitch(D), new Kind(MINOR_SEVENTH, "-7", true)));
     }
 
     @Test
     public void tgfi_05 ()
     {
         final String s = "D-7/C";
-        t(
-            s,
-            new ChordInfo(
-                s,
-                new Pitch(D),
-                new Kind(MINOR_SEVENTH, "-7", true),
-                new Pitch(C)));
+        t(s, new ChordInfo(s, new Pitch(D), new Kind(MINOR_SEVENTH, "-7", true), new Pitch(C)));
     }
 
-//    @Test
-//    public void tgfi_06 ()
-//    {
-//        final String s = "B-7b5"; // half-diminished in fact?
-//        t(
-//            s,
-//            new ChordInfo(
-//                s,
-//                new Pitch(B),
-//                new Kind(MINOR_SEVENTH, "-7", true),
-//                new Degree(5, -1, ALTER)));
-//    }
-//
-//    @Test
-//    public void tgfi_07 ()
-//    {
-//        final String s = "Bb" + DELTA + "7(#11)";
-//        t(
-//            s,
-//            new ChordInfo(
-//                s,
-//                new Pitch(B, -1),
-//                new Kind(MAJOR_SEVENTH, DELTA + "7", true),
-//                new Degree(11, 1, ADD)));
-//    }
-//
+    //    @Test
+    //    public void tgfi_06 ()
+    //    {
+    //        final String s = "B-7b5"; // half-diminished in fact?
+    //        t(
+    //            s,
+    //            new ChordInfo(
+    //                s,
+    //                new Pitch(B),
+    //                new Kind(MINOR_SEVENTH, "-7", true),
+    //                new Degree(5, -1, ALTER)));
+    //    }
+    //
+    //    @Test
+    //    public void tgfi_07 ()
+    //    {
+    //        final String s = "Bb" + DELTA + "7(#11)";
+    //        t(
+    //            s,
+    //            new ChordInfo(
+    //                s,
+    //                new Pitch(B, -1),
+    //                new Kind(MAJOR_SEVENTH, DELTA + "7", true),
+    //                new Degree(11, 1, ADD)));
+    //    }
+    //
     //
     //    @Test
     //    public void tgfi_08 ()
@@ -836,24 +722,22 @@ public class ChordInfoTest
     public void tgfi_09 ()
     {
         final String s = "Eb13";
-        t(
-            s,
-            new ChordInfo(s, new Pitch(E, -1), new Kind(DOMINANT_13_TH, "13")));
+        t(s, new ChordInfo(s, new Pitch(E, -1), new Kind(DOMINANT_13_TH, "13")));
     }
 
-//    @Test
-//    public void tgfi_10 ()
-//    {
-//        final String s = "Db" + DELTA + "7(#11)";
-//        t(
-//            s,
-//            new ChordInfo(
-//                s,
-//                new Pitch(D, -1),
-//                new Kind(MAJOR_SEVENTH, DELTA + "7", true),
-//                new Degree(11, 1, ADD)));
-//    }
-//
+    //    @Test
+    //    public void tgfi_10 ()
+    //    {
+    //        final String s = "Db" + DELTA + "7(#11)";
+    //        t(
+    //            s,
+    //            new ChordInfo(
+    //                s,
+    //                new Pitch(D, -1),
+    //                new Kind(MAJOR_SEVENTH, DELTA + "7", true),
+    //                new Degree(11, 1, ADD)));
+    //    }
+    //
     //----------------//
     // getPrintWriter //
     //----------------//
@@ -861,7 +745,7 @@ public class ChordInfoTest
     {
         try {
             final BufferedWriter bw = new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(file), "UTF8"));
+                    new OutputStreamWriter(new FileOutputStream(file), "UTF8"));
 
             return new PrintWriter(bw);
         } catch (Exception ex) {
@@ -874,7 +758,7 @@ public class ChordInfoTest
     //---//
     // t //
     //---//
-    private void t (String    text,
+    private void t (String text,
                     ChordInfo exp)
     {
         // Print method name

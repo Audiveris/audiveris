@@ -4,18 +4,25 @@
  */
 package omr.ui;
 
+import omr.ui.util.SeparableToolBar;
+
+import omr.util.BaseTestCase;
+
 import com.jgoodies.looks.LookUtils;
+
+import org.jdesktop.application.Application;
+import org.jdesktop.application.SingleFrameApplication;
+
+import org.junit.Test;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridLayout;
+
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import omr.util.BaseTestCase;
-
-import org.jdesktop.application.SingleFrameApplication;
-
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -26,9 +33,6 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
-import omr.ui.util.SeparableToolBar;
-import org.jdesktop.application.Application;
-import org.junit.Test;
 
 /**
  *
@@ -37,7 +41,7 @@ import org.junit.Test;
 public class BsafTest
         extends BaseTestCase
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     public static final void main (String... args)
     {
@@ -48,20 +52,18 @@ public class BsafTest
     public void testAppl ()
     {
         Application.launch(Appl.class, null);
-
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     private static class Appl
             extends SingleFrameApplication
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         protected void startup ()
         {
-            String lafName =
-                    LookUtils.IS_OS_WINDOWS_XP
+            String lafName = LookUtils.IS_OS_WINDOWS_XP
                     ? com.jgoodies.looks.Options.getCrossPlatformLookAndFeelClassName()
                     : com.jgoodies.looks.Options.getSystemLookAndFeelClassName();
 
@@ -71,13 +73,26 @@ public class BsafTest
                 System.err.println("Can't set look & feel:" + e);
             }
 
-
             JFrame frame = getMainFrame();
             frame.setJMenuBar(buildMenuBar());
             frame.setContentPane(buildContentPane());
             frame.setSize(600, 400);
             frame.setTitle("BSAF Test");
             show(frame);
+        }
+
+        /**
+         * Builds and answers the content pane.
+         */
+        private JComponent buildContentPane ()
+        {
+            JPanel panel = new JPanel(new BorderLayout());
+            panel.setBackground(Color.orange);
+            panel.add(buildToolBar(), BorderLayout.NORTH);
+            panel.add(createCenteredLabel("Content"), BorderLayout.CENTER);
+            panel.add(buildStatusBar(), BorderLayout.SOUTH);
+
+            return panel;
         }
 
         /**
@@ -115,19 +130,6 @@ public class BsafTest
         }
 
         /**
-         * Builds and answers the content pane.
-         */
-        private JComponent buildContentPane ()
-        {
-            JPanel panel = new JPanel(new BorderLayout());
-            panel.setBackground(Color.orange);
-            panel.add(buildToolBar(), BorderLayout.NORTH);
-            panel.add(createCenteredLabel("Content"), BorderLayout.CENTER);
-            panel.add(buildStatusBar(), BorderLayout.SOUTH);
-            return panel;
-        }
-
-        /**
          * Builds and answers the tool bar.
          */
         private Component buildStatusBar ()
@@ -135,6 +137,7 @@ public class BsafTest
             JPanel statusBar = new JPanel(new BorderLayout());
             statusBar.setBackground(Color.LIGHT_GRAY);
             statusBar.add(createCenteredLabel("Status Bar"));
+
             return statusBar;
         }
 
@@ -146,7 +149,6 @@ public class BsafTest
             JToolBar toolBar = new SeparableToolBar();
             toolBar.setBackground(Color.PINK);
             ///toolBar.putClientProperty(Options.HEADER_STYLE_KEY, Boolean.TRUE);
-
             toolBar.add(createCenteredLabel("Tool Bar"));
 
             JButton button1 = new JButton("Bouton #1");
@@ -170,6 +172,7 @@ public class BsafTest
             JLabel label = new JLabel(text);
             label.setHorizontalAlignment(SwingConstants.CENTER);
             label.setBorder(new EmptyBorder(3, 3, 3, 3));
+
             return label;
         }
     }

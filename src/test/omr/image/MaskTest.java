@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               M a s k T e s t                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         M a s k T e s t                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -23,11 +23,11 @@ import java.awt.geom.Path2D;
  */
 public class MaskTest
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Mask instance = createInstance();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new MaskTest object.
      */
@@ -35,7 +35,7 @@ public class MaskTest
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of apply method, of class Mask.
      */

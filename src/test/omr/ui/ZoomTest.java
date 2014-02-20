@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              Z o o m T e s t                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        Z o o m T e s t                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui;
 
@@ -15,7 +15,6 @@ import omr.ui.field.LDoubleField;
 import omr.ui.view.*;
 
 import omr.util.BaseTestCase;
-import static junit.framework.Assert.*;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -26,13 +25,12 @@ import javax.swing.event.*;
 /**
  * DOCUMENT ME!
  *
- * @author TBD
- * @version TBD
-  */
+ * @author Hervé Bitteur
+ */
 public class ZoomTest
-    extends BaseTestCase
+        extends BaseTestCase
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     //------//
     // main //
@@ -49,19 +47,19 @@ public class ZoomTest
     {
         final Zoom zoom = new Zoom();
 
-        JFrame     frame = new JFrame(getClass().toString());
-        Container  pane = frame.getContentPane();
+        JFrame frame = new JFrame(getClass().toString());
+        Container pane = frame.getContentPane();
         pane.setLayout(new BorderLayout());
 
         final LDoubleField ldf = new LDoubleField("Ratio", "Current ratio");
-        JPanel             panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.add(ldf.getLabel(), BorderLayout.WEST);
         panel.add(ldf.getField(), BorderLayout.CENTER);
         pane.add(panel, BorderLayout.NORTH);
 
-        ldf.getField()
-           .addActionListener(
-            new ActionListener() {
+        ldf.getField().addActionListener(
+                new ActionListener()
+                {
                     public void actionPerformed (ActionEvent e)
                     {
                         zoom.setRatio(ldf.getValue());
@@ -74,7 +72,8 @@ public class ZoomTest
         pane.add(slider, BorderLayout.SOUTH);
 
         zoom.addChangeListener(
-            new ChangeListener() {
+                new ChangeListener()
+                {
                     public void stateChanged (ChangeEvent e)
                     {
                         ldf.setValue(zoom.getRatio());

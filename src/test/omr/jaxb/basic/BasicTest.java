@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             B a s i c T e s t                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       B a s i c T e s t                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.jaxb.basic;
 
@@ -26,32 +26,31 @@ import javax.xml.bind.*;
  * DOCUMENT ME!
  *
  * @author Hervé Bitteur
- * @version $Id$
  */
 public class BasicTest
-    extends BaseTestCase
+        extends BaseTestCase
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     public static void main (String... args)
-        throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException
     {
         new BasicTest().play(args[0]);
     }
 
     public void play (String fileName)
-        throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException
     {
         JAXBContext jaxbContext = JAXBContext.newInstance(Waiter.class);
 
-        Waiter      waiter = new Waiter();
+        Waiter waiter = new Waiter();
         waiter.id = 456;
         waiter.firstName = "Robert";
         waiter.location = new Point(1234, 5678);
 
-        ArrayList<Day> days = new ArrayList<>();
+        ArrayList<Day> days = new ArrayList<Day>();
 
-        Day            d1 = new Day();
+        Day d1 = new Day();
         d1.label = Weekday.FRIDAY;
 
         Meeting m1 = new Meeting(8, 9);
@@ -69,9 +68,9 @@ public class BasicTest
 
         waiter.purse = new Purse();
 
-        waiter.titles = new String[] { "One", "Two", "Three" };
+        waiter.titles = new String[]{"One", "Two", "Three"};
 
-        waiter.results = new double[] { 1d, 2d, 4d, 67d };
+        waiter.results = new double[]{1d, 2d, 4d, 67d};
 
         double[][] matrix = new double[2][];
 
@@ -107,7 +106,7 @@ public class BasicTest
     }
 
     public void testMarshall ()
-        throws JAXBException, FileNotFoundException
+            throws JAXBException, FileNotFoundException
     {
         File dir = new File("data/temp");
         dir.mkdirs();

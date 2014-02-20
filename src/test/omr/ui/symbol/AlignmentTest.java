@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         A l i g n m e n t T e s t                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   A l i g n m e n t T e s t                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -31,13 +31,12 @@ import java.util.Map.Entry;
  */
 public class AlignmentTest
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Map Alignment -> Point */
-    Map<Alignment, Point> points = new HashMap<>();
+    Map<Alignment, Point> points = new HashMap<Alignment, Point>();
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AlignmentTest object.
      */
@@ -45,8 +44,7 @@ public class AlignmentTest
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of toPoint method, of class Alignment.
      */
@@ -61,20 +59,19 @@ public class AlignmentTest
         for (Vertical vert : Vertical.values()) {
             for (Horizontal hori : Horizontal.values()) {
                 Alignment instance = new Alignment(vert, hori);
-                Point     start = points.get(instance);
+                Point start = points.get(instance);
 
                 for (Vertical v : Vertical.values()) {
                     for (Horizontal h : Horizontal.values()) {
                         Alignment expAlign = new Alignment(v, h);
-                        Point     to = instance.toPoint(expAlign, rect);
-                        Point     target = new Point(start);
+                        Point to = instance.toPoint(expAlign, rect);
+                        Point target = new Point(start);
                         target.translate(to.x, to.y);
 
-                        System.out.print(
-                            instance + " + " + to + " = " + target);
+                        System.out.print(instance + " + " + to + " = " + target);
 
                         Alignment align = getAlign(target);
-                        Point     expTarget = points.get(expAlign);
+                        Point expTarget = points.get(expAlign);
 
                         System.out.println("  " + expAlign + " =? " + align);
                         assertEquals("Different points", expTarget, target);
@@ -85,6 +82,29 @@ public class AlignmentTest
                 System.out.println();
             }
         }
+    }
+
+    private void assignPoints ()
+    {
+        points.put(new Alignment(TOP, LEFT), new Point(-6, -26));
+        points.put(new Alignment(TOP, CENTER), new Point(19, -26));
+        points.put(new Alignment(TOP, RIGHT), new Point(44, -26));
+        points.put(new Alignment(TOP, XORIGIN), new Point(0, -26));
+
+        points.put(new Alignment(MIDDLE, LEFT), new Point(-6, -7));
+        points.put(new Alignment(MIDDLE, CENTER), new Point(19, -7));
+        points.put(new Alignment(MIDDLE, RIGHT), new Point(44, -7));
+        points.put(new Alignment(MIDDLE, XORIGIN), new Point(0, -7));
+
+        points.put(new Alignment(BOTTOM, LEFT), new Point(-6, 12));
+        points.put(new Alignment(BOTTOM, CENTER), new Point(19, 12));
+        points.put(new Alignment(BOTTOM, RIGHT), new Point(44, 12));
+        points.put(new Alignment(BOTTOM, XORIGIN), new Point(0, 12));
+
+        points.put(new Alignment(BASELINE, LEFT), new Point(-6, 0));
+        points.put(new Alignment(BASELINE, CENTER), new Point(19, 0));
+        points.put(new Alignment(BASELINE, RIGHT), new Point(44, 0));
+        points.put(new Alignment(BASELINE, XORIGIN), new Point(0, 0));
     }
 
     //    /**
@@ -119,35 +139,11 @@ public class AlignmentTest
     private Alignment getAlign (Point target)
     {
         for (Entry<Alignment, Point> entry : points.entrySet()) {
-            if (entry.getValue()
-                     .equals(target)) {
+            if (entry.getValue().equals(target)) {
                 return entry.getKey();
             }
         }
 
         return null;
-    }
-
-    private void assignPoints ()
-    {
-        points.put(new Alignment(TOP, LEFT), new Point(-6, -26));
-        points.put(new Alignment(TOP, CENTER), new Point(19, -26));
-        points.put(new Alignment(TOP, RIGHT), new Point(44, -26));
-        points.put(new Alignment(TOP, XORIGIN), new Point(0, -26));
-
-        points.put(new Alignment(MIDDLE, LEFT), new Point(-6, -7));
-        points.put(new Alignment(MIDDLE, CENTER), new Point(19, -7));
-        points.put(new Alignment(MIDDLE, RIGHT), new Point(44, -7));
-        points.put(new Alignment(MIDDLE, XORIGIN), new Point(0, -7));
-
-        points.put(new Alignment(BOTTOM, LEFT), new Point(-6, 12));
-        points.put(new Alignment(BOTTOM, CENTER), new Point(19, 12));
-        points.put(new Alignment(BOTTOM, RIGHT), new Point(44, 12));
-        points.put(new Alignment(BOTTOM, XORIGIN), new Point(0, 12));
-
-        points.put(new Alignment(BASELINE, LEFT), new Point(-6, 0));
-        points.put(new Alignment(BASELINE, CENTER), new Point(19, 0));
-        points.put(new Alignment(BASELINE, RIGHT), new Point(44, 0));
-        points.put(new Alignment(BASELINE, XORIGIN), new Point(0, 0));
     }
 }

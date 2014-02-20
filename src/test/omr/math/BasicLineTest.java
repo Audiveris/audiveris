@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         B a s i c L i n e T e s t                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   B a s i c L i n e T e s t                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -22,21 +22,24 @@ import org.junit.Test;
  * @author Hervé Bitteur
  */
 public class BasicLineTest
-    extends BaseTestCase
+        extends BaseTestCase
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    protected static final double[] xx = new double[] { 1d, 2d, 3d, 4d, 5d };
-    protected static final double[] yy = new double[] { 4d, 9d, 14d, 19d, 24d };
+    protected static final double[] xx = new double[]{1d, 2d, 3d, 4d, 5d};
 
-    //~ Instance fields --------------------------------------------------------
+    protected static final double[] yy = new double[]{4d, 9d, 14d, 19d, 24d};
 
+    //~ Instance fields ----------------------------------------------------------------------------
     BasicLine l = new BasicLine();
+
     BasicLine l2 = new BasicLine();
+
     BasicLine lxy = new BasicLine(xx, yy);
+
     BasicLine l3 = new BasicLine(-0.80343527d, -0.5953921d, 385.66354d);
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //@Test (expected = IllegalArgumentException.class)
     public void testDifferentPoints ()
     {
@@ -46,9 +49,7 @@ public class BasicLineTest
         try {
             BasicLine line = new BasicLine(my_xx, my_yy);
             print(line);
-            fail(
-                    "Exception should be raised"
-                    + " when arrays have different lengths");
+            fail("Exception should be raised" + " when arrays have different lengths");
         } catch (Exception expected) {
             checkException(expected);
         }
@@ -153,8 +154,8 @@ public class BasicLineTest
 
     public void testShortPoints ()
     {
-        double[] xx = new double[] { 1d };
-        double[] yy = new double[] { 4d };
+        double[] xx = new double[]{1d};
+        double[] yy = new double[]{4d};
 
         try {
             BasicLine l = new BasicLine(xx, yy);
@@ -172,17 +173,15 @@ public class BasicLineTest
 
     public void testSingularMeanDistance ()
     {
-        double[] xx = new double[] { 1d, 1d, 1d };
-        double[] yy = new double[] { 2d, 2d, 2d };
+        double[] xx = new double[]{1d, 1d, 1d};
+        double[] yy = new double[]{2d, 2d, 2d};
 
         try {
             BasicLine l = new BasicLine(xx, yy);
             print(l);
 
             double md = l.getMeanDistance();
-            fail(
-                "Exception should be raised" +
-                " when using a line not properly defined");
+            fail("Exception should be raised" + " when using a line not properly defined");
         } catch (Exception expected) {
             checkException(expected);
         }
@@ -190,15 +189,13 @@ public class BasicLineTest
 
     public void testSingularPoints ()
     {
-        double[] xx = new double[] { 1d, 1d, 1d };
-        double[] yy = new double[] { 2d, 2d, 2d };
+        double[] xx = new double[]{1d, 1d, 1d};
+        double[] yy = new double[]{2d, 2d, 2d};
 
         try {
             BasicLine l = new BasicLine(xx, yy);
             print(l);
-            fail(
-                "Exception should be raised" +
-                " when line is singularly defined");
+            fail("Exception should be raised" + " when line is singularly defined");
         } catch (Exception expected) {
             checkException(expected);
         }
@@ -256,9 +253,7 @@ public class BasicLineTest
             l.includePoint(0, 1);
 
             double y = l.yAtX(0d);
-            fail(
-                "Exception should be raised" +
-                " when Yat is called on a vertical line");
+            fail("Exception should be raised" + " when Yat is called on a vertical line");
         } catch (Exception expected) {
             checkException(expected);
         }

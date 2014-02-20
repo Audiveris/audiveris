@@ -15,9 +15,9 @@ import org.junit.*;
  * @author Etiolles
  */
 public class LegendreMomentsTest
-    extends MomentsExtractorTest<LegendreMoments>
+        extends MomentsExtractorTest<LegendreMoments>
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new LegendreMomentsTest object.
@@ -26,8 +26,7 @@ public class LegendreMomentsTest
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of generate method, of class LegendreMoments.
      */

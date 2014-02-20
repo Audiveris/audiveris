@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         M u s i c F o n t T e s t                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   M u s i c F o n t T e s t                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -34,33 +34,28 @@ import java.io.FileOutputStream;
  */
 public class MusicFontTest
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     final int itemsPerLine = 8;
-
     final int linesPerPage = 8;
-
     final int xMargin = 100;
-
     final int yMargin = 100;
-
     final int cellWidth = 200;
-
     final int cellHeight = 200;
-
     final int pageWidth = (itemsPerLine * cellWidth) + (2 * xMargin);
-
     final int pageHeight = (linesPerPage * cellHeight) + (2 * yMargin);
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+
     /**
      * Printout of each MusicFont character
      */
     @Test
     public void textPrintout ()
-            throws Exception
+        throws Exception
     {
         File file = new File("data/temp/" + MusicFont.FONT_NAME + ".pdf");
+
         try (FileOutputStream fos = new FileOutputStream(file)) {
             Rectangle rect = new Rectangle(pageWidth, pageHeight);
             int x = xMargin; // Cell left side

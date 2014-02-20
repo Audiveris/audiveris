@@ -1,18 +1,19 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    C h a m f e r D i s t a n c e T e s t                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              C h a m f e r D i s t a n c e T e s t                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
-import ij.process.ByteProcessor;
 import omr.math.TableUtil;
+
+import ij.process.ByteProcessor;
 
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ import java.awt.Dimension;
  */
 public class ChamferDistanceTest
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new ChamferDistanceTest object.
@@ -33,7 +34,7 @@ public class ChamferDistanceTest
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of compute method, of class ChamferDistance.
      */

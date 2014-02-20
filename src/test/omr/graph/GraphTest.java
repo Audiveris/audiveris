@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             G r a p h T e s t                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       G r a p h T e s t                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.graph;
 
@@ -23,39 +23,25 @@ import java.util.*;
  * @author Hervé Bitteur
  */
 public class GraphTest
-    extends BaseTestCase
+        extends BaseTestCase
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
-    private MyDigraph   graph;
-    private MyVertex    v1;
-    private MyVertex    v2;
-    private MyVertex    v3;
+    private MyDigraph graph;
+
+    private MyVertex v1;
+
+    private MyVertex v2;
+
+    private MyVertex v3;
+
     private MySignature s1;
+
     private MySignature s2;
+
     private MySignature s3;
 
-    //~ Methods ----------------------------------------------------------------
-
-    //-----------------------//
-    // testAddTargetNoTarget //
-    //-----------------------//
-    //@Test
-    public void testAddTargetNoTarget ()
-    {
-        MyVertex v10 = new MyVertex();
-        MyVertex v20 = null;
-
-        try {
-            v10.addTarget(v20);
-            fail(
-                "Exception should be raised" +
-                " when edge is allocated to a null target");
-        } catch (IllegalArgumentException expected) {
-            checkException(expected);
-        }
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // testAddNullVertex //
     //-------------------//
@@ -70,6 +56,23 @@ public class GraphTest
         }
     }
 
+    //-----------------------//
+    // testAddTargetNoTarget //
+    //-----------------------//
+    //@Test
+    public void testAddTargetNoTarget ()
+    {
+        MyVertex v10 = new MyVertex();
+        MyVertex v20 = null;
+
+        try {
+            v10.addTarget(v20);
+            fail("Exception should be raised" + " when edge is allocated to a null target");
+        } catch (IllegalArgumentException expected) {
+            checkException(expected);
+        }
+    }
+
     //---------------//
     // testAddVertex //
     //---------------//
@@ -78,14 +81,8 @@ public class GraphTest
     {
         MyVertex v = new MyVertex();
         graph.addVertex(v);
-        assertEquals(
-            "Graph should contain just one vertex.",
-            1,
-            graph.getVertexCount());
-        assertSame(
-            "Retrieving Vertex just added.",
-            v,
-            graph.getVertexById(v.getId()));
+        assertEquals("Graph should contain just one vertex.", 1, graph.getVertexCount());
+        assertSame("Retrieving Vertex just added.", v, graph.getVertexById(v.getId()));
     }
 
     //---------------------//
@@ -98,13 +95,11 @@ public class GraphTest
 
         MyDigraph g2 = new MyDigraph();
 
-        MyVertex  v = g2.createVertex();
+        MyVertex v = g2.createVertex();
 
         try {
             v1.addTarget(v);
-            fail(
-                "Exception should be raised" +
-                " when edge is allocated across graphs");
+            fail("Exception should be raised" + " when edge is allocated across graphs");
         } catch (Exception expected) {
             checkException(expected);
         }
@@ -122,10 +117,7 @@ public class GraphTest
         createEdges();
 
         graph.dump("\nDump of whole graph:");
-        assertEquals(
-            "v1 should have 2 targets : v2 & v3.",
-            2,
-            v1.getOutDegree());
+        assertEquals("v1 should have 2 targets : v2 & v3.", 2, v1.getOutDegree());
         assertEquals(v1.getTargets().get(0).getId(), v2.getId());
         assertEquals(v1.getTargets().get(1), v3);
         assertSame(v2.getSources().get(0), v1);
@@ -147,10 +139,7 @@ public class GraphTest
         v2.removeTarget(v3, true);
 
         graph.dump("\nDump after removal of edge from v2 to v3:");
-        assertEquals(
-            "Vertex v2 should have no more targets.",
-            0,
-            v2.getOutDegree());
+        assertEquals("Vertex v2 should have no more targets.", 0, v2.getOutDegree());
         assertEquals("Vertex v3 should have one source.", 1, v3.getInDegree());
     }
 
@@ -183,9 +172,7 @@ public class GraphTest
     public void testGetVertexByWrongId ()
     {
         createVertices();
-        assertNull(
-            "No vertex should be found with wrong id.",
-            graph.getVertexById(123));
+        assertNull("No vertex should be found with wrong id.", graph.getVertexById(123));
     }
 
     //-----------------//
@@ -196,19 +183,15 @@ public class GraphTest
     {
         createVertices();
 
-        Collection<MyVertex> ref = new ArrayList<>();
+        Collection<MyVertex> ref = new ArrayList<MyVertex>();
         ref.add(v1);
         ref.add(v3);
         ref.add(v2);
         System.out.println("\ntestGetVertices:");
         System.out.println("ref=" + ref);
         System.out.println("vertices=" + graph.getVertices());
-        assertTrue(
-            "Non correct collection of vertices",
-            ref.containsAll(graph.getVertices()));
-        assertTrue(
-            "Non correct collection of vertices",
-            graph.getVertices().containsAll(ref));
+        assertTrue("Non correct collection of vertices", ref.containsAll(graph.getVertices()));
+        assertTrue("Non correct collection of vertices", graph.getVertices().containsAll(ref));
     }
 
     //---------------------//
@@ -230,7 +213,7 @@ public class GraphTest
         createVertices();
         v1.addTarget(v2);
         v1.addTarget(v2);
-        
+
         graph.dump("\ntestMultipleEdge. attempt of multiple edges:");
         assertEquals("There should be just one target.", 1, v1.getOutDegree());
         assertEquals("There should be just one source.", 1, v2.getInDegree());
@@ -247,9 +230,7 @@ public class GraphTest
         try {
             // Remove a non-existing edge
             v2.removeTarget(v3, true);
-            fail(
-                "Exception should be raised" +
-                " when attempting to remove a non-existent edge");
+            fail("Exception should be raised" + " when attempting to remove a non-existent edge");
         } catch (Exception expected) {
             checkException(expected);
         }
@@ -279,12 +260,8 @@ public class GraphTest
     {
         // Allocate some vertices
         createVertices();
-        assertEquals(
-            "Graph should contain exactly 3 vertices.",
-            3,
-            graph.getVertexCount());
+        assertEquals("Graph should contain exactly 3 vertices.", 3, graph.getVertexCount());
     }
-
 
     //-------------------//
     // testVertexRemoval //
@@ -303,10 +280,7 @@ public class GraphTest
         v1.delete();
         v3.delete();
         graph.dump("\nDump after deletion of all vertices:");
-        assertEquals(
-            "Graph should now be totally empty.",
-            0,
-            graph.getVertexCount());
+        assertEquals("Graph should now be totally empty.", 0, graph.getVertexCount());
     }
 
     //-------//
@@ -334,20 +308,18 @@ public class GraphTest
         v3 = graph.createVertex();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     static class MyDigraph
-        extends BasicDigraph<MyDigraph, MyVertex>
+            extends BasicDigraph<MyDigraph, MyVertex>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public MyDigraph ()
         {
             super("MyDigraph", MyVertex.class);
         }
 
-        //~ Methods ------------------------------------------------------------
-
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -357,19 +329,17 @@ public class GraphTest
 
     static class MySignature
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final MyVertex vertex;
 
-        //~ Constructors -------------------------------------------------------
-
+        //~ Constructors ---------------------------------------------------------------------------
         public MySignature (MyVertex vertex)
         {
             this.vertex = vertex;
         }
 
-        //~ Methods ------------------------------------------------------------
-
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -378,9 +348,9 @@ public class GraphTest
     }
 
     static class MyVertex
-        extends BasicVertex<MyDigraph, MyVertex>
+            extends BasicVertex<MyDigraph, MyVertex>
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String toString ()

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        B a s i c L i n e C h e c k                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  B a s i c L i n e C h e c k                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -22,9 +22,9 @@ import static java.lang.Math.*;
  * @author Hervé Bitteur
  */
 public class BasicLineCheck
-    extends BaseTestCase
+        extends BaseTestCase
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     public static void checkDistanceOf (BasicLine l)
     {
@@ -41,17 +41,19 @@ public class BasicLineCheck
         double d2 = l.distanceOf(1, 10);
         System.out.println("Distance of (1,10): " + d2);
         assertNears("Distance of (1,10)", 1.176696810829104, d2);
-        
+
         BasicLine ll = new BasicLine();
         ll.includePoint(1, 1);
         ll.includePoint(2, 10);
+
         double dll = ll.distanceOf(0, 0);
         System.out.println("ll Distance of (0.0): " + dll);
         assertNears("ll Distance of (0,0)", 0.8834522085987723, dll);
-        
+
         BasicLine h = new BasicLine();
         h.includePoint(1, 1);
         h.includePoint(10, -2);
+
         double dh = h.distanceOf(0, 0);
         System.out.println("h Distance of (0.0): " + dh);
         assertNears("h Distance of (0,0)", 1.2649110640673515, dh);
@@ -71,9 +73,7 @@ public class BasicLineCheck
         try {
             double md = l.getMeanDistance();
             print(l);
-            fail(
-                "Exception should be raised" +
-                " when less than 2 points are known");
+            fail("Exception should be raised" + " when less than 2 points are known");
         } catch (Exception expected) {
             checkException(expected);
         }
@@ -95,9 +95,7 @@ public class BasicLineCheck
         try {
             double x = l.xAtY(0d);
             System.out.println("at y=0, x=" + x);
-            fail(
-                "Exception should be raised" +
-                " when abscissa cannot be determined");
+            fail("Exception should be raised" + " when abscissa cannot be determined");
         } catch (Exception expected) {
             checkException(expected);
         }
@@ -128,7 +126,7 @@ public class BasicLineCheck
                                           BasicLine o)
     {
         double base = -100d;
-        int    half = 1;
+        int half = 1;
 
         for (int i = -half; i <= half; i++) {
             l.includePoint(base + i, -1d);
@@ -155,7 +153,7 @@ public class BasicLineCheck
                                            BasicLine o)
     {
         double base = -100d;
-        int    half = 10;
+        int half = 10;
 
         for (int i = -half; i <= half; i++) {
             l.includePoint(base + i, -1d);
@@ -186,9 +184,7 @@ public class BasicLineCheck
     {
         try {
             double d = l.distanceOf(0, 0);
-            fail(
-                "Exception should be raised" +
-                " when line parameters are not set");
+            fail("Exception should be raised" + " when line parameters are not set");
         } catch (Exception expected) {
             checkException(expected);
         }
@@ -244,9 +240,7 @@ public class BasicLineCheck
             print(l);
 
             double d = l.distanceOf(0, 0);
-            fail(
-                "Exception should be raised" +
-                " when line parameters are not set");
+            fail("Exception should be raised" + " when line parameters are not set");
         } catch (Exception expected) {
             checkException(expected);
         }
@@ -424,9 +418,7 @@ public class BasicLineCheck
         try {
             double y = l.yAtX(0d);
             System.out.println("at x=0, y=" + y);
-            fail(
-                "Exception should be raised" +
-                " when ordinate cannot be determined");
+            fail("Exception should be raised" + " when ordinate cannot be determined");
         } catch (Exception expected) {
             checkException(expected);
         }
@@ -473,27 +465,21 @@ public class BasicLineCheck
     {
         try {
             double a = l.getA();
-            fail(
-                "Exception should be raised" +
-                " when parameter A is undefined");
+            fail("Exception should be raised" + " when parameter A is undefined");
         } catch (Exception expected) {
             checkException(expected);
         }
 
         try {
             double a = l.getB();
-            fail(
-                "Exception should be raised" +
-                " when parameter B is undefined");
+            fail("Exception should be raised" + " when parameter B is undefined");
         } catch (Exception expected) {
             checkException(expected);
         }
 
         try {
             double a = l.getC();
-            fail(
-                "Exception should be raised" +
-                " when parameter C is undefined");
+            fail("Exception should be raised" + " when parameter C is undefined");
         } catch (Exception expected) {
             checkException(expected);
         }

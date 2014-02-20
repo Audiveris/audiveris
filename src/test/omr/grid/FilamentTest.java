@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          F i l a m e n t T e s t                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    F i l a m e n t T e s t                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -39,7 +39,7 @@ import java.awt.geom.Point2D;
  */
 public class FilamentTest
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private Scale scale = new Scale(20, 3);
 
@@ -47,7 +47,7 @@ public class FilamentTest
 
     private Lag lag;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new FilamentTest object.
      */
@@ -56,7 +56,13 @@ public class FilamentTest
         System.out.println("FilamentTest");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    @Before
+    public void setUp ()
+    {
+        System.out.println("setUp");
+    }
+
     @BeforeClass
     public static void setUpClass ()
             throws Exception
@@ -64,23 +70,17 @@ public class FilamentTest
         System.out.println("setUpClass");
     }
 
+    @After
+    public void tearDown ()
+    {
+        System.out.println("tearDown");
+    }
+
     @AfterClass
     public static void tearDownClass ()
             throws Exception
     {
         System.out.println("tearDownClass");
-    }
-
-    @Before
-    public void setUp ()
-    {
-        System.out.println("setUp");
-    }
-
-    @After
-    public void tearDown ()
-    {
-        System.out.println("tearDown");
     }
 
     /**
@@ -232,8 +232,7 @@ public class FilamentTest
             setOrientation(ori);
 
             Filament instance = createFil();
-            Point2D expResult = orientation.absolute(
-                    new Point2D.Double(100, 25.5));
+            Point2D expResult = orientation.absolute(new Point2D.Double(100, 25.5));
             Point2D result = instance.getStartPoint(Orientation.HORIZONTAL);
             instance.asciiDrawing();
             assertEquals(expResult, result);
@@ -252,8 +251,7 @@ public class FilamentTest
             setOrientation(ori);
 
             Filament instance = createFil();
-            Point2D expResult = orientation.absolute(
-                    new Point2D.Double(171, 27.8));
+            Point2D expResult = orientation.absolute(new Point2D.Double(171, 27.8));
             Point2D result = instance.getStopPoint(Orientation.HORIZONTAL);
             assertEquals(expResult.getX(), result.getX(), 0.1);
             assertEquals(expResult.getY(), result.getY(), 0.1);

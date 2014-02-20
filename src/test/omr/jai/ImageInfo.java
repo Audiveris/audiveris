@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             I m a g e I n f o                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       I m a g e I n f o                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.jai;
 
@@ -27,16 +27,22 @@ import javax.media.jai.*;
  */
 public class ImageInfo
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
+    private ImageInfo ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
     public static void main (String[] args)
     {
         String name = "../bnf/manuscrit/2Partitions/00398006/T0000012.tif"; //args[0];
         // Open the image (using the name passed as a command line parameter)
-        PlanarImage pi = JAI.create("fileload", name); 
-        
+
+        PlanarImage pi = JAI.create("fileload", name);
+
         // Get the image file size (non-JAI related).
-        File image = new File(name); 
+        File image = new File(name);
         System.out.println("Image file size: " + image.length() + " bytes.");
 
         print(pi);
@@ -50,21 +56,20 @@ public class ImageInfo
 
         // Remember getMaxX and getMaxY return the coordinate of the next point!
         System.out.println(
-            " (from " + pi.getMinX() + "," + pi.getMinY() + " to " +
-            (pi.getMaxX() - 1) + "," + (pi.getMaxY() - 1) + ")");
+                " (from " + pi.getMinX() + "," + pi.getMinY() + " to " + (pi.getMaxX() - 1) + ","
+                + (pi.getMaxY() - 1) + ")");
 
         if ((pi.getNumXTiles() != 1) || (pi.getNumYTiles() != 1)) { // Is it tiled?
-                                                                    // Tiles number, dimensions and coordinates.
+            // Tiles number, dimensions and coordinates.
             System.out.print("Tiles: ");
             System.out.print(
-                pi.getTileWidth() + "x" + pi.getTileHeight() + " pixels" +
-                " (" + pi.getNumXTiles() + "x" + pi.getNumYTiles() + " tiles)");
+                    pi.getTileWidth() + "x" + pi.getTileHeight() + " pixels" + " ("
+                    + pi.getNumXTiles() + "x" + pi.getNumYTiles() + " tiles)");
             System.out.print(
-                " (from " + pi.getMinTileX() + "," + pi.getMinTileY() + " to " +
-                pi.getMaxTileX() + "," + pi.getMaxTileY() + ")");
+                    " (from " + pi.getMinTileX() + "," + pi.getMinTileY() + " to " + pi.getMaxTileX()
+                    + "," + pi.getMaxTileY() + ")");
             System.out.println(
-                " offset: " + pi.getTileGridXOffset() + "," +
-                pi.getTileGridXOffset());
+                    " offset: " + pi.getTileGridXOffset() + "," + pi.getTileGridXOffset());
         }
 
         // Display info about the SampleModel of the image.
@@ -73,37 +78,37 @@ public class ImageInfo
         System.out.print("Data type: ");
 
         switch (sm.getDataType()) {
-        case DataBuffer.TYPE_BYTE :
+        case DataBuffer.TYPE_BYTE:
             System.out.println("byte");
 
             break;
 
-        case DataBuffer.TYPE_SHORT :
+        case DataBuffer.TYPE_SHORT:
             System.out.println("short");
 
             break;
 
-        case DataBuffer.TYPE_USHORT :
+        case DataBuffer.TYPE_USHORT:
             System.out.println("ushort");
 
             break;
 
-        case DataBuffer.TYPE_INT :
+        case DataBuffer.TYPE_INT:
             System.out.println("int");
 
             break;
 
-        case DataBuffer.TYPE_FLOAT :
+        case DataBuffer.TYPE_FLOAT:
             System.out.println("float");
 
             break;
 
-        case DataBuffer.TYPE_DOUBLE :
+        case DataBuffer.TYPE_DOUBLE:
             System.out.println("double");
 
             break;
 
-        case DataBuffer.TYPE_UNDEFINED :
+        case DataBuffer.TYPE_UNDEFINED:
             System.out.println("undefined");
 
             break;
@@ -113,23 +118,22 @@ public class ImageInfo
         ColorModel cm = pi.getColorModel();
 
         if (cm != null) {
-            System.out.println(
-                "Number of color components: " + cm.getNumComponents());
+            System.out.println("Number of color components: " + cm.getNumComponents());
             System.out.println("Bits per pixel: " + cm.getPixelSize());
             System.out.print("Image Transparency: ");
 
             switch (cm.getTransparency()) {
-            case Transparency.OPAQUE :
+            case Transparency.OPAQUE:
                 System.out.println("opaque");
 
                 break;
 
-            case Transparency.BITMASK :
+            case Transparency.BITMASK:
                 System.out.println("bitmask");
 
                 break;
 
-            case Transparency.TRANSLUCENT :
+            case Transparency.TRANSLUCENT:
                 System.out.println("translucent");
 
                 break;
@@ -139,17 +143,16 @@ public class ImageInfo
         }
 
         // Set up the parameters for the Histogram object.
-        int[]          bins = { 256, 256, 256 }; // The number of bins.
-        double[]       low = { 0.0D, 0.0D, 0.0D }; // The low value.
-        double[]       high = { 256.0D, 256.0D, 256.0D }; // The high value.
-                                                          // Construct the Histogram object.
+        int[] bins = {256, 256, 256}; // The number of bins.
+        double[] low = {0.0D, 0.0D, 0.0D}; // The low value.
+        double[] high = {256.0D, 256.0D, 256.0D}; // The high value.
+        // Construct the Histogram object.
 
         ///Histogram      hist = new Histogram(bins, low, high);
-
         // Create the parameter block.
         ParameterBlock pb = new ParameterBlock();
         pb.addSource(pi); // Specify the source image
-                          //pb.add(hist); // Specify the histogram
+        //pb.add(hist); // Specify the histogram
 
         pb.add(null); // No ROI
         pb.add(1); // Sampling
@@ -213,9 +216,5 @@ public class ImageInfo
 
         res = hist.getStandardDeviation();
         System.out.println("getStandardDeviation: " + Arrays.toString(res));
-    }
-
-    private ImageInfo ()
-    {
     }
 }

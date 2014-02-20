@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          R a t i o n a l T e s t                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    R a t i o n a l T e s t                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -20,7 +20,7 @@ import org.junit.Test;
  */
 public class RationalTest
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new RationalTest object.
@@ -29,8 +29,7 @@ public class RationalTest
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Test of abs method, of class Rational.
      */
@@ -55,7 +54,7 @@ public class RationalTest
 
         Rational instance = new Rational(4, 9);
         Rational that = new Rational(2, 3);
-        int      result = instance.compareTo(that);
+        int result = instance.compareTo(that);
         assertEquals(-1, result);
         assertEquals(0, instance.compareTo(new Rational(-8, -18)));
         assertEquals(1, instance.compareTo(instance.opposite()));
@@ -89,7 +88,7 @@ public class RationalTest
         System.out.println("divides");
 
         Rational instance = new Rational(2, 3);
-        int      that = 2;
+        int that = 2;
         Rational expResult = new Rational(1, 3);
         Rational result = instance.divides(that);
         assertEquals(expResult, result);
@@ -117,12 +116,11 @@ public class RationalTest
     {
         System.out.println("gcd");
 
-        Rational[] vals = new Rational[] {
-                              new Rational(2, 3), new Rational(1, 4),
-                              new Rational(5, 6)
-                          };
-        Rational   expResult = new Rational(1, 12);
-        Rational   result = Rational.gcd(vals);
+        Rational[] vals = new Rational[]{new Rational(2, 3), new Rational(1, 4), new Rational(
+            5,
+            6)};
+        Rational expResult = new Rational(1, 12);
+        Rational result = Rational.gcd(vals);
         assertEquals(expResult, result);
     }
 
@@ -150,8 +148,8 @@ public class RationalTest
         System.out.println("hashCode");
 
         Rational instance = new Rational(2, 3);
-        int      expResult = 39874;
-        int      result = instance.hashCode();
+        int expResult = 39874;
+        int result = instance.hashCode();
         assertEquals(expResult, result);
     }
 
@@ -179,7 +177,7 @@ public class RationalTest
         System.out.println("minus");
 
         Rational instance = new Rational(2, 3);
-        int      that = 1;
+        int that = 1;
         Rational expResult = new Rational(-1, 3);
         Rational result = instance.minus(that);
         assertEquals(expResult, result);
@@ -223,7 +221,7 @@ public class RationalTest
         System.out.println("plus");
 
         Rational instance = new Rational(2, 3);
-        int      that = 5;
+        int that = 5;
         Rational expResult = new Rational(17, 3);
         Rational result = instance.plus(that);
         assertEquals(expResult, result);
@@ -267,7 +265,7 @@ public class RationalTest
         System.out.println("times");
 
         Rational instance = new Rational(2, 3);
-        int      that = -10;
+        int that = -10;
         Rational expResult = new Rational(-20, 3);
         Rational result = instance.times(that);
         assertEquals(expResult, result);
@@ -282,8 +280,8 @@ public class RationalTest
         System.out.println("toDouble");
 
         Rational instance = new Rational(2, 4);
-        double   expResult = 0.5;
-        double   result = instance.toDouble();
+        double expResult = 0.5;
+        double result = instance.toDouble();
         assertEquals(expResult, result, 0.0);
     }
 
@@ -296,8 +294,8 @@ public class RationalTest
         System.out.println("toString");
 
         Rational instance = new Rational(2, 3);
-        String   expResult = "2/3";
-        String   result = instance.toString();
+        String expResult = "2/3";
+        String result = instance.toString();
         assertEquals(expResult, result);
 
         instance = new Rational(2, 1);

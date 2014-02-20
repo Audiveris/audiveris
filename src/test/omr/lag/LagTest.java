@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               L a g T e s t                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         L a g T e s t                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag;
 
@@ -34,18 +34,20 @@ import java.util.Set;
  * Lag features.
  */
 public class LagTest
-    extends BaseTestCase
+        extends BaseTestCase
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     // Lags and RunsTable instances
-    Lag       vLag;
+    Lag vLag;
+
     RunsTable vTable;
-    Lag       hLag;
+
+    Lag hLag;
+
     RunsTable hTable;
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //    /**
     //     * Test of addRuns method, of class Lag.
     //     */
@@ -59,7 +61,6 @@ public class LagTest
     //        instance.addRuns(runsTable);
     //        fail("The test case is a prototype.");
     //    }
-
     //    /**
     //     * Test of createSection method, of class Lag.
     //     */
@@ -76,7 +77,6 @@ public class LagTest
     //        assertEquals(expResult, result);
     //        fail("The test case is a prototype.");
     //    }
-
     //------------------------//
     // testCreateSectionNoRun //
     //------------------------//
@@ -85,8 +85,8 @@ public class LagTest
         try {
             Section s = hLag.createSection(123, null);
             fail(
-                "IllegalArgumentException should be raised" +
-                " when creating section with a null run");
+                    "IllegalArgumentException should be raised"
+                    + " when creating section with a null run");
         } catch (IllegalArgumentException expected) {
             checkException(expected);
         }
@@ -97,12 +97,10 @@ public class LagTest
     //-------------------------------//
     public void testGetRectangleCendroidEmpty ()
     {
-        Section        s2 = hLag.createSection(
-            180,
-            createRun(hTable, 180, 100, 10));
+        Section s2 = hLag.createSection(180, createRun(hTable, 180, 100, 10));
 
         Rectangle roi = new Rectangle(0, 0, 20, 20);
-        Point          pt = s2.getRectangleCentroid(roi);
+        Point pt = s2.getRectangleCentroid(roi);
         System.out.println("roi=" + roi + " pt=" + pt);
         assertNull("External roi should give a null centroid", pt);
     }
@@ -112,7 +110,7 @@ public class LagTest
     //------------------------------//
     public void testGetRectangleCendroidHori ()
     {
-        int     p = 180;
+        int p = 180;
         Section s = hLag.createSection(180, createRun(hTable, p++, 100, 10));
         s.append(createRun(hTable, p++, 102, 20));
         s.append(createRun(hTable, p++, 102, 20));
@@ -120,7 +118,7 @@ public class LagTest
         s.drawAscii();
 
         Rectangle roi = new Rectangle(100, 180, 1, 1);
-        Point          pt = s.getRectangleCentroid(roi);
+        Point pt = s.getRectangleCentroid(roi);
         System.out.println("roi=" + roi + " pt=" + pt);
 
         Point expected = new Point(100, 180);
@@ -147,8 +145,8 @@ public class LagTest
 
             Point pt = s2.getRectangleCentroid(roi);
             fail(
-                "IllegalArgumentException should be raised" +
-                " when rectangle of interest is null");
+                    "IllegalArgumentException should be raised"
+                    + " when rectangle of interest is null");
         } catch (IllegalArgumentException expected) {
             checkException(expected);
         }
@@ -159,7 +157,7 @@ public class LagTest
     //------------------------------//
     public void testGetRectangleCendroidVert ()
     {
-        int     p = 50;
+        int p = 50;
         Section s = vLag.createSection(p, createRun(vTable, p++, 100, 10));
         s.append(createRun(vTable, p++, 102, 20));
         s.append(createRun(vTable, p++, 102, 20));
@@ -167,7 +165,7 @@ public class LagTest
         s.drawAscii();
 
         Rectangle roi = new Rectangle(48, 102, 5, 3);
-        Point          pt = s.getRectangleCentroid(roi);
+        Point pt = s.getRectangleCentroid(roi);
         System.out.println("roi=" + roi + " pt=" + pt);
 
         Point expected = new Point(51, 103);
@@ -190,7 +188,6 @@ public class LagTest
     //        assertEquals(expResult, result);
     //        fail("The test case is a prototype.");
     //    }
-
     //    /**
     //     * Test of getRunService method, of class Lag.
     //     */
@@ -235,7 +232,6 @@ public class LagTest
     //        assertEquals(expResult, result);
     //        fail("The test case is a prototype.");
     //    }
-
     //-----------------//
     // testGetSections //
     //-----------------//
@@ -247,12 +243,12 @@ public class LagTest
         Section s3 = vLag.createSection(180, new Run(100, 10, 127));
         s3.append(new Run(101, 20, 127));
 
-        List<Section> sections = new ArrayList<>();
+        List<Section> sections = new ArrayList<Section>();
         sections.add(s2);
         sections.add(s3);
         Collections.sort(sections, Section.idComparator);
 
-        List<Section> lagSections = new ArrayList<>(vLag.getSections());
+        List<Section> lagSections = new ArrayList<Section>(vLag.getSections());
         Collections.sort(lagSections, Section.idComparator);
         assertEquals("Retrieved sections.", sections, lagSections);
     }
@@ -286,7 +282,6 @@ public class LagTest
     //        assertEquals(expResult, result);
     //        fail("The test case is a prototype.");
     //    }
-
     //----------//
     // testHLag //
     //----------//
@@ -307,10 +302,7 @@ public class LagTest
         hLag.dump(null);
         dump("s1 dump:", s1);
         commonAssertions(s1);
-        assertEquals(
-            "Bad ContourBox",
-            s1.getBounds(),
-            new Rectangle(100, 180, 21, 2));
+        assertEquals("Bad ContourBox", s1.getBounds(), new Rectangle(100, 180, 21, 2));
     }
 
     //---------------//
@@ -318,9 +310,8 @@ public class LagTest
     //---------------//
     public void testHabsolute ()
     {
-        Point      cp = new Point(12, 34);
-        Point xy = hLag.getOrientation()
-                            .absolute(cp);
+        Point cp = new Point(12, 34);
+        Point xy = hLag.getOrientation().absolute(cp);
         assertEquals("Non expected switch.", cp, xy);
     }
 
@@ -330,8 +321,7 @@ public class LagTest
     public void testHoriented ()
     {
         Point xy = new Point(12, 34);
-        Point      cp = hLag.getOrientation()
-                            .oriented(xy);
+        Point cp = hLag.getOrientation().oriented(xy);
         assertEquals("Non expected switch.", cp, xy);
     }
 
@@ -352,12 +342,10 @@ public class LagTest
         founds = hLag.intersectedSections(new Rectangle(0, 0, 0, 0));
         assertEquals("No section.", 0, founds.size());
 
-        founds = hLag.intersectedSections(
-            new Rectangle(100, 180, 1, 1));
+        founds = hLag.intersectedSections(new Rectangle(100, 180, 1, 1));
         assertEquals("One section.", 1, founds.size());
 
-        founds = hLag.intersectedSections(
-            new Rectangle(0, 180, 200, 21));
+        founds = hLag.intersectedSections(new Rectangle(0, 180, 200, 21));
         assertEquals("Two sections.", 2, founds.size());
     }
 
@@ -453,7 +441,6 @@ public class LagTest
     //        instance.setServices(locationService, sceneService);
     //        fail("The test case is a prototype.");
     //    }
-
     //---------------//
     // testTranslate //
     //---------------//
@@ -492,32 +479,28 @@ public class LagTest
         s1.append(createRun(vTable, 5, 1, 6));
         s1.drawAscii();
 
-        Roi                roi = new BasicRoi(new Rectangle(0, 0, 6, 7));
+        Roi roi = new BasicRoi(new Rectangle(0, 0, 6, 7));
 
-        String             expV = "{Histogram 1-5 size:5 [1:5 2:3 3:2 4:1 5:6]}";
-        String             expH = "{Histogram 0-6 size:7 [0:1 1:4 2:4 3:2 4:2 5:2 6:2]}";
+        String expV = "{Histogram 1-5 size:5 [1:5 2:3 3:2 4:1 5:6]}";
+        String expH = "{Histogram 0-6 size:7 [0:1 1:4 2:4 3:2 4:2 5:2 6:2]}";
 
         Histogram<Integer> histoVS = roi.getSectionHistogram(
-            Orientation.VERTICAL,
-            Collections.singletonList(s1));
+                Orientation.VERTICAL,
+                Collections.singletonList(s1));
         System.out.println("histoVS=" + histoVS);
         assertEquals("Wrong histogram", expV, histoVS.toString());
 
         Histogram<Integer> histoHS = roi.getSectionHistogram(
-            Orientation.HORIZONTAL,
-            Collections.singletonList(s1));
+                Orientation.HORIZONTAL,
+                Collections.singletonList(s1));
         System.out.println("histoHS=" + histoHS);
         assertEquals("Wrong histogram", expH, histoHS.toString());
 
-        Histogram<Integer> histoVR = roi.getRunHistogram(
-            Orientation.VERTICAL,
-            vTable);
+        Histogram<Integer> histoVR = roi.getRunHistogram(Orientation.VERTICAL, vTable);
         System.out.println("histoVR=" + histoVR);
         assertEquals("Wrong histogram", expV, histoVR.toString());
 
-        Histogram<Integer> histoHR = roi.getRunHistogram(
-            Orientation.HORIZONTAL,
-            vTable);
+        Histogram<Integer> histoHR = roi.getRunHistogram(Orientation.HORIZONTAL, vTable);
         System.out.println("histoHR=" + histoHR);
         assertEquals("Wrong histogram", expH, histoHR.toString());
     }
@@ -533,10 +516,7 @@ public class LagTest
         vLag.dump(null);
         dump("s2 dump:", s2);
         commonAssertions(s2);
-        assertEquals(
-            "Bad ContourBox",
-            s2.getBounds(),
-            new Rectangle(180, 100, 2, 21));
+        assertEquals("Bad ContourBox", s2.getBounds(), new Rectangle(180, 100, 2, 21));
 
         Section s3 = vLag.createSection(180, new Run(100, 10, 127));
         s3.append(new Run(101, 20, 127));
@@ -550,9 +530,8 @@ public class LagTest
     //---------------//
     public void testVabsolute ()
     {
-        Point      cp = new Point(12, 34);
-        Point xy = vLag.getOrientation()
-                            .absolute(cp);
+        Point cp = new Point(12, 34);
+        Point xy = vLag.getOrientation().absolute(cp);
         assertEquals("Expected switch.", new Point(cp.y, cp.x), xy);
     }
 
@@ -562,8 +541,7 @@ public class LagTest
     public void testVoriented ()
     {
         Point xy = new Point(12, 34);
-        Point      cp = vLag.getOrientation()
-                            .absolute(xy);
+        Point cp = vLag.getOrientation().absolute(xy);
         assertEquals("Expected switch.", new Point(cp.y, cp.x), xy);
     }
 
@@ -574,17 +552,11 @@ public class LagTest
     protected void setUp ()
     {
         vLag = new BasicLag("My Vertical Lag", Orientation.VERTICAL);
-        vTable = new RunsTable(
-            "Vert Runs",
-            Orientation.VERTICAL,
-            new Dimension(100, 200)); // Absolute
+        vTable = new RunsTable("Vert Runs", Orientation.VERTICAL, new Dimension(100, 200)); // Absolute
         vLag.setRuns(vTable);
 
         hLag = new BasicLag("My Horizontal Lag", Orientation.HORIZONTAL);
-        hTable = new RunsTable(
-            "Hori Runs",
-            Orientation.HORIZONTAL,
-            new Dimension(100, 200)); // Absolute
+        hTable = new RunsTable("Hori Runs", Orientation.HORIZONTAL, new Dimension(100, 200)); // Absolute
         hLag.setRuns(hTable);
     }
 
@@ -593,16 +565,9 @@ public class LagTest
     //------------------//
     private void commonAssertions (Section s)
     {
-        Orientation ori = s.getGraph()
-                           .getOrientation();
-        assertEquals(
-            "Bad Bounds",
-            s.getOrientedBounds(),
-            new Rectangle(100, 180, 21, 2));
-        assertEquals(
-            "Bad Centroid",
-            s.getCentroid(),
-            ori.absolute(new Point(109, 180)));
+        Orientation ori = s.getGraph().getOrientation();
+        assertEquals("Bad Bounds", s.getOrientedBounds(), new Rectangle(100, 180, 21, 2));
+        assertEquals("Bad Centroid", s.getCentroid(), ori.absolute(new Point(109, 180)));
 
         //        assertTrue("Bad Containment", s.contains(100, 180));
         //        assertFalse("Bad Containment", s.contains(100, 181));
@@ -639,14 +604,13 @@ public class LagTest
     // createRun //
     //-----------//
     private Run createRun (RunsTable table,
-                           int       alignment,
-                           int       start,
-                           int       length)
+                           int alignment,
+                           int start,
+                           int length)
     {
         Run run = new Run(start, length, 127);
 
-        table.getSequence(alignment)
-             .add(run);
+        table.getSequence(alignment).add(run);
 
         return run;
     }
@@ -654,7 +618,7 @@ public class LagTest
     //------//
     // dump //
     //------//
-    private void dump (String  title,
+    private void dump (String title,
                        Section section)
     {
         if (title != null) {
@@ -692,15 +656,14 @@ public class LagTest
     private void dump (Polygon polygon)
     {
         for (int i = 0; i < polygon.npoints; i++) {
-            System.out.println(
-                i + ": x" + polygon.xpoints[i] + ",y" + polygon.ypoints[i]);
+            System.out.println(i + ": x" + polygon.xpoints[i] + ",y" + polygon.ypoints[i]);
         }
     }
 
     //------//
     // dump //
     //------//
-    private void dump (int[]  ints,
+    private void dump (int[] ints,
                        String title)
     {
         System.out.println("\n" + title);

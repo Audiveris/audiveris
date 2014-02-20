@@ -29,21 +29,22 @@ import javax.swing.event.ChangeListener;
  * @author Hervé Bitteur
  */
 public class MouseWheelTest
-    extends MouseAdapter
+        extends MouseAdapter
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final double base = 2;
+
     private static final double intervals = 5;
+
     private static final double factor = Math.pow(base, 1d / intervals);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
+    LogSlider slider;
 
-    LogSlider  slider;
     final Zoom zoom = new Zoom();
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // main //
     //------//
@@ -61,14 +62,15 @@ public class MouseWheelTest
         /*
          * java.awt.event.MouseWheelEvent
          * [MOUSE_WHEEL,(628,24),absolute(0,0),button=0,modifiers=Ctrl,extModifiers=Ctrl,clickCount=0,scrollType=WHEEL_UNIT_SCROLL,scrollAmount=3,wheelRotation=-1]
-         * on javax.swing.JPanel[,0,0,800x30,layout=java.awt.FlowLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=]
+         * on
+         * javax.swing.JPanel[,0,0,800x30,layout=java.awt.FlowLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=]
          */
 
         //System.out.println("e: " + e);
         int scrollAmount = e.getScrollAmount();
-        int     scrollType = e.getScrollType();
-        int     unitsToScroll = e.getUnitsToScroll();
-        int     wheelRotation = e.getWheelRotation();
+        int scrollType = e.getScrollType();
+        int unitsToScroll = e.getUnitsToScroll();
+        int wheelRotation = e.getWheelRotation();
         boolean ctrl = e.isControlDown();
 
         //        System.out.println(
@@ -97,19 +99,19 @@ public class MouseWheelTest
     @Test
     public void play ()
     {
-        JFrame    frame = new JFrame(getClass().toString());
+        JFrame frame = new JFrame(getClass().toString());
         Container pane = frame.getContentPane();
         pane.setLayout(new BorderLayout());
 
         final LDoubleField ldf = new LDoubleField("Ratio", "Current ratio");
-        JPanel             panel = new JPanel();
+        JPanel panel = new JPanel();
         panel.add(ldf.getLabel(), BorderLayout.WEST);
         panel.add(ldf.getField(), BorderLayout.CENTER);
         pane.add(panel, BorderLayout.NORTH);
 
-        ldf.getField()
-           .addActionListener(
-            new ActionListener() {
+        ldf.getField().addActionListener(
+                new ActionListener()
+                {
                     @Override
                     public void actionPerformed (ActionEvent e)
                     {
@@ -123,7 +125,8 @@ public class MouseWheelTest
         pane.add(slider, BorderLayout.SOUTH);
 
         zoom.addChangeListener(
-            new ChangeListener() {
+                new ChangeListener()
+                {
                     @Override
                     public void stateChanged (ChangeEvent e)
                     {

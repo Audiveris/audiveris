@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                   L i n e a r E v a l u a t o r T e s t                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2011. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                             L i n e a r E v a l u a t o r T e s t                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -36,27 +36,29 @@ import java.util.List;
  */
 public class LinearEvaluatorTest
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final String[]     inNames = new String[] { "first", "second" };
-    private static final String       dirName = "data/temp";
-    private static final String       fileName = "linear.xml";
+    private static final String[] inNames = new String[]{"first", "second"};
+
+    private static final String dirName = "data/temp";
+
+    private static final String fileName = "linear.xml";
+
     private static final List<Sample> samples = Arrays.asList(
-        new Sample("A", new double[] { 10, 20 }),
-        new Sample("A", new double[] { 11, 23 }),
-        new Sample("A", new double[] { 9, 20 }),
-        new Sample("B", new double[] { 5, 40 }),
-        new Sample("B", new double[] { 7, 50 }),
-        new Sample("C", new double[] { 100, 200 }),
-        new Sample("C", new double[] { 90, 205 }),
-        new Sample("C", new double[] { 95, 220 }),
-        new Sample("C", new double[] { 98, 210 }),
-        new Sample("D", new double[] { 30, 60 }),
-        new Sample("E", new double[] { 80, 20 }),
-        new Sample("E", new double[] { 80, 25 }));
+            new Sample("A", new double[]{10, 20}),
+            new Sample("A", new double[]{11, 23}),
+            new Sample("A", new double[]{9, 20}),
+            new Sample("B", new double[]{5, 40}),
+            new Sample("B", new double[]{7, 50}),
+            new Sample("C", new double[]{100, 200}),
+            new Sample("C", new double[]{90, 205}),
+            new Sample("C", new double[]{95, 220}),
+            new Sample("C", new double[]{98, 210}),
+            new Sample("D", new double[]{30, 60}),
+            new Sample("E", new double[]{80, 20}),
+            new Sample("E", new double[]{80, 25}));
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LinearEvaluatorTest object.
      */
@@ -64,17 +66,16 @@ public class LinearEvaluatorTest
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     @BeforeClass
     public static void setUpClass ()
-        throws Exception
+            throws Exception
     {
     }
 
     @AfterClass
     public static void tearDownClass ()
-        throws Exception
+            throws Exception
     {
     }
 
@@ -86,11 +87,11 @@ public class LinearEvaluatorTest
     {
         System.out.println("\n--categoryDistance");
 
-        double[]        pattern = new double[] { 14, 26 };
-        String          category = "A";
+        double[] pattern = new double[]{14, 26};
+        String category = "A";
         LinearEvaluator instance = createTrainedInstance();
-        double          expResult = 18.25;
-        double          result = instance.categoryDistance(pattern, category);
+        double expResult = 18.25;
+        double result = instance.categoryDistance(pattern, category);
         assertEquals(expResult, result, 0.01);
     }
 
@@ -114,8 +115,8 @@ public class LinearEvaluatorTest
     {
         System.out.println("\n--dumpDistance");
 
-        double[]        pattern = new double[] { 14, 26 };
-        String          category = "A";
+        double[] pattern = new double[]{14, 26};
+        String category = "A";
         LinearEvaluator instance = createTrainedInstance();
         instance.dumpDistance(pattern, category);
     }
@@ -129,7 +130,7 @@ public class LinearEvaluatorTest
         System.out.println("\n--manyPatternDistance");
 
         LinearEvaluator instance = createTrainedInstance();
-        double[]        one = new double[] { 10, 20 };
+        double[] one = new double[]{10, 20};
         System.out.println("Distances to " + Arrays.toString(one));
 
         for (Sample sample : samples) {
@@ -140,11 +141,12 @@ public class LinearEvaluatorTest
 
     /**
      * Test of marshal method, of class LinearEvaluator.
+     *
      * @throws Exception
      */
     /////////@Test
     public void testMarshal ()
-        throws Exception
+            throws Exception
     {
         System.out.println("\n--marshal");
 
@@ -152,10 +154,23 @@ public class LinearEvaluatorTest
         File file = new File(dir, fileName);
         dir.mkdirs();
 
-        OutputStream    os = new FileOutputStream(file);
+        OutputStream os = new FileOutputStream(file);
         LinearEvaluator instance = createTrainedInstance();
         instance.marshal(os);
         os.close();
+    }
+
+    /**
+     * Test of marchal THEN unmarshal methods.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testMarshalThenUnmarshal ()
+            throws Exception
+    {
+        testMarshal();
+        testUnmarshal();
     }
 
     /**
@@ -166,11 +181,11 @@ public class LinearEvaluatorTest
     {
         System.out.println("\n--patternDistance");
 
-        double[]        one = new double[] { 10, 20 };
-        double[]        two = new double[] { 5, 40 };
+        double[] one = new double[]{10, 20};
+        double[] two = new double[]{5, 40};
         LinearEvaluator instance = createTrainedInstance();
-        double          expResult = 0.03;
-        double          result = instance.patternDistance(one, two);
+        double expResult = 0.03;
+        double result = instance.patternDistance(one, two);
         assertEquals(expResult, result, 0.1);
     }
 
@@ -182,10 +197,10 @@ public class LinearEvaluatorTest
     {
         System.out.println("\n--Printer");
 
-        double[]        one = new double[] { 10, 20 };
-        double[]        two = new double[] { 5, 40 };
+        double[] one = new double[]{10, 20};
+        double[] two = new double[]{5, 40};
         LinearEvaluator instance = createTrainedInstance();
-        Printer         printer = instance.new Printer(12);
+        Printer printer = instance.new Printer(12);
 
         System.out.println("defaults: " + printer.getDefaults());
         System.out.println("   names: " + printer.getNames());
@@ -208,32 +223,21 @@ public class LinearEvaluatorTest
 
     /**
      * Test of unmarshal method, of class LinearEvaluator.
+     *
      * @throws Exception
      */
     ////////@Test
     public void testUnmarshal ()
-        throws Exception
+            throws Exception
     {
         System.out.println("\n--unmarshal");
 
-        File            dir = new File(dirName);
-        File            file = new File(dir, fileName);
-        InputStream     in = new FileInputStream(file);
+        File dir = new File(dirName);
+        File file = new File(dir, fileName);
+        InputStream in = new FileInputStream(file);
 
         LinearEvaluator result = LinearEvaluator.unmarshal(in);
         result.dump();
-    }
-
-    /**
-     * Test of marchal THEN unmarshal methods.
-     * @throws Exception
-     */
-    @Test
-    public void testMarshalThenUnmarshal ()
-        throws Exception
-    {
-        testMarshal();
-        testUnmarshal();
     }
 
     private LinearEvaluator createRawInstance ()
