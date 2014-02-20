@@ -1,19 +1,19 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     O r t h o g o n a l M o m e n t s                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               O r t h o g o n a l M o m e n t s                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.moments;
 
 /**
- * Interface {@code OrthogonalMoments} is a general definition for a
- * descriptor of orthogonal moments.
+ * Interface {@code OrthogonalMoments} is a general definition for a descriptor of
+ * orthogonal moments.
  *
  * @param <D> the descriptor type
  *
@@ -21,7 +21,7 @@ package omr.moments;
  */
 public interface OrthogonalMoments<D extends OrthogonalMoments<D>>
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the distance to another descriptor instance.
@@ -51,6 +51,7 @@ public interface OrthogonalMoments<D extends OrthogonalMoments<D>>
     void setMoment (int m,
                     int n,
                     double value);
+
     //    /**
     //     * Report a label for the (m,n) moment.
     //     * @param m m order

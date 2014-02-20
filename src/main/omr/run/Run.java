@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                   R u n                                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                             R u n                                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.run;
 
@@ -18,15 +18,16 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code Run} implements a contiguous run of pixels of the same
- * color. Note that the direction (vertical or horizontal) is not relevant.
+ * Class {@code Run} implements a contiguous run of pixels of the same color.
+ * <p>
+ * Note that the direction (vertical or horizontal) is not relevant.
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class Run
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Number of pixels */
     @XmlAttribute
@@ -43,7 +44,7 @@ public class Run
     /** Containing section, if any */
     private Section section;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----//
     // Run //
     //-----//
@@ -73,25 +74,7 @@ public class Run
         this(0, 0, 0);
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //-----------------//
-    // getCommonLength //
-    //-----------------//
-    /**
-     * Report the length of the common part with another run (assumed to be
-     * adjacent)
-     *
-     * @param other the other run
-     * @return the length of the common part
-     */
-    public int getCommonLength (Run other)
-    {
-        int startCommon = Math.max(this.getStart(), other.getStart());
-        int stopCommon = Math.min(this.getStop(), other.getStop());
-
-        return stopCommon - startCommon + 1;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getLength //
     //-----------//
@@ -116,6 +99,19 @@ public class Run
     public final int getLevel ()
     {
         return level;
+    }
+
+    //------------//
+    // getSection //
+    //------------//
+    /**
+     * Report the section that contains this run
+     *
+     * @return the containing section, or null if none
+     */
+    public Section getSection ()
+    {
+        return section;
     }
 
     //----------//
@@ -144,32 +140,6 @@ public class Run
     public final int getStop ()
     {
         return (start + length) - 1;
-    }
-
-    //-----------//
-    // translate //
-    //-----------//
-    /**
-     * Apply a delta-coordinate translation to this run
-     *
-     * @param dc the (coordinate) translation
-     */
-    public final void translate (int dc)
-    {
-        start += dc;
-    }
-
-    //------------//
-    // getSection //
-    //------------//
-    /**
-     * Report the section that contains this run
-     *
-     * @return the containing section, or null if none
-     */
-    public Section getSection ()
-    {
-        return section;
     }
 
     //-------------//
@@ -214,13 +184,41 @@ public class Run
     {
         StringBuilder sb = new StringBuilder(80);
         sb.append("{Run ");
-        sb.append(start)
-                .append("/")
-                .append(length);
-        sb.append("@")
-                .append(level);
+        sb.append(start).append("/").append(length);
+        sb.append("@").append(level);
         sb.append("}");
 
         return sb.toString();
+    }
+
+    //-----------//
+    // translate //
+    //-----------//
+    /**
+     * Apply a delta-coordinate translation to this run
+     *
+     * @param dc the (coordinate) translation
+     */
+    public final void translate (int dc)
+    {
+        start += dc;
+    }
+
+    //-----------------//
+    // getCommonLength //
+    //-----------------//
+    /**
+     * Report the length of the common part with another run (assumed to be
+     * adjacent)
+     *
+     * @param other the other run
+     * @return the length of the common part
+     */
+    public int getCommonLength (Run other)
+    {
+        int startCommon = Math.max(this.getStart(), other.getStart());
+        int stopCommon = Math.min(this.getStop(), other.getStop());
+
+        return stopCommon - startCommon + 1;
     }
 }

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           G r i d B u i l d e r                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     G r i d B u i l d e r                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -36,9 +36,8 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code GridBuilder} computes the grid of systems of a sheet
- * picture, based on the retrieval of horizontal staff lines and of
- * vertical bar lines.
+ * Class {@code GridBuilder} computes the grid of systems of a sheet picture, based on
+ * the retrieval of horizontal staff lines and of vertical bar lines.
  * <p>
  * The actual processing is delegated to 3 companions:<ul>
  * <li>{@link LinesRetriever} for retrieving horizontal staff lines.</li>
@@ -50,16 +49,13 @@ import java.util.Collection;
  */
 public class GridBuilder
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            GridBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(GridBuilder.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -70,7 +66,7 @@ public class GridBuilder
     /** Companion in charge of bar lines. */
     public final BarsRetriever barsRetriever;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // GridBuilder //
     //-------------//
@@ -90,7 +86,7 @@ public class GridBuilder
         sheet.addItemRenderer(linesRetriever);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // buildInfo //
     //-----------//
@@ -114,8 +110,7 @@ public class GridBuilder
                 displayEditor();
 
                 // Inter board
-                sheet.getAssembly()
-                        .addBoard(Step.DATA_TAB, new InterBoard(sheet));
+                sheet.getAssembly().addBoard(Step.DATA_TAB, new InterBoard(sheet));
             }
 
             // Retrieve the horizontal staff lines filaments with long sections
@@ -187,8 +182,7 @@ public class GridBuilder
      */
     private void buildAllLags ()
     {
-        final boolean showRuns = constants.showRuns.isSet()
-                                 && (Main.getGui() != null);
+        final boolean showRuns = constants.showRuns.isSet() && (Main.getGui() != null);
         final StopWatch watch = new StopWatch("buildAllLags");
 
         try {
@@ -198,9 +192,7 @@ public class GridBuilder
             // hLag creation
             watch.start("buildHorizontalLag");
 
-            RunsTable longVertTable = linesRetriever.buildHorizontalLag(
-                    wholeVertTable,
-                    showRuns);
+            RunsTable longVertTable = linesRetriever.buildHorizontalLag(wholeVertTable, showRuns);
 
             // vLag creation
             watch.start("buildVerticalLag");
@@ -220,26 +212,23 @@ public class GridBuilder
         sheet.createSymbolsControllerAndEditor();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Boolean printWatch = new Constant.Boolean(
                 false,
                 "Should we print out the stop watch?");
 
-        Constant.Boolean showRuns = new Constant.Boolean(
-                false,
-                "Should we show view on runs?");
+        Constant.Boolean showRuns = new Constant.Boolean(false, "Should we show view on runs?");
 
         Constant.Boolean buildDewarpedTarget = new Constant.Boolean(
                 false,
                 "Should we build a dewarped target?");
-
     }
 }

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         S c r i p t A c t i o n s                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   S c r i p t A c t i o n s                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.script;
 
@@ -45,23 +45,19 @@ import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
 /**
- * Class {@code ScriptActions} gathers UI actions related to script
- * handling. These static member classes are ready to be picked by the plugins
- * mechanism.
+ * Class {@code ScriptActions} gathers UI actions related to script handling.
+ * These static member classes are ready to be picked by the plugins mechanism.
  *
  * @author Hervé Bitteur
  */
 public class ScriptActions
         extends SheetActions
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ScriptActions.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScriptActions.class);
 
     /** Singleton */
     private static ScriptActions INSTANCE;
@@ -69,7 +65,7 @@ public class ScriptActions
     /** Default parameter. */
     public static final Param<Boolean> defaultPrompt = new Default();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // ScriptActions //
     //---------------//
@@ -80,7 +76,7 @@ public class ScriptActions
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // checkStored //
     //-------------//
@@ -99,8 +95,7 @@ public class ScriptActions
                     "Save script for score " + script.getScore().getRadix() + "?");
 
             if (answer == JOptionPane.YES_OPTION) {
-                Task<Void, Void> task = getInstance()
-                        .storeScript(null);
+                Task<Void, Void> task = getInstance().storeScript(null);
 
                 if (task != null) {
                     task.execute();
@@ -198,9 +193,7 @@ public class ScriptActions
                 true,
                 Main.getGui().getFrame(),
                 getDefaultScriptFile(score),
-                new OmrFileFilter(
-                "Script files",
-                new String[]{ScriptManager.SCRIPT_EXTENSION}));
+                new OmrFileFilter("Script files", new String[]{ScriptManager.SCRIPT_EXTENSION}));
 
         if (scriptFile != null) {
             return new StoreScriptTask(score.getScript(), scriptFile);
@@ -222,18 +215,18 @@ public class ScriptActions
     {
         return (score.getScriptFile() != null) ? score.getScriptFile()
                 : new File(
-                constants.defaultScriptDirectory.getValue(),
-                score.getRadix() + ScriptManager.SCRIPT_EXTENSION);
+                        constants.defaultScriptDirectory.getValue(),
+                        score.getRadix() + ScriptManager.SCRIPT_EXTENSION);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Default directory for saved scripts */
         Constant.String defaultScriptDirectory = new Constant.String(
@@ -244,7 +237,6 @@ public class ScriptActions
         Constant.Boolean closeConfirmation = new Constant.Boolean(
                 true,
                 "Should we ask confirmation for closing a sheet with unsaved script?");
-
     }
 
     //---------//
@@ -253,7 +245,7 @@ public class ScriptActions
     private static class Default
             extends Param<Boolean>
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Boolean getSpecific ()
@@ -264,12 +256,10 @@ public class ScriptActions
         @Override
         public boolean setSpecific (Boolean specific)
         {
-            if (!getSpecific()
-                    .equals(specific)) {
+            if (!getSpecific().equals(specific)) {
                 constants.closeConfirmation.setValue(specific);
                 logger.info(
-                        "You will {} be prompted to save script when"
-                        + " closing score",
+                        "You will {} be prompted to save script when" + " closing score",
                         specific ? "now" : "no longer");
 
                 return true;
@@ -285,17 +275,17 @@ public class ScriptActions
     private static class LoadScriptTask
             extends BasicTask
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private File file;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         LoadScriptTask (File file)
         {
             this.file = file;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -304,9 +294,7 @@ public class ScriptActions
             logger.info("Running script file {} ...", file);
 
             try {
-                final Script script = ScriptManager.getInstance()
-                        .load(
-                        new FileInputStream(file));
+                final Script script = ScriptManager.getInstance().load(new FileInputStream(file));
 
                 if (logger.isDebugEnabled()) {
                     script.dump();
@@ -329,13 +317,13 @@ public class ScriptActions
     private static class StoreScriptTask
             extends BasicTask
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private Script script;
 
         private File file;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         StoreScriptTask (Script script,
                          File file)
         {
@@ -343,7 +331,7 @@ public class ScriptActions
             this.file = file;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws InterruptedException
@@ -358,12 +346,10 @@ public class ScriptActions
                 }
 
                 fos = new FileOutputStream(file);
-                omr.script.ScriptManager.getInstance()
-                        .store(script, fos);
+                omr.script.ScriptManager.getInstance().store(script, fos);
                 logger.info("Script stored as {}", file);
                 constants.defaultScriptDirectory.setValue(file.getParent());
-                script.getScore()
-                        .setScriptFile(file);
+                script.getScore().setScriptFile(file);
             } catch (FileNotFoundException ex) {
                 logger.warn("Cannot find script file " + file, ex);
             } catch (JAXBException ex) {

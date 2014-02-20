@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      G h o s t D r o p A d a p t e r                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                G h o s t D r o p A d a p t e r                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.dnd;
 
@@ -18,8 +18,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class {@code GhostDropAdapter} is a MouseAdapter specifically meant
- * for handling {@link GhostDropEvent} instances.
+ * Class {@code GhostDropAdapter} is a MouseAdapter specifically meant for handling
+ * {@link GhostDropEvent} instances.
  *
  * @param <A> the precise type for action carried by the drop
  * @author Hervé Bitteur (from Romain Guy's demo)
@@ -27,13 +27,13 @@ import java.util.Set;
 public abstract class GhostDropAdapter<A>
         extends MouseAdapter
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The related glasspane */
     protected final GhostGlassPane glassPane;
 
     /** The registered listeners */
-    private final Set<GhostDropListener<A>> listeners = new HashSet<>();
+    private final Set<GhostDropListener<A>> listeners = new HashSet<GhostDropListener<A>>();
 
     /** The event-carried action */
     protected A action;
@@ -41,7 +41,7 @@ public abstract class GhostDropAdapter<A>
     /** The image to be displayed on the glasspane */
     protected BufferedImage image;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // GhostDropAdapter //
     //------------------//
@@ -58,7 +58,7 @@ public abstract class GhostDropAdapter<A>
         this.action = action;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // addDropListener //
     //-----------------//
@@ -90,9 +90,7 @@ public abstract class GhostDropAdapter<A>
     {
         glassPane.setVisible(true);
 
-        ScreenPoint screenPoint = new ScreenPoint(
-                e.getXOnScreen(),
-                e.getYOnScreen());
+        ScreenPoint screenPoint = new ScreenPoint(e.getXOnScreen(), e.getYOnScreen());
 
         glassPane.setImage(image);
         glassPane.setPoint(screenPoint);
@@ -104,14 +102,12 @@ public abstract class GhostDropAdapter<A>
     @Override
     public void mouseReleased (MouseEvent e)
     {
-        ScreenPoint screenPoint = new ScreenPoint(
-                e.getXOnScreen(),
-                e.getYOnScreen());
+        ScreenPoint screenPoint = new ScreenPoint(e.getXOnScreen(), e.getYOnScreen());
 
         glassPane.setVisible(false);
         glassPane.setImage(null);
 
-        fireDropEvent(new GhostDropEvent<>(action, screenPoint));
+        fireDropEvent(new GhostDropEvent<A>(action, screenPoint));
     }
 
     //--------------------//

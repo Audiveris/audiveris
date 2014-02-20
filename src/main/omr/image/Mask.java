@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                   M a s k                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                             M a s k                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -27,23 +27,22 @@ import java.awt.geom.Area;
  */
 public class Mask
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Mask.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Mask area. */
     private final Area area;
 
     private final Rectangle rect;
 
     private final Table.UnsignedByte bitmap;
-    
-    /** Number of relevant points. */
-    private int pointCount; 
 
-    //~ Constructors -----------------------------------------------------------
+    /** Number of relevant points. */
+    private int pointCount;
+
+    //~ Constructors -------------------------------------------------------------------------------
     //------//
     // Mask //
     //------//
@@ -60,7 +59,7 @@ public class Mask
         bitmap = computeRelevantPoints(area);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // apply //
     //-------//
@@ -86,6 +85,14 @@ public class Mask
         }
     }
 
+    //------//
+    // dump //
+    //------//
+    public void dump (String title)
+    {
+        bitmap.dump(title);
+    }
+
     //---------//
     // getArea //
     //---------//
@@ -97,14 +104,23 @@ public class Mask
         return area;
     }
 
+    //---------------//
+    // getPointCount //
+    //---------------//
+    /**
+     * @return the pointCount
+     */
+    public int getPointCount ()
+    {
+        return pointCount;
+    }
+
     //-----------------------//
     // computeRelevantPoints //
     //-----------------------//
     private Table.UnsignedByte computeRelevantPoints (Area area)
     {
-        Table.UnsignedByte table = new Table.UnsignedByte(
-                rect.width,
-                rect.height);
+        Table.UnsignedByte table = new Table.UnsignedByte(rect.width, rect.height);
         Point loc = rect.getLocation();
         table.fill(PixelFilter.BACKGROUND);
 
@@ -123,33 +139,14 @@ public class Mask
 
         return table;
     }
-    
-    //------//
-    // dump //
-    //------//
-    public void dump(String title)
-    {
-        bitmap.dump(title);
-    }
 
-    //---------------//
-    // getPointCount //
-    //---------------//
-    /**
-     * @return the pointCount
-     */
-    public int getPointCount ()
-    {
-        return pointCount;
-    }
-
-    //~ Inner Interfaces -------------------------------------------------------
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
     public static interface Adapter
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Method called on each mask relevant point.

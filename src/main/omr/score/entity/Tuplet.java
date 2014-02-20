@@ -1,17 +1,16 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                T u p l e t                                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                          T u p l e t                                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
-import java.util.ArrayList;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
@@ -26,6 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Point;
 import java.awt.geom.Line2D;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,27 +34,26 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code Tuplet} represents a tuplet notation and encapsulates
- * the translation from tuplet glyph to the impacted chords.
+ * Class {@code Tuplet} represents a tuplet notation and encapsulates the translation
+ * from tuplet glyph to the impacted chords.
  *
  * @author Hervé Bitteur
  */
 public class Tuplet
         extends AbstractNotation
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Tuplet.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /**
      * Set of chords involved in the tuplet sequence.
      */
     private final SortedSet<Chord> chords;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //--------//
     // Tuplet //
@@ -87,7 +86,7 @@ public class Tuplet
         chords.last().addNotation(this);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //----------//
     // populate //
@@ -109,9 +108,11 @@ public class Tuplet
 
         // Let's gather the set of possible chords, ordered by their distance
         // (abscissa-based) to the position of the tuplet sign.
-        List<Chord> candidates = new ArrayList<>();
+        List<Chord> candidates = new ArrayList<Chord>();
+
         for (TreeNode node : measure.getChords()) {
             Chord chord = (Chord) node;
+
             if (chord.getReferencePoint() != null) {
                 // No tuplet on a whole
                 if (!chord.isWholeDuration()) {
@@ -119,23 +120,14 @@ public class Tuplet
                 }
             }
         }
+
         Collections.sort(candidates, new DxComparator(point));
 
         // Now, get the properly embraced chords
-        SortedSet<Chord> chords = getEmbracedChords(
-                glyph,
-                measure,
-                point,
-                candidates,
-                null);
+        SortedSet<Chord> chords = getEmbracedChords(glyph, measure, point, candidates, null);
 
         if (chords != null) {
-            glyph.setTranslation(
-                    new Tuplet(
-                    measure,
-                    point,
-                    chords,
-                    glyph));
+            glyph.setTranslation(new Tuplet(measure, point, chords, glyph));
         } else {
             // Nullify shape unless manual
             if (!glyph.isManualShape()) {
@@ -159,7 +151,7 @@ public class Tuplet
     @Override
     public List<Line2D> getTranslationLinks (Glyph glyph)
     {
-        List<Line2D> links = new ArrayList<>();
+        List<Line2D> links = new ArrayList<Line2D>();
 
         for (Chord chord : chords) {
             links.addAll(chord.getTranslationLinks(glyph));
@@ -224,12 +216,11 @@ public class Tuplet
                                                        List<Chord> candidates,
                                                        Staff requiredStaff)
     {
-        logger.debug("{} {}{}",
+        logger.debug(
+                "{} {}{}",
                 glyph.getShape(),
                 glyph.idString(),
-                (requiredStaff != null)
-                ? (" staff#" + requiredStaff.getId())
-                : "");
+                (requiredStaff != null) ? (" staff#" + requiredStaff.getId()) : "");
 
         // We consider each candidate in turn, with its duration
         // in order to determine the duration base of the tuplet
@@ -253,8 +244,7 @@ public class Tuplet
             } else if (staff != commonStaff) {
                 // We have chords in different staves, we must fix that.
                 // We choose the closest in ordinate of the chords so far
-                SortedSet<Chord> verticals = new TreeSet<>(
-                        new DyComparator(point));
+                SortedSet<Chord> verticals = new TreeSet<Chord>(new DyComparator(point));
 
                 for (Chord ch : candidates) {
                     verticals.add(ch);
@@ -326,7 +316,7 @@ public class Tuplet
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //--------------//
     // DxComparator //
@@ -334,18 +324,18 @@ public class Tuplet
     private static class DxComparator
             implements Comparator<Chord>
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** The location of the tuplet sign */
         private final Point signPoint;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public DxComparator (Point signPoint)
         {
             this.signPoint = signPoint;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /** Compare their horizontal distance from the signPoint reference */
         @Override
         public int compare (Chord c1,
@@ -364,18 +354,18 @@ public class Tuplet
     private static class DyComparator
             implements Comparator<Chord>
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** The location of the tuplet sign */
         private final Point signPoint;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public DyComparator (Point signPoint)
         {
             this.signPoint = signPoint;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /** Compare their vertical distance from the signPoint reference */
         @Override
         public int compare (Chord c1,
@@ -401,29 +391,29 @@ public class Tuplet
      */
     private static class TupletCollector
     {
-        //~ Enumerations -------------------------------------------------------
+        //~ Enumerations ---------------------------------------------------------------------------
 
         /** Describe the current status of the tuplet collector */
         public enum Status
         {
-            //~ Enumeration constant initializers ------------------------------
+            //~ Enumeration constant initializers --------------------------------------------------
 
             TOO_SHORT("Too short"),
             OK("Correct"),
             TOO_LONG("Too long"),
             OUTSIDE("Outside chords");
 
-            //~ Instance fields ------------------------------------------------
+            //~ Instance fields --------------------------------------------------------------------
             final String label;
 
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
             private Status (String label)
             {
                 this.label = label;
             }
         }
 
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
         /** Underlying glyph */
         private final Glyph glyph;
 
@@ -445,7 +435,7 @@ public class Tuplet
         /** Current status */
         private Status status = Status.TOO_SHORT;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public TupletCollector (Glyph glyph,
                                 SortedSet<Chord> chords)
         {
@@ -454,7 +444,7 @@ public class Tuplet
             this.chords = chords;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public void dump ()
         {
             StringBuilder sb = new StringBuilder();
@@ -490,8 +480,8 @@ public class Tuplet
             }
 
             StringBuilder sb = new StringBuilder();
-            sb.append(status.label).append(" sequence in ")
-                    .append(glyph.getShape()).append(": ").append(total);
+            sb.append(status.label).append(" sequence in ").append(glyph.getShape()).append(": ").append(
+                    total);
 
             if (expectedTotal != Rational.MAX_VALUE) {
                 sb.append(" vs ").append(expectedTotal);

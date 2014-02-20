@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              T e x t F o n t                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        T e x t F o n t                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -25,22 +25,19 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code TextFont} is meant to simplify the use of text font for
- * pieces of text such as titles, directions, lyrics, etc.
+ * Class {@code TextFont} is meant to simplify the use of text font for pieces of text
+ * such as titles, directions, lyrics, etc.
  *
  * @author Hervé Bitteur
  */
 public class TextFont
         extends OmrFont
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            TextFont.class);
+    private static final Logger logger = LoggerFactory.getLogger(TextFont.class);
 
     /** Name of the chosen underlying text font */
     private static final String fontName = constants.defaultTextFontName.getValue();
@@ -52,7 +49,7 @@ public class TextFont
     /** Ratio from a 300 DPI scan to font point-size (72 pt/inch) */
     public static final float TO_POINT = 72f / 300f;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------//
     // TextFont //
@@ -84,8 +81,7 @@ public class TextFont
     public TextFont (FontInfo info)
     {
         this(
-                info.isSerif ? Font.SERIF
-                : (info.isMonospace ? Font.MONOSPACED : Font.SANS_SERIF),
+                info.isSerif ? Font.SERIF : (info.isMonospace ? Font.MONOSPACED : Font.SANS_SERIF),
                 (info.isBold ? Font.BOLD : 0) | (info.isItalic ? Font.ITALIC : 0),
                 info.pointsize);
     }
@@ -103,7 +99,7 @@ public class TextFont
         super(fontName, Font.PLAIN, size);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //-----------------//
     // computeFontSize //
@@ -137,14 +133,14 @@ public class TextFont
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.String defaultTextFontName = new Constant.String(
                 "Serif",
@@ -154,6 +150,5 @@ public class TextFont
                 "points",
                 10,
                 "Default font point size for texts");
-
     }
 }

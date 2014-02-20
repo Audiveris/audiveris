@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     A b s t r a c t D i r e c t i o n                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               A b s t r a c t D i r e c t i o n                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -21,8 +21,8 @@ import java.awt.Point;
 /**
  * Class {@code Direction} is the basis for all variants of direction
  * indications: pedal, words, dynamics, wedge, dashes, etc...
- *
- * <p>For some directions (such as wedge, dashes, pedal), we may have two
+ * <p>
+ * For some directions (such as wedge, dashes, pedal), we may have two
  * "events": the starting event and the stopping event. Both will trigger the
  * creation of a Direction instance, the difference being made by the "start"
  * boolean.
@@ -33,13 +33,11 @@ public abstract class AbstractDirection
         extends MeasureElement
         implements Direction
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractDirection.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractDirection.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /** Creates a new instance of Direction
      *
      * @param measure        the containing measure

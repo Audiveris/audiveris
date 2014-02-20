@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             L C o m b o B o x                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       L C o m b o B o x                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.field;
 
@@ -16,9 +16,8 @@ import java.awt.event.ActionListener;
 import javax.swing.JComboBox;
 
 /**
- * Class {@code LComboBox} is a logical combination of a JLabel and a
- * JComboBox, a "Labeled Combo", where the label describes
- * the dynamic content of the combo.
+ * Class {@code LComboBox} is a logical combination of a JLabel and a JComboBox,
+ * a "Labeled Combo", where the label describes the dynamic content of the combo.
  *
  * @param <E> type of combo entity
  *
@@ -27,7 +26,7 @@ import javax.swing.JComboBox;
 public class LComboBox<E>
         extends LField<JComboBox<E>>
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //-----------//
     // LComboBox //
@@ -44,10 +43,10 @@ public class LComboBox<E>
                       String tip,
                       E[] items)
     {
-        super(label, tip, new JComboBox<>(items));
+        super(label, tip, new JComboBox<E>(items));
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // addActionListener //
     //-------------------//
@@ -58,8 +57,7 @@ public class LComboBox<E>
      */
     public void addActionListener (ActionListener listener)
     {
-        getField()
-                .addActionListener(listener);
+        getField().addActionListener(listener);
     }
 
     //-----------------//
@@ -68,8 +66,7 @@ public class LComboBox<E>
     @SuppressWarnings("unchecked")
     public E getSelectedItem ()
     {
-        return (E) getField()
-                .getSelectedItem();
+        return (E) getField().getSelectedItem();
     }
 
     //-----------------//
@@ -77,7 +74,6 @@ public class LComboBox<E>
     //-----------------//
     public void setSelectedItem (E item)
     {
-        getField()
-                .setSelectedItem(item);
+        getField().setSelectedItem(item);
     }
 }

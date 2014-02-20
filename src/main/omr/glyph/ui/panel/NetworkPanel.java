@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          N e t w o r k P a n e l                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    N e t w o r k P a n e l                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui.panel;
 
@@ -39,22 +39,20 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code NetworkPanel} is the user interface that handles the
- * training of the neural network engine. It is a dedicated companion of
- * class {@link GlyphTrainer}.
+ * Class {@code NetworkPanel} is the user interface that handles the training of the
+ * neural network engine.
+ * It is a dedicated companion of class {@link GlyphTrainer}.
  *
  * @author Hervé Bitteur
  */
 class NetworkPanel
         extends TrainingPanel
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            NetworkPanel.class);
+    private static final Logger logger = LoggerFactory.getLogger(NetworkPanel.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Best neural weights so far */
     private NeuralNetwork.Backup bestSnap;
 
@@ -79,9 +77,7 @@ class NetworkPanel
             "%.2f");
 
     /** Output of Estimated time for end of training */
-    private LTextField eta = new LTextField(
-            "ETA",
-            "Estimated time for end of training");
+    private LTextField eta = new LTextField("ETA", "Estimated time for end of training");
 
     /** Input field for Maximum number of iterations to perform */
     private LIntegerField listEpochs = new LIntegerField(
@@ -144,7 +140,7 @@ class NetworkPanel
     /** Training start time */
     private long startTime;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // NetworkPanel //
     //--------------//
@@ -162,12 +158,7 @@ class NetworkPanel
                          ChangeListener errorListener,
                          SelectionPanel selectionPanel)
     {
-        super(
-                task,
-                standardWidth,
-                GlyphNetwork.getInstance(),
-                selectionPanel,
-                6);
+        super(task, standardWidth, GlyphNetwork.getInstance(), selectionPanel, 6);
         this.errorListener = errorListener;
         task.addObserver(this);
 
@@ -177,13 +168,12 @@ class NetworkPanel
             errorEvent = null;
         }
 
-        eta.getField()
-                .setEditable(false); // ETA is just an output
+        eta.getField().setEditable(false); // ETA is just an output
 
-        component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                .put(KeyStroke.getKeyStroke("ENTER"), "readParams");
-        component.getActionMap()
-                .put("readParams", new ParamAction());
+        component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke("ENTER"),
+                "readParams");
+        component.getActionMap().put("readParams", new ParamAction());
 
         trainAction = new NetworkTrainAction(
                 "Re-Train",
@@ -198,7 +188,7 @@ class NetworkPanel
         displayParams();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // epochEnded //
     //------------//
@@ -229,38 +219,37 @@ class NetworkPanel
 
         SwingUtilities.invokeLater(
                 new Runnable()
-        {
-            // This part is run on swing thread
-            @Override
-            public void run ()
-            {
-                // Update current values
-                trainIndex.setValue(index);
-                trainError.setValue(mse);
+                {
+                    // This part is run on swing thread
+                    @Override
+                    public void run ()
+                    {
+                        // Update current values
+                        trainIndex.setValue(index);
+                        trainError.setValue(mse);
 
-                // Update best values
-                if (snapTaken) {
-                    bestIndex.setValue(index);
-                    bestError.setValue(mse);
+                        // Update best values
+                        if (snapTaken) {
+                            bestIndex.setValue(index);
+                            bestError.setValue(mse);
 
-                    if (errorListener != null) {
-                        errorListener.stateChanged(errorEvent);
+                            if (errorListener != null) {
+                                errorListener.stateChanged(errorEvent);
+                            }
+                        }
+
+                        // Update progress bar ?
+                        progressBar.setValue(index);
+
+                        // Compute ETA
+                        long sofar = System.currentTimeMillis() - startTime;
+                        long total = (GlyphNetwork.getInstance().getListEpochs() * sofar) / index;
+                        Date etaDate = new Date(startTime + total);
+                        eta.setText(dateFormat.format(etaDate));
+
+                        component.repaint();
                     }
-                }
-
-                // Update progress bar ?
-                progressBar.setValue(index);
-
-                // Compute ETA
-                long sofar = System.currentTimeMillis() - startTime;
-                long total = (GlyphNetwork.getInstance()
-                        .getListEpochs() * sofar) / index;
-                Date etaDate = new Date(startTime + total);
-                eta.setText(dateFormat.format(etaDate));
-
-                component.repaint();
-            }
-        });
+                });
     }
 
     //--------------//
@@ -291,23 +280,23 @@ class NetworkPanel
 
         SwingUtilities.invokeLater(
                 new Runnable()
-        {
-            // This part is run on swing thread
-            @Override
-            public void run ()
-            {
-                // Update best values
-                bestIndex.setValue(index);
-                bestError.setValue(mse);
+                {
+                    // This part is run on swing thread
+                    @Override
+                    public void run ()
+                    {
+                        // Update best values
+                        bestIndex.setValue(index);
+                        bestError.setValue(mse);
 
-                if (errorListener != null) {
-                    errorListener.stateChanged(errorEvent);
-                }
+                        if (errorListener != null) {
+                            errorListener.stateChanged(errorEvent);
+                        }
 
-                // Remember starting time
-                startTime = System.currentTimeMillis();
-            }
-        });
+                        // Remember starting time
+                        startTime = System.currentTimeMillis();
+                    }
+                });
     }
 
     //--------//
@@ -450,21 +439,21 @@ class NetworkPanel
         progressBar.setMaximum(network.getListEpochs());
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // BestAction //
     //------------//
     private class BestAction
             extends AbstractAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public BestAction ()
         {
             super("Use Best");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -486,14 +475,14 @@ class NetworkPanel
     private class LastAction
             extends AbstractAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public LastAction ()
         {
             super("Use Last");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -526,7 +515,7 @@ class NetworkPanel
     private class NetworkTrainAction
             extends TrainingPanel.TrainAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public NetworkTrainAction (String title,
                                    EvaluationEngine.StartingMode mode,
@@ -537,7 +526,7 @@ class NetworkPanel
             this.confirmationRequired = confirmationRequired;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //-------//
         // train //
         //-------//
@@ -564,7 +553,7 @@ class NetworkPanel
     private class ParamAction
             extends AbstractAction
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         // Purpose is just to read and remember the data from the various
         // input fields. Triggered when user presses Enter in one of these
@@ -583,14 +572,14 @@ class NetworkPanel
     private class StopAction
             extends AbstractAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public StopAction ()
         {
             super("Stop");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              B a s i c L a g                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        B a s i c L a g                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag;
 
@@ -45,19 +45,16 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code BasicLag} is a basic implementation of {@link Lag}
- * interface.
+ * Class {@code BasicLag} is a basic implementation of {@link Lag} interface.
  *
  * @author Hervé Bitteur
  */
 public class BasicLag
         extends BasicDigraph<Lag, Section>
-        implements Lag,
-                   EventSubscriber<UserEvent>
+        implements Lag, EventSubscriber<UserEvent>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(BasicLag.class);
 
     /** Events read on location service */
@@ -68,11 +65,10 @@ public class BasicLag
 
     /** Events read on section service */
     public static final Class[] sctEventsRead = new Class<?>[]{
-        SectionIdEvent.class,
-        SectionEvent.class
+        SectionIdEvent.class, SectionEvent.class
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Orientation of the lag */
     private final Orientation orientation;
 
@@ -85,7 +81,7 @@ public class BasicLag
     /** Hosted section service */
     protected final SelectionService lagService;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // BasicLag //
     //----------//
@@ -119,7 +115,7 @@ public class BasicLag
         lagService = new SelectionService(name, Lag.eventsWritten);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addRuns //
     //---------//
@@ -171,15 +167,6 @@ public class BasicLag
         return runsTable.getRunAt(x, y);
     }
 
-    //---------------//
-    // getRunService //
-    //---------------//
-    @Override
-    public SelectionService getRunService ()
-    {
-        return runsTable.getRunService();
-    }
-
     //---------//
     // getRuns //
     //---------//
@@ -189,15 +176,6 @@ public class BasicLag
         return runsTable;
     }
 
-    //-------------------//
-    // getSectionService //
-    //-------------------//
-    @Override
-    public SelectionService getSectionService ()
-    {
-        return lagService;
-    }
-
     //-------------//
     // getSections //
     //-------------//
@@ -205,6 +183,56 @@ public class BasicLag
     public final Collection<Section> getSections ()
     {
         return getVertices();
+    }
+
+    //-------------------//
+    // containedSections //
+    //-------------------//
+    @Override
+    public Set<Section> containedSections (Rectangle rect)
+    {
+        return Sections.containedSections(rect, getSections());
+    }
+
+    //-------------//
+    // cutServices //
+    //-------------//
+    @Override
+    public void cutServices ()
+    {
+        if (runsTable != null) {
+            runsTable.cutLocationService(locationService);
+
+            for (Class<?> eventClass : runEventsRead) {
+                getRunService().unsubscribe(eventClass, this);
+            }
+        }
+
+        for (Class<?> eventClass : locEventsRead) {
+            locationService.unsubscribe(eventClass, this);
+        }
+
+        for (Class<?> eventClass : sctEventsRead) {
+            lagService.unsubscribe(eventClass, this);
+        }
+    }
+
+    //---------------//
+    // getRunService //
+    //---------------//
+    @Override
+    public SelectionService getRunService ()
+    {
+        return runsTable.getRunService();
+    }
+
+    //-------------------//
+    // getSectionService //
+    //-------------------//
+    @Override
+    public SelectionService getSectionService ()
+    {
+        return lagService;
     }
 
     //--------------------//
@@ -223,8 +251,16 @@ public class BasicLag
     @SuppressWarnings("unchecked")
     public Set<Section> getSelectedSectionSet ()
     {
-        return (Set<Section>) getSectionService().getSelection(
-                SectionSetEvent.class);
+        return (Set<Section>) getSectionService().getSelection(SectionSetEvent.class);
+    }
+
+    //---------------------//
+    // intersectedSections //
+    //---------------------//
+    @Override
+    public Set<Section> intersectedSections (Rectangle rect)
+    {
+        return Sections.lookupIntersectedSections(rect, getSections());
     }
 
     //------------//
@@ -238,24 +274,6 @@ public class BasicLag
     public boolean isVertical ()
     {
         return orientation.isVertical();
-    }
-
-    //---------------------//
-    // intersectedSections //
-    //---------------------//
-    @Override
-    public Set<Section> intersectedSections (Rectangle rect)
-    {
-        return Sections.lookupIntersectedSections(rect, getSections());
-    }
-
-    //-------------------//
-    // containedSections //
-    //-------------------//
-    @Override
-    public Set<Section> containedSections (Rectangle rect)
-    {
-        return Sections.containedSections(rect, getSections());
     }
 
     //---------//
@@ -330,7 +348,7 @@ public class BasicLag
     public List<Section> purgeSections (Predicate<Section> predicate)
     {
         // List of sections to be purged (to avoid concurrent modifications)
-        List<Section> purges = new ArrayList<>(2000);
+        List<Section> purges = new ArrayList<Section>(2000);
 
         // Iterate on all sections
         for (Section section : getSections()) {
@@ -380,6 +398,7 @@ public class BasicLag
 
         if (runsTable != null) {
             runsTable.setLocationService(locationService);
+
             for (Class<?> eventClass : runEventsRead) {
                 getRunService().subscribeStrongly(eventClass, this);
             }
@@ -391,28 +410,6 @@ public class BasicLag
 
         for (Class<?> eventClass : sctEventsRead) {
             lagService.subscribeStrongly(eventClass, this);
-        }
-    }
-
-    //-------------//
-    // cutServices //
-    //-------------//
-    @Override
-    public void cutServices ()
-    {
-        if (runsTable != null) {
-            runsTable.cutLocationService(locationService);
-            for (Class<?> eventClass : runEventsRead) {
-                getRunService().unsubscribe(eventClass, this);
-            }
-        }
-        
-        for (Class<?> eventClass : locEventsRead) {
-            locationService.unsubscribe(eventClass, this);
-        }
-
-        for (Class<?> eventClass : sctEventsRead) {
-            lagService.unsubscribe(eventClass, this);
         }
     }
 
@@ -457,19 +454,17 @@ public class BasicLag
 
         // Section selection mode?
         if (ViewParameters.getInstance().isSectionMode()) {
-            // Non-degenerated rectangle? 
+            // Non-degenerated rectangle?
             if ((rect.width > 0) && (rect.height > 0)) {
                 // Look for enclosed sections
                 Set<Section> sectionsFound = containedSections(rect);
 
                 // Publish (first) Section found
-                Section section = sectionsFound.isEmpty() ? null
-                        : sectionsFound.iterator().next();
+                Section section = sectionsFound.isEmpty() ? null : sectionsFound.iterator().next();
                 publish(new SectionEvent(this, hint, movement, section));
 
                 // Publish whole SectionSet
-                publish(
-                        new SectionSetEvent(this, hint, movement, sectionsFound));
+                publish(new SectionSetEvent(this, hint, movement, sectionsFound));
             }
         }
     }
@@ -545,11 +540,7 @@ public class BasicLag
         if (hint == SelectionHint.SECTION_INIT) {
             // Publish section contour
             publish(
-                    new LocationEvent(
-                    this,
-                    hint,
-                    null,
-                    (section != null) ? section.getBounds() : null));
+                    new LocationEvent(this, hint, null, (section != null) ? section.getBounds() : null));
         }
 
         // In section-selection mode, update section set
@@ -558,7 +549,7 @@ public class BasicLag
             Set<Section> sections = getSelectedSectionSet();
 
             if (sections == null) {
-                sections = new LinkedHashSet<>();
+                sections = new LinkedHashSet<Section>();
             }
 
             if (hint == SelectionHint.LOCATION_ADD) {

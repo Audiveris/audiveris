@@ -1,21 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     A b s t r a c t E x t r a c t o r                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               A b s t r a c t E x t r a c t o r                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.moments;
 
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code AbstractExtractor} provides the basis for moments
- * extraction.
+ * Class {@code AbstractExtractor} provides the basis for moments extraction.
  *
  * @param <D> actual descriptor type
  *
@@ -24,7 +23,7 @@ import java.awt.geom.Point2D;
 public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
         implements MomentsExtractor<D>
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Input abscissae. */
     protected int[] xx;
@@ -44,7 +43,7 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
     /** The target descriptor. */
     protected D descriptor;
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // extract //
     //---------//
@@ -112,9 +111,7 @@ public abstract class AbstractExtractor<D extends OrthogonalMoments<D>>
             m01 += yy[i];
         }
 
-        center = new Point2D.Double(
-                (double) m10 / (double) mass,
-                (double) m01 / (double) mass);
+        center = new Point2D.Double((double) m10 / (double) mass, (double) m01 / (double) mass);
 
         ///System.out.println("center: " + center);
     }

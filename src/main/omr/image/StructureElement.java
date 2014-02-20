@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       S t r u c t u r e E l e m e n t                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 S t r u c t u r e E l e m e n t                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -24,15 +24,13 @@ import java.util.StringTokenizer;
 public class StructureElement
         implements MorphoConstants
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            StructureElement.class);
+    private static final Logger logger = LoggerFactory.getLogger(StructureElement.class);
 
     static final String EOL = System.getProperty("line.separator");
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     private int[] mask;
 
     private int width = 1;
@@ -51,7 +49,7 @@ public class StructureElement
 
     public boolean offsetmodified = false;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StructureElement object.
      *
@@ -166,13 +164,12 @@ public class StructureElement
         vect = calcVect(mask, width);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     public int[] Delta (int[] offset)
     {
         int[] astrel = this.T(offset);
 
         //int index=0;
-
         // for (int i=0; i<this.width-1;i++){
         // for (int j=0;j<this.width;j++){
         for (int index = 0; index < mask.length; index++) {
@@ -323,10 +320,7 @@ public class StructureElement
 
             //  if (i*width+j<=mask.length)
             //  if (mask[i*width+j]>k || mask[i*width+j]>m || mask[i*width+j]>l || mask[i*width+j]>n)
-            if ((mask[c] > k)
-                || (mask[c] > m)
-                || (mask[c] > l)
-                || (mask[c] > n)) {
+            if ((mask[c] > k) || (mask[c] > m) || (mask[c] > l) || (mask[c] > n)) {
                 // perim[i*width+j]= mask[i*width+j];
                 perim[c] = mask[c];
 
@@ -485,114 +479,6 @@ public class StructureElement
         }
     }
 
-    private int[][] calcVect (int[] perim,
-                              int w)
-    {
-        int N = 0;
-        int sz = perim.length;
-
-        for (int i = 0; i < perim.length; i++) {
-            if (perim[i] > 0) {
-                N++;
-            }
-        }
-
-        //System.out.println("nnz: "+N);
-        int h = sz / w;
-        int p = (int) Math.floor(h / 2);
-        int q = (int) Math.floor(w / 2);
-
-        // System.out.println("p: "+p);
-        //  System.out.println("q: "+q);
-        int[][] pg = new int[N][4];
-        int i;
-        int j;
-        int counter = 0;
-
-        // System.out.println("size:"+sz);
-        for (int c = 0; c < sz; c++) {
-            //        for (int  i=0;i<h-1;i++) {
-            //            for (int j=0;j<w;j++){
-            i = c / w;
-            j = c % w;
-
-            if (perim[c] > 0) {
-                pg[counter][0] = i - p;
-                pg[counter][1] = j - q;
-                pg[counter][2] = perim[c];
-
-                int[] a = {pg[counter][1], pg[counter][0]};
-                double d = getDistance(a, this.type);
-                //System.out.println("i: "+pg[counter][0]+ " j: "+pg[counter][1] +"d: " +d);
-                pg[counter][3] = (int) Math.round(d);
-                // System.out.println("i: "+pg[counter][0]+ " j: "+pg[counter][1]+"index: "+counter);
-                counter++;
-
-                //int pp=i-p;
-                // int qq=j-q ;
-            }
-
-            //System.out.println("i: "+i+ " j: "+j+"index: "+c);
-
-            // }
-        }
-
-        return pg;
-    }
-
-    private int[] createCircularMask (int shift,
-                                      double radius,
-                                      int[] offset)
-    {
-        //  if (radius<=2.0)  {
-        // this.width= ((int)(radius+shift+0.5))*2 ;
-        //offset= SWGRAD;
-        //}
-        //else
-        this.width = (((int) (radius + shift + 0.5)) * 2) + 1;
-        // this.width= ((int)(radius+shift))*2 + 1;
-        this.height = width;
-
-        // IJ.log("w="+width);
-        int[] mask = new int[this.width * this.width];
-        double r = (width / 2.0) - 0.5;
-
-        //if ((radius==1.5) && (r==3)) r=3.5;
-        double r2 = (radius * radius) + 1;
-
-        // IJ.log("radius "+radius+" r "+r +" r2 "+r2);
-        int index = 0;
-
-        for (double x = -r; x <= r; x++) {
-            for (double y = -r; y <= r; y++) {
-                //int index= (int)(r+x+width*(r+y));
-                //   if (x*x+y*y<r2){
-                if ((((x - offset[0]) * (x - offset[0]))
-                     + ((y - offset[1]) * (y - offset[1]))) < r2) {
-                    mask[index] = 255;
-                }
-
-                index++;
-            }
-        }
-
-        // return mask;
-        return mask;
-    }
-
-    private static boolean validate (float var,
-                                     int k)
-    {
-        float a = k * var;
-        int b = (int) (k * var);
-
-        if (((a - b) == 0) || (var < 0)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     private int[] createDiamondMask (int shift,
                                      double radius,
                                      int[] offset)
@@ -661,13 +547,11 @@ public class StructureElement
                 for (int y = r - shift; y <= (r - shift); y++) {
                     if (Math.abs(alpha) < (Math.PI / 2)) {
                         if ((y - (Math.tan(alpha) * x)) == 0) {
-                            mask[(r + x) - offset[0]
-                                 + (((r + y) - offset[1]) * width)] = 255;
+                            mask[(r + x) - offset[0] + (((r + y) - offset[1]) * width)] = 255;
                         }
                     } else {
                         if (((Math.tan((Math.PI / 2) - alpha) * y) - x) == 0) {
-                            mask[(r + x) - offset[0]
-                                 + (((r + y) - offset[1]) * width)] = 255;
+                            mask[(r + x) - offset[0] + (((r + y) - offset[1]) * width)] = 255;
                         }
                     }
                 }
@@ -699,10 +583,7 @@ public class StructureElement
             r = counter / width;
             c = counter % width;
 
-            if ((r > shift)
-                || (r < (height - shift))
-                || (c > shift)
-                || (c < (width - shift))) {
+            if ((r > shift) || (r < (height - shift)) || (c > shift) || (c < (width - shift))) {
                 //  try {
                 mask[counter] = 255;
             }
@@ -740,5 +621,111 @@ public class StructureElement
         this.height = width;
 
         return k;
+    }
+
+    private static boolean validate (float var,
+                                     int k)
+    {
+        float a = k * var;
+        int b = (int) (k * var);
+
+        if (((a - b) == 0) || (var < 0)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private int[][] calcVect (int[] perim,
+                              int w)
+    {
+        int N = 0;
+        int sz = perim.length;
+
+        for (int i = 0; i < perim.length; i++) {
+            if (perim[i] > 0) {
+                N++;
+            }
+        }
+
+        //System.out.println("nnz: "+N);
+        int h = sz / w;
+        int p = (int) Math.floor(h / 2);
+        int q = (int) Math.floor(w / 2);
+
+        // System.out.println("p: "+p);
+        //  System.out.println("q: "+q);
+        int[][] pg = new int[N][4];
+        int i;
+        int j;
+        int counter = 0;
+
+        // System.out.println("size:"+sz);
+        for (int c = 0; c < sz; c++) {
+            //        for (int  i=0;i<h-1;i++) {
+            //            for (int j=0;j<w;j++){
+            i = c / w;
+            j = c % w;
+
+            if (perim[c] > 0) {
+                pg[counter][0] = i - p;
+                pg[counter][1] = j - q;
+                pg[counter][2] = perim[c];
+
+                int[] a = {pg[counter][1], pg[counter][0]};
+                double d = getDistance(a, this.type);
+                //System.out.println("i: "+pg[counter][0]+ " j: "+pg[counter][1] +"d: " +d);
+                pg[counter][3] = (int) Math.round(d);
+                // System.out.println("i: "+pg[counter][0]+ " j: "+pg[counter][1]+"index: "+counter);
+                counter++;
+
+                //int pp=i-p;
+                // int qq=j-q ;
+            }
+
+            //System.out.println("i: "+i+ " j: "+j+"index: "+c);
+            // }
+        }
+
+        return pg;
+    }
+
+    private int[] createCircularMask (int shift,
+                                      double radius,
+                                      int[] offset)
+    {
+        //  if (radius<=2.0)  {
+        // this.width= ((int)(radius+shift+0.5))*2 ;
+        //offset= SWGRAD;
+        //}
+        //else
+        this.width = (((int) (radius + shift + 0.5)) * 2) + 1;
+        // this.width= ((int)(radius+shift))*2 + 1;
+        this.height = width;
+
+        // IJ.log("w="+width);
+        int[] mask = new int[this.width * this.width];
+        double r = (width / 2.0) - 0.5;
+
+        //if ((radius==1.5) && (r==3)) r=3.5;
+        double r2 = (radius * radius) + 1;
+
+        // IJ.log("radius "+radius+" r "+r +" r2 "+r2);
+        int index = 0;
+
+        for (double x = -r; x <= r; x++) {
+            for (double y = -r; y <= r; y++) {
+                //int index= (int)(r+x+width*(r+y));
+                //   if (x*x+y*y<r2){
+                if ((((x - offset[0]) * (x - offset[0])) + ((y - offset[1]) * (y - offset[1]))) < r2) {
+                    mask[index] = 255;
+                }
+
+                index++;
+            }
+        }
+
+        // return mask;
+        return mask;
     }
 }

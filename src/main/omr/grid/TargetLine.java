@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            T a r g e t L i n e                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      T a r g e t L i n e                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -16,14 +16,13 @@ import static omr.util.HorizontalSide.*;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code TargetLine} is an immutable perfect destination object
- * for a staff line.
+ * Class {@code TargetLine} is an immutable perfect destination object for a staff line.
  *
  * @author Hervé Bitteur
  */
 public class TargetLine
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Related raw information */
     public final LineInfo info;
@@ -43,7 +42,7 @@ public class TargetLine
     /** Cosine of raw line angle */
     private final double cos;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // TargetLine //
     //------------//
@@ -74,7 +73,7 @@ public class TargetLine
         cos = dx / hypot;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // sourceOf //
     //----------//
@@ -111,10 +110,8 @@ public class TargetLine
         double left = staff.system.left;
         double right = staff.system.right;
         double xRatio = (dstX - left) / (right - left);
-        double srcX = ((1 - xRatio) * info.getEndPoint(LEFT)
-                .getX())
-                      + (xRatio * info.getEndPoint(RIGHT)
-                .getX());
+        double srcX = ((1 - xRatio) * info.getEndPoint(LEFT).getX())
+                      + (xRatio * info.getEndPoint(RIGHT).getX());
         double srcY = info.yAt(srcX);
 
         return new Point2D.Double(srcX, srcY);
@@ -127,10 +124,8 @@ public class TargetLine
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("{Line");
-        sb.append("#")
-                .append(id);
-        sb.append(" y:")
-                .append(y);
+        sb.append("#").append(id);
+        sb.append(" y:").append(y);
         sb.append("}");
 
         return sb.toString();

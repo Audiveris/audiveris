@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  Z o o m                                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            Z o o m                                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.view;
 
@@ -27,44 +27,39 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code Zoom} encapsulates a zoom ratio, which is typically
- * the ratio between display values (such as the size of the display of
- * an entity) and model values (such as the size of the entity itself).
+ * Class {@code Zoom} encapsulates a zoom ratio, which is typically the ratio between
+ * display values (such as the size of the display of an entity) and model values
+ * (such as the size of the entity itself).
  *
- * For example, a Zoom with ratio set to a 2.0 value would double the display
- * of a given entity.
- *
- * <p>Since this class is meant to be used when handling display tasks, it
- * also provides utility methods to go back and forth between display and
- * model values, for simple items such as primitive data (double), Point,
- * Dimension and Rectangle.
- *
- * <p>It handles an internal collection of change listeners, that are
- * entities registered to be notified whenever a new ratio value is set.
- *
- * <p>A new value is programmatically set by calling the {@link #setRatio}
- * method. The newly defined ratio value is then pushed to all registered
- * observers.
- *
- * <p>A {@link LogSlider} can be connected to this zoom entity, to provide
- * UI for both output and input.
+ * For example, a Zoom with ratio set to a 2.0 value would double the display of a given entity.
+ * <p>
+ * Since this class is meant to be used when handling display tasks, it also provides utility
+ * methods to go back and forth between display and model values, for simple items such as primitive
+ * data (double), Point, Dimension and Rectangle.
+ * <p>
+ * It handles an internal collection of change listeners, that are entities registered to be
+ * notified whenever a new ratio value is set.
+ * <p>
+ * A new value is programmatically set by calling the {@link #setRatio} method. The newly defined
+ * ratio value is then pushed to all registered observers.
+ * <p>
+ * A {@link LogSlider} can be connected to this zoom entity, to provide UI for both output and
+ * input.
  *
  * @author Hervé Bitteur
  */
 public class Zoom
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Zoom.class);
 
     // To assign a unique Id
     private static int globalId;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Unique event, created lazily */
     protected ChangeEvent changeEvent = null;
 
@@ -72,7 +67,7 @@ public class Zoom
     protected LogSlider slider;
 
     /** Collection of event listeners */
-    protected Set<ChangeListener> listeners = new HashSet<>();
+    protected Set<ChangeListener> listeners = new HashSet<ChangeListener>();
 
     /** Current ratio value */
     protected double ratio;
@@ -80,7 +75,7 @@ public class Zoom
     // Unique Id (to ease debugging)
     private int id = ++globalId;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------//
     // Zoom //
     //------//
@@ -124,7 +119,7 @@ public class Zoom
         setRatio(ratio);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // addChangeListener //
     //-------------------//
@@ -323,24 +318,24 @@ public class Zoom
 
             slider.addChangeListener(
                     new ChangeListener()
-            {
-                @Override
-                public void stateChanged (ChangeEvent e)
-                {
-                    // Forward the new zoom ratio
-                    if (constants.continuousSliderReading.getValue()
-                        || !slider.getValueIsAdjusting()) {
-                        double newRatio = slider.getDoubleValue();
-                        logger.debug("Slider firing zoom newRatio={}", newRatio);
+                    {
+                        @Override
+                        public void stateChanged (ChangeEvent e)
+                        {
+                            // Forward the new zoom ratio
+                            if (constants.continuousSliderReading.getValue()
+                                || !slider.getValueIsAdjusting()) {
+                                double newRatio = slider.getDoubleValue();
+                                logger.debug("Slider firing zoom newRatio={}", newRatio);
 
-                        // Stop condition to avoid endless loop between
-                        // slider and zoom
-                        if (Math.abs(newRatio - ratio) > .001) {
-                            forceRatio(newRatio);
+                                // Stop condition to avoid endless loop between
+                                // slider and zoom
+                                if (Math.abs(newRatio - ratio) > .001) {
+                                    forceRatio(newRatio);
+                                }
+                            }
                         }
-                    }
-                }
-            });
+                    });
         }
     }
 
@@ -355,8 +350,7 @@ public class Zoom
     @Override
     public String toString ()
     {
-        return "{Zoom#" + id + " listeners=" + listeners.size() + " ratio="
-               + ratio + "}";
+        return "{Zoom#" + id + " listeners=" + listeners.size() + " ratio=" + ratio + "}";
     }
 
     //-------------//
@@ -434,18 +428,17 @@ public class Zoom
         fireStateChanged();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Boolean continuousSliderReading = new Constant.Boolean(
                 true,
                 "Should we allow continuous reading of the zoom slider");
-
     }
 }

@@ -1,17 +1,16 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          T e s s e r a c t O C R                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    T e s s e r a c t O C R                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.text.tesseract;
 
-import omr.Main;
 import omr.WellKnowns;
 
 import omr.constant.Constant;
@@ -27,11 +26,10 @@ import omr.text.TextLine;
 
 import omr.util.ClassUtil;
 
-import tesseract.TessBridge.TessBaseAPI.SegmentationMode;
-import static tesseract.TessBridge.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import static tesseract.TessBridge.*;
+import tesseract.TessBridge.TessBaseAPI.SegmentationMode;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -46,38 +44,34 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Class {@code TesseractOCR} is an OCR service built on the Google
- * Tesseract engine.
+ * Class {@code TesseractOCR} is an OCR service built on the Google Tesseract engine.
  *
- * <p>It relies on the <b>tesseract3</b> C++ program, accessed through a
- * <b>JavaCPP</b>-based bridge.</p>
+ * <p>
+ * It relies on <b>tesseract3</b> C++ program, accessed through a <b>JavaCPP</b>-based bridge.</p>
  *
  * @author Hervé Bitteur
  */
 public class TesseractOCR
         implements OCR
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(TesseractOCR.class);
 
     /** Singleton. */
     private static final OCR INSTANCE = new TesseractOCR();
 
     /** Latin encoder, to check character validity. (not used yet) */
-    private static final CharsetEncoder encoder = Charset.forName("iso-8859-1").
-            newEncoder();
+    private static final CharsetEncoder encoder = Charset.forName("iso-8859-1").newEncoder();
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** To assign a serial number to each image processing order. */
     private final AtomicInteger serial = new AtomicInteger(0);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //--------------//
     // TesseractOCR //
@@ -89,7 +83,7 @@ public class TesseractOCR
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //-------------//
     // getInstance //
@@ -112,9 +106,9 @@ public class TesseractOCR
     {
         if (isAvailable()) {
             try {
-                String[] langs = TessBaseAPI.getInstalledLanguages(
-                        WellKnowns.OCR_FOLDER.getPath());
-                return new TreeSet<>(Arrays.asList(langs));
+                String[] langs = TessBaseAPI.getInstalledLanguages(WellKnowns.OCR_FOLDER.getPath());
+
+                return new TreeSet<String>(Arrays.asList(langs));
             } catch (Throwable ex) {
                 logger.warn("Error in loading Tesseract languages", ex);
                 throw new UnavailableOcrException();
@@ -155,6 +149,7 @@ public class TesseractOCR
 
             // DEBUG
             String name = "";
+
             if (true) {
                 StackTraceElement elem = ClassUtil.getCallingFrame(
                         BasicGlyph.class,
@@ -166,7 +161,8 @@ public class TesseractOCR
                 }
             }
 
-            order = new TesseractOrder(system,
+            order = new TesseractOrder(
+                    system,
                     label + name,
                     serial.incrementAndGet(),
                     constants.keepImages.isSet(),
@@ -185,9 +181,9 @@ public class TesseractOCR
             }
 
             return lines;
-
         } catch (IOException ex) {
             logger.warn("Could not create OCR order", ex);
+
             return null;
         } catch (UnsatisfiedLinkError ex) {
             logger.warn("OCR link error", ex);
@@ -209,27 +205,26 @@ public class TesseractOCR
         switch (layoutMode) {
         case MULTI_BLOCK:
             return SegmentationMode.AUTO;
+
         default:
         case SINGLE_BLOCK:
             return SegmentationMode.SINGLE_BLOCK;
         }
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Boolean useOCR = new Constant.Boolean(
-                true,
-                "Should we use the OCR feature?");
+        Constant.Boolean useOCR = new Constant.Boolean(true, "Should we use the OCR feature?");
 
         Constant.Boolean keepImages = new Constant.Boolean(
                 false,
                 "Should we keep the images sent to Tesseract?");
-
     }
 }

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      G l y p h C o m p o s i t i o n                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                G l y p h C o m p o s i t i o n                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -20,51 +20,46 @@ import java.util.Set;
 import java.util.SortedSet;
 
 /**
- * Interface {@code GlyphComposition} defines the facet that handles
- * the way a glyph is composed of sections members, as well as the
- * relationships with sub-glyphs (parts) if any.
+ * Interface {@code GlyphComposition} defines the facet that handles the way a glyph is
+ * composed of sections members, as well as the relationships with sub-glyphs (parts)
+ * if any.
  *
  * @author Hervé Bitteur
  */
 public interface GlyphComposition
         extends GlyphFacet, Checkable
 {
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
 
     /** Tells whether a section must point back to a containing glyph.
      * <<p>
-     * A section may point back to its containing glyph, making it
-     * <b>active</b>.
-     * There may be several containing glyph instances for a given section, but
-     * at
-     * most one of them can be active.
+     * A section may point back to its containing glyph, making it <b>active</b>.
+     * There may be several containing glyph instances for a given section, but at most one of them
+     * can be active.
      * This allows to easily detect which sections and which glyph instances are
      * active.
      * Sections are often displayed with a color specific to the shape of their
      * active containing glyph (example: staff lines during grid building).
      * <p>
      * TODO: Is this still useful?
-     * When building glyph instances from a collection of sections, we should
-     * always
-     * be able to filter the collection beforehand.
-     * The feature is convenient for color display, however staff lines sections
-     * get quickly removed, and we now focus on Inter display rather than Glyph
-     * display.
-     * So let's keep the feature for a while but use it only for sections whose
-     * role is determined once for all, like staff lines.
+     * When building glyph instances from a collection of sections, we should always be able to
+     * filter the collection beforehand.
+     * The feature is convenient for color display, however staff lines sections get quickly
+     * removed, and we now focus on Inter display rather than Glyph display.
+     * So let's keep the feature for a while but use it only for sections whose role is determined
+     * once for all, like staff lines.
      */
     enum Linking
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** Pointing back to glyph */
         LINK,
         /** No pointing back to glyph */
         NO_LINK;
-
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the top ancestor of this glyph.
      * This is this glyph itself, when it has no parent (i.e. not been included

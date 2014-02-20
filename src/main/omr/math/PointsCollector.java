@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       P o i n t s C o l l e c t o r                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 P o i n t s C o l l e c t o r                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -15,13 +15,12 @@ import java.awt.Rectangle;
 import java.util.Arrays;
 
 /**
- * Class {@code PointsCollector} is meant to cumulate points
- * coordinates, perhaps within a provided <b>absolute</b> region of
- * interest.
+ * Class {@code PointsCollector} is meant to cumulate points coordinates, perhaps
+ * within a provided <b>absolute</b> region of interest.
  */
 public class PointsCollector
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The absolute region of interest, if any */
     private Rectangle roi;
@@ -35,7 +34,7 @@ public class PointsCollector
     /** The ordinates */
     private int[] yy;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------------//
     // PointsCollector //
     //-----------------//
@@ -67,31 +66,29 @@ public class PointsCollector
         yy = new int[capacity];
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //----------//
-    // getSize //
-    //----------//
+    //~ Methods ------------------------------------------------------------------------------------
+    //----------------//
+    // ensureCapacity //
+    //----------------//
     /**
-     * Report the current number of points collected.
+     * Increases the capacity of this instance.
      *
-     * @return the current number of points
+     * @param minCapacity the desired minimum capacity
      */
-    public final int getSize ()
+    public void ensureCapacity (int minCapacity)
     {
-        return size;
-    }
+        int oldCapacity = xx.length;
 
-    //--------//
-    // getRoi //
-    //--------//
-    /**
-     * Report the absolute region of interest for this collector
-     *
-     * @return the related ROI if any, null otherwise
-     */
-    public Rectangle getRoi ()
-    {
-        return roi;
+        if (minCapacity > oldCapacity) {
+            int newCapacity = ((oldCapacity * 3) / 2) + 1;
+
+            if (newCapacity < minCapacity) {
+                newCapacity = minCapacity;
+            }
+
+            xx = Arrays.copyOf(xx, newCapacity);
+            yy = Arrays.copyOf(yy, newCapacity);
+        }
     }
 
     //------------//
@@ -138,28 +135,30 @@ public class PointsCollector
         size++;
     }
 
-    //----------------//
-    // ensureCapacity //
-    //----------------//
+    //--------//
+    // getRoi //
+    //--------//
     /**
-     * Increases the capacity of this instance.
+     * Report the absolute region of interest for this collector
      *
-     * @param minCapacity the desired minimum capacity
+     * @return the related ROI if any, null otherwise
      */
-    public void ensureCapacity (int minCapacity)
+    public Rectangle getRoi ()
     {
-        int oldCapacity = xx.length;
+        return roi;
+    }
 
-        if (minCapacity > oldCapacity) {
-            int newCapacity = ((oldCapacity * 3) / 2) + 1;
-
-            if (newCapacity < minCapacity) {
-                newCapacity = minCapacity;
-            }
-
-            xx = Arrays.copyOf(xx, newCapacity);
-            yy = Arrays.copyOf(yy, newCapacity);
-        }
+    //----------//
+    // getSize //
+    //----------//
+    /**
+     * Report the current number of points collected.
+     *
+     * @return the current number of points
+     */
+    public final int getSize ()
+    {
+        return size;
     }
 
     //----------//
@@ -170,10 +169,7 @@ public class PointsCollector
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("{")
-                .append(getClass().getSimpleName())
-                .append(" size:")
-                .append(size);
+        sb.append("{").append(getClass().getSimpleName()).append(" size:").append(size);
 
         sb.append("}");
 

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          P l u g i n A c t i o n                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    P l u g i n A c t i o n                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.plugin;
 
@@ -22,25 +22,23 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 
 /**
- * Class {@code PluginAction} implements the concrete user action
- * related to a registered plugin.
+ * Class {@code PluginAction} implements the concrete user action related to a
+ * registered plugin.
  *
  * @author Hervé Bitteur
  */
 class PluginAction
         extends AbstractAction
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            PluginAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(PluginAction.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related plugin */
     private final Plugin plugin;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // PluginAction //
     //--------------//
@@ -56,7 +54,7 @@ class PluginAction
         putValue(SHORT_DESCRIPTION, plugin.getDescription());
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -66,8 +64,7 @@ class PluginAction
         final Score score = ScoreController.getCurrentScore();
 
         if (score != null) {
-            plugin.getTask(score)
-                    .execute();
+            plugin.getTask(score).execute();
         }
     }
 }

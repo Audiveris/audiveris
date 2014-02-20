@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             G l y p h L a y e r                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       G l y p h L a y e r                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -21,15 +21,18 @@ public enum GlyphLayer
 
     /** Glyph instances from initial binary image. */
     DEFAULT("B", "Glyphs from initial binary image"),
+
     /** Horizontal
      * glyph instances from ledgers and endings. */
     LEDGER("L", "Horizontal glyphs from ledgers and endings"),
+
     /** Glyph instances from
      * foreground spots. */
     SPOT("S", "Glyphs from foreground spots"),
     /** Virtual glyph
      * instances from Drag and Drop. */
     DROP("D", "Virtual glyphs from Drag n' Drop"),
+
     /** Glyph instances
      * unmarshalled from XML file. */
     XML("X", "Sample glyphs unmarshalled from XML file");
@@ -55,8 +58,5 @@ public enum GlyphLayer
         return concreteValues;
     }
 
-    private static final GlyphLayer[] concreteValues = new GlyphLayer[]{
-        DEFAULT, LEDGER, SPOT
-    };
-
+    private static final GlyphLayer[] concreteValues = new GlyphLayer[]{DEFAULT, LEDGER, SPOT};
 }

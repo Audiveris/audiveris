@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               A n c h o r e d                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         A n c h o r e d                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -15,19 +15,18 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Interface {@code Anchored} handles anchor positions relative to a
- * rectangular area.
+ * Interface {@code Anchored} handles anchor positions relative to a rectangular area.
  *
  * @author Hervé Bitteur
  */
 public interface Anchored
 {
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
 
     /** Specifies a reference relative location. */
     public enum Anchor
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /**
          * Area Center.
@@ -63,7 +62,7 @@ public interface Anchored
         BOTTOM_RIGHT_STEM;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Assign a relative offset for an anchor type.
      *

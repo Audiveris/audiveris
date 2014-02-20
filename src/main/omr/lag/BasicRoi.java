@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              B a s i c R o i                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        B a s i c R o i                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag;
 
@@ -33,12 +33,12 @@ import java.util.List;
 public class BasicRoi
         implements Roi
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Region of interest with absolute coordinates */
     final Rectangle absContour;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // BasicRoi //
     //----------//
@@ -53,7 +53,7 @@ public class BasicRoi
         this.absContour = absoluteContour;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // getAbsoluteContour //
     //--------------------//
@@ -70,9 +70,7 @@ public class BasicRoi
     public Histogram<Integer> getGlyphHistogram (Orientation projection,
                                                  Collection<Glyph> glyphs)
     {
-        return getSectionHistogram(
-                projection,
-                Glyphs.sectionsOf(glyphs));
+        return getSectionHistogram(projection, Glyphs.sectionsOf(glyphs));
     }
 
     //-----------------//
@@ -84,11 +82,9 @@ public class BasicRoi
     {
         final Orientation tableOrient = table.getOrientation();
         final boolean alongTheRuns = projection == tableOrient;
-        final Histogram<Integer> histo = new Histogram<>();
-        final Rectangle tableContour = new Rectangle(
-                table.getDimension());
-        final Rectangle inter = new Rectangle(
-                absContour.intersection(tableContour));
+        final Histogram<Integer> histo = new Histogram<Integer>();
+        final Rectangle tableContour = new Rectangle(table.getDimension());
+        final Rectangle inter = new Rectangle(absContour.intersection(tableContour));
         final Rectangle oriInter = tableOrient.oriented(inter);
         final int minPos = oriInter.y;
         final int maxPos = (oriInter.y + oriInter.height) - 1;
@@ -128,8 +124,8 @@ public class BasicRoi
                                                    Collection<Section> sections)
     {
         // Split the sections into 2 populations along & across wrt projection
-        List<Section> along = new ArrayList<>();
-        List<Section> across = new ArrayList<>();
+        List<Section> along = new ArrayList<Section>();
+        List<Section> across = new ArrayList<Section>();
 
         for (Section section : sections) {
             if (section.isVertical() == projection.isVertical()) {
@@ -139,7 +135,7 @@ public class BasicRoi
             }
         }
 
-        final Histogram<Integer> histo = new Histogram<>();
+        final Histogram<Integer> histo = new Histogram<Integer>();
         populate(histo, projection, along, true);
         populate(histo, projection.opposite(), across, false);
 

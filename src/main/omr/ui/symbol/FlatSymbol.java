@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            F l a t S y m b o l                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      F l a t S y m b o l                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -17,13 +17,12 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class {@code FlatSymbol} handles a flat or double-flat symbol with
- * a refPoint.
+ * Class {@code FlatSymbol} handles a flat or double-flat symbol with a refPoint.
  */
 public class FlatSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //------------//
     // FlatSymbol //
@@ -57,7 +56,7 @@ public class FlatSymbol
         super(isIcon, shape, false, codes);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getRefPoint //
     //-------------//

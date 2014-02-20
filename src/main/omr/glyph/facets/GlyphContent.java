@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          G l y p h C o n t e n t                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    G l y p h C o n t e n t                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -17,15 +17,15 @@ import omr.text.TextWord;
 import java.awt.Point;
 
 /**
- * Interface {@code GlyphContent} defines a facet that deals with the
- * textual content, if any, of a glyph.
+ * Interface {@code GlyphContent} defines a facet that deals with the textual content,
+ * if any, of a glyph.
  *
  * @author Hervé Bitteur
  */
 public interface GlyphContent
         extends GlyphFacet
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** String equivalent of Character used for elision. (undertie) */
     String ELISION_STRING = new String(Character.toChars(8255));
@@ -36,7 +36,7 @@ public interface GlyphContent
     /** String equivalent of Character used for hyphen. */
     String HYPHEN_STRING = "-";
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the manually assigned role, if any.
      *

@@ -1,23 +1,23 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           C l e f P a t t e r n                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     C l e f P a t t e r n                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
+import omr.glyph.GlyphNest;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Glyphs;
 import omr.glyph.Grades;
-import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
@@ -42,21 +42,19 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code ClefPattern} verifies all the initial clefs of a
- * system, using an intersection inner rectangle and a containing
- * outer rectangle to retrieve the clef glyphs and only those ones.
+ * Class {@code ClefPattern} verifies all the initial clefs of a system, using an
+ * intersection inner rectangle and a containing outer rectangle to retrieve the clef
+ * glyphs and only those ones.
  *
  * @author Hervé Bitteur
  */
 public class ClefPattern
         extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(ClefPattern.class);
 
     /** Specific predicate to filter clef shapes */
@@ -79,7 +77,7 @@ public class ClefPattern
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Glyphs nest */
     private final GlyphNest nest;
 
@@ -94,7 +92,7 @@ public class ClefPattern
 
     private final int yMargin;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ClefPattern object.
      *
@@ -113,7 +111,7 @@ public class ClefPattern
         yMargin = scale.toPixels(constants.yMargin);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // runPattern //
     //------------//
@@ -139,9 +137,7 @@ public class ClefPattern
                     staff.getFirstLine().yAt(left) + (staff.getHeight() / 2),
                     0,
                     0);
-            inner.grow(
-                    (clefWidth / 2) - xOffset,
-                    (staff.getHeight() / 2) - yOffset);
+            inner.grow((clefWidth / 2) - xOffset, (staff.getHeight() / 2) - yOffset);
 
             // Remember the box, for visual debug
             staff.addAttachment("  ci", inner);
@@ -150,9 +146,9 @@ public class ClefPattern
             Collection<Glyph> glyphs = system.lookupIntersectedGlyphs(inner);
             logger.debug("{}{}", staffId, Glyphs.toString(" int", glyphs));
 
-            // We assume than there can't be any alien among them, so we should 
+            // We assume than there can't be any alien among them, so we should
             // rebuild the larger glyph which the alien had wrongly segmented
-            Set<Glyph> impacted = new HashSet<>();
+            Set<Glyph> impacted = new HashSet<Glyph>();
 
             for (Glyph glyph : glyphs) {
                 if (glyph.getShape() == Shape.STEM) {
@@ -167,6 +163,7 @@ public class ClefPattern
                 // Rebuild the larger glyph
                 Glyph larger = nest.buildGlyph(impacted, true, Glyph.Linking.NO_LINK);
                 system.registerGlyph(larger);
+
                 if (larger != null) {
                     logger.debug("Rebuilt stem-segmented {}", larger.idString());
                 }
@@ -199,7 +196,7 @@ public class ClefPattern
         if (glyphs.isEmpty()) {
             return false;
         }
-        
+
         final GlyphNest nest = system.getSheet().getNest();
 
         // Check if we already have a clef among the intersected glyphs
@@ -212,8 +209,7 @@ public class ClefPattern
             } else {
                 // Remember grade of the best existing clef
                 for (Glyph glyph : clefs) {
-                    if ((orgClef == null)
-                        || (glyph.getGrade() > orgClef.getGrade())) {
+                    if ((orgClef == null) || (glyph.getGrade() > orgClef.getGrade())) {
                         orgClef = glyph;
                     }
                 }
@@ -232,12 +228,10 @@ public class ClefPattern
                 Grades.clefMinGrade,
                 clefShapePredicate);
 
-        if ((vote != null)
-            && ((orgClef == null) || (vote.grade > orgClef.getGrade()))) {
+        if ((vote != null) && ((orgClef == null) || (vote.grade > orgClef.getGrade()))) {
             // We now have a clef!
             // Look around for an even better result...
-            logger.debug("{} built from {}",
-                         vote.shape, Glyphs.toString(glyphs));
+            logger.debug("{} built from {}", vote.shape, Glyphs.toString(glyphs));
 
             // Look for larger stuff
             Rectangle outer = compound.getBounds();
@@ -261,7 +255,9 @@ public class ClefPattern
                 logger.debug("Considering {}", g);
 
                 Glyph newCompound = nest.buildGlyph(
-                        Arrays.asList(compound, g), false, Glyph.Linking.NO_LINK);
+                        Arrays.asList(compound, g),
+                        false,
+                        Glyph.Linking.NO_LINK);
                 final Evaluation newVote = GlyphNetwork.getInstance().vote(
                         newCompound,
                         system,
@@ -288,18 +284,16 @@ public class ClefPattern
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.Fraction clefWidth = new Scale.Fraction(
-                3d,
-                "Width of a clef");
+        Scale.Fraction clefWidth = new Scale.Fraction(3d, "Width of a clef");
 
         Scale.Fraction xOffset = new Scale.Fraction(
                 0.2d,
@@ -309,17 +303,12 @@ public class ClefPattern
                 0d,
                 "Clef vertical offset since staff line");
 
-        Scale.Fraction xMargin = new Scale.Fraction(
-                0d,
-                "Clef horizontal outer margin");
+        Scale.Fraction xMargin = new Scale.Fraction(0d, "Clef horizontal outer margin");
 
-        Scale.Fraction yMargin = new Scale.Fraction(
-                0.5d,
-                "Clef vertical outer margin");
+        Scale.Fraction yMargin = new Scale.Fraction(0.5d, "Clef vertical outer margin");
 
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
                 0.1,
                 "Minimum normalized weight to be added to a clef");
-
     }
 }

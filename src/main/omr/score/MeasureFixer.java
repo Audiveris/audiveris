@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          M e a s u r e F i x e r                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    M e a s u r e F i x e r                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -48,12 +48,11 @@ import java.util.List;
 public class MeasureFixer
         extends AbstractScoreVisitor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(MeasureFixer.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     private int im; // Current measure index in system
 
     private List<Measure> verticals = null; // Current vertical measures
@@ -73,7 +72,7 @@ public class MeasureFixer
     /** The latest id assigned to a measure (in the current system) */
     private Integer lastId = null;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // MeasureFixer //
     //--------------//
@@ -84,7 +83,7 @@ public class MeasureFixer
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // visit Page //
     //------------//
@@ -98,8 +97,7 @@ public class MeasureFixer
         page.computeMeasureCount();
 
         // Remember the delta of measure ids in this page
-        page.setDeltaMeasureId(
-                page.getLastSystem().getLastPart().getLastMeasure().getIdValue());
+        page.setDeltaMeasureId(page.getLastSystem().getLastPart().getLastMeasure().getIdValue());
 
         return false;
     }
@@ -138,7 +136,7 @@ public class MeasureFixer
         system.acceptChildren(this);
 
         // Measure indices to remove
-        List<Integer> toRemove = new ArrayList<>();
+        List<Integer> toRemove = new ArrayList<Integer>();
 
         // Use a loop on "vertical" measures, across all system parts
         final int imMax = system.getFirstRealPart().getMeasures().size() - 1;
@@ -150,11 +148,10 @@ public class MeasureFixer
             // Check if all voices in all parts exhibit the same termination
             measureTermination = getMeasureTermination();
 
-            logger.debug("measureFinal:{}{}",
+            logger.debug(
+                    "measureFinal:{}{}",
                     measureTermination,
-                    (measureTermination != null)
-                    ? ("=" + measureTermination)
-                    : "");
+                    (measureTermination != null) ? ("=" + measureTermination) : "");
 
             if (isEmpty()) {
                 logger.debug("empty");
@@ -162,7 +159,8 @@ public class MeasureFixer
                 // All this vertical measure is empty (no notes/rests)
                 // We will merge with the following measure, if any
                 if (im < imMax) {
-                    setId((lastId != null) ? (lastId + 1)
+                    setId(
+                            (lastId != null) ? (lastId + 1)
                             : ((prevSystemLastId != null)
                             ? (prevSystemLastId + 1) : 1),
                             false);
@@ -170,9 +168,9 @@ public class MeasureFixer
             } else if (isPickup()) {
                 logger.debug("pickup");
                 setImplicit();
-                setId((lastId != null) ? (-lastId)
-                        : ((prevSystemLastId != null)
-                        ? (-prevSystemLastId) : 0),
+                setId(
+                        (lastId != null) ? (-lastId)
+                        : ((prevSystemLastId != null) ? (-prevSystemLastId) : 0),
                         false);
             } else if (isSecondRepeatHalf()) {
                 logger.debug("secondHalf");
@@ -190,9 +188,9 @@ public class MeasureFixer
                 logger.debug("normal");
 
                 // Normal measure
-                setId((lastId != null) ? (lastId + 1)
-                        : ((prevSystemLastId != null)
-                        ? (prevSystemLastId + 1) : 1),
+                setId(
+                        (lastId != null) ? (lastId + 1)
+                        : ((prevSystemLastId != null) ? (prevSystemLastId + 1) : 1),
                         false);
             }
 
@@ -243,6 +241,7 @@ public class MeasureFixer
                         termination = voiceTermination;
                     } else if (!voiceTermination.equals(termination)) {
                         logger.debug("Non-consistent voices terminations");
+
                         return null;
                     }
                 }
@@ -276,8 +275,7 @@ public class MeasureFixer
      */
     private boolean isPickup ()
     {
-        return (system.getChildIndex() == 0) && (im == 0)
-               && (measureTermination != null)
+        return (system.getChildIndex() == 0) && (im == 0) && (measureTermination != null)
                && (measureTermination.compareTo(Rational.ZERO) < 0);
     }
 
@@ -292,9 +290,8 @@ public class MeasureFixer
      */
     private boolean isRealStart ()
     {
-        return (im == 1)
-               && (prevVerticals.get(0).getActualDuration().equals(
-                Rational.ZERO));
+        return (im == 1) && (prevVerticals.get(0).getActualDuration().equals(Rational.ZERO));
+
         ///&& (measureTermination != null); // Too strict!
     }
 
@@ -316,8 +313,7 @@ public class MeasureFixer
         }
 
         // Check for partial second half
-        if ((measureTermination == null)
-            || (measureTermination.compareTo(Rational.ZERO) >= 0)) {
+        if ((measureTermination == null) || (measureTermination.compareTo(Rational.ZERO) >= 0)) {
             return false;
         }
 
@@ -331,8 +327,7 @@ public class MeasureFixer
 
         Shape shape = barline.getShape();
 
-        if ((shape != Shape.RIGHT_REPEAT_SIGN)
-            && (shape != Shape.BACK_TO_BACK_REPEAT_SIGN)) {
+        if ((shape != Shape.RIGHT_REPEAT_SIGN) && (shape != Shape.BACK_TO_BACK_REPEAT_SIGN)) {
             return false;
         }
 
@@ -383,8 +378,7 @@ public class MeasureFixer
 
             int index = -1;
 
-            for (Iterator<TreeNode> it = part.getMeasures().iterator(); it.
-                    hasNext();) {
+            for (Iterator<TreeNode> it = part.getMeasures().iterator(); it.hasNext();) {
                 index++;
                 it.next();
 
@@ -444,7 +438,7 @@ public class MeasureFixer
     private List<Measure> verticalsOf (ScoreSystem system,
                                        int index)
     {
-        List<Measure> measures = new ArrayList<>();
+        List<Measure> measures = new ArrayList<Measure>();
 
         for (TreeNode node : system.getParts()) {
             SystemPart part = (SystemPart) node;

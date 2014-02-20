@@ -1,21 +1,17 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            I n s e r t T a s k                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      I n s e r t T a s k                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.script;
 
 import omr.glyph.Shape;
-import omr.glyph.VirtualGlyph;
-import omr.glyph.facets.Glyph;
-
-import omr.grid.StaffInfo;
 
 import omr.selection.GlyphSetEvent;
 import omr.selection.MouseMovement;
@@ -29,7 +25,6 @@ import omr.util.PointFacade;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -39,18 +34,16 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
-import omr.sheet.SystemManager;
 
 /**
- * Class {@code InsertTask} inserts a set of (virtual) glyphs into the
- * sheet environment.
+ * Class {@code InsertTask} inserts a set of (virtual) glyphs into the sheet environment.
  *
  * @author Hervé Bitteur
  */
 public class InsertTask
         extends GlyphTask
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Shape of the inserted glyphs */
     @XmlAttribute
@@ -64,7 +57,7 @@ public class InsertTask
     @XmlElement(name = "point")
     private PointFacade[] points;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // InsertTask //
     //------------//
@@ -94,7 +87,7 @@ public class InsertTask
         }
 
         this.shape = shape;
-        this.locations = new ArrayList<>(locations);
+        this.locations = new ArrayList<Point>(locations);
     }
 
     //------------//
@@ -106,7 +99,7 @@ public class InsertTask
         shape = null; // Dummy value
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // core //
     //------//
@@ -129,11 +122,7 @@ public class InsertTask
 
         // Take inserted glyph(s) as selected glyph(s)
         sheet.getNest().getGlyphService().publish(
-                new GlyphSetEvent(
-                        this,
-                        SelectionHint.GLYPH_INIT,
-                        MouseMovement.PRESSING,
-                        glyphs));
+                new GlyphSetEvent(this, SelectionHint.GLYPH_INIT, MouseMovement.PRESSING, glyphs));
     }
 
     //------------------//
@@ -181,24 +170,23 @@ public class InsertTask
     @Override
     protected SortedSet<SystemInfo> retrieveCurrentImpact (Sheet sheet)
     {
-        SortedSet<SystemInfo> impactedSystems = new TreeSet<>();
-        
+        SortedSet<SystemInfo> impactedSystems = new TreeSet<SystemInfo>();
+
         logger.error("Not yet implemented");
 
-//        for (Point location : locations) {
-//            SystemInfo system = sheet.getSystemOf(location);
-//
-//            if (system != null) {
-//                // Include this system
-//                impactedSystems.add(system);
-//            }
-//
-//            if (shape.isPersistent()) {
-//                // Include all following systems as well
-//                impactedSystems.addAll(remaining(system));
-//            }
-//        }
-
+        //        for (Point location : locations) {
+        //            SystemInfo system = sheet.getSystemOf(location);
+        //
+        //            if (system != null) {
+        //                // Include this system
+        //                impactedSystems.add(system);
+        //            }
+        //
+        //            if (shape.isPersistent()) {
+        //                // Include all following systems as well
+        //                impactedSystems.addAll(remaining(system));
+        //            }
+        //        }
         return impactedSystems;
     }
 
@@ -213,30 +201,31 @@ public class InsertTask
     protected void retrieveGlyphs ()
     {
         logger.error("Not yet implemented");
-//        glyphs = new LinkedHashSet<>();
-//        SystemManager systemManager = sheet.getSystemManager();
-//
-//        for (Point location : locations) {
-//            Glyph glyph = new VirtualGlyph(
-//                    shape,
-//                    sheet.getScale().getInterline(),
-//                    location);
-//
-//            // TODO: Some location other than the areacenter may be desired
-//            // (depending on the shape)?
-//            for (SystemInfo system : systemManager.getSystemsOf(location)) {
-//                glyph = system.registerGlyph(glyph);
-//
-//                // Specific for LEDGERs: add them to related staff
-//                if (shape == Shape.LEDGER) {
-//                    StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
-//                //TODO: insert a LedgerInter!
-//                    ///staff.addLedger(glyph);
-//                }
-//            }
-//
-//            glyphs.add(glyph);
-//        }
+
+        //        glyphs = new LinkedHashSet<>();
+        //        SystemManager systemManager = sheet.getSystemManager();
+        //
+        //        for (Point location : locations) {
+        //            Glyph glyph = new VirtualGlyph(
+        //                    shape,
+        //                    sheet.getScale().getInterline(),
+        //                    location);
+        //
+        //            // TODO: Some location other than the areacenter may be desired
+        //            // (depending on the shape)?
+        //            for (SystemInfo system : systemManager.getSystemsOf(location)) {
+        //                glyph = system.registerGlyph(glyph);
+        //
+        //                // Specific for LEDGERs: add them to related staff
+        //                if (shape == Shape.LEDGER) {
+        //                    StaffInfo staff = system.getStaffAt(glyph.getAreaCenter());
+        //                //TODO: insert a LedgerInter!
+        //                    ///staff.addLedger(glyph);
+        //                }
+        //            }
+        //
+        //            glyphs.add(glyph);
+        //        }
     }
 
     //----------------//
@@ -251,7 +240,7 @@ public class InsertTask
     {
         // Convert array of point facades -> locations
         if (locations == null) {
-            locations = new ArrayList<>();
+            locations = new ArrayList<Point>();
 
             for (PointFacade facade : points) {
                 locations.add(new Point(facade.getX(), facade.getY()));
@@ -269,7 +258,7 @@ public class InsertTask
     {
         // Convert locations -> array of point facades
         if (points == null) {
-            List<PointFacade> facades = new ArrayList<>();
+            List<PointFacade> facades = new ArrayList<PointFacade>();
 
             for (Point point : locations) {
                 facades.add(new PointFacade(point));

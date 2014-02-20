@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               L o g P a n e                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         L o g P a n e                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.log;
 
@@ -40,15 +40,13 @@ import javax.swing.text.StyleConstants;
  */
 public class LogPane
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(LogPane.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The scrolling text area */
     private JScrollPane component;
 
@@ -59,7 +57,7 @@ public class LogPane
 
     private final SimpleAttributeSet attributes = new SimpleAttributeSet();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------//
     // LogPane //
     //---------//
@@ -82,7 +80,7 @@ public class LogPane
         component.setViewportView(logArea);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // clearLog //
     //----------//
@@ -119,41 +117,41 @@ public class LogPane
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                while (LogGuiAppender.getEventCount() > 0) {
-                    ILoggingEvent event = LogGuiAppender.pollEvent();
+                {
+                    @Override
+                    public void run ()
+                    {
+                        while (LogGuiAppender.getEventCount() > 0) {
+                            ILoggingEvent event = LogGuiAppender.pollEvent();
 
-                    if (event != null) {
-                        // Color
-                        StyleConstants.setForeground(
-                                attributes,
-                                getLevelColor(event.getLevel()));
+                            if (event != null) {
+                                // Color
+                                StyleConstants.setForeground(
+                                        attributes,
+                                        getLevelColor(event.getLevel()));
 
-                        // Font name
-                        StyleConstants.setFontFamily(
-                                attributes,
-                                constants.fontName.getValue());
+                                // Font name
+                                StyleConstants.setFontFamily(
+                                        attributes,
+                                        constants.fontName.getValue());
 
-                        // Font size
-                        StyleConstants.setFontSize(
-                                attributes,
-                                constants.fontSize.getValue());
+                                // Font size
+                                StyleConstants.setFontSize(
+                                        attributes,
+                                        constants.fontSize.getValue());
 
-                        try {
-                            document.insertString(
-                                    document.getLength(),
-                                    event.getFormattedMessage() + "\n",
-                                    attributes);
-                        } catch (BadLocationException ex) {
-                            ex.printStackTrace();
+                                try {
+                                    document.insertString(
+                                            document.getLength(),
+                                            event.getFormattedMessage() + "\n",
+                                            attributes);
+                                } catch (BadLocationException ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
                         }
                     }
-                }
-            }
-        });
+                });
     }
 
     //---------------//
@@ -172,23 +170,17 @@ public class LogPane
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Integer fontSize = new Constant.Integer(
-                "Points",
-                10,
-                "Font size for log pane");
+        Constant.Integer fontSize = new Constant.Integer("Points", 10, "Font size for log pane");
 
-        Constant.String fontName = new Constant.String(
-                "Lucida Console",
-                "Font name for log pane");
-
+        Constant.String fontName = new Constant.String("Lucida Console", "Font name for log pane");
     }
 }

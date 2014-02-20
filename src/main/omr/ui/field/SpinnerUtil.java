@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            S p i n n e r U t i l                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      S p i n n e r U t i l                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.field;
 
@@ -23,24 +23,23 @@ import javax.swing.SpinnerListModel;
 import javax.swing.SpinnerModel;
 
 /**
- * Class {@code SpinnerUtil} gathers a few utilities for JSpinner
- * entities
+ * Class {@code SpinnerUtil} gathers a few utilities for JSpinner entities
  *
  * @author Hervé Bitteur
  */
 public class SpinnerUtil
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Specific value to indicate that spinner value is invalid : {@value} */
     public static final int NO_VALUE = 0;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     private SpinnerUtil ()
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // fixIntegerList //
     //----------------//
@@ -56,10 +55,8 @@ public class SpinnerUtil
         editor = (JSpinner.DefaultEditor) spinner.getEditor();
 
         final JFormattedTextField ftf = editor.getTextField();
-        ftf.getInputMap()
-                .put(KeyStroke.getKeyStroke("ENTER"), "enterAction");
-        ftf.getActionMap()
-                .put(
+        ftf.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "enterAction");
+        ftf.getActionMap().put(
                 "enterAction",
                 new AbstractAction()
         {
@@ -73,7 +70,7 @@ public class SpinnerUtil
                     ftf.setText(ftf.getValue().toString());
                 }
             }
-        });
+                });
     }
 
     //-------------//
@@ -90,8 +87,7 @@ public class SpinnerUtil
     {
         JSpinner.DefaultEditor editor;
         editor = (JSpinner.DefaultEditor) spinner.getEditor();
-        editor.getTextField()
-                .setEditable(bool);
+        editor.getTextField().setEditable(bool);
     }
 
     //---------//
@@ -111,8 +107,7 @@ public class SpinnerUtil
         if (model instanceof SpinnerListModel) {
             ((SpinnerListModel) model).setList(values);
         } else {
-            throw new IllegalArgumentException(
-                    "Spinner model is not a SpinnerListModel");
+            throw new IllegalArgumentException("Spinner model is not a SpinnerListModel");
         }
     }
 
@@ -128,7 +123,6 @@ public class SpinnerUtil
     {
         JSpinner.DefaultEditor editor;
         editor = (JSpinner.DefaultEditor) spinner.getEditor();
-        editor.getTextField()
-                .setHorizontalAlignment(JTextField.RIGHT);
+        editor.getTextField().setHorizontalAlignment(JTextField.RIGHT);
     }
 }

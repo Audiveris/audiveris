@@ -1,26 +1,26 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            P o l y n o m i a l                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      P o l y n o m i a l                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
 /**
  * Class {@code Polynomial} is a simple polynomial implementation.
- *
+ * <p>
  * See http://introcs.cs.princeton.edu/java/92symbolic/Polynomial.java.html
  *
  * @author Hervé Bitteur
  */
 public class Polynomial
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The degree of polynomial */
     protected int degree;
@@ -28,7 +28,7 @@ public class Polynomial
     /** Polynomial coefficient vector, from low to high order */
     protected double[] coefficients;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // Polynomial //
     //------------//
@@ -51,26 +51,42 @@ public class Polynomial
         this.degree = degree();
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //---------//
-    // compose //
-    //---------//
-    /**
-     * Compose with that other polynomial.
-     *
-     * @param that the other polynomial
-     * @return a(b(x))
-     */
-    public Polynomial compose (Polynomial that)
+    //~ Methods ------------------------------------------------------------------------------------
+    //------//
+    // main //
+    //------//
+    // test client
+    public static void main (String[] args)
     {
-        Polynomial result = new Polynomial(0, 0);
+        Polynomial zero = new Polynomial(0, 0);
 
-        for (int i = this.degree; i >= 0; i--) {
-            Polynomial term = new Polynomial(this.coefficients[i], 0);
-            result = term.plus(that.times(result));
-        }
+        Polynomial p1 = new Polynomial(4, 3); // 4x^3
+        Polynomial p2 = new Polynomial(3, 2); // 3x^2
+        Polynomial p3 = new Polynomial(1, 0); // 1
+        Polynomial p4 = new Polynomial(2, 1); // 2x
+        Polynomial p = p1.plus(p2).plus(p3).plus(p4); // 4x^3 + 3x^2 + 2x + 1
 
-        return result;
+        Polynomial q1 = new Polynomial(3, 2); // 3x^2
+        Polynomial q2 = new Polynomial(5, 0); // 5
+        Polynomial q = q1.plus(q2); // 3x^2 + 5
+
+        Polynomial r = p.plus(q);
+        Polynomial s = p.times(q);
+        Polynomial t = p.compose(q);
+
+        System.out.println("zero(x) =     " + zero);
+        System.out.println("p(x) =        " + p);
+        System.out.println("q(x) =        " + q);
+        System.out.println("p(x) + q(x) = " + r);
+        System.out.println("p(x) * q(x) = " + s);
+        System.out.println("p(q(x))     = " + t);
+        System.out.println("0 - p(x)    = " + zero.minus(p));
+        System.out.println("p(3)        = " + p.evaluate(3));
+        System.out.println("p'(x)       = " + p.derivative());
+        System.out.println("p''(x)      = " + p.derivative().derivative());
+        System.out.println("p'''(x)     = " + p.derivative().derivative().derivative());
+        System.out.println(
+                "p''''(x)    = " + p.derivative().derivative().derivative().derivative());
     }
 
     //--------//
@@ -90,6 +106,27 @@ public class Polynomial
         }
 
         return 0;
+    }
+
+    //---------//
+    // compose //
+    //---------//
+    /**
+     * Compose with that other polynomial.
+     *
+     * @param that the other polynomial
+     * @return a(b(x))
+     */
+    public Polynomial compose (Polynomial that)
+    {
+        Polynomial result = new Polynomial(0, 0);
+
+        for (int i = this.degree; i >= 0; i--) {
+            Polynomial term = new Polynomial(this.coefficients[i], 0);
+            result = term.plus(that.times(result));
+        }
+
+        return result;
     }
 
     //------------//
@@ -151,7 +188,7 @@ public class Polynomial
      */
     public double evaluate (double x)
     {
-        // use Horner's method 
+        // use Horner's method
         double result = 0;
 
         for (int i = degree; i >= 0; i--) {
@@ -159,47 +196,6 @@ public class Polynomial
         }
 
         return result;
-    }
-
-    //------//
-    // main //
-    //------//
-    // test client
-    public static void main (String[] args)
-    {
-        Polynomial zero = new Polynomial(0, 0);
-
-        Polynomial p1 = new Polynomial(4, 3); // 4x^3
-        Polynomial p2 = new Polynomial(3, 2); // 3x^2
-        Polynomial p3 = new Polynomial(1, 0); // 1
-        Polynomial p4 = new Polynomial(2, 1); // 2x
-        Polynomial p = p1.plus(p2)
-                .plus(p3)
-                .plus(p4); // 4x^3 + 3x^2 + 2x + 1
-
-        Polynomial q1 = new Polynomial(3, 2); // 3x^2
-        Polynomial q2 = new Polynomial(5, 0); // 5
-        Polynomial q = q1.plus(q2); // 3x^2 + 5
-
-        Polynomial r = p.plus(q);
-        Polynomial s = p.times(q);
-        Polynomial t = p.compose(q);
-
-        System.out.println("zero(x) =     " + zero);
-        System.out.println("p(x) =        " + p);
-        System.out.println("q(x) =        " + q);
-        System.out.println("p(x) + q(x) = " + r);
-        System.out.println("p(x) * q(x) = " + s);
-        System.out.println("p(q(x))     = " + t);
-        System.out.println("0 - p(x)    = " + zero.minus(p));
-        System.out.println("p(3)        = " + p.evaluate(3));
-        System.out.println("p'(x)       = " + p.derivative());
-        System.out.println("p''(x)      = " + p.derivative().derivative());
-        System.out.println(
-                "p'''(x)     = " + p.derivative().derivative().derivative());
-        System.out.println(
-                "p''''(x)    = "
-                + p.derivative().derivative().derivative().derivative());
     }
 
     //-------//
@@ -213,9 +209,7 @@ public class Polynomial
      */
     public Polynomial minus (Polynomial that)
     {
-        Polynomial result = new Polynomial(
-                0,
-                Math.max(this.degree, that.degree));
+        Polynomial result = new Polynomial(0, Math.max(this.degree, that.degree));
 
         for (int i = 0; i <= this.degree; i++) {
             result.coefficients[i] += this.coefficients[i];
@@ -241,9 +235,7 @@ public class Polynomial
      */
     public Polynomial plus (Polynomial that)
     {
-        Polynomial result = new Polynomial(
-                0,
-                Math.max(this.degree, that.degree));
+        Polynomial result = new Polynomial(0, Math.max(this.degree, that.degree));
 
         for (int i = 0; i <= this.degree; i++) {
             result.coefficients[i] += this.coefficients[i];

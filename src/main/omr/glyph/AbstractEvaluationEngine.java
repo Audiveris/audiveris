@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                A b s t r a c t G l y p h E v a l u a t o r                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                          A b s t r a c t G l y p h E v a l u a t o r                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -45,40 +45,39 @@ import javax.swing.JOptionPane;
 import javax.xml.bind.JAXBException;
 
 /**
- * Class {@code AbstractEvaluationEngine} is an abstract implementation
- * for any evaluation engine.
- *
- * <p> <img src="doc-files/GlyphEvaluator.jpg" />
+ * Class {@code AbstractEvaluationEngine} is an abstract implementation for any
+ * evaluation engine.
+ * <p>
+ * <img src="doc-files/GlyphEvaluator.jpg" />
  *
  * @author Hervé Bitteur
  */
 public abstract class AbstractEvaluationEngine
         implements EvaluationEngine
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             AbstractEvaluationEngine.class);
 
     /** Number of shapes to differentiate. */
-    protected static final int shapeCount = 1
-                                            + Shape.LAST_PHYSICAL_SHAPE.ordinal();
+    protected static final int shapeCount = 1 + Shape.LAST_PHYSICAL_SHAPE.ordinal();
 
     /** A special evaluation array, used to report NOISE. */
     protected static final Evaluation[] noiseEvaluations = {
-        new Evaluation(Shape.NOISE, Evaluation.ALGORITHM)
+        new Evaluation(
+        Shape.NOISE,
+        Evaluation.ALGORITHM)
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The glyph checker for additional specific checks. */
     protected ShapeChecker glyphChecker = ShapeChecker.getInstance();
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //----------//
     // evaluate //
@@ -91,7 +90,7 @@ public abstract class AbstractEvaluationEngine
                                   EnumSet<ShapeEvaluator.Condition> conditions,
                                   Predicate<Shape> predicate)
     {
-        List<Evaluation> best = new ArrayList<>();
+        List<Evaluation> best = new ArrayList<Evaluation>();
         Evaluation[] evals = getSortedEvaluations(glyph);
 
         EvalsLoop:
@@ -107,8 +106,7 @@ public abstract class AbstractEvaluationEngine
             }
 
             // Allowed?
-            if (conditions.contains(Condition.ALLOWED)
-                && glyph.isShapeForbidden(eval.shape)) {
+            if (conditions.contains(Condition.ALLOWED) && glyph.isShapeForbidden(eval.shape)) {
                 continue;
             }
 
@@ -138,6 +136,7 @@ public abstract class AbstractEvaluationEngine
                     continue EvalsLoop;
                 }
             }
+
             best.add(eval);
         }
 
@@ -158,6 +157,7 @@ public abstract class AbstractEvaluationEngine
             return evals[ordinal];
         } else {
             logger.error("Shape {} cannot be evaluated directly", shape);
+
             return null;
         }
     }
@@ -217,8 +217,7 @@ public abstract class AbstractEvaluationEngine
                                double minGrade,
                                Predicate<Shape> predicate)
     {
-        Evaluation[] evals = evaluate(glyph, null, 1, minGrade,
-                EnumSet.of(ALLOWED), predicate);
+        Evaluation[] evals = evaluate(glyph, null, 1, minGrade, EnumSet.of(ALLOWED), predicate);
 
         if (evals.length > 0) {
             return evals[0];
@@ -249,8 +248,7 @@ public abstract class AbstractEvaluationEngine
                             EnumSet<Condition> conditions,
                             Predicate<Shape> predicate)
     {
-        Evaluation[] evals = evaluate(glyph, system, 1, minGrade, conditions,
-                predicate);
+        Evaluation[] evals = evaluate(glyph, system, 1, minGrade, conditions, predicate);
 
         if (evals.length > 0) {
             return evals[0];
@@ -268,8 +266,13 @@ public abstract class AbstractEvaluationEngine
                             double minGrade,
                             Predicate<Shape> predicate)
     {
-        Evaluation[] evals = evaluate(glyph, system, 1, minGrade,
-                EnumSet.of(ALLOWED, CHECKED), predicate);
+        Evaluation[] evals = evaluate(
+                glyph,
+                system,
+                1,
+                minGrade,
+                EnumSet.of(ALLOWED, CHECKED),
+                predicate);
 
         if (evals.length > 0) {
             return evals[0];
@@ -286,8 +289,13 @@ public abstract class AbstractEvaluationEngine
                             SystemInfo system,
                             double minGrade)
     {
-        Evaluation[] evals = evaluate(glyph, system, 1, minGrade,
-                EnumSet.of(ALLOWED, CHECKED), null);
+        Evaluation[] evals = evaluate(
+                glyph,
+                system,
+                1,
+                minGrade,
+                EnumSet.of(ALLOWED, CHECKED),
+                null);
 
         if (evals.length > 0) {
             return evals[0];
@@ -306,6 +314,19 @@ public abstract class AbstractEvaluationEngine
      * @return the file name
      */
     protected abstract String getFileName ();
+
+    //-----------------------//
+    // getNaturalEvaluations //
+    //-----------------------//
+    /**
+     * Run the evaluator with the specified glyph, and return the
+     * natural sequence of interpretations (ordered by Shape ordinal)
+     * with no additional check.
+     *
+     * @param glyph the glyph to be examined
+     * @return all shape-ordered evaluations
+     */
+    protected abstract Evaluation[] getNaturalEvaluations (Glyph glyph);
 
     //----------------------//
     // getSortedEvaluations //
@@ -332,37 +353,23 @@ public abstract class AbstractEvaluationEngine
         }
     }
 
-    //-----------------------//
-    // getNaturalEvaluations //
-    //-----------------------//
+    //--------------//
+    // isCompatible //
+    //--------------//
     /**
-     * Run the evaluator with the specified glyph, and return the
-     * natural sequence of interpretations (ordered by Shape ordinal)
-     * with no additional check.
+     * Make sure the provided engine object is compatible with the
+     * current application.
      *
-     * @param glyph the glyph to be examined
-     * @return all shape-ordered evaluations
+     * @param obj the engine object
+     * @return true if engine is usable and found compatible
      */
-    protected abstract Evaluation[] getNaturalEvaluations (Glyph glyph);
+    protected abstract boolean isCompatible (Object obj);
 
     //---------//
     // marshal //
     //---------//
     protected abstract void marshal (OutputStream os)
             throws FileNotFoundException, IOException, JAXBException;
-
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * The specific unmarshalling method which builds a suitable engine.
-     *
-     * @param is the input stream to read
-     * @return the newly built evaluation engine
-     * @throws JAXBException, IOException
-     */
-    protected abstract Object unmarshal (InputStream is)
-            throws JAXBException, IOException;
 
     //-----------//
     // unmarshal //
@@ -379,6 +386,7 @@ public abstract class AbstractEvaluationEngine
         // First try user file, if any (in user EVAL folder)
         {
             File file = new File(WellKnowns.EVAL_FOLDER, getFileName());
+
             if (file.exists()) {
                 Object obj = unmarshal(file);
 
@@ -386,14 +394,14 @@ public abstract class AbstractEvaluationEngine
                     logger.warn("Could not load {}", file);
                 } else {
                     if (!isCompatible(obj)) {
-                        final String msg = "Obsolete user data for " + getName()
-                                           + " in " + file
+                        final String msg = "Obsolete user data for " + getName() + " in " + file
                                            + ", trying default data";
                         logger.warn(msg);
                         JOptionPane.showMessageDialog(null, msg);
                     } else {
                         // Tell the user we are not using the default
                         logger.info("{} unmarshalled from {}", getName(), file);
+
                         return obj;
                     }
                 }
@@ -404,24 +412,25 @@ public abstract class AbstractEvaluationEngine
         //file = new File(WellKnowns.RES_URI, getFileName());
         URI uri = UriUtil.toURI(WellKnowns.RES_URI, getFileName());
         InputStream input;
+
         try {
             input = uri.toURL().openStream();
         } catch (Exception ex) {
             logger.warn("Error in " + uri, ex);
+
             return null;
         }
+
         Object obj = unmarshal(input, getFileName());
 
         if (obj == null) {
             logger.warn("Could not load {}", uri);
         } else {
             if (!isCompatible(obj)) {
-                final String msg = "Obsolete default data for " + getName()
-                                   + " in " + uri
+                final String msg = "Obsolete default data for " + getName() + " in " + uri
                                    + ", please retrain from scratch";
                 logger.warn(msg);
                 /////TODO: JOptionPane.showMessageDialog(null, msg);
-
                 obj = null;
             } else {
                 logger.debug("{} unmarshalled from {}", getName(), uri);
@@ -431,17 +440,18 @@ public abstract class AbstractEvaluationEngine
         return obj;
     }
 
-    //--------------//
-    // isCompatible //
-    //--------------//
+    //-----------//
+    // unmarshal //
+    //-----------//
     /**
-     * Make sure the provided engine object is compatible with the
-     * current application.
+     * The specific unmarshalling method which builds a suitable engine.
      *
-     * @param obj the engine object
-     * @return true if engine is usable and found compatible
+     * @param is the input stream to read
+     * @return the newly built evaluation engine
+     * @throws JAXBException, IOException
      */
-    protected abstract boolean isCompatible (Object obj);
+    protected abstract Object unmarshal (InputStream is)
+            throws JAXBException, IOException;
 
     //-----------//
     // unmarshal //
@@ -475,8 +485,7 @@ public abstract class AbstractEvaluationEngine
                               String name)
     {
         if (is == null) {
-            logger.warn("No data stream for {} engine as {}",
-                    getName(), name);
+            logger.warn("No data stream for {} engine as {}", getName(), name);
         } else {
             try {
                 Object engine = unmarshal(is);
@@ -495,15 +504,17 @@ public abstract class AbstractEvaluationEngine
         return null;
     }
 
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
+        //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.AreaFraction minWeight = new Scale.AreaFraction(0.08,
+        Scale.AreaFraction minWeight = new Scale.AreaFraction(
+                0.08,
                 "Minimum normalized weight to be considered not a noise");
-
     }
 }

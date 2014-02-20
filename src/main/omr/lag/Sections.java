@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              S e c t i o n s                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        S e c t i o n s                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag;
 
@@ -24,19 +24,70 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * Class {@code Sections} handles features related to a collection of
- * sections.
+ * Class {@code Sections} handles features related to a collection of sections.
  *
  * @author Hervé Bitteur
  */
 public class Sections
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Sections.class);
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
+    private Sections ()
+    {
+    }
+
+    //~ Methods ------------------------------------------------------------------------------------
+    //-----------------//
+    // byReverseLength //
+    //-----------------//
+    /**
+     * Return a comparator for comparing Section instances on their
+     * decreasing length, using the provided orientation.
+     *
+     * @param orientation the provided orientation
+     * @return the properly oriented length comparator
+     */
+    public static Comparator<Section> byReverseLength (final Orientation orientation)
+    {
+        return new Comparator<Section>()
+        {
+            @Override
+            public int compare (Section s1,
+                                Section s2)
+            {
+                return Integer.signum(s2.getLength(orientation) - s1.getLength(orientation));
+            }
+        };
+    }
+
+    //-------------------//
+    // containedSections //
+    //-------------------//
+    /**
+     * Convenient method to look for sections contained by the provided
+     * rectangle
+     *
+     * @param rect     provided rectangle
+     * @param sections the collection of sections to browse
+     * @return the set of contained sections
+     */
+    public static Set<Section> containedSections (Rectangle rect,
+                                                  Collection<? extends Section> sections)
+    {
+        Set<Section> found = new LinkedHashSet<Section>();
+
+        for (Section section : sections) {
+            if (rect.contains(section.getBounds())) {
+                found.add(section);
+            }
+        }
+
+        return found;
+    }
+
     //-----------//
     // getBounds //
     //-----------//
@@ -61,31 +112,6 @@ public class Sections
         return box;
     }
 
-    //-----------------//
-    // byReverseLength //
-    //-----------------//
-    /**
-     * Return a comparator for comparing Section instances on their
-     * decreasing length, using the provided orientation.
-     *
-     * @param orientation the provided orientation
-     * @return the properly oriented length comparator
-     */
-    public static Comparator<Section> byReverseLength (
-            final Orientation orientation)
-    {
-        return new Comparator<Section>()
-        {
-            @Override
-            public int compare (Section s1,
-                                Section s2)
-            {
-                return Integer.signum(
-                        s2.getLength(orientation) - s1.getLength(orientation));
-            }
-        };
-    }
-
     //---------------------------//
     // lookupIntersectedSections //
     //---------------------------//
@@ -100,35 +126,10 @@ public class Sections
     public static Set<Section> lookupIntersectedSections (Rectangle rect,
                                                           Collection<? extends Section> sections)
     {
-        Set<Section> found = new LinkedHashSet<>();
+        Set<Section> found = new LinkedHashSet<Section>();
 
         for (Section section : sections) {
             if (section.intersects(rect)) {
-                found.add(section);
-            }
-        }
-
-        return found;
-    }
-
-    //-------------------//
-    // containedSections //
-    //-------------------//
-    /**
-     * Convenient method to look for sections contained by the provided
-     * rectangle
-     *
-     * @param rect     provided rectangle
-     * @param sections the collection of sections to browse
-     * @return the set of contained sections
-     */
-    public static Set<Section> containedSections (Rectangle rect,
-                                                  Collection<? extends Section> sections)
-    {
-        Set<Section> found = new LinkedHashSet<>();
-
-        for (Section section : sections) {
-            if (rect.contains(section.getBounds())) {
                 found.add(section);
             }
         }
@@ -155,13 +156,10 @@ public class Sections
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append(label)
-                .append("[");
+        sb.append(label).append("[");
 
         for (Section section : sections) {
-            sb.append("#")
-                    .append(section.isVertical() ? "V" : "H")
-                    .append(section.getId());
+            sb.append("#").append(section.isVertical() ? "V" : "H").append(section.getId());
         }
 
         sb.append("]");
@@ -214,9 +212,5 @@ public class Sections
     public static String toString (Section... sections)
     {
         return toString("sections", sections);
-    }
-
-    private Sections ()
-    {
     }
 }

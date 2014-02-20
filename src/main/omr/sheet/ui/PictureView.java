@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           P i c t u r e V i e w                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     P i c t u r e V i e w                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet.ui;
 
@@ -42,17 +42,15 @@ public class PictureView
         extends ScrollView
         implements PropertyChangeListener
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            PictureView.class);
+    private static final Logger logger = LoggerFactory.getLogger(PictureView.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Link with sheet */
     private final Sheet sheet;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // PictureView //
     //-------------//
@@ -74,14 +72,13 @@ public class PictureView
 
         // Listen to all painting parameters
         PaintingParameters.getInstance()
-                .addPropertyChangeListener(
-                        new WeakPropertyChangeListener(this));
+                .addPropertyChangeListener(new WeakPropertyChangeListener(this));
 
         // Insert view
         setView(view);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // propertyChange //
     //----------------//
@@ -91,14 +88,14 @@ public class PictureView
         view.repaint();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//
     private class MyView
             extends RubberPanel
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         //--------//
         // render //
@@ -107,11 +104,9 @@ public class PictureView
         public void render (Graphics2D g)
         {
             Color oldColor = g.getColor();
-            
+
             // Anti-aliasing ON
-            g.setRenderingHint(
-                    RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
             PaintingParameters painting = PaintingParameters.getInstance();
 
@@ -133,17 +128,16 @@ public class PictureView
                 // Draw sort of system brackets
                 //                if (sheet.getTargetBuilder() != null) {
                 //                    sheet.getTargetBuilder()
-                //                            .renderSystems(g); // TODO: Temporary 
+                //                            .renderSystems(g); // TODO: Temporary
                 //                }
                 boolean mixed = painting.isInputPainting();
                 g.setColor(mixed ? Colors.MUSIC_PICTURE : Colors.MUSIC_ALONE);
-                sheet.getPage()
-                        .accept(
-                                new PagePhysicalPainter(
-                                        g,
-                                        mixed ? false : painting.isVoicePainting(),
-                                        true,
-                                        false));
+                sheet.getPage().accept(
+                        new PagePhysicalPainter(
+                                g,
+                                mixed ? false : painting.isVoicePainting(),
+                                true,
+                                false));
             }
 
             g.setColor(oldColor);

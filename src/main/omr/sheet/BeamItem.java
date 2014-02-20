@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               B e a m I t e m                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         B e a m I t e m                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -21,13 +21,13 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code BeamItem} represents one beam candidate, using a very
- * simple parallelogram definition.
+ * Class {@code BeamItem} represents one beam candidate, using a very simple
+ * parallelogram definition.
  */
 public class BeamItem
         implements Vip
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The median line of the beam item. */
     final Line2D median;
@@ -38,7 +38,7 @@ public class BeamItem
     /** VIP flag. */
     private boolean vip;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamItem object.
      *
@@ -52,7 +52,7 @@ public class BeamItem
         this.height = height;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getBeltArea //
     //-------------//
@@ -81,10 +81,7 @@ public class BeamItem
     //-------------//
     public Area getCoreArea ()
     {
-        return AreaUtil.horizontalParallelogram(
-                median.getP1(),
-                median.getP2(),
-                height);
+        return AreaUtil.horizontalParallelogram(median.getP1(), median.getP2(), height);
     }
 
     //-------//

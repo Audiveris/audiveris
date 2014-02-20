@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            B r o k e n L i n e                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       B r o k e n L i n e                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -38,34 +38,31 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code BrokenLine} handles the broken line defined by a
- * sequence of points which can be modified at any time.
+ * Class {@code BrokenLine} handles the broken line defined by a sequence of points
+ * which can be modified at any time.
  *
- * <p>This class make use of several distance parameters, presented here from
- * smaller to larger:
+ * <p>
+ * This class make use of several distance parameters, presented here from smaller to larger:
  * <dl>
  * <dt><b>colinear</b></dt>
- * <dd>A point sufficiently close to a segment can be considered as colinear
- * and thus removed. See {@link #isColinear} method.</dd>
+ * <dd>A point sufficiently close to a segment can be considered as colinear and thus removed. See
+ * {@link #isColinear} method.</dd>
  * <dt><b>sticky</b></dt>
- * <dd>A point sufficiently close to a reference point or to a segment allows
- * to select this reference point or segment.
- * See {@link #findPoint} and {@link #findSegment} methods.</dd>
+ * <dd>A point sufficiently close to a reference point or to a segment allows to select this
+ * reference point or segment. See {@link #findPoint} and {@link #findSegment} methods.</dd>
  * <dt><b>dragging</b></dt>
- * <dd>A point sufficiently close to the last location of a point being dragged
- * is considered as the new location for this point. This UI feature is actually
- * beyond the scope of BrokenLine, so only the default dragging value is handled
- * here for convenience. See {@link #getDraggingDistance}.
+ * <dd>A point sufficiently close to the last location of a point being dragged is considered as the
+ * new location for this point. This UI feature is actually beyond the scope of BrokenLine, so only
+ * the default dragging value is handled here for convenience. See {@link #getDraggingDistance}.
  * </dd>
  * </dl>
- *
- * <p><b>Nota:</b> Internal reference points data can still be modified at any
- * time, since the BrokenLine, just like a List, merely handles points pointers.
+ * <p>
+ * <b>Nota:</b> Internal reference points data can still be modified at any time, since the
+ * BrokenLine, just like a List, merely handles points pointers.
  * For example, to move a point, just call point.setLocation() method.</p>
- *
- * <p>This ability of dynamic modification is the main reason why this class
- * is not simply implemented as a Path2D. If a Path2D instance is needed,
- * use the {@link #toGeoPath()} conversion method.
+ * <p>
+ * This ability of dynamic modification is the main reason why this class is not simply implemented
+ * as a Path2D. If a Path2D instance is needed, use the {@link #toGeoPath()} conversion method.
  *
  * @author Hervé Bitteur
  */
@@ -74,31 +71,30 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "broken-line")
 public class BrokenLine
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
+    
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(BrokenLine.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The ordered sequence of points */
-    private final List<Point> points = new ArrayList<>();
+    private final List<Point> points = new ArrayList<Point>();
 
     /** Dummy collection of points, just for (un) marshalling */
     @XmlElement(name = "point")
-    private final List<PointFacade> xps = new ArrayList<>();
+    private final List<PointFacade> xps = new ArrayList<PointFacade>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //------------//
     // BrokenLine //
     //------------//
     /**
-     * Creates a new BrokenLine object with an initially empty sequence
-     * of points.
+     * Creates a new BrokenLine object with an initially empty sequence of points.
      */
     public BrokenLine ()
     {
@@ -130,25 +126,31 @@ public class BrokenLine
         resetPoints(points);
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //
-    //-------------//
-    // resetPoints //
-    //-------------//
+    //~ Methods ------------------------------------------------------------------------------------
+    //---------------------//
+    // getDraggingDistance //
+    //---------------------//
     /**
-     * Replace the current line points with the provided ones.
+     * Report the dragging distance.
      *
-     * @param points the new collection of points
+     * @return the dragging distance, specified in pixels
      */
-    public final void resetPoints (Collection<Point> points)
+    public static int getDraggingDistance ()
     {
-        if (this.points != points) {
-            this.points.clear();
+        return constants.draggingDistance.getValue();
+    }
 
-            if (points != null) {
-                this.points.addAll(points);
-            }
-        }
+    //-------------------//
+    // getStickyDistance //
+    //-------------------//
+    /**
+     * Report the maximum distance (from a point, from a segment).
+     *
+     * @return the maximum distance, specified in pixels
+     */
+    public static int getStickyDistance ()
+    {
+        return constants.stickyDistance.getValue();
     }
 
     //----------//
@@ -168,8 +170,8 @@ public class BrokenLine
     // findPoint //
     //-----------//
     /**
-     * Find the first point of the current sequence which is close to
-     * the provided point (less than sticky distance).
+     * Find the first point of the current sequence which is close to the provided point
+     * (less than sticky distance).
      *
      * @param point the provided point
      * @return the point found, or null if not found
@@ -192,12 +194,11 @@ public class BrokenLine
     // findSegment //
     //-------------//
     /**
-     * Find the closest segment (if any) which lies at a maximum of
-     * sticky distance from the provided point.
+     * Find the closest segment (if any) which lies at a maximum of sticky distance from
+     * the provided point.
      *
      * @param point the provided point
-     * @return the sequence point that starts the segment found
-     *         (or null if not found)
+     * @return the sequence point that starts the segment found (or null if not found)
      */
     public Point findSegment (Point point)
     {
@@ -280,11 +281,7 @@ public class BrokenLine
                 sb.append(' ');
             }
 
-            sb.append('(')
-                    .append(p.x)
-                    .append(',')
-                    .append(p.y)
-                    .append(')');
+            sb.append('(').append(p.x).append(',').append(p.y).append(')');
             started = true;
         }
 
@@ -347,9 +344,8 @@ public class BrokenLine
     // isColinear //
     //------------//
     /**
-     * Check whether the specified point is colinear (within
-     * colinearDistance) with the previous and the following points in
-     * the sequence.
+     * Check whether the specified point is colinear (within colinearDistance) with the
+     * previous and the following points in the sequence.
      *
      * @param point the point to check
      * @return true if the 3 points are colinear or nearly so
@@ -359,9 +355,7 @@ public class BrokenLine
         int index = points.indexOf(point);
 
         if ((index > 0) && (index < (points.size() - 1))) {
-            Line2D.Double line = new Line2D.Double(
-                    getPoint(index - 1),
-                    getPoint(index + 1));
+            Line2D.Double line = new Line2D.Double(getPoint(index - 1), getPoint(index + 1));
             double dist = line.ptLineDist(point);
 
             return dist <= constants.colinearDistance.getValue();
@@ -383,6 +377,26 @@ public class BrokenLine
         points.remove(point);
     }
 
+    //
+    //-------------//
+    // resetPoints //
+    //-------------//
+    /**
+     * Replace the current line points with the provided ones.
+     *
+     * @param points the new collection of points
+     */
+    public final void resetPoints (Collection<Point> points)
+    {
+        if (this.points != points) {
+            this.points.clear();
+
+            if (points != null) {
+                this.points.addAll(points);
+            }
+        }
+    }
+
     //------//
     // size //
     //------//
@@ -394,52 +408,6 @@ public class BrokenLine
     public int size ()
     {
         return points.size();
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return "{BrokenLine " + getSequenceString() + "}";
-    }
-
-    //----------------//
-    // afterUnmarshal //
-    //----------------//
-    /**
-     * Called after all the properties (except IDREF) are unmarshalled
-     * for this object, but before this object is set to the parent
-     * object.
-     */
-    @SuppressWarnings("unused")
-    private void afterUnmarshal (Unmarshaller um,
-                                 Object parent)
-    {
-        // Convert xps -> points
-        points.clear();
-
-        for (PointFacade xp : xps) {
-            points.add(xp.getPoint());
-        }
-    }
-
-    //---------------//
-    // beforeMarshal //
-    //---------------//
-    /**
-     * Called immediately before the marshalling of this object begins.
-     */
-    @SuppressWarnings("unused")
-    private void beforeMarshal (Marshaller m)
-    {
-        // Convert points -> xps
-        xps.clear();
-
-        for (Point point : points) {
-            xps.add(new PointFacade(point));
-        }
     }
 
     //-----------//
@@ -467,40 +435,59 @@ public class BrokenLine
         return path;
     }
 
-    //---------------------//
-    // getDraggingDistance //
-    //---------------------//
-    /**
-     * Report the dragging distance.
-     *
-     * @return the dragging distance, specified in pixels
-     */
-    public static int getDraggingDistance ()
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
     {
-        return constants.draggingDistance.getValue();
+        return "{BrokenLine " + getSequenceString() + "}";
     }
 
-    //-------------------//
-    // getStickyDistance //
-    //-------------------//
+    //----------------//
+    // afterUnmarshal //
+    //----------------//
     /**
-     * Report the maximum distance (from a point, from a segment).
-     *
-     * @return the maximum distance, specified in pixels
+     * Called after all the properties (except IDREF) are un-marshaled for this object,
+     * but before this object is set to the parent object.
      */
-    public static int getStickyDistance ()
+    @SuppressWarnings("unused")
+    private void afterUnmarshal (Unmarshaller um,
+                                 Object parent)
     {
-        return constants.stickyDistance.getValue();
+        // Convert xps -> points
+        points.clear();
+
+        for (PointFacade xp : xps) {
+            points.add(xp.getPoint());
+        }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //---------------//
+    // beforeMarshal //
+    //---------------//
+    /**
+     * Called immediately before the marshaling of this object begins.
+     */
+    @SuppressWarnings("unused")
+    private void beforeMarshal (Marshaller m)
+    {
+        // Convert points -> xps
+        xps.clear();
+
+        for (Point point : points) {
+            xps.add(new PointFacade(point));
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Integer colinearDistance = new Constant.Integer(
                 "Pixels",
@@ -516,6 +503,5 @@ public class BrokenLine
                 "Pixels",
                 25,
                 "Maximum distance from a point to drag it");
-
     }
 }

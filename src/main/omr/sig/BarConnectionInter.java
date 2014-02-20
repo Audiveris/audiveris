@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     B a r C o n n e c t i o n I n t e r                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               B a r C o n n e c t i o n I n t e r                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
@@ -18,19 +18,19 @@ import omr.grid.BarConnection;
 import java.awt.geom.Area;
 
 /**
- * Class {@code BarConnectionInter} represents a vertical connection
- * between two bar lines across staves.
+ * Class {@code BarConnectionInter} represents a vertical connection between two bar
+ * lines across staves.
  *
  * @author Hervé Bitteur
  */
 public class BarConnectionInter
         extends AbstractInter
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final BarConnection connection;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarConnectionInter object.
      *
@@ -47,7 +47,7 @@ public class BarConnectionInter
         setImpacts(impacts);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

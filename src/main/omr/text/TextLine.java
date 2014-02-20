@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              T e x t L i n e                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        T e x t L i n e                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.text;
 
@@ -35,17 +35,16 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class {@code TextLine} defines a non-mutable structure to report all
- * information on one OCR-decoded line.
+ * Class {@code TextLine} defines a non-mutable structure to report all information on
+ * one OCR-decoded line.
  *
  * @author Hervé Bitteur
  */
 public class TextLine
         extends TextBasedItem
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(TextLine.class);
 
     /** Line comparator by deskewed abscissa. */
@@ -55,8 +54,7 @@ public class TextLine
         public int compare (TextLine o1,
                             TextLine o2)
         {
-            return Double.compare(o1.getDskOrigin().getX(),
-                    o2.getDskOrigin().getX());
+            return Double.compare(o1.getDskOrigin().getX(), o2.getDskOrigin().getX());
         }
     };
 
@@ -67,19 +65,18 @@ public class TextLine
         public int compare (TextLine o1,
                             TextLine o2)
         {
-            return Double.compare(o1.getDskOrigin().getY(),
-                    o2.getDskOrigin().getY());
+            return Double.compare(o1.getDskOrigin().getY(), o2.getDskOrigin().getY());
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Containing system. */
     @Navigable(false)
     private final SystemInfo system;
 
     /** Words that compose this line. */
-    private final List<TextWord> words = new ArrayList<>();
+    private final List<TextWord> words = new ArrayList<TextWord>();
 
     /** Unmodifiable view of the words sequence. */
     @Navigable(false)
@@ -100,7 +97,7 @@ public class TextLine
     /** Temporary processed flag. */
     private boolean processed;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------//
     // TextLine //
@@ -139,7 +136,30 @@ public class TextLine
         this.system = system;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // addWords //
+    //----------//
+    /**
+     * Add a few words.
+     *
+     * @param words the words to add
+     */
+    public void addWords (Collection<TextWord> words)
+    {
+        if ((words != null) && !words.isEmpty()) {
+            this.words.addAll(words);
+
+            for (TextWord word : words) {
+                word.setTextLine(this);
+            }
+
+            Collections.sort(this.words, TextWord.byAbscissa);
+
+            invalidateCache();
+        }
+    }
+
     //
     //------------//
     // appendWord //
@@ -156,29 +176,6 @@ public class TextLine
         invalidateCache();
     }
 
-    //----------//
-    // addWords //
-    //----------//
-    /**
-     * Add a few words.
-     *
-     * @param words the words to add
-     */
-    public void addWords (Collection<TextWord> words)
-    {
-        if (words != null && !words.isEmpty()) {
-            this.words.addAll(words);
-
-            for (TextWord word : words) {
-                word.setTextLine(this);
-            }
-
-            Collections.sort(this.words, TextWord.byAbscissa);
-
-            invalidateCache();
-        }
-    }
-
     //------//
     // dump //
     //------//
@@ -188,6 +185,7 @@ public class TextLine
     public void dump ()
     {
         logger.info("{}", this);
+
         for (TextWord word : words) {
             logger.info("   {}", word);
         }
@@ -243,7 +241,7 @@ public class TextLine
      */
     public List<TextChar> getChars ()
     {
-        List<TextChar> chars = new ArrayList<>();
+        List<TextChar> chars = new ArrayList<TextChar>();
 
         for (TextWord word : words) {
             chars.addAll(word.getChars());
@@ -282,6 +280,7 @@ public class TextLine
     {
         if (dskOrigin == null) {
             Line2D base = getBaseline();
+
             if (base != null) {
                 dskOrigin = system.getSkew().deskewed(base.getP1());
             }
@@ -329,27 +328,34 @@ public class TextLine
 
             for (TextWord word : words) {
                 int length = word.getLength();
+
                 // Discard one-char words, they are not reliable
                 if (length > 1) {
                     charCount += length;
-                    sizeTotal += word.getPreciseFontSize() * length;
+                    sizeTotal += (word.getPreciseFontSize() * length);
+
                     FontInfo info = word.getFontInfo();
 
                     if (info.isBold) {
                         boldCount += length;
                     }
+
                     if (info.isItalic) {
                         italicCount += length;
                     }
+
                     if (info.isUnderlined) {
                         underlinedCount += length;
                     }
+
                     if (info.isMonospace) {
                         monospaceCount += length;
                     }
+
                     if (info.isSerif) {
                         serifCount += word.getLength();
                     }
+
                     if (info.isSmallcaps) {
                         smallcapsCount += length;
                     }
@@ -358,7 +364,8 @@ public class TextLine
 
             if (charCount > 0) {
                 int quorum = charCount / 2;
-                meanFont = new FontInfo(boldCount >= quorum, // isBold,
+                meanFont = new FontInfo(
+                        boldCount >= quorum, // isBold,
                         italicCount >= quorum, // isItalic,
                         underlinedCount >= quorum, // isUnderlined,
                         monospaceCount >= quorum, // isMonospace,
@@ -455,10 +462,11 @@ public class TextLine
      */
     public List<Glyph> getWordGlyphs ()
     {
-        List<Glyph> glyphs = new ArrayList<>(words.size());
+        List<Glyph> glyphs = new ArrayList<Glyph>(words.size());
 
         for (TextWord word : words) {
             Glyph glyph = word.getGlyph();
+
             if (glyph != null) {
                 glyphs.add(glyph);
             } else {
@@ -482,43 +490,17 @@ public class TextLine
         return wordsView;
     }
 
-    //-----------------//
-    // internalsString //
-    //-----------------//
+    //---------//
+    // isChord //
+    //---------//
     /**
-     * {@inheritDoc}
+     * Report whether this line has the Chord role
+     *
+     * @return true for chord line
      */
-    @Override
-    protected String internalsString ()
+    public boolean isChord ()
     {
-        StringBuilder sb = new StringBuilder(super.internalsString());
-
-        if (getDskOrigin() != null) {
-            sb.append(String.format(
-                    " dsk[%.0f,%.0f]",
-                    getDskOrigin().getX(), getDskOrigin().getY()));
-        }
-
-        if (getRole() != null) {
-            sb.append(getRole());
-        }
-
-        return sb.toString();
-    }
-
-    //-----------------//
-    // invalidateCache //
-    //-----------------//
-    private void invalidateCache ()
-    {
-        setBounds(null);
-
-        setBaseline(null);
-        setConfidence(null);
-
-        dskOrigin = null;
-        roleInfo = null;
-        meanFont = null;
+        return getRole().role == TextRole.Chord;
     }
 
     //----------//
@@ -532,19 +514,6 @@ public class TextLine
     public boolean isLyrics ()
     {
         return getRole().role == TextRole.Lyrics;
-    }
-
-    //---------//
-    // isChord //
-    //---------//
-    /**
-     * Report whether this line has the Chord role
-     *
-     * @return true for chord line
-     */
-    public boolean isChord ()
-    {
-        return getRole().role == TextRole.Chord;
     }
 
     //-------------//
@@ -565,7 +534,7 @@ public class TextLine
      */
     public void removeWords (Collection<TextWord> words)
     {
-        if (words != null && !words.isEmpty()) {
+        if ((words != null) && !words.isEmpty()) {
             this.words.removeAll(words);
             invalidateCache();
         }
@@ -628,12 +597,49 @@ public class TextLine
         super.translate(dx, dy);
 
         // Update the deskewed origin
-        getDskOrigin().setLocation(system.getSkew().deskewed(
-                getBaseline().getP1()));
+        getDskOrigin().setLocation(system.getSkew().deskewed(getBaseline().getP1()));
 
         // Translate contained descriptors
         for (TextWord word : words) {
             word.translate(dx, dy);
         }
+    }
+
+    //-----------------//
+    // internalsString //
+    //-----------------//
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected String internalsString ()
+    {
+        StringBuilder sb = new StringBuilder(super.internalsString());
+
+        if (getDskOrigin() != null) {
+            sb.append(
+                    String.format(" dsk[%.0f,%.0f]", getDskOrigin().getX(), getDskOrigin().getY()));
+        }
+
+        if (getRole() != null) {
+            sb.append(getRole());
+        }
+
+        return sb.toString();
+    }
+
+    //-----------------//
+    // invalidateCache //
+    //-----------------//
+    private void invalidateCache ()
+    {
+        setBounds(null);
+
+        setBaseline(null);
+        setConfidence(null);
+
+        dskOrigin = null;
+        roleInfo = null;
+        meanFont = null;
     }
 }

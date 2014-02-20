@@ -1,33 +1,32 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            L T e x t F i e l d                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      L T e x t F i e l d                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.field;
 
 import javax.swing.JTextField;
 
 /**
- * Class {@code LTextField} is a {@link LField}, where the field
- * is a text field.
+ * Class {@code LTextField} is a {@link LField}, where the field is a text field.
  *
  * @author Hervé Bitteur
  */
 public class LTextField
         extends LField<JTextField>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Defaut number of characters in the text field : {@value} */
     private static final int FIELD_WIDTH = 6;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // LTextField //
     //------------//
@@ -67,7 +66,7 @@ public class LTextField
         this(false, label, tip);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getText //
     //---------//
@@ -78,8 +77,7 @@ public class LTextField
      */
     public String getText ()
     {
-        return getField()
-                .getText();
+        return getField().getText();
     }
 
     //---------//
@@ -92,7 +90,6 @@ public class LTextField
      */
     public void setText (String text)
     {
-        getField()
-                .setText(text);
+        getField().setText(text);
     }
 }

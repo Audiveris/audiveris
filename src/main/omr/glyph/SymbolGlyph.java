@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           S y m b o l G l y p h                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     S y m b o l G l y p h                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -34,8 +34,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 
 /**
- * Class {@code SymbolGlyph} is an artificial glyph, built from a
- * symbol.
+ * Class {@code SymbolGlyph} is an artificial glyph, built from a symbol.
  * It is used to generate glyph instances for training, when no real glyph
  * (glyph retrieved from scanned sheet) is available.
  *
@@ -44,20 +43,18 @@ import java.awt.image.DataBuffer;
 public class SymbolGlyph
         extends BasicGlyph
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SymbolGlyph.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolGlyph.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying symbol, with generic size */
     private final ShapeSymbol symbol;
 
     /** The underlying image, properly sized */
     private final BufferedImage image;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // SymbolGlyph //
     //-------------//
@@ -122,14 +119,13 @@ public class SymbolGlyph
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // createBuffer //
     //--------------//
     private ByteProcessor createBuffer (BufferedImage img)
     {
-        DataBuffer dataBuffer = img.getData()
-                .getDataBuffer();
+        DataBuffer dataBuffer = img.getData().getDataBuffer();
         ByteProcessor buf = new ByteProcessor(img.getWidth(), img.getHeight());
 
         for (int y = 0, h = img.getHeight(); y < h; y++) {

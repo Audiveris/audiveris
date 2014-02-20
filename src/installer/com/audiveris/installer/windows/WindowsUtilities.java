@@ -39,7 +39,7 @@ public class WindowsUtilities
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
             WindowsUtilities.class);
 

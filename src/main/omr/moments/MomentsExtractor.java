@@ -1,21 +1,21 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      M o m e n t s E x t r a c t o r                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                M o m e n t s E x t r a c t o r                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.moments;
 
 import java.awt.image.WritableRaster;
 
 /**
- * Interface {@code MomentsExtractor} is a general definition for an
- * extractor of {@link OrthogonalMoments}.
+ * Interface {@code MomentsExtractor} is a general definition for an extractor of
+ * {@link OrthogonalMoments}.
  *
  * @param <D> the descriptor type
  *
@@ -23,7 +23,7 @@ import java.awt.image.WritableRaster;
  */
 public interface MomentsExtractor<D extends OrthogonalMoments<D>>
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Extract information from provided foreground points and save

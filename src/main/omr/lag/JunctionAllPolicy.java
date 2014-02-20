@@ -1,29 +1,28 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     J u n c t i o n A l l P o l i c y                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               J u n c t i o n A l l P o l i c y                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag;
 
 import omr.run.Run;
 
 /**
- * Class {@code JunctionAllPolicy} defines a junction policy which
- * imposes no condition on run consistency, thus taking all runs
- * considered.
+ * Class {@code JunctionAllPolicy} defines a junction policy which imposes no condition
+ * on run consistency, thus taking all runs considered.
  *
  * @author Hervé Bitteur
  */
 public class JunctionAllPolicy
         implements JunctionPolicy
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //-------------------//
     // JunctionAllPolicy //
@@ -35,7 +34,7 @@ public class JunctionAllPolicy
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // consistentRun //
     //---------------//

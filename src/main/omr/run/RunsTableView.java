@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         R u n s T a b l e V i e w                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   R u n s T a b l e V i e w                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.run;
 
@@ -29,32 +29,29 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class {@code RunsTableView} displays a view on an underlying runs
- * table.
+ * Class {@code RunsTableView} displays a view on an underlying runs table.
  *
  * @author Hervé Bitteur
  */
 public class RunsTableView
         extends RubberPanel
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            RunsTableView.class);
+    private static final Logger logger = LoggerFactory.getLogger(RunsTableView.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying table of runs */
     private final RunsTable table;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // RunsTableView //
     //---------------//
     /**
      * Creates a new RunsTableView object.
      *
-     * @param table the underlying table of runs
+     * @param table           the underlying table of runs
      * @param locationService the service where locations are retrieved from
      */
     public RunsTableView (RunsTable table,
@@ -70,7 +67,7 @@ public class RunsTableView
         setBackground(Color.white);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//
@@ -165,7 +162,6 @@ public class RunsTableView
         Run run = table.lookupRun(pt);
 
         // Publish Run information
-        table.getRunService()
-                .publish(new RunEvent(this, hint, movement, run));
+        table.getRunService().publish(new RunEvent(this, hint, movement, run));
     }
 }

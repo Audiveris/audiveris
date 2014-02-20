@@ -75,7 +75,7 @@ import java.awt.geom.PathIterator;
 public class ReversePathIterator
         implements PathIterator
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The winding rule. */
     private final int windingRule;
@@ -92,7 +92,7 @@ public class ReversePathIterator
     /** The index into the segment types during iteration. */
     private int segmentIndex = 0;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create an inverted path iterator from a standard one, keeping the winding
      * rule.
@@ -131,8 +131,7 @@ public class ReversePathIterator
                 segTypes = dummy;
             }
 
-            final int segType = segTypes[segPos++] = original.currentSegment(
-                    temp);
+            final int segType = segTypes[segPos++] = original.currentSegment(temp);
 
             if (first) {
                 if (segType != SEG_MOVETO) {
@@ -232,131 +231,7 @@ public class ReversePathIterator
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
-    /**
-     * Get a reverse path iterator for a shape, keeping the shape's winding
-     * rule.
-     *
-     * @param shape shape for which a reverse path iterator is needed
-     * @return reverse path iterator
-     */
-    public static PathIterator getReversePathIterator (Shape shape)
-    {
-        return new ReversePathIterator(shape.getPathIterator(null));
-    }
-
-    /**
-     * Get a reverse flattened path iterator for a shape, keeping the shape's
-     * winding rule.
-     *
-     * @param shape    shape for which a reverse flattened path iterator is
-     *                 needed
-     * @param flatness flatness epsilon
-     * @return reverse flattened path iterator
-     */
-    public static PathIterator getReversePathIterator (Shape shape,
-                                                       double flatness)
-    {
-        return new ReversePathIterator(shape.getPathIterator(null, flatness));
-    }
-
-    /**
-     * Get a reverse transformed path iterator for a shape, keeping the shape's
-     * winding rule.
-     *
-     * @param shape shape for which a reverse transformed path iterator is
-     *              needed
-     * @return reverse transformed path iterator
-     */
-    public static PathIterator getReversePathIterator (Shape shape,
-                                                       AffineTransform at)
-    {
-        return new ReversePathIterator(shape.getPathIterator(at));
-    }
-
-    /**
-     * Get a reverse transformed flattened path iterator for a shape, keeping
-     * the shape's winding rule.
-     *
-     * @param shape    shape for which a reverse transformed flattened path
-     *                 iterator is needed
-     * @param flatness flatness epsilon
-     * @return reverse transformed flattened path iterator
-     */
-    public static PathIterator getReversePathIterator (Shape shape,
-                                                       AffineTransform at,
-                                                       double flatness)
-    {
-        return new ReversePathIterator(shape.getPathIterator(at, flatness));
-    }
-
-    /**
-     * Get a reverse path iterator for a shape.
-     *
-     * @param shape       shape for which a reverse path iterator is needed
-     * @param windingRule winding rule of newly created iterator
-     * @return reverse path iterator
-     */
-    public static PathIterator getReversePathIterator (Shape shape,
-                                                       int windingRule)
-    {
-        return new ReversePathIterator(
-                shape.getPathIterator(null),
-                windingRule);
-    }
-
-    /**
-     * Get a reverse flattened path iterator for a shape.
-     *
-     * @param shape       shape for which a reverse flattened path iterator is
-     *                    needed
-     * @param flatness    flatness epsilon
-     * @param windingRule winding rule of newly created iterator
-     * @return reverse flattened path iterator
-     */
-    public static PathIterator getReversePathIterator (Shape shape,
-                                                       double flatness,
-                                                       int windingRule)
-    {
-        return new ReversePathIterator(
-                shape.getPathIterator(null, flatness),
-                windingRule);
-    }
-
-    /**
-     * Get a reverse transformed path iterator for a shape.
-     *
-     * @param shape       shape for which a reverse transformed path iterator is
-     *                    needed
-     * @param windingRule winding rule of newly created iterator
-     * @return reverse transformed path iterator
-     */
-    public static PathIterator getReversePathIterator (Shape shape,
-                                                       AffineTransform at,
-                                                       int windingRule)
-    {
-        return new ReversePathIterator(shape.getPathIterator(at), windingRule);
-    }
-
-    /**
-     * Get a reverse transformed flattened path iterator for a shape.
-     *
-     * @param shape       shape for which a reverse transformed flattened path
-     *                    iterator is needed
-     * @param flatness    flatness epsilon
-     * @param windingRule winding rule of newly created iterator
-     * @return reverse transformed flattened path iterator
-     */
-    public static PathIterator getReversePathIterator (Shape shape,
-                                                       AffineTransform at,
-                                                       double flatness,
-                                                       int windingRule)
-    {
-        return new ReversePathIterator(
-                shape.getPathIterator(at, flatness),
-                windingRule);
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Returns the coordinates and type of the current path segment in
      * the iteration.
@@ -427,6 +302,124 @@ public class ReversePathIterator
         }
 
         return segmentType;
+    }
+
+    /**
+     * Get a reverse path iterator for a shape, keeping the shape's winding
+     * rule.
+     *
+     * @param shape shape for which a reverse path iterator is needed
+     * @return reverse path iterator
+     */
+    public static PathIterator getReversePathIterator (Shape shape)
+    {
+        return new ReversePathIterator(shape.getPathIterator(null));
+    }
+
+    /**
+     * Get a reverse flattened path iterator for a shape, keeping the shape's
+     * winding rule.
+     *
+     * @param shape    shape for which a reverse flattened path iterator is
+     *                 needed
+     * @param flatness flatness epsilon
+     * @return reverse flattened path iterator
+     */
+    public static PathIterator getReversePathIterator (Shape shape,
+                                                       double flatness)
+    {
+        return new ReversePathIterator(shape.getPathIterator(null, flatness));
+    }
+
+    /**
+     * Get a reverse transformed path iterator for a shape, keeping the shape's
+     * winding rule.
+     *
+     * @param shape shape for which a reverse transformed path iterator is
+     *              needed
+     * @return reverse transformed path iterator
+     */
+    public static PathIterator getReversePathIterator (Shape shape,
+                                                       AffineTransform at)
+    {
+        return new ReversePathIterator(shape.getPathIterator(at));
+    }
+
+    /**
+     * Get a reverse transformed flattened path iterator for a shape, keeping
+     * the shape's winding rule.
+     *
+     * @param shape    shape for which a reverse transformed flattened path
+     *                 iterator is needed
+     * @param flatness flatness epsilon
+     * @return reverse transformed flattened path iterator
+     */
+    public static PathIterator getReversePathIterator (Shape shape,
+                                                       AffineTransform at,
+                                                       double flatness)
+    {
+        return new ReversePathIterator(shape.getPathIterator(at, flatness));
+    }
+
+    /**
+     * Get a reverse path iterator for a shape.
+     *
+     * @param shape       shape for which a reverse path iterator is needed
+     * @param windingRule winding rule of newly created iterator
+     * @return reverse path iterator
+     */
+    public static PathIterator getReversePathIterator (Shape shape,
+                                                       int windingRule)
+    {
+        return new ReversePathIterator(shape.getPathIterator(null), windingRule);
+    }
+
+    /**
+     * Get a reverse flattened path iterator for a shape.
+     *
+     * @param shape       shape for which a reverse flattened path iterator is
+     *                    needed
+     * @param flatness    flatness epsilon
+     * @param windingRule winding rule of newly created iterator
+     * @return reverse flattened path iterator
+     */
+    public static PathIterator getReversePathIterator (Shape shape,
+                                                       double flatness,
+                                                       int windingRule)
+    {
+        return new ReversePathIterator(shape.getPathIterator(null, flatness), windingRule);
+    }
+
+    /**
+     * Get a reverse transformed path iterator for a shape.
+     *
+     * @param shape       shape for which a reverse transformed path iterator is
+     *                    needed
+     * @param windingRule winding rule of newly created iterator
+     * @return reverse transformed path iterator
+     */
+    public static PathIterator getReversePathIterator (Shape shape,
+                                                       AffineTransform at,
+                                                       int windingRule)
+    {
+        return new ReversePathIterator(shape.getPathIterator(at), windingRule);
+    }
+
+    /**
+     * Get a reverse transformed flattened path iterator for a shape.
+     *
+     * @param shape       shape for which a reverse transformed flattened path
+     *                    iterator is needed
+     * @param flatness    flatness epsilon
+     * @param windingRule winding rule of newly created iterator
+     * @return reverse transformed flattened path iterator
+     */
+    public static PathIterator getReversePathIterator (Shape shape,
+                                                       AffineTransform at,
+                                                       double flatness,
+                                                       int windingRule)
+    {
+        return new ReversePathIterator(shape.getPathIterator(at, flatness), windingRule);
     }
 
     /**

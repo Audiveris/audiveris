@@ -1,8 +1,8 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          L o g g i n g S t r e a m                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    L o g g i n g S t r e a m                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 package omr.log;
 
 import omr.WellKnowns;
@@ -15,9 +15,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
- * Class {@code LoggingStream} defines an OutputStream that writes
- * contents to a Logger upon each call to flush().
- * <br/>
+ * Class {@code LoggingStream} defines an OutputStream that writes contents to a Logger
+ * upon each call to flush().
+ * <p>
  * <a
  * href="http://blogs.oracle.com/nickstephen/entry/java_redirecting_system_out_and">See
  * blog of Nick Stephen</a>
@@ -27,13 +27,13 @@ import java.io.IOException;
 public class LoggingStream
         extends ByteArrayOutputStream
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final Logger logger;
 
     private final Level level;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Constructor
      *
@@ -48,7 +48,7 @@ public class LoggingStream
         this.level = level;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Upon flush(), write the existing contents of the OutputStream to
      * the logger as a log record.

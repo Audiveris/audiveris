@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            B e a m S y m b o l                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      B e a m S y m b o l                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -30,16 +30,16 @@ import java.awt.geom.Rectangle2D;
 public class BeamSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     // The head+stem part
     private static final BasicSymbol quarter = Symbols.SYMBOL_QUARTER;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     // Number of beams
     protected final int beamCount;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // BeamSymbol //
     //------------//
@@ -73,7 +73,7 @@ public class BeamSymbol
         this.beamCount = beamCount;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -115,21 +115,15 @@ public class BeamSymbol
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
-        Point loc = alignment.translatedPoint(
-                TOP_RIGHT,
-                p.rect,
-                location);
+        Point loc = alignment.translatedPoint(TOP_RIGHT, p.rect, location);
 
         // Beams
         Rectangle2D quarterRect = p.layout.getBounds();
-        int beamHeight = (int) Math.rint(
-                quarterRect.getHeight() * 0.12);
+        int beamHeight = (int) Math.rint(quarterRect.getHeight() * 0.12);
         int beamDelta = (int) Math.rint(quarterRect.getHeight() * 0.18);
 
         for (int i = 0; i < beamCount; i++) {
-            Point left = new Point(
-                    loc.x - p.quarterDx,
-                    loc.y + (i * beamDelta) + p.quarterDy);
+            Point left = new Point(loc.x - p.quarterDx, loc.y + (i * beamDelta) + p.quarterDy);
             Point right = new Point(loc.x, loc.y + (i * beamDelta));
             Polygon polygon = new Polygon();
             polygon.addPoint(left.x, left.y);
@@ -150,22 +144,21 @@ public class BeamSymbol
         g.setComposite(oldComposite);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // layout for just quarter layout
-        // rect for global image 
+        // rect for global image
         // Between the 2 quarters
         int quarterDx;
 
         // Between the 2 quarters
         int quarterDy;
-
     }
 }

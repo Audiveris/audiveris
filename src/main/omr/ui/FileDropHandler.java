@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       F i l e D r o p H a n d l e r                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 F i l e D r o p H a n d l e r                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui;
 
@@ -46,19 +46,16 @@ import javax.swing.TransferHandler.TransferSupport;
 public class FileDropHandler
         extends TransferHandler
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            FileDropHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(FileDropHandler.class);
 
     /** Default parameter. */
     public static final Param<Step> defaultStep = new Default();
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // canImport //
     //-----------//
@@ -115,8 +112,7 @@ public class FileDropHandler
 
             /* Loop through the files */
             for (File file : fileList) {
-                if (file.getName()
-                        .endsWith(ScriptManager.SCRIPT_EXTENSION)) {
+                if (file.getName().endsWith(ScriptManager.SCRIPT_EXTENSION)) {
                     new DropScriptTask(file).execute();
                 } else {
                     new DropImageTask(file, defaultStep.getTarget()).execute();
@@ -135,19 +131,18 @@ public class FileDropHandler
         return true;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final Steps.Constant defaultStep = new Steps.Constant(
                 Steps.valueOf(Steps.LOAD),
                 "Default step launched when an image file is dropped");
-
     }
 
     //---------//
@@ -156,7 +151,7 @@ public class FileDropHandler
     private static class Default
             extends Param<Step>
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Step getSpecific ()
@@ -167,8 +162,7 @@ public class FileDropHandler
         @Override
         public boolean setSpecific (Step specific)
         {
-            if (!getSpecific()
-                    .equals(specific)) {
+            if (!getSpecific().equals(specific)) {
                 constants.defaultStep.setValue(specific);
                 logger.info("Default drop step is now ''{}''", specific);
 
@@ -185,13 +179,13 @@ public class FileDropHandler
     private static class DropImageTask
             extends BasicTask
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final File file;
 
         private final Step target;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public DropImageTask (File file,
                               Step target)
         {
@@ -199,7 +193,7 @@ public class FileDropHandler
             this.target = target;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws Exception
@@ -212,10 +206,7 @@ public class FileDropHandler
             if (target.equals(loadStep)) {
                 Stepping.processScore(Collections.EMPTY_SET, null, score);
             } else {
-                Stepping.processScore(
-                        Collections.singleton(target),
-                        null,
-                        score);
+                Stepping.processScore(Collections.singleton(target), null, score);
             }
 
             return null;
@@ -228,23 +219,22 @@ public class FileDropHandler
     private static class DropScriptTask
             extends BasicTask
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final File file;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public DropScriptTask (File file)
         {
             this.file = file;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Void doInBackground ()
                 throws Exception
         {
-            ScriptManager.getInstance()
-                    .loadAndRun(file);
+            ScriptManager.getInstance().loadAndRun(file);
 
             return null;
         }

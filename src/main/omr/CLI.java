@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                   C L I                                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                             C L I                                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr;
 
@@ -36,7 +36,8 @@ import java.util.TreeSet;
  * Class {@code CLI} parses and holds the parameters of the command
  * line interface.
  *
- * <p> The command line parameters can be (order and case are not relevant):
+ * <p>
+ * The command line parameters can be (order and case are not relevant):
  * <dl>
  *
  * <dt> <b>-help</b> </dt> <dd> to print a quick usage help and leave the
@@ -98,16 +99,15 @@ import java.util.TreeSet;
  */
 public class CLI
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(CLI.class);
 
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
     /** For handling cardinality of command parameters */
     private static enum Card
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** No parameter expected */
         NONE,
@@ -117,59 +117,47 @@ public class CLI
         /** One or several
          * parameters are expected */
         MULTIPLE;
-
     }
 
     /** For command analysis */
     private static enum Command
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
-        HELP(
-        "Prints help about application arguments and stops",
-        Card.NONE,
-        null),
-        BATCH(
-        "Specifies to run with no graphic user interface",
-        Card.NONE,
-        null),
-        STEP(
-        "Defines a series of target steps",
-        Card.MULTIPLE,
-        "(STEPNAME|@STEPLIST)+"),
+        HELP("Prints help about application arguments and stops", Card.NONE, null),
+        BATCH("Specifies to run with no graphic user interface", Card.NONE, null),
+        STEP("Defines a series of target steps", Card.MULTIPLE, "(STEPNAME|@STEPLIST)+"),
         OPTION(
-        "Defines a series of key=value constant pairs",
-        Card.MULTIPLE,
-        "(KEY=VALUE|@OPTIONLIST)+"),
+                "Defines a series of key=value constant pairs",
+                Card.MULTIPLE,
+                "(KEY=VALUE|@OPTIONLIST)+"),
         SCRIPT(
-        "Defines a series of script files to run",
-        Card.MULTIPLE,
-        "(SCRIPTNAME|@SCRIPTLIST)+"),
+                "Defines a series of script files to run",
+                Card.MULTIPLE,
+                "(SCRIPTNAME|@SCRIPTLIST)+"),
         INPUT(
-        "Defines a series of input image files to process",
-        Card.MULTIPLE,
-        "(FILENAME|@FILELIST)+"),
-        PAGES(
-        "Defines a set of specific pages to process",
-        Card.MULTIPLE,
-        "(PAGE|@PAGELIST)+"),
+                "Defines a series of input image files to process",
+                Card.MULTIPLE,
+                "(FILENAME|@FILELIST)+"),
+        PAGES("Defines a set of specific pages to process", Card.MULTIPLE, "(PAGE|@PAGELIST)+"),
         BENCH(
-        "Defines an output path to bench data file (or directory)",
-        Card.SINGLE,
-        "(DIRNAME|FILENAME)"),
+                "Defines an output path to bench data file (or directory)",
+                Card.SINGLE,
+                "(DIRNAME|FILENAME)"),
+
         //        MIDI(
         //            "Defines an output path to MIDI file (or directory)",
         //            Card.SINGLE,
-        //            "(DIRNAME|FILENAME)"), 
+        //            "(DIRNAME|FILENAME)"),
         PRINT(
-        "Defines an output path to PDF file (or directory)",
-        Card.SINGLE,
-        "(DIRNAME|FILENAME)"),
+                "Defines an output path to PDF file (or directory)",
+                Card.SINGLE,
+                "(DIRNAME|FILENAME)"),
         EXPORT(
-        "Defines an output path to MusicXML file (or directory)",
-        Card.SINGLE,
-        "(DIRNAME|FILENAME)");
-        //~ Instance fields ----------------------------------------------------
+                "Defines an output path to MusicXML file (or directory)",
+                Card.SINGLE,
+                "(DIRNAME|FILENAME)");
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Info about command itself */
         public final String description;
@@ -180,7 +168,7 @@ public class CLI
         /** Info about expected command parameters */
         public final String params;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a Command object.
          *
@@ -198,7 +186,7 @@ public class CLI
         }
     }
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of the program */
     private final String toolName;
 
@@ -208,7 +196,7 @@ public class CLI
     /** The parameters to fill */
     private final Parameters parameters;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----//
     // CLI //
     //-----//
@@ -232,7 +220,7 @@ public class CLI
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getParameters //
     //---------------//
@@ -357,9 +345,9 @@ public class CLI
         boolean paramForbidden = false; // Are we not expecting a param?
         Command command = Command.INPUT; // By default
         Parameters params = new Parameters();
-        List<String> optionPairs = new ArrayList<>();
-        List<String> stepStrings = new ArrayList<>();
-        List<String> pageStrings = new ArrayList<>();
+        List<String> optionPairs = new ArrayList<String>();
+        List<String> stepStrings = new ArrayList<String>();
+        List<String> pageStrings = new ArrayList<String>();
 
         // Parse all arguments from command line
         for (int i = 0; i < args.length; i++) {
@@ -370,8 +358,7 @@ public class CLI
                 // Check that we were not expecting param(s)
                 if (paramNeeded) {
                     printCommandLine();
-                    stopUsage(
-                            "Found no parameter after command '" + command + "'");
+                    stopUsage("Found no parameter after command '" + command + "'");
 
                     return null;
                 }
@@ -420,8 +407,7 @@ public class CLI
                 if (paramForbidden) {
                     printCommandLine();
                     stopUsage(
-                            "Extra parameter '" + token
-                            + "' found after command '" + command + "'");
+                            "Extra parameter '" + token + "' found after command '" + command + "'");
 
                     return null;
                 }
@@ -498,12 +484,10 @@ public class CLI
         for (String stepString : stepStrings) {
             try {
                 // Read a step name
-                params.desiredSteps.add(
-                        Steps.valueOf(stepString.toUpperCase()));
+                params.desiredSteps.add(Steps.valueOf(stepString.toUpperCase()));
             } catch (Exception ex) {
                 printCommandLine();
-                stopUsage(
-                        "Step name expected, found '" + stepString + "' instead");
+                stopUsage("Step name expected, found '" + stepString + "' instead");
 
                 return null;
             }
@@ -514,14 +498,15 @@ public class CLI
             try {
                 // Read a page id (counted from 1)
                 int id = Integer.parseInt(pageString);
+
                 if (params.pages == null) {
-                    params.pages = new TreeSet<>();
+                    params.pages = new TreeSet<Integer>();
                 }
+
                 params.pages.add(id);
             } catch (Exception ex) {
                 printCommandLine();
-                stopUsage(
-                        "Page id expected, found '" + pageString + "' instead");
+                stopUsage("Page id expected, found '" + pageString + "' instead");
 
                 return null;
             }
@@ -579,30 +564,29 @@ public class CLI
         for (Command command : Command.values()) {
             buf.append(
                     String.format(
-                    "%n  %-36s %s",
-                    String.format(
-                    " [-%s%s]",
-                    command.toString().toLowerCase(Locale.ENGLISH),
-                    ((command.params != null) ? (" " + command.params) : "")),
-                    command.description));
+                            "%n  %-36s %s",
+                            String.format(
+                            " [-%s%s]",
+                            command.toString().toLowerCase(Locale.ENGLISH),
+                            ((command.params != null) ? (" " + command.params) : "")),
+                            command.description));
         }
 
         // Print all allowed step names
-        buf.append("\n\nKnown step names are in order").append(
-                " (non case-sensitive):");
+        buf.append("\n\nKnown step names are in order").append(" (non case-sensitive):");
 
         for (Step step : Steps.values()) {
             buf.append(
                     String.format(
-                    "%n   %-11s : %s",
-                    step.toString().toUpperCase(),
-                    step.getDescription()));
+                            "%n   %-11s : %s",
+                            step.toString().toUpperCase(),
+                            step.getDescription()));
         }
 
         logger.info(buf.toString());
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // Parameters //
     //------------//
@@ -612,22 +596,22 @@ public class CLI
      */
     public static class Parameters
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Flag that indicates a batch mode */
         boolean batchMode = false;
 
         /** The set of desired steps */
-        final Set<Step> desiredSteps = new LinkedHashSet<>();
+        final Set<Step> desiredSteps = new LinkedHashSet<Step>();
 
         /** The map of options */
         Properties options = null;
 
         /** The list of script file names to execute */
-        final List<String> scriptNames = new ArrayList<>();
+        final List<String> scriptNames = new ArrayList<String>();
 
         /** The list of input image file names to load */
-        final List<String> inputNames = new ArrayList<>();
+        final List<String> inputNames = new ArrayList<String>();
 
         /** The set of page ids to load */
         SortedSet<Integer> pages = null;
@@ -646,12 +630,12 @@ public class CLI
         /** Where printed score (PDF) is to be saved */
         String printPath = null;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         private Parameters ()
         {
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //-----------------//
         // setImpliedSteps //
         //-----------------//

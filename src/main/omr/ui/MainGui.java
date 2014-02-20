@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               M a i n G u i                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         M a i n G u i                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui;
 
@@ -81,9 +81,8 @@ import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code MainGui} is the Java User Interface, the main class for
- * displaying a score, the related sheet, the message log and the
- * various tools.
+ * Class {@code MainGui} is the Java User Interface, the main class for displaying a
+ * sheet, the message log and the various tools.
  *
  * @author Hervé Bitteur
  */
@@ -91,15 +90,13 @@ public class MainGui
         extends SingleFrameApplication
         implements EventSubscriber<SheetEvent>, PropertyChangeListener
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(MainGui.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Official name of the application. */
     private String appName;
@@ -120,7 +117,7 @@ public class MainGui
     private BoardsScrollPane boardsScrollPane;
 
     /** GlassPane needed to handle drag and drop from shape palette. */
-    private GhostGlassPane glassPane = new GhostGlassPane();
+    private final GhostGlassPane glassPane = new GhostGlassPane();
 
     /** Main pane with Sheet on top and Log+Errors on bottom. */
     private JSplitPane mainPane;
@@ -131,7 +128,7 @@ public class MainGui
     /** Step menu. */
     private StepMenu stepMenu;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------//
     // MainGui //
     //---------//
@@ -143,20 +140,7 @@ public class MainGui
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this application.
-     *
-     * @return the SingleFrameApplication instance
-     */
-    public static SingleFrameApplication getInstance ()
-    {
-        return (SingleFrameApplication) Application.getInstance();
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //----------//
     // clearLog //
@@ -218,11 +202,7 @@ public class MainGui
     {
         JEditorPane htmlPane = new JEditorPane("text/html", htmlStr);
         htmlPane.setEditable(false);
-        JOptionPane.showMessageDialog(
-                frame,
-                htmlPane,
-                appName,
-                JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(frame, htmlPane, appName, JOptionPane.INFORMATION_MESSAGE);
     }
 
     //------------------------//
@@ -291,11 +271,22 @@ public class MainGui
     //--------------//
     public String getIconsRoot ()
     {
-        ResourceMap resource = Application.getInstance()
-                .getContext()
-                .getResourceMap(getClass());
+        ResourceMap resource = Application.getInstance().getContext().getResourceMap(getClass());
 
         return resource.getString("icons.root");
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the single instance of this application.
+     *
+     * @return the SingleFrameApplication instance
+     */
+    public static SingleFrameApplication getInstance ()
+    {
+        return (SingleFrameApplication) Application.getInstance();
     }
 
     //---------//
@@ -335,8 +326,7 @@ public class MainGui
     public void hideErrors (JComponent component)
     {
         // To avoid race conditions, check we remove the proper component
-        if ((component != null)
-            && (component == bottomPane.getRightComponent())) {
+        if ((component != null) && (component == bottomPane.getRightComponent())) {
             bottomPane.setRightComponent(null);
         }
     }
@@ -387,9 +377,7 @@ public class MainGui
                             // Update frame title
                             sb.append(" - ");
 
-                            ResourceMap resource = Application.getInstance()
-                            .getContext()
-                            .getResourceMap(
+                            ResourceMap resource = Application.getInstance().getContext().getResourceMap(
                                     getClass());
                             sb.append(resource.getString("mainFrame.title"));
                             frame.setTitle(sb.toString());
@@ -538,8 +526,7 @@ public class MainGui
 
         // Weakly listen to GUI Actions parameters
         PropertyChangeListener weak = new WeakPropertyChangeListener(this);
-        GuiActions.getInstance()
-                .addPropertyChangeListener(weak);
+        GuiActions.getInstance().addPropertyChangeListener(weak);
 
         // Make the GUI instance available for the other classes
         Main.setGui(this);
@@ -552,14 +539,12 @@ public class MainGui
 
         // Launch scores
         for (Callable<Void> task : Main.getFilesTasks()) {
-            OmrExecutors.getCachedLowExecutor()
-                    .submit(task);
+            OmrExecutors.getCachedLowExecutor().submit(task);
         }
 
         // Launch scripts
         for (Callable<Void> task : Main.getScriptsTasks()) {
-            OmrExecutors.getCachedLowExecutor()
-                    .submit(task);
+            OmrExecutors.getCachedLowExecutor().submit(task);
         }
     }
 
@@ -587,9 +572,7 @@ public class MainGui
         frame.setGlassPane(glassPane);
 
         // Use the defined application name
-        appName = getContext()
-                .getResourceMap()
-                .getString("Application.name");
+        appName = getContext().getResourceMap().getString("Application.name");
 
         // Define an exit listener
         addExitListener(
@@ -605,8 +588,7 @@ public class MainGui
                     public void willExit (EventObject e)
                     {
                         // Store latest constant values on disk
-                        ConstantManager.getInstance()
-                        .storeResource();
+                        ConstantManager.getInstance().storeResource();
                     }
                 });
 
@@ -662,10 +644,7 @@ public class MainGui
         bottomPane.setResizeWeight(0.5d); // Cut in half initially
 
         // mainPane =  sheetsController / bottomPane
-        mainPane = new JSplitPane(
-                JSplitPane.VERTICAL_SPLIT,
-                sheetsController.getComponent(),
-                null);
+        mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, sheetsController.getComponent(), null);
         mainPane.setBorder(null);
         mainPane.setDividerSize(1);
         mainPane.setResizeWeight(0.9d); // Give bulk space to upper part
@@ -682,28 +661,23 @@ public class MainGui
         ///toolBar.add(toolKeyPanel);
         Container content = frame.getContentPane();
         content.setLayout(new BorderLayout());
-        content.add(
-                ActionManager.getInstance().getToolBar(),
-                BorderLayout.NORTH);
+        content.add(ActionManager.getInstance().getToolBar(), BorderLayout.NORTH);
         content.add(appPane, BorderLayout.CENTER);
 
         // Suppress all internal borders, recursively
         ///UIUtilities.suppressBorders(frame.getContentPane());
         // Display the boards pane?
-        if (GuiActions.getInstance()
-                .isBoardsDisplayed()) {
+        if (GuiActions.getInstance().isBoardsDisplayed()) {
             appPane.add(boardsScrollPane, BorderLayout.EAST);
         }
 
         // Display the log pane?
-        if (GuiActions.getInstance()
-                .isLogDisplayed()) {
+        if (GuiActions.getInstance().isLogDisplayed()) {
             bottomPane.setLeftComponent(logPane.getComponent());
         }
 
         // Display the errors pane?
-        if (GuiActions.getInstance()
-                .isErrorsDisplayed()) {
+        if (GuiActions.getInstance().isErrorsDisplayed()) {
             bottomPane.setRightComponent(null);
         }
 
@@ -728,8 +702,7 @@ public class MainGui
         stepMenu = new StepMenu(new SeparableMenu());
 
         // Specific plugin menu
-        JMenu pluginMenu = PluginsManager.getInstance()
-                .getMenu(null);
+        JMenu pluginMenu = PluginsManager.getInstance().getMenu(null);
 
         // For some specific top-level menus
         ActionManager mgr = ActionManager.getInstance();
@@ -741,15 +714,13 @@ public class MainGui
         mgr.loadAllDescriptors();
         mgr.registerAllActions();
 
-        // Menu bar 
+        // Menu bar
         JMenuBar innerBar = mgr.getMenuBar();
 
         // Gauges = progress + memory
         JPanel gauges = new JPanel();
         gauges.setLayout(new BorderLayout());
-        gauges.add(
-                Stepping.createMonitor().getComponent(),
-                BorderLayout.CENTER);
+        gauges.add(Stepping.createMonitor().getComponent(), BorderLayout.CENTER);
         gauges.add(new MemoryMeter().getComponent(), BorderLayout.EAST);
 
         // Outer bar = menu + gauges
@@ -781,27 +752,11 @@ public class MainGui
      */
     private boolean needBottomPane ()
     {
-        return GuiActions.getInstance()
-                .isLogDisplayed()
-               || GuiActions.getInstance()
-                .isErrorsDisplayed();
+        return GuiActions.getInstance().isLogDisplayed()
+               || GuiActions.getInstance().isErrorsDisplayed();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
-                true,
-                "Should we preload costly packages in the background?");
-
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //------------------//
     // BoardsScrollPane //
@@ -813,12 +768,25 @@ public class MainGui
     private class BoardsScrollPane
             extends JScrollPane
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         public void setBoards (JComponent boards)
         {
             setViewportView(boards);
             revalidate();
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final Constant.Boolean preloadCostlyPackages = new Constant.Boolean(
+                true,
+                "Should we preload costly packages in the background?");
     }
 }

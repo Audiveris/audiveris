@@ -1,22 +1,22 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       S c o r e P a r a m e t e r s                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 S c o r e P a r a m e t e r s                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.ui;
-
-import omr.plugin.PluginsManager;
 
 import omr.image.AdaptiveDescriptor;
 import omr.image.FilterDescriptor;
 import omr.image.FilterKind;
 import omr.image.GlobalDescriptor;
+
+import omr.plugin.PluginsManager;
 
 import omr.score.Score;
 import omr.score.entity.Page;
@@ -45,12 +45,12 @@ import omr.util.OmrExecutors;
 import omr.util.Param;
 import omr.util.TreeNode;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -75,14 +75,15 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * Class {@code ScoreParameters} is a dialog that allows the user to
- * easily manage the most frequent parameters.
+ * Class {@code ScoreParameters} is a dialog that allows the user to easily manage the
+ * most frequent parameters.
  *
  * <div style="float: right;">
  * <img src="doc-files/ScoreParameters.png" />
  * </div>
  *
- * <p>It addresses:
+ * <p>
+ * It addresses:
  * <ul>
  * <li>Text language specification</li>
  * <li>Binarization parameters</li>
@@ -93,7 +94,8 @@ import javax.swing.event.ListSelectionListener;
  * <li>Name and instrument related to each score part</li>
  * </ul>
  *
- * <p>The dialog is organized as a scope-based tabbed pane with:
+ * <p>
+ * The dialog is organized as a scope-based tabbed pane with:
  * <ul>
  * <li>a panel for the <b>default</b> scope,</li>
  * <li>a panel for current <b>score</b> scope (provided that there is a
@@ -102,7 +104,8 @@ import javax.swing.event.ListSelectionListener;
  * score contains more than a single page).</li>
  * </ul>
  *
- * <p>A panel is a vertical collection of panes, each pane being introduced
+ * <p>
+ * A panel is a vertical collection of panes, each pane being introduced
  * by a check box and a label.
  * Initially the box is unchecked and the pane content is disabled.
  * <br/>Manually checking the box represents a selection and indicates the
@@ -110,7 +113,8 @@ import javax.swing.event.ListSelectionListener;
  * <br/>Unchecking the box reverts the content to the value it had prior to
  * the selection.
  *
- * <p>The selected modifications are actually performed (and this may launch
+ * <p>
+ * The selected modifications are actually performed (and this may launch
  * some costly re-processing) only when the user presses the OK button.
  *
  * @author Hervé Bitteur
@@ -118,13 +122,11 @@ import javax.swing.event.ListSelectionListener;
 public class ScoreParameters
         implements ChangeListener
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ScoreParameters.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreParameters.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The swing component of this panel. */
     private final JTabbedPane component = new JTabbedPane();
@@ -141,7 +143,7 @@ public class ScoreParameters
     /** Related script task. */
     private ParametersTask task;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //-----------------//
     // ScoreParameters //
@@ -169,13 +171,19 @@ public class ScoreParameters
 
         // Default panel
         TextPane defaultTextPane = createTextPane(
-                null, null, null, Language.defaultSpecification);
+                null,
+                null,
+                null,
+                Language.defaultSpecification);
         FilterPane defaultFilterPane = new FilterPane(
-                null, null, null, FilterDescriptor.defaultFilter);
-        TempoPane defaultTempoPane = new TempoPane(
-                null, null, Tempo.defaultTempo);
+                null,
+                null,
+                null,
+                FilterDescriptor.defaultFilter);
+        TempoPane defaultTempoPane = new TempoPane(null, null, Tempo.defaultTempo);
 
-        defaultPanel = new MyPanel("Default settings",
+        defaultPanel = new MyPanel(
+                "Default settings",
                 defaultTextPane,
                 defaultFilterPane,
                 defaultTempoPane,
@@ -188,18 +196,23 @@ public class ScoreParameters
 
         // Score panel?
         if (score != null) {
-            List<Pane> panes = new ArrayList<>();
+            List<Pane> panes = new ArrayList<Pane>();
 
             TextPane scoreTextPane = createTextPane(
-                    score, null, defaultTextPane, score.getTextParam());
+                    score,
+                    null,
+                    defaultTextPane,
+                    score.getTextParam());
             panes.add(scoreTextPane);
 
             FilterPane scoreFilterPane = new FilterPane(
-                    score, null, defaultFilterPane, score.getFilterParam());
+                    score,
+                    null,
+                    defaultFilterPane,
+                    score.getFilterParam());
             panes.add(scoreFilterPane);
 
-            panes.add(new TempoPane(
-                    score, defaultTempoPane, score.getTempoParam()));
+            panes.add(new TempoPane(score, defaultTempoPane, score.getTempoParam()));
 
             if (score.getPartList() != null) {
                 // Part by part information
@@ -213,11 +226,10 @@ public class ScoreParameters
             if (score.isMultiPage()) {
                 for (TreeNode pn : score.getPages()) {
                     Page aPage = (Page) pn;
-                    MyPanel panel = new MyPanel("Page settings",
-                            createTextPane(
-                            null, aPage, scoreTextPane, page.getTextParam()),
-                            new FilterPane(
-                            null, aPage, scoreFilterPane, page.getFilterParam()));
+                    MyPanel panel = new MyPanel(
+                            "Page settings",
+                            createTextPane(null, aPage, scoreTextPane, page.getTextParam()),
+                            new FilterPane(null, aPage, scoreFilterPane, page.getFilterParam()));
                     component.addTab("P#" + aPage.getIndex(), null, panel, panel.getName());
 
                     if (aPage == page) {
@@ -231,25 +243,11 @@ public class ScoreParameters
 
         // Initially selected tab
         component.addChangeListener(this);
-        component.setSelectedComponent((pagePanel != null) ? pagePanel
-                : (scorePanel != null) ? scorePanel
-                : defaultPanel);
+        component.setSelectedComponent(
+                (pagePanel != null) ? pagePanel : ((scorePanel != null) ? scorePanel : defaultPanel));
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //--------------//
-    // getComponent //
-    //--------------//
-    /**
-     * Report the UI component.
-     *
-     * @return the concrete component
-     */
-    public JTabbedPane getComponent ()
-    {
-        return component;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // commit //
     //--------//
@@ -266,6 +264,7 @@ public class ScoreParameters
                 // Commit all specific values, if any, to their backup object
                 // Do this ONLY for the Default panel
                 MyPanel panel = defaultPanel;
+
                 //logger.info("{}", panel.getName());
                 for (Pane pane : panel.panes) {
                     pane.commit();
@@ -287,32 +286,17 @@ public class ScoreParameters
         }
     }
 
-    //-------------//
-    // dataIsValid //
-    //-------------//
+    //--------------//
+    // getComponent //
+    //--------------//
     /**
-     * Make sure every user-entered data is valid, and while doing so,
-     * feed a ParametersTask to be later run on the related score/sheet
+     * Report the UI component.
      *
-     * @return true if everything is OK, false otherwise
+     * @return the concrete component
      */
-    private boolean dataIsValid ()
+    public JTabbedPane getComponent ()
     {
-        task = new ParametersTask();
-
-        // Loop on all panes of all panels
-        for (int t = 0, tBreak = component.getTabCount(); t < tBreak; t++) {
-            MyPanel panel = (MyPanel) component.getComponentAt(t);
-            for (Pane pane : panel.panes) {
-                if (pane.isSelected() && !pane.isValid()) {
-                    task = null; // Cleaner
-
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return component;
     }
 
     //--------------//
@@ -363,7 +347,36 @@ public class ScoreParameters
         return null;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //-------------//
+    // dataIsValid //
+    //-------------//
+    /**
+     * Make sure every user-entered data is valid, and while doing so,
+     * feed a ParametersTask to be later run on the related score/sheet
+     *
+     * @return true if everything is OK, false otherwise
+     */
+    private boolean dataIsValid ()
+    {
+        task = new ParametersTask();
+
+        // Loop on all panes of all panels
+        for (int t = 0, tBreak = component.getTabCount(); t < tBreak; t++) {
+            MyPanel panel = (MyPanel) component.getComponentAt(t);
+
+            for (Pane pane : panel.panes) {
+                if (pane.isSelected() && !pane.isValid()) {
+                    task = null; // Cleaner
+
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //---------//
     // MyPanel //
@@ -374,10 +387,12 @@ public class ScoreParameters
     private final class MyPanel
             extends Panel
     {
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Collection of individual data panes */
-        private final List<Pane> panes = new ArrayList<>();
+        private final List<Pane> panes = new ArrayList<Pane>();
 
+        //~ Constructors ---------------------------------------------------------------------------
         public MyPanel (String name,
                         Pane... panes)
         {
@@ -404,6 +419,7 @@ public class ScoreParameters
             }
         }
 
+        //~ Methods --------------------------------------------------------------------------------
         public void defineLayout ()
         {
             // Compute the total number of logical rows
@@ -413,8 +429,12 @@ public class ScoreParameters
                 logicalRowCount += pane.getLogicalRowCount();
             }
 
-            FormLayout layout = Panel.makeFormLayout(logicalRowCount, 3,
-                    "right:", "30dlu", "35dlu");
+            FormLayout layout = Panel.makeFormLayout(
+                    logicalRowCount,
+                    3,
+                    "right:",
+                    "30dlu",
+                    "35dlu");
             PanelBuilder builder = new PanelBuilder(layout, this);
             builder.setDefaultDialogBorder();
 
@@ -424,6 +444,74 @@ public class ScoreParameters
             for (Pane pane : panes) {
                 r = pane.defineLayout(builder, cst, r);
             }
+        }
+    }
+
+    //-------------//
+    // BooleanPane //
+    //-------------//
+    /**
+     * A template for pane with just one global boolean, and
+     * no score or page relationship.
+     * Scope can be: default.
+     */
+    private abstract class BooleanPane
+            extends Pane<Boolean>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /**
+         * Use a ComboBox for boolean, since current status is more readable
+         * than a plain CheckBox
+         */
+        private final JComboBox<Boolean> box = new JComboBox(
+                new Boolean[]{Boolean.FALSE, Boolean.TRUE});
+
+        private final JLabel label;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public BooleanPane (String label,
+                            String text,
+                            String tip,
+                            Param<Boolean> backup)
+        {
+            super(label, null, null, null, backup);
+
+            this.label = new JLabel(text, SwingConstants.RIGHT);
+            box.setToolTipText(tip);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int r)
+        {
+            r = super.defineLayout(builder, cst, r);
+
+            builder.add(label, cst.xyw(5, r, 3));
+            builder.add(box, cst.xyw(9, r, 3));
+
+            return r + 2;
+        }
+
+        @Override
+        public void setEnabled (boolean bool)
+        {
+            box.setEnabled(bool);
+            label.setEnabled(bool);
+        }
+
+        @Override
+        protected void display (Boolean content)
+        {
+            box.setSelectedItem(content ? Boolean.TRUE : Boolean.FALSE);
+        }
+
+        @Override
+        protected Boolean read ()
+        {
+            return box.getItemAt(box.getSelectedIndex());
         }
     }
 
@@ -438,7 +526,7 @@ public class ScoreParameters
             extends Param<E>
             implements ActionListener
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Backup parameter (cannot be null). */
         protected final Param<E> backup;
@@ -455,7 +543,7 @@ public class ScoreParameters
         /** Title for the pane. */
         private final String title;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         //
         public Pane (String title,
                      Score score,
@@ -466,8 +554,7 @@ public class ScoreParameters
             super(parent);
 
             if (backup == null) {
-                throw new IllegalArgumentException(
-                        "Null backup for pane '" + title + "'");
+                throw new IllegalArgumentException("Null backup for pane '" + title + "'");
             }
 
             this.backup = backup;
@@ -479,27 +566,19 @@ public class ScoreParameters
             box.addActionListener(this);
         }
 
-        //~ Methods ------------------------------------------------------------
-        /**
-         * Set the enabled flag for all data fields
-         *
-         * @param bool the flag value
-         */
-        protected abstract void setEnabled (boolean bool);
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Pane (de)selection (programmatic or manual)
+            boolean sel = isSelected();
 
-        /**
-         * Write the parameter into the fields content
-         *
-         * @param content the data to display
-         */
-        protected abstract void display (E content);
+            setEnabled(sel);
 
-        /**
-         * Read the parameter as defined by the fields content.
-         *
-         * @return the pane parameter
-         */
-        protected abstract E read ();
+            if (!sel) {
+                display(getTarget());
+            }
+        }
 
         /**
          * Commit the modifications, for the items that are not handled
@@ -544,37 +623,6 @@ public class ScoreParameters
         }
 
         /**
-         * Check whether all the pane data are valid, and feed the
-         * ParametersTask accordingly with score or page information.
-         *
-         * @return true if everything is OK, false otherwise
-         */
-        public boolean isValid ()
-        {
-            return true; // By default
-        }
-
-        /**
-         * User has selected (and enabled) this pane
-         *
-         * @return true if selected
-         */
-        public boolean isSelected ()
-        {
-            return box.isSelected();
-        }
-
-        /**
-         * User selects (or deselects) this pane
-         *
-         * @param bool true for selection
-         */
-        public void setSelected (boolean bool)
-        {
-            box.setSelected(bool);
-        }
-
-        /**
          * Report the specific value for this pane, if any.
          *
          * @return the fields content when selected, otherwise the backup
@@ -592,55 +640,87 @@ public class ScoreParameters
             }
         }
 
-        @Override
-        public void actionPerformed (ActionEvent e)
+        /**
+         * User has selected (and enabled) this pane
+         *
+         * @return true if selected
+         */
+        public boolean isSelected ()
         {
-            // Pane (de)selection (programmatic or manual)
-            boolean sel = isSelected();
-
-            setEnabled(sel);
-
-            if (!sel) {
-                display(getTarget());
-            }
+            return box.isSelected();
         }
-    }
-
-    //-------------//
-    // BooleanPane //
-    //-------------//
-    /**
-     * A template for pane with just one global boolean, and
-     * no score or page relationship.
-     * Scope can be: default.
-     */
-    private abstract class BooleanPane
-            extends Pane<Boolean>
-    {
-        //~ Instance fields ----------------------------------------------------
 
         /**
-         * Use a ComboBox for boolean, since current status is more readable
-         * than a plain CheckBox
+         * Check whether all the pane data are valid, and feed the
+         * ParametersTask accordingly with score or page information.
+         *
+         * @return true if everything is OK, false otherwise
          */
-        private final JComboBox<Boolean> box = new JComboBox(
-                new Boolean[]{Boolean.FALSE, Boolean.TRUE});
-
-        private final JLabel label;
-
-        //~ Constructors -------------------------------------------------------
-        public BooleanPane (String label,
-                            String text,
-                            String tip,
-                            Param<Boolean> backup)
+        public boolean isValid ()
         {
-            super(label, null, null, null, backup);
-
-            this.label = new JLabel(text, SwingConstants.RIGHT);
-            box.setToolTipText(tip);
+            return true; // By default
         }
 
-        //~ Methods ------------------------------------------------------------
+        /**
+         * User selects (or deselects) this pane
+         *
+         * @param bool true for selection
+         */
+        public void setSelected (boolean bool)
+        {
+            box.setSelected(bool);
+        }
+
+        /**
+         * Write the parameter into the fields content
+         *
+         * @param content the data to display
+         */
+        protected abstract void display (E content);
+
+        /**
+         * Read the parameter as defined by the fields content.
+         *
+         * @return the pane parameter
+         */
+        protected abstract E read ();
+
+        /**
+         * Set the enabled flag for all data fields
+         *
+         * @param bool the flag value
+         */
+        protected abstract void setEnabled (boolean bool);
+    }
+
+    //---------//
+    // DnDPane //
+    //---------//
+    /**
+     * Which step should we trigger on Drag n' Drop?.
+     * Scope can be: default.
+     */
+    private class DnDPane
+            extends Pane<Step>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** ComboBox for desired step */
+        private final JComboBox<Step> stepCombo;
+
+        private final JLabel stepLabel = new JLabel("Triggered step", SwingConstants.RIGHT);
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public DnDPane ()
+        {
+            super("Drag n' Drop", null, null, null, FileDropHandler.defaultStep);
+
+            // ComboBox for triggered step
+            stepCombo = new JComboBox<Step>(Steps.values().toArray(new Step[0]));
+            stepCombo.setToolTipText("Step to trigger on Drag n' Drop");
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int defineLayout (PanelBuilder builder,
                                  CellConstraints cst,
@@ -648,29 +728,29 @@ public class ScoreParameters
         {
             r = super.defineLayout(builder, cst, r);
 
-            builder.add(label, cst.xyw(5, r, 3));
-            builder.add(box, cst.xyw(9, r, 3));
+            builder.add(stepLabel, cst.xyw(5, r, 3));
+            builder.add(stepCombo, cst.xyw(9, r, 3));
 
             return r + 2;
         }
 
         @Override
-        public void setEnabled (boolean bool)
+        protected void display (Step content)
         {
-            box.setEnabled(bool);
-            label.setEnabled(bool);
+            stepCombo.setSelectedItem(content);
         }
 
         @Override
-        protected void display (Boolean content)
+        protected Step read ()
         {
-            box.setSelectedItem(content ? Boolean.TRUE : Boolean.FALSE);
+            return stepCombo.getItemAt(stepCombo.getSelectedIndex());
         }
 
         @Override
-        protected Boolean read ()
+        protected void setEnabled (boolean bool)
         {
-            return box.getItemAt(box.getSelectedIndex());
+            stepCombo.setEnabled(bool);
+            stepLabel.setEnabled(bool);
         }
     }
 
@@ -684,27 +764,32 @@ public class ScoreParameters
     private class FilterPane
             extends Pane<FilterDescriptor>
     {
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** ComboBox for filter kind */
-        private final JComboBox<FilterKind> kindCombo = new JComboBox<>(FilterKind.values());
+        private final JComboBox<FilterKind> kindCombo = new JComboBox<FilterKind>(
+                FilterKind.values());
 
         private final JLabel kindLabel = new JLabel("Filter", SwingConstants.RIGHT);
 
         // Data for global
-        private final SpinData globalData = new SpinData("Threshold",
+        private final SpinData globalData = new SpinData(
+                "Threshold",
                 "Global threshold for foreground pixels",
                 new SpinnerNumberModel(0, 0, 255, 1));
 
         // Data for local
-        private final SpinData localDataMean = new SpinData("Coeff for Mean",
+        private final SpinData localDataMean = new SpinData(
+                "Coeff for Mean",
                 "Coefficient for mean pixel value",
                 new SpinnerNumberModel(0.5, 0.5, 1.5, 0.1));
 
-        private final SpinData localDataDev = new SpinData("Coeff for StdDev",
+        private final SpinData localDataDev = new SpinData(
+                "Coeff for StdDev",
                 "Coefficient for standard deviation value",
                 new SpinnerNumberModel(0.2, 0.2, 1.5, 0.1));
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public FilterPane (Score score,
                            final Page page,
                            FilterPane parent,
@@ -717,7 +802,40 @@ public class ScoreParameters
             kindCombo.addActionListener(this);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            if ((e != null) && (e.getSource() == kindCombo)) {
+                // KindCombo: new kind
+                switch (readKind()) {
+                case GLOBAL:
+                    localDataMean.setVisible(false);
+                    localDataDev.setVisible(false);
+                    globalData.setVisible(true);
+
+                    // Use proper global data
+                    display(GlobalDescriptor.getDefault());
+
+                    break;
+
+                case ADAPTIVE:
+                    globalData.setVisible(false);
+                    localDataMean.setVisible(true);
+                    localDataDev.setVisible(true);
+
+                    // Use proper adaptive data
+                    display(AdaptiveDescriptor.getDefault());
+
+                    break;
+
+                default:
+                }
+            } else {
+                super.actionPerformed(e);
+            }
+        }
+
         @Override
         public int defineLayout (PanelBuilder builder,
                                  CellConstraints cst,
@@ -752,38 +870,29 @@ public class ScoreParameters
         }
 
         @Override
-        public void actionPerformed (ActionEvent e)
+        protected void display (FilterDescriptor desc)
         {
-            if (e != null && e.getSource() == kindCombo) {
-                // KindCombo: new kind
-                switch (readKind()) {
-                case GLOBAL:
-                    localDataMean.setVisible(false);
-                    localDataDev.setVisible(false);
-                    globalData.setVisible(true);
+            FilterKind kind = desc.getKind();
+            kindCombo.setSelectedItem(kind);
 
-                    // Use proper global data
-                    display(GlobalDescriptor.getDefault());
-                    break;
+            switch (kind) {
+            case GLOBAL:
 
-                case ADAPTIVE:
-                    globalData.setVisible(false);
-                    localDataMean.setVisible(true);
-                    localDataDev.setVisible(true);
+                GlobalDescriptor globalDesc = (GlobalDescriptor) desc;
+                globalData.spinner.setValue(globalDesc.threshold);
 
-                    // Use proper adaptive data
-                    display(AdaptiveDescriptor.getDefault());
-                    break;
-                default:
-                }
-            } else {
-                super.actionPerformed(e);
+                break;
+
+            case ADAPTIVE:
+
+                AdaptiveDescriptor localDesc = (AdaptiveDescriptor) desc;
+                localDataMean.spinner.setValue(localDesc.meanCoeff);
+                localDataDev.spinner.setValue(localDesc.stdDevCoeff);
+
+                break;
+
+            default:
             }
-        }
-
-        private FilterKind readKind ()
-        {
-            return kindCombo.getItemAt(kindCombo.getSelectedIndex());
         }
 
         @Override
@@ -792,49 +901,10 @@ public class ScoreParameters
             commitSpinners();
 
             return (readKind() == FilterKind.GLOBAL)
-                    ? new GlobalDescriptor(
-                    (int) globalData.spinner.getValue())
+                    ? new GlobalDescriptor((int) globalData.spinner.getValue())
                     : new AdaptiveDescriptor(
-                    (double) localDataMean.spinner.getValue(),
-                    (double) localDataDev.spinner.getValue());
-        }
-
-        /** This is needed to read data manually typed in spinners fields */
-        private void commitSpinners ()
-        {
-            try {
-                switch (readKind()) {
-                case GLOBAL:
-                    globalData.spinner.commitEdit();
-                    break;
-
-                case ADAPTIVE:
-                    localDataMean.spinner.commitEdit();
-                    localDataDev.spinner.commitEdit();
-                    break;
-                default:
-                }
-            } catch (ParseException ignored) {
-            }
-        }
-
-        @Override
-        protected void display (FilterDescriptor desc)
-        {
-            FilterKind kind = desc.getKind();
-            kindCombo.setSelectedItem(kind);
-            switch (kind) {
-            case GLOBAL:
-                GlobalDescriptor globalDesc = (GlobalDescriptor) desc;
-                globalData.spinner.setValue(globalDesc.threshold);
-                break;
-            case ADAPTIVE:
-                AdaptiveDescriptor localDesc = (AdaptiveDescriptor) desc;
-                localDataMean.spinner.setValue(localDesc.meanCoeff);
-                localDataDev.spinner.setValue(localDesc.stdDevCoeff);
-                break;
-            default:
-            }
+                            (double) localDataMean.spinner.getValue(),
+                            (double) localDataDev.spinner.getValue());
         }
 
         @Override
@@ -845,6 +915,55 @@ public class ScoreParameters
             globalData.setEnabled(bool);
             localDataMean.setEnabled(bool);
             localDataDev.setEnabled(bool);
+        }
+
+        /** This is needed to read data manually typed in spinners fields */
+        private void commitSpinners ()
+        {
+            try {
+                switch (readKind()) {
+                case GLOBAL:
+                    globalData.spinner.commitEdit();
+
+                    break;
+
+                case ADAPTIVE:
+                    localDataMean.spinner.commitEdit();
+                    localDataDev.spinner.commitEdit();
+
+                    break;
+
+                default:
+                }
+            } catch (ParseException ignored) {
+            }
+        }
+
+        private FilterKind readKind ()
+        {
+            return kindCombo.getItemAt(kindCombo.getSelectedIndex());
+        }
+    }
+
+    //--------------//
+    // ParallelPane //
+    //--------------//
+    /**
+     * Should we use defaultParallelism as much as possible.
+     * Scope can be: default.
+     */
+    private class ParallelPane
+            extends BooleanPane
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public ParallelPane ()
+        {
+            super(
+                    "Parallelism",
+                    "Allowed",
+                    "Should we use parallelism whenever possible",
+                    OmrExecutors.defaultParallelism);
         }
     }
 
@@ -857,32 +976,27 @@ public class ScoreParameters
     private class PartPanel
             extends Panel
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final int logicalRowCount = 3;
 
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
         //
         private final JLabel label;
 
         /** Id of the part */
-        private final LTextField id = new LTextField(
-                "Id",
-                "Id of the score part");
+        private final LTextField id = new LTextField("Id", "Id of the score part");
 
         /** Name of the part */
-        private LTextField name = new LTextField(
-                true,
-                "Name",
-                "Name for the score part");
+        private LTextField name = new LTextField(true, "Name", "Name for the score part");
 
         /** Midi Instrument */
         private JLabel midiLabel = new JLabel("Midi");
 
-        private JComboBox<String> midiBox = new JComboBox<>(
+        private JComboBox<String> midiBox = new JComboBox<String>(
                 MidiAbstractions.getProgramNames());
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public PartPanel (ScorePart scorePart)
         {
             label = new JLabel("Part #" + scorePart.getId());
@@ -891,7 +1005,7 @@ public class ScoreParameters
             id.setText(scorePart.getPid());
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public boolean checkPart ()
         {
             // Part name
@@ -933,15 +1047,6 @@ public class ScoreParameters
             return r;
         }
 
-        private void setItemsEnabled (boolean sel)
-        {
-            label.setEnabled(sel);
-            id.setEnabled(sel);
-            name.setEnabled(sel);
-            midiLabel.setEnabled(sel);
-            midiBox.setEnabled(sel);
-        }
-
         private void display (PartData partData)
         {
             // Setting for part name
@@ -950,349 +1055,14 @@ public class ScoreParameters
             // Setting for part midi program
             midiBox.setSelectedIndex(partData.program - 1);
         }
-    }
 
-    //------------//
-    // ScriptPane //
-    //------------//
-    /**
-     * Should we prompt the user for saving the script when sheet is
-     * closed?.
-     * Scope can be: default.
-     */
-    private class ScriptPane
-            extends BooleanPane
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public ScriptPane ()
+        private void setItemsEnabled (boolean sel)
         {
-            super(
-                    "Script",
-                    "Prompt for save",
-                    "Should we prompt for saving the script on score closing",
-                    ScriptActions.defaultPrompt);
-        }
-    }
-
-    //--------------//
-    // ParallelPane //
-    //--------------//
-    /**
-     * Should we use defaultParallelism as much as possible.
-     * Scope can be: default.
-     */
-    private class ParallelPane
-            extends BooleanPane
-    {
-        //~ Constructors -------------------------------------------------------
-
-        public ParallelPane ()
-        {
-            super(
-                    "Parallelism",
-                    "Allowed",
-                    "Should we use parallelism whenever possible",
-                    OmrExecutors.defaultParallelism);
-        }
-    }
-
-    //---------//
-    // DnDPane //
-    //---------//
-    /**
-     * Which step should we trigger on Drag n' Drop?.
-     * Scope can be: default.
-     */
-    private class DnDPane
-            extends Pane<Step>
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** ComboBox for desired step */
-        private final JComboBox<Step> stepCombo;
-
-        private final JLabel stepLabel = new JLabel("Triggered step",
-                SwingConstants.RIGHT);
-
-        //~ Constructors -------------------------------------------------------
-        public DnDPane ()
-        {
-            super("Drag n' Drop", null, null, null, FileDropHandler.defaultStep);
-
-            // ComboBox for triggered step
-            stepCombo = new JComboBox<>(
-                    Steps.values().toArray(new Step[0]));
-            stepCombo.setToolTipText("Step to trigger on Drag n' Drop");
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            r = super.defineLayout(builder, cst, r);
-
-            builder.add(stepLabel, cst.xyw(5, r, 3));
-            builder.add(stepCombo, cst.xyw(9, r, 3));
-
-            return r + 2;
-        }
-
-        @Override
-        protected Step read ()
-        {
-            return stepCombo.getItemAt(stepCombo.getSelectedIndex());
-        }
-
-        @Override
-        protected void display (Step content)
-        {
-            stepCombo.setSelectedItem(content);
-        }
-
-        @Override
-        protected void setEnabled (boolean bool)
-        {
-            stepCombo.setEnabled(bool);
-            stepLabel.setEnabled(bool);
-        }
-    }
-
-    //------------//
-    // PluginPane //
-    //------------//
-    /**
-     * Which Plugin should be the default one.
-     * Scope can be: default.
-     */
-    private class PluginPane
-            extends Pane<String>
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** ComboBox for registered plugins */
-        private final JComboBox<String> pluginCombo;
-
-        private final JLabel pluginLabel = new JLabel("Default plugin",
-                SwingConstants.RIGHT);
-
-        //~ Constructors -------------------------------------------------------
-        public PluginPane ()
-        {
-            super("Plugin", null, null, null, PluginsManager.defaultPluginId);
-
-            // ComboBox for triggered step
-            pluginCombo = new JComboBox<>(
-                    PluginsManager.getInstance().getPluginIds().toArray(new String[0]));
-            pluginCombo.setToolTipText("Default plugin to be launched");
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            r = super.defineLayout(builder, cst, r);
-
-            builder.add(pluginLabel, cst.xyw(5, r, 3));
-            builder.add(pluginCombo, cst.xyw(9, r, 3));
-
-            return r + 2;
-        }
-
-        @Override
-        protected String read ()
-        {
-            return pluginCombo.getItemAt(pluginCombo.getSelectedIndex());
-        }
-
-        @Override
-        protected void display (String content)
-        {
-            pluginCombo.setSelectedItem(content);
-        }
-
-        @Override
-        protected void setEnabled (boolean bool)
-        {
-            pluginCombo.setEnabled(bool);
-            pluginLabel.setEnabled(bool);
-        }
-    }
-
-    //-----------//
-    // Tempopane //
-    //-----------//
-    /**
-     * Pane to set the dominant tempo value.
-     * Scope can be: default, score.
-     */
-    private class TempoPane
-            extends Pane<Integer>
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        // Tempo value
-        private final SpinData tempo = new SpinData("Quarters/Min",
-                "Tempo in quarters per minute",
-                new SpinnerNumberModel(20, 20, 400, 1));
-
-        //~ Constructors -------------------------------------------------------
-        public TempoPane (Score score,
-                          Pane parent,
-                          Param<Integer> backup)
-        {
-            super("Tempo", score, null, parent, backup);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            r = super.defineLayout(builder, cst, r);
-
-            return tempo.defineLayout(builder, cst, r);
-        }
-
-        @Override
-        protected Integer read ()
-        {
-            commitSpinners();
-
-            return (int) tempo.spinner.getValue();
-        }
-
-        @Override
-        protected void display (Integer content)
-        {
-            tempo.spinner.setValue(content);
-        }
-
-        @Override
-        protected void setEnabled (boolean bool)
-        {
-            tempo.setEnabled(bool);
-        }
-
-        @Override
-        public boolean isValid ()
-        {
-            task.setTempo(read());
-
-            return true;
-        }
-
-        private void commitSpinners ()
-        {
-            try {
-                tempo.spinner.commitEdit();
-            } catch (ParseException ignored) {
-            }
-        }
-    }
-
-    //----------//
-    // TextPane //
-    //----------//
-    /**
-     * Pane to set the dominant text language specification.
-     * Scope can be: default, score, page.
-     */
-    private class TextPane
-            extends Pane<String>
-            implements ListSelectionListener
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Underlying language list model. */
-        Language.ListModel model = new Language.ListModel();
-
-        /** List for choosing elements of language specification. */
-        private final JList<String> langList = new JList<>(model);
-
-        /** Put the list into a scroll pane. */
-        private final JScrollPane langScroll = new JScrollPane(langList);
-
-        /** Resulting visible specification. */
-        private final JLabel langSpec = new JLabel("", SwingConstants.RIGHT);
-
-        //~ Constructors -------------------------------------------------------
-        public TextPane (Score score,
-                         Page page,
-                         TextPane parent,
-                         Param<String> backup)
-        {
-            super("Language", score, page, parent, backup);
-
-            langList.setLayoutOrientation(JList.VERTICAL);
-            langList.setToolTipText("Dominant languages for textual items");
-            langList.setVisibleRowCount(5);
-            langList.addListSelectionListener(this);
-
-            langSpec.setToolTipText("Resulting specification");
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public int defineLayout (PanelBuilder builder,
-                                 CellConstraints cst,
-                                 int r)
-        {
-            r = super.defineLayout(builder, cst, r);
-
-            builder.add(langSpec, cst.xyw(1, r, 7));
-            builder.add(langScroll, cst.xyw(9, r, 3));
-
-            return r + 2;
-        }
-
-        @Override
-        public boolean isValid ()
-        {
-            task.setLanguage(read(), page);
-
-            return true;
-        }
-
-        @Override
-        protected String read ()
-        {
-            return model.specOf(langList.getSelectedValuesList());
-        }
-
-        @Override
-        protected void display (String spec)
-        {
-            int[] indices = model.indicesOf(spec);
-
-            if (indices.length > 0 && indices[0] != -1) {
-                // Scroll to first index found?
-                String firstElement = model.getElementAt(indices[0]);
-                langList.setSelectedValue(firstElement, true);
-
-                // Flag all selected indices
-                langList.setSelectedIndices(indices);
-            }
-
-            langSpec.setText(spec);
-        }
-
-        @Override
-        protected void setEnabled (boolean bool)
-        {
-            langList.setEnabled(bool);
-            langSpec.setEnabled(bool);
-        }
-
-        @Override
-        public void valueChanged (ListSelectionEvent e)
-        {
-            langSpec.setText(read());
+            label.setEnabled(sel);
+            id.setEnabled(sel);
+            name.setEnabled(sel);
+            midiLabel.setEnabled(sel);
+            midiBox.setEnabled(sel);
         }
     }
 
@@ -1306,18 +1076,18 @@ public class ScoreParameters
     private class PartsPane
             extends Pane<List<PartData>>
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** All score part panes */
-        private final List<PartPanel> partPanels = new ArrayList<>();
+        private final List<PartPanel> partPanels = new ArrayList<PartPanel>();
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public PartsPane (Score score)
         {
             super("Parts", score, null, null, score.getPartsParam());
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int defineLayout (PanelBuilder builder,
                                  CellConstraints cst,
@@ -1339,7 +1109,7 @@ public class ScoreParameters
         @Override
         public int getLogicalRowCount ()
         {
-            return 2 + PartPanel.logicalRowCount * score.getPartList().size();
+            return 2 + (PartPanel.logicalRowCount * score.getPartList().size());
         }
 
         @Override
@@ -1368,7 +1138,7 @@ public class ScoreParameters
         @Override
         protected List<PartData> read ()
         {
-            List<PartData> data = new ArrayList<>();
+            List<PartData> data = new ArrayList<PartData>();
 
             for (PartPanel partPanel : partPanels) {
                 data.add(partPanel.getData());
@@ -1386,19 +1156,106 @@ public class ScoreParameters
         }
     }
 
-//----------//
-// SpinData //
-//----------//
+    //------------//
+    // PluginPane //
+    //------------//
+    /**
+     * Which Plugin should be the default one.
+     * Scope can be: default.
+     */
+    private class PluginPane
+            extends Pane<String>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** ComboBox for registered plugins */
+        private final JComboBox<String> pluginCombo;
+
+        private final JLabel pluginLabel = new JLabel("Default plugin", SwingConstants.RIGHT);
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public PluginPane ()
+        {
+            super("Plugin", null, null, null, PluginsManager.defaultPluginId);
+
+            // ComboBox for triggered step
+            pluginCombo = new JComboBox<String>(
+                    PluginsManager.getInstance().getPluginIds().toArray(new String[0]));
+            pluginCombo.setToolTipText("Default plugin to be launched");
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int r)
+        {
+            r = super.defineLayout(builder, cst, r);
+
+            builder.add(pluginLabel, cst.xyw(5, r, 3));
+            builder.add(pluginCombo, cst.xyw(9, r, 3));
+
+            return r + 2;
+        }
+
+        @Override
+        protected void display (String content)
+        {
+            pluginCombo.setSelectedItem(content);
+        }
+
+        @Override
+        protected String read ()
+        {
+            return pluginCombo.getItemAt(pluginCombo.getSelectedIndex());
+        }
+
+        @Override
+        protected void setEnabled (boolean bool)
+        {
+            pluginCombo.setEnabled(bool);
+            pluginLabel.setEnabled(bool);
+        }
+    }
+
+    //------------//
+    // ScriptPane //
+    //------------//
+    /**
+     * Should we prompt the user for saving the script when sheet is
+     * closed?.
+     * Scope can be: default.
+     */
+    private class ScriptPane
+            extends BooleanPane
+    {
+        //~ Constructors ---------------------------------------------------------------------------
+
+        public ScriptPane ()
+        {
+            super(
+                    "Script",
+                    "Prompt for save",
+                    "Should we prompt for saving the script on score closing",
+                    ScriptActions.defaultPrompt);
+        }
+    }
+
+    //----------//
+    // SpinData //
+    //----------//
     /**
      * A line with a labeled spinner.
      */
     private class SpinData
     {
+        //~ Instance fields ------------------------------------------------------------------------
 
         protected final JLabel label;
 
         protected final JSpinner spinner;
 
+        //~ Constructors ---------------------------------------------------------------------------
         public SpinData (String label,
                          String tip,
                          SpinnerModel model)
@@ -1411,6 +1268,7 @@ public class ScoreParameters
             spinner.setToolTipText(tip);
         }
 
+        //~ Methods --------------------------------------------------------------------------------
         public int defineLayout (PanelBuilder builder,
                                  CellConstraints cst,
                                  int r)
@@ -1419,7 +1277,14 @@ public class ScoreParameters
             builder.add(spinner, cst.xyw(11, r, 1));
 
             r += 2;
+
             return r;
+        }
+
+        public void setEnabled (boolean bool)
+        {
+            label.setEnabled(bool);
+            spinner.setEnabled(bool);
         }
 
         public void setVisible (boolean bool)
@@ -1427,11 +1292,179 @@ public class ScoreParameters
             label.setVisible(bool);
             spinner.setVisible(bool);
         }
+    }
 
-        public void setEnabled (boolean bool)
+    //-----------//
+    // Tempopane //
+    //-----------//
+    /**
+     * Pane to set the dominant tempo value.
+     * Scope can be: default, score.
+     */
+    private class TempoPane
+            extends Pane<Integer>
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        // Tempo value
+        private final SpinData tempo = new SpinData(
+                "Quarters/Min",
+                "Tempo in quarters per minute",
+                new SpinnerNumberModel(20, 20, 400, 1));
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public TempoPane (Score score,
+                          Pane parent,
+                          Param<Integer> backup)
         {
-            label.setEnabled(bool);
-            spinner.setEnabled(bool);
+            super("Tempo", score, null, parent, backup);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int r)
+        {
+            r = super.defineLayout(builder, cst, r);
+
+            return tempo.defineLayout(builder, cst, r);
+        }
+
+        @Override
+        public boolean isValid ()
+        {
+            task.setTempo(read());
+
+            return true;
+        }
+
+        @Override
+        protected void display (Integer content)
+        {
+            tempo.spinner.setValue(content);
+        }
+
+        @Override
+        protected Integer read ()
+        {
+            commitSpinners();
+
+            return (int) tempo.spinner.getValue();
+        }
+
+        @Override
+        protected void setEnabled (boolean bool)
+        {
+            tempo.setEnabled(bool);
+        }
+
+        private void commitSpinners ()
+        {
+            try {
+                tempo.spinner.commitEdit();
+            } catch (ParseException ignored) {
+            }
+        }
+    }
+
+    //----------//
+    // TextPane //
+    //----------//
+    /**
+     * Pane to set the dominant text language specification.
+     * Scope can be: default, score, page.
+     */
+    private class TextPane
+            extends Pane<String>
+            implements ListSelectionListener
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Underlying language list model. */
+        Language.ListModel model = new Language.ListModel();
+
+        /** List for choosing elements of language specification. */
+        private final JList<String> langList = new JList<String>(model);
+
+        /** Put the list into a scroll pane. */
+        private final JScrollPane langScroll = new JScrollPane(langList);
+
+        /** Resulting visible specification. */
+        private final JLabel langSpec = new JLabel("", SwingConstants.RIGHT);
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public TextPane (Score score,
+                         Page page,
+                         TextPane parent,
+                         Param<String> backup)
+        {
+            super("Language", score, page, parent, backup);
+
+            langList.setLayoutOrientation(JList.VERTICAL);
+            langList.setToolTipText("Dominant languages for textual items");
+            langList.setVisibleRowCount(5);
+            langList.addListSelectionListener(this);
+
+            langSpec.setToolTipText("Resulting specification");
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public int defineLayout (PanelBuilder builder,
+                                 CellConstraints cst,
+                                 int r)
+        {
+            r = super.defineLayout(builder, cst, r);
+
+            builder.add(langSpec, cst.xyw(1, r, 7));
+            builder.add(langScroll, cst.xyw(9, r, 3));
+
+            return r + 2;
+        }
+
+        @Override
+        public boolean isValid ()
+        {
+            task.setLanguage(read(), page);
+
+            return true;
+        }
+
+        @Override
+        public void valueChanged (ListSelectionEvent e)
+        {
+            langSpec.setText(read());
+        }
+
+        @Override
+        protected void display (String spec)
+        {
+            int[] indices = model.indicesOf(spec);
+
+            if ((indices.length > 0) && (indices[0] != -1)) {
+                // Scroll to first index found?
+                String firstElement = model.getElementAt(indices[0]);
+                langList.setSelectedValue(firstElement, true);
+
+                // Flag all selected indices
+                langList.setSelectedIndices(indices);
+            }
+
+            langSpec.setText(spec);
+        }
+
+        @Override
+        protected String read ()
+        {
+            return model.specOf(langList.getSelectedValuesList());
+        }
+
+        @Override
+        protected void setEnabled (boolean bool)
+        {
+            langList.setEnabled(bool);
+            langSpec.setEnabled(bool);
         }
     }
 }

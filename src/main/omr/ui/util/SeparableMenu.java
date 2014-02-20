@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         S e p a r a b l e M e n u                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Brenton Partridge 2007. All rights reserved.                //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   S e p a r a b l e M e n u                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright (C) Brenton Partridge 2007. All rig4ts reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.util;
 
@@ -16,8 +16,7 @@ import javax.swing.JMenu;
 import javax.swing.JSeparator;
 
 /**
- * Class {@code SeparableMenu} is a menu which is able to collapse
- * unneeded separators.
+ * Class {@code SeparableMenu} is a menu which is able to collapse unneeded separators.
  *
  * @author Brenton Partridge
  */

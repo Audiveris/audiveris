@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            T e x t S y m b o l                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      T e x t S y m b o l                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -24,12 +24,12 @@ import java.awt.geom.Rectangle2D;
 public class TextSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The text string to use */
     private final String str;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // TextSymbol //
     //------------//
@@ -63,7 +63,7 @@ public class TextSymbol
         this.str = str;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -81,14 +81,11 @@ public class TextSymbol
     {
         Params p = new Params();
 
-        TextFont textFont = new TextFont(
-                (int) Math.rint(font.getSize2D() * 0.62));
+        TextFont textFont = new TextFont((int) Math.rint(font.getSize2D() * 0.62));
         p.layout = textFont.layout(str);
 
         Rectangle2D r = p.layout.getBounds();
-        p.rect = new Rectangle(
-                (int) Math.ceil(r.getWidth()),
-                (int) Math.ceil(r.getHeight()));
+        p.rect = new Rectangle((int) Math.ceil(r.getWidth()), (int) Math.ceil(r.getHeight()));
 
         return p;
     }

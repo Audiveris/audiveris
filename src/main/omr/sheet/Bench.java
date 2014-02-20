@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 B e n c h                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           B e n c h                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -19,24 +19,22 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 
 /**
- * Class {@code Bench} defines the general features of a bench, used
- * by each individual {@link SheetBench} and the containing {@link
- * ScoreBench}.
+ * Class {@code Bench} defines the general features of a bench, used by each individual
+ * {@link SheetBench} and the containing {@link ScoreBench}.
  *
  * @author Hervé Bitteur
  */
 public abstract class Bench
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Bench.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The internal set of properties */
     protected final Properties props = new Properties();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Bench object.
      */
@@ -44,15 +42,7 @@ public abstract class Bench
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //------------//
-    // flushBench //
-    //------------//
-    /**
-     * Flush the current content of bench to disk
-     */
-    protected abstract void flushBench ();
-
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addProp //
     //---------//
@@ -96,6 +86,14 @@ public abstract class Bench
     {
         addProp(radix, value.toString());
     }
+
+    //------------//
+    // flushBench //
+    //------------//
+    /**
+     * Flush the current content of bench to disk
+     */
+    protected abstract void flushBench ();
 
     //-------//
     // keyOf //

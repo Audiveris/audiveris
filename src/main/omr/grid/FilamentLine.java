@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          F i l a m e n t L i n e                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    F i l a m e n t L i n e                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -28,20 +28,20 @@ import java.awt.geom.Point2D;
 import java.util.Collection;
 
 /**
- * Class {@code FilamentLine} implements a staff line (or a part of it),
- * based on filaments
+ * Class {@code FilamentLine} implements a staff line (or a part of it), based on
+ * filaments.
  *
  * @author Hervé Bitteur
  */
 public class FilamentLine
         implements LineInfo
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Underlying filament. */
     LineFilament fil;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // FilamentLine //
     //--------------//
@@ -55,7 +55,7 @@ public class FilamentLine
         add(fil);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // add //
     //-----//
@@ -114,16 +114,6 @@ public class FilamentLine
     public Point2D getLeftPoint ()
     {
         return getStartPoint();
-    }
-
-    //--------//
-    // toPath //
-    //--------//
-    @Override
-    public GeoPath toPath ()
-    {
-        return fil.getLine()
-                .toPath();
     }
 
     //---------------//
@@ -203,9 +193,7 @@ public class FilamentLine
      */
     public boolean isWithinRange (double x)
     {
-        return (x >= getStartPoint()
-                .getX()) && (x <= getStopPoint()
-                .getX());
+        return (x >= getStartPoint().getX()) && (x <= getStopPoint().getX());
     }
 
     //--------//
@@ -237,6 +225,15 @@ public class FilamentLine
         fil.setEndingPoints(pStart, pStop);
     }
 
+    //--------//
+    // toPath //
+    //--------//
+    @Override
+    public GeoPath toPath ()
+    {
+        return fil.getLine().toPath();
+    }
+
     //----------//
     // toString //
     //----------//
@@ -247,8 +244,7 @@ public class FilamentLine
         sb.append(fil.getClusterPos());
         sb.append("[");
 
-        sb.append("F")
-                .append(fil.getId());
+        sb.append("F").append(fil.getId());
 
         sb.append("]");
 

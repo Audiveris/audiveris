@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         T r a i n i n g P a n e l                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   T r a i n i n g P a n e l                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui.panel;
 
@@ -21,12 +21,12 @@ import static omr.glyph.ui.panel.GlyphTrainer.Task.Activity.*;
 
 import omr.ui.util.Panel;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -47,25 +47,23 @@ import javax.swing.JRadioButton;
 import javax.swing.SwingWorker;
 
 /**
- * Class {@code TrainingPanel} is a panel dedicated to the training of
- * an evaluation engine.
- * It is used through its subclasses {@link NetworkPanel} and {@link
- * RegressionPanel} to train the neural network engine and the linear
- * engine respectively. It is a dedicated companion of class {@link
- * GlyphTrainer}.
+ * Class {@code TrainingPanel} is a panel dedicated to the training of an evaluation
+ * engine.
+ * <p>
+ * It is used through its subclasses {@link NetworkPanel} and {@link RegressionPanel} to train the
+ * neural network engine and the linear engine respectively. It is a dedicated companion of class
+ * {@link GlyphTrainer}.
  *
  * @author Hervé Bitteur
  */
 class TrainingPanel
-    implements EvaluationEngine.Monitor, Observer
+        implements EvaluationEngine.Monitor, Observer
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(TrainingPanel.class);
 
-    //~ Instance fields --------------------------------------------------------
-
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The swing component */
     protected final Panel component;
 
@@ -109,8 +107,7 @@ class TrainingPanel
     /** The Neural Network engine */
     private GlyphNetwork network = GlyphNetwork.getInstance();
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // TrainingPanel //
     //---------------//
@@ -125,10 +122,10 @@ class TrainingPanel
      *                       counted
      */
     public TrainingPanel (GlyphTrainer.Task task,
-                          String            standardWidth,
-                          EvaluationEngine  engine,
-                          SelectionPanel    selectionPanel,
-                          int               totalRows)
+                          String standardWidth,
+                          EvaluationEngine engine,
+                          SelectionPanel selectionPanel,
+                          int totalRows)
     {
         this.engine = engine;
         this.task = task;
@@ -137,12 +134,7 @@ class TrainingPanel
         component = new Panel();
         component.setNoInsets();
 
-        FormLayout layout = Panel.makeFormLayout(
-            totalRows,
-            4,
-            "",
-            standardWidth,
-            standardWidth);
+        FormLayout layout = Panel.makeFormLayout(totalRows, 4, "", standardWidth, standardWidth);
 
         builder = new PanelBuilder(layout, component);
         builder.setDefaultDialogBorder(); // Useful ?
@@ -150,10 +142,9 @@ class TrainingPanel
         defineLayout();
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
-    public void epochEnded (int    epochIndex,
+    public void epochEnded (int epochIndex,
                             double mse)
     {
     }
@@ -177,7 +168,7 @@ class TrainingPanel
     }
 
     @Override
-    public void trainingStarted (final int    epochIndex,
+    public void trainingStarted (final int epochIndex,
                                  final double mse)
     {
     }
@@ -194,16 +185,16 @@ class TrainingPanel
      */
     @Override
     public void update (Observable obs,
-                        Object     unused)
+                        Object unused)
     {
         switch (task.getActivity()) {
-        case INACTIVE :
+        case INACTIVE:
             trainAction.setEnabled(true);
 
             break;
 
-        case SELECTING :
-        case TRAINING :
+        case SELECTING:
+        case TRAINING:
             trainAction.setEnabled(false);
 
             break;
@@ -233,9 +224,9 @@ class TrainingPanel
     protected void defineLayout ()
     {
         // Buttons to select just the core glyphs, or the whole population
-        CoreAction   coreAction = new CoreAction();
+        CoreAction coreAction = new CoreAction();
         JRadioButton coreButton = new JRadioButton(coreAction);
-        WholeAction  wholeAction = new WholeAction();
+        WholeAction wholeAction = new WholeAction();
         JRadioButton wholeButton = new JRadioButton(wholeAction);
 
         // Group the radio buttons.
@@ -243,12 +234,11 @@ class TrainingPanel
         group.add(wholeButton);
         wholeButton.setToolTipText("Use the whole glyph base for any action");
         group.add(coreButton);
-        coreButton.setToolTipText(
-            "Use only the core glyph base for any action");
+        coreButton.setToolTipText("Use only the core glyph base for any action");
         wholeButton.setSelected(true);
 
         // Evaluator Title & Progress Bar
-        int    r = 1; // ----------------------------
+        int r = 1; // ----------------------------
         String title = engine.getName() + " Training";
         builder.addSeparator(title, cst.xyw(1, r, 7));
         builder.add(progressBar, cst.xyw(9, r, 7));
@@ -304,23 +294,21 @@ class TrainingPanel
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // DumpAction //
     //------------//
     protected class DumpAction
-        extends AbstractAction
+            extends AbstractAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public DumpAction ()
         {
             super("Dump");
         }
 
-        //~ Methods ------------------------------------------------------------
-
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -332,32 +320,30 @@ class TrainingPanel
     // TrainAction //
     //-------------//
     protected class TrainAction
-        extends AbstractAction
+            extends AbstractAction
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // Specific training starting mode
         protected EvaluationEngine.StartingMode mode = EvaluationEngine.StartingMode.SCRATCH;
-        protected boolean                       confirmationRequired = true;
 
-        //~ Constructors -------------------------------------------------------
+        protected boolean confirmationRequired = true;
 
+        //~ Constructors ---------------------------------------------------------------------------
         public TrainAction (String title)
         {
             super(title);
         }
 
-        //~ Methods ------------------------------------------------------------
-
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             // Ask user confirmation
             if (confirmationRequired) {
                 int answer = JOptionPane.showConfirmDialog(
-                    component,
-                    "Do you really want to retrain " + engine.getName()
-                        + " from scratch?");
+                        component,
+                        "Do you really want to retrain " + engine.getName() + " from scratch?");
 
                 if (answer != JOptionPane.YES_OPTION) {
                     return;
@@ -365,8 +351,9 @@ class TrainingPanel
             }
 
             class Worker
-                extends Thread
+                    extends Thread
             {
+
                 @Override
                 public void run ()
                 {
@@ -390,7 +377,7 @@ class TrainingPanel
             progressBar.setValue(0);
             progressBar.setMaximum(network.getListEpochs());
 
-            List<Glyph> glyphs = new ArrayList<>();
+            List<Glyph> glyphs = new ArrayList<Glyph>();
 
             for (String gName : gNames) {
                 Glyph glyph = repository.getGlyph(gName, selectionPanel);
@@ -420,11 +407,12 @@ class TrainingPanel
     // CoreAction //
     //------------//
     private class CoreAction
-        extends AbstractAction
+            extends AbstractAction
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        final SwingWorker<Integer, Object> worker = new SwingWorker<Integer, Object>() {
+        final SwingWorker<Integer, Object> worker = new SwingWorker<Integer, Object>()
+        {
             @Override
             public void done ()
             {
@@ -438,21 +426,17 @@ class TrainingPanel
             @Override
             protected Integer doInBackground ()
             {
-                return selectionPanel.getBase(false)
-                                     .size();
+                return selectionPanel.getBase(false).size();
             }
         };
 
-
-        //~ Constructors -------------------------------------------------------
-
+        //~ Constructors ---------------------------------------------------------------------------
         public CoreAction ()
         {
             super("Core");
         }
 
-        //~ Methods ------------------------------------------------------------
-
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -465,11 +449,12 @@ class TrainingPanel
     // WholeAction //
     //-------------//
     private class WholeAction
-        extends AbstractAction
+            extends AbstractAction
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        final SwingWorker<Integer, Object> worker = new SwingWorker<Integer, Object>() {
+        final SwingWorker<Integer, Object> worker = new SwingWorker<Integer, Object>()
+        {
             @Override
             public void done ()
             {
@@ -483,21 +468,17 @@ class TrainingPanel
             @Override
             protected Integer doInBackground ()
             {
-                return selectionPanel.getBase(true)
-                                     .size();
+                return selectionPanel.getBase(true).size();
             }
         };
 
-
-        //~ Constructors -------------------------------------------------------
-
+        //~ Constructors ---------------------------------------------------------------------------
         public WholeAction ()
         {
             super("Whole");
         }
 
-        //~ Methods ------------------------------------------------------------
-
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {

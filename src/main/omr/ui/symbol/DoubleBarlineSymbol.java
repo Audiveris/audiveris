@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                   D o u b l e B a r l i n e S y m b o l                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                             D o u b l e B a r l i n e S y m b o l                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -27,17 +27,16 @@ import java.awt.geom.Rectangle2D;
 public class DoubleBarlineSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     // Total width, computed from width of thin barline
     private static final double WIDTH_RATIO = 4.5;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     // The thin barline symbol
-    private final ShapeSymbol thinSymbol = Symbols.getSymbol(
-            Shape.THIN_BARLINE);
+    private final ShapeSymbol thinSymbol = Symbols.getSymbol(Shape.THIN_BARLINE);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------------//
     // DoubleBarlineSymbol //
     //---------------------//
@@ -51,7 +50,7 @@ public class DoubleBarlineSymbol
         super(isIcon, Shape.DOUBLE_BARLINE, false);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//

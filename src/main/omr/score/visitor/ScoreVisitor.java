@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          S c o r e V i s i t o r                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    S c o r e V i s i t o r                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.visitor;
 
@@ -45,10 +45,9 @@ import omr.score.entity.VisitableNode;
 import omr.score.entity.Wedge;
 
 /**
- * Interface {@code ScoreVisitor} is meant to visit any node of the
- * Score hierarchy.
- *
- * <p>The hierarchy is meant to be browsed "depth-first".</p>
+ * Interface {@code ScoreVisitor} is meant to visit any node of the Score hierarchy.
+ * <p>
+ * The hierarchy is meant to be browsed "depth-first".</p>
  * <p>
  * All the polymorphic visit(node) methods return a boolean which
  * tells whether the visit shall continue to the children of this class.
@@ -64,7 +63,7 @@ import omr.score.entity.Wedge;
  */
 public interface ScoreVisitor
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     boolean visit (Articulation node);
 

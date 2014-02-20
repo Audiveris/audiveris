@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         G l y p h P i l e E v e n t                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   G l y p h P i l e E v e n t                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.selection;
 
@@ -17,20 +17,20 @@ import omr.glyph.facets.Glyph;
 import java.util.Set;
 
 /**
- * Class {@code GlyphPileEvent} represents a collection of overlapping
- * glyphs, one on top of the other.
+ * Class {@code GlyphPileEvent} represents a collection of overlapping glyphs, one on
+ * top of the other.
  *
  * @author Hervé Bitteur
  */
 public class GlyphPileEvent
         extends NestEvent
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The selected pile of glyphs, which may be null. */
     private final Set<Glyph> glyphs;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // GlyphPileEvent //
     //---------------//
@@ -51,7 +51,7 @@ public class GlyphPileEvent
         this.glyphs = glyphs;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//

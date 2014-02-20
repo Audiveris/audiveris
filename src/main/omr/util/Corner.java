@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 C o r n e r                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           C o r n e r                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class Corner
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     public static final Corner TOP_LEFT = new Corner(TOP, LEFT);
 
@@ -42,14 +42,14 @@ public class Corner
             TOP_LEFT,
             BOTTOM_RIGHT);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The vertical side. */
     public final VerticalSide vSide;
 
     /** The horizontal side. */
     public final HorizontalSide hSide;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Corner object.
      *
@@ -63,7 +63,7 @@ public class Corner
         this.hSide = hSide;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     public int getId ()
     {
         return values.indexOf(this);

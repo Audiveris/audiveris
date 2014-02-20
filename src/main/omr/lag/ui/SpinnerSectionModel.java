@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                   S p i n n e r S e c t i o n M o d e l                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                             S p i n n e r S e c t i o n M o d e l                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag.ui;
 
@@ -21,30 +21,27 @@ import org.slf4j.LoggerFactory;
 import javax.swing.AbstractSpinnerModel;
 
 /**
- * Class {@code SpinnerSectionModel} is a spinner model backed by a
- * {@link Lag}.
- * Any modification in the lag is thus transparently handled,
- * since the lag <b>is</b> the model.
+ * Class {@code SpinnerSectionModel} is a spinner model backed by a {@link Lag}.
+ * <p>
+ * Any modification in the lag is thus transparently handled, since the lag <b>is</b> the model.
  *
  * @author Hervé Bitteur
  */
 public class SpinnerSectionModel
         extends AbstractSpinnerModel
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SpinnerSectionModel.class);
+    private static final Logger logger = LoggerFactory.getLogger(SpinnerSectionModel.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying section lag */
     private final Lag lag;
 
     /** Current section id */
     private Integer currentId;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------------//
     // SpinnerSectionModel //
     //---------------------//
@@ -56,8 +53,7 @@ public class SpinnerSectionModel
     public SpinnerSectionModel (Lag lag)
     {
         if (lag == null) {
-            throw new IllegalArgumentException(
-                    "SpinnerSectionModel expects non-null section lag");
+            throw new IllegalArgumentException("SpinnerSectionModel expects non-null section lag");
         }
 
         this.lag = lag;
@@ -65,7 +61,7 @@ public class SpinnerSectionModel
         currentId = SpinnerUtil.NO_VALUE;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getNextValue //
     //--------------//

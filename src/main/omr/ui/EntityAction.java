@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          E n t i t y A c t i o n                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    E n t i t y A c t i o n                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui;
 
@@ -27,10 +27,9 @@ import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 
 /**
- * Class {@code EntityAction} is a template for any entity-dependent
- * action. It builds the action, registers it in the list of entity-dependent
- * actions if such list if provided, inserts the action in the proper menu, and
- * inserts a button in the toolbar if provided.
+ * Class {@code EntityAction} is a template for any entity-dependent action.
+ * It builds the action, registers it in the list of entity-dependent actions if such list if
+ * provided, inserts the action in the proper menu, and inserts a button in the toolbar if provided.
  *
  * @author Brenton Partridge
  * @author Hervé Bitteur
@@ -38,12 +37,12 @@ import javax.swing.KeyStroke;
 public class EntityAction
         extends AbstractAction
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Delegation to an existing action, if any */
     private Action delegate = null;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // OmrAction //
     //-----------//
@@ -86,8 +85,8 @@ public class EntityAction
         if (key != null) {
             item.setAccelerator(
                     KeyStroke.getKeyStroke(
-                    (int) key.charAt(0),
-                    Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+                            (int) key.charAt(0),
+                            Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         }
 
         // Add an icon in the Tool bar?
@@ -135,7 +134,7 @@ public class EntityAction
         this(entityActions, menu, toolBar, label, tip, null, icon);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//

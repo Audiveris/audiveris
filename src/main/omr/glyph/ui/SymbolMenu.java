@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            S y m b o l M e n u                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      S y m b o l M e n u                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
@@ -37,21 +37,19 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code SymbolMenu} defines the menu which is linked to
- * the current selection of one or several glyphs.
+ * Class {@code SymbolMenu} defines the menu which is linked to the current selection of
+ * one or several glyphs.
  *
  * @author Hervé Bitteur
  */
 public class SymbolMenu
         extends AbstractActionMenu
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SymbolMenu.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolMenu.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The controller in charge of user gesture */
     private final GlyphsController controller;
 
@@ -77,7 +75,7 @@ public class SymbolMenu
     /** Sure we have no virtual glyphs? */
     private boolean noVirtuals;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // SymbolMenu //
     //------------//
@@ -99,7 +97,7 @@ public class SymbolMenu
         this.shapeFocus = shapeFocus;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // updateMenu //
     //------------//
@@ -178,7 +176,7 @@ public class SymbolMenu
         super.initMenu();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // AssignAction //
     //--------------//
@@ -188,14 +186,14 @@ public class SymbolMenu
     protected class AssignAction
             extends DynAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public AssignAction ()
         {
             super(20);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -242,11 +240,11 @@ public class SymbolMenu
     protected class AssignListener
             implements ActionListener
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final boolean compound;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates the AssignListener, with the compound flag.
          *
@@ -257,7 +255,7 @@ public class SymbolMenu
             this.compound = compound;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -278,14 +276,14 @@ public class SymbolMenu
     protected class CompoundAction
             extends DynAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public CompoundAction ()
         {
             super(30);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -327,14 +325,14 @@ public class SymbolMenu
     protected class CopyAction
             extends DynAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public CopyAction ()
         {
             super(10);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -381,14 +379,14 @@ public class SymbolMenu
     protected class DeassignAction
             extends DynAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public DeassignAction ()
         {
             super(20);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -403,17 +401,11 @@ public class SymbolMenu
 
                 // Update focus on current glyph, if reused in a compound
                 if (glyph != null) {
-                    Glyph newGlyph = glyph.getFirstSection()
-                            .getGlyph();
+                    Glyph newGlyph = glyph.getFirstSection().getGlyph();
 
                     if (glyph != newGlyph) {
-                        nest.getGlyphService()
-                                .publish(
-                                        new GlyphEvent(
-                                                this,
-                                                SelectionHint.GLYPH_INIT,
-                                                null,
-                                                newGlyph));
+                        nest.getGlyphService().publish(
+                                new GlyphEvent(this, SelectionHint.GLYPH_INIT, null, newGlyph));
                     }
                 }
             } else {
@@ -431,8 +423,7 @@ public class SymbolMenu
 
                 if (noVirtuals) {
                     sb.append("Deassign ");
-                    sb.append(knownNb)
-                            .append(" glyph");
+                    sb.append(knownNb).append(" glyph");
 
                     if (knownNb > 1) {
                         sb.append("s");
@@ -441,8 +432,7 @@ public class SymbolMenu
                     sb.append("Delete ");
 
                     if (virtualNb > 0) {
-                        sb.append(virtualNb)
-                                .append(" virtual glyph");
+                        sb.append(virtualNb).append(" virtual glyph");
 
                         if (virtualNb > 1) {
                             sb.append("s");
@@ -451,9 +441,7 @@ public class SymbolMenu
                 }
 
                 if (stemNb > 0) {
-                    sb.append(" w/ ")
-                            .append(stemNb)
-                            .append(" stem");
+                    sb.append(" w/ ").append(stemNb).append(" stem");
 
                     if (stemNb > 1) {
                         sb.append("s");
@@ -479,14 +467,14 @@ public class SymbolMenu
     protected class DumpAction
             extends DynAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public DumpAction ()
         {
             super(40);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -502,9 +490,7 @@ public class SymbolMenu
                 setEnabled(true);
 
                 StringBuilder sb = new StringBuilder();
-                sb.append("Dump ")
-                        .append(glyphNb)
-                        .append(" glyph");
+                sb.append("Dump ").append(glyphNb).append(" glyph");
 
                 if (glyphNb > 1) {
                     sb.append("s");
@@ -529,30 +515,26 @@ public class SymbolMenu
     protected class PasteAction
             extends DynAction
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String PREFIX = "Paste ";
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public PasteAction ()
         {
             super(10);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             JMenuItem source = (JMenuItem) e.getSource();
-            Shape shape = Shape.valueOf(
-                    source.getText().substring(PREFIX.length()));
+            Shape shape = Shape.valueOf(source.getText().substring(PREFIX.length()));
             Glyph glyph = nest.getSelectedGlyph();
 
             if (glyph != null) {
-                controller.asyncAssignGlyphs(
-                        Collections.singleton(glyph),
-                        shape,
-                        false);
+                controller.asyncAssignGlyphs(Collections.singleton(glyph), shape, false);
             }
         }
 
@@ -583,14 +565,14 @@ public class SymbolMenu
     private class DumpTextAction
             extends DynAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public DumpTextAction ()
         {
             super(40);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -606,9 +588,7 @@ public class SymbolMenu
                 setEnabled(true);
 
                 StringBuilder sb = new StringBuilder();
-                sb.append("Dump text of ")
-                        .append(glyphNb)
-                        .append(" glyph");
+                sb.append("Dump text of ").append(glyphNb).append(" glyph");
 
                 if (glyphNb > 1) {
                     sb.append("s");
@@ -633,24 +613,21 @@ public class SymbolMenu
     private class ProposedAction
             extends DynAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public ProposedAction ()
         {
             super(30);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             Glyph glyph = nest.getSelectedGlyph();
 
             if ((glyph != null) && (glyph == proposedGlyph)) {
-                controller.asyncAssignGlyphs(
-                        Collections.singleton(glyph),
-                        proposedShape,
-                        false);
+                controller.asyncAssignGlyphs(Collections.singleton(glyph), proposedShape, false);
             }
         }
 
@@ -664,19 +641,14 @@ public class SymbolMenu
                 SystemManager systemManager = sheet.getSystemManager();
 
                 for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
-                    Evaluation vote = evaluator.vote(
-                            glyph,
-                            system,
-                            Grades.symbolMinGrade);
+                    Evaluation vote = evaluator.vote(glyph, system, Grades.symbolMinGrade);
 
                     if (vote != null) {
                         proposedGlyph = glyph;
                         proposedShape = vote.shape;
                         setEnabled(true);
                         putValue(NAME, "Build compound as " + proposedShape);
-                        putValue(
-                                SHORT_DESCRIPTION,
-                                "Accept the proposed compound");
+                        putValue(SHORT_DESCRIPTION, "Accept the proposed compound");
 
                         return;
                     }
@@ -701,22 +673,21 @@ public class SymbolMenu
     private class ShapeAction
             extends DynAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public ShapeAction ()
         {
             super(70);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             Set<Glyph> glyphs = nest.getSelectedGlyphSet();
 
             if ((glyphs != null) && (glyphs.size() == 1)) {
-                Glyph glyph = glyphs.iterator()
-                        .next();
+                Glyph glyph = glyphs.iterator().next();
 
                 if (glyph.getShape() != null) {
                     shapeFocus.setCurrentShape(glyph.getShape());
@@ -750,22 +721,21 @@ public class SymbolMenu
     private class SimilarAction
             extends DynAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public SimilarAction ()
         {
             super(70);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             Set<Glyph> glyphs = nest.getSelectedGlyphSet();
 
             if ((glyphs != null) && (glyphs.size() == 1)) {
-                Glyph glyph = glyphs.iterator()
-                        .next();
+                Glyph glyph = glyphs.iterator().next();
 
                 if (glyph != null) {
                     shapeFocus.setSimilarGlyph(glyph);
@@ -781,9 +751,7 @@ public class SymbolMenu
             if (glyph != null) {
                 setEnabled(true);
                 putValue(NAME, "Show similar glyphs");
-                putValue(
-                        SHORT_DESCRIPTION,
-                        "Display all glyphs similar to this one");
+                putValue(SHORT_DESCRIPTION, "Display all glyphs similar to this one");
             } else {
                 setEnabled(false);
                 putValue(NAME, "Show similar");
@@ -802,14 +770,14 @@ public class SymbolMenu
     private class StemSegmentAction
             extends DynAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public StemSegmentAction ()
         {
             super(50);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -841,14 +809,14 @@ public class SymbolMenu
     private class TranslationAction
             extends DynAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public TranslationAction ()
         {
             super(40);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -867,9 +835,7 @@ public class SymbolMenu
                         StringBuilder sb = new StringBuilder();
                         sb.append("Show translations");
                         putValue(NAME, sb.toString());
-                        putValue(
-                                SHORT_DESCRIPTION,
-                                "Show translations related to the glyph(s)");
+                        putValue(SHORT_DESCRIPTION, "Show translations related to the glyph(s)");
 
                         return;
                     }
@@ -892,14 +858,14 @@ public class SymbolMenu
     private class TrimSlurAction
             extends DynAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public TrimSlurAction ()
         {
             super(60);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {

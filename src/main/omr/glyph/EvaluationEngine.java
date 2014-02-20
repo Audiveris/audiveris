@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      E v a l u a t i o n E n g i n e                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                E v a l u a t i o n E n g i n e                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -18,30 +18,28 @@ import omr.math.NeuralNetwork;
 import java.util.Collection;
 
 /**
- * Interface {@code EvaluationEngine} describes the life-cycle of an
- * evaluation engine.
+ * Interface {@code EvaluationEngine} describes the life-cycle of an evaluation engine.
  *
  * @author Hervé Bitteur
  */
 public interface EvaluationEngine
         extends ShapeEvaluator
 {
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
 
     /** The various modes for starting the training of an evaluator. */
     public static enum StartingMode
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** Start with the current values. */
         INCREMENTAL,
         /** Start from
          * scratch, with new initial values. */
         SCRATCH;
-
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Dump the internals of the engine.
      */
@@ -68,7 +66,7 @@ public interface EvaluationEngine
                 Monitor monitor,
                 StartingMode mode);
 
-    //~ Inner Interfaces -------------------------------------------------------
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     /**
      * General monitoring interface to pass information about the
      * training of an evaluator when processing a sample glyph.
@@ -76,7 +74,7 @@ public interface EvaluationEngine
     public static interface Monitor
             extends NeuralNetwork.Monitor
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Entry called when a glyph is being processed.

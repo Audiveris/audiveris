@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               O p t i o n s                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         O p t i o n s                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui;
 
@@ -45,19 +45,17 @@ import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 
 /**
- * Class {@code Options} defines the user interface to display and edit
- * applications options (constants and loggers)
+ * Class {@code Options} defines the user interface to edit application constants.
  *
  * @author Hervé Bitteur
  */
 public class Options
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Options.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The interface window */
     private JFrame frame;
 
@@ -82,8 +80,7 @@ public class Options
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            UnitManager.getInstance()
-                    .dumpAllUnits();
+            UnitManager.getInstance().dumpAllUnits();
         }
     };
 
@@ -93,8 +90,7 @@ public class Options
         @Override
         public void actionPerformed (ActionEvent e)
         {
-            UnitManager.getInstance()
-                    .checkAllUnits();
+            UnitManager.getInstance().checkAllUnits();
         }
     };
 
@@ -107,10 +103,8 @@ public class Options
             MainGui gui = Main.getGui();
 
             if (gui != null) {
-                if (true == gui.displayConfirmation(
-                        "Reset all constants to their factory value?")) {
-                    UnitManager.getInstance()
-                            .resetAllUnits();
+                if (true == gui.displayConfirmation("Reset all constants to their factory value?")) {
+                    UnitManager.getInstance().resetAllUnits();
                 }
             }
         }
@@ -156,7 +150,7 @@ public class Options
         }
     };
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------//
     // Options //
     //---------//
@@ -166,14 +160,12 @@ public class Options
     public Options ()
     {
         // Preload constant units
-        UnitManager.getInstance()
-                .preLoadUnits(Main.class.getName());
+        UnitManager.getInstance().preLoadUnits(Main.class.getName());
 
         frame = new JFrame();
         frame.setName("optionsFrame");
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        frame.getContentPane()
-                .setLayout(new BorderLayout());
+        frame.getContentPane().setLayout(new BorderLayout());
 
         JToolBar toolBar = new JToolBar(JToolBar.HORIZONTAL);
         frame.add(toolBar, BorderLayout.NORTH);
@@ -221,30 +213,28 @@ public class Options
         frame.add(new JScrollPane(unitTreeTable), BorderLayout.CENTER);
 
         // Needed to process user input when RETURN/ENTER is pressed
-        toolBar.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                .put(KeyStroke.getKeyStroke("ENTER"), "EnterAction");
-        toolBar.getActionMap()
-                .put("EnterAction", forwardSearch);
+        toolBar.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke("ENTER"),
+                "EnterAction");
+        toolBar.getActionMap().put("EnterAction", forwardSearch);
 
         // Resources injection
-        ResourceMap resource = Application.getInstance()
-                .getContext()
-                .getResourceMap(getClass());
+        ResourceMap resource = Application.getInstance().getContext().getResourceMap(getClass());
         resource.injectComponents(frame);
 
         // Make sure the search entry field gets the focus at creation time
         frame.addWindowListener(
                 new WindowAdapter()
-        {
-            @Override
-            public void windowOpened (WindowEvent e)
-            {
-                searchField.requestFocus();
-            }
-        });
+                {
+                    @Override
+                    public void windowOpened (WindowEvent e)
+                    {
+                        searchField.requestFocus();
+                    }
+                });
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getComponent //
     //--------------//
@@ -261,11 +251,9 @@ public class Options
      */
     private void setSelection ()
     {
-        searchString = searchField.getText()
-                .trim();
+        searchString = searchField.getText().trim();
 
-        Set<Object> matches = UnitManager.getInstance()
-                .searchUnits(searchString);
+        Set<Object> matches = UnitManager.getInstance().searchUnits(searchString);
         rows = unitTreeTable.setNodesSelection(matches);
 
         if (rows == null) {

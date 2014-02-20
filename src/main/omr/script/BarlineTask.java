@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           B a r l i n e T a s k                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     B a r l i n e T a s k                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.script;
 
@@ -19,20 +19,18 @@ import omr.sheet.Sheet;
 import java.util.Collection;
 
 /**
- * Class {@code BarlineTask} assigns (or deassigns) a barline shape to
- * a collection of glyphs.
- *
+ * Class {@code BarlineTask} assigns (or deassigns) a barline shape to a collection of
+ * glyphs.
  * <p>
- * If the compound flag is set, a compound glyph is composed from the
- * provided glyphs and assigned the shape. Otherwise, each provided glyph is
- * assigned the shape.</p>
+ * If the compound flag is set, a compound glyph is composed from the provided glyphs and assigned
+ * the shape. Otherwise, each provided glyph is assigned the shape.</p>
  *
  * @author Hervé Bitteur
  */
 public class BarlineTask
         extends AssignTask
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //-------------//
     // BarlineTask //
@@ -77,7 +75,7 @@ public class BarlineTask
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //--------//
     // epilog //

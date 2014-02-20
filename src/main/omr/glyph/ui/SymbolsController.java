@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     S y m b o l s C o n t r o l l e r                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               S y m b o l s C o n t r o l l e r                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
@@ -33,25 +33,23 @@ import java.awt.Color;
 import java.util.Collection;
 
 /**
- * Class {@code SymbolsController} is a GlyphsController specifically
- * meant for symbol glyphs, adding handling for assigning Texts,
- * for fixing Slurs and for segmenting on Stems.
+ * Class {@code SymbolsController} is a GlyphsController specifically meant for symbol
+ * glyphs, adding handling for assigning Texts, for fixing Slurs and for segmenting on
+ * Stems.
  *
  * @author Hervé Bitteur
  */
 public class SymbolsController
         extends GlyphsController
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SymbolsController.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolsController.class);
 
     /** Color for hiding unknown glyphs when filter is ON */
     public static final Color hiddenColor = Color.white;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------------//
     // SymbolsController //
     //-------------------//
@@ -65,7 +63,7 @@ public class SymbolsController
         super(model);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // asyncAssignRationals //
     //----------------------//
@@ -167,7 +165,6 @@ public class SymbolsController
     @Override
     public String toString ()
     {
-        return getClass()
-                .getSimpleName();
+        return getClass().getSimpleName();
     }
 }

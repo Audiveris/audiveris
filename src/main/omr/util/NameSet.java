@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               N a m e S e t                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         N a m e S e t                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -29,25 +29,24 @@ import javax.swing.JMenuItem;
 /**
  * Class {@code NameSet} encapsulates the handling of a list of names,
  * a typical use is a history of file names.
- *
- * <p> Actually, rather than a set, it is a list where the most recently used
+ * <p>
+ * Actually, rather than a set, it is a list where the most recently used
  * are kept at the head of the list. There is no duplicate in the set (tests are
  * case-insensitive). </p>
- *
- * <p> The NameSet can additionally be used to dynamically generate and handle a
- * menu. </p>
+ * <p>
+ * The NameSet can additionally be used to dynamically generate and handle a menu. </p>
  *
  * @author Hervé Bitteur
  */
 @ThreadSafe
 public class NameSet
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Separator */
     private static final String SEPARATOR = ";";
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Global name for this set */
     private final String setName;
 
@@ -55,12 +54,12 @@ public class NameSet
     private final Constant.String constant;
 
     /** List of names in this set */
-    private final List<String> names = new ArrayList<>();
+    private final List<String> names = new ArrayList<String>();
 
     /** Max number of names in this set */
     private final int maxNameNb;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------//
     // NameSet //
     //---------//
@@ -81,21 +80,13 @@ public class NameSet
 
         // Retrieve the list of names already in the set
         String[] vals = constant.getValue().split(SEPARATOR);
+
         if (!vals[0].isEmpty()) {
             names.addAll(Arrays.asList(vals));
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //
-    //---------//
-    // isEmpty //
-    //---------//
-    public synchronized boolean isEmpty ()
-    {
-        return names.isEmpty();
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // add //
     //-----//
@@ -124,6 +115,15 @@ public class NameSet
 
         // Update the constant accordingly
         updateConstant();
+    }
+
+    //
+    //---------//
+    // isEmpty //
+    //---------//
+    public synchronized boolean isEmpty ()
+    {
+        return names.isEmpty();
     }
 
     //------//
@@ -239,18 +239,18 @@ public class NameSet
         constant.setValue(buf.toString());
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyMenu //
     //--------//
     private class MyMenu
             extends DynamicMenu
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private ActionListener listener;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public MyMenu (String label,
                        ActionListener listener)
         {
@@ -258,7 +258,7 @@ public class NameSet
             this.listener = listener;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void buildItems ()
         {

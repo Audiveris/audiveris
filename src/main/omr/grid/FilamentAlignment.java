@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     F i l a m e n t A l i g n m e n t                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               F i l a m e n t A l i g n m e n t                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -43,32 +43,28 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class {@code FilamentAlignment} is a GlyphAlignment meant for a
- * Filament instance, where the underlying Line is actually not a
- * straight line, but a NaturalSpline.
+ * Class {@code FilamentAlignment} is a GlyphAlignment meant for a Filament instance,
+ * where the underlying Line is actually not a straight line, but a NaturalSpline.
  *
  * @author Hervé Bitteur
  */
 public class FilamentAlignment
         extends BasicAlignment
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            FilamentAlignment.class);
+    private static final Logger logger = LoggerFactory.getLogger(FilamentAlignment.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Absolute defining points */
     protected List<Point2D> points;
 
     /** Mean distance from a straight line */
     protected Double meanDistance;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------------//
     // FilamentAlignment //
     //-------------------//
@@ -80,7 +76,7 @@ public class FilamentAlignment
         super(glyph);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // dumpOf //
     //--------//
@@ -124,8 +120,7 @@ public class FilamentAlignment
 
         for (Point2D point : points) {
             if (prevPoint != null) {
-                bisector = LineUtil.bisector(
-                        new Line2D.Double(prevPoint, point));
+                bisector = LineUtil.bisector(new Line2D.Double(prevPoint, point));
             }
 
             if (prevBisector != null) {
@@ -294,12 +289,10 @@ public class FilamentAlignment
 
                 // Lookup corresponding section(s)
                 Scale scale = new Scale(glyph.getInterline());
-                int probeWidth = scale.toPixels(
-                        BasicAlignment.getProbeWidth());
+                int probeWidth = scale.toPixels(BasicAlignment.getProbeWidth());
                 Orientation orientation = getRoughOrientation();
                 final Point2D point = points.get(idx);
-                Point2D orientedPt = orientation.oriented(
-                        points.get(idx));
+                Point2D orientedPt = orientation.oriented(points.get(idx));
                 Rectangle2D rect = new Rectangle2D.Double(
                         orientedPt.getX() - (probeWidth / 2),
                         orientedPt.getY() - (probeWidth / 2),
@@ -389,11 +382,9 @@ public class FilamentAlignment
         }
 
         if (orientation == Orientation.HORIZONTAL) {
-            return getLine()
-                    .yDerivativeAtX(coord);
+            return getLine().yDerivativeAtX(coord);
         } else {
-            return getLine()
-                    .xDerivativeAtY(coord);
+            return getLine().xDerivativeAtY(coord);
         }
     }
 
@@ -419,13 +410,11 @@ public class FilamentAlignment
 
             // We need a rough orientation right now
             Orientation orientation = getRoughOrientation();
-            Point2D orientedStart = (startPoint == null) ? null
-                    : orientation.oriented(startPoint);
-            Point2D orientedStop = (stopPoint == null) ? null
-                    : orientation.oriented(stopPoint);
+            Point2D orientedStart = (startPoint == null) ? null : orientation.oriented(
+                    startPoint);
+            Point2D orientedStop = (stopPoint == null) ? null : orientation.oriented(stopPoint);
             Rectangle oBounds = orientation.oriented(glyph.getBounds());
-            double oStart = (orientedStart != null) ? orientedStart.getX()
-                    : oBounds.x;
+            double oStart = (orientedStart != null) ? orientedStart.getX() : oBounds.x;
             double oStop = (orientedStop != null) ? orientedStop.getX()
                     : (oBounds.x + (oBounds.width - 1));
             double length = oStop - oStart + 1;
@@ -443,8 +432,7 @@ public class FilamentAlignment
             if (startPoint == null) {
                 Point2D p = orientation.oriented(
                         getRectangleCentroid(orientation.absolute(oProbe)));
-                startPoint = orientation.absolute(
-                        new Point2D.Double(oStart, p.getY()));
+                startPoint = orientation.absolute(new Point2D.Double(oStart, p.getY()));
             }
 
             newPoints.add(startPoint);
@@ -467,15 +455,13 @@ public class FilamentAlignment
 
                 Point2D p = orientation.oriented(
                         getRectangleCentroid(orientation.absolute(oProbe)));
-                stopPoint = orientation.absolute(
-                        new Point2D.Double(oStop, p.getY()));
+                stopPoint = orientation.absolute(new Point2D.Double(oStop, p.getY()));
             }
 
             newPoints.add(stopPoint);
 
             // Interpolate the best spline through the provided points
-            line = NaturalSpline.interpolate(
-                    newPoints.toArray(new Point2D[newPoints.size()]));
+            line = NaturalSpline.interpolate(newPoints.toArray(new Point2D[newPoints.size()]));
 
             // Remember points (atomically)
             this.points = newPoints;
@@ -499,8 +485,7 @@ public class FilamentAlignment
 
         for (Point2D p : points) {
             double dc = Math.abs(
-                    coord
-                    - ((orientation == Orientation.HORIZONTAL) ? p.getX() : p.getY()));
+                    coord - ((orientation == Orientation.HORIZONTAL) ? p.getX() : p.getY()));
 
             if ((dc <= margin) && (dc < bestDeltacoord)) {
                 bestDeltacoord = dc;
@@ -529,9 +514,7 @@ public class FilamentAlignment
         List<Line2D> bisectors = new ArrayList<Line2D>();
 
         for (int i = 0; i < (points.size() - 1); i++) {
-            bisectors.add(
-                    LineUtil.bisector(
-                            new Line2D.Double(points.get(i), points.get(i + 1))));
+            bisectors.add(LineUtil.bisector(new Line2D.Double(points.get(i), points.get(i + 1))));
         }
 
         return bisectors;
@@ -565,9 +548,7 @@ public class FilamentAlignment
                 nextBisector.getP1(),
                 nextBisector.getP2());
 
-        return Math.hypot(
-                inter.getX() - point.getX(),
-                inter.getY() - point.getY());
+        return Math.hypot(inter.getX() - point.getX(), inter.getY() - point.getY());
     }
 
     //---------------------//
@@ -577,18 +558,17 @@ public class FilamentAlignment
     {
         Rectangle box = glyph.getBounds();
 
-        return (box.height > box.width) ? Orientation.VERTICAL
-                : Orientation.HORIZONTAL;
+        return (box.height > box.width) ? Orientation.VERTICAL : Orientation.HORIZONTAL;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Scale.Fraction segmentLength = new Scale.Fraction(
                 2,
@@ -605,6 +585,5 @@ public class FilamentAlignment
         Scale.Fraction minRadius = new Scale.Fraction(
                 12,
                 "Minimum acceptable radius of curvature");
-
     }
 }

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     S c o r e X m l R e d u c t i o n                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               S c o r e X m l R e d u c t i o n                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -58,16 +58,15 @@ import java.util.TreeSet;
 import javax.xml.bind.JAXBException;
 
 /**
- * Class {@code ScoreXmlReduction} is the "reduce" part of a MapReduce
- * Job for a given score, based on the merge of MusicXML page contents.
- *
+ * Class {@code ScoreXmlReduction} is the "reduce" part of a MapReduce job for a score,
+ * based on the merge of MusicXML page contents.
  * <ol>
  * <li>Any Map task processes a score page and produces the related XML fragment
  * as its output.</li>
  * <li>The Reduce task takes all the XML fragments as input and consolidates
  * them in a global Score output.</li></ol>
- *
- * <p>Typical calling of the feature is as follows:
+ * <p>
+ * Typical calling of the feature is as follows:
  * <code>
  * <pre>
  * Map&lt;Integer, String&gt; fragments = ...;
@@ -76,44 +75,40 @@ import javax.xml.bind.JAXBException;
  * Map&lt;Integer, Status&gt; statuses = reduction.getStatuses();
  * </pre>
  * </code>
- * </p>
- *
- * <p><b>Features not yet implemented:</b> <ul>
+ * <p>
+ * <b>Features not yet implemented:</b> <ul>
  * <li>Connection of slurs between pages</li>
  * <li>In part-list, handling of part-group beside score-part</li>
- * </ul></p>
- *
- * <p><b>Test:</b> A main() method is provided only to ease the testing of
+ * </ul>
+ * <p>
+ * <b>Test:</b> A main() method is provided only to ease the testing of
  * this class, assuming that the individual pages have already been scanned and
  * their XML fragments are available on disk.
  * It requires 3 arguments: name of the folder to lookup, prefix for
  * matching files, suffix for matching files.
  * It with search the specified folder for matching files, read their content as
  * XML fragments, launch a ScoreXmlReduction instance on this data and finally
- * write the global score in the input folder.</p>
- *
- * <p><b>Relevant MusicXML elements:</b><br/>
+ * write the global score in the input folder.
+ * <p>
+ * <b>Relevant MusicXML elements:</b><br/>
  * <img src="doc-files/Part.jpg" />
- * </p>
  *
  * @author Hervé Bitteur
  */
 public class ScoreXmlReduction
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ScoreXmlReduction.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreXmlReduction.class);
 
     /** Just for debug */
     private static StopWatch watch;
 
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
     /** End status of processing for a single XML fragment */
     public static enum Status
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** Fragment was processed correctly */
         OK,
@@ -123,10 +118,9 @@ public class ScoreXmlReduction
         /** The fragment as
          * a whole could not be processed */
         FRAGMENT_FAILED;
-
     }
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Map of XML fragments, one entry per page */
     private final Map<Integer, String> fragments;
 
@@ -148,7 +142,7 @@ public class ScoreXmlReduction
     /** Map of old ScoreInstrument -> new ScoreInstrument */
     private Map<ScoreInstrument, ScoreInstrument> newInsts;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ScoreXmlReduction object.
      *
@@ -160,23 +154,10 @@ public class ScoreXmlReduction
     {
         this.fragments = fragments;
 
-        statuses = new TreeMap<>();
+        statuses = new TreeMap<Integer, Status>();
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //-------------//
-    // getStatuses //
-    //-------------//
-    /**
-     * Report for each input fragment the final processing status
-     *
-     * @return a map (fragment ID -> processing status)
-     */
-    public Map<Integer, Status> getStatuses ()
-    {
-        return statuses;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // main //
     //------//
@@ -204,8 +185,7 @@ public class ScoreXmlReduction
                 logger.info("args[{}] = \"{}\"", i, args[i]);
             }
 
-            throw new IllegalArgumentException(
-                    "Expected 3 arguments (folder, prefix, suffix)");
+            throw new IllegalArgumentException("Expected 3 arguments (folder, prefix, suffix)");
         }
 
         // Selecting files
@@ -232,7 +212,6 @@ public class ScoreXmlReduction
         //        if (logger.isDebugEnabled()) {
         //            logger.debug("Output:\n" + output);
         //        }
-
         // For debugging
         watch.start("Writing output file");
 
@@ -249,11 +228,21 @@ public class ScoreXmlReduction
 
         for (Entry<Integer, Status> entry : reduction.getStatuses().entrySet()) {
             System.out.println(
-                    String.format(
-                    "Fragment #%3d: %s",
-                    entry.getKey(),
-                    entry.getValue()));
+                    String.format("Fragment #%3d: %s", entry.getKey(), entry.getValue()));
         }
+    }
+
+    //-------------//
+    // getStatuses //
+    //-------------//
+    /**
+     * Report for each input fragment the final processing status
+     *
+     * @return a map (fragment ID -> processing status)
+     */
+    public Map<Integer, Status> getStatuses ()
+    {
+        return statuses;
     }
 
     //--------//
@@ -264,7 +253,8 @@ public class ScoreXmlReduction
      * from each page. The fragments are a map of XML fragments, the map key
      * being the page number in the containing score. They are provided to the
      * ScoreXmlReduction constructor.
-     * <p>The final processing status for each fragment is made available
+     * <p>
+     * The final processing status for each fragment is made available
      * through the {@link #getStatuses()} method.</p>
      *
      * @return the resulting global XML output for the score
@@ -282,8 +272,7 @@ public class ScoreXmlReduction
         }
 
         // Unmarshall pages (MusicXML fragments -> ScorePartwise instances)
-        SortedMap<Integer, ScorePartwise> partwises = unmarshallPages(
-                fragments);
+        SortedMap<Integer, ScorePartwise> partwises = unmarshallPages(fragments);
 
         if (partwises.isEmpty()) {
             return "";
@@ -294,92 +283,6 @@ public class ScoreXmlReduction
 
         // Build output (global ScorePartwise -> MusicXML)
         return buildOutput(globalPartwise);
-    }
-
-    //-----------//
-    // readFiles //
-    //-----------//
-    /**
-     * Simply read the files raw content into strings in memory
-     *
-     * @param files the collection of files to read
-     * @return the collection of raw XML fragments
-     */
-    private static SortedMap<Integer, String> readFiles (
-            SortedMap<Integer, File> files)
-    {
-        watch.start("Reading input files");
-
-        SortedMap<Integer, String> fragments = new TreeMap<>();
-
-        for (Map.Entry<Integer, File> entry : files.entrySet()) {
-            BufferedReader input;
-            File file = entry.getValue();
-
-            try {
-                input = new BufferedReader(new FileReader(file));
-            } catch (FileNotFoundException ex) {
-                System.err.println(ex + " " + file);
-
-                continue;
-            }
-
-            StringBuilder fragment = new StringBuilder();
-            String line;
-
-            try {
-                while ((line = input.readLine()) != null) {
-                    fragment.append(line).append("\n");
-                }
-            } catch (IOException ex) {
-                System.err.println(ex + " " + file);
-
-                continue;
-            }
-
-            fragments.put(entry.getKey(), fragment.toString());
-        }
-
-        return fragments;
-    }
-
-    //-------------//
-    // selectFiles //
-    //-------------//
-    /**
-     * Retrieve the map of files whose names match the provided filter
-     *
-     * @param dir    path to folder where files are to be read
-     * @param prefix prefix of desired file names
-     * @param suffix suffix of desired file names
-     * @return the sorted map of matching files, indexed by their number
-     */
-    private static SortedMap<Integer, File> selectFiles (File dir,
-                                                         String prefix,
-                                                         String suffix)
-    {
-        SortedMap<Integer, File> map = new TreeMap<>();
-        MyFilenameFilter filter = new MyFilenameFilter(prefix, suffix);
-        File[] files = dir.listFiles(filter);
-
-        if (files == null) {
-            logger.warn("Cannot read folder {}", dir);
-
-            return null;
-        }
-
-        File template = new File(dir, prefix + "*" + suffix);
-        logger.info("Looking for {}", template);
-
-        if (files.length == 0) {
-            logger.warn("No file matching {}", template);
-        } else {
-            for (File file : files) {
-                map.put(filter.getFileNumber(file.getName()), file);
-            }
-        }
-
-        return map;
     }
 
     //-----------//
@@ -457,7 +360,7 @@ public class ScoreXmlReduction
     private void addPartList (ScorePartwise global)
     {
         // Map ScorePart -> Part data
-        partData = new HashMap<>();
+        partData = new HashMap<ScorePart, Part>();
 
         PartList partList = factory.createPartList();
         global.setPartList(partList);
@@ -473,8 +376,8 @@ public class ScoreXmlReduction
         }
 
         // Align each candidate to its related result */
-        newParts = new HashMap<>();
-        newInsts = new HashMap<>();
+        newParts = new HashMap<ScorePart, ScorePart>();
+        newInsts = new HashMap<ScoreInstrument, ScoreInstrument>();
 
         for (Result result : connection.getResultMap().keySet()) {
             ScorePart newSP = (ScorePart) result.getUnderlyingObject();
@@ -490,8 +393,7 @@ public class ScoreXmlReduction
                     ScoreInstrument si = old.getScoreInstrument().get(idx - 1);
 
                     if (idx > newInstruments.size()) {
-                        logger.debug("{} #{} Creating {}",
-                                result, idx, stringOf(si));
+                        logger.debug("{} #{} Creating {}", result, idx, stringOf(si));
                         newInstruments.add(si);
                         si.setId("P" + result.getId() + "-I" + idx);
 
@@ -499,6 +401,7 @@ public class ScoreXmlReduction
                         for (Object obj : old.getMidiDeviceAndMidiInstrument()) {
                             if (obj instanceof MidiInstrument) {
                                 MidiInstrument midi = (MidiInstrument) obj;
+
                                 if (midi.getId() == si) {
                                     newSP.getMidiDeviceAndMidiInstrument().add(midi);
 
@@ -507,8 +410,7 @@ public class ScoreXmlReduction
                             }
                         }
                     } else {
-                        logger.debug("{} #{} Reusing {}",
-                                result, idx, stringOf(si));
+                        logger.debug("{} #{} Reusing {}", result, idx, stringOf(si));
                     }
 
                     newInsts.put(si, newInstruments.get(idx - 1));
@@ -538,8 +440,10 @@ public class ScoreXmlReduction
             for (Part part : page.getPart()) {
                 ScorePart oldScorePart = (ScorePart) part.getId();
                 ScorePart newScorePart = newParts.get(oldScorePart);
-                logger.info("page:{} old:{} new:{}",
-                        entry.getKey(), oldScorePart.getId(),
+                logger.info(
+                        "page:{} old:{} new:{}",
+                        entry.getKey(),
+                        oldScorePart.getId(),
                         newScorePart.getId());
 
                 Part globalPart = partData.get(newScorePart);
@@ -552,7 +456,8 @@ public class ScoreXmlReduction
 
                 // Update measure in situ and reference them from containing part
                 for (Measure measure : part.getMeasure()) {
-                    logger.debug("page#{} part:{} Measure#{}",
+                    logger.debug(
+                            "page#{} part:{} Measure#{}",
                             entry.getKey(),
                             oldScorePart.getId(),
                             measure.getNumber());
@@ -560,8 +465,7 @@ public class ScoreXmlReduction
                     // New page?
                     if (!isFirstPage && isFirstMeasure) {
                         // Insert/Update print element
-                        getPrint(measure.getNoteOrBackupOrForward()).setNewPage(
-                                YesNo.YES);
+                        getPrint(measure.getNoteOrBackupOrForward()).setNewPage(YesNo.YES);
                     }
 
                     // Shift measure number
@@ -576,9 +480,7 @@ public class ScoreXmlReduction
                             Instrument inst = note.getInstrument();
 
                             if (inst != null) {
-                                inst.setId(
-                                        newInsts.get(
-                                        (ScoreInstrument) inst.getId()));
+                                inst.setId(newInsts.get((ScoreInstrument) inst.getId()));
                             }
                         }
                     }
@@ -623,15 +525,13 @@ public class ScoreXmlReduction
      */
     private void dumpResultMapping ()
     {
-        for (Entry<Result, Set<Candidate>> entry : connection.getResultMap().
-                entrySet()) {
+        for (Entry<Result, Set<Candidate>> entry : connection.getResultMap().entrySet()) {
             logger.debug("Result: {}", entry.getKey());
 
             ScorePart spr = (ScorePart) entry.getKey().getUnderlyingObject();
 
             for (com.audiveris.proxymusic.ScoreInstrument si : spr.getScoreInstrument()) {
-                logger.debug("-- final inst: {} {}",
-                        si.getId(), si.getInstrumentName());
+                logger.debug("-- final inst: {} {}", si.getId(), si.getInstrumentName());
             }
 
             for (Candidate candidate : entry.getValue()) {
@@ -640,8 +540,7 @@ public class ScoreXmlReduction
                 ScorePart sp = (ScorePart) candidate.getUnderlyingObject();
 
                 for (com.audiveris.proxymusic.ScoreInstrument si : sp.getScoreInstrument()) {
-                    logger.debug("-- instrument: {} {}",
-                            si.getId(), si.getInstrumentName());
+                    logger.debug("-- instrument: {} {}", si.getId(), si.getInstrumentName());
                 }
             }
         }
@@ -668,8 +567,7 @@ public class ScoreXmlReduction
                     ScoreInstrument si = old.getScoreInstrument().get(idx - 1);
 
                     if (idx > newInstruments.size()) {
-                        logger.debug("{} #{} Creating {}",
-                                result, idx, stringOf(si));
+                        logger.debug("{} #{} Creating {}", result, idx, stringOf(si));
                         newInstruments.add(si);
                         si.setId("P" + result.getId() + "-I" + idx);
 
@@ -677,6 +575,7 @@ public class ScoreXmlReduction
                         for (Object obj : old.getMidiDeviceAndMidiInstrument()) {
                             if (obj instanceof MidiInstrument) {
                                 MidiInstrument midi = (MidiInstrument) obj;
+
                                 if (midi.getId() == si) {
                                     newSP.getMidiDeviceAndMidiInstrument().add(midi);
 
@@ -685,8 +584,7 @@ public class ScoreXmlReduction
                             }
                         }
                     } else {
-                        logger.debug("{} #{} Reusing {}",
-                                result, idx, stringOf(si));
+                        logger.debug("{} #{} Reusing {}", result, idx, stringOf(si));
                     }
 
                     newInsts.put(si, newInstruments.get(idx - 1));
@@ -698,29 +596,25 @@ public class ScoreXmlReduction
                 }
 
                 // Identification
-                if ((old.getIdentification() != null)
-                    && (newSP.getIdentification() == null)) {
+                if ((old.getIdentification() != null) && (newSP.getIdentification() == null)) {
                     newSP.setIdentification(old.getIdentification());
                 }
 
                 // Midi device
                 //TODO: Translate this from MusicXML 2.0 to 3.0
-//                if ((old.getMidiDevice() != null)
-//                    && (newSP.getMidiDevice() == null)) {
-//                    newSP.setMidiDevice(old.getMidiDevice());
-//                }
-
+                //                if ((old.getMidiDevice() != null)
+                //                    && (newSP.getMidiDevice() == null)) {
+                //                    newSP.setMidiDevice(old.getMidiDevice());
+                //                }
                 // Name display
-                if ((old.getPartNameDisplay() != null)
-                    && (newSP.getPartNameDisplay() == null)) {
+                if ((old.getPartNameDisplay() != null) && (newSP.getPartNameDisplay() == null)) {
                     newSP.setPartNameDisplay(old.getPartNameDisplay());
                 }
 
                 // Abbreviation display
                 if ((old.getPartAbbreviationDisplay() != null)
                     && (newSP.getPartAbbreviationDisplay() == null)) {
-                    newSP.setPartAbbreviationDisplay(
-                            old.getPartAbbreviationDisplay());
+                    newSP.setPartAbbreviationDisplay(old.getPartAbbreviationDisplay());
                 }
             }
         }
@@ -811,7 +705,6 @@ public class ScoreXmlReduction
 
         // Handle cross-page slurs
         // TBD
-
         // The end
         return global;
     }
@@ -831,6 +724,91 @@ public class ScoreXmlReduction
             String partId = "P" + ++partIndex;
             scorePart.setId(partId);
         }
+    }
+
+    //-----------//
+    // readFiles //
+    //-----------//
+    /**
+     * Simply read the files raw content into strings in memory
+     *
+     * @param files the collection of files to read
+     * @return the collection of raw XML fragments
+     */
+    private static SortedMap<Integer, String> readFiles (SortedMap<Integer, File> files)
+    {
+        watch.start("Reading input files");
+
+        SortedMap<Integer, String> fragments = new TreeMap<Integer, String>();
+
+        for (Map.Entry<Integer, File> entry : files.entrySet()) {
+            BufferedReader input;
+            File file = entry.getValue();
+
+            try {
+                input = new BufferedReader(new FileReader(file));
+            } catch (FileNotFoundException ex) {
+                System.err.println(ex + " " + file);
+
+                continue;
+            }
+
+            StringBuilder fragment = new StringBuilder();
+            String line;
+
+            try {
+                while ((line = input.readLine()) != null) {
+                    fragment.append(line).append("\n");
+                }
+            } catch (IOException ex) {
+                System.err.println(ex + " " + file);
+
+                continue;
+            }
+
+            fragments.put(entry.getKey(), fragment.toString());
+        }
+
+        return fragments;
+    }
+
+    //-------------//
+    // selectFiles //
+    //-------------//
+    /**
+     * Retrieve the map of files whose names match the provided filter
+     *
+     * @param dir    path to folder where files are to be read
+     * @param prefix prefix of desired file names
+     * @param suffix suffix of desired file names
+     * @return the sorted map of matching files, indexed by their number
+     */
+    private static SortedMap<Integer, File> selectFiles (File dir,
+                                                         String prefix,
+                                                         String suffix)
+    {
+        SortedMap<Integer, File> map = new TreeMap<Integer, File>();
+        MyFilenameFilter filter = new MyFilenameFilter(prefix, suffix);
+        File[] files = dir.listFiles(filter);
+
+        if (files == null) {
+            logger.warn("Cannot read folder {}", dir);
+
+            return null;
+        }
+
+        File template = new File(dir, prefix + "*" + suffix);
+        logger.info("Looking for {}", template);
+
+        if (files.length == 0) {
+            logger.warn("No file matching {}", template);
+        } else {
+            for (File file : files) {
+                map.put(filter.getFileNumber(file.getName()), file);
+            }
+        }
+
+        return map;
     }
 
     //----------//
@@ -860,23 +838,20 @@ public class ScoreXmlReduction
      *         page)
      * @throws JAXBException
      */
-    private SortedMap<Integer, ScorePartwise> unmarshallPages (
-            Map<Integer, String> pageFragments)
+    private SortedMap<Integer, ScorePartwise> unmarshallPages (Map<Integer, String> pageFragments)
             throws JAXBException
     {
         ///watch.start("Unmarshalling pages");
 
         // Access the page fragments in the right order
-        SortedSet<Integer> pageNumbers = new TreeSet<>(
-                pageFragments.keySet());
+        SortedSet<Integer> pageNumbers = new TreeSet<Integer>(pageFragments.keySet());
         logger.info("About to read fragments {}", pageNumbers);
 
         /** For user feedback */
-        String range = " of [" + pageNumbers.first() + ".."
-                       + pageNumbers.last() + "]...";
+        String range = " of [" + pageNumbers.first() + ".." + pageNumbers.last() + "]...";
 
         /* Load pages content */
-        SortedMap<Integer, ScorePartwise> pages = new TreeMap<>();
+        SortedMap<Integer, ScorePartwise> pages = new TreeMap<Integer, ScorePartwise>();
 
         for (int pageNumber : pageNumbers) {
             watch.start("Unmarshalling page #" + pageNumber);
@@ -886,25 +861,20 @@ public class ScoreXmlReduction
 
             // Filter out invalid XML characters if any
             WrappedBoolean stripped = new WrappedBoolean(false);
-            String fragment = XmlUtil.stripNonValidXMLCharacters(
-                    rawFragment,
-                    stripped);
+            String fragment = XmlUtil.stripNonValidXMLCharacters(rawFragment, stripped);
 
             if (stripped.isSet()) {
-                logger.warn("Illegal XML characters found in fragment #{}",
-                        pageNumber);
+                logger.warn("Illegal XML characters found in fragment #{}", pageNumber);
                 statuses.put(pageNumber, Status.CHARACTERS_SKIPPED);
             }
 
-            ByteArrayInputStream is = new ByteArrayInputStream(
-                    fragment.getBytes());
+            ByteArrayInputStream is = new ByteArrayInputStream(fragment.getBytes());
 
             try {
                 ScorePartwise partwise = Marshalling.unmarshal(is);
                 pages.put(pageNumber, partwise);
             } catch (Exception ex) {
-                logger.warn("Could not unmarshall fragment #{} {}",
-                        pageNumber, ex);
+                logger.warn("Could not unmarshall fragment #{} {}", pageNumber, ex);
                 statuses.put(pageNumber, Status.FRAGMENT_FAILED);
             }
         }
@@ -912,7 +882,7 @@ public class ScoreXmlReduction
         return pages;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------------//
     // MyFilenameFilter //
     //------------------//
@@ -923,7 +893,7 @@ public class ScoreXmlReduction
     private static class MyFilenameFilter
             implements FilenameFilter
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // Mandatory beginning of file name
         final String prefix;
@@ -931,7 +901,7 @@ public class ScoreXmlReduction
         // Mandatory ending of file name
         final String suffix;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public MyFilenameFilter (String prefix,
                                  String suffix)
         {
@@ -939,7 +909,7 @@ public class ScoreXmlReduction
             this.suffix = suffix;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean accept (File dir,
                                String name)
@@ -961,9 +931,7 @@ public class ScoreXmlReduction
 
         public Integer getFileNumber (String name)
         {
-            String numStr = name.substring(
-                    prefix.length(),
-                    name.length() - suffix.length());
+            String numStr = name.substring(prefix.length(), name.length() - suffix.length());
 
             // Beware of leading zeros
             while ((numStr.length() > 1) && numStr.startsWith("0")) {
@@ -974,8 +942,7 @@ public class ScoreXmlReduction
                 return Integer.decode(numStr);
             } catch (Exception ex) {
                 logger.warn(
-                        "Cannot decode number \"" + numStr + "\" in file name \""
-                        + name + "\"",
+                        "Cannot decode number \"" + numStr + "\" in file name \"" + name + "\"",
                         ex);
 
                 return null;

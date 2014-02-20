@@ -1,40 +1,39 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           P a c k a g e N o d e                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     P a c k a g e N o d e                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.constant;
 
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * Class {@code PackageNode} represents a package in the hierarchy of
- * nodes. It can have children, which can be sub-packages and units. For
- * example, the unit/class <b>omr.score.Page</b> will need PackageNode
- * <b>omr</b> and PackageNode <b>omr.score</b>.
+ * Class {@code PackageNode} represents a package in the hierarchy of nodes.
+ * <p>
+ * It can have children, which can be sub-packages and units. For example, the unit/class
+ * <b>omr.score.Page</b> will need PackageNode <b>omr</b> and PackageNode <b>omr.score</b>.
  *
  * @author Hervé Bitteur
  */
 public class PackageNode
-    extends Node
+        extends Node
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * The children, composed of either other {@code PackageNode} or
      * {@code ConstantSet}.
      */
-    private final ConcurrentSkipListSet<Node> children = new ConcurrentSkipListSet<>(
-        Node.nameComparator);
+    private final ConcurrentSkipListSet<Node> children = new ConcurrentSkipListSet<Node>(
+            Node.nameComparator);
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // PackageNode //
     //-------------//
@@ -46,7 +45,7 @@ public class PackageNode
      *              ConstantSet).
      */
     public PackageNode (String name,
-                        Node   child)
+                        Node child)
     {
         super(name);
 
@@ -55,8 +54,7 @@ public class PackageNode
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addChild //
     //----------//

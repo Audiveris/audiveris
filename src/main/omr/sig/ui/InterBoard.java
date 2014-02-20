@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             I n t e r B o a r d                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       I n t e r B o a r d                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig.ui;
 
@@ -59,8 +59,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code InterBoard} defines a UI board for {@link Inter}
- * information.
+ * Class {@code InterBoard} defines a UI board for {@link Inter} information.
  *
  * @author Hervé Bitteur
  */
@@ -68,19 +67,16 @@ public class InterBoard
         extends Board
         implements ChangeListener, ActionListener
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            InterBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(InterBoard.class);
 
     /** Events this board is interested in. */
-    private static final Class<?>[] eventClasses = new Class<?>[]{
-        InterListEvent.class
-    };
+    private static final Class<?>[] eventClasses = new Class<?>[]{InterListEvent.class};
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
@@ -94,19 +90,13 @@ public class InterBoard
     private JSpinner idSpinner;
 
     /** Output : grade (intrinsic/contextual). */
-    private final LTextField grade = new LTextField(
-            "Grade",
-            "Intrinsic / Contextual");
+    private final LTextField grade = new LTextField("Grade", "Intrinsic / Contextual");
 
     /** Input / Output : VIP flag. */
-    private final LCheckBox vip = new LCheckBox(
-            "Vip",
-            "Is this inter flagged as VIP?");
+    private final LCheckBox vip = new LCheckBox("Vip", "Is this inter flagged as VIP?");
 
     /** Output : shape. */
-    private final LTextField shapeField = new LTextField(
-            "",
-            "Shape for this interpretation");
+    private final LTextField shapeField = new LTextField("", "Shape for this interpretation");
 
     /** Output : grade details. */
     private final JLabel details = new JLabel("");
@@ -130,7 +120,7 @@ public class InterBoard
      */
     private boolean selfUpdating = false;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // InterBoard //
     //------------//
@@ -159,8 +149,7 @@ public class InterBoard
                     public void actionPerformed (ActionEvent e)
                     {
                         // Retrieve current inter selection
-                        InterListEvent interListEvent = (InterListEvent) getSelectionService()
-                        .getLastEvent(
+                        InterListEvent interListEvent = (InterListEvent) getSelectionService().getLastEvent(
                                 InterListEvent.class);
                         List<Inter> interList = interListEvent.getData();
 
@@ -205,7 +194,7 @@ public class InterBoard
         details.setHorizontalAlignment(SwingConstants.CENTER);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -281,13 +270,12 @@ public class InterBoard
             // is received leading to such selfUpdating. Hence the check.
             if (!selfUpdating) {
                 // Notify the new inter id
-                getSelectionService()
-                        .publish(
-                                new InterIdEvent(
-                                        this,
-                                        SelectionHint.INTER_INIT,
-                                        null,
-                                        (Integer) spinner.getValue()));
+                getSelectionService().publish(
+                        new InterIdEvent(
+                                this,
+                                SelectionHint.INTER_INIT,
+                                null,
+                                (Integer) spinner.getValue()));
             }
         } else {
             logger.error("No known spinner");
@@ -368,8 +356,7 @@ public class InterBoard
     private Inter getSelectedInter ()
     {
         final List<Inter> interList = (List<Inter>) getSelectionService()
-                .getSelection(
-                        InterListEvent.class);
+                .getSelection(InterListEvent.class);
 
         if ((interList != null) && !interList.isEmpty()) {
             return interList.get(interList.size() - 1);
@@ -424,12 +411,9 @@ public class InterBoard
 
         // Inter characteristics
         if (inter != null) {
-            vip.getLabel()
-                    .setEnabled(true);
-            vip.getField()
-                    .setEnabled(!inter.isVip());
-            vip.getField()
-                    .setSelected(inter.isVip());
+            vip.getLabel().setEnabled(true);
+            vip.getField().setEnabled(!inter.isVip());
+            vip.getField().setSelected(inter.isVip());
 
             Double cp = inter.getContextualGrade();
 
@@ -439,15 +423,11 @@ public class InterBoard
                 grade.setText(String.format("%.2f", inter.getGrade()));
             }
 
-            details.setText(
-                    (inter.getImpacts() == null) ? "" : inter.getImpacts().toString());
-            deassignAction.putValue(
-                    Action.NAME,
-                    inter.isDeleted() ? "deleted" : "Deassign");
+            details.setText((inter.getImpacts() == null) ? "" : inter.getImpacts().toString());
+            deassignAction.putValue(Action.NAME, inter.isDeleted() ? "deleted" : "Deassign");
         } else {
             vip.setEnabled(false);
-            vip.getField()
-                    .setSelected(false);
+            vip.getField().setSelected(false);
 
             grade.setText("");
             details.setText("");
@@ -458,14 +438,14 @@ public class InterBoard
         details.setEnabled(inter != null);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Exact pixel height for the shape icon field */
         PixelCount shapeIconHeight = new PixelCount(
@@ -476,7 +456,6 @@ public class InterBoard
         PixelCount shapeIconWidth = new PixelCount(
                 50,
                 "Exact pixel width for the shape icon field");
-
     }
 
     //----------------//
@@ -485,7 +464,7 @@ public class InterBoard
     private class DeassignAction
             extends AbstractAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public DeassignAction ()
         {
@@ -493,7 +472,7 @@ public class InterBoard
             this.putValue(Action.SHORT_DESCRIPTION, "Deassign inter");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {

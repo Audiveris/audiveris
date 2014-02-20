@@ -1,19 +1,16 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       M u l t i p l e R u n s V i e w er                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 M u l t i p l e R u n s V i e w er                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet.ui;
 
-import static omr.run.Orientation.HORIZONTAL;
-import static omr.run.Orientation.VERTICAL;
-import omr.run.Run;
 import omr.run.RunsTable;
 
 import omr.sheet.Sheet;
@@ -24,8 +21,6 @@ import omr.ui.view.ScrollView;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.util.List;
 
 /**
  * Class {@code MultipleRunsViewer} is similar to RunsViewer but can
@@ -35,20 +30,19 @@ import java.util.List;
  */
 public class MultipleRunsViewer
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Sequence of colors to be used. */
     private static final Color[] colors = new Color[]{
-        new Color(0, 0, 0),
-        new Color(0, 255, 0, 100),
+        new Color(0, 0, 0), new Color(0, 255, 0, 100),
         new Color(255, 0, 0, 100)
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet */
     private final Sheet sheet;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // RunsViewer //
     //------------//
@@ -62,7 +56,7 @@ public class MultipleRunsViewer
         this.sheet = sheet;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // display //
     //---------//
@@ -79,11 +73,10 @@ public class MultipleRunsViewer
 
         BoardsPane boards = new BoardsPane(new PixelBoard(sheet));
 
-        sheet.getAssembly()
-                .addViewTab("MultiTables", new ScrollView(view), boards);
+        sheet.getAssembly().addViewTab("MultiTables", new ScrollView(view), boards);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//
@@ -94,11 +87,11 @@ public class MultipleRunsViewer
     private class MyView
             extends RubberPanel
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final RunsTable[] tables;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public MyView (RunsTable... tables)
         {
             this.tables = tables;
@@ -110,7 +103,7 @@ public class MultipleRunsViewer
             setBackground(Color.white);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //--------//
         // render //
         //--------//

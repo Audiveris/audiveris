@@ -1,25 +1,24 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            B a r y c e n t e r                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      B a r y c e n t e r                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code Barycenter} is meant to cumulate data when computing
- * barycenter.
+ * Class {@code Barycenter} is meant to cumulate data when computing barycenter.
  */
 public class Barycenter
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * The total weight (such as the number of pixels).
@@ -34,7 +33,7 @@ public class Barycenter
     /** The weighted ordinate */
     private double yy;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // Barycenter //
     //------------//
@@ -45,7 +44,7 @@ public class Barycenter
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getWeight //
     //-----------//
@@ -164,15 +163,10 @@ public class Barycenter
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("{");
-        sb.append(getClass().getSimpleName())
-                .append(" weight:")
-                .append(weight);
+        sb.append(getClass().getSimpleName()).append(" weight:").append(weight);
 
         if (weight > 0) {
-            sb.append(" x:")
-                    .append((float) getX())
-                    .append(" y:")
-                    .append((float) getY());
+            sb.append(" x:").append((float) getX()).append(" y:").append((float) getY());
         }
 
         return sb.toString();

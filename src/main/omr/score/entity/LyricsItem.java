@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            L y r i c s I t e m                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      L y r i c s I t e m                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -45,14 +45,11 @@ public class LyricsItem
         extends Text
         implements Comparable<LyricsItem>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            LyricsItem.class);
+    private static final Logger logger = LoggerFactory.getLogger(LyricsItem.class);
 
     /** Comparator based on line number */
     public static final Comparator<LyricsItem> numberComparator = new Comparator<LyricsItem>()
@@ -65,13 +62,13 @@ public class LyricsItem
         }
     };
 
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
     /**
      * Describes the kind of this lyrics item.
      */
     public static enum ItemKind
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** Just an elision */
         Elision,
@@ -81,7 +78,6 @@ public class LyricsItem
         Hyphen,
         /** A real syllable */
         Syllable;
-
     }
 
     /**
@@ -89,7 +85,7 @@ public class LyricsItem
      */
     public static enum SyllabicType
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** Single-syllable word */
         SINGLE,
@@ -100,10 +96,9 @@ public class LyricsItem
         MIDDLE,
         /** Syllable that ends a word */
         END;
-
     }
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Lyrics kind. */
     private ItemKind itemKind;
 
@@ -131,7 +126,7 @@ public class LyricsItem
     /** Mapped note/chord, if any. */
     private Chord mappedChord;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // LyricsItem //
     //------------//
@@ -168,7 +163,7 @@ public class LyricsItem
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -189,8 +184,7 @@ public class LyricsItem
         }
 
         // Comparison is based on abscissa only
-        return Integer.signum(
-                getReferencePoint().x - other.getReferencePoint().x);
+        return Integer.signum(getReferencePoint().x - other.getReferencePoint().x);
     }
 
     //--------------------//
@@ -305,8 +299,7 @@ public class LyricsItem
         int centerX = getReferencePoint().x + (width / 4);
 
         SystemPart part = lyricsLine.getPart();
-        int maxDx = part.getScale()
-                .toPixels(constants.maxItemDx);
+        int maxDx = part.getScale().toPixels(constants.maxItemDx);
 
         for (TreeNode mNode : part.getMeasures()) {
             Measure measure = (Measure) mNode;
@@ -316,8 +309,7 @@ public class LyricsItem
                 break;
             }
 
-            if ((measure.getBarline()
-                    .getRightX() + maxDx) < centerX) {
+            if ((measure.getBarline().getRightX() + maxDx) < centerX) {
                 continue;
             }
 
@@ -345,8 +337,7 @@ public class LyricsItem
                         mappedChord = bestChord;
 
                         if ((word != null) && (word.getGlyph() != null)) {
-                            word.getGlyph()
-                                    .setTranslation(this);
+                            word.getGlyph().setTranslation(this);
                         }
                     }
 
@@ -381,8 +372,7 @@ public class LyricsItem
     protected void computeReferencePoint ()
     {
         Rectangle itemBox = seed.getBounds();
-        setReferencePoint(new Point(itemBox.x, getSentence()
-                .getLocation().y));
+        setReferencePoint(new Point(itemBox.x, getSentence().getLocation().y));
     }
 
     //-----------------//
@@ -394,18 +384,15 @@ public class LyricsItem
         StringBuilder sb = new StringBuilder();
 
         if (itemKind != null) {
-            sb.append(" ")
-                    .append(itemKind);
+            sb.append(" ").append(itemKind);
         }
 
         if (getSyllabicType() != null) {
-            sb.append(" ")
-                    .append(getSyllabicType());
+            sb.append(" ").append(getSyllabicType());
         }
 
         if (mappedChord != null) {
-            sb.append(" mappedTo:Ch#")
-                    .append(mappedChord.getId());
+            sb.append(" mappedTo:Ch#").append(mappedChord.getId());
         }
 
         return sb.toString();
@@ -419,18 +406,17 @@ public class LyricsItem
         this.lyricsLine = line;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction maxItemDx = new Scale.Fraction(
                 4,
                 "Maximum horizontal distance between a note and its lyrics item");
-
     }
 }

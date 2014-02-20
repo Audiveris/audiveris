@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              I n t e r M e n u                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        I n t e r M e n u                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig.ui;
 
@@ -37,17 +37,16 @@ import javax.swing.JMenuItem;
  */
 public class InterMenu
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            InterMenu.class);
+    private static final Logger logger = LoggerFactory.getLogger(InterMenu.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     private final JMenu menu;
 
     private InterListener interListener = new InterListener();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // InterMenu //
     //-----------//
@@ -72,22 +71,14 @@ public class InterMenu
         updateMenu(inters);
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //---------//
-    // getMenu //
-    //---------//
-    public JMenu getMenu ()
-    {
-        return menu;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // updateMenu //
     //------------//
     public final int updateMenu (Collection<Inter> inters)
     {
         // We rebuild the menu items on each update, since the set of inters
-        // is brand new. 
+        // is brand new.
         menu.removeAll();
 
         if ((inters != null) && !inters.isEmpty()) {
@@ -116,7 +107,15 @@ public class InterMenu
         return 0;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //---------//
+    // getMenu //
+    //---------//
+    public JMenu getMenu ()
+    {
+        return menu;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // InterListener //
     //---------------//
@@ -126,7 +125,7 @@ public class InterMenu
     private class InterListener
             extends AbstractMouseListener
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void mouseEntered (MouseEvent e)

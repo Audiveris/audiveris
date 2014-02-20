@@ -23,7 +23,7 @@ public class CppCompanion
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(
             CppCompanion.class);
 

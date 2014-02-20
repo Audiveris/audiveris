@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      F i l t e r D e s c r i p t o r                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                F i l t e r D e s c r i p t o r                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -24,39 +24,29 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 /**
- * Management data meant to describe an implementation instance of
- * a PixelFilter.
+ * Management data meant to describe an implementation instance of a PixelFilter.
  * (kind of filter + related parameters)
  */
 public abstract class FilterDescriptor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             FilterDescriptor.class);
 
     /** Default param. */
     public static final Param<FilterDescriptor> defaultFilter = new Default();
 
-    //~ Methods ----------------------------------------------------------------
-    //----------------//
-    // getDefaultKind //
-    //----------------//
-    public static FilterKind getDefaultKind ()
+    //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // equals //
+    //--------//
+    @Override
+    public boolean equals (Object obj)
     {
-        return constants.defaultKind.getValue();
-    }
-
-    //----------------//
-    // setDefaultKind //
-    //----------------//
-    public static void setDefaultKind (FilterKind kind)
-    {
-        constants.defaultKind.setValue(kind);
+        return (obj instanceof FilterDescriptor);
     }
 
     //-----------//
@@ -82,13 +72,12 @@ public abstract class FilterDescriptor
      */
     public abstract FilterKind getKind ();
 
-    //--------//
-    // equals //
-    //--------//
-    @Override
-    public boolean equals (Object obj)
+    //----------------//
+    // getDefaultKind //
+    //----------------//
+    public static FilterKind getDefaultKind ()
     {
-        return (obj instanceof FilterDescriptor);
+        return constants.defaultKind.getValue();
     }
 
     //----------//
@@ -100,6 +89,14 @@ public abstract class FilterDescriptor
         int hash = 5;
 
         return hash;
+    }
+
+    //----------------//
+    // setDefaultKind //
+    //----------------//
+    public static void setDefaultKind (FilterKind kind)
+    {
+        constants.defaultKind.setValue(kind);
     }
 
     //----------//
@@ -126,7 +123,7 @@ public abstract class FilterDescriptor
         return sb.toString();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //-----------//
     // Constants //
@@ -134,7 +131,7 @@ public abstract class FilterDescriptor
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         FilterKind.Constant defaultKind = new FilterKind.Constant(
                 FilterKind.ADAPTIVE,
@@ -147,7 +144,7 @@ public abstract class FilterDescriptor
     private static class Default
             extends Param<FilterDescriptor>
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public FilterDescriptor getSpecific ()
@@ -175,8 +172,7 @@ public abstract class FilterDescriptor
         @Override
         public boolean setSpecific (FilterDescriptor specific)
         {
-            if (!getSpecific()
-                    .equals(specific)) {
+            if (!getSpecific().equals(specific)) {
                 FilterKind kind = specific.getKind();
                 FilterDescriptor.setDefaultKind(kind);
 

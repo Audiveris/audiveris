@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         T e m p l a t e S y m b o l                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   T e m p l a t e S y m b o l                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -25,13 +25,11 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code TemplateSymbol} defines a symbol meant only for
- * template matching.
+ * Class {@code TemplateSymbol} defines a symbol meant only for template matching.
  * <p>
- * TODO: Symbol must depend on interline of course, PLUS line thickness
- * and perhaps stem thickness as well.
- * This implies that a set of templates will likely be defined per page
- * (interline, line, stem).
+ * TODO: Symbol must depend on interline of course, PLUS line thickness and perhaps stem thickness
+ * as well.
+ * This implies that a set of templates will likely be defined per page (interline, line, stem).
  * Beware, ledgers are often a bit thicker than staff lines.
  *
  * @author Hervé Bitteur
@@ -39,19 +37,19 @@ import java.awt.geom.Rectangle2D;
 public class TemplateSymbol
         extends BasicSymbol
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Affine Transform for small symbol shapes. */
     private static final AffineTransform smallAt = AffineTransform.getScaleInstance(
             Template.smallRatio,
             Template.smallRatio);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     protected final Key key;
 
     protected final boolean isSmall;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TemplateSymbol object.
      *
@@ -66,7 +64,7 @@ public class TemplateSymbol
         isSmall = key.shape.isSmall();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // getSymbolBounds //
     //-----------------//
@@ -98,11 +96,7 @@ public class TemplateSymbol
         final int symWidth = (int) Math.rint(r.getWidth());
         final int symHeight = (int) Math.rint(r.getHeight());
         p.rect = new Rectangle(symWidth, isSmall ? interline : symHeight);
-        p.symbolRect = new Rectangle(
-                0,
-                (interline - symHeight) / 2,
-                symWidth,
-                symHeight);
+        p.symbolRect = new Rectangle(0, (interline - symHeight) / 2, symWidth, symHeight);
 
         return p;
     }
@@ -121,8 +115,7 @@ public class TemplateSymbol
         // Background
         g.setColor(Color.RED);
 
-        if ((key.shape == Shape.WHOLE_NOTE_SMALL)
-            || (key.shape == Shape.WHOLE_NOTE)) {
+        if ((key.shape == Shape.WHOLE_NOTE_SMALL) || (key.shape == Shape.WHOLE_NOTE)) {
             g.fill(
                     new Rectangle2D.Float(
                             p.rect.x,
@@ -147,23 +140,18 @@ public class TemplateSymbol
         // Middle line?
         if (key.hasLine) {
             loc = alignment.translatedPoint(MIDDLE_LEFT, p.rect, location);
-            g.fill(
-                    new Rectangle2D.Float(
-                            loc.x,
-                            loc.y - (p.line / 2),
-                            p.rect.width,
-                            p.line));
+            g.fill(new Rectangle2D.Float(loc.x, loc.y - (p.line / 2), p.rect.width, p.line));
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Rectangle symbolRect; // Bounds for symbol inside image
 

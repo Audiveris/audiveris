@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          D i s t a n c e T a b l e                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    D i s t a n c e T a b l e                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -19,7 +19,7 @@ package omr.image;
 public interface DistanceTable
         extends Table
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the normalizing value by which each raw distance data
@@ -29,7 +29,7 @@ public interface DistanceTable
      */
     int getNormalizer ();
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Integer //
     //---------//
@@ -37,11 +37,11 @@ public interface DistanceTable
             extends Table.Integer
             implements DistanceTable
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final int normalizer;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Integer (int width,
                         int height,
                         int normalizer)
@@ -50,7 +50,7 @@ public interface DistanceTable
             this.normalizer = normalizer;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int getNormalizer ()
         {
@@ -65,11 +65,11 @@ public interface DistanceTable
             extends Table.Short
             implements DistanceTable
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final int normalizer;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Short (int width,
                       int height,
                       int normalizer)
@@ -78,7 +78,7 @@ public interface DistanceTable
             this.normalizer = normalizer;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int getNormalizer ()
         {

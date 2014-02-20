@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       L I n t e g e r S p i n n e r                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 L I n t e g e r S p i n n e r                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.field;
 
@@ -15,16 +15,15 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code LSpinner} is a logical combination of a JLabel and a
- * JSpinner, a "Labeled Spinner", where the label describes
- * the dynamic content of the spinner.
+ * Class {@code LSpinner} is a logical combination of a JLabel and a JSpinner,
+ * a "Labeled Spinner", where the label describes the dynamic content of the spinner.
  *
  * @author Hervé Bitteur
  */
 public class LIntegerSpinner
         extends LSpinner
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //-----------------//
     // LIntegerSpinner //
@@ -42,7 +41,7 @@ public class LIntegerSpinner
         super(label, tip);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // addChangeListener //
     //-------------------//

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        P a r a m e t e r s T a s k                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  P a r a m e t e r s T a s k                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.script;
 
@@ -49,7 +49,7 @@ import javax.xml.bind.annotation.XmlElements;
 public class ParametersTask
         extends ScriptTask
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Language code. */
     @XmlElement(name = "language")
@@ -61,22 +61,20 @@ public class ParametersTask
 
     /** Pixel filter. */
     @XmlElements({
-        @XmlElement(name = "global-filter",
-                    type = GlobalDescriptor.class),
-        @XmlElement(name = "adaptive-filter",
-                    type = AdaptiveDescriptor.class)
+        @XmlElement(name = "global-filter", type = GlobalDescriptor.class),
+        @XmlElement(name = "adaptive-filter", type = AdaptiveDescriptor.class)
     })
     private FilterDescriptor filterDescriptor;
 
     /** Description data for each part. */
     @XmlElement(name = "part")
-    private List<PartData> parts = new ArrayList<>();
+    private List<PartData> parts = new ArrayList<PartData>();
 
     /** Specific page parameters. */
     @XmlElement(name = "page")
-    private List<PageParameters> pages = new ArrayList<>();
+    private List<PageParameters> pages = new ArrayList<PageParameters>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------------//
     // ParametersTask //
@@ -86,7 +84,7 @@ public class ParametersTask
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //---------//
     // addPart //
@@ -122,24 +120,21 @@ public class ParametersTask
         // Score Binarization
         if (filterDescriptor != null) {
             if (score.getFilterParam().setSpecific(filterDescriptor)) {
-                sb.append(" filter:")
-                        .append(filterDescriptor);
+                sb.append(" filter:").append(filterDescriptor);
             }
         }
 
         // Score Language
         if (language != null) {
             if (score.getTextParam().setSpecific(language)) {
-                sb.append(" language:")
-                        .append(language);
+                sb.append(" language:").append(language);
             }
         }
 
         // Score Tempo
         if (tempo != null) {
             if (score.getTempoParam().setSpecific(tempo)) {
-                sb.append(" tempo:")
-                        .append(tempo);
+                sb.append(" tempo:").append(tempo);
             }
         }
 
@@ -155,9 +150,7 @@ public class ParametersTask
                 // Part midi program
                 scorePart.setMidiProgram(data.program);
             } catch (Exception ex) {
-                logger.warn(
-                        "Error in script Parameters part#" + (i + 1),
-                        ex);
+                logger.warn("Error in script Parameters part#" + (i + 1), ex);
             }
         }
 
@@ -169,17 +162,16 @@ public class ParametersTask
             // Page Binarization
             if (params.filterDescriptor != null) {
                 if (page.getFilterParam().setSpecific(params.filterDescriptor)) {
-                    sb.append(" filter:")
-                            .append(params.filterDescriptor);
+                    sb.append(" filter:").append(params.filterDescriptor);
                 }
             }
 
             // Page Language
             if (params.language != null) {
                 Param<String> context = page.getTextParam();
+
                 if (page.getTextParam().setSpecific(params.language)) {
-                    sb.append(" language:")
-                            .append(params.language);
+                    sb.append(" language:").append(params.language);
                 }
             }
 
@@ -202,7 +194,6 @@ public class ParametersTask
     @Override
     public void epilog (Sheet sheet)
     {
-
         final Step binaryStep = Steps.valueOf(Steps.BINARY);
         final Step textsStep = Steps.valueOf(Steps.TEXTS);
         final Step symbolsStep = Steps.valueOf(Steps.SYMBOLS);
@@ -210,18 +201,20 @@ public class ParametersTask
 
         Step latestStep = Stepping.getLatestMandatoryStep(sheet);
 
-        for (TreeNode pn : new ArrayList<>(sheet.getScore().getPages())) {
+        for (TreeNode pn : new ArrayList<TreeNode>(sheet.getScore().getPages())) {
             final Page page = (Page) pn;
             Step from = null;
 
             // Language
             if (Steps.compare(latestStep, textsStep) >= 0) {
                 LiveParam<String> param = page.getTextParam();
+
                 if (param.needsUpdate()) {
-                    logger.debug("Page {} needs TEXT with {}",
-                            page.getId(), param.getTarget());
+                    logger.debug("Page {} needs TEXT with {}", page.getId(), param.getTarget());
+
                     // Convert the text items as much as possible
                     final Sheet theSheet = page.getSheet();
+
                     for (SystemInfo system : theSheet.getSystems()) {
                         system.getTextBuilder().switchLanguageTexts();
                     }
@@ -234,13 +227,12 @@ public class ParametersTask
             // Binarization
             if (Steps.compare(latestStep, binaryStep) >= 0) {
                 LiveParam<FilterDescriptor> param = page.getFilterParam();
+
                 if (param.needsUpdate()) {
-                    logger.debug("Page {} needs BINARY with {}",
-                            page.getId(), param.getTarget());
+                    logger.debug("Page {} needs BINARY with {}", page.getId(), param.getTarget());
                     //  Reprocess this page from BINARY step
                     from = binaryStep;
                 }
-
             }
 
             Stepping.reprocessSheet(from, sheet, null, true, false);
@@ -314,23 +306,19 @@ public class ParametersTask
         StringBuilder sb = new StringBuilder(" parameters");
 
         if (filterDescriptor != null) {
-            sb.append(" filter:")
-                    .append(filterDescriptor);
+            sb.append(" filter:").append(filterDescriptor);
         }
 
         if (language != null) {
-            sb.append(" language:")
-                    .append(language);
+            sb.append(" language:").append(language);
         }
 
         for (PartData data : parts) {
-            sb.append(" ")
-                    .append(data);
+            sb.append(" ").append(data);
         }
 
         for (PageParameters params : pages) {
-            sb.append(" ")
-                    .append(params);
+            sb.append(" ").append(params);
         }
 
         return sb.toString() + super.internalsString();
@@ -348,6 +336,7 @@ public class ParametersTask
     private PageParameters getParams (Page page)
     {
         int index = page.getIndex();
+
         for (PageParameters params : pages) {
             if (params.index == index) {
                 return params;
@@ -362,13 +351,66 @@ public class ParametersTask
         return params;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //----------------//
+    // PageParameters //
+    //----------------//
+    /**
+     * Parameters for a page.
+     */
+    public static class PageParameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Page unique index. */
+        @XmlAttribute(name = "index")
+        private int index;
+
+        /** Language code. */
+        @XmlElement(name = "language")
+        private String language;
+
+        /** Pixel filter. */
+        @XmlElements({
+            @XmlElement(name = "global-filter", type = GlobalDescriptor.class),
+            @XmlElement(name = "adaptive-filter", type = AdaptiveDescriptor.class)
+        })
+        private FilterDescriptor filterDescriptor;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        //
+        /** No-arg constructor needed by JAXB */
+        public PageParameters ()
+        {
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder("{page#");
+            sb.append(index);
+
+            if (filterDescriptor != null) {
+                sb.append(" filter:").append(filterDescriptor);
+            }
+
+            if (language != null) {
+                sb.append(" language:").append(language);
+            }
+
+            sb.append("}");
+
+            return sb.toString();
+        }
+    }
+
     //----------//
     // PartData //
     //----------//
     public static class PartData
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Name of the part */
         @XmlAttribute
@@ -378,7 +420,7 @@ public class ParametersTask
         @XmlAttribute
         public final int program;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public PartData (String name,
                          int program)
         {
@@ -392,65 +434,11 @@ public class ParametersTask
             program = 0;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
             return "{name:" + name + " program:" + program + "}";
-        }
-    }
-
-    //----------------//
-    // PageParameters //
-    //----------------//
-    /**
-     * Parameters for a page.
-     */
-    public static class PageParameters
-    {
-
-        /** Page unique index. */
-        @XmlAttribute(name = "index")
-        private int index;
-
-        /** Language code. */
-        @XmlElement(name = "language")
-        private String language;
-
-        /** Pixel filter. */
-        @XmlElements({
-            @XmlElement(name = "global-filter",
-                        type = GlobalDescriptor.class),
-            @XmlElement(name = "adaptive-filter",
-                        type = AdaptiveDescriptor.class)
-        })
-        private FilterDescriptor filterDescriptor;
-
-        //~ Constructors -------------------------------------------------------
-        //
-        /** No-arg constructor needed by JAXB */
-        public PageParameters ()
-        {
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder("{page#");
-            sb.append(index);
-
-            if (filterDescriptor != null) {
-                sb.append(" filter:")
-                        .append(filterDescriptor);
-            }
-
-            if (language != null) {
-                sb.append(" language:")
-                        .append(language);
-            }
-
-            sb.append("}");
-            return sb.toString();
         }
     }
 }

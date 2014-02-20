@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          L e d g e r S y m b o l                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    L e d g e r S y m b o l                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -28,13 +28,12 @@ import java.awt.geom.Rectangle2D;
 public class LedgerSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     // The head part
-    private static final BasicSymbol head = Symbols.getSymbol(
-            Shape.NOTEHEAD_BLACK);
+    private static final BasicSymbol head = Symbols.getSymbol(Shape.NOTEHEAD_BLACK);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // LedgerSymbol //
     //--------------//
@@ -63,7 +62,7 @@ public class LedgerSymbol
         super(isIcon, Shape.LEDGER, decorated);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getRefPoint //
     //-------------//
@@ -73,9 +72,7 @@ public class LedgerSymbol
     @Override
     public Point getRefPoint (Rectangle box)
     {
-        return new Point(
-                box.x + (box.width / 2),
-                box.y + (int) Math.rint(box.height * 0.67));
+        return new Point(box.x + (box.width / 2), box.y + (int) Math.rint(box.height * 0.67));
     }
 
     //------------//
@@ -116,10 +113,7 @@ public class LedgerSymbol
                           Point location,
                           Alignment alignment)
     {
-        Point loc = alignment.translatedPoint(
-                AREA_CENTER,
-                params.rect,
-                location);
+        Point loc = alignment.translatedPoint(AREA_CENTER, params.rect, location);
 
         if (decorated) {
             // Draw a note head (using composite)
@@ -130,10 +124,6 @@ public class LedgerSymbol
         }
 
         // Ledger
-        g.drawLine(
-                loc.x - (params.rect.width / 2),
-                loc.y,
-                loc.x + (params.rect.width / 2),
-                loc.y);
+        g.drawLine(loc.x - (params.rect.width / 2), loc.y, loc.x + (params.rect.width / 2), loc.y);
     }
 }

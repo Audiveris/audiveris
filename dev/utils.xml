@@ -55,17 +55,29 @@
     <target name="global-replace"
             description="Modify token of every source file">
 	
-        <replace encoding="utf8" dir="${basedir}/src">
+<!--        <replace encoding="utf8" dir="${basedir}/src">
             <replacetoken>@literal </replacetoken>
             <replacevalue>@code </replacevalue>
             <include name="**/*.java"/>
-        </replace>
+        </replace>-->
 	
-        <!--        <replace encoding="utf8" dir="${basedir}/src">
-            <replacetoken>Copyright © Hervé Bitteur 2000-2012. All rights reserved.  </replacetoken>
-            <replacevalue>Copyright © Hervé Bitteur 2000-2013. All rights reserved.  </replacevalue>
+<!--        <replace encoding="utf8" dir="${basedir}/src">
+            <replacetoken>Copyright © Hervé Bitteur 2000-2013. All rights reserved.</replacetoken>
+            <replacevalue>Copyright © Hervé Bitteur 2000-2014. All rights reserved.</replacevalue>
             <include name="**/*.java"/>
         </replace>-->
+	
+        <replace encoding="utf8" dir="${basedir}/src">
+            <replacetoken>/** Specific application parameters */</replacetoken>
+            <replacevalue></replacevalue>
+            <include name="**/*.java"/>
+        </replace>
+	
+        <replace encoding="utf8" dir="${basedir}/src">
+            <replacetoken>/** Usual logger utility */</replacetoken>
+            <replacevalue></replacevalue>
+            <include name="**/*.java"/>
+        </replace>
 	     
 
         <!--        <replaceregexp

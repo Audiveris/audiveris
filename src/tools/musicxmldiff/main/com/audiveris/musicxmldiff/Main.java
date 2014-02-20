@@ -36,7 +36,7 @@ public class Main
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     /** Parameters read from CLI */

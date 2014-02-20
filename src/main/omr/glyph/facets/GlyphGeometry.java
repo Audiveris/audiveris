@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         G l y p h G e o m e t r y                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   G l y p h G e o m e t r y                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -23,19 +23,18 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Interface {@code GlyphGeometry} defines the facet which handles all
- * the geometrical characteristics of a glyph (scale, contour box,
- * location, weight, density, moments, etc).
- *
- * <p>Nota: A glyph, unlike its member sections, has no orientation, so all the
- * following methods work in absolute coordinates.
+ * Interface {@code GlyphGeometry} defines the facet which handles all the geometrical
+ * characteristics of a glyph (scale, contour box, location, weight, density, moments, etc).
+ * <p>
+ * Nota: A glyph, unlike its member sections, has no orientation, so all the following methods work
+ * in absolute coordinates.
  *
  * @author Hervé Bitteur
  */
 interface GlyphGeometry
         extends GlyphFacet
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the glyph ART moments, which are lazily computed.

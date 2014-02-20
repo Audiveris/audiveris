@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        S e l e c t i o n P a n e l                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  S e l e c t i o n P a n e l                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui.panel;
 
@@ -54,9 +54,8 @@ import javax.swing.JProgressBar;
 import javax.swing.KeyStroke;
 
 /**
- * Class {@code SelectionPanel} handles a user panel to select <B>names</B>
- * from glyph repository, either the whole population or a core set of
- * glyphs.
+ * Class {@code SelectionPanel} handles a user panel to select <B>names</B> from glyph
+ * repository, either the whole population or a core set of glyphs.
  * This class is a dedicated companion of {@link GlyphTrainer}.
  *
  * @author Hervé Bitteur
@@ -64,15 +63,13 @@ import javax.swing.KeyStroke;
 class SelectionPanel
         implements GlyphRepository.Monitor, Observer
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(SelectionPanel.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Reference of network panel companion (TBI) */
     private TrainingPanel trainingPanel;
 
@@ -126,7 +123,7 @@ class SelectionPanel
             "Selected",
             "Number of selected glyph files to load");
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------------//
     // SelectionPanel //
     //----------------//
@@ -145,17 +142,17 @@ class SelectionPanel
         component = new Panel();
         component.setNoInsets();
 
-        component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                .put(KeyStroke.getKeyStroke("ENTER"), "readParams");
-        component.getActionMap()
-                .put("readParams", new ParamAction());
+        component.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke("ENTER"),
+                "readParams");
+        component.getActionMap().put("readParams", new ParamAction());
 
         displayParams();
 
         defineLayout(standardWidth);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getBase //
     //---------//
@@ -281,7 +278,7 @@ class SelectionPanel
         // Train regression on them
         GlyphRegression regression = GlyphRegression.getInstance();
         Collection<String> gNames = getBase(true); // use whole
-        List<Glyph> glyphs = new ArrayList<>();
+        List<Glyph> glyphs = new ArrayList<Glyph>();
 
         // Actually load each glyph description, if not yet done
         for (String gName : gNames) {
@@ -296,7 +293,7 @@ class SelectionPanel
         regression.train(glyphs, null, EvaluationEngine.StartingMode.SCRATCH);
 
         // Measure all glyphs of each shape
-        Map<Shape, List<NotedGlyph>> palmares = new HashMap<>();
+        Map<Shape, List<NotedGlyph>> palmares = new HashMap<Shape, List<NotedGlyph>>();
 
         for (String gName : gNames) {
             Glyph glyph = repository.getGlyph(gName, this);
@@ -304,13 +301,11 @@ class SelectionPanel
             if (glyph != null) {
                 try {
                     Shape shape = glyph.getShape();
-                    double grade = regression.measureDistance(
-                            glyph,
-                            shape);
+                    double grade = regression.measureDistance(glyph, shape);
                     List<NotedGlyph> shapeNotes = palmares.get(shape);
 
                     if (shapeNotes == null) {
-                        shapeNotes = new ArrayList<>();
+                        shapeNotes = new ArrayList<NotedGlyph>();
                         palmares.put(shape, shapeNotes);
                     }
 
@@ -322,7 +317,7 @@ class SelectionPanel
         }
 
         // Set of chosen shapes
-        final Set<NotedGlyph> set = new HashSet<>();
+        final Set<NotedGlyph> set = new HashSet<NotedGlyph>();
         final int maxSimilar = similar.getValue();
 
         // Sort the palmares, shape by shape, by (decreasing) grade
@@ -337,15 +332,14 @@ class SelectionPanel
                 int idx = Math.min(size - 1, Math.round(i * delta));
                 NotedGlyph ng = shapeNotes.get(idx);
 
-                if (ng.glyph.getShape()
-                        .isTrainable()) {
+                if (ng.glyph.getShape().isTrainable()) {
                     set.add(ng);
                 }
             }
         }
 
         // Build the core base
-        List<String> base = new ArrayList<>(set.size());
+        List<String> base = new ArrayList<String>(set.size());
 
         for (NotedGlyph ng : set) {
             base.add(ng.gName);
@@ -360,12 +354,7 @@ class SelectionPanel
     //--------------//
     private void defineLayout (String standardWidth)
     {
-        FormLayout layout = Panel.makeFormLayout(
-                3,
-                4,
-                "",
-                standardWidth,
-                standardWidth);
+        FormLayout layout = Panel.makeFormLayout(3, 4, "", standardWidth, standardWidth);
         PanelBuilder builder = new PanelBuilder(layout, component);
         CellConstraints cst = new CellConstraints();
         builder.setDefaultDialogBorder();
@@ -409,21 +398,19 @@ class SelectionPanel
         constants.maxSimilar.setValue(similar.getValue());
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Integer maxSimilar = new Constant.Integer(
                 "Glyphs",
                 10,
-                "Absolute maximum number of instances for the same shape"
-                + " used in training");
-
+                "Absolute maximum number of instances for the same shape" + " used in training");
     }
 
     //------------//
@@ -434,7 +421,7 @@ class SelectionPanel
      */
     private static class NotedGlyph
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         /** For comparing NotedGlyph instance in reverse grade order */
         static final Comparator<NotedGlyph> reverseGradeComparator = new Comparator<NotedGlyph>()
@@ -447,14 +434,14 @@ class SelectionPanel
             }
         };
 
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
         final String gName;
 
         final Glyph glyph;
 
         final double grade;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public NotedGlyph (String gName,
                            Glyph glyph,
                            double grade)
@@ -464,7 +451,7 @@ class SelectionPanel
             this.grade = grade;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -478,25 +465,22 @@ class SelectionPanel
     private class DumpAction
             extends AbstractAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public DumpAction ()
         {
             super("Dump");
-            putValue(
-                    Action.SHORT_DESCRIPTION,
-                    "Dump the current glyph selection");
+            putValue(Action.SHORT_DESCRIPTION, "Dump the current glyph selection");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             List<String> gNames = getBase(trainingPanel.useWhole());
             System.out.println(
-                    "Content of "
-                    + (trainingPanel.useWhole() ? "whole" : "core")
-                    + " population (" + gNames.size() + "):");
+                    "Content of " + (trainingPanel.useWhole() ? "whole" : "core") + " population ("
+                    + gNames.size() + "):");
             Collections.sort(gNames, GlyphRepository.shapeComparator);
 
             int glyphNb = 0;
@@ -504,10 +488,8 @@ class SelectionPanel
 
             for (String gName : gNames) {
                 if (prevName != null) {
-                    if (!GlyphRepository.shapeNameOf(gName)
-                            .equals(prevName)) {
-                        System.out.println(
-                                String.format("%4d %s", glyphNb, prevName));
+                    if (!GlyphRepository.shapeNameOf(gName).equals(prevName)) {
+                        System.out.println(String.format("%4d %s", glyphNb, prevName));
                         glyphNb = 1;
                     }
                 }
@@ -526,7 +508,7 @@ class SelectionPanel
     private class ParamAction
             extends AbstractAction
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         // Purpose is just to read and remember the data from the various
         // input fields. Triggered when user presses Enter in one of these
@@ -545,17 +527,15 @@ class SelectionPanel
     private class RefreshAction
             extends AbstractAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public RefreshAction ()
         {
             super("Disk Refresh");
-            putValue(
-                    Action.SHORT_DESCRIPTION,
-                    "Refresh trainer with disk information");
+            putValue(Action.SHORT_DESCRIPTION, "Refresh trainer with disk information");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -569,35 +549,33 @@ class SelectionPanel
     private class SelectAction
             extends AbstractAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public SelectAction ()
         {
             super("Select Core");
-            putValue(
-                    Action.SHORT_DESCRIPTION,
-                    "Build core selection out of whole glyph base");
+            putValue(Action.SHORT_DESCRIPTION, "Build core selection out of whole glyph base");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
             executor.execute(
                     new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    task.setActivity(SELECTING);
+                    {
+                        @Override
+                        public void run ()
+                        {
+                            task.setActivity(SELECTING);
 
-                    // Define Core from Whole
-                    defineCore();
-                    repository.storeCoreBase();
+                            // Define Core from Whole
+                            defineCore();
+                            repository.storeCoreBase();
 
-                    task.setActivity(INACTIVE);
-                }
-            });
+                            task.setActivity(INACTIVE);
+                        }
+                    });
         }
     }
 }

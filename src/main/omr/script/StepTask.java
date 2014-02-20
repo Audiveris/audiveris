@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              S t e p T a s k                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        S t e p T a s k                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.script;
 
@@ -33,12 +33,12 @@ import javax.xml.bind.annotation.XmlAttribute;
 public class StepTask
         extends ScriptTask
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The step launched */
     private Step step;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // StepTask //
     //----------//
@@ -60,7 +60,7 @@ public class StepTask
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // core //
     //------//
@@ -68,10 +68,7 @@ public class StepTask
     public void core (final Sheet sheet)
             throws StepException
     {
-        Stepping.processScore(
-                Collections.singleton(step),
-                null,
-                sheet.getScore());
+        Stepping.processScore(Collections.singleton(step), null, sheet.getScore());
     }
 
     //-----------------//

@@ -27,7 +27,7 @@ public abstract class AbstractCompanion
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
             AbstractCompanion.class);
 

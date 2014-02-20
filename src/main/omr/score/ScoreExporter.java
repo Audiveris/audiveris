@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         S c o r e E x p o r t e r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   S c o r e E x p o r t e r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -65,11 +65,6 @@ import omr.text.FontInfo;
 import omr.util.OmrExecutors;
 import omr.util.TreeNode;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.w3c.dom.Node;
-
 import com.audiveris.proxymusic.AboveBelow;
 import com.audiveris.proxymusic.Accidental;
 import com.audiveris.proxymusic.Articulations;
@@ -121,8 +116,8 @@ import com.audiveris.proxymusic.Repeat;
 import com.audiveris.proxymusic.Rest;
 import com.audiveris.proxymusic.RightLeftMiddle;
 import com.audiveris.proxymusic.Root;
-import com.audiveris.proxymusic.RootStep;
 import com.audiveris.proxymusic.RootAlter;
+import com.audiveris.proxymusic.RootStep;
 import com.audiveris.proxymusic.Scaling;
 import com.audiveris.proxymusic.ScoreInstrument;
 import com.audiveris.proxymusic.ScorePartwise;
@@ -147,8 +142,12 @@ import com.audiveris.proxymusic.UprightInverted;
 import com.audiveris.proxymusic.WedgeType;
 import com.audiveris.proxymusic.Work;
 import com.audiveris.proxymusic.YesNo;
-
 import com.audiveris.proxymusic.util.Marshalling;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.w3c.dom.Node;
 
 import java.awt.Font;
 import java.awt.Point;
@@ -176,51 +175,49 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 
 /**
- * Class {@code ScoreExporter} visits the score hierarchy to export
- * the score to a MusicXML file, stream or DOM.
+ * Class {@code ScoreExporter} visits the score hierarchy to export the score to a
+ * MusicXML file, stream or DOM.
  *
  * @author Hervé Bitteur
  */
 public class ScoreExporter
         extends AbstractScoreVisitor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ScoreExporter.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ScoreExporter.class);
 
     /** A future which reflects whether JAXB has been initialized * */
-    private static final Future<Void> loading = OmrExecutors.
-            getCachedLowExecutor().submit(
+    private static final Future<Void> loading = OmrExecutors.getCachedLowExecutor().submit(
             new Callable<Void>()
-    {
-        @Override
-        public Void call ()
+            {
+                @Override
+                public Void call ()
                 throws Exception
-        {
-            try {
-                Marshalling.getContext();
-            } catch (JAXBException ex) {
-                logger.warn("Error preloading JaxbContext", ex);
-                throw ex;
-            }
+                {
+                    try {
+                        Marshalling.getContext();
+                    } catch (JAXBException ex) {
+                        logger.warn("Error preloading JaxbContext", ex);
+                        throw ex;
+                    }
 
-            return null;
-        }
-    });
+                    return null;
+                }
+            });
 
     /** Default page horizontal margin */
-    private static final BigDecimal pageHorizontalMargin =
-            new BigDecimal(constants.pageHorizontalMargin.getValue());
+    private static final BigDecimal pageHorizontalMargin = new BigDecimal(
+            constants.pageHorizontalMargin.getValue());
 
     /** Default page vertical margin */
-    private static final BigDecimal pageVerticalMargin =
-            new BigDecimal(constants.pageVerticalMargin.getValue());
+    private static final BigDecimal pageVerticalMargin = new BigDecimal(
+            constants.pageVerticalMargin.getValue());
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related score */
     private final Score score;
 
@@ -234,10 +231,10 @@ public class ScoreExporter
     private IsFirst isFirst = new IsFirst();
 
     /** Map of Slur numbers, reset for every scorePart */
-    private Map<Slur, Integer> slurNumbers = new HashMap<>();
+    private Map<Slur, Integer> slurNumbers = new HashMap<Slur, Integer>();
 
     /** Map of Tuplet numbers, reset for every measure */
-    private Map<Tuplet, Integer> tupletNumbers = new HashMap<>();
+    private Map<Tuplet, Integer> tupletNumbers = new HashMap<Tuplet, Integer>();
 
     /** Potential range of selected measures */
     private MeasureRange measureRange;
@@ -245,7 +242,7 @@ public class ScoreExporter
     /** Factory for proxymusic entities */
     private final com.audiveris.proxymusic.ObjectFactory factory = new com.audiveris.proxymusic.ObjectFactory();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // ScoreExporter //
     //---------------//
@@ -269,7 +266,17 @@ public class ScoreExporter
         this.score = score;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //---------//
+    // preload //
+    //---------//
+    /**
+     * Empty static method, just to trigger class elaboration.
+     */
+    public static void preload ()
+    {
+    }
+
     //
     //--------//
     // export //
@@ -304,8 +311,7 @@ public class ScoreExporter
             throws IOException, Exception
     {
         if (os == null) {
-            throw new IllegalArgumentException(
-                    "Trying to export a score to a null output stream");
+            throw new IllegalArgumentException("Trying to export a score to a null output stream");
         }
 
         // Let visited nodes fill the scorePartWise proxy
@@ -334,8 +340,7 @@ public class ScoreExporter
             throws IOException, Exception
     {
         if (node == null) {
-            throw new IllegalArgumentException(
-                    "Trying to export a score to a null DOM Node");
+            throw new IllegalArgumentException("Trying to export a score to a null DOM Node");
         }
 
         try {
@@ -345,16 +350,6 @@ public class ScoreExporter
             //  Finally, marshal the proxy with what we've got
             Marshalling.marshal(scorePartwise, node, injectSignature);
         }
-    }
-
-    //---------//
-    // preload //
-    //---------//
-    /**
-     * Empty static method, just to trigger class elaboration.
-     */
-    public static void preload ()
-    {
     }
 
     //-----------------//
@@ -384,9 +379,7 @@ public class ScoreExporter
 
             // relative-x
             pmArpeggiate.setRelativeX(
-                    toTenths(
-                    arpeggiate.getReferencePoint().x
-                    - current.note.getCenterLeft().x));
+                    toTenths(arpeggiate.getReferencePoint().x - current.note.getCenterLeft().x));
 
             // number ???
             // TODO
@@ -408,8 +401,7 @@ public class ScoreExporter
         try {
             logger.debug("Visiting {}", articulation);
 
-            JAXBElement<?> element = getArticulationObject(
-                    articulation.getShape());
+            JAXBElement<?> element = getArticulationObject(articulation.getShape());
 
             // Staff ?
             Staff staff = current.note.getStaff();
@@ -417,20 +409,15 @@ public class ScoreExporter
             // Placement
             Class<?> classe = element.getDeclaredType();
 
-            Method method = classe.getMethod(
-                    "setPlacement",
-                    AboveBelow.class);
+            Method method = classe.getMethod("setPlacement", AboveBelow.class);
             method.invoke(
                     element.getValue(),
-                    (articulation.getReferencePoint().y < current.note.
-                    getCenter().y)
+                    (articulation.getReferencePoint().y < current.note.getCenter().y)
                     ? AboveBelow.ABOVE : AboveBelow.BELOW);
 
             // Default-Y
             method = classe.getMethod("setDefaultY", BigDecimal.class);
-            method.invoke(
-                    element.getValue(),
-                    yOf(articulation.getReferencePoint(), staff));
+            method.invoke(element.getValue(), yOf(articulation.getReferencePoint(), staff));
 
             // Include in Articulations
             getArticulations().getAccentOrStrongAccentOrStaccato().add(element);
@@ -451,6 +438,7 @@ public class ScoreExporter
             if (barline == null) {
                 return false;
             }
+
             logger.debug("Visiting {}", barline);
 
             Shape shape = barline.getShape();
@@ -459,15 +447,13 @@ public class ScoreExporter
                 && (shape != omr.glyph.Shape.PART_DEFINING_BARLINE)) {
                 try {
                     com.audiveris.proxymusic.Barline pmBarline = factory.createBarline();
-                    com.audiveris.proxymusic.BarStyleColor barStyleColor = factory.
-                            createBarStyleColor();
+                    com.audiveris.proxymusic.BarStyleColor barStyleColor = factory.createBarStyleColor();
 
                     if (barline == current.measure.getBarline()) {
                         // The bar is on right side
                         pmBarline.setLocation(RightLeftMiddle.RIGHT);
 
-                        if ((shape == RIGHT_REPEAT_SIGN)
-                            || (shape == BACK_TO_BACK_REPEAT_SIGN)) {
+                        if ((shape == RIGHT_REPEAT_SIGN) || (shape == BACK_TO_BACK_REPEAT_SIGN)) {
                             barStyleColor.setValue(BarStyle.LIGHT_HEAVY);
 
                             Repeat repeat = factory.createRepeat();
@@ -479,8 +465,7 @@ public class ScoreExporter
                         // Or bar is on left side
                         pmBarline.setLocation(RightLeftMiddle.LEFT);
 
-                        if ((shape == LEFT_REPEAT_SIGN)
-                            || (shape == BACK_TO_BACK_REPEAT_SIGN)) {
+                        if ((shape == LEFT_REPEAT_SIGN) || (shape == BACK_TO_BACK_REPEAT_SIGN)) {
                             barStyleColor.setValue(BarStyle.HEAVY_LIGHT);
 
                             Repeat repeat = factory.createRepeat();
@@ -493,8 +478,7 @@ public class ScoreExporter
                     // TODO: improve error handling here !!!!!!!!!
                     if (barStyleColor.getValue() == null) {
                         if (barline.getShape() != null) {
-                            barStyleColor.setValue(
-                                    barStyleOf(barline.getShape()));
+                            barStyleColor.setValue(barStyleOf(barline.getShape()));
                         }
                     }
 
@@ -559,9 +543,7 @@ public class ScoreExporter
 
             com.audiveris.proxymusic.EmptyPrintStyleAlign pmCoda = factory.createEmptyPrintStyleAlign();
             // default-x
-            pmCoda.setDefaultX(
-                    toTenths(
-                    coda.getReferencePoint().x - current.measure.getLeftX()));
+            pmCoda.setDefaultX(toTenths(coda.getReferencePoint().x - current.measure.getLeftX()));
 
             // default-y
             pmCoda.setDefaultY(yOf(coda.getReferencePoint(), staff));
@@ -575,9 +557,7 @@ public class ScoreExporter
             direction.setSound(sound);
             sound.setCoda("" + current.measure.getScoreId());
             sound.setDivisions(
-                    new BigDecimal(
-                    score.simpleDurationOf(
-                    omr.score.entity.Note.QUARTER_DURATION)));
+                    new BigDecimal(score.simpleDurationOf(omr.score.entity.Note.QUARTER_DURATION)));
 
             // Everything is now OK
             current.pmMeasure.getNoteOrBackupOrForward().add(direction);
@@ -611,10 +591,9 @@ public class ScoreExporter
                 insertStaffId(direction, staff);
 
                 // Placement
-                direction.
-                        setPlacement(
-                        (words.getReferencePoint().y < current.note.getCenter().y)
-                        ? AboveBelow.ABOVE : AboveBelow.BELOW);
+                direction.setPlacement(
+                        (words.getReferencePoint().y < current.note.getCenter().y) ? AboveBelow.ABOVE
+                        : AboveBelow.BELOW);
 
                 // default-y
                 pmWords.setDefaultY(yOf(words.getReferencePoint(), staff));
@@ -624,9 +603,7 @@ public class ScoreExporter
 
                 // relative-x
                 pmWords.setRelativeX(
-                        toTenths(
-                        words.getReferencePoint().x
-                        - current.note.getCenterLeft().x));
+                        toTenths(words.getReferencePoint().x - current.note.getCenterLeft().x));
 
                 // Everything is now OK
                 directionType.getWords().add(pmWords);
@@ -661,14 +638,12 @@ public class ScoreExporter
 
             // relative-x
             harmony.setRelativeX(
-                    toTenths(
-                    symbol.getReferencePoint().x
-                    - current.note.getCenterLeft().x));
+                    toTenths(symbol.getReferencePoint().x - current.note.getCenterLeft().x));
 
             // Placement
             harmony.setPlacement(
-                    (symbol.getReferencePoint().y < current.note.getCenter().y)
-                    ? AboveBelow.ABOVE : AboveBelow.BELOW);
+                    (symbol.getReferencePoint().y < current.note.getCenter().y) ? AboveBelow.ABOVE
+                    : AboveBelow.BELOW);
 
             // Staff
             insertStaffId(harmony, staff);
@@ -684,18 +659,22 @@ public class ScoreExporter
                 alter.setValue(new BigDecimal(info.getRoot().alter));
                 root.setRootAlter(alter);
             }
+
             harmony.getHarmonyChord().add(root);
 
             // Kind
             Kind kind = factory.createKind();
             kind.setValue(kindOf(info.getKind().type));
             kind.setText(info.getKind().text);
+
             if (info.getKind().paren) {
                 kind.setParenthesesDegrees(YesNo.YES);
             }
+
             if (info.getKind().symbol) {
                 kind.setUseSymbols(YesNo.YES);
             }
+
             harmony.getHarmonyChord().add(kind);
 
             // Bass
@@ -710,6 +689,7 @@ public class ScoreExporter
                     bassAlter.setValue(new BigDecimal(info.getBass().alter));
                     bass.setBassAlter(bassAlter);
                 }
+
                 harmony.getHarmonyChord().add(bass);
             }
 
@@ -760,8 +740,7 @@ public class ScoreExporter
             com.audiveris.proxymusic.Dynamics pmDynamics = factory.createDynamics();
 
             // Precise dynamic signature
-            pmDynamics.getPOrPpOrPpp().add(
-                    getDynamicsObject(dynamics.getShape()));
+            pmDynamics.getPOrPpOrPpp().add(getDynamicsObject(dynamics.getShape()));
 
             // Staff ?
             Staff staff = current.note.getStaff();
@@ -779,9 +758,7 @@ public class ScoreExporter
 
             // Relative-x (No offset for the time being) using note left side
             pmDynamics.setRelativeX(
-                    toTenths(
-                    dynamics.getReferencePoint().x
-                    - current.note.getCenterLeft().x));
+                    toTenths(dynamics.getReferencePoint().x - current.note.getCenterLeft().x));
 
             // Related sound level, if available
             Integer soundLevel = dynamics.getSoundLevel();
@@ -822,16 +799,13 @@ public class ScoreExporter
             if (fermata.getShape() == Shape.FERMATA_BELOW) {
                 dot = new Point(box.x + (box.width / 2), box.y);
             } else {
-                dot = new Point(
-                        box.x + (box.width / 2),
-                        box.y + box.height);
+                dot = new Point(box.x + (box.width / 2), box.y + box.height);
             }
 
             pmFermata.setDefaultY(yOf(dot, current.note.getStaff()));
 
             // Type
-            pmFermata.
-                    setType(
+            pmFermata.setType(
                     (fermata.getShape() == Shape.FERMATA) ? UprightInverted.UPRIGHT
                     : UprightInverted.INVERTED);
             // Everything is now OK
@@ -886,6 +860,7 @@ public class ScoreExporter
             // Make sure this measure is within the range to be exported
             if (!isDesired(measure)) {
                 logger.debug("{} skipped.", measure);
+
                 return false;
             }
 
@@ -908,9 +883,7 @@ public class ScoreExporter
             }
 
             // Do we need to create & export a dummy initial measure?
-            if (((measureRange != null) && !measure.isTemporary()
-                 && (measure.getIdValue() > 1))
-                && // TODO: Following line is illegal
+            if (((measureRange != null) && !measure.isTemporary() && (measure.getIdValue() > 1)) && // TODO: Following line is illegal
                     (measure.getScoreId().equals(measureRange.getFirstId()))) {
                 insertCurrentContext(measure);
             }
@@ -928,6 +901,7 @@ public class ScoreExporter
 
             // Left barline ?
             Measure prevMeasure = (Measure) measure.getPreviousSibling();
+
             if ((prevMeasure != null) && !prevMeasure.isDummy()) {
                 visit(prevMeasure.getBarline());
             }
@@ -937,8 +911,7 @@ public class ScoreExporter
                 try {
                     getAttributes().setDivisions(
                             new BigDecimal(
-                            score.simpleDurationOf(
-                            omr.score.entity.Note.QUARTER_DURATION)));
+                                    score.simpleDurationOf(omr.score.entity.Note.QUARTER_DURATION)));
                 } catch (Exception ex) {
                     if (score.getDurationDivisor() == null) {
                         logger.warn(
@@ -951,16 +924,15 @@ public class ScoreExporter
             }
 
             // Number of staves, if > 1
-            if (isFirst.page && isFirst.system && isFirst.measure
+            if (isFirst.page
+                && isFirst.system
+                && isFirst.measure
                 && current.scorePart.isMultiStaff()) {
-                getAttributes().setStaves(
-                        new BigInteger("" + current.scorePart.getStaffCount()));
-
+                getAttributes().setStaves(new BigInteger("" + current.scorePart.getStaffCount()));
             }
 
             // Tempo?
-            if (isFirst.page && isFirst.system && isFirst.measure
-                && !measure.isDummy()) {
+            if (isFirst.page && isFirst.system && isFirst.measure && !measure.isDummy()) {
                 Direction direction = factory.createDirection();
                 current.pmMeasure.getNoteOrBackupOrForward().add(direction);
 
@@ -968,14 +940,12 @@ public class ScoreExporter
                 direction.getDirectionType().add(directionType);
 
                 // Use a dummy words element
-                FormattedText pmWords = factory.
-                        createFormattedText();
+                FormattedText pmWords = factory.createFormattedText();
                 directionType.getWords().add(pmWords);
                 pmWords.setValue("");
 
                 Sound sound = factory.createSound();
-                sound.setTempo(
-                        new BigDecimal(score.getTempoParam().getTarget()));
+                sound.setTempo(new BigDecimal(score.getTempoParam().getTarget()));
                 direction.setSound(sound);
             }
 
@@ -1021,17 +991,13 @@ public class ScoreExporter
                         if ((info != null) && // Skip free slots
                                 (info.getStatus() == Voice.Status.BEGIN)) {
                             Chord chord = info.getChord();
-                            clefIters.push(
-                                    chord.getCenter().x,
-                                    chord.getStaff());
+                            clefIters.push(chord.getCenter().x, chord.getStaff());
 
                             // Need a forward before this chord ?
                             Rational startTime = chord.getStartTime();
 
                             if (timeCounter.compareTo(startTime) < 0) {
-                                insertForward(
-                                        startTime.minus(timeCounter),
-                                        chord);
+                                insertForward(startTime.minus(timeCounter), chord);
                                 timeCounter = startTime;
                             }
 
@@ -1045,8 +1011,7 @@ public class ScoreExporter
                     if (!measure.isImplicit() && !measure.isFirstHalf()) {
                         Rational termination = voice.getTermination();
 
-                        if ((termination != null)
-                            && (termination.compareTo(Rational.ZERO) < 0)) {
+                        if ((termination != null) && (termination.compareTo(Rational.ZERO) < 0)) {
                             Rational delta = termination.opposite();
                             insertForward(delta, voice.getLastChord());
                             timeCounter = timeCounter.plus(delta);
@@ -1087,10 +1052,11 @@ public class ScoreExporter
 
             // For first note in chord
             if (chord.getNotes().indexOf(note) == 0) {
-                // Chord direction events 
+                // Chord direction events
                 for (omr.score.entity.Direction node : chord.getDirections()) {
                     node.accept(this);
                 }
+
                 // Chord symbol, if any
                 if (chord.getChordSymbol() != null) {
                     chord.getChordSymbol().accept(this);
@@ -1145,14 +1111,12 @@ public class ScoreExporter
             // Default-x (use left side of the note wrt measure)
             if (!note.getMeasure().isDummy()) {
                 int noteLeft = note.getCenterLeft().x;
-                current.pmNote.setDefaultX(
-                        toTenths(noteLeft - note.getMeasure().getLeftX()));
+                current.pmNote.setDefaultX(toTenths(noteLeft - note.getMeasure().getLeftX()));
             }
 
             // Tuplet factor ?
             if (chord.getTupletFactor() != null) {
-                TimeModification timeModification = factory.
-                        createTimeModification();
+                TimeModification timeModification = factory.createTimeModification();
                 timeModification.setActualNotes(
                         new BigInteger("" + chord.getTupletFactor().actualDen));
                 timeModification.setNormalNotes(
@@ -1170,8 +1134,7 @@ public class ScoreExporter
                     dur = chord.getDuration();
                 }
 
-                current.pmNote.setDuration(
-                        new BigDecimal(score.simpleDurationOf(dur)));
+                current.pmNote.setDuration(new BigDecimal(score.simpleDurationOf(dur)));
             } catch (Exception ex) {
                 if (score.getDurationDivisor() != null) {
                     logger.warn("Not able to get duration of note", ex);
@@ -1193,8 +1156,7 @@ public class ScoreExporter
 
             // For specific mirrored note
             if (note.getMirroredNote() != null) {
-                int fbn = note.getChord().getFlagsNumber()
-                          + note.getChord().getBeams().size();
+                int fbn = note.getChord().getFlagsNumber() + note.getChord().getBeams().size();
 
                 if ((fbn > 0) && (note.getShape() == NOTEHEAD_VOID)) {
                     // Indicate that the head should not be filled
@@ -1234,8 +1196,7 @@ public class ScoreExporter
             // Accidental ?
             if (note.getAccidental() != null) {
                 Accidental accidental = factory.createAccidental();
-                accidental.setValue(
-                        accidentalValueOf(note.getAccidental().getShape()));
+                accidental.setValue(accidentalValueOf(note.getAccidental().getShape()));
                 current.pmNote.setAccidental(accidental);
             }
 
@@ -1252,6 +1213,7 @@ public class ScoreExporter
                     }
                 } else {
                     List<Chord> chords = beam.getChords();
+
                     if (chords.get(0) == chord) {
                         pmBeam.setValue(BeamValue.BEGIN);
                     } else if (chords.get(chords.size() - 1) == chord) {
@@ -1274,16 +1236,13 @@ public class ScoreExporter
                 for (LyricsItem syllable : note.getSyllables()) {
                     if (syllable.getContent() != null) {
                         Lyric pmLyric = factory.createLyric();
-                        pmLyric.setDefaultY(
-                                yOf(syllable.getReferencePoint(), staff));
-                        pmLyric.setNumber(
-                                "" + syllable.getLyricsLine().getId());
+                        pmLyric.setDefaultY(yOf(syllable.getReferencePoint(), staff));
+                        pmLyric.setNumber("" + syllable.getLyricsLine().getId());
 
                         TextElementData pmText = factory.createTextElementData();
                         pmText.setValue(syllable.getContent());
-                        pmLyric.getElisionAndSyllabicAndText().
-                                add(getSyllabic(syllable.
-                                getSyllabicType()));
+                        pmLyric.getElisionAndSyllabicAndText().add(
+                                getSyllabic(syllable.getSyllabicType()));
                         pmLyric.getElisionAndSyllabicAndText().add(pmText);
 
                         current.pmNote.getLyric().add(pmLyric);
@@ -1317,13 +1276,11 @@ public class ScoreExporter
 
             // Placement?
             Class<?> classe = element.getDeclaredType();
-            Method method = classe.getMethod(
-                    "setPlacement",
-                    AboveBelow.class);
+            Method method = classe.getMethod("setPlacement", AboveBelow.class);
             method.invoke(
                     element.getValue(),
-                    (ornament.getReferencePoint().y < current.note.getCenter().y)
-                    ? AboveBelow.ABOVE : AboveBelow.BELOW);
+                    (ornament.getReferencePoint().y < current.note.getCenter().y) ? AboveBelow.ABOVE
+                    : AboveBelow.BELOW);
             // Everything is OK
             // Include in ornaments
             getOrnaments().getTrillMarkOrTurnOrDelayedTurn().add(element);
@@ -1378,26 +1335,22 @@ public class ScoreExporter
 
             // Start / Stop type
             pmPedal.setType(
-                    pedal.isStart()
-                    ? StartStopChangeContinue.START
-                    : StartStopChangeContinue.STOP);
+                    pedal.isStart() ? StartStopChangeContinue.START : StartStopChangeContinue.STOP);
 
             // Staff ?
             Staff staff = current.note.getStaff();
             insertStaffId(direction, staff);
 
             // default-x
-            pmPedal.setDefaultX(
-                    toTenths(
-                    pedal.getReferencePoint().x - current.measure.getLeftX()));
+            pmPedal.setDefaultX(toTenths(pedal.getReferencePoint().x - current.measure.getLeftX()));
 
             // default-y
             pmPedal.setDefaultY(yOf(pedal.getReferencePoint(), staff));
 
             // Placement
             direction.setPlacement(
-                    (pedal.getReferencePoint().y < current.note.getCenter().y)
-                    ? AboveBelow.ABOVE : AboveBelow.BELOW);
+                    (pedal.getReferencePoint().y < current.note.getCenter().y) ? AboveBelow.ABOVE
+                    : AboveBelow.BELOW);
             // Everything is OK
             directionType.setPedal(pmPedal);
             direction.getDirectionType().add(directionType);
@@ -1432,7 +1385,6 @@ public class ScoreExporter
 
             // No version inserted
             // Let the marshalling class handle it
-
             // Identification
             Identification identification = factory.createIdentification();
 
@@ -1445,8 +1397,7 @@ public class ScoreExporter
 
             // [Encoding]/Software
             encoding.getEncodingDateOrEncoderOrSoftware().add(
-                    factory.createEncodingSoftware(
-                    WellKnowns.TOOL_NAME + " " + WellKnowns.TOOL_REF));
+                    factory.createEncodingSoftware(WellKnowns.TOOL_NAME + " " + WellKnowns.TOOL_REF));
 
             // [Encoding]/EncodingDate
             // Let the Marshalling class handle it
@@ -1467,17 +1418,15 @@ public class ScoreExporter
                 defaults.setScaling(scaling);
                 scaling.setMillimeters(
                         new BigDecimal(
-                        String.format("%.4f", (current.scale.getInterline() * 25.4 * 4) / 300))); // Assuming 300 DPI
+                                String.format("%.4f", (current.scale.getInterline() * 25.4 * 4) / 300))); // Assuming 300 DPI
                 scaling.setTenths(new BigDecimal(40));
 
                 // [Defaults]/PageLayout (using first page)
                 if (firstPage.getDimension() != null) {
                     PageLayout pageLayout = factory.createPageLayout();
                     defaults.setPageLayout(pageLayout);
-                    pageLayout.setPageHeight(
-                            toTenths(firstPage.getDimension().height));
-                    pageLayout.setPageWidth(
-                            toTenths(firstPage.getDimension().width));
+                    pageLayout.setPageHeight(toTenths(firstPage.getDimension().height));
+                    pageLayout.setPageWidth(toTenths(firstPage.getDimension().width));
 
                     PageMargins pageMargins = factory.createPageMargins();
                     pageMargins.setType(MarginType.BOTH);
@@ -1493,11 +1442,12 @@ public class ScoreExporter
             Font lyricFont = omr.score.entity.Text.getLyricsFont();
             LyricFont pmLyricFont = factory.createLyricFont();
             pmLyricFont.setFontFamily(lyricFont.getName());
-            pmLyricFont.setFontSize(
-                    "" + omr.score.entity.Text.getLyricsFontSize());
+            pmLyricFont.setFontSize("" + omr.score.entity.Text.getLyricsFontSize());
+
             if (lyricFont.isItalic()) {
                 pmLyricFont.setFontStyle(FontStyle.ITALIC);
             }
+
             defaults.getLyricFont().add(pmLyricFont);
             scorePartwise.setDefaults(defaults);
 
@@ -1548,9 +1498,8 @@ public class ScoreExporter
             } else {
                 // Need to build an artificial system scorePart
                 // Or simply delegating to the series of artificial measures
-                SystemPart dummyPart = system.getFirstRealPart().
-                        createDummyPart(
-                        current.scorePart.getId());
+                SystemPart dummyPart = system.getFirstRealPart()
+                        .createDummyPart(current.scorePart.getId());
                 dummyPart.accept(this);
             }
 
@@ -1584,9 +1533,7 @@ public class ScoreExporter
             insertStaffId(direction, staff);
 
             // default-x
-            empty.setDefaultX(
-                    toTenths(
-                    segno.getReferencePoint().x - current.measure.getLeftX()));
+            empty.setDefaultX(toTenths(segno.getReferencePoint().x - current.measure.getLeftX()));
 
             // default-y
             empty.setDefaultY(yOf(segno.getReferencePoint(), staff));
@@ -1595,9 +1542,7 @@ public class ScoreExporter
             Sound sound = factory.createSound();
             sound.setSegno("" + current.measure.getScoreId());
             sound.setDivisions(
-                    new BigDecimal(
-                    score.simpleDurationOf(
-                    omr.score.entity.Note.QUARTER_DURATION)));
+                    new BigDecimal(score.simpleDurationOf(omr.score.entity.Note.QUARTER_DURATION)));
 
             // Everything is OK
             directionType.getSegno().add(empty);
@@ -1621,16 +1566,14 @@ public class ScoreExporter
 
             // Make sure we have notes (or extension) on both sides
             // TODO: Make an exception for slurs at beginning of page!
-            if ((slur.getLeftNote() == null)
-                && (slur.getLeftExtension() == null)) {
+            if ((slur.getLeftNote() == null) && (slur.getLeftExtension() == null)) {
                 slur.addError("Non left-connected slur is not exported");
 
                 return false;
             }
 
             // TODO: Make an exception for slurs at end of page!
-            if ((slur.getRightNote() == null)
-                && (slur.getRightExtension() == null)) {
+            if ((slur.getRightNote() == null) && (slur.getRightExtension() == null)) {
                 slur.addError("Non right-connected slur is not exported");
 
                 return false;
@@ -1655,24 +1598,19 @@ public class ScoreExporter
 
                 // Orientation
                 if (isStart) {
-                    tied.setOrientation(
-                            slur.isBelow() ? OverUnder.UNDER : OverUnder.OVER);
+                    tied.setOrientation(slur.isBelow() ? OverUnder.UNDER : OverUnder.OVER);
                 }
 
                 // Bezier
                 if (isStart) {
-                    tied.setDefaultX(
-                            toTenths(slur.getCurve().getX1() - noteLeft));
+                    tied.setDefaultX(toTenths(slur.getCurve().getX1() - noteLeft));
                     tied.setDefaultY(yOf(slur.getCurve().getY1(), staff));
-                    tied.setBezierX(
-                            toTenths(slur.getCurve().getCtrlX1() - noteLeft));
+                    tied.setBezierX(toTenths(slur.getCurve().getCtrlX1() - noteLeft));
                     tied.setBezierY(yOf(slur.getCurve().getCtrlY1(), staff));
                 } else {
-                    tied.setDefaultX(
-                            toTenths(slur.getCurve().getX2() - noteLeft));
+                    tied.setDefaultX(toTenths(slur.getCurve().getX2() - noteLeft));
                     tied.setDefaultY(yOf(slur.getCurve().getY2(), staff));
-                    tied.setBezierX(
-                            toTenths(slur.getCurve().getCtrlX2() - noteLeft));
+                    tied.setBezierX(toTenths(slur.getCurve().getCtrlX2() - noteLeft));
                     tied.setBezierY(yOf(slur.getCurve().getCtrlY2(), staff));
                 }
 
@@ -1688,9 +1626,11 @@ public class ScoreExporter
                     pmSlur.setNumber(num);
                     slurNumbers.remove(slur);
 
-                    logger.debug("{} last use {} -> {}",
+                    logger.debug(
+                            "{} last use {} -> {}",
                             current.note.getContextString(),
-                            num, slurNumbers.toString());
+                            num,
+                            slurNumbers.toString());
                 } else {
                     // Determine first available number
                     for (num = 1; num <= 6; num++) {
@@ -1703,9 +1643,11 @@ public class ScoreExporter
 
                             pmSlur.setNumber(num);
 
-                            logger.debug("{} first use {} -> {}",
+                            logger.debug(
+                                    "{} first use {} -> {}",
                                     current.note.getContextString(),
-                                    num, slurNumbers.toString());
+                                    num,
+                                    slurNumbers.toString());
 
                             break;
                         }
@@ -1713,31 +1655,23 @@ public class ScoreExporter
                 }
 
                 // Type
-                pmSlur.
-                        setType(
-                        isStart ? StartStopContinue.START : StartStopContinue.STOP);
+                pmSlur.setType(isStart ? StartStopContinue.START : StartStopContinue.STOP);
 
                 // Placement
                 if (isStart) {
-                    pmSlur.
-                            setPlacement(
-                            slur.isBelow() ? AboveBelow.BELOW : AboveBelow.ABOVE);
+                    pmSlur.setPlacement(slur.isBelow() ? AboveBelow.BELOW : AboveBelow.ABOVE);
                 }
 
                 // Bezier
                 if (isStart) {
-                    pmSlur.setDefaultX(
-                            toTenths(slur.getCurve().getX1() - noteLeft));
+                    pmSlur.setDefaultX(toTenths(slur.getCurve().getX1() - noteLeft));
                     pmSlur.setDefaultY(yOf(slur.getCurve().getY1(), staff));
-                    pmSlur.setBezierX(
-                            toTenths(slur.getCurve().getCtrlX1() - noteLeft));
+                    pmSlur.setBezierX(toTenths(slur.getCurve().getCtrlX1() - noteLeft));
                     pmSlur.setBezierY(yOf(slur.getCurve().getCtrlY1(), staff));
                 } else {
-                    pmSlur.setDefaultX(
-                            toTenths(slur.getCurve().getX2() - noteLeft));
+                    pmSlur.setDefaultX(toTenths(slur.getCurve().getX2() - noteLeft));
                     pmSlur.setDefaultY(yOf(slur.getCurve().getY2(), staff));
-                    pmSlur.setBezierX(
-                            toTenths(slur.getCurve().getCtrlX2() - noteLeft));
+                    pmSlur.setBezierX(toTenths(slur.getCurve().getCtrlX2() - noteLeft));
                     pmSlur.setBezierY(yOf(slur.getCurve().getCtrlY2(), staff));
                 }
 
@@ -1830,8 +1764,7 @@ public class ScoreExporter
             // Credits
             Credit pmCredit = factory.createCredit();
             // For MusicXML, page # is counted from 1, whatever the pageIndex
-            pmCredit.setPage(
-                    new BigInteger("" + (1 + current.page.getChildIndex())));
+            pmCredit.setPage(new BigInteger("" + (1 + current.page.getChildIndex())));
 
             FormattedText creditWords = factory.createFormattedText();
             creditWords.setValue(text.getContent());
@@ -1842,8 +1775,7 @@ public class ScoreExporter
             // Position is wrt page
             Point pt = text.getReferencePoint();
             creditWords.setDefaultX(toTenths(pt.x));
-            creditWords.setDefaultY(
-                    toTenths(current.page.getDimension().height - pt.y));
+            creditWords.setDefaultY(toTenths(current.page.getDimension().height - pt.y));
 
             pmCredit.getCreditTypeOrLinkOrBookmark().add(creditWords);
             scorePartwise.getCredit().add(pmCredit);
@@ -1867,14 +1799,12 @@ public class ScoreExporter
                 Time time = factory.createTime();
 
                 // Beats
-                time.getTimeSignature().add(
-                        factory.createTimeBeats(
-                        "" + timeSignature.getNumerator()));
+                time.getTimeSignature()
+                        .add(factory.createTimeBeats("" + timeSignature.getNumerator()));
 
                 // BeatType
                 time.getTimeSignature().add(
-                        factory.createTimeBeatType(
-                        "" + timeSignature.getDenominator()));
+                        factory.createTimeBeatType("" + timeSignature.getDenominator()));
 
                 // Symbol ?
                 if (timeSignature.getShape() != null) {
@@ -1929,14 +1859,13 @@ public class ScoreExporter
             // Placement
             if (tuplet.getChord() == current.note.getChord()) { // i.e. start
                 pmTuplet.setPlacement(
-                        (tuplet.getCenter().y <= current.note.getCenter().y)
-                        ? AboveBelow.ABOVE : AboveBelow.BELOW);
+                        (tuplet.getCenter().y <= current.note.getCenter().y) ? AboveBelow.ABOVE
+                        : AboveBelow.BELOW);
             }
 
             // Type
             pmTuplet.setType(
-                    (tuplet.getChord() == current.note.getChord())
-                    ? StartStop.START : StartStop.STOP);
+                    (tuplet.getChord() == current.note.getChord()) ? StartStop.START : StartStop.STOP);
 
             // Number
             Integer num = tupletNumbers.get(tuplet);
@@ -1987,16 +1916,13 @@ public class ScoreExporter
             // Start or stop ?
             if (wedge.isStart()) {
                 // Type
-                pmWedge.
-                        setType(
-                        (wedge.getShape() == Shape.CRESCENDO) ? WedgeType.CRESCENDO
-                        : WedgeType.DIMINUENDO);
+                pmWedge.setType(
+                        (wedge.getShape() == Shape.CRESCENDO) ? WedgeType.CRESCENDO : WedgeType.DIMINUENDO);
 
                 // Placement
-                direction.
-                        setPlacement(
-                        (wedge.getReferencePoint().y < current.note.getCenter().y)
-                        ? AboveBelow.ABOVE : AboveBelow.BELOW);
+                direction.setPlacement(
+                        (wedge.getReferencePoint().y < current.note.getCenter().y) ? AboveBelow.ABOVE
+                        : AboveBelow.BELOW);
 
                 // default-y
                 pmWedge.setDefaultY(yOf(wedge.getReferencePoint(), staff));
@@ -2007,11 +1933,9 @@ public class ScoreExporter
             //        // Relative-x (No offset for the time being) using note left side
             //        pmWedge.setRelativeX(
             //            toTenths(wedge.getReferencePoint().x - current.note.getCenterLeft().x));
-
             //        // default-x
             //        pmWedge.setDefaultX(
             //            toTenths(wedge.getReferencePoint().x - current.measure.getLeftX()));
-
             // Everything is OK
             directionType.setWedge(pmWedge);
             direction.getDirectionType().add(directionType);
@@ -2023,97 +1947,13 @@ public class ScoreExporter
         return true;
     }
 
-    //- Utilities --------------------------------------------------------------
-    //
-    //----------//
-    // toTenths //
-    //----------//
-    /**
-     * Convert a distance expressed in pixels to a string value
-     * expressed in tenths of interline.
-     *
-     * @param dist the distance in pixels
-     * @return the number of tenths as a string
-     */
-    private BigDecimal toTenths (double dist)
-    {
-        return new BigDecimal(
-                "" + (int) Math.
-                rint((10f * dist) / current.scale.getInterline()));
-    }
-
-    //-------------//
-    // setFontInfo //
-    //-------------//
-    private void setFontInfo (FormattedText formattedText,
-                              Text text)
-    {
-        FontInfo fontInfo = text.getSentence().getFirstWord().getFontInfo();
-        formattedText.setFontSize("" + text.getExportedFontSize());
-
-        // Family
-        if (fontInfo.isSerif) {
-            formattedText.setFontFamily("serif");
-        } else if (fontInfo.isMonospace) {
-            formattedText.setFontFamily("monospace");
-        } else {
-            formattedText.setFontFamily("sans-serif");
-        }
-
-        // Italic?
-        if (fontInfo.isItalic) {
-            formattedText.setFontStyle(FontStyle.ITALIC);
-        }
-
-        // Bold?
-        if (fontInfo.isBold) {
-            formattedText.setFontWeight(FontWeight.BOLD);
-        }
-
-    }
-
-    //-----//
-    // yOf //
-    //-----//
-    /**
-     * Report the musicXML staff-based Y value of a Point ordinate.
-     *
-     * @param ordinate the ordinate (page-based, in pixels)
-     * @param staff    the related staff
-     * @return the upward-oriented ordinate wrt staff top line (in tenths)
-     */
-    private BigDecimal yOf (double ordinate,
-                            Staff staff)
-    {
-        return toTenths(staff.getTopLeft().y - ordinate);
-    }
-
-    //-----//
-    // yOf //
-    //-----//
-    /**
-     * Report the musicXML staff-based Y value of a Point.
-     * This method is safer than the other one which simply accepts a (detyped)
-     * double ordinate.
-     *
-     * @param point the pixel point
-     * @param staff the related staff
-     * @return the upward-oriented ordinate wrt staff top line (in tenths)
-     */
-    private BigDecimal yOf (Point point,
-                            Staff staff)
-    {
-        return yOf(point.y, staff);
-    }
-
     //----------//
     // areEqual //
     //----------//
     private static boolean areEqual (Time left,
                                      Time right)
     {
-        return (getNum(left).equals(getNum(right)))
-               && (getDen(left).equals(getDen(right)));
+        return (getNum(left).equals(getNum(right))) && (getDen(left).equals(getDen(right)));
     }
 
     //----------//
@@ -2123,82 +1963,6 @@ public class ScoreExporter
                                      Key right)
     {
         return left.getFifths().equals(right.getFifths());
-    }
-
-    //------------------//
-    // getArticulations //
-    //------------------//
-    /**
-     * Report (after creating it if necessary) the articulations
-     * elements in the notations element of the current note.
-     *
-     * @return the note notations articulations element
-     */
-    private Articulations getArticulations ()
-    {
-        for (Object obj : getNotations().getTiedOrSlurOrTuplet()) {
-            if (obj instanceof Articulations) {
-                return (Articulations) obj;
-            }
-        }
-
-        // Need to allocate articulations
-        Articulations articulations = factory.createArticulations();
-        getNotations().getTiedOrSlurOrTuplet().add(articulations);
-
-        return articulations;
-    }
-
-    //--------//
-    // getDen // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
-    //--------//
-    private static java.lang.String getDen (Time time)
-    {
-        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
-            if (elem.getName().getLocalPart().equals("beat-type")) {
-                return elem.getValue();
-            }
-        }
-
-        logger.error("No denominator found in {}", time);
-
-        return "";
-    }
-
-    //--------------//
-    // getNotations //
-    //--------------//
-    /**
-     * Report (after creating it if necessary) the notations element
-     * of the current note.
-     *
-     * @return the note notations element
-     */
-    private Notations getNotations ()
-    {
-        // Notations allocated?
-        if (current.pmNotations == null) {
-            current.pmNotations = factory.createNotations();
-            current.pmNote.getNotations().add(current.pmNotations);
-        }
-
-        return current.pmNotations;
-    }
-
-    //--------//
-    // getNum // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
-    //--------//
-    private static java.lang.String getNum (Time time)
-    {
-        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
-            if (elem.getName().getLocalPart().equals("beats")) {
-                return elem.getValue();
-            }
-        }
-
-        logger.error("No numerator found in {}", time);
-
-        return "";
     }
 
     //-----------//
@@ -2215,9 +1979,7 @@ public class ScoreExporter
 
         // Line (General computation that could be overridden by more
         // specific shape test below)
-        pmClef.setLine(
-                new BigInteger(
-                "" + (3 - (int) Math.rint(clef.getPitchPosition() / 2.0))));
+        pmClef.setLine(new BigInteger("" + (3 - (int) Math.rint(clef.getPitchPosition() / 2.0))));
 
         Shape shape = clef.getShape();
 
@@ -2275,6 +2037,22 @@ public class ScoreExporter
         return pmClef;
     }
 
+    //--------------------//
+    // buildScorePartwise //
+    //--------------------//
+    /**
+     * Fill a ScorePartwise with the Score information.
+     *
+     * @return the filled document
+     */
+    private ScorePartwise buildScorePartwise ()
+    {
+        // Let visited nodes fill the scorePartwise proxy
+        score.accept(this);
+
+        return scorePartwise;
+    }
+
     //---------------//
     // getAttributes //
     //---------------//
@@ -2292,6 +2070,82 @@ public class ScoreExporter
         }
 
         return current.pmAttributes;
+    }
+
+    //--------//
+    // getDen // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
+    //--------//
+    private static java.lang.String getDen (Time time)
+    {
+        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
+            if (elem.getName().getLocalPart().equals("beat-type")) {
+                return elem.getValue();
+            }
+        }
+
+        logger.error("No denominator found in {}", time);
+
+        return "";
+    }
+
+    //--------//
+    // getNum // A VERIFIER A VERIFIER A VERIFIER A VERIFIER A VERIFIER
+    //--------//
+    private static java.lang.String getNum (Time time)
+    {
+        for (JAXBElement<java.lang.String> elem : time.getTimeSignature()) {
+            if (elem.getName().getLocalPart().equals("beats")) {
+                return elem.getValue();
+            }
+        }
+
+        logger.error("No numerator found in {}", time);
+
+        return "";
+    }
+
+    //------------------//
+    // getArticulations //
+    //------------------//
+    /**
+     * Report (after creating it if necessary) the articulations
+     * elements in the notations element of the current note.
+     *
+     * @return the note notations articulations element
+     */
+    private Articulations getArticulations ()
+    {
+        for (Object obj : getNotations().getTiedOrSlurOrTuplet()) {
+            if (obj instanceof Articulations) {
+                return (Articulations) obj;
+            }
+        }
+
+        // Need to allocate articulations
+        Articulations articulations = factory.createArticulations();
+        getNotations().getTiedOrSlurOrTuplet().add(articulations);
+
+        return articulations;
+    }
+
+    //--------------//
+    // getNotations //
+    //--------------//
+    /**
+     * Report (after creating it if necessary) the notations element
+     * of the current note.
+     *
+     * @return the note notations element
+     */
+    private Notations getNotations ()
+    {
+        // Notations allocated?
+        if (current.pmNotations == null) {
+            current.pmNotations = factory.createNotations();
+            current.pmNote.getNotations().add(current.pmNotations);
+        }
+
+        return current.pmNotations;
     }
 
     //--------------//
@@ -2318,22 +2172,6 @@ public class ScoreExporter
         return ornaments;
     }
 
-    //--------------------//
-    // buildScorePartwise //
-    //--------------------//
-    /**
-     * Fill a ScorePartwise with the Score information.
-     *
-     * @return the filled document
-     */
-    private ScorePartwise buildScorePartwise ()
-    {
-        // Let visited nodes fill the scorePartwise proxy
-        score.accept(this);
-
-        return scorePartwise;
-    }
-
     //--------------//
     // getScorePart //
     //--------------//
@@ -2349,7 +2187,6 @@ public class ScoreExporter
         current.scorePart = scorePart;
 
         ///logger.info("Processing " + scorePart);
-
         // Scorepart in partList
         com.audiveris.proxymusic.ScorePart pmScorePart = factory.createScorePart();
         pmScorePart.setId(scorePart.getPid());
@@ -2357,8 +2194,7 @@ public class ScoreExporter
         PartName partName = factory.createPartName();
         pmScorePart.setPartName(partName);
         partName.setValue(
-                (scorePart.getName() != null) ? scorePart.getName()
-                : scorePart.getDefaultName());
+                (scorePart.getName() != null) ? scorePart.getName() : scorePart.getDefaultName());
 
         // Score instrument
         Integer midiProgram = scorePart.getMidiProgram();
@@ -2370,8 +2206,7 @@ public class ScoreExporter
         ScoreInstrument scoreInstrument = new ScoreInstrument();
         pmScorePart.getScoreInstrument().add(scoreInstrument);
         scoreInstrument.setId(pmScorePart.getId() + "-I1");
-        scoreInstrument.setInstrumentName(
-                MidiAbstractions.getProgramName(midiProgram));
+        scoreInstrument.setInstrumentName(MidiAbstractions.getProgramName(midiProgram));
 
         // Midi instrument
         MidiInstrument midiInstrument = factory.createMidiInstrument();
@@ -2579,9 +2414,7 @@ public class ScoreExporter
         }
 
         // Perhaps another key before this one ?
-        KeySignature previousKey = current.measure.getKeyBefore(
-                key.getCenter(),
-                key.getStaff());
+        KeySignature previousKey = current.measure.getKeyBefore(key.getCenter(), key.getStaff());
 
         if (previousKey != null) {
             return !previousKey.getKey().equals(key.getKey());
@@ -2590,118 +2423,108 @@ public class ScoreExporter
         return true; // Since no previous key found
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-    //
-    //---------//
-    // Current //
-    //---------//
-    /** Keep references of all current entities. */
-    private static class Current
+    //-------------//
+    // setFontInfo //
+    //-------------//
+    private void setFontInfo (FormattedText formattedText,
+                              Text text)
     {
-        //~ Instance fields ----------------------------------------------------
+        FontInfo fontInfo = text.getSentence().getFirstWord().getFontInfo();
+        formattedText.setFontSize("" + text.getExportedFontSize());
 
-        // Score dependent
-        com.audiveris.proxymusic.Work pmWork;
-
-        // Part dependent
-        ScorePart scorePart;
-
-        com.audiveris.proxymusic.ScorePartwise.Part pmPart;
-
-        // Page dependent
-        Page page;
-
-        int pageMeasureIdOffset = 0;
-
-        Scale scale;
-
-        // System dependent
-        ScoreSystem system;
-
-        // Measure dependent
-        Measure measure;
-
-        com.audiveris.proxymusic.ScorePartwise.Part.Measure pmMeasure;
-
-        Voice voice;
-
-        // Note dependent
-        omr.score.entity.Note note;
-
-        com.audiveris.proxymusic.Note pmNote;
-
-        com.audiveris.proxymusic.Notations pmNotations;
-
-        com.audiveris.proxymusic.Attributes pmAttributes;
-
-        //~ Methods ------------------------------------------------------------
-        // Cleanup at end of measure
-        void endMeasure ()
-        {
-            measure = null;
-            pmMeasure = null;
-            voice = null;
-
-            endNote();
+        // Family
+        if (fontInfo.isSerif) {
+            formattedText.setFontFamily("serif");
+        } else if (fontInfo.isMonospace) {
+            formattedText.setFontFamily("monospace");
+        } else {
+            formattedText.setFontFamily("sans-serif");
         }
 
-        // Cleanup at end of note
-        void endNote ()
-        {
-            note = null;
-            pmNote = null;
-            pmNotations = null;
-            pmAttributes = null;
+        // Italic?
+        if (fontInfo.isItalic) {
+            formattedText.setFontStyle(FontStyle.ITALIC);
+        }
+
+        // Bold?
+        if (fontInfo.isBold) {
+            formattedText.setFontWeight(FontWeight.BOLD);
         }
     }
 
-    //---------//
-    // IsFirst //
-    //---------//
-    /** Composite flag to help drive processing of any entity. */
-    private static class IsFirst
+    //- Utilities --------------------------------------------------------------
+    //
+    //----------//
+    // toTenths //
+    //----------//
+    /**
+     * Convert a distance expressed in pixels to a string value
+     * expressed in tenths of interline.
+     *
+     * @param dist the distance in pixels
+     * @return the number of tenths as a string
+     */
+    private BigDecimal toTenths (double dist)
     {
-        //~ Instance fields ----------------------------------------------------
+        return new BigDecimal("" + (int) Math.rint((10f * dist) / current.scale.getInterline()));
+    }
 
-        /** We are writing the first score part of the score */
-        boolean scorePart;
+    //-----//
+    // yOf //
+    //-----//
+    /**
+     * Report the musicXML staff-based Y value of a Point ordinate.
+     *
+     * @param ordinate the ordinate (page-based, in pixels)
+     * @param staff    the related staff
+     * @return the upward-oriented ordinate wrt staff top line (in tenths)
+     */
+    private BigDecimal yOf (double ordinate,
+                            Staff staff)
+    {
+        return toTenths(staff.getTopLeft().y - ordinate);
+    }
 
-        /** We are writing the first page of the score */
-        Boolean page;
+    //-----//
+    // yOf //
+    //-----//
+    /**
+     * Report the musicXML staff-based Y value of a Point.
+     * This method is safer than the other one which simply accepts a (detyped)
+     * double ordinate.
+     *
+     * @param point the pixel point
+     * @param staff the related staff
+     * @return the upward-oriented ordinate wrt staff top line (in tenths)
+     */
+    private BigDecimal yOf (Point point,
+                            Staff staff)
+    {
+        return yOf(point.y, staff);
+    }
 
-        /** We are writing the first system in the current page */
-        boolean system;
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
 
-        /** We are writing the first measure in current system (in current
-         * scorePart) */
-        boolean measure;
+        Constant.Integer pageHorizontalMargin = new Constant.Integer(
+                "tenths",
+                80,
+                "Page horizontal margin");
 
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public java.lang.String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
+        Constant.Integer pageVerticalMargin = new Constant.Integer(
+                "tenths",
+                80,
+                "Page vertical margin");
 
-            if (scorePart) {
-                sb.append(" firstScorePart");
-            }
-
-            if (page == null) {
-                sb.append(" noPage");
-            } else if (page) {
-                sb.append(" firstPage");
-            }
-
-            if (system) {
-                sb.append(" firstSystem");
-            }
-
-            if (measure) {
-                sb.append(" firstMeasure");
-            }
-
-            return sb.toString();
-        }
+        Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
+                false,
+                "Should we avoid brackets for all tuplets");
     }
 
     //---------------//
@@ -2715,7 +2538,7 @@ public class ScoreExporter
      */
     private class ClefIterators
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Containing measure */
         private final Measure measure;
@@ -2726,14 +2549,14 @@ public class ScoreExporter
         /** Per staff, iterator on Clefs sorted by abscissa */
         private final Map<Staff, ListIterator<Clef>> iters;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public ClefIterators (Measure measure)
         {
             this.measure = measure;
 
             staves = measure.getPart().getStaves();
 
-            Map<Staff, List<Clef>> map = new HashMap<>();
+            Map<Staff, List<Clef>> map = new HashMap<Staff, List<Clef>>();
 
             for (TreeNode tn : measure.getClefList().getChildren()) {
                 Clef clef = (Clef) tn;
@@ -2741,13 +2564,13 @@ public class ScoreExporter
                 List<Clef> list = map.get(staff);
 
                 if (list == null) {
-                    map.put(staff, list = new ArrayList<>());
+                    map.put(staff, list = new ArrayList<Clef>());
                 }
 
                 list.add(clef);
             }
 
-            iters = new HashMap<>();
+            iters = new HashMap<Staff, ListIterator<Clef>>();
 
             for (Entry<Staff, List<Clef>> entry : map.entrySet()) {
                 List<Clef> list = entry.getValue();
@@ -2759,15 +2582,14 @@ public class ScoreExporter
                     public int compare (Clef o1,
                                         Clef o2)
                     {
-                        return Integer.signum(
-                                o1.getCenter().x - o2.getCenter().x);
+                        return Integer.signum(o1.getCenter().x - o2.getCenter().x);
                     }
-                });
+                        });
                 iters.put(entry.getKey(), list.listIterator());
             }
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Push as far as possible the relevant clefs iterators,
          * according to the current abscissa.
@@ -2812,6 +2634,119 @@ public class ScoreExporter
         }
     }
 
+    //
+    //---------//
+    // Current //
+    //---------//
+    /** Keep references of all current entities. */
+    private static class Current
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        // Score dependent
+        com.audiveris.proxymusic.Work pmWork;
+
+        // Part dependent
+        ScorePart scorePart;
+
+        com.audiveris.proxymusic.ScorePartwise.Part pmPart;
+
+        // Page dependent
+        Page page;
+
+        int pageMeasureIdOffset = 0;
+
+        Scale scale;
+
+        // System dependent
+        ScoreSystem system;
+
+        // Measure dependent
+        Measure measure;
+
+        com.audiveris.proxymusic.ScorePartwise.Part.Measure pmMeasure;
+
+        Voice voice;
+
+        // Note dependent
+        omr.score.entity.Note note;
+
+        com.audiveris.proxymusic.Note pmNote;
+
+        com.audiveris.proxymusic.Notations pmNotations;
+
+        com.audiveris.proxymusic.Attributes pmAttributes;
+
+        //~ Methods --------------------------------------------------------------------------------
+        // Cleanup at end of measure
+        void endMeasure ()
+        {
+            measure = null;
+            pmMeasure = null;
+            voice = null;
+
+            endNote();
+        }
+
+        // Cleanup at end of note
+        void endNote ()
+        {
+            note = null;
+            pmNote = null;
+            pmNotations = null;
+            pmAttributes = null;
+        }
+    }
+
+    //---------//
+    // IsFirst //
+    //---------//
+    /** Composite flag to help drive processing of any entity. */
+    private static class IsFirst
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** We are writing the first score part of the score */
+        boolean scorePart;
+
+        /** We are writing the first page of the score */
+        Boolean page;
+
+        /** We are writing the first system in the current page */
+        boolean system;
+
+        /** We are writing the first measure in current system (in current
+         * scorePart) */
+        boolean measure;
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public java.lang.String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (scorePart) {
+                sb.append(" firstScorePart");
+            }
+
+            if (page == null) {
+                sb.append(" noPage");
+            } else if (page) {
+                sb.append(" firstPage");
+            }
+
+            if (system) {
+                sb.append(" firstSystem");
+            }
+
+            if (measure) {
+                sb.append(" firstMeasure");
+            }
+
+            return sb.toString();
+        }
+    }
+
     //--------------//
     // MeasurePrint //
     //--------------//
@@ -2820,6 +2755,7 @@ public class ScoreExporter
      */
     private class MeasurePrint
     {
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final Measure measure;
 
@@ -2828,6 +2764,7 @@ public class ScoreExporter
         /** Needed to remove the element if not actually used. */
         private boolean used = false;
 
+        //~ Constructors ---------------------------------------------------------------------------
         public MeasurePrint (Measure measure)
         {
             this.measure = measure;
@@ -2837,12 +2774,7 @@ public class ScoreExporter
             current.pmMeasure.getNoteOrBackupOrForward().add(pmPrint);
         }
 
-        private com.audiveris.proxymusic.Print getPrint ()
-        {
-            used = true;
-            return pmPrint;
-        }
-
+        //~ Methods --------------------------------------------------------------------------------
         public void process ()
         {
             populatePrint();
@@ -2851,6 +2783,13 @@ public class ScoreExporter
             if (!used) {
                 current.pmMeasure.getNoteOrBackupOrForward().remove(pmPrint);
             }
+        }
+
+        private com.audiveris.proxymusic.Print getPrint ()
+        {
+            used = true;
+
+            return pmPrint;
         }
 
         private void populatePrint ()
@@ -2877,32 +2816,24 @@ public class ScoreExporter
                 SystemMargins systemMargins = factory.createSystemMargins();
                 systemLayout.setSystemMargins(systemMargins);
                 systemMargins.setLeftMargin(
-                        toTenths(current.system.getTopLeft().x)
-                        .subtract(pageHorizontalMargin));
+                        toTenths(current.system.getTopLeft().x).subtract(pageHorizontalMargin));
                 systemMargins.setRightMargin(
                         toTenths(
-                        current.page.getDimension().width
-                        - current.system.getTopLeft().x
-                        - current.system.getDimension().width)
-                        .subtract(pageHorizontalMargin));
+                                current.page.getDimension().width - current.system.getTopLeft().x
+                                - current.system.getDimension().width).subtract(pageHorizontalMargin));
 
                 if (isFirst.system) {
                     // TopSystemDistance
                     systemLayout.setTopSystemDistance(
-                            toTenths(current.system.getTopLeft().y)
-                            .subtract(pageVerticalMargin));
-
+                            toTenths(current.system.getTopLeft().y).subtract(pageVerticalMargin));
                 } else {
                     // SystemDistance
-                    ScoreSystem prevSystem = (ScoreSystem) current.system.
-                            getPreviousSibling();
+                    ScoreSystem prevSystem = (ScoreSystem) current.system.getPreviousSibling();
                     systemLayout.setSystemDistance(
                             toTenths(
-                            current.system.getTopLeft().y
-                            - prevSystem.getTopLeft().y
-                            - prevSystem.getDimension().height
-                            - prevSystem.getLastPart().getLastStaff().
-                            getHeight()));
+                                    current.system.getTopLeft().y - prevSystem.getTopLeft().y
+                                    - prevSystem.getDimension().height
+                                    - prevSystem.getLastPart().getLastStaff().getHeight()));
                 }
 
                 getPrint().setSystemLayout(systemLayout);
@@ -2921,8 +2852,8 @@ public class ScoreExporter
                             Staff prevStaff = (Staff) staff.getPreviousSibling();
 
                             if (prevStaff == null) {
-                                SystemPart prevPart = (SystemPart) measure.
-                                        getPart().getPreviousSibling();
+                                SystemPart prevPart = (SystemPart) measure.getPart()
+                                        .getPreviousSibling();
 
                                 if (!prevPart.isDummy()) {
                                     prevStaff = prevPart.getLastStaff();
@@ -2932,17 +2863,14 @@ public class ScoreExporter
                             if (prevStaff != null) {
                                 staffLayout.setStaffDistance(
                                         toTenths(
-                                        staff.getTopLeft().y
-                                        - prevStaff.getTopLeft().y
-                                        - prevStaff.getHeight()));
+                                                staff.getTopLeft().y - prevStaff.getTopLeft().y
+                                                - prevStaff.getHeight()));
                                 getPrint().getStaffLayout().add(staffLayout);
                             }
                         } catch (Exception ex) {
                             logger.warn(
-                                    "Error exporting staff layout system#"
-                                    + current.system.getId() + " part#"
-                                    + current.scorePart.getId() + " staff#"
-                                    + staff.getId(),
+                                    "Error exporting staff layout system#" + current.system.getId()
+                                    + " part#" + current.scorePart.getId() + " staff#" + staff.getId(),
                                     ex);
                         }
                     }
@@ -2958,39 +2886,16 @@ public class ScoreExporter
 
             // Measure numbering?
             if (isFirst.system && isFirst.measure) {
-                com.audiveris.proxymusic.MeasureNumbering pmNumbering =
-                        factory.createMeasureNumbering();
+                com.audiveris.proxymusic.MeasureNumbering pmNumbering = factory.createMeasureNumbering();
+
                 if (isFirst.scorePart) {
                     pmNumbering.setValue(MeasureNumberingValue.SYSTEM);
                 } else {
                     pmNumbering.setValue(MeasureNumberingValue.NONE);
                 }
+
                 getPrint().setMeasureNumbering(pmNumbering);
             }
         }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Constant.Integer pageHorizontalMargin = new Constant.Integer(
-                "tenths",
-                80,
-                "Page horizontal margin");
-
-        Constant.Integer pageVerticalMargin = new Constant.Integer(
-                "tenths",
-                80,
-                "Page vertical margin");
-
-        Constant.Boolean avoidTupletBrackets = new Constant.Boolean(
-                false,
-                "Should we avoid brackets for all tuplets");
-
     }
 }

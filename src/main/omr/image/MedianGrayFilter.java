@@ -1,34 +1,35 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            M e d i a n F i l t e r                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      M e d i a n F i l t e r                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
 import ij.process.ByteProcessor;
+
 import java.util.Arrays;
 
 /**
- * Class {@code MedianGrayFilter} allows to run a median filter on an
- * input image, assumed to contain only gray values [0..255].
+ * Class {@code MedianGrayFilter} allows to run a median filter on an input image,
+ * assumed to contain only gray values [0..255].
  *
  * @author Hervé Bitteur
  */
 public class MedianGrayFilter
         extends AbstractGrayFilter
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Desired radius for the filter. */
     private final int radius;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new MedianGrayFilter object.
      *
@@ -40,7 +41,7 @@ public class MedianGrayFilter
         this.radius = radius;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // filter //
     //--------//
@@ -55,7 +56,7 @@ public class MedianGrayFilter
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                // To address specific behavior at image boundaries, 
+                // To address specific behavior at image boundaries,
                 // reduce radius to not use pixels outside the image.
                 int rad = radius;
 

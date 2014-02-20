@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            B a s i c G l y p h                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      B a s i c G l y p h                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -64,24 +64,20 @@ import java.util.SortedSet;
 
 /**
  * Class {@code BasicGlyph} is the basic Glyph implementation.
- *
  * <p>
- * From an implementation point of view, this {@code BasicGlyph} is just a
- * shell around specialized Glyph facets, and most of the methods are simply
- * using delegation to the proper facet.
+ * From an implementation point of view, this {@code BasicGlyph} is just a shell around specialized
+ * Glyph facets, and most of the methods are simply using delegation to the proper facet.
  *
  * @author Hervé Bitteur
  */
 public class BasicGlyph
         implements Glyph
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            BasicGlyph.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicGlyph.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** All needed facets */
     final GlyphAdministration administration;
 
@@ -107,7 +103,7 @@ public class BasicGlyph
     // Set all facets
     final Set<GlyphFacet> facets = new LinkedHashSet<GlyphFacet>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // BasicGlyph //
     //------------//
@@ -198,19 +194,15 @@ public class BasicGlyph
         try {
             Constructor<?> constructor = alignmentClass.getConstructor(
                     new Class<?>[]{Glyph.class});
-            theAlignment = (GlyphAlignment) constructor.newInstance(
-                    new Object[]{this});
+            theAlignment = (GlyphAlignment) constructor.newInstance(new Object[]{this});
         } catch (Exception ex) {
-            logger.error(
-                    "Cannot instantiate BasicGlyph with {} ex:{}",
-                    alignmentClass,
-                    ex);
+            logger.error("Cannot instantiate BasicGlyph with {} ex:{}", alignmentClass, ex);
         }
 
         addFacet(alignment = theAlignment);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void addAttachment (String id,
                                java.awt.Shape attachment)
@@ -479,15 +471,13 @@ public class BasicGlyph
     @Override
     public TextRoleInfo getManualRole ()
     {
-        return getContent()
-                .getManualRole();
+        return getContent().getManualRole();
     }
 
     @Override
     public String getManualValue ()
     {
-        return getContent()
-                .getManualValue();
+        return getContent().getManualValue();
     }
 
     @Override
@@ -541,8 +531,7 @@ public class BasicGlyph
     @Override
     public String getOcrLanguage ()
     {
-        return getContent()
-                .getOcrLanguage();
+        return getContent().getOcrLanguage();
     }
 
     @Override
@@ -643,29 +632,25 @@ public class BasicGlyph
     @Override
     public Point getTextLocation ()
     {
-        return getContent()
-                .getTextLocation();
+        return getContent().getTextLocation();
     }
 
     @Override
     public TextRoleInfo getTextRole ()
     {
-        return getContent()
-                .getTextRole();
+        return getContent().getTextRole();
     }
 
     @Override
     public String getTextValue ()
     {
-        return getContent()
-                .getTextValue();
+        return getContent().getTextValue();
     }
 
     @Override
     public TextWord getTextWord ()
     {
-        return getContent()
-                .getTextWord();
+        return getContent().getTextWord();
     }
 
     @Override
@@ -884,15 +869,13 @@ public class BasicGlyph
     @Override
     public void setManualRole (TextRoleInfo manualRole)
     {
-        getContent()
-                .setManualRole(manualRole);
+        getContent().setManualRole(manualRole);
     }
 
     @Override
     public void setManualValue (String manualValue)
     {
-        getContent()
-                .setManualValue(manualValue);
+        getContent().setManualValue(manualValue);
     }
 
     @Override
@@ -955,8 +938,7 @@ public class BasicGlyph
     public void setTextWord (String ocrLanguage,
                              TextWord textWord)
     {
-        getContent()
-                .setTextWord(ocrLanguage, textWord);
+        getContent().setTextWord(ocrLanguage, textWord);
     }
 
     @Override
@@ -997,10 +979,7 @@ public class BasicGlyph
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("{")
-                .append(getClass().getSimpleName())
-                .append("#")
-                .append(getId());
+        sb.append("{").append(getClass().getSimpleName()).append("#").append(getId());
 
         sb.append(internalsString());
 
@@ -1061,45 +1040,30 @@ public class BasicGlyph
         StringBuilder sb = new StringBuilder();
 
         if (getShape() != null) {
-            sb.append(" ")
-                    .append(recognition.getEvaluation());
+            sb.append(" ").append(recognition.getEvaluation());
 
-            if (getShape()
-                    .getPhysicalShape() != getShape()) {
-                sb.append(" physical=")
-                        .append(getShape().getPhysicalShape());
+            if (getShape().getPhysicalShape() != getShape()) {
+                sb.append(" physical=").append(getShape().getPhysicalShape());
             }
         }
 
         if (getPartOf() != null) {
-            sb.append(" partOf#")
-                    .append(getPartOf().getId());
+            sb.append(" partOf#").append(getPartOf().getId());
         }
 
         Rectangle box = getBounds();
 
         if (box != null) {
-            sb.append(" bounds=[")
-                    .append(box.x)
-                    .append(",")
-                    .append(box.y)
-                    .append(",")
-                    .append(box.width)
-                    .append(",")
-                    .append(box.height)
-                    .append("]");
+            sb.append(" bounds=[").append(box.x).append(",").append(box.y).append(",")
+                    .append(box.width).append(",").append(box.height).append("]");
         }
 
         if (isTranslated()) {
-            sb.append(" trans=[")
-                    .append(getTranslations())
-                    .append("]");
+            sb.append(" trans=[").append(getTranslations()).append("]");
         }
 
-        if (!getFailures()
-                .isEmpty()) {
-            sb.append(" ")
-                    .append(getFailures());
+        if (!getFailures().isEmpty()) {
+            sb.append(" ").append(getFailures());
         }
 
         return sb.toString();

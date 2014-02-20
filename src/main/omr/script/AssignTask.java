@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            A s s i g n T a s k                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      A s s i g n T a s k                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.script;
 
@@ -24,19 +24,18 @@ import java.util.Collection;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
- * Class {@code AssignTask} assigns (or deassign) a shape to a
- * collection of glyphs.
+ * Class {@code AssignTask} assigns (or deassign) a shape to a collection of glyphs.
  *
- * <p>Il the compound flag is set, a compound glyph is composed from the
- * provided glyphs and assigned the shape. Otherwise, each provided glyph is
- * assigned the shape.</p>
+ * <p>
+ * Il the compound flag is set, a compound glyph is composed from the provided glyphs and assigned
+ * the shape. Otherwise, each provided glyph is assigned the shape.</p>
  *
  * @author Hervé Bitteur
  */
 public class AssignTask
         extends GlyphUpdateTask
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Assigned shape (or null for a deassignment) */
     @XmlAttribute
@@ -46,7 +45,7 @@ public class AssignTask
     @XmlAttribute
     private final boolean compound;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //------------//
     // AssignTask //
@@ -94,7 +93,7 @@ public class AssignTask
         compound = false;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //------//
     // core //
@@ -106,8 +105,7 @@ public class AssignTask
     public void core (Sheet sheet)
             throws Exception
     {
-        sheet.getSymbolsController()
-                .syncAssign(this);
+        sheet.getSymbolsController().syncAssign(this);
     }
 
     //--------//
@@ -167,8 +165,7 @@ public class AssignTask
         }
 
         if (shape != null) {
-            sb.append(" ")
-                    .append(shape);
+            sb.append(" ").append(shape);
         } else {
             sb.append(" no-shape");
         }

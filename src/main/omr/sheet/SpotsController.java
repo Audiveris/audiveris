@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          S p o t s C o n t r o l l e r                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    S p o t s C o n t r o l l e r                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -41,31 +41,27 @@ import java.util.EnumSet;
 import java.util.List;
 
 /**
- * Class {@code SpotsController} is a quick & dirty hack to display
- * the retrieved spots.
+ * Class {@code SpotsController} is a quick & dirty hack to display the retrieved spots.
  *
  * @author Hervé Bitteur
  */
 public class SpotsController
         extends GlyphsController
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SpotsController.class);
+    private static final Logger logger = LoggerFactory.getLogger(SpotsController.class);
 
     /** Set of shapes of interest. */
-    private static final EnumSet<Shape> relevantShapes = EnumSet.of(
-            Shape.BEAM_SPOT);
+    private static final EnumSet<Shape> relevantShapes = EnumSet.of(Shape.BEAM_SPOT);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     private final Lag[] lags;
 
     /** Related user display if any */
     private MyView view;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------------//
     // SpotsController //
     //-----------------//
@@ -82,7 +78,7 @@ public class SpotsController
         this.lags = lags;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // refresh //
     //---------//
@@ -106,23 +102,20 @@ public class SpotsController
         // Specific rubber display
         view = new MyView(getNest(), Arrays.asList(lags));
 
-        sheet.getAssembly()
-                .addViewTab(
-                        "Spots",
-                        new ScrollView(view),
-                        new BoardsPane(
-                        new PixelBoard(sheet),
-                        new SymbolGlyphBoard(this, true, true)));
+        sheet.getAssembly().addViewTab(
+                "Spots",
+                new ScrollView(view),
+                new BoardsPane(new PixelBoard(sheet), new SymbolGlyphBoard(this, true, true)));
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//
     private final class MyView
             extends NestView
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public MyView (GlyphNest nest,
                        List<Lag> lags)
@@ -134,7 +127,7 @@ public class SpotsController
             setName("SpotController-MyView");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //---------//
         // onEvent //
         //---------//

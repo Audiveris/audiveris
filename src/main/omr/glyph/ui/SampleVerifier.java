@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        S a m p l e V e r i f i e r                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  S a m p l e V e r i f i e r                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
@@ -60,20 +60,19 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 /**
- * Class {@code SampleVerifier} provides a user interface to browse
- * through all glyphs samples recorded for evaluator training,
- * to visually check the correctness of their assigned shape,
- * and to remove spurious samples when necessary.
- *
- * <p>One, several or all recorded sheets can be selected.
- *
- * <p>Within the contained glyphs, one, several or all can be selected, the
- * selected glyphs can then be browsed in any direction.
- *
- * <p>The current glyph is displayed, with its appearance in a properly
- * translated Nest view, and its characteristics in a dedicated panel.
- * If the user wants to discard the glyph, it can be removed from the repository
- * of training material.
+ * Class {@code SampleVerifier} provides a user interface to browse through all glyphs
+ * samples recorded for evaluator training, to visually check the correctness of their
+ * assigned shape, and to remove spurious samples when necessary.
+ * <p>
+ * One, several or all recorded sheets can be selected.
+ * <p>
+ * Within the contained glyphs, one, several or all can be selected, the selected glyphs can then be
+ * browsed in any direction.
+ * <p>
+ * The current glyph is displayed, with its appearance in a properly translated Nest view, and its
+ * characteristics in a dedicated panel.
+ * If the user wants to discard the glyph, it can be removed from the repository of training
+ * material.
  *
  * @author Hervé Bitteur
  */
@@ -81,7 +80,6 @@ public class SampleVerifier
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(SampleVerifier.class);
 
     /** The unique instance */
@@ -95,16 +93,16 @@ public class SampleVerifier
     private final JFrame frame;
 
     /** The panel in charge of the current glyph */
-    private GlyphBrowser glyphBrowser = new GlyphBrowser(this);
+    private final GlyphBrowser glyphBrowser = new GlyphBrowser(this);
 
     /** The panel in charge of the glyphs selection */
-    private GlyphSelector glyphSelector = new GlyphSelector(glyphBrowser);
+    private final GlyphSelector glyphSelector = new GlyphSelector(glyphBrowser);
 
     /** The panel in charge of the shapes selection */
-    private ShapeSelector shapeSelector = new ShapeSelector(glyphSelector);
+    private final ShapeSelector shapeSelector = new ShapeSelector(glyphSelector);
 
     /** The panel in charge of the sheets (or icons folder) selection */
-    private FolderSelector folderSelector = new FolderSelector(shapeSelector);
+    private final FolderSelector folderSelector = new FolderSelector(shapeSelector);
 
     /** Sheets folder */
     private final File sheetsFolder = repository.getSheetsFolder();
@@ -137,7 +135,7 @@ public class SampleVerifier
         // Resource injection
         ResourceMap resource = MainGui.getInstance().getContext().
                 getResourceMap(
-                getClass());
+                        getClass());
         resource.injectComponents(frame);
     }
 
@@ -507,40 +505,39 @@ public class SampleVerifier
 
             ///list.setVisibleRowCount(10);
             ///scrollPane.setMinimumSize(new Dimension(250, 300));
-
             // To be informed of mouse (de)selections (not programmatic)
             list.addListSelectionListener(
                     new ListSelectionListener()
-            {
-                @Override
-                public void valueChanged (ListSelectionEvent e)
-                {
-                    updateCardinal(); // Brute force !!!
-                }
-            });
+                    {
+                        @Override
+                        public void valueChanged (ListSelectionEvent e)
+                        {
+                            updateCardinal(); // Brute force !!!
+                        }
+                    });
 
             // Same action whatever the subclass : select all items
             selectAll.addActionListener(
                     new ActionListener()
-            {
-                @Override
-                public void actionPerformed (ActionEvent e)
-                {
-                    selectAll();
-                }
-            });
+                    {
+                        @Override
+                        public void actionPerformed (ActionEvent e)
+                        {
+                            selectAll();
+                        }
+                    });
 
             // Same action whatever the subclass : deselect all items
             cancelAll.addActionListener(
                     new ActionListener()
-            {
-                @Override
-                public void actionPerformed (ActionEvent e)
-                {
-                    list.setSelectedIndices(new int[0]);
-                    updateCardinal();
-                }
-            });
+                    {
+                        @Override
+                        public void actionPerformed (ActionEvent e)
+                        {
+                            list.setSelectedIndices(new int[0]);
+                            updateCardinal();
+                        }
+                    });
 
             JPanel buttons = new JPanel(new GridLayout(3, 1));
             buttons.add(load);
@@ -728,10 +725,10 @@ public class SampleVerifier
         {
             setBorder(
                     BorderFactory.createTitledBorder(
-                    new EtchedBorder(),
-                    title,
-                    TitledBorder.LEFT,
-                    TitledBorder.TOP));
+                            new EtchedBorder(),
+                            title,
+                            TitledBorder.LEFT,
+                            TitledBorder.TOP));
             setLayout(new BorderLayout());
             setMinimumSize(new Dimension(200, height));
             setPreferredSize(new Dimension(width, height));

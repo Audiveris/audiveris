@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      O t t a v a C l e f S y m b o l                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                O t t a v a C l e f S y m b o l                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -21,18 +21,18 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code OttavaClefSymbol} displays a clef (bass or treble) with the
- * addition of an ottava (alta or bassa)
+ * Class {@code OttavaClefSymbol} displays a clef (bass or treble) with the addition of
+ * an ottava (alta or bassa).
  */
 public class OttavaClefSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     // True for alta, false for bassa
     private final boolean isAlta;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // OttavaClefSymbol //
     //------------------//
@@ -53,7 +53,7 @@ public class OttavaClefSymbol
         this.isAlta = isAlta;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -95,14 +95,14 @@ public class OttavaClefSymbol
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     private class MyParams
             extends Params
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final TextLayout ottavaLayout;
 
@@ -110,7 +110,7 @@ public class OttavaClefSymbol
 
         final Rectangle2D clefRect;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public MyParams (MusicFont font)
         {
             ottavaLayout = Symbols.SYMBOL_OTTAVA.layout(font);

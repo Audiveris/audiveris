@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 S I G r a p h                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           S I G r a p h                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
@@ -47,31 +47,29 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code SIGraph} represents the Symbol Interpretation Graph
- * that aims at finding the best global interpretation of all symbols
- * in a system.
+ * Class {@code SIGraph} represents the Symbol Interpretation Graph that aims at
+ * finding the best global interpretation of all symbols in a system.
  * <p>
- * A special instance is created at sheet level for the time when the systems
- * have not yet been defined. This sheet-level instance has its system pointer
- * at null.
+ * A special instance is created at sheet level for the time when the systems have not yet been
+ * defined. This sheet-level instance has its system pointer at null.
  *
  * @author Hervé Bitteur
  */
 public class SIGraph
         extends Multigraph<Inter, Relation>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(SIGraph.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Dedicated sheet */
     private final Sheet sheet;
 
     /** Dedicated system */
     private final SystemInfo system;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------//
     // SIGraph //
     //---------//
@@ -112,7 +110,7 @@ public class SIGraph
         this.system = system;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getInter //
     //----------//
@@ -155,8 +153,7 @@ public class SIGraph
         inter.setSig(this);
 
         if ((system == null) || (inter.getId() == 0)) {
-            sheet.getSigManager()
-                    .register(inter);
+            sheet.getSigManager().register(inter);
         }
 
         return res;
@@ -220,8 +217,7 @@ public class SIGraph
         List<Inter> found = new ArrayList<Inter>();
 
         for (Inter inter : vertexSet()) {
-            if (inter.getBounds()
-                    .contains(point)) {
+            if (inter.getBounds().contains(point)) {
                 // More precise test if we know inter area
                 Area area = inter.getArea();
 
@@ -309,11 +305,10 @@ public class SIGraph
             map.put(inter, concurrents);
 
             for (Relation rel : getExclusions(inter)) {
-                Inter concurrent = (getEdgeTarget(rel) == inter)
-                        ? getEdgeSource(rel) : getEdgeTarget(rel);
+                Inter concurrent = (getEdgeTarget(rel) == inter) ? getEdgeSource(rel)
+                        : getEdgeTarget(rel);
 
-                if ((inter.getId() < concurrent.getId())
-                    && inters.contains(concurrent)) {
+                if ((inter.getId() < concurrent.getId()) && inters.contains(concurrent)) {
                     concurrents.add(concurrent);
                     conflict = true;
                 }
@@ -321,8 +316,7 @@ public class SIGraph
 
             //TODO: this is a hack that should be removed when
             // multiple stems for a head are correctly filtered out.
-            if (focus instanceof AbstractNoteInter
-                && inter instanceof StemInter) {
+            if (focus instanceof AbstractNoteInter && inter instanceof StemInter) {
                 // Flag all other stems, if any, as concurrents of this one
                 for (Inter stem : stems) {
                     if ((stem != inter) && (inter.getId() < stem.getId())) {
@@ -403,8 +397,7 @@ public class SIGraph
                                  Class classe)
     {
         for (Relation rel : getAllEdges(source, target)) {
-            if (rel.getClass()
-                    .isAssignableFrom(classe)) {
+            if (rel.getClass().isAssignableFrom(classe)) {
                 return rel;
             }
         }
@@ -548,8 +541,7 @@ public class SIGraph
                     @Override
                     public boolean check (Inter inter)
                     {
-                        return !inter.isDeleted()
-                               && (inter.getShape() == shape);
+                        return !inter.isDeleted() && (inter.getShape() == shape);
                     }
                 });
     }
@@ -571,8 +563,7 @@ public class SIGraph
                     @Override
                     public boolean check (Inter inter)
                     {
-                        return !inter.isDeleted()
-                               && (classe.isAssignableFrom(inter.getClass()));
+                        return !inter.isDeleted() && (classe.isAssignableFrom(inter.getClass()));
                     }
                 });
     }
@@ -594,8 +585,7 @@ public class SIGraph
                     @Override
                     public boolean check (Inter inter)
                     {
-                        return !inter.isDeleted()
-                               && shapes.contains(inter.getShape());
+                        return !inter.isDeleted() && shapes.contains(inter.getShape());
                     }
                 });
     }
@@ -649,8 +639,7 @@ public class SIGraph
                                           boolean sortedByAbscissa,
                                           Area area)
     {
-        double xMax = area.getBounds()
-                .getMaxX();
+        double xMax = area.getBounds().getMaxX();
         List<Glyph> found = new ArrayList<Glyph>();
 
         for (Glyph glyph : glyphs) {
@@ -768,9 +757,7 @@ public class SIGraph
     //---------//
     public void publish (InterListEvent event)
     {
-        system.getSheet()
-                .getLocationService()
-                .publish(event);
+        system.getSheet().getLocationService().publish(event);
     }
 
     //------------------//
@@ -989,10 +976,7 @@ public class SIGraph
                                Support support,
                                Inter source)
     {
-        return Grades.contextual(
-                target.getGrade(),
-                source.getGrade(),
-                support.getSupportRatio());
+        return Grades.contextual(target.getGrade(), source.getGrade(), support.getSupportRatio());
     }
 
     //----------------//
@@ -1051,7 +1035,7 @@ public class SIGraph
         return sb.toString();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Sequence //
     //----------//
@@ -1065,20 +1049,20 @@ public class SIGraph
      */
     private static class Sequence
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // The sequence of interpretations statuses
         // This line is parallel to the list of inters considered
         int[] line;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Sequence (int n)
         {
             line = new int[n];
             Arrays.fill(line, 0);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public Sequence copy ()
         {
             Sequence newSeq = new Sequence(line.length);

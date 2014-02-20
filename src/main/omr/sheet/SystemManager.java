@@ -1,18 +1,19 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          S y s t e m M a n a g e r                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    S y s t e m M a n a g e r                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
 import omr.constant.ConstantSet;
 
+import omr.glyph.GlyphLayer;
 import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
@@ -44,49 +45,43 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import omr.glyph.GlyphLayer;
 
 /**
- * Class {@code SystemManager} handles physical information about all
- * the systems of a given sheet.
+ * Class {@code SystemManager} handles physical information about all the systems of a
+ * given sheet.
  * <p>
- * A key question is to dispatch entities (sections, glyph instances) to
- * relevant system(s).
- * It is important to restrict the amount of entities to be searched when
- * processing a given system.
- * This also speeds up the program, since it allows to process all systems in
- * parallel.
+ * A key question is to dispatch entities (sections, glyph instances) to relevant system(s).
+ * It is important to restrict the amount of entities to be searched when processing a given system.
+ * This also speeds up the program, since it allows to process all systems in parallel.
  * <p>
- * For systems laid side by side, the middle vertical line should be enough to
- * separate entities (mainly composed of braces or similar things in that case).
+ * For systems laid side by side, the middle vertical line should be enough to separate entities
+ * (mainly composed of braces or similar things in that case).
  * <p>
- * For systems laid one under the other, unfortunately, there is no way to
- * always find out a precise border.
- * There are even examples where such separating border simply cannot be found.
- * So the strategy is to dispatch such "shareable" entities to both systems
- * when relevant, and let each system process these entities as needed.
- * Basically the shareable entities are those found between the last line of
- * upper system and the first line of lower system.
+ * For systems laid one under the other, unfortunately, there is no way to always find out a precise
+ * border. There are even examples where such separating border simply cannot be found.
+ * So the strategy is to dispatch such "shareable" entities to both systems when relevant, and let
+ * each system process these entities as needed.
+ * Basically the shareable entities are those found between the last line of upper system and the
+ * first line of lower system.
  *
  * @author Hervé Bitteur
  */
 public class SystemManager
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SystemManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(SystemManager.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
     /** Sheet retrieved systems. */
     private final List<SystemInfo> systems;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // SystemManager //
     //---------------//
@@ -102,7 +97,7 @@ public class SystemManager
         systems = sheet.getSystems();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // dispatchGlyphs //
     //----------------//
@@ -142,21 +137,18 @@ public class SystemManager
     {
         // Clear systems containers
         for (SystemInfo system : systems) {
-            system.getMutableHorizontalFullSections()
-                    .clear();
+            system.getMutableHorizontalFullSections().clear();
         }
 
         // Now dispatch the lag huge sections among the systems
         List<SystemInfo> relevants = new ArrayList<SystemInfo>();
 
-        for (Section section : sheet.getLag(Lags.FULL_HLAG)
-                .getSections()) {
+        for (Section section : sheet.getLag(Lags.FULL_HLAG).getSections()) {
             getSystemsOf(section.getCentroid(), relevants);
 
             for (SystemInfo system : relevants) {
                 // Link system <>-> section
-                system.getMutableHorizontalFullSections()
-                        .add(section);
+                system.getMutableHorizontalFullSections().add(section);
             }
         }
     }
@@ -225,7 +217,7 @@ public class SystemManager
     /**
      * Report the systems that intersect the provided rectangle
      *
-     * @param rect the provided rectangle
+     * @param rect  the provided rectangle
      * @param found (output) list to be populated (allocated if null)
      * @return the containing systems info, perhaps empty but not null
      */
@@ -297,8 +289,7 @@ public class SystemManager
             throws StepException
     {
         // Clear Score -> Systems
-        sheet.getPage()
-                .resetSystems();
+        sheet.getPage().resetSystems();
 
         for (SystemInfo system : systems) {
             system.allocateScoreStructure(); // ScoreSystem, Parts & Staves
@@ -329,25 +320,22 @@ public class SystemManager
         // Vertical abscissae on system left & right
         final SystemInfo leftNeighbor = horiNeighbor(system, LEFT);
         final int left = (leftNeighbor != null)
-                ? ((leftNeighbor.getRight() + system.getLeft()) / 2)
-                : 0;
+                ? ((leftNeighbor.getRight() + system.getLeft()) / 2) : 0;
         system.setAreaEnd(LEFT, left);
 
         final SystemInfo rightNeighbor = horiNeighbor(system, RIGHT);
         final int right = (rightNeighbor != null)
-                ? ((system.getRight()
-                    + rightNeighbor.getLeft()) / 2) : sheetWidth;
+                ? ((system.getRight() + rightNeighbor.getLeft()) / 2) : sheetWidth;
         system.setAreaEnd(RIGHT, right);
 
         PathIterator north = aboves.isEmpty()
-                ? new GeoPath(
-                        new Line2D.Double(left, 0, right, 0)).getPathIterator(null)
-                : getGlobalLine(aboves, BOTTOM);
+                ? new GeoPath(new Line2D.Double(left, 0, right, 0)).getPathIterator(
+                        null) : getGlobalLine(aboves, BOTTOM);
 
         PathIterator south = belows.isEmpty()
                 ? new GeoPath(
-                        new Line2D.Double(left, sheetHeight, right, sheetHeight)).getPathIterator(
-                        null) : getGlobalLine(belows, TOP);
+                        new Line2D.Double(left, sheetHeight, right, sheetHeight)).getPathIterator(null)
+                : getGlobalLine(belows, TOP);
 
         // Define sheet-wide area
         GeoPath wholePath = new GeoPath();
@@ -375,21 +363,18 @@ public class SystemManager
     {
         // Clear systems containers
         for (SystemInfo system : systems) {
-            system.getMutableHorizontalSections()
-                    .clear();
+            system.getMutableHorizontalSections().clear();
         }
 
         // Now dispatch the lag sections among relevant systems
         List<SystemInfo> relevants = new ArrayList<SystemInfo>();
 
-        for (Section section : sheet.getLag(Lags.HLAG)
-                .getSections()) {
+        for (Section section : sheet.getLag(Lags.HLAG).getSections()) {
             getSystemsOf(section.getCentroid(), relevants);
 
             for (SystemInfo system : relevants) {
                 // Link system <>-> section
-                system.getMutableHorizontalSections()
-                        .add(section);
+                system.getMutableHorizontalSections().add(section);
             }
         }
     }
@@ -419,21 +404,18 @@ public class SystemManager
     {
         // Clear systems containers
         for (SystemInfo system : systems) {
-            system.getMutableVerticalSections()
-                    .clear();
+            system.getMutableVerticalSections().clear();
         }
 
         // Now dispatch the lag sections among relevant systems
         List<SystemInfo> relevants = new ArrayList<SystemInfo>();
 
-        for (Section section : sheet.getLag(Lags.VLAG)
-                .getSections()) {
+        for (Section section : sheet.getLag(Lags.VLAG).getSections()) {
             getSystemsOf(section.getCentroid(), relevants);
 
             for (SystemInfo system : relevants) {
                 // Link system <>-> section
-                system.getMutableVerticalSections()
-                        .add(section);
+                system.getMutableVerticalSections().add(section);
             }
         }
     }
@@ -460,12 +442,10 @@ public class SystemManager
         List<StaffInfo> staffList = new ArrayList<StaffInfo>();
 
         for (SystemInfo system : list) {
-            staffList.add(
-                    (side == TOP) ? system.getFirstStaff() : system.getLastStaff());
+            staffList.add((side == TOP) ? system.getFirstStaff() : system.getLastStaff());
         }
 
-        return sheet.getStaffManager()
-                .getGlobalLine(staffList, side);
+        return sheet.getStaffManager().getGlobalLine(staffList, side);
     }
 
     //--------------//
@@ -513,8 +493,7 @@ public class SystemManager
         int sysNb = systems.size();
 
         if (partNb > 0) {
-            sb.append(partNb)
-                    .append(" part");
+            sb.append(partNb).append(" part");
 
             if (partNb > 1) {
                 sb.append("s");
@@ -523,13 +502,10 @@ public class SystemManager
             sb.append("no part found");
         }
 
-        sheet.getBench()
-                .recordPartCount(partNb);
+        sheet.getBench().recordPartCount(partNb);
 
         if (sysNb > 0) {
-            sb.append(" along ")
-                    .append(sysNb)
-                    .append(" system");
+            sb.append(" along ").append(sysNb).append(" system");
 
             if (sysNb > 1) {
                 sb.append("s");
@@ -538,8 +514,7 @@ public class SystemManager
             sb.append(", no system found");
         }
 
-        sheet.getBench()
-                .recordSystemCount(sysNb);
+        sheet.getBench().recordSystemCount(sysNb);
 
         logger.info("{}{}", sheet.getLogPrefix(), sb);
     }
@@ -599,18 +574,17 @@ public class SystemManager
         return neighbors;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction yellowZoneHalfHeight = new Scale.Fraction(
                 0.1,
                 "Half height of inter-system yellow zone");
-
     }
 }

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              P a g e N o d e                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        P a g e N o d e                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -24,7 +24,7 @@ import omr.util.TreeNode;
 public abstract class PageNode
         extends ScoreNode
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //----------//
     // PageNode //
@@ -39,7 +39,7 @@ public abstract class PageNode
         super(container);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // getContextString //
     //------------------//
@@ -48,11 +48,8 @@ public abstract class PageNode
     {
         StringBuilder sb = new StringBuilder(super.getContextString());
 
-        if (getScore()
-                .isMultiPage()) {
-            sb.append("[#")
-                    .append(getPage().getIndex())
-                    .append("] ");
+        if (getScore().isMultiPage()) {
+            sb.append("[#").append(getPage().getIndex()).append("] ");
         }
 
         return sb.toString();
@@ -87,7 +84,6 @@ public abstract class PageNode
      */
     public Scale getScale ()
     {
-        return getPage()
-                .getScale();
+        return getPage().getScale();
     }
 }

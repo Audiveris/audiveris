@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     S t i c k I n t e r s e c t i o n                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               S t i c k I n t e r s e c t i o n                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -20,17 +20,16 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class {@code StickIntersection} records the intersection point of a
- * stick with a crossing line.
- * (A typical example is a vertical barline stick that crosses a horizontal
- * staff line)
+ * Class {@code StickIntersection} records the intersection point of a stick with a
+ * crossing line.
+ * (A typical example is a vertical barline stick that crosses a horizontal staff line)
  *
  * @author Hervé Bitteur
  */
 public class StickIntersection
         implements Comparable<StickIntersection>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Comparator on increasing abscissa */
     public static Comparator<StickIntersection> byAbscissa = new Comparator<StickIntersection>()
@@ -68,7 +67,7 @@ public class StickIntersection
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Abscissa where the stick intersects the line */
     public final double x;
 
@@ -78,7 +77,7 @@ public class StickIntersection
     /** The stick */
     private final Glyph stick;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StickIntersection object.
      *
@@ -93,7 +92,7 @@ public class StickIntersection
         this.stick = stick;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // compareTo //
     //-----------//
@@ -117,7 +116,7 @@ public class StickIntersection
     /** Conversion to a sequence of sticks */
     public static List<Glyph> sticksOf (Collection<StickIntersection> sps)
     {
-        List<Glyph> sticks = new ArrayList<>();
+        List<Glyph> sticks = new ArrayList<Glyph>();
 
         for (StickIntersection sp : sps) {
             sticks.add(sp.getStickAncestor());
@@ -143,7 +142,6 @@ public class StickIntersection
     @Override
     public String toString ()
     {
-        return getStickAncestor()
-                .idString() + "@x:" + (float) x + ",y:" + (float) y;
+        return getStickAncestor().idString() + "@x:" + (float) x + ",y:" + (float) y;
     }
 }

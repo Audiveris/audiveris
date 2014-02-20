@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  D a s h                                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            D a s h                                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -37,7 +37,7 @@ import java.util.Comparator;
  */
 public abstract class Dash
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** A comparator based on abscissa of underlying glyph */
     public static final Comparator<Dash> byAbscissa = new Comparator<Dash>()
@@ -50,7 +50,7 @@ public abstract class Dash
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related staff */
     private StaffInfo staff;
 
@@ -63,7 +63,7 @@ public abstract class Dash
     /** The underlying stick if any */
     private final Glyph stick;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------//
     // Dash //
     //------//
@@ -83,7 +83,7 @@ public abstract class Dash
         box = stick.getBounds();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getBounds //
     //-----------//
@@ -172,9 +172,7 @@ public abstract class Dash
         if ((clip == null) || clip.intersects(box)) {
             line = getLine();
 
-            Point start = new Point(
-                    box.x,
-                    (int) Math.rint(line.yAtX((double) box.x)));
+            Point start = new Point(box.x, (int) Math.rint(line.yAtX((double) box.x)));
             Point stop = new Point(
                     box.x + box.width,
                     (int) Math.rint(line.yAtX((double) box.x + box.width + 1)));
@@ -205,10 +203,8 @@ public abstract class Dash
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append(" staff#")
-                .append(staff.getId());
-        sb.append(" ")
-                .append(stick.idString());
+        sb.append(" staff#").append(staff.getId());
+        sb.append(" ").append(stick.idString());
 
         return sb.toString();
     }

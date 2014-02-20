@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      F i l a m e n t s F a c t o r y                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                F i l a m e n t s F a c t o r y                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -17,8 +17,8 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 import omr.glyph.GlyphLayer;
-import omr.glyph.Glyphs;
 import omr.glyph.GlyphNest;
+import omr.glyph.Glyphs;
 import omr.glyph.facets.BasicAlignment;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
@@ -51,8 +51,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code FilamentsFactory} builds filaments (long series of
- * sections) out of a collection of sections.
+ * Class {@code FilamentsFactory} builds filaments (long series of sections) out of a
+ * collection of sections.
  * <p>
  * These filaments are meant to represent good candidates for (horizontal)
  * staff lines or (vertical) bar lines.
@@ -78,16 +78,13 @@ import java.util.List;
  */
 public class FilamentsFactory
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            FilamentsFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(FilamentsFactory.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related scale. */
     private final Scale scale;
@@ -107,7 +104,7 @@ public class FilamentsFactory
     /** Scale-dependent constants. */
     private final Parameters params;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // FilamentsFactory //
     //------------------//
@@ -144,7 +141,7 @@ public class FilamentsFactory
         params.initialize();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // dump //
     //------//
@@ -184,8 +181,7 @@ public class FilamentsFactory
 
                 // Check thickness
                 Rectangle bounds = orientation.oriented(section.getBounds());
-                Line line = orientation.switchRef(
-                        section.getAbsoluteLine());
+                Line line = orientation.switchRef(section.getAbsoluteLine());
 
                 if (Math.abs(line.getSlope()) < (Math.PI / 4)) {
                     // Measure mean thickness on each half
@@ -196,25 +192,20 @@ public class FilamentsFactory
 
                     // Start side
                     Rectangle oRoi = new Rectangle(startCoord, startPos, 0, 0);
-                    final int halfWidth = Math.min(
-                            params.probeWidth / 2,
-                            bounds.width / 4);
+                    final int halfWidth = Math.min(params.probeWidth / 2, bounds.width / 4);
                     oRoi.grow(halfWidth, params.maxThickness);
 
-                    PointsCollector collector = new PointsCollector(
-                            orientation.absolute(oRoi));
+                    PointsCollector collector = new PointsCollector(orientation.absolute(oRoi));
                     section.cumulate(collector);
 
-                    int startThickness = (int) Math.rint(
-                            (double) collector.getSize() / oRoi.width);
+                    int startThickness = (int) Math.rint((double) collector.getSize() / oRoi.width);
 
                     // Stop side
                     oRoi.translate(stopCoord - startCoord, stopPos - startPos);
                     collector = new PointsCollector(orientation.absolute(oRoi));
                     section.cumulate(collector);
 
-                    int stopThickness = (int) Math.rint(
-                            (double) collector.getSize() / oRoi.width);
+                    int stopThickness = (int) Math.rint((double) collector.getSize() / oRoi.width);
 
                     section.setFat(
                             (startThickness > params.maxThickness)
@@ -492,14 +483,10 @@ public class FilamentsFactory
 
         try {
             // Start & Stop points for each filament
-            Point2D oneStart = orientation.oriented(
-                    one.getStartPoint(orientation));
-            Point2D oneStop = orientation.oriented(
-                    one.getStopPoint(orientation));
-            Point2D twoStart = orientation.oriented(
-                    two.getStartPoint(orientation));
-            Point2D twoStop = orientation.oriented(
-                    two.getStopPoint(orientation));
+            Point2D oneStart = orientation.oriented(one.getStartPoint(orientation));
+            Point2D oneStop = orientation.oriented(one.getStopPoint(orientation));
+            Point2D twoStart = orientation.oriented(two.getStartPoint(orientation));
+            Point2D twoStop = orientation.oriented(two.getStopPoint(orientation));
 
             // coord gap?
             double overlapStart = Math.max(oneStart.getX(), twoStart.getX());
@@ -508,11 +495,7 @@ public class FilamentsFactory
 
             if (coordGap > params.maxCoordGap) {
                 if (logger.isDebugEnabled() || areVips) {
-                    logger.info(
-                            "{}Gap too long: {} vs {}",
-                            vips,
-                            coordGap,
-                            params.maxCoordGap);
+                    logger.info("{}Gap too long: {} vs {}", vips, coordGap, params.maxCoordGap);
                 }
 
                 return false;
@@ -523,16 +506,14 @@ public class FilamentsFactory
                 // There is an overlap between the two filaments
                 // Determine maximum consistent resulting thickness
                 double maxConsistentThickness = maxConsistentThickness(one);
-                double maxSpace = expanding ? params.maxExpansionSpace
-                        : params.maxOverlapSpace;
+                double maxSpace = expanding ? params.maxExpansionSpace : params.maxOverlapSpace;
 
                 // Measure thickness at various coord values of overlap
                 // Provided that the overlap is long enough
                 int valNb = (int) Math.min(3, 1 - (coordGap / 10));
 
                 for (int iq = 1; iq <= valNb; iq++) {
-                    double midCoord = overlapStart
-                                      - ((iq * coordGap) / (valNb + 1));
+                    double midCoord = overlapStart - ((iq * coordGap) / (valNb + 1));
                     double onePos = one.getPositionAt(midCoord, orientation);
                     double twoPos = two.getPositionAt(midCoord, orientation);
                     double posGap = Math.abs(onePos - twoPos);
@@ -550,11 +531,7 @@ public class FilamentsFactory
                     }
 
                     // Check resulting thickness at middle of overlap
-                    double thickness = Glyphs.getThicknessAt(
-                            midCoord,
-                            orientation,
-                            one,
-                            two);
+                    double thickness = Glyphs.getThicknessAt(midCoord, orientation, one, two);
 
                     if (thickness > params.maxThickness) {
                         if (logger.isDebugEnabled() || areVips) {
@@ -621,14 +598,10 @@ public class FilamentsFactory
                 }
 
                 // Compute position gap, taking thickness into account
-                double oneThickness = one.getWeight() / one.getLength(
-                        orientation);
-                double twoThickness = two.getWeight() / two.getLength(
-                        orientation);
-                int posMargin = (int) Math.rint(
-                        Math.max(oneThickness, twoThickness) / 2);
-                double posGap = Math.abs(stop.getY() - start.getY())
-                                - posMargin;
+                double oneThickness = one.getWeight() / one.getLength(orientation);
+                double twoThickness = two.getWeight() / two.getLength(orientation);
+                int posMargin = (int) Math.rint(Math.max(oneThickness, twoThickness) / 2);
+                double posGap = Math.abs(stop.getY() - start.getY()) - posMargin;
 
                 if (posGap > params.maxPosGap) {
                     if (logger.isDebugEnabled() || areVips) {
@@ -677,8 +650,7 @@ public class FilamentsFactory
     private Glyph createFilament (Section section)
     {
         try {
-            final Glyph fil = (Glyph) glyphConstructor.newInstance(
-                    new Object[]{scale, layer});
+            final Glyph fil = (Glyph) glyphConstructor.newInstance(new Object[]{scale, layer});
 
             if (section != null) {
                 fil.addSection(section, GlyphComposition.Linking.NO_LINK);
@@ -739,10 +711,7 @@ public class FilamentsFactory
             }
         }
 
-        logger.debug(
-                "createFilaments: {}/{}",
-                filaments.size(),
-                inputSections.size());
+        logger.debug("createFilaments: {}/{}", filaments.size(), inputSections.size());
     }
 
     //-----------------//
@@ -759,7 +728,7 @@ public class FilamentsFactory
                                          Collection<Section> source)
     {
         try {
-            // Sort sections by first position 
+            // Sort sections by first position
             List<Section> sections = new ArrayList<Section>();
 
             for (Section section : source) {
@@ -768,10 +737,7 @@ public class FilamentsFactory
                 }
             }
 
-            logger.debug(
-                    "expandFilaments: {}/{}",
-                    sections.size(),
-                    source.size());
+            logger.debug("expandFilaments: {}/{}", sections.size(), source.size());
 
             Collections.sort(sections, Section.posComparator);
 
@@ -780,21 +746,14 @@ public class FilamentsFactory
             List<Glyph> sectionGlyphs = new ArrayList<Glyph>(sections.size());
 
             for (Section section : sections) {
-                Glyph sectionGlyph = new BasicGlyph(
-                        scale.getInterline(),
-                        layer);
-                sectionGlyph.addSection(
-                        section,
-                        GlyphComposition.Linking.NO_LINK);
+                Glyph sectionGlyph = new BasicGlyph(scale.getInterline(), layer);
+                sectionGlyph.addSection(section, GlyphComposition.Linking.NO_LINK);
                 section.setProcessed(true);
                 ///sectionGlyph = nest.registerGlyph(sectionGlyph); // Not really useful
                 sectionGlyphs.add(sectionGlyph);
 
                 if (section.isVip() || nest.isVip(sectionGlyph)) {
-                    logger.info(
-                            "VIP created {} from {}",
-                            sectionGlyph,
-                            section);
+                    logger.info("VIP created {} from {}", sectionGlyph, section);
                     sectionGlyph.setVip();
                 }
             }
@@ -805,8 +764,7 @@ public class FilamentsFactory
             // Process each filament on turn
             for (Glyph fil : filaments) {
                 // Build filament fat box
-                final Rectangle filBounds = orientation.oriented(
-                        fil.getBounds());
+                final Rectangle filBounds = orientation.oriented(fil.getBounds());
                 filBounds.grow(params.maxCoordGap, params.maxPosGap);
 
                 boolean expanding = true;
@@ -814,23 +772,18 @@ public class FilamentsFactory
                 do {
                     expanding = false;
 
-                    for (Iterator<Glyph> it = sectionGlyphs.iterator();
-                            it.hasNext();) {
+                    for (Iterator<Glyph> it = sectionGlyphs.iterator(); it.hasNext();) {
                         Glyph sectionGlyph = it.next();
-                        Rectangle glyphBounds = orientation.oriented(
-                                sectionGlyph.getBounds());
+                        Rectangle glyphBounds = orientation.oriented(sectionGlyph.getBounds());
 
                         if (filBounds.intersects(glyphBounds)) {
                             // Check more closely
                             if (canMerge(fil, sectionGlyph, true)) {
-                                if (logger.isDebugEnabled()
-                                    || fil.isVip()
-                                    || sectionGlyph.isVip()) {
+                                if (logger.isDebugEnabled() || fil.isVip() || sectionGlyph.isVip()) {
                                     logger.info(
                                             "VIP merging {} w/ {}",
                                             fil,
-                                            Sections.toString(
-                                            sectionGlyph.getMembers()));
+                                            Sections.toString(sectionGlyph.getMembers()));
 
                                     if (sectionGlyph.isVip()) {
                                         fil.setVip();
@@ -845,10 +798,7 @@ public class FilamentsFactory
                             }
                         } else {
                             if (fil.isVip() && sectionGlyph.isVip()) {
-                                logger.info(
-                                        "No intersection between {} and {}",
-                                        fil,
-                                        sectionGlyph);
+                                logger.info("No intersection between {} and {}", fil, sectionGlyph);
                             }
                         }
                     }
@@ -892,8 +842,7 @@ public class FilamentsFactory
             // Keep on working while we do have a candidate to check for merge
             CandidateLoop:
             while (true) {
-                final Rectangle candidateBounds = orientation.oriented(
-                        candidate.getBounds());
+                final Rectangle candidateBounds = orientation.oriented(candidate.getBounds());
                 candidateBounds.grow(params.maxCoordGap, params.maxPosGap);
 
                 // Check the candidate vs all filaments until current excluded
@@ -904,19 +853,13 @@ public class FilamentsFactory
                     }
 
                     if ((head != candidate) && (head.getPartOf() == null)) {
-                        Rectangle headBounds = orientation.oriented(
-                                head.getBounds());
+                        Rectangle headBounds = orientation.oriented(head.getBounds());
 
                         if (headBounds.intersects(candidateBounds)) {
                             // Check for a possible merge
                             if (canMerge(head, candidate, false)) {
-                                if (logger.isDebugEnabled()
-                                    || head.isVip()
-                                    || candidate.isVip()) {
-                                    logger.info(
-                                            "VIP merged {} into {}",
-                                            candidate,
-                                            head);
+                                if (logger.isDebugEnabled() || head.isVip() || candidate.isVip()) {
+                                    logger.info("VIP merged {} into {}", candidate, head);
 
                                     if (candidate.isVip()) {
                                         head.setVip();
@@ -989,8 +932,7 @@ public class FilamentsFactory
                     continue;
                 }
 
-                Rectangle sectionBox = orientation.oriented(
-                        section.getBounds());
+                Rectangle sectionBox = orientation.oriented(section.getBounds());
 
                 if (sectionBox.intersects(lineBox)) {
                     Point centroid = section.getCentroid();
@@ -1001,16 +943,13 @@ public class FilamentsFactory
                             : (line.xAtYExt(centroid.y) - centroid.x);
 
                     if (gap <= params.maxPosGap) {
-                        fil.addSection(
-                                section,
-                                GlyphComposition.Linking.NO_LINK);
+                        fil.addSection(section, GlyphComposition.Linking.NO_LINK);
                         section.setProcessed(true);
                     }
                 }
             }
 
-            if (!fil.getMembers()
-                    .isEmpty()) {
+            if (!fil.getMembers().isEmpty()) {
                 filaments.add(fil);
             }
         }
@@ -1049,14 +988,14 @@ public class FilamentsFactory
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -1126,7 +1065,6 @@ public class FilamentsFactory
         Scale.Fraction maxInvolvingLength = new Scale.Fraction(
                 2,
                 "Maximum filament length to apply thickness test");
-
     }
 
     //------------//
@@ -1137,7 +1075,7 @@ public class FilamentsFactory
      */
     private class Parameters
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Maximum thickness for filaments */
         public int maxThickness;
@@ -1175,7 +1113,7 @@ public class FilamentsFactory
         /** Probe width */
         public int probeWidth;
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public void dump (String title)
         {
             Main.dumping.dump(this, title);

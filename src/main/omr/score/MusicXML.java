@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              M u s i c X M L                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        M u s i c X M L                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -44,21 +44,18 @@ import javax.xml.bind.JAXBElement;
  */
 public class MusicXML
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            MusicXML.class);
+    private static final Logger logger = LoggerFactory.getLogger(MusicXML.class);
 
     /** Names of the various note types used in MusicXML */
     private static final String[] noteTypeNames = new String[]{
-        "256th", "128th", "64th",
-        "32nd", "16th", "eighth",
-        "quarter", "half", "whole",
-        "breve", "long"
+        "256th", "128th", "64th", "32nd", "16th",
+        "eighth", "quarter", "half", "whole", "breve",
+        "long"
     };
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // ScoreExporter //
     //---------------//
@@ -69,7 +66,7 @@ public class MusicXML
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // accidentalTextOf //
     //------------------//
@@ -278,9 +275,7 @@ public class MusicXML
     {
         // Since quarter is at index 6 in noteTypeNames, use 2**6 = 64
         ///int dur = (64 * note.getNoteDuration()) / Note.QUARTER_DURATION;
-        double dur = 64 * note.getNoteDuration()
-                .divides(Note.QUARTER_DURATION)
-                .toDouble();
+        double dur = 64 * note.getNoteDuration().divides(Note.QUARTER_DURATION).toDouble();
         int index = (int) Math.rint(Math.log(dur) / Math.log(2));
 
         return noteTypeNames[index];
@@ -299,15 +294,13 @@ public class MusicXML
 
         switch (shape) {
         case INVERTED_MORDENT:
-            return factory.createOrnamentsInvertedMordent(
-                    factory.createMordent());
+            return factory.createOrnamentsInvertedMordent(factory.createMordent());
 
         case MORDENT:
             return factory.createOrnamentsMordent(factory.createMordent());
 
         case TR:
-            return factory.createOrnamentsTrillMark(
-                    factory.createEmptyTrillSound());
+            return factory.createOrnamentsTrillMark(factory.createEmptyTrillSound());
 
         case TURN:
             return factory.createOrnamentsTurn(factory.createHorizontalTurn());
@@ -365,8 +358,7 @@ public class MusicXML
      * @param type Audiveris enum DegreeType
      * @return Proxymusic enum DegreeTypeValue
      */
-    public static DegreeTypeValue typeOf (
-            omr.score.entity.ChordInfo.Degree.DegreeType type)
+    public static DegreeTypeValue typeOf (omr.score.entity.ChordInfo.Degree.DegreeType type)
     {
         return DegreeTypeValue.valueOf(type.toString());
     }

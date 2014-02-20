@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         B a r s R e t r i e v e r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   B a r s R e t r i e v e r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -89,8 +89,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code BarsRetriever} focuses on the retrieval of vertical
- * bar lines.
+ * Class {@code BarsRetriever} focuses on the retrieval of vertical bar lines.
  * <p>
  * Bar lines are used to:
  * <ul>
@@ -103,14 +102,13 @@ import java.util.TreeSet;
 public class BarsRetriever
         implements ItemRenderer
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BarsRetriever.class);
+    private static final Logger logger = LoggerFactory.getLogger(BarsRetriever.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related sheet. */
     @Navigable(false)
@@ -138,7 +136,7 @@ public class BarsRetriever
     /** All connections found between bars across staves. */
     private final Set<BarConnection> connections = new LinkedHashSet<BarConnection>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // BarsRetriever //
     //---------------//
@@ -160,7 +158,7 @@ public class BarsRetriever
         staffManager = sheet.getStaffManager();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //------------------//
     // buildVerticalLag //
@@ -228,11 +226,7 @@ public class BarsRetriever
 
                 if (clip.intersects(peakBox)) {
                     double xMid = (peak.getStart() + peak.getStop()) / 2d;
-                    Line2D line = new Line2D.Double(
-                            xMid,
-                            peak.getTop(),
-                            xMid,
-                            peak.getBottom());
+                    Line2D line = new Line2D.Double(xMid, peak.getTop(), xMid, peak.getBottom());
                     g.draw(line);
                 }
             }
@@ -412,9 +406,7 @@ public class BarsRetriever
                     NaturalSpline line = NaturalSpline.interpolate(
                             new Point2D.Double(xMid, peak.getTop()),
                             new Point2D.Double(xMid, peak.getBottom()));
-                    List<Glyph> glyphs = factory.retrieveFilaments(
-                            sections,
-                            Arrays.asList(line));
+                    List<Glyph> glyphs = factory.retrieveFilaments(sections, Arrays.asList(line));
 
                     // By construction we should have exactly 1 glyph built
                     if (!glyphs.isEmpty()) {
@@ -428,8 +420,7 @@ public class BarsRetriever
                             peak.setAbove();
                         }
 
-                        if (((glyphBox.y + glyphBox.height) - 1
-                             - peak.getBottom()) > params.maxBarExtension) {
+                        if (((glyphBox.y + glyphBox.height) - 1 - peak.getBottom()) > params.maxBarExtension) {
                             peak.setBelow();
                         }
                     }
@@ -457,8 +448,7 @@ public class BarsRetriever
      */
     private BarConnection checkConnection (BarAlignment alignment)
     {
-        ByteProcessor pixelFilter = sheet.getPicture().getSource(
-                Picture.SourceKey.BINARY);
+        ByteProcessor pixelFilter = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
         BarPeak p1 = alignment.topPeak;
         BarPeak p2 = alignment.bottomPeak;
 
@@ -472,25 +462,17 @@ public class BarsRetriever
                         new Point2D.Double(p1.getStop(), p1.getBottom()),
                         new Point2D.Double(p2.getStop(), p2.getTop())));
 
-        final CoreData data = AreaUtil.verticalCore(
-                pixelFilter,
-                leftLine,
-                rightLine);
+        final CoreData data = AreaUtil.verticalCore(pixelFilter, leftLine, rightLine);
 
         logger.debug("{}", data);
 
         if ((data.gap <= params.maxConnectionGap)
             && (data.whiteRatio <= params.maxConnectionWhiteRatio)) {
-            double whiteImpact = 1
-                                 - (data.whiteRatio / params.maxConnectionWhiteRatio);
-            double gapImpact = 1
-                               - ((double) data.gap / params.maxConnectionGap);
+            double whiteImpact = 1 - (data.whiteRatio / params.maxConnectionWhiteRatio);
+            double gapImpact = 1 - ((double) data.gap / params.maxConnectionGap);
             double alignImpact = alignment.getImpacts().getGrade() / alignment.getImpacts()
                     .getIntrinsicRatio();
-            GradeImpacts impacts = new BarConnection.Impacts(
-                    alignImpact,
-                    whiteImpact,
-                    gapImpact);
+            GradeImpacts impacts = new BarConnection.Impacts(alignImpact, whiteImpact, gapImpact);
 
             return new BarConnection(alignment, impacts);
         } else {
@@ -608,15 +590,11 @@ public class BarsRetriever
                 // Start of a new system
                 staffTop = systemTops[i];
 
-                system = new SystemInfo(
-                        ++systemId,
-                        sheet,
-                        staffManager.getRange(staff, staff));
+                system = new SystemInfo(++systemId, sheet, staffManager.getRange(staff, staff));
                 newSystems.add(system);
             } else {
                 // Continuing current system
-                system.setStaves(
-                        staffManager.getRange(system.getFirstStaff(), staff));
+                system.setStaves(staffManager.getRange(system.getFirstStaff(), staff));
             }
         }
 
@@ -653,14 +631,11 @@ public class BarsRetriever
         // Check for bar peaks aligned across staves
         for (StaffInfo staff : staffManager.getStaves()) {
             for (VerticalSide side : VerticalSide.values()) {
-                List<StaffInfo> otherStaves = staffManager.vertNeighbors(
-                        staff,
-                        side);
+                List<StaffInfo> otherStaves = staffManager.vertNeighbors(staff, side);
 
                 // Make sure there are other staves on this side
                 // and they are "short-wise compatible" with current staff
-                if (otherStaves.isEmpty()
-                    || (otherStaves.get(0).isShort() != staff.isShort())) {
+                if (otherStaves.isEmpty() || (otherStaves.get(0).isShort() != staff.isShort())) {
                     continue;
                 }
 
@@ -738,8 +713,7 @@ public class BarsRetriever
             } else {
                 // Is this a truely separate second connection?
                 // Check horizontal gap with previous one
-                int gap = connection.topPeak.getStart()
-                          - prevConnection.topPeak.getStop() - 1;
+                int gap = connection.topPeak.getStart() - prevConnection.topPeak.getStop() - 1;
 
                 if (gap > params.maxDoubleBarGap) {
                     if (partTops[top - 1] == null) {
@@ -933,8 +907,7 @@ public class BarsRetriever
     {
         final Skew skew = sheet.getSkew();
         final int mid = (peak.getStart() + peak.getStop()) / 2;
-        final double dsk = skew.deskewed(
-                new Point(mid, peak.getOrdinate(side))).getX();
+        final double dsk = skew.deskewed(new Point(mid, peak.getOrdinate(side))).getX();
 
         for (BarPeak otherPeak : otherStaff.getBarPeaks()) {
             if (otherPeak.isThin() != peak.isThin()) {
@@ -942,8 +915,7 @@ public class BarsRetriever
             }
 
             int otherMid = (otherPeak.getStart() + otherPeak.getStop()) / 2;
-            Point otherPt = (side == TOP)
-                    ? new Point(otherMid, otherPeak.getBottom())
+            Point otherPt = (side == TOP) ? new Point(otherMid, otherPeak.getBottom())
                     : new Point(otherMid, otherPeak.getTop());
             double otherDsk = skew.deskewed(otherPt).getX();
             double dx = scale.pixelsToFrac(otherDsk - dsk);
@@ -951,8 +923,7 @@ public class BarsRetriever
             if (Math.abs(dx) <= constants.maxAlignmentDx.getValue()) {
                 double alignImpact = 1
                                      - (Math.abs(dx) / constants.maxAlignmentDx.getValue());
-                GradeImpacts impacts = new BarAlignment.Impacts(
-                        alignImpact);
+                GradeImpacts impacts = new BarAlignment.Impacts(alignImpact);
                 final BarAlignment alignment;
 
                 if (side == TOP) {
@@ -989,9 +960,7 @@ public class BarsRetriever
         // Purge alignments vs connections
         for (BarConnection connection : connections) {
             for (VerticalSide side : VerticalSide.values()) {
-                for (BarAlignment alignment : alignmentsOf(
-                        connection.getPeak(side),
-                        side)) {
+                for (BarAlignment alignment : alignmentsOf(connection.getPeak(side), side)) {
                     alignments.remove(alignment);
                     logger.info("Removed {}", alignment);
                 }
@@ -1009,10 +978,7 @@ public class BarsRetriever
 
                 if (otherAlignment != null) {
                     // We have a conflict here, make a decision
-                    logger.debug(
-                            "Conflict {} vs {}",
-                            alignment,
-                            otherAlignment);
+                    logger.debug("Conflict {} vs {}", alignment, otherAlignment);
 
                     if (Math.abs(otherAlignment.dx) <= Math.abs(alignment.dx)) {
                         toRemove.add(alignment);
@@ -1044,8 +1010,7 @@ public class BarsRetriever
 
         for (BarAlignment alignment : alignments) {
             final SystemInfo s1 = alignment.getPeak(TOP).getStaff().getSystem();
-            final SystemInfo s2 = alignment.getPeak(BOTTOM).getStaff()
-                    .getSystem();
+            final SystemInfo s2 = alignment.getPeak(BOTTOM).getStaff().getSystem();
 
             if (s1 != s2) {
                 toRemove.add(alignment);
@@ -1136,14 +1101,14 @@ public class BarsRetriever
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction maxAlignmentDx = new Scale.Fraction(
                 0.5,
@@ -1203,7 +1168,7 @@ public class BarsRetriever
     //------------//
     private static class Parameters
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final int maxAlignmentDx;
 
@@ -1220,7 +1185,7 @@ public class BarsRetriever
         // Debug
         final List<Integer> vipSections;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *
@@ -1236,8 +1201,7 @@ public class BarsRetriever
             maxConnectionWhiteRatio = constants.maxConnectionWhiteRatio.getValue();
 
             // VIPs
-            vipSections = VipUtil.decodeIds(
-                    constants.verticalVipSections.getValue());
+            vipSections = VipUtil.decodeIds(constants.verticalVipSections.getValue());
 
             if (logger.isDebugEnabled()) {
                 Main.dumping.dump(this);

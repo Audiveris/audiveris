@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             K e y S y m b o l                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       K e y S y m b o l                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -23,19 +23,19 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * Class {@code KeySymbol} displays a Key Signature symbol.
- *
- * <p><img src="doc-files/KeySignatures.png" />
+ * <p>
+ * <img src="doc-files/KeySignatures.png" />
  *
  */
 public abstract class KeySymbol
         extends ShapeSymbol
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The key to represent, -7..-1 for flats, 1..7 for sharps */
     protected final int key;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // KeySymbol //
     //-----------//
@@ -56,7 +56,7 @@ public abstract class KeySymbol
         this.key = key;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getParams //
     //-----------//
@@ -74,9 +74,7 @@ public abstract class KeySymbol
         p.itemDx = r2.getWidth() * 1.15;
 
         int sign = Integer.signum(key);
-        p.itemRect = new Rectangle(
-                (int) Math.ceil(r2.getWidth()),
-                (int) Math.ceil(r2.getHeight()));
+        p.itemRect = new Rectangle((int) Math.ceil(r2.getWidth()), (int) Math.ceil(r2.getHeight()));
 
         for (int k = 1; k <= (key * sign); k++) {
             int position = KeySignature.getItemPosition(k * sign, null);
@@ -94,8 +92,7 @@ public abstract class KeySymbol
         }
 
         p.rect.x = (p.rect.width / 2);
-        p.rect.y = -(int) Math.rint(
-                KeySignature.getStandardPosition(key) * p.stepDy);
+        p.rect.y = -(int) Math.rint(KeySignature.getStandardPosition(key) * p.stepDy);
 
         return p;
     }
@@ -112,8 +109,7 @@ public abstract class KeySymbol
         MyParams p = (MyParams) params;
         Point loc = alignment.translatedPoint(AREA_CENTER, p.rect, location);
         loc.x -= (p.rect.width / 2);
-        loc.y -= (int) Math.rint(
-                KeySignature.getStandardPosition(key) * p.stepDy);
+        loc.y -= (int) Math.rint(KeySignature.getStandardPosition(key) * p.stepDy);
 
         int sign = Integer.signum(key);
 
@@ -129,20 +125,19 @@ public abstract class KeySymbol
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         double stepDy; // Dy from one step to the other
 
         double itemDx; // Dx from one item to the other
 
         Rectangle itemRect; // Item rectangle
-
     }
 }

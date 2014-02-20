@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       G l y p h R e g r e s s i o n                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 G l y p h R e g r e s s i o n                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -15,7 +15,7 @@ import omr.Main;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-
+import static omr.glyph.AbstractEvaluationEngine.shapeCount;
 import omr.glyph.facets.Glyph;
 
 import omr.math.LinearEvaluator;
@@ -39,8 +39,6 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
-import static omr.glyph.AbstractEvaluationEngine.shapeCount;
-
 /**
  * Class {@code GlyphRegression} is a glyph evaluator that encapsulates
  * a {@link LinearEvaluator} working on glyph parameters.
@@ -50,14 +48,11 @@ import static omr.glyph.AbstractEvaluationEngine.shapeCount;
 public class GlyphRegression
         extends AbstractEvaluationEngine
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            GlyphRegression.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphRegression.class);
 
     /** LinearEvaluator backup file name */
     private static final String BACKUP_FILE_NAME = "linear-evaluator.xml";
@@ -65,15 +60,14 @@ public class GlyphRegression
     /** The singleton */
     private static volatile GlyphRegression INSTANCE;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The encapsulated linear evaluator */
     private LinearEvaluator engine;
 
     /** The constraints (minimum, maximum) per shape & per parameter */
-    private EnumMap<Shape, Range[]> constraintMap = new EnumMap<>(
-            Shape.class);
+    private EnumMap<Shape, Range[]> constraintMap = new EnumMap<Shape, Range[]>(Shape.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------------//
     // GlyphRegression //
     //-----------------//
@@ -102,100 +96,25 @@ public class GlyphRegression
         if (Main.getGui() != null) {
             Main.getGui().addExitListener(
                     new ExitListener()
-            {
-                @Override
-                public boolean canExit (EventObject eo)
-                {
-                    return true;
-                }
+                    {
+                        @Override
+                        public boolean canExit (EventObject eo)
+                        {
+                            return true;
+                        }
 
-                @Override
-                public void willExit (EventObject eo)
-                {
-                    if (engine.isDataModified()) {
-                        marshal();
-                    }
-                }
-            });
+                        @Override
+                        public void willExit (EventObject eo)
+                        {
+                            if (engine.isDataModified()) {
+                                marshal();
+                            }
+                        }
+                    });
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //    //--------------------//
-    //    // constraintsMatched //
-    //    //--------------------//
-    //    /**
-    //     * Check that all the (non-disabled) constraints matched between a
-    //     * given glyph and a shape
-    //     * @param params the glyph features
-    //     * @param eval   the evaluation context to update
-    //     * @return true if matched, false otherwise
-    //     */
-    //    public boolean constraintsMatched (double[]   params,
-    //                                       Evaluation eval)
-    //    {
-    //        String failed = firstMisMatched(params, eval.shape);
-    //
-    //        if (failed != null) {
-    //            eval.failure = new Evaluation.Failure(failed);
-    //
-    //            return false;
-    //        } else {
-    //            return true;
-    //        }
-    //    }
-    //--------------//
-    // isCompatible //
-    //--------------//
-    @Override
-    protected final boolean isCompatible (Object obj)
-    {
-        if (obj instanceof LinearEvaluator) {
-            LinearEvaluator anEngine = (LinearEvaluator) obj;
-
-            // Check parameters names, they must be identical
-            if (!Arrays.equals(
-                    anEngine.getParameterNames(),
-                    ShapeDescription.getParameterLabels())) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Engine parameters: {}",
-                            Arrays.toString(anEngine.getParameterNames()));
-                    logger.debug("Shape  parameters: {}",
-                            Arrays.toString(ShapeDescription.getParameterLabels()));
-                }
-                return false;
-            }
-
-            // Check categories names. Order is not relevant
-            // Engine categories must be a subset of physical shapes
-            String[] categories = anEngine.getCategoryNames();
-
-            String[] shapes = ShapeSet.getPhysicalShapeNames();
-            String[] sortedShapes = Arrays.copyOf(shapes, shapes.length);
-
-            List<String> extraNames = new ArrayList<>(Arrays.asList(categories));
-            extraNames.removeAll(Arrays.asList(sortedShapes));
-
-            if (!extraNames.isEmpty()) {
-                if (logger.isDebugEnabled()) {
-                    Arrays.sort(categories);
-                    logger.debug("Engine categories: {}",
-                            Arrays.toString(categories));
-                    Arrays.sort(sortedShapes);
-                    logger.debug("Physical   shapes: {}",
-                            Arrays.toString(sortedShapes));
-                    logger.debug("Extra names found in {}: {}",
-                            getName(), extraNames);
-                }
-                return false;
-            } else {
-                return true;
-            }
-        } else {
-            return false;
-        }
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // dump //
     //------//
@@ -396,9 +315,7 @@ public class GlyphRegression
     public double measureDistance (Glyph glyph,
                                    Shape shape)
     {
-        return engine.categoryDistance(
-                ShapeDescription.features(glyph),
-                shape.toString());
+        return engine.categoryDistance(ShapeDescription.features(glyph), shape.toString());
     }
 
     //-----------------//
@@ -509,14 +426,12 @@ public class GlyphRegression
         }
 
         // Prepare the collection of samples
-        Collection<Sample> samples = new ArrayList<>();
+        Collection<Sample> samples = new ArrayList<Sample>();
 
         for (Glyph glyph : base) {
             try {
                 Shape shape = glyph.getShape().getPhysicalShape();
-                Sample sample = new Sample(
-                        shape.toString(),
-                        ShapeDescription.features(glyph));
+                Sample sample = new Sample(shape.toString(), ShapeDescription.features(glyph));
                 samples.add(sample);
             } catch (Exception ex) {
                 logger.warn(
@@ -531,6 +446,80 @@ public class GlyphRegression
 
         // Save to disk
         marshal();
+    }
+
+    //    //--------------------//
+    //    // constraintsMatched //
+    //    //--------------------//
+    //    /**
+    //     * Check that all the (non-disabled) constraints matched between a
+    //     * given glyph and a shape
+    //     * @param params the glyph features
+    //     * @param eval   the evaluation context to update
+    //     * @return true if matched, false otherwise
+    //     */
+    //    public boolean constraintsMatched (double[]   params,
+    //                                       Evaluation eval)
+    //    {
+    //        String failed = firstMisMatched(params, eval.shape);
+    //
+    //        if (failed != null) {
+    //            eval.failure = new Evaluation.Failure(failed);
+    //
+    //            return false;
+    //        } else {
+    //            return true;
+    //        }
+    //    }
+    //--------------//
+    // isCompatible //
+    //--------------//
+    @Override
+    protected final boolean isCompatible (Object obj)
+    {
+        if (obj instanceof LinearEvaluator) {
+            LinearEvaluator anEngine = (LinearEvaluator) obj;
+
+            // Check parameters names, they must be identical
+            if (!Arrays.equals(anEngine.getParameterNames(), ShapeDescription.getParameterLabels())) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "Engine parameters: {}",
+                            Arrays.toString(anEngine.getParameterNames()));
+                    logger.debug(
+                            "Shape  parameters: {}",
+                            Arrays.toString(ShapeDescription.getParameterLabels()));
+                }
+
+                return false;
+            }
+
+            // Check categories names. Order is not relevant
+            // Engine categories must be a subset of physical shapes
+            String[] categories = anEngine.getCategoryNames();
+
+            String[] shapes = ShapeSet.getPhysicalShapeNames();
+            String[] sortedShapes = Arrays.copyOf(shapes, shapes.length);
+
+            List<String> extraNames = new ArrayList<String>(Arrays.asList(categories));
+            extraNames.removeAll(Arrays.asList(sortedShapes));
+
+            if (!extraNames.isEmpty()) {
+                if (logger.isDebugEnabled()) {
+                    Arrays.sort(categories);
+                    logger.debug("Engine categories: {}", Arrays.toString(categories));
+                    Arrays.sort(sortedShapes);
+                    logger.debug("Physical   shapes: {}", Arrays.toString(sortedShapes));
+                    logger.debug("Extra names found in {}: {}", getName(), extraNames);
+                }
+
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
 
     //-------------//
@@ -548,18 +537,16 @@ public class GlyphRegression
     @Override
     protected Evaluation[] getNaturalEvaluations (Glyph glyph)
     {
-            double[] ins = ShapeDescription.features(glyph);
-            Evaluation[] evals = new Evaluation[shapeCount];
-            Shape[] values = Shape.values();
+        double[] ins = ShapeDescription.features(glyph);
+        Evaluation[] evals = new Evaluation[shapeCount];
+        Shape[] values = Shape.values();
 
-            for (int s = 0; s < shapeCount; s++) {
-                Shape shape = values[s];
-                evals[s] = new Evaluation(
-                        shape,
-                        1d / measureDistance(ins, shape));
-            }
+        for (int s = 0; s < shapeCount; s++) {
+            Shape shape = values[s];
+            evals[s] = new Evaluation(shape, 1d / measureDistance(ins, shape));
+        }
 
-            return evals;
+        return evals;
     }
 
     //---------//
@@ -813,16 +800,16 @@ public class GlyphRegression
             Double min = range.min;
 
             if ((min != null) && (val < min)) {
-                logger.debug("{} failed on minimum for {} {} < {}",
-                        shape, label, val, min);
+                logger.debug("{} failed on minimum for {} {} < {}", shape, label, val, min);
+
                 return label + ".min";
             }
 
             Double max = range.max;
 
             if ((max != null) && (val > max)) {
-                logger.debug("{} failed on maximum for {} {} > {}",
-                        shape, label, val, max);
+                logger.debug("{} failed on maximum for {} {} > {}", shape, label, val, max);
+
                 return label + ".max";
             }
         }
@@ -831,20 +818,19 @@ public class GlyphRegression
         return null;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Range //
     //-------//
     public static class Range
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Constraint on minimum, if any */
         Double min;
 
         /** Constraint on maximum, if any */
         Double max;
-
     }
 
     //-----------//
@@ -853,7 +839,7 @@ public class GlyphRegression
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Double factorForMinima = new Constant.Double(
                 "factor",
@@ -864,6 +850,5 @@ public class GlyphRegression
                 "factor",
                 1.3,
                 "Factor applied to all maximum constraints");
-
     }
 }

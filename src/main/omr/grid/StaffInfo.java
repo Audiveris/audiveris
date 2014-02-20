@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             S t a f f I n f o                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       S t a f f I n f o                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -58,18 +58,17 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * Class {@code StaffInfo} handles physical information of a staff
- * with its lines.
+ * Class {@code StaffInfo} handles physical information of a staff with its lines.
  * <p>
- * Note: All methods are meant to provide correct results, regardless of the
- * actual number of lines in the staff instance.
+ * Note: All methods are meant to provide correct results, regardless of the actual number of lines
+ * in the staff instance.
  *
  * @author Hervé Bitteur
  */
 public class StaffInfo
         implements AttachmentHolder
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -98,7 +97,7 @@ public class StaffInfo
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Area around the staff.
      * The same area strategy applies for staves and for systems:
@@ -166,7 +165,7 @@ public class StaffInfo
     /** Potential attachments. */
     private final AttachmentHolder attachments = new BasicAttachmentHolder();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //-----------//
     // StaffInfo //
@@ -193,22 +192,31 @@ public class StaffInfo
         this.lines = lines;
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //--------------------//
-    // getLedgerLineIndex //
-    //--------------------//
+    //~ Methods ------------------------------------------------------------------------------------
+    //------------------------//
+    // getLedgerPitchPosition //
+    //------------------------//
     /**
-     * Compute staff-based line index, based on provided pitch position
+     * Report the pitch position of a ledger WRT the related staff.
+     * <p>
+     * TODO: This implementation assumes a 5-line staff.
+     * But can we have ledgers on a staff with more (of less) than 5 lines?
      *
-     * @param pitchPosition the provided pitch position
-     * @return the computed line index
+     * @param lineIndex the ledger line index
+     * @return the ledger pitch position
      */
-    public static int getLedgerLineIndex (double pitchPosition)
+    public static int getLedgerPitchPosition (int lineIndex)
     {
-        if (pitchPosition > 0) {
-            return (int) Math.rint(pitchPosition / 2) - 2;
+        //        // Safer, for the time being...
+        //        if (getStaff()
+        //                .getLines()
+        //                .size() != 5) {
+        //            throw new RuntimeException("Only 5-line staves are supported");
+        //        }
+        if (lineIndex > 0) {
+            return 4 + (2 * lineIndex);
         } else {
-            return (int) Math.rint(pitchPosition / 2) + 2;
+            return -4 + (2 * lineIndex);
         }
     }
 
@@ -260,10 +268,7 @@ public class StaffInfo
     {
         assert ledger != null : "Cannot add a null ledger";
 
-        addLedger(
-                ledger,
-                getLedgerLineIndex(
-                pitchPositionOf(ledger.getGlyph().getCentroid())));
+        addLedger(ledger, getLedgerLineIndex(pitchPositionOf(ledger.getGlyph().getCentroid())));
     }
 
     //------------//
@@ -280,10 +285,8 @@ public class StaffInfo
      */
     public int distanceTo (Point point)
     {
-        final double top = getFirstLine()
-                .yAt(point.getX());
-        final double bottom = getLastLine()
-                .yAt(point.getX());
+        final double top = getFirstLine().yAt(point.getX());
+        final double bottom = getLastLine().yAt(point.getX());
 
         return (int) Math.max(top - point.getY(), point.getY() - bottom);
     }
@@ -296,8 +299,7 @@ public class StaffInfo
      */
     public void dump ()
     {
-        System.out.println(
-                "StaffInfo" + getId() + " left=" + left + " right=" + right);
+        System.out.println("StaffInfo" + getId() + " left=" + left + " right=" + right);
 
         int i = 0;
 
@@ -320,10 +322,8 @@ public class StaffInfo
     public int gapTo (Rectangle rect)
     {
         Point center = GeoUtil.centerOf(rect);
-        int staffTop = getFirstLine()
-                .yAt(center.x);
-        int staffBot = getLastLine()
-                .yAt(center.x);
+        int staffTop = getFirstLine().yAt(center.x);
+        int staffBot = getLastLine().yAt(center.x);
         int glyphTop = rect.y;
         int glyphBot = (glyphTop + rect.height) - 1;
 
@@ -386,8 +386,7 @@ public class StaffInfo
      */
     public Rectangle2D getAreaBounds ()
     {
-        return getArea()
-                .getBounds2D();
+        return getArea().getBounds2D();
     }
 
     //----------------//
@@ -423,12 +422,9 @@ public class StaffInfo
     public IndexedLedger getClosestLedger (Point2D point)
     {
         IndexedLedger bestLedger = null;
-        double top = getFirstLine()
-                .yAt(point.getX());
-        double bottom = getLastLine()
-                .yAt(point.getX());
-        double rawPitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom
-                                                                          - top);
+        double top = getFirstLine().yAt(point.getX());
+        double bottom = getLastLine().yAt(point.getX());
+        double rawPitch = (4.0d * ((2 * point.getY()) - bottom - top)) / (bottom - top);
 
         if (Math.abs(rawPitch) <= 5) {
             return null;
@@ -444,11 +440,7 @@ public class StaffInfo
                     0,
                     top - point.getY() + 1);
         } else {
-            searchBox = new Rectangle2D.Double(
-                    point.getX(),
-                    bottom,
-                    0,
-                    point.getY() - bottom + 1);
+            searchBox = new Rectangle2D.Double(point.getX(), bottom, 0, point.getY() - bottom + 1);
         }
 
         //searchBox.grow(interline, interline);
@@ -463,8 +455,7 @@ public class StaffInfo
 
         for (Map.Entry<Integer, SortedSet<LedgerInter>> entry : ledgerMap.entrySet()) {
             for (LedgerInter ledger : entry.getValue()) {
-                if (ledger.getBounds()
-                        .intersects(searchBox)) {
+                if (ledger.getBounds().intersects(searchBox)) {
                     foundLedgers.add(new IndexedLedger(ledger, entry.getKey()));
                 }
             }
@@ -475,8 +466,7 @@ public class StaffInfo
             double bestDist = Double.MAX_VALUE;
 
             for (IndexedLedger iLedger : foundLedgers) {
-                Point2D center = iLedger.ledger.getGlyph()
-                        .getAreaCenter();
+                Point2D center = iLedger.ledger.getGlyph().getAreaCenter();
                 double dist = Math.abs(center.getY() - point.getY());
 
                 if (dist < bestDist) {
@@ -581,8 +571,7 @@ public class StaffInfo
      */
     public int getHeight ()
     {
-        return getSpecificScale()
-                .getInterline() * (lines.size() - 1);
+        return getSpecificScale().getInterline() * (lines.size() - 1);
     }
 
     //-------//
@@ -611,39 +600,30 @@ public class StaffInfo
         return lines.get(lines.size() - 1);
     }
 
+    //--------------------//
+    // getLedgerLineIndex //
+    //--------------------//
+    /**
+     * Compute staff-based line index, based on provided pitch position
+     *
+     * @param pitchPosition the provided pitch position
+     * @return the computed line index
+     */
+    public static int getLedgerLineIndex (double pitchPosition)
+    {
+        if (pitchPosition > 0) {
+            return (int) Math.rint(pitchPosition / 2) - 2;
+        } else {
+            return (int) Math.rint(pitchPosition / 2) + 2;
+        }
+    }
+
     //--------------//
     // getLedgerMap //
     //--------------//
     public SortedMap<Integer, SortedSet<LedgerInter>> getLedgerMap ()
     {
         return ledgerMap;
-    }
-
-    //------------------------//
-    // getLedgerPitchPosition //
-    //------------------------//
-    /**
-     * Report the pitch position of a ledger WRT the related staff.
-     * <p>
-     * TODO: This implementation assumes a 5-line staff.
-     * But can we have ledgers on a staff with more (of less) than 5 lines?
-     *
-     * @param lineIndex the ledger line index
-     * @return the ledger pitch position
-     */
-    public static int getLedgerPitchPosition (int lineIndex)
-    {
-        //        // Safer, for the time being...
-        //        if (getStaff()
-        //                .getLines()
-        //                .size() != 5) {
-        //            throw new RuntimeException("Only 5-line staves are supported");
-        //        }
-        if (lineIndex > 0) {
-            return 4 + (2 * lineIndex);
-        } else {
-            return -4 + (2 * lineIndex);
-        }
     }
 
     //------------//
@@ -784,9 +764,7 @@ public class StaffInfo
             double linesRight = Integer.MIN_VALUE;
 
             for (LineInfo line : lines) {
-                linesRight = Math.max(
-                        linesRight,
-                        line.getEndPoint(RIGHT).getX());
+                linesRight = Math.max(linesRight, line.getEndPoint(RIGHT).getX());
             }
 
             return linesRight;
@@ -813,8 +791,7 @@ public class StaffInfo
             bestLedger = getClosestLedger(point);
 
             if (bestLedger != null) {
-                Point2D center = bestLedger.ledger.getGlyph()
-                        .getAreaCenter();
+                Point2D center = bestLedger.ledger.getGlyph().getAreaCenter();
                 int ledgerPitch = getLedgerPitchPosition(bestLedger.index);
                 double deltaPitch = (2d * (point.getY() - center.getY())) / specificScale.getInterline();
                 pitch = ledgerPitch + deltaPitch;
@@ -897,13 +874,10 @@ public class StaffInfo
      */
     public double pitchPositionOf (Point2D pt)
     {
-        double top = getFirstLine()
-                .yAt(pt.getX());
-        double bottom = getLastLine()
-                .yAt(pt.getX());
+        double top = getFirstLine().yAt(pt.getX());
+        double bottom = getLastLine().yAt(pt.getX());
 
-        return ((lines.size() - 1) * ((2 * pt.getY()) - bottom - top)) / (bottom
-                                                                          - top);
+        return ((lines.size() - 1) * ((2 * pt.getY()) - bottom - top)) / (bottom - top);
     }
 
     //-------------------//
@@ -1113,17 +1087,14 @@ public class StaffInfo
     {
         StringBuilder sb = new StringBuilder("{StaffInfo");
 
-        sb.append(" id=")
-                .append(getId());
+        sb.append(" id=").append(getId());
 
         if (isShort) {
             sb.append(" SHORT");
         }
 
-        sb.append(" left:")
-                .append(left);
-        sb.append(" right:")
-                .append(right);
+        sb.append(" left:").append(left);
+        sb.append(" right:").append(right);
 
         sb.append("}");
 
@@ -1158,20 +1129,12 @@ public class StaffInfo
      */
     public boolean yOverlaps (StaffInfo that)
     {
-        final double thisTop = this.getFirstLine()
-                .getLeftPoint()
-                .getY();
-        final double thatTop = that.getFirstLine()
-                .getLeftPoint()
-                .getY();
+        final double thisTop = this.getFirstLine().getLeftPoint().getY();
+        final double thatTop = that.getFirstLine().getLeftPoint().getY();
         final double commonTop = Math.max(thisTop, thatTop);
 
-        final double thisBottom = this.getLastLine()
-                .getLeftPoint()
-                .getY();
-        final double thatBottom = that.getLastLine()
-                .getLeftPoint()
-                .getY();
+        final double thisBottom = this.getLastLine().getLeftPoint().getY();
+        final double thatBottom = that.getLastLine().getLeftPoint().getY();
         final double commonBottom = Math.min(thisBottom, thatBottom);
 
         return commonBottom > commonTop;
@@ -1191,7 +1154,7 @@ public class StaffInfo
         isShort = true;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // IndexedLedger //
     //---------------//
@@ -1201,7 +1164,7 @@ public class StaffInfo
      */
     public static class IndexedLedger
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** The ledger. */
         public final LedgerInter ledger;
@@ -1209,7 +1172,7 @@ public class StaffInfo
         /** Staff-based line index. (-1, -2, ... above, +1, +2, ... below) */
         public final int index;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public IndexedLedger (LedgerInter ledger,
                               int index)
         {
@@ -1224,11 +1187,10 @@ public class StaffInfo
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Scale.Fraction minDMZWidth = new Scale.Fraction(
                 4.0,
                 "Minimum width of zone without notes at beginning of staff");
-
     }
 }

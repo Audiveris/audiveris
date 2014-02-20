@@ -40,7 +40,7 @@ public class Installer
         LogUtilities.initialize();
     }
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
             Installer.class);
 

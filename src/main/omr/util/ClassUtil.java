@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             C l a s s U t i l                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        C l a s s U t i l                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -23,18 +23,16 @@ import java.io.File;
  */
 public class ClassUtil
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ClassUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClassUtil.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     private ClassUtil ()
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // getCallingFrame //
     //-----------------//
@@ -43,8 +41,8 @@ public class ClassUtil
      * Code was derived from a private method found in the JDK Logger class
      *
      * @param skippedClasses the classes to skip
-     * @return the frame found, just before the skipped classes (or just before
-     *         the caller of this method)
+     * @return the frame found, just before the skipped classes (or just before the caller of this
+     *         method)
      */
     public static StackTraceElement getCallingFrame (Class... skippedClasses)
     {
@@ -99,8 +97,8 @@ public class ClassUtil
      * Code was derived from a private method found in the JDK Logger class
      *
      * @param skipped predicate to skip class(es)
-     * @return the frame found, just before the skipped classes (or just before
-     *         the caller of this method)
+     * @return the frame found, just before the skipped classes (or just before the caller of this
+     *         method)
      */
     public static StackTraceElement getCallingFrame (Predicate<String> skipped)
     {
@@ -168,8 +166,8 @@ public class ClassUtil
     /**
      * Try to load a library.
      *
-     * @param library the library to load (without ".dll" suffix for Windows,
-     *                without "lib" prefix and ".so" suffix for Linux
+     * @param library the library to load (without ".dll" suffix for Windows, without "lib" prefix
+     *                and ".so" suffix for Linux
      * @param verbose true for verbose output
      * @return true if succeeded, false otherwise (no exception is thrown)
      */
@@ -199,8 +197,7 @@ public class ClassUtil
     // nameOf //
     //--------//
     /**
-     * Report the full name of the object class, without the package
-     * information.
+     * Report the full name of the object class, without the package information.
      *
      * @param obj the object to name
      * @return the concatenation of (enclosing) simple names
@@ -209,8 +206,7 @@ public class ClassUtil
     {
         StringBuilder sb = new StringBuilder();
 
-        for (Class<?> cl = obj.getClass(); cl != null;
-                cl = cl.getEnclosingClass()) {
+        for (Class<?> cl = obj.getClass(); cl != null; cl = cl.getEnclosingClass()) {
             if (sb.length() > 0) {
                 sb.insert(0, "-");
             }

@@ -1,33 +1,33 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         D i s t a n c e F i l t e r                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   D i s t a n c e F i l t e r                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
 import ij.process.ByteProcessor;
 
 /**
- * Class {@code DistanceFilter} implements a {@link PixelFilter} on
- * top of a distance image.
+ * Class {@code DistanceFilter} implements a {@link PixelFilter} on top of a distance
+ * image.
  *
  * @author Hervé Bitteur
  */
 public class DistanceFilter
         implements PixelFilter
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The underlying distance image (distances to foreground). */
     private final Table distances;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new DistanceFilter object.
      *
@@ -38,7 +38,7 @@ public class DistanceFilter
         this.distances = distances;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public ByteProcessor filteredImage ()
     {

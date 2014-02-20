@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 C h o r d                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           C h o r d                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -47,22 +47,20 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code Chord} represents an ensemble of entities (rests, notes)
- * attached to the same stem if any, and that occur on the same time in
- * a staff.
- * <p><b>NB</b>We assume that all notes of a chord have the same duration.
+ * Class {@code Chord} represents an ensemble of entities (rests, notes) attached to
+ * the same stem if any, and that occur on the same time in a staff.
+ * <p>
+ * <b>NB</b>We assume that all notes of a chord have the same duration.
  *
  * @author Hervé Bitteur
  */
 public class Chord
         extends MeasureNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Chord.class);
 
     /** Compare two chords by abscissa within a measure. */
@@ -140,12 +138,11 @@ public class Chord
                 logger.error("Ordering notes from different chords");
             }
 
-            return n1.getChord().getStemDir() * (n2.getCenter().y - n1.
-                    getCenter().y);
+            return n1.getChord().getStemDir() * (n2.getCenter().y - n1.getCenter().y);
         }
     };
-    //~ Instance fields --------------------------------------------------------
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Id for debug (unique within measure) */
     private final int id;
 
@@ -162,13 +159,13 @@ public class Chord
     private Point tailLocation;
 
     /** Collection of beams this chord is connected to */
-    private List<Beam> beams = new ArrayList<>();
+    private List<Beam> beams = new ArrayList<Beam>();
 
     /** Number of augmentation dots */
     private int dotsNumber;
 
     /** Flag glyphs */
-    private Set<Glyph> flagGlyphs = new HashSet<>();
+    private Set<Glyph> flagGlyphs = new HashSet<Glyph>();
 
     /** Number of flags (a beam is not a flag) */
     private int flagsNumber;
@@ -183,13 +180,13 @@ public class Chord
     private Voice voice;
 
     /** Collection of marks for user */
-    private List<Mark> marks = new ArrayList<>();
+    private List<Mark> marks = new ArrayList<Mark>();
 
     /** Notations related to this chord */
-    private List<Notation> notations = new ArrayList<>();
+    private List<Notation> notations = new ArrayList<Notation>();
 
     /** Directions (loosely) related to this chord */
-    private List<Direction> directions = new ArrayList<>();
+    private List<Direction> directions = new ArrayList<Direction>();
 
     /** Symbol (chord name), if any, related to this chord */
     private ChordSymbol chordSymbol;
@@ -206,14 +203,13 @@ public class Chord
             int y2 = b2.getLine().yAtX(x);
             int yHead = getHeadLocation().y;
 
-            int result = Integer.signum(
-                    Math.abs(yHead - y2) - Math.abs(yHead - y1));
+            int result = Integer.signum(Math.abs(yHead - y2) - Math.abs(yHead - y1));
 
             return result;
         }
     };
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //-------//
     // Chord //
@@ -233,7 +229,7 @@ public class Chord
         id = measure.getChords().size();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getFlagShape //
     //--------------//
@@ -276,7 +272,7 @@ public class Chord
     public static List<Chord> getStemChords (Measure measure,
                                              Glyph stem)
     {
-        List<Chord> chords = new ArrayList<>();
+        List<Chord> chords = new ArrayList<Chord>();
 
         for (TreeNode node : measure.getChords()) {
             Chord chord = (Chord) node;
@@ -289,207 +285,6 @@ public class Chord
         return chords;
     }
 
-    //-------------------------//
-    // lookupInterleavedChords //
-    //-------------------------//
-    /**
-     * Look up for all chords interleaved between the given stemed chords
-     *
-     * @param left  the chord on the left of the area
-     * @param right the chord on the right of the area
-     * @return the collection of interleaved chords, which may be empty
-     */
-    public static SortedSet<Chord> lookupInterleavedChords (Chord left,
-                                                            Chord right)
-    {
-        SortedSet<Chord> found = new TreeSet<>(Chord.byAbscissa);
-
-        if ((left == null) || (right == null)) {
-            return found; // Safer
-        }
-
-        // Define the area limited by the left and right chords with their stems
-        // and check for intersection with a rest note
-        // More precisely, we use the area half on the tail side.
-        // And we check that the interleaved chords have the same stem dir
-        Polygon polygon = new Polygon();
-        polygon.addPoint(left.getHeadLocation().x, left.getCenter().y);
-        polygon.addPoint(left.getTailLocation().x, left.getTailLocation().y);
-        polygon.addPoint(right.getTailLocation().x, right.getTailLocation().y);
-        polygon.addPoint(right.getHeadLocation().x, right.getCenter().y);
-
-        for (TreeNode node : left.getMeasure().getChords()) {
-            Chord chord = (Chord) node;
-
-            // Not interested in the bounding chords (TBC)
-            if ((chord == left) || (chord == right)) {
-                continue;
-            }
-
-            // Additional check on stem dir, if left & right agree
-            if (left.getStemDir() == right.getStemDir()) {
-                if (chord.getReferencePoint() == null
-                    || (chord.getStemDir() != 0 && chord.getStemDir() != left.getStemDir())) {
-                    continue;
-                }
-            }
-
-            Rectangle box = chord.getBox();
-
-            if (polygon.intersects(box.x, box.y, box.width, box.height)) {
-                found.add(chord);
-            }
-        }
-
-        return found;
-    }
-
-    //------------//
-    // lookupRest //
-    //------------//
-    /**
-     * Look up for a potential rest interleaved between the given stemed
-     * chords
-     *
-     * @param left  the chord on the left of the area
-     * @param right the chord on the right of the area
-     * @return the rest found, or null otherwise
-     */
-    public static Note lookupRest (Chord left,
-                                   Chord right)
-    {
-        // Define the area limited by the left and right chords with their stems
-        // and check for intersection with a rest note
-        Polygon polygon = new Polygon();
-        polygon.addPoint(left.headLocation.x, left.headLocation.y);
-        polygon.addPoint(left.tailLocation.x, left.tailLocation.y);
-        polygon.addPoint(right.tailLocation.x, right.tailLocation.y);
-        polygon.addPoint(right.headLocation.x, right.headLocation.y);
-
-        for (TreeNode node : left.getMeasure().getChords()) {
-            Chord chord = (Chord) node;
-
-            // Not interested in the bounding chords
-            if ((chord == left) || (chord == right)) {
-                continue;
-            }
-
-            for (TreeNode n : chord.getNotes()) {
-                Note note = (Note) n;
-
-                // Interested in rest notes only
-                if (note.isRest()) {
-                    Rectangle box = note.getBox();
-
-                    if (polygon.intersects(box.x, box.y, box.width, box.height)) {
-                        return note;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    //--------------//
-    // populateFlag //
-    //--------------//
-    /**
-     * Try to assign a flag to a relevant chord.
-     *
-     * @param glyph   the underlying glyph of this flag
-     * @param measure the containing measure
-     */
-    public static void populateFlag (Glyph glyph,
-                                     Measure measure)
-    {
-        logger.debug("Chord Populating flag {}", glyph);
-
-        // Retrieve the related chord
-        Glyph stem = null;
-
-        for (HorizontalSide side : HorizontalSide.values()) {
-            stem = glyph.getStem(side);
-
-            if (stem != null) {
-                List<Chord> sideChords = Chord.getStemChords(measure, stem);
-
-                if (!sideChords.isEmpty()) {
-                    for (Chord chord : sideChords) {
-                        chord.flagsNumber += getFlagValue(glyph.getShape());
-                        chord.addFlagGlyph(glyph);
-                        glyph.addTranslation(chord);
-                    }
-                } else {
-                    measure.addError(stem, "No chord for stem " + stem.getId());
-                }
-
-                return;
-            }
-        }
-
-        measure.addError(glyph, "Flag glyph with no stem");
-    }
-
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Create a new chord (or join an existing one) to host the note(s)
-     * that correspond to the provided glyph.
-     *
-     * @param glyph   the provided underlying glyph (notehead, note or rest)
-     * @param measure the containing measure
-     */
-    public static void populate (Glyph glyph,
-                                 Measure measure)
-    {
-        if (glyph.isVip()) {
-            logger.info("Chord. populate {}", glyph.idString());
-        }
-
-        glyph.clearTranslations();
-        Set<Integer> assigned = new HashSet<>();
-
-        // Allocate 1 chord per stem, per rest, per whole note
-        if (glyph.getStemNumber() > 0) {
-            // Beware of noteheads with 2 stems, we need to duplicate them
-            // in order to actually have two logical chords.
-            // Sides are browsed LEFT, then RIGHT
-            for (HorizontalSide side : HorizontalSide.values()) {
-                boolean completing = side == HorizontalSide.RIGHT;
-                Glyph stem = glyph.getStem(side);
-
-                if (stem != null) {
-                    List<Chord> chords = Chord.getStemChords(measure, stem);
-                    if (!chords.isEmpty()) {
-                        // At this point, we can have at most one chord per stem
-                        // Join the chord(s)
-                        for (Chord chord : chords) {
-                            Note.createPack(chord, glyph, assigned, completing);
-                        }
-
-                    } else {
-                        // Create a new stem-based chord
-                        Chord chord = new Chord(measure, null);
-                        chord.setStem(stem);
-                        stem.setTranslation(chord);
-                        Note.createPack(chord, glyph, assigned, completing);
-                    }
-                }
-            }
-        } else {
-            // Create a brand-new stem-less chord (rest or whole note)
-            Chord chord = new Chord(measure, null);
-            Note.createPack(chord, glyph, assigned, true);
-
-            // Keep track of measure rests (linked to no time slot)
-            if (glyph.getShape().isMeasureRest()) {
-                measure.addWholeChord(chord);
-            }
-        }
-    }
-
     //--------//
     // accept //
     //--------//
@@ -497,21 +292,6 @@ public class Chord
     public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
-    }
-
-    //---------------------//
-    // getTranslationLinks //
-    //---------------------//
-    @Override
-    public List<Line2D> getTranslationLinks (Glyph glyph)
-    {
-        Point from = glyph.getLocation();
-        Point to = stem != null
-                ? stem.getAreaCenter()
-                : getReferencePoint();
-
-        Line2D line = new Line2D.Double(from, to);
-        return Arrays.asList(line);
     }
 
     //---------//
@@ -567,19 +347,6 @@ public class Chord
         directions.add(direction);
     }
 
-    //----------------//
-    // setChordSymbol //
-    //----------------//
-    /**
-     * Set the chord symbol for this chord
-     *
-     * @param chordSymbol the symbol to assign
-     */
-    public void setChordSymbol (ChordSymbol chordSymbol)
-    {
-        this.chordSymbol = chordSymbol;
-    }
-
     //--------------//
     // addFlagGlyph //
     //--------------//
@@ -631,19 +398,19 @@ public class Chord
         // Incoming ties
         SplitOrder order = checkTies(
                 new TieRelation()
-        {
-            @Override
-            public Note getDistantNote (Slur slur)
-            {
-                return slur.getLeftNote();
-            }
+                {
+                    @Override
+                    public Note getDistantNote (Slur slur)
+                    {
+                        return slur.getLeftNote();
+                    }
 
-            @Override
-            public Note getLocalNote (Slur slur)
-            {
-                return slur.getRightNote();
-            }
-        });
+                    @Override
+                    public Note getLocalNote (Slur slur)
+                    {
+                        return slur.getRightNote();
+                    }
+                });
 
         if (order != null) {
             split(order);
@@ -654,19 +421,19 @@ public class Chord
         // Outgoing ties
         order = checkTies(
                 new TieRelation()
-        {
-            @Override
-            public Note getDistantNote (Slur slur)
-            {
-                return slur.getRightNote();
-            }
+                {
+                    @Override
+                    public Note getDistantNote (Slur slur)
+                    {
+                        return slur.getRightNote();
+                    }
 
-            @Override
-            public Note getLocalNote (Slur slur)
-            {
-                return slur.getLeftNote();
-            }
-        });
+                    @Override
+                    public Note getLocalNote (Slur slur)
+                    {
+                        return slur.getLeftNote();
+                    }
+                });
 
         if (order != null) {
             split(order);
@@ -691,7 +458,7 @@ public class Chord
         stem.addTranslation(clone);
 
         // Notes (we make a deep copy of each note)
-        List<TreeNode> notesCopy = new ArrayList<>();
+        List<TreeNode> notesCopy = new ArrayList<TreeNode>();
         notesCopy.addAll(getNotes());
 
         for (TreeNode node : notesCopy) {
@@ -706,7 +473,6 @@ public class Chord
 
         // Insure correct ordering of chords within their container
         ///Collections.sort(getParent().getChildren(), chordComparator);
-
         return clone;
     }
 
@@ -741,19 +507,6 @@ public class Chord
         return beams;
     }
 
-    //---------------//
-    // getDirections //
-    //---------------//
-    /**
-     * Report the direction entities loosely related to this chord
-     *
-     * @return the collection of (loosely) related directions, perhaps empty
-     */
-    public Collection<? extends Direction> getDirections ()
-    {
-        return directions;
-    }
-
     //----------------//
     // getChordSymbol //
     //----------------//
@@ -765,6 +518,19 @@ public class Chord
     public ChordSymbol getChordSymbol ()
     {
         return chordSymbol;
+    }
+
+    //---------------//
+    // getDirections //
+    //---------------//
+    /**
+     * Report the direction entities loosely related to this chord
+     *
+     * @return the collection of (loosely) related directions, perhaps empty
+     */
+    public Collection<? extends Direction> getDirections ()
+    {
+        return directions;
     }
 
     //---------------//
@@ -864,21 +630,20 @@ public class Chord
      */
     public List<Chord> getFollowingTiedChords ()
     {
-        List<Chord> tied = new ArrayList<>();
+        List<Chord> tied = new ArrayList<Chord>();
 
         for (TreeNode node : children) {
             Note note = (Note) node;
 
             for (Slur slur : note.getSlurs()) {
-                if (slur.isTie()
-                    && (slur.getLeftNote() == note)
-                    && (slur.getRightNote() != null)) {
+                if (slur.isTie() && (slur.getLeftNote() == note) && (slur.getRightNote() != null)) {
                     tied.add(slur.getRightNote().getChord());
                 }
             }
         }
 
         Collections.sort(tied, Chord.byAbscissa);
+
         return tied;
     }
 
@@ -1008,14 +773,6 @@ public class Chord
     }
 
     //---------//
-    // setSlot //
-    //---------//
-    public void setSlot (Slot slot)
-    {
-        this.slot = slot;
-    }
-
-    //---------//
     // getSlot //
     //---------//
     /**
@@ -1076,6 +833,208 @@ public class Chord
         return stem;
     }
 
+    //-------------------------//
+    // lookupInterleavedChords //
+    //-------------------------//
+    /**
+     * Look up for all chords interleaved between the given stemed chords
+     *
+     * @param left  the chord on the left of the area
+     * @param right the chord on the right of the area
+     * @return the collection of interleaved chords, which may be empty
+     */
+    public static SortedSet<Chord> lookupInterleavedChords (Chord left,
+                                                            Chord right)
+    {
+        SortedSet<Chord> found = new TreeSet<Chord>(Chord.byAbscissa);
+
+        if ((left == null) || (right == null)) {
+            return found; // Safer
+        }
+
+        // Define the area limited by the left and right chords with their stems
+        // and check for intersection with a rest note
+        // More precisely, we use the area half on the tail side.
+        // And we check that the interleaved chords have the same stem dir
+        Polygon polygon = new Polygon();
+        polygon.addPoint(left.getHeadLocation().x, left.getCenter().y);
+        polygon.addPoint(left.getTailLocation().x, left.getTailLocation().y);
+        polygon.addPoint(right.getTailLocation().x, right.getTailLocation().y);
+        polygon.addPoint(right.getHeadLocation().x, right.getCenter().y);
+
+        for (TreeNode node : left.getMeasure().getChords()) {
+            Chord chord = (Chord) node;
+
+            // Not interested in the bounding chords (TBC)
+            if ((chord == left) || (chord == right)) {
+                continue;
+            }
+
+            // Additional check on stem dir, if left & right agree
+            if (left.getStemDir() == right.getStemDir()) {
+                if ((chord.getReferencePoint() == null)
+                    || ((chord.getStemDir() != 0) && (chord.getStemDir() != left.getStemDir()))) {
+                    continue;
+                }
+            }
+
+            Rectangle box = chord.getBox();
+
+            if (polygon.intersects(box.x, box.y, box.width, box.height)) {
+                found.add(chord);
+            }
+        }
+
+        return found;
+    }
+
+    //------------//
+    // lookupRest //
+    //------------//
+    /**
+     * Look up for a potential rest interleaved between the given stemed
+     * chords
+     *
+     * @param left  the chord on the left of the area
+     * @param right the chord on the right of the area
+     * @return the rest found, or null otherwise
+     */
+    public static Note lookupRest (Chord left,
+                                   Chord right)
+    {
+        // Define the area limited by the left and right chords with their stems
+        // and check for intersection with a rest note
+        Polygon polygon = new Polygon();
+        polygon.addPoint(left.headLocation.x, left.headLocation.y);
+        polygon.addPoint(left.tailLocation.x, left.tailLocation.y);
+        polygon.addPoint(right.tailLocation.x, right.tailLocation.y);
+        polygon.addPoint(right.headLocation.x, right.headLocation.y);
+
+        for (TreeNode node : left.getMeasure().getChords()) {
+            Chord chord = (Chord) node;
+
+            // Not interested in the bounding chords
+            if ((chord == left) || (chord == right)) {
+                continue;
+            }
+
+            for (TreeNode n : chord.getNotes()) {
+                Note note = (Note) n;
+
+                // Interested in rest notes only
+                if (note.isRest()) {
+                    Rectangle box = note.getBox();
+
+                    if (polygon.intersects(box.x, box.y, box.width, box.height)) {
+                        return note;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    //----------//
+    // populate //
+    //----------//
+    /**
+     * Create a new chord (or join an existing one) to host the note(s)
+     * that correspond to the provided glyph.
+     *
+     * @param glyph   the provided underlying glyph (notehead, note or rest)
+     * @param measure the containing measure
+     */
+    public static void populate (Glyph glyph,
+                                 Measure measure)
+    {
+        if (glyph.isVip()) {
+            logger.info("Chord. populate {}", glyph.idString());
+        }
+
+        glyph.clearTranslations();
+
+        Set<Integer> assigned = new HashSet<Integer>();
+
+        // Allocate 1 chord per stem, per rest, per whole note
+        if (glyph.getStemNumber() > 0) {
+            // Beware of noteheads with 2 stems, we need to duplicate them
+            // in order to actually have two logical chords.
+            // Sides are browsed LEFT, then RIGHT
+            for (HorizontalSide side : HorizontalSide.values()) {
+                boolean completing = side == HorizontalSide.RIGHT;
+                Glyph stem = glyph.getStem(side);
+
+                if (stem != null) {
+                    List<Chord> chords = Chord.getStemChords(measure, stem);
+
+                    if (!chords.isEmpty()) {
+                        // At this point, we can have at most one chord per stem
+                        // Join the chord(s)
+                        for (Chord chord : chords) {
+                            Note.createPack(chord, glyph, assigned, completing);
+                        }
+                    } else {
+                        // Create a new stem-based chord
+                        Chord chord = new Chord(measure, null);
+                        chord.setStem(stem);
+                        stem.setTranslation(chord);
+                        Note.createPack(chord, glyph, assigned, completing);
+                    }
+                }
+            }
+        } else {
+            // Create a brand-new stem-less chord (rest or whole note)
+            Chord chord = new Chord(measure, null);
+            Note.createPack(chord, glyph, assigned, true);
+
+            // Keep track of measure rests (linked to no time slot)
+            if (glyph.getShape().isMeasureRest()) {
+                measure.addWholeChord(chord);
+            }
+        }
+    }
+
+    //--------------//
+    // populateFlag //
+    //--------------//
+    /**
+     * Try to assign a flag to a relevant chord.
+     *
+     * @param glyph   the underlying glyph of this flag
+     * @param measure the containing measure
+     */
+    public static void populateFlag (Glyph glyph,
+                                     Measure measure)
+    {
+        logger.debug("Chord Populating flag {}", glyph);
+
+        // Retrieve the related chord
+        Glyph stem = null;
+
+        for (HorizontalSide side : HorizontalSide.values()) {
+            stem = glyph.getStem(side);
+
+            if (stem != null) {
+                List<Chord> sideChords = Chord.getStemChords(measure, stem);
+
+                if (!sideChords.isEmpty()) {
+                    for (Chord chord : sideChords) {
+                        chord.flagsNumber += getFlagValue(glyph.getShape());
+                        chord.addFlagGlyph(glyph);
+                        glyph.addTranslation(chord);
+                    }
+                } else {
+                    measure.addError(stem, "No chord for stem " + stem.getId());
+                }
+
+                return;
+            }
+        }
+
+        measure.addError(glyph, "Flag glyph with no stem");
+    }
+
     //------------//
     // getStemDir //
     //------------//
@@ -1108,6 +1067,20 @@ public class Chord
         }
 
         return tailLocation;
+    }
+
+    //---------------------//
+    // getTranslationLinks //
+    //---------------------//
+    @Override
+    public List<Line2D> getTranslationLinks (Glyph glyph)
+    {
+        Point from = glyph.getLocation();
+        Point to = (stem != null) ? stem.getAreaCenter() : getReferencePoint();
+
+        Line2D line = new Line2D.Double(from, to);
+
+        return Arrays.asList(line);
     }
 
     //-----------------//
@@ -1202,6 +1175,19 @@ public class Chord
         return false;
     }
 
+    //----------------//
+    // setChordSymbol //
+    //----------------//
+    /**
+     * Set the chord symbol for this chord
+     *
+     * @param chordSymbol the symbol to assign
+     */
+    public void setChordSymbol (ChordSymbol chordSymbol)
+    {
+        this.chordSymbol = chordSymbol;
+    }
+
     //---------------//
     // setDotsNumber //
     //---------------//
@@ -1214,6 +1200,14 @@ public class Chord
     public void setDotsNumber (int dotsNumber)
     {
         this.dotsNumber = dotsNumber;
+    }
+
+    //---------//
+    // setSlot //
+    //---------//
+    public void setSlot (Slot slot)
+    {
+        this.slot = slot;
     }
 
     //--------------//
@@ -1231,16 +1225,17 @@ public class Chord
             logger.debug("setStartTime {} for chord #{}", startTime, getId());
 
             this.startTime = startTime;
-//
-//            // Set the same info in containing slot if any
-//            if (slot != null) {
-//                slot.setStartTime(startTime);
-//            }
+
+            //
+            //            // Set the same info in containing slot if any
+            //            if (slot != null) {
+            //                slot.setStartTime(startTime);
+            //            }
         } else {
             if (!this.startTime.equals(startTime)) {
                 addError(
-                        "Reassigning startTime from " + this.startTime + " to "
-                        + startTime + " in " + this);
+                        "Reassigning startTime from " + this.startTime + " to " + startTime + " in "
+                        + this);
             }
         }
     }
@@ -1284,17 +1279,14 @@ public class Chord
         // Already done?
         if (this.voice == null) {
             final String contextString = getContextString();
-            logger.debug("{} Ch#{} setVoice {}",
-                    contextString, id, voice.getId());
+            logger.debug("{} Ch#{} setVoice {}", contextString, id, voice.getId());
 
             this.voice = voice;
 
             // Update the voice entity
             if (!isWholeDuration()) {
                 if (slot != null) {
-                    voice.setSlotInfo(
-                            slot,
-                            new VoiceChord(this, Voice.Status.BEGIN));
+                    voice.setSlotInfo(slot, new VoiceChord(this, Voice.Status.BEGIN));
                 }
 
                 // Extend this info to other grouped chords if any
@@ -1303,7 +1295,10 @@ public class Chord
                 if (group != null) {
                     logger.debug(
                             "{} Ch#{} extending voice#{} to group#{}",
-                            contextString, id, voice.getId(), group.getId());
+                            contextString,
+                            id,
+                            voice.getId(),
+                            group.getId());
 
                     group.setVoice(voice);
                 }
@@ -1318,28 +1313,30 @@ public class Chord
                     if (this.getMeasure() == chord.getMeasure()) {
                         logger.debug(
                                 "{} Ch#{} extending voice#{} to tied chord#{}",
-                                contextString, id, voice.getId(), chord.getId());
+                                contextString,
+                                id,
+                                voice.getId(),
+                                chord.getId());
 
                         chord.setVoice(voice);
                     } else {
                         // Chords tied across measure boundary
-                        logger.debug("{} Cross tie {} -> {}",
+                        logger.debug(
+                                "{} Cross tie {} -> {}",
                                 contextString,
-                                toShortString(), chord.toShortString());
+                                toShortString(),
+                                chord.toShortString());
                     }
                 }
             }
         } else if (this.voice != voice) {
             addError(
-                    "Chord. Attempt to reassign voice from " + this.voice.
-                    getId()
-                    + " to " + voice.getId() + " in " + this);
+                    "Chord. Attempt to reassign voice from " + this.voice.getId() + " to "
+                    + voice.getId() + " in " + this);
         } else {
             if (!isWholeDuration()) {
                 if (slot != null) {
-                    voice.setSlotInfo(
-                            slot,
-                            new VoiceChord(this, Voice.Status.BEGIN));
+                    voice.setSlotInfo(slot, new VoiceChord(this, Voice.Status.BEGIN));
                 }
             }
         }
@@ -1361,20 +1358,18 @@ public class Chord
 
         try {
             if (headLocation != null) {
-                sb.append(" head[x=").append(headLocation.x).append(",y=").
-                        append(headLocation.y).append("]");
+                sb.append(" head[x=").append(headLocation.x).append(",y=").append(headLocation.y).append(
+                        "]");
             }
 
             if (tailLocation != null) {
-                sb.append(" tail[x=").append(tailLocation.x).append(",y=").
-                        append(tailLocation.y).append("]");
+                sb.append(" tail[x=").append(tailLocation.x).append(",y=").append(tailLocation.y).append(
+                        "]");
             }
 
             if (!beams.isEmpty()) {
                 try {
-                    sb.append(" beams G#").
-                            append(beams.get(0).getGroup().getId()).append(
-                            "[");
+                    sb.append(" beams G#").append(beams.get(0).getGroup().getId()).append("[");
 
                     for (Beam beam : beams) {
                         sb.append(beam).append(" ");
@@ -1571,24 +1566,24 @@ public class Chord
      */
     private SplitOrder checkTies (TieRelation tie)
     {
-        List<Note> distantNotes = new ArrayList<>();
-        List<Chord> distantChords = new ArrayList<>();
+        List<Note> distantNotes = new ArrayList<Note>();
+        List<Chord> distantChords = new ArrayList<Chord>();
 
         for (TreeNode nn : getNotes()) {
             Note note = (Note) nn;
 
             // Use a COPY of slurs to allow concurrent deletion
-            for (Slur slur : new ArrayList<>(note.getSlurs())) {
+            for (Slur slur : new ArrayList<Slur>(note.getSlurs())) {
                 if (tie.isRelevant(slur, note)) {
                     Note distantNote = tie.getDistantNote(slur);
 
                     if (distantNote != null) {
                         // Safety check
-                        if (distantNote == note
-                            || distantNote.getChord() == this) {
+                        if ((distantNote == note) || (distantNote.getChord() == this)) {
                             // This slur is a loop on the same note or chord!
                             logger.info("Looping slur detected {}", slur);
                             slur.destroy();
+
                             continue;
                         }
 
@@ -1602,12 +1597,15 @@ public class Chord
         }
 
         if (distantChords.size() > 1) {
-            logger.debug("{} Ch#{} with multiple tied chords: {}",
-                    getContextString(), getId(), distantChords);
+            logger.debug(
+                    "{} Ch#{} with multiple tied chords: {}",
+                    getContextString(),
+                    getId(),
+                    distantChords);
 
-            // Prepare the split of this chord, using the most distant note 
+            // Prepare the split of this chord, using the most distant note
             // from chord head
-            SortedSet<Note> tiedNotes = new TreeSet<>(noteHeadComparator);
+            SortedSet<Note> tiedNotes = new TreeSet<Note>(noteHeadComparator);
 
             for (Note distantNote : distantNotes) {
                 for (Slur slur : distantNote.getSlurs()) {
@@ -1657,9 +1655,7 @@ public class Chord
 
                 if (middle.y < bestNote.getCenter().y) {
                     // Stem is up
-                    tailLocation = new Point(
-                            stemBox.x + (stemBox.width / 2),
-                            stemBox.y);
+                    tailLocation = new Point(stemBox.x + (stemBox.width / 2), stemBox.y);
                 } else {
                     // Stem is down
                     tailLocation = new Point(
@@ -1744,7 +1740,7 @@ public class Chord
      */
     private Set<Glyph> retrieveFlags ()
     {
-        Set<Glyph> foundFlags = new HashSet<>();
+        Set<Glyph> foundFlags = new HashSet<Glyph>();
 
         for (Glyph glyph : getSystem().getInfo().getGlyphs()) {
             Shape shape = glyph.getShape();
@@ -1820,11 +1816,9 @@ public class Chord
 
         // Should we split the stem as well?
         // Use a test on length of resulting stem fragment
-        int stemFragmentLength = Math.abs(
-                alien.headLocation.y - this.headLocation.y);
+        int stemFragmentLength = Math.abs(alien.headLocation.y - this.headLocation.y);
 
-        if (stemFragmentLength >= getScale().toPixels(
-                constants.minStemFragmentLength)) {
+        if (stemFragmentLength >= getScale().toPixels(constants.minStemFragmentLength)) {
             this.tailLocation = alien.headLocation;
         }
 
@@ -1838,7 +1832,7 @@ public class Chord
         return alien;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // SplitOrder //
     //------------//
@@ -1849,7 +1843,7 @@ public class Chord
      */
     public static class SplitOrder
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** The chord to be split */
         final Chord chord;
@@ -1857,7 +1851,7 @@ public class Chord
         /** The first note of this chord to feed an alien chord */
         final Note alienNote;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create a chord SplitOrder
          *
@@ -1871,7 +1865,7 @@ public class Chord
             this.alienNote = alienNote;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -1891,12 +1885,11 @@ public class Chord
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction minStemFragmentLength = new Scale.Fraction(
                 2d,
                 "Minimum length for stem fragment in split");
-
     }
 
     //-------------//
@@ -1904,7 +1897,7 @@ public class Chord
     //-------------//
     private abstract static class TieRelation
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         public abstract Note getDistantNote (Slur slur);
 

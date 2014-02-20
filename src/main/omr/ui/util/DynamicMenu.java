@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           D y n a m i c M e n u                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     D y n a m i c M e n u                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.util;
 
@@ -20,20 +20,18 @@ import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 /**
- * Class {@code DynamicMenu} simplifies the definition of a menu,
- * whose content needs to be updated on-the-fly when the menu is being
- * selected.
+ * Class {@code DynamicMenu} simplifies the definition of a menu, whose content needs
+ * to be updated on-the-fly when the menu is being selected.
  *
  * @author Hervé Bitteur
  */
 public abstract class DynamicMenu
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            DynamicMenu.class);
+    private static final Logger logger = LoggerFactory.getLogger(DynamicMenu.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The concrete UI menu. */
     private JMenu menu;
 
@@ -61,7 +59,7 @@ public abstract class DynamicMenu
         }
     };
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // DynamicMenu //
     //-------------//
@@ -92,7 +90,7 @@ public abstract class DynamicMenu
     /**
      * Creates a new DynamicMenu object.
      *
-     * @param action related action
+     * @param action    related action
      * @param menuClass the precise class for menu
      */
     public DynamicMenu (Action action,
@@ -110,7 +108,7 @@ public abstract class DynamicMenu
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getMenu //
     //---------//

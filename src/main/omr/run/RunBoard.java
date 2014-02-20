@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              R u n B o a r d                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        R u n B o a r d                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.run;
 
@@ -36,16 +36,14 @@ import org.slf4j.LoggerFactory;
 public class RunBoard
         extends Board
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            RunBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(RunBoard.class);
 
     /** Events this entity is interested in */
     private static final Class<?>[] eventClasses = new Class<?>[]{RunEvent.class};
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Field for run length */
     private final LIntegerField rLength = new LIntegerField(
             false,
@@ -64,7 +62,7 @@ public class RunBoard
             "Start",
             "Pixel coordinate at start of run");
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // RunBoard //
     //----------//
@@ -127,10 +125,8 @@ public class RunBoard
     {
         super(
                 Board.RUN.name
-                + ((runsTable.getOrientation() == Orientation.VERTICAL) ? " Vert"
-                : " Hori"),
-                Board.RUN.position
-                + ((runsTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
+                + ((runsTable.getOrientation() == Orientation.VERTICAL) ? " Vert" : " Hori"),
+                Board.RUN.position + ((runsTable.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
                 runsTable.getRunService(),
                 eventClasses,
                 false,
@@ -138,7 +134,7 @@ public class RunBoard
         defineLayout();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//

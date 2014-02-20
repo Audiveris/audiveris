@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                   Z i p                                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                             Z i p                                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -27,21 +27,20 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Class {@code Zip} is a convenient utility that provides both
- * writing and reading from a file which is transparently compressed
- * in Zip.
+ * Class {@code Zip} is a convenient utility that provides both writing and reading
+ * from a file which is transparently compressed in Zip.
  *
  * @author Hervé Bitteur
  */
 public class Zip
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     private Zip ()
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // createInputStream //
     //-------------------//
@@ -62,8 +61,7 @@ public class Zip
             //ZipFile zf = new ZipFile(path + ".zip");
             ZipFile zf = new ZipFile(path);
 
-            for (Enumeration<?> entries = zf.entries();
-                    entries.hasMoreElements();) {
+            for (Enumeration<?> entries = zf.entries(); entries.hasMoreElements();) {
                 ZipEntry entry = (ZipEntry) entries.nextElement();
 
                 return zf.getInputStream(entry);
@@ -129,8 +127,7 @@ public class Zip
 
             ZipFile zf = new ZipFile(path + ".zip");
 
-            for (Enumeration<?> entries = zf.entries();
-                    entries.hasMoreElements();) {
+            for (Enumeration<?> entries = zf.entries(); entries.hasMoreElements();) {
                 ZipEntry entry = (ZipEntry) entries.nextElement();
                 InputStream is = zf.getInputStream(entry);
 

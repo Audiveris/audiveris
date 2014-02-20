@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        M e a s u r e E l e m e n t                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  M e a s u r e E l e m e n t                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -28,29 +28,26 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code MeasureElement} is the basis for measure elements
+ * Class {@code MeasureElement} is the basis for measure elements.
  * (directions, notations, etc.)
  *
- * <p>For some elements (such as wedge, dashes, pedal, slur, tuplet), we may
- * have two "events": the starting event and the stopping event.
- * Both will trigger the creation of a MeasureElement instance, the difference
- * being made by the "start" boolean.
+ * <p>
+ * For some elements (such as wedge, dashes, pedal, slur, tuplet), we may have two "events": the
+ * starting event and the stopping event. Both will trigger the creation of a MeasureElement
+ * instance, the difference being made by the "start" boolean.
  *
  * @author Hervé Bitteur
  */
 public abstract class MeasureElement
         extends MeasureNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            MeasureElement.class);
+    private static final Logger logger = LoggerFactory.getLogger(MeasureElement.class);
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The precise shape */
     private Shape shape;
 
@@ -60,7 +57,7 @@ public abstract class MeasureElement
     /** Related chord if any (in containing measure) */
     private final Chord chord;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance
      *
@@ -87,7 +84,7 @@ public abstract class MeasureElement
         this.chord = chord;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getChord //
     //----------//
@@ -146,16 +143,13 @@ public abstract class MeasureElement
         StringBuilder sb = new StringBuilder();
 
         // Actual element class name
-        String name = getClass()
-                .getName();
+        String name = getClass().getName();
         int period = name.lastIndexOf('.');
-        sb.append("{")
-                .append((period != -1) ? name.substring(period + 1) : name);
+        sb.append("{").append((period != -1) ? name.substring(period + 1) : name);
 
         try {
             // Shape
-            sb.append(" ")
-                    .append(getShape());
+            sb.append(" ").append(getShape());
 
             // Start ?
             if (!isStart()) {
@@ -163,38 +157,23 @@ public abstract class MeasureElement
             }
 
             // Point
-            sb.append(" ref[x=")
-                    .append(getReferencePoint().x)
-                    .append(",y=")
-                    .append(getReferencePoint().y)
-                    .append("]");
+            sb.append(" ref[x=").append(getReferencePoint().x).append(",y=")
+                    .append(getReferencePoint().y).append("]");
 
             // Box
-            sb.append(" box[x=")
-                    .append(getBox().x)
-                    .append(",y=")
-                    .append(getBox().y)
-                    .append(",w=")
-                    .append(getBox().width)
-                    .append(",h=")
-                    .append(getBox().height)
-                    .append("]");
+            sb.append(" box[x=").append(getBox().x).append(",y=").append(getBox().y).append(",w=").append(
+                    getBox().width).append(",h=").append(getBox().height).append("]");
 
             // Glyphs
-            sb.append(" ")
-                    .append(Glyphs.toString(glyphs));
+            sb.append(" ").append(Glyphs.toString(glyphs));
 
             // Chord
-            sb.append(" ")
-                    .append(chord.getContextString())
-                    .append(" ")
-                    .append(chord);
+            sb.append(" ").append(chord.getContextString()).append(" ").append(chord);
         } catch (NullPointerException e) {
             sb.append(" INVALID");
         }
 
-        sb.append(internalsString())
-                .append("}");
+        sb.append(internalsString()).append("}");
 
         return sb.toString();
     }
@@ -204,8 +183,7 @@ public abstract class MeasureElement
     //--------------//
     protected Shape computeShape ()
     {
-        return getGlyph()
-                .getShape();
+        return getGlyph().getShape();
     }
 
     //-----------//
@@ -215,9 +193,7 @@ public abstract class MeasureElement
                                       Point point)
     {
         // Shift on abscissa (because of left side of note heads)
-        int dx = measure.getSystem()
-                .getScale()
-                .toPixels(constants.slotShift);
+        int dx = measure.getSystem().getScale().toPixels(constants.slotShift);
 
         return measure.getEventChord(new Point(point.x + dx, point.y));
     }
@@ -248,20 +224,18 @@ public abstract class MeasureElement
         setReferencePoint(null);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Abscissa shift when looking for time slot (half a note head) */
         Scale.Fraction slotShift = new Scale.Fraction(
                 0.5,
-                "Abscissa shift when looking for time slot "
-                + "(half a note head)");
-
+                "Abscissa shift when looking for time slot " + "(half a note head)");
     }
 }

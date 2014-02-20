@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             P r i n t S t e p                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       P r i n t S t e p                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -29,13 +29,11 @@ import java.util.Collection;
 public class PrintStep
         extends AbstractStep
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            PrintStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(PrintStep.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // PrintStep //
     //-----------//
@@ -52,7 +50,7 @@ public class PrintStep
                 "Write the output PDF file");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // doit //
     //------//
@@ -61,7 +59,6 @@ public class PrintStep
                       Sheet sheet)
             throws StepException
     {
-        ScoresManager.getInstance()
-                .writePhysicalPdf(sheet.getScore(), null);
+        ScoresManager.getInstance().writePhysicalPdf(sheet.getScore(), null);
     }
 }

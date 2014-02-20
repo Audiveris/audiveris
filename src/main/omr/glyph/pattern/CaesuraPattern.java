@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        C a e s u r a P a t t e r n                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  C a e s u r a P a t t e r n                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
@@ -34,13 +34,11 @@ import java.awt.Point;
 public class CaesuraPattern
         extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            CaesuraPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(CaesuraPattern.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------------//
     // CaesuraPattern //
     //----------------//
@@ -54,7 +52,7 @@ public class CaesuraPattern
         super("Caesura", system);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // runPattern //
     //------------//
@@ -73,8 +71,7 @@ public class CaesuraPattern
             SystemPart part = scoreSystem.getPartAt(center);
             Measure measure = part.getMeasureAt(center);
 
-            if (!measure.getChords()
-                    .isEmpty()) {
+            if (!measure.getChords().isEmpty()) {
                 if (glyph.isVip() || logger.isDebugEnabled()) {
                     logger.info("Cancelled caesura #{}", glyph.getId());
                 }

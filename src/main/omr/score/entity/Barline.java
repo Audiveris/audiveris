@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               B a r l i n e                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         B a r l i n e                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -33,18 +33,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class {@code Barline} encapsulates a logical bar line, that may be
- * composed of several physical components : repeat dots, thin and
- * thick bars.
+ * Class {@code Barline} encapsulates a logical bar line, that may be composed of
+ * several physical components : repeat dots, thin and thick bars.
  *
  * @author Hervé Bitteur
  */
 public class Barline
         extends PartNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Barline.class);
 
     /** Predicate to detect a barline glyph (not a repeat dot) */
@@ -55,20 +53,19 @@ public class Barline
         {
             Shape shape = glyph.getShape();
 
-            return (shape == Shape.PART_DEFINING_BARLINE)
-                   || (shape == Shape.THIN_BARLINE)
+            return (shape == Shape.PART_DEFINING_BARLINE) || (shape == Shape.THIN_BARLINE)
                    || (shape == Shape.THICK_BARLINE);
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Precise bar line shape */
     private Shape shape;
 
     /** Signature of this bar line, as inferred from its components */
     private String signature;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------//
     // Barline //
     //---------//
@@ -82,7 +79,7 @@ public class Barline
         super(measure);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -118,7 +115,7 @@ public class Barline
     public int getLeftX ()
     {
         Rectangle box = getBox();
-        int middleY = box.y + box.height / 2;
+        int middleY = box.y + (box.height / 2);
 
         for (Glyph glyph : getGlyphs()) {
             if (linePredicate.check(glyph)) {
@@ -146,7 +143,7 @@ public class Barline
     {
         int right = 0;
         Rectangle box = getBox();
-        int middleY = box.y + box.height / 2;
+        int middleY = box.y + (box.height / 2);
 
         for (Glyph glyph : getGlyphs()) {
             if (glyph.isBar()) {
@@ -233,8 +230,7 @@ public class Barline
 
         for (Glyph glyph : getGlyphs()) {
             if (glyph.isBar()) {
-                float thickness = (float) glyph.getWeight() / glyph.getLength(
-                        Orientation.VERTICAL);
+                float thickness = (float) glyph.getWeight() / glyph.getLength(Orientation.VERTICAL);
                 g.setStroke(new BasicStroke(thickness));
                 glyph.renderLine(g);
             }
@@ -290,9 +286,8 @@ public class Barline
         sb.append("{Barline");
 
         try {
-            sb.append(" ").append(getShape()).append(" center=").append(
-                    getCenter()).append(" sig=").append(getSignature()).append(Glyphs.
-                    toString(" glyphs", glyphs));
+            sb.append(" ").append(getShape()).append(" center=").append(getCenter()).append(
+                    " sig=").append(getSignature()).append(Glyphs.toString(" glyphs", glyphs));
         } catch (NullPointerException e) {
             sb.append(" INVALID");
         }
@@ -403,9 +398,7 @@ public class Barline
                         // BAR : Check overlap with staff reference
                         Rectangle box = glyph.getBounds();
 
-                        if (Math.max(box.y, topStaff) > Math.min(
-                                box.y + box.height,
-                                botStaff)) {
+                        if (Math.max(box.y, topStaff) > Math.min(box.y + box.height, botStaff)) {
                             continue;
                         }
                     }
@@ -433,15 +426,15 @@ public class Barline
         return signature;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // Signatures //
     //------------//
     private static class Signatures
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
-        public static final Map<String, Shape> map = new HashMap<>();
+        public static final Map<String, Shape> map = new HashMap<String, Shape>();
 
         static {
             map.put("N", Shape.THIN_BARLINE);
@@ -457,6 +450,7 @@ public class Barline
             map.put("NKN", Shape.BACK_TO_BACK_REPEAT_SIGN); // For convenience
         }
 
+        //~ Constructors ---------------------------------------------------------------------------
         private Signatures ()
         {
         }

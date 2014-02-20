@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         B u f f e r e d S o u r c e                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   B u f f e r e d S o u r c e                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -21,9 +21,9 @@ import java.awt.image.Raster;
  * @author Hervé Bitteur
  */
 public class BufferedSource
-    implements PixelSource
+        implements PixelSource
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The wrapped BufferedImage instance. */
     private final BufferedImage image;
@@ -37,8 +37,7 @@ public class BufferedSource
     /** Buffer to read pixel value. */
     private final int[] pixelArray;
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BufferedSource object around a given BufferedImage
      * instance.
@@ -55,23 +54,16 @@ public class BufferedSource
         pixelArray = new int[4];
     }
 
-    //~ Methods ----------------------------------------------------------------
-
-    @Override
-    public int getHeight ()
-    {
-        return image.getHeight();
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public int get (int x,
-                         int y)
+                    int y)
     {
         raster.getPixel(x, y, pixelArray);
 
         if (hasAlpha) {
-            int    gray = pixelArray[0];
-            int    alpha = pixelArray[3];
+            int gray = pixelArray[0];
+            int alpha = pixelArray[3];
             double a = alpha / 255d;
             double p = ((1 - a) * 255) + (a * gray);
 
@@ -79,6 +71,12 @@ public class BufferedSource
         } else {
             return pixelArray[0];
         }
+    }
+
+    @Override
+    public int getHeight ()
+    {
+        return image.getHeight();
     }
 
     @Override

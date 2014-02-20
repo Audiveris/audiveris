@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            G u i A c t i o n s                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      G u i A c t i o n s                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui;
 
@@ -74,22 +74,17 @@ import javax.swing.text.JTextComponent;
 public class GuiActions
         extends ScoreDependent
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            GuiActions.class);
+    private static final Logger logger = LoggerFactory.getLogger(GuiActions.class);
 
     /** Options UI */
     private static Options options;
 
     // Resource injection
-    private static ResourceMap resource = Application.getInstance()
-            .getContext()
-            .getResourceMap(
+    private static ResourceMap resource = Application.getInstance().getContext().getResourceMap(
             GuiActions.class);
 
     /** Singleton */
@@ -107,24 +102,7 @@ public class GuiActions
     /** Should the boards window be displayed */
     public static final String BOARDS_DISPLAYED = "boardsDisplayed";
 
-    //~ Methods ----------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized GuiActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new GuiActions();
-        }
-
-        return INSTANCE;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // clearLog //
     //----------//
@@ -136,8 +114,7 @@ public class GuiActions
     @Action
     public void clearLog (ActionEvent e)
     {
-        Main.getGui()
-                .clearLog();
+        Main.getGui().clearLog();
     }
 
     //---------------//
@@ -181,8 +158,7 @@ public class GuiActions
     @Action(enabledProperty = SHEET_AVAILABLE)
     public void dumpEventServices (ActionEvent e)
     {
-        SheetsController.getInstance()
-                .dumpCurrentSheetServices();
+        SheetsController.getInstance().dumpCurrentSheetServices();
     }
 
     //------//
@@ -196,8 +172,24 @@ public class GuiActions
     @Action
     public void exit (ActionEvent e)
     {
-        MainGui.getInstance()
-                .exit();
+        MainGui.getInstance().exit();
+    }
+
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized GuiActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new GuiActions();
+        }
+
+        return INSTANCE;
     }
 
     //-------------------//
@@ -218,8 +210,7 @@ public class GuiActions
      */
     public boolean isBrowserSupported ()
     {
-        return WebBrowser.getBrowser()
-                .isSupported();
+        return WebBrowser.getBrowser().isSupported();
     }
 
     //-------------------//
@@ -324,16 +315,13 @@ public class GuiActions
     @Action(enabledProperty = "browserSupported")
     public void showManual (ActionEvent e)
     {
-        File file = new File(
-                WellKnowns.DOC_FOLDER,
-                constants.manualUrl.getValue());
+        File file = new File(WellKnowns.DOC_FOLDER, constants.manualUrl.getValue());
 
         if (!file.exists()) {
             logger.warn("Cannot find file {}", file);
         } else {
             URI uri = file.toURI();
-            WebBrowser.getBrowser()
-                    .launch(uri);
+            WebBrowser.getBrowser().launch(uri);
         }
     }
 
@@ -402,8 +390,7 @@ public class GuiActions
     @Action
     public void verifyTrainingMaterial (ActionEvent e)
     {
-        SampleVerifier.getInstance()
-                .setVisible(true);
+        SampleVerifier.getInstance().setVisible(true);
     }
 
     //--------------//
@@ -421,14 +408,13 @@ public class GuiActions
 
         try {
             URI uri = new URI(str);
-            WebBrowser.getBrowser()
-                    .launch(uri);
+            WebBrowser.getBrowser().launch(uri);
         } catch (URISyntaxException ex) {
             logger.warn("Illegal site uri " + str, ex);
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // AboutAction //
     //-------------//
@@ -439,11 +425,11 @@ public class GuiActions
      */
     public static class AboutAction
     {
-        //~ Enumerations -------------------------------------------------------
+        //~ Enumerations ---------------------------------------------------------------------------
 
         private static enum Topic
         {
-            //~ Enumeration constant initializers ------------------------------
+            //~ Enumeration constant initializers --------------------------------------------------
 
             /** Longer application description */
             description(new JTextField()),
@@ -469,32 +455,31 @@ public class GuiActions
             os(new JTextField()),
             /** Arch */
             osArch(new JTextField());
-            //~ Instance fields ------------------------------------------------
+            //~ Instance fields --------------------------------------------------------------------
 
             public final JTextComponent comp;
 
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
             Topic (JTextComponent comp)
             {
                 this.comp = comp;
             }
         }
 
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
         // Dialog
         private JDialog aboutBox = null;
 
         private HyperlinkListener linkListener = new LinkListener();
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public void actionPerformed (ActionEvent e)
         {
             if (aboutBox == null) {
                 aboutBox = createAboutBox();
             }
 
-            MainGui.getInstance()
-                    .show(aboutBox);
+            MainGui.getInstance().show(aboutBox);
         }
 
         private JDialog createAboutBox ()
@@ -544,8 +529,7 @@ public class GuiActions
                 topic.comp.setBackground(Color.WHITE);
 
                 if (topic.comp instanceof JEditorPane) {
-                    ((JEditorPane) topic.comp).addHyperlinkListener(
-                            linkListener);
+                    ((JEditorPane) topic.comp).addHyperlinkListener(linkListener);
                 }
 
                 builder.add(topic.comp, cst.xy(3, iRow));
@@ -562,8 +546,7 @@ public class GuiActions
 
             // Manual injection
             resource.injectComponents(dialog);
-            Topic.version.comp.setText(
-                    WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD);
+            Topic.version.comp.setText(WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD);
             Topic.classes.comp.setText(WellKnowns.CLASS_CONTAINER.toString());
             Topic.license.comp.setText("GNU GPL V2");
 
@@ -574,35 +557,32 @@ public class GuiActions
                     + System.getProperty("java.runtime.version") + ")");
             Topic.javaVm.comp.setText(
                     System.getProperty("java.vm.name") + " (build "
-                    + System.getProperty("java.vm.version") + ", "
-                    + System.getProperty("java.vm.info") + ")");
+                    + System.getProperty("java.vm.version") + ", " + System.getProperty("java.vm.info")
+                    + ")");
             Topic.os.comp.setText(
-                    System.getProperty("os.name") + " "
-                    + System.getProperty("os.version"));
+                    System.getProperty("os.name") + " " + System.getProperty("os.version"));
             Topic.osArch.comp.setText(System.getProperty("os.arch"));
 
             return dialog;
         }
 
-        //~ Inner Classes ------------------------------------------------------
+        //~ Inner Classes --------------------------------------------------------------------------
         //------------//
         // ImagePanel //
         //------------//
         private static class ImagePanel
                 extends JPanel
         {
-            //~ Instance fields ------------------------------------------------
+            //~ Instance fields --------------------------------------------------------------------
 
             private Image img;
 
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
             public ImagePanel (Image img)
             {
                 this.img = img;
 
-                Dimension size = new Dimension(
-                        img.getWidth(null),
-                        img.getHeight(null));
+                Dimension size = new Dimension(img.getWidth(null), img.getHeight(null));
                 setPreferredSize(size);
                 setMinimumSize(size);
                 setMaximumSize(size);
@@ -616,7 +596,7 @@ public class GuiActions
                 this(new ImageIcon(uri.toURL()).getImage());
             }
 
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void paintComponent (Graphics g)
             {
@@ -627,7 +607,7 @@ public class GuiActions
         private static class LinkListener
                 implements HyperlinkListener
         {
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
 
             @Override
             public void hyperlinkUpdate (HyperlinkEvent event)
@@ -639,8 +619,7 @@ public class GuiActions
                     try {
                         //System.out.println("Activated URL " + url);
                         URI uri = new URI(url.toString());
-                        WebBrowser.getBrowser()
-                                .launch(uri);
+                        WebBrowser.getBrowser().launch(uri);
                     } catch (URISyntaxException ex) {
                         logger.warn("Illegal URI " + url, ex);
                     }
@@ -655,7 +634,7 @@ public class GuiActions
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.String webSiteUrl = new Constant.String(
                 "http://www.audiveris.org",
@@ -676,7 +655,6 @@ public class GuiActions
         final Constant.Boolean errorsDisplayed = new Constant.Boolean(
                 true,
                 "Should the errors window be displayed");
-
     }
 
     //-------------//
@@ -685,14 +663,14 @@ public class GuiActions
     private static class OptionsTask
             extends Task<Options, Void>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public OptionsTask ()
         {
             super(MainGui.getInstance());
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected Options doInBackground ()
                 throws Exception
@@ -708,8 +686,7 @@ public class GuiActions
         protected void succeeded (Options options)
         {
             if (options != null) {
-                MainGui.getInstance()
-                        .show(options.getComponent());
+                MainGui.getInstance().show(options.getComponent());
             }
         }
     }

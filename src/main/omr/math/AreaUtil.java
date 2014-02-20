@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               A r e a U t i l                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         A r e a U t i l                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -20,14 +20,13 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code AreaUtil} gathers static utility methods for Area
- * instances.
+ * Class {@code AreaUtil} gathers static utility methods for Area instances.
  *
  * @author Hervé Bitteur
  */
 public class AreaUtil
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     //-------------------------//
     // horizontalParallelogram //
@@ -177,8 +176,7 @@ public class AreaUtil
 
         // Left line
         path.append(
-                median.getPathIterator(
-                        AffineTransform.getTranslateInstance(-dx + 0.5, 0)),
+                median.getPathIterator(AffineTransform.getTranslateInstance(-dx + 0.5, 0)),
                 false);
 
         // Right line (reversed)
@@ -193,7 +191,7 @@ public class AreaUtil
         return new Area(path);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // CoreData //
     //----------//
@@ -202,7 +200,7 @@ public class AreaUtil
      */
     public static class CoreData
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Total area length. (height for vertical, width for horizontal) */
         public final int length;
@@ -213,7 +211,7 @@ public class AreaUtil
         /** Ratio of white elements on total length. */
         public final double whiteRatio;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public CoreData (int length,
                          int gap,
                          double whiteRatio)
@@ -223,7 +221,7 @@ public class AreaUtil
             this.whiteRatio = whiteRatio;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                   G l y p h A d m i n i s t r a t i o n                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                             G l y p h A d m i n i s t r a t i o n                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -17,16 +17,15 @@ import omr.glyph.GlyphNest;
 import omr.util.Vip;
 
 /**
- * Interface {@code GlyphAdministration} defines the administration
- * facet of a glyph, handling the glyph id and its related containing
- * nest.
+ * Interface {@code GlyphAdministration} defines the administration facet of a glyph,
+ * handling the glyph id and its related containing nest.
  *
  * @author Hervé Bitteur
  */
 interface GlyphAdministration
         extends GlyphFacet, Vip
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report whether this entity has been "processed".

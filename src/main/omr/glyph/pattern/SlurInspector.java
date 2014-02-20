@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         S l u r I n s p e c t o r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   S l u r I n s p e c t o r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
@@ -17,10 +17,12 @@ import omr.constant.ConstantSet;
 import omr.glyph.CompoundBuilder;
 import omr.glyph.Evaluation;
 import omr.glyph.GlyphLayer;
+import omr.glyph.GlyphNest;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.BasicGlyph;
+import omr.glyph.facets.Glyph;
 
 import omr.grid.StaffInfo;
 
@@ -34,6 +36,7 @@ import static omr.run.Orientation.*;
 
 import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
+import omr.sheet.SystemManager;
 
 import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.*;
@@ -54,9 +57,6 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
-import omr.glyph.GlyphNest;
-import omr.glyph.facets.Glyph;
-import omr.sheet.SystemManager;
 
 /**
  * Class {@code SlurInspector} encapsulates physical processing
@@ -67,27 +67,24 @@ import omr.sheet.SystemManager;
 public class SlurInspector
         extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
      * TODO:
      * - extendSlur() should extend glyph by glyph
      * - extendSlurSection() & collectMemberSections() should be factorized
      */
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(SlurInspector.class);
 
     /** Shapes suitable for extensions. */
     private static final EnumSet<Shape> extShapes = EnumSet.copyOf(
             ShapeSet.shapesOf(
                     ShapeSet.Dots,
-                    ShapeSet.shapesOf(Shape.CLUTTER, Shape.CHARACTER,
-                                      Shape.LEDGER, Shape.TENUTO)));
+                    ShapeSet.shapesOf(Shape.CLUTTER, Shape.CHARACTER, Shape.LEDGER, Shape.TENUTO)));
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Compound adapter to extend slurs */
     private final SlurCompoundAdapter adapter;
@@ -95,7 +92,7 @@ public class SlurInspector
     /** Scale-dependent parameters. */
     private final Parameters params;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // SlurInspector //
     //---------------//
@@ -113,7 +110,7 @@ public class SlurInspector
         params = new Parameters(system.getSheet().getScale());
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // computeCircle //
     //---------------//
@@ -152,23 +149,16 @@ public class SlurInspector
         // We force 3 defining points
         Point2D left = getSlurPointNearX(box.x, sections, box);
         Point2D right = getSlurPointNearX(box.x + box.width, sections, box);
-        Point2D middle = getSlurPointNearX(
-                box.x + (box.width / 2),
-                sections,
-                box);
+        Point2D middle = getSlurPointNearX(box.x + (box.width / 2), sections, box);
 
         // Adjust middle abscissa according to slur orientation
-        double slope = (right.getY() - left.getY()) / (right.getX()
-                                                       - left.getX());
+        double slope = (right.getY() - left.getY()) / (right.getX() - left.getX());
         Point2D inter = new Point2D.Double(
                 middle.getX(),
                 left.getY() + ((middle.getX() - left.getX()) * slope));
         double dy = middle.getY() - inter.getY();
-        double dx = -dy * (slope / (1 + slope * slope));
-        middle = getSlurPointNearX(
-                box.x + (box.width / 2) + (int) Math.rint(dx),
-                sections,
-                box);
+        double dx = -dy * (slope / (1 + (slope * slope)));
+        middle = getSlurPointNearX(box.x + (box.width / 2) + (int) Math.rint(dx), sections, box);
 
         Circle circle = new Circle(left, middle, right, xx, yy);
 
@@ -229,7 +219,7 @@ public class SlurInspector
     {
         // Make a list of all slur glyphs to be checked in this system
         // (So as to free the system glyphs list for on-the-fly modifications)
-        List<Glyph> slurs = new ArrayList<>();
+        List<Glyph> slurs = new ArrayList<Glyph>();
         int modifs = 0;
 
         for (Glyph glyph : system.getGlyphs()) {
@@ -243,7 +233,7 @@ public class SlurInspector
         }
 
         // First pass to extend existing slurs
-        List<Glyph> toAdd = new ArrayList<>();
+        List<Glyph> toAdd = new ArrayList<Glyph>();
 
         for (Iterator<Glyph> it = slurs.iterator(); it.hasNext();) {
             Glyph slur = it.next();
@@ -264,8 +254,10 @@ public class SlurInspector
                 }
             } catch (NoSlurCurveException ex) {
                 if (logger.isDebugEnabled()) {
-                    logger.info("{}Abnormal curve slur#{}",
-                                system.getSheet().getLogPrefix(), slur.getId());
+                    logger.info(
+                            "{}Abnormal curve slur#{}",
+                            system.getSheet().getLogPrefix(),
+                            slur.getId());
                 }
 
                 slur.setShape(null);
@@ -294,9 +286,7 @@ public class SlurInspector
                         slur.setShape(null);
                     }
                 } catch (Exception ex) {
-                    logger.warn(
-                            "Error in trimming slur#" + slur.getId(),
-                            ex);
+                    logger.warn("Error in trimming slur#" + slur.getId(), ex);
                 }
 
                 modifs++;
@@ -338,11 +328,11 @@ public class SlurInspector
         }
 
         // Get a COPY of the member list, sorted by decreasing weight */
-        List<Section> members = new ArrayList<>(oldSlur.getMembers());
+        List<Section> members = new ArrayList<Section>(oldSlur.getMembers());
         Collections.sort(members, Section.reverseWeightComparator);
 
         // Find the suitable seed
-        Wrapper<Double> seedDist = new Wrapper<>();
+        Wrapper<Double> seedDist = new Wrapper<Double>();
         Section seedSection = findSeedSection(members, seedDist);
 
         // If no significant section has been found, just give up
@@ -355,13 +345,10 @@ public class SlurInspector
         }
 
         // Sections collected (including seedSection)
-        List<Section> collected = collectMemberSections(
-                members,
-                seedSection,
-                seedDist.value);
+        List<Section> collected = collectMemberSections(members, seedSection, seedDist.value);
 
         // Sections left over
-        List<Section> left = new ArrayList<>(members);
+        List<Section> left = new ArrayList<Section>(members);
         left.removeAll(collected);
 
         // Sections too far from the other ones
@@ -378,13 +365,14 @@ public class SlurInspector
 
                 if (newSlur != null) {
                     if (oldSlur.isVip() || logger.isDebugEnabled()) {
-                        logger.info("Trimmed slur #{} as smaller #{}",
-                                    oldSlur.getId(), newSlur.getId());
+                        logger.info(
+                                "Trimmed slur #{} as smaller #{}",
+                                oldSlur.getId(),
+                                newSlur.getId());
                     }
                 } else {
                     if (oldSlur.isVip() || logger.isDebugEnabled()) {
-                        logger.info("Giving up slur #{} w/ {}",
-                                    oldSlur.getId(), collected);
+                        logger.info("Giving up slur #{} w/ {}", oldSlur.getId(), collected);
                     }
 
                     left.addAll(collected);
@@ -407,8 +395,10 @@ public class SlurInspector
                 }
             }
         } else {
-            logger.warn("{} No section left when trimming slur #{}",
-                        system.getScoreSystem().getContextString(), oldSlur.getId());
+            logger.warn(
+                    "{} No section left when trimming slur #{}",
+                    system.getScoreSystem().getContextString(),
+                    oldSlur.getId());
 
             return null;
         }
@@ -435,6 +425,7 @@ public class SlurInspector
 
             // Beware, the newGlyph may now belong to a different system
             SystemManager systemManager = system.getSheet().getSystemManager();
+
             for (SystemInfo newSystem : systemManager.getSystemsOf(newGlyph)) {
                 // Check whether SLUR is not forbidden for this glyph
                 newGlyph = newSystem.registerGlyph(newGlyph);
@@ -471,7 +462,7 @@ public class SlurInspector
                                                  Section seedSection,
                                                  double lastDistance)
     {
-        List<Section> collected = new ArrayList<>();
+        List<Section> collected = new ArrayList<Section>();
 
         // We impose the seed
         collected.add(seedSection);
@@ -505,7 +496,7 @@ public class SlurInspector
                 logger.debug("Trying {}", section);
 
                 // Try a circle
-                List<Section> config = new ArrayList<>(collected);
+                List<Section> config = new ArrayList<Section>(collected);
                 config.add(section);
 
                 try {
@@ -545,7 +536,7 @@ public class SlurInspector
     private List<Section> detectIsolatedSections (Section seedSection,
                                                   List<Section> collected)
     {
-        final List<Section> isolated = new ArrayList<>(collected);
+        final List<Section> isolated = new ArrayList<Section>(collected);
         final Rectangle slurBox = seedSection.getBounds();
         boolean makingProgress;
 
@@ -593,8 +584,7 @@ public class SlurInspector
             SideLoop:
             while (true) {
                 if (root.isVip() || logger.isDebugEnabled()) {
-                    logger.info("Trying to {} extend slur #{}",
-                                side, root.getId());
+                    logger.info("Trying to {} extend slur #{}", side, root.getId());
                 }
 
                 // Look at neighboring glyphs (TODO: should be incremental?)
@@ -606,8 +596,11 @@ public class SlurInspector
 
                 if (compound != null) {
                     if (root.isVip() || logger.isDebugEnabled()) {
-                        logger.info("Slur #{} {} extended as #{}",
-                                    root.getId(), side, compound.getId());
+                        logger.info(
+                                "Slur #{} {} extended as #{}",
+                                root.getId(),
+                                side,
+                                compound.getId());
 
                         if (root.isVip()) {
                             compound.setVip();
@@ -655,10 +648,11 @@ public class SlurInspector
                                       HorizontalSide side)
     {
         final GlyphNest nest = system.getSheet().getNest();
+
         // The best compound obtained so far
         Glyph bestSlur = null;
 
-        List<Section> sections = new ArrayList<>();
+        List<Section> sections = new ArrayList<Section>();
         sections.addAll(system.getHorizontalSections());
         sections.addAll(system.getVerticalSections());
 
@@ -696,7 +690,7 @@ public class SlurInspector
             }
 
             // Retrieve good neighbors among the suitable sections
-            List<Section> neighbors = new ArrayList<>();
+            List<Section> neighbors = new ArrayList<Section>();
 
             for (Section section : sections) {
                 if (section.isVip()) {
@@ -704,8 +698,7 @@ public class SlurInspector
                 }
 
                 if (!section.isProcessed()) {
-                    if (adapter.isSectionClose(section)
-                        && adapter.isSectionSuitable(section)) {
+                    if (adapter.isSectionClose(section) && adapter.isSectionSuitable(section)) {
                         neighbors.add(section);
                         section.setProcessed(true);
                     }
@@ -718,13 +711,13 @@ public class SlurInspector
                 Collections.sort(neighbors, adapter.sectionComparator);
 
                 // Sections effectively added
-                List<Section> added = new ArrayList<>();
+                List<Section> added = new ArrayList<Section>();
 
                 for (Section section : neighbors) {
                     added.add(section);
 
                     // slur config = seed sections + added sections
-                    List<Section> config = new ArrayList<>(added);
+                    List<Section> config = new ArrayList<Section>(added);
                     config.addAll(root.getMembers());
 
                     boolean sectionOk = false;
@@ -733,18 +726,21 @@ public class SlurInspector
 
                     if (distance <= adapter.extendedDistance()) {
                         Glyph compound = nest.buildGlyph(
-                                config, GlyphLayer.DEFAULT, false, Glyph.Linking.NO_LINK);
+                                config,
+                                GlyphLayer.DEFAULT,
+                                false,
+                                Glyph.Linking.NO_LINK);
 
                         if (adapter.isCompoundValid(compound)) {
                             // Assign and insert into system & nest environments
                             compound = system.registerGlyph(compound);
-                            compound.setEvaluation(
-                                    adapter.getChosenEvaluation());
+                            compound.setEvaluation(adapter.getChosenEvaluation());
 
                             if (root.isVip() || logger.isDebugEnabled()) {
                                 logger.info(
                                         "Slur #{} extended as #{} with {}",
-                                        root.getId(), compound.getId(),
+                                        root.getId(),
+                                        compound.getId(),
                                         Sections.toString(added));
 
                                 if (root.isVip()) {
@@ -762,8 +758,7 @@ public class SlurInspector
 
                     if (!sectionOk) {
                         if (root.isVip() || logger.isDebugEnabled()) {
-                            logger.info("Slur #{} excluding section#{}",
-                                        root.getId(), section);
+                            logger.info("Slur #{} excluding section#{}", root.getId(), section);
                         }
 
                         break;
@@ -775,6 +770,23 @@ public class SlurInspector
         }
 
         return bestSlur;
+    }
+
+    //------------------//
+    // extendedDistance //
+    //------------------//
+    /**
+     * Report the maximum extended circle distance, knowing the
+     * circle distance of the current slur.
+     *
+     * @param lastDistance current slur fitting distance
+     * @return extended maximum distance
+     */
+    private double extendedDistance (double lastDistance)
+    {
+        double ratio = constants.distanceExtensionRatio.getValue();
+
+        return lastDistance + (ratio * (params.maxCircleDistance - lastDistance));
     }
 
     //-----------------//
@@ -824,8 +836,7 @@ public class SlurInspector
             if (seedSection == null) {
                 logger.debug("No suitable seed section found");
             } else {
-                logger.debug("Seed section is {} dist:{}",
-                             seedSection, seedDist.value);
+                logger.debug("Seed section is {} dist:{}", seedSection, seedDist.value);
             }
         }
 
@@ -861,7 +872,7 @@ public class SlurInspector
             return "no curve";
         }
 
-        // Check radius 
+        // Check radius
         double radius = circle.getRadius();
 
         if (radius < params.minCircleRadius) {
@@ -949,23 +960,81 @@ public class SlurInspector
         return cause == null;
     }
 
-    //------------------//
-    // extendedDistance //
-    //------------------//
-    /**
-     * Report the maximum extended circle distance, knowing the
-     * circle distance of the current slur.
-     *
-     * @param lastDistance current slur fitting distance
-     * @return extended maximum distance
-     */
-    private double extendedDistance (double lastDistance)
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
     {
-        double ratio = constants.distanceExtensionRatio.getValue();
-        return lastDistance + ratio * (params.maxCircleDistance - lastDistance);
+        //~ Instance fields ------------------------------------------------------------------------
+
+        Scale.Fraction maxCircleDistance = new Scale.Fraction(
+                0.006,
+                "Maximum distance to approximating circle for a slur");
+
+        Scale.Fraction minCircleRadius = new Scale.Fraction(
+                0.7,
+                "Minimum circle radius for a slur");
+
+        Scale.Fraction maxCircleRadius = new Scale.Fraction(
+                100,
+                "Maximum circle radius for a slur");
+
+        Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
+                0.3,
+                "Minimum weight of a chunk to be part of slur computation");
+
+        Scale.AreaFraction minExtensionWeight = new Scale.AreaFraction(
+                0.01,
+                "Minimum weight of a glyph to be considered for slur extension");
+
+        Scale.Fraction slurBoxDx = new Scale.Fraction(
+                0.7,
+                "Extension abscissa when looking for slur compound");
+
+        Scale.Fraction slurBoxDy = new Scale.Fraction(
+                0.4,
+                "Extension ordinate when looking for slur compound");
+
+        Scale.Fraction slurBoxHypot = new Scale.Fraction(
+                0.9,
+                "Extension length when looking for line-free slur compound");
+
+        Scale.Fraction slurLineBoxHypot = new Scale.Fraction(
+                1.5,
+                "Extension length when looking for line-touching slur compound");
+
+        Scale.Fraction slurLineTangentBoxHypot = new Scale.Fraction(
+                3.0,
+                "Extension length when looking for line-tangent slur compound");
+
+        Scale.Fraction minSlurWidth = new Scale.Fraction(
+                2,
+                "Minimum width to use curve rather than line for extension");
+
+        Scale.LineFraction minExtensionHeight = new Scale.LineFraction(
+                2,
+                "Minimum height for extension box, specified as LineFraction");
+
+        Scale.LineFraction maxChunkThickness = new Scale.LineFraction(
+                2,
+                "Maximum mean thickness of a chunk to be part of slur computation");
+
+        Constant.Ratio maxHeightRatio = new Constant.Ratio(
+                2.0,
+                "Maximum height ratio between curve height and glyph height");
+
+        Constant.Double maxTangentSlope = new Constant.Double(
+                "tangent",
+                0.05,
+                "Maximum slope for staff line tangent");
+
+        Constant.Ratio distanceExtensionRatio = new Constant.Ratio(
+                0.67,
+                "Acceptable distance extension to maximum limit");
     }
 
-    //~ Inner Classes ----------------------------------------------------------
     //
     //----------------------//
     // NoSlurCurveException //
@@ -979,6 +1048,64 @@ public class SlurInspector
     {
     }
 
+    //------------//
+    // Parameters //
+    //------------//
+    private static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final int interline;
+
+        final int minChunkWeight;
+
+        final int minExtensionWeight;
+
+        final double maxChunkThickness;
+
+        final int slurBoxDx;
+
+        final int slurBoxDy;
+
+        final int targetHypot;
+
+        final int targetLineHypot;
+
+        final int targetLineTangentHypot;
+
+        final int minSlurWidth;
+
+        final int minExtensionHeight;
+
+        final double maxCircleDistance;
+
+        final double minCircleRadius;
+
+        final double maxCircleRadius;
+
+        final double maxTangentSlope;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Parameters (Scale scale)
+        {
+            interline = scale.getInterline();
+            minChunkWeight = scale.toPixels(constants.minChunkWeight);
+            minExtensionWeight = scale.toPixels(constants.minExtensionWeight);
+            maxChunkThickness = scale.toPixels(constants.maxChunkThickness);
+            slurBoxDx = scale.toPixels(constants.slurBoxDx);
+            slurBoxDy = scale.toPixels(constants.slurBoxDy);
+            targetHypot = scale.toPixels(constants.slurBoxHypot);
+            targetLineHypot = scale.toPixels(constants.slurLineBoxHypot);
+            targetLineTangentHypot = scale.toPixels(constants.slurLineTangentBoxHypot);
+            minSlurWidth = scale.toPixels(constants.minSlurWidth);
+            minExtensionHeight = scale.toPixels(constants.minExtensionHeight);
+            maxCircleDistance = scale.toPixelsDouble(constants.maxCircleDistance);
+            minCircleRadius = scale.toPixels(constants.minCircleRadius);
+            maxCircleRadius = scale.toPixels(constants.maxCircleRadius);
+            maxTangentSlope = constants.maxTangentSlope.getValue();
+        }
+    }
+
     //---------------------//
     // SlurCompoundAdapter //
     //---------------------//
@@ -988,9 +1115,9 @@ public class SlurInspector
     private class SlurCompoundAdapter
             extends CompoundBuilder.AbstractAdapter
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        // Underlying slur curve 
+        // Underlying slur curve
         protected CubicCurve2D curve;
 
         // Current fitting distance
@@ -1014,7 +1141,7 @@ public class SlurInspector
             }
         };
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public SlurCompoundAdapter (SystemInfo system)
         {
             // Note: minGrade value (0d) is irrelevant, since compound validity
@@ -1023,7 +1150,7 @@ public class SlurInspector
             super(system, 0d);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Compute the extension box on the provided side.
          *
@@ -1042,18 +1169,18 @@ public class SlurInspector
                 // so we use approximating line instead.
                 endPt = (side == LEFT) ? seed.getStartPoint(HORIZONTAL)
                         : seed.getStopPoint(HORIZONTAL);
-                cp = (side == LEFT) ? seed.getStopPoint(HORIZONTAL)
-                        : seed.getStartPoint(HORIZONTAL);
+                cp = (side == LEFT) ? seed.getStopPoint(HORIZONTAL) : seed.getStartPoint(
+                        HORIZONTAL);
             } else {
                 endPt = (side == LEFT) ? curve.getP1() : curve.getP2();
                 cp = (side == LEFT) ? curve.getCtrlP1() : curve.getCtrlP2();
             }
 
             // Exact ending point (?)
-            Rectangle roi = (side == LEFT)
-                    ? new Rectangle(sBox.x, sBox.y, 1, sBox.height)
+            Rectangle roi = (side == LEFT) ? new Rectangle(sBox.x, sBox.y, 1, sBox.height)
                     : new Rectangle((sBox.x + sBox.width) - 1, sBox.y, 1, sBox.height);
             Point2D ep = seed.getRectangleCentroid(roi);
+
             if (ep != null) {
                 if (side == RIGHT) {
                     ep.setLocation(ep.getX() + 1, ep.getY());
@@ -1063,6 +1190,7 @@ public class SlurInspector
             }
 
             StaffInfo staff = system.getStaffAt(endPt);
+
             if (staff == null) {
                 // Weird case, where the slur crosses system boundaries
                 Point2D otherEnd = (side == LEFT) ? curve.getP2() : curve.getP1();
@@ -1073,8 +1201,9 @@ public class SlurInspector
             final double pitch = staff.pitchPositionOf(endPt);
             final int intPitch = (int) Math.rint(pitch);
             double target;
+
             if ((Math.abs(intPitch) <= 4) && ((intPitch % 2) == 0)) {
-                // TODO: beware of vertical 
+                // TODO: beware of vertical
                 double slope = (ep.getY() - cp.getY()) / (ep.getX() - cp.getX());
 
                 if (Math.abs(slope) <= params.maxTangentSlope) {
@@ -1106,11 +1235,7 @@ public class SlurInspector
 
             // Ensure minimum box height
             if (rect.height < params.minExtensionHeight) {
-                rect.grow(
-                        0,
-                        1
-                        + (int) Math.rint(
-                        (params.minExtensionHeight - rect.height) / 2.0));
+                rect.grow(0, 1 + (int) Math.rint((params.minExtensionHeight - rect.height) / 2.0));
             }
 
             seed.addAttachment(((side == LEFT) ? "e^" : "^e"), rect);
@@ -1160,15 +1285,17 @@ public class SlurInspector
             if (isValid(compound)) {
                 // Is distance still OK?
                 double compoundDistance = getCircle(compound).getDistance();
+
                 if (compoundDistance <= extendedDistance()) {
-                    chosenEvaluation = new Evaluation(
-                            Shape.SLUR,
-                            Evaluation.ALGORITHM);
+                    chosenEvaluation = new Evaluation(Shape.SLUR, Evaluation.ALGORITHM);
 
                     return true;
                 } else {
-                    logger.debug("{} Degrading distance {} vs {}",
-                                 seed, compoundDistance, extendedDistance());
+                    logger.debug(
+                            "{} Degrading distance {} vs {}",
+                            seed,
+                            compoundDistance,
+                            extendedDistance());
                 }
             }
 
@@ -1283,150 +1410,12 @@ public class SlurInspector
 
             if (side == LEFT) {
                 // Use box right vertical
-                return new Line2D.Double(
-                        b.x + b.width,
-                        b.y,
-                        b.x + b.width,
-                        b.y + b.height).ptSegDistSq(endPt);
+                return new Line2D.Double(b.x + b.width, b.y, b.x + b.width, b.y + b.height).ptSegDistSq(
+                        endPt);
             } else {
                 // Use box left vertical
-                return new Line2D.Double(b.x, b.y, b.x, b.y + b.height).
-                        ptSegDistSq(endPt);
+                return new Line2D.Double(b.x, b.y, b.x, b.y + b.height).ptSegDistSq(endPt);
             }
         }
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    private static class Parameters
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final int interline;
-
-        final int minChunkWeight;
-
-        final int minExtensionWeight;
-
-        final double maxChunkThickness;
-
-        final int slurBoxDx;
-
-        final int slurBoxDy;
-
-        final int targetHypot;
-
-        final int targetLineHypot;
-
-        final int targetLineTangentHypot;
-
-        final int minSlurWidth;
-
-        final int minExtensionHeight;
-
-        final double maxCircleDistance;
-
-        final double minCircleRadius;
-
-        final double maxCircleRadius;
-
-        final double maxTangentSlope;
-
-        //~ Constructors -------------------------------------------------------
-        public Parameters (Scale scale)
-        {
-            interline = scale.getInterline();
-            minChunkWeight = scale.toPixels(constants.minChunkWeight);
-            minExtensionWeight = scale.toPixels(constants.minExtensionWeight);
-            maxChunkThickness = scale.toPixels(constants.maxChunkThickness);
-            slurBoxDx = scale.toPixels(constants.slurBoxDx);
-            slurBoxDy = scale.toPixels(constants.slurBoxDy);
-            targetHypot = scale.toPixels(constants.slurBoxHypot);
-            targetLineHypot = scale.toPixels(constants.slurLineBoxHypot);
-            targetLineTangentHypot = scale.toPixels(
-                    constants.slurLineTangentBoxHypot);
-            minSlurWidth = scale.toPixels(constants.minSlurWidth);
-            minExtensionHeight = scale.toPixels(constants.minExtensionHeight);
-            maxCircleDistance = scale.toPixelsDouble(constants.maxCircleDistance);
-            minCircleRadius = scale.toPixels(constants.minCircleRadius);
-            maxCircleRadius = scale.toPixels(constants.maxCircleRadius);
-            maxTangentSlope = constants.maxTangentSlope.getValue();
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Scale.Fraction maxCircleDistance = new Scale.Fraction(
-                0.006,
-                "Maximum distance to approximating circle for a slur");
-
-        Scale.Fraction minCircleRadius = new Scale.Fraction(
-                0.7,
-                "Minimum circle radius for a slur");
-
-        Scale.Fraction maxCircleRadius = new Scale.Fraction(
-                100,
-                "Maximum circle radius for a slur");
-
-        Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
-                0.3,
-                "Minimum weight of a chunk to be part of slur computation");
-
-        Scale.AreaFraction minExtensionWeight = new Scale.AreaFraction(
-                0.01,
-                "Minimum weight of a glyph to be considered for slur extension");
-
-        Scale.Fraction slurBoxDx = new Scale.Fraction(
-                0.7,
-                "Extension abscissa when looking for slur compound");
-
-        Scale.Fraction slurBoxDy = new Scale.Fraction(
-                0.4,
-                "Extension ordinate when looking for slur compound");
-
-        Scale.Fraction slurBoxHypot = new Scale.Fraction(
-                0.9,
-                "Extension length when looking for line-free slur compound");
-
-        Scale.Fraction slurLineBoxHypot = new Scale.Fraction(
-                1.5,
-                "Extension length when looking for line-touching slur compound");
-
-        Scale.Fraction slurLineTangentBoxHypot = new Scale.Fraction(
-                3.0,
-                "Extension length when looking for line-tangent slur compound");
-
-        Scale.Fraction minSlurWidth = new Scale.Fraction(
-                2,
-                "Minimum width to use curve rather than line for extension");
-
-        Scale.LineFraction minExtensionHeight = new Scale.LineFraction(
-                2,
-                "Minimum height for extension box, specified as LineFraction");
-
-        Scale.LineFraction maxChunkThickness = new Scale.LineFraction(
-                2,
-                "Maximum mean thickness of a chunk to be part of slur computation");
-
-        Constant.Ratio maxHeightRatio = new Constant.Ratio(
-                2.0,
-                "Maximum height ratio between curve height and glyph height");
-
-        Constant.Double maxTangentSlope = new Constant.Double(
-                "tangent",
-                0.05,
-                "Maximum slope for staff line tangent");
-
-        Constant.Ratio distanceExtensionRatio = new Constant.Ratio(
-                0.67,
-                "Acceptable distance extension to maximum limit");
-
     }
 }

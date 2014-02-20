@@ -1,21 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         O m r F i l e F i l t e r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   O m r F i l e F i l t e r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.util;
 
 import java.io.File;
 
 /**
- * Class {@code OmrFileFilter} is a special file filter, based on file
- * extensions
+ * Class {@code OmrFileFilter} is a special file filter, based on file extensions
  *
  * @author Hervé Bitteur
  */
@@ -23,7 +22,7 @@ public class OmrFileFilter
         extends javax.swing.filechooser.FileFilter
         implements java.io.FilenameFilter
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** User readable description */
     private final String description;
@@ -31,7 +30,7 @@ public class OmrFileFilter
     /** Array of accepted file extensions */
     private final String[] extensions;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // OmrFileFilter //
     //---------------//
@@ -84,7 +83,7 @@ public class OmrFileFilter
         this.extensions = extensions.clone();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             U n i t M o d e l                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       U n i t M o d e l                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.constant;
 
@@ -24,21 +24,17 @@ import org.slf4j.LoggerFactory;
 import javax.swing.JOptionPane;
 
 /**
- * Class {@code UnitModel} implements a data model for units suitable
- * for use in a JTreeTable.
- *
- * <p>A row in the UnitModel can be any instance of the 3 following types:
+ * Class {@code UnitModel} implements a data model for units suitable for use in a
+ * JTreeTable.
+ * <p>
+ * A row in the UnitModel can be any instance of the 3 following types:
  * <ul>
- *
- * <li><b>PackageNode</b> to represent a package. Its children rows can be
- * either (sub) PackageNodes or UnitNodes.</li>
- *
- * <li><b>UnitNode</b> to represent a class that contains a ConstantSet.
- * Its parent node is a PackageNode. Its children rows (if any)
- * are the Constants of its ConstantSet.</li>
- *
- * <li><b>Constant</b> to represent a constant within a ConstantSet. In that
- * case, its parent node is a UnitNode. It has no children rows.</li>
+ * <li><b>PackageNode</b> to represent a package. Its children rows can be either (sub) PackageNodes
+ * or UnitNodes.</li>
+ * <li><b>UnitNode</b> to represent a class that contains a ConstantSet. Its parent node is a
+ * PackageNode. Its children rows (if any) are the Constants of its ConstantSet.</li>
+ * <li><b>Constant</b> to represent a constant within a ConstantSet. In that case, its parent node
+ * is a UnitNode. It has no children rows.</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -46,19 +42,17 @@ import javax.swing.JOptionPane;
 public class UnitModel
         extends AbstractTreeTableModel
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            UnitModel.class);
+    private static final Logger logger = LoggerFactory.getLogger(UnitModel.class);
 
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
     /**
      * Enumeration type to describe each column of the JTreeTable
      */
     public static enum Column
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /**
          * The left column, assigned to tree structure, allows expansion
@@ -96,7 +90,7 @@ public class UnitModel
          * Column dedicated to constant description.
          */
         DESC("Description", false, 350, String.class);
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Java class to handle column content. */
         private final Class<?> type;
@@ -110,7 +104,7 @@ public class UnitModel
         /** Width for column display. */
         private final int width;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         //--------//
         // Column //
         //--------//
@@ -125,7 +119,7 @@ public class UnitModel
             this.type = type;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //----------//
         // getWidth //
         //----------//
@@ -135,7 +129,7 @@ public class UnitModel
         }
     }
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // UnitModel //
     //-----------//
@@ -147,7 +141,7 @@ public class UnitModel
         super(UnitManager.getInstance().getRoot());
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getChild //
     //----------//
@@ -179,8 +173,7 @@ public class UnitModel
         }
 
         System.err.println(
-                "*** getChild. Unexpected node " + parent + ", type="
-                + parent.getClass().getName());
+                "*** getChild. Unexpected node " + parent + ", type=" + parent.getClass().getName());
 
         return null;
     }
@@ -323,8 +316,7 @@ public class UnitModel
             if (node instanceof Constant) {
                 Constant constant = (Constant) node;
 
-                return (constant.getQuantityUnit() != null)
-                        ? constant.getQuantityUnit() : "";
+                return (constant.getQuantityUnit() != null) ? constant.getQuantityUnit() : "";
             } else {
                 return "";
             }
@@ -349,16 +341,13 @@ public class UnitModel
                             if (constant instanceof Scale.Fraction) {
                                 return String.format(
                                         "%.1f",
-                                        scale.toPixelsDouble(
-                                        (Scale.Fraction) constant));
+                                        scale.toPixelsDouble((Scale.Fraction) constant));
                             } else if (constant instanceof Scale.LineFraction) {
                                 return Integer.valueOf(
-                                        scale.toPixels(
-                                        (Scale.LineFraction) constant));
+                                        scale.toPixels((Scale.LineFraction) constant));
                             } else if (constant instanceof Scale.AreaFraction) {
                                 return Integer.valueOf(
-                                        scale.toPixels(
-                                        (Scale.AreaFraction) constant));
+                                        scale.toPixels((Scale.AreaFraction) constant));
                             }
                         }
                     } else {
@@ -467,15 +456,9 @@ public class UnitModel
 
                     // Forward modif to the modif status column and to the pixel
                     // column (brute force!)
-                    fireTreeNodesChanged(
-                            this,
-                            new Object[]{getRoot()},
-                            null,
-                            null);
+                    fireTreeNodesChanged(this, new Object[]{getRoot()}, null, null);
                 } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(
-                            null,
-                            "Illegal number format");
+                    JOptionPane.showMessageDialog(null, "Illegal number format");
                 }
 
                 break;
@@ -484,11 +467,7 @@ public class UnitModel
 
                 if (!((Boolean) value).booleanValue()) {
                     constant.reset();
-                    fireTreeNodesChanged(
-                            this,
-                            new Object[]{getRoot()},
-                            null,
-                            null);
+                    fireTreeNodesChanged(this, new Object[]{getRoot()}, null, null);
                 }
 
                 break;

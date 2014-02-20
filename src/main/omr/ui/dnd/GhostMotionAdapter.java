@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    G h o s t M o t i o n A d a p t e r                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              G h o s t M o t i o n A d a p t e r                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.dnd;
 
@@ -19,25 +19,23 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
 /**
- * Class {@code GhostMotionAdapter} is a special MouseMotion adapter
- * meant for dragging the ghost image.
+ * Class {@code GhostMotionAdapter} is a special MouseMotion adapter meant for dragging
+ * the ghost image.
  *
  * @author Hervé Bitteur (from Romain Guy's demo)
  */
 public class GhostMotionAdapter
         extends MouseMotionAdapter
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            GhostMotionAdapter.class);
+    private static final Logger logger = LoggerFactory.getLogger(GhostMotionAdapter.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related glasspane */
     protected GhostGlassPane glassPane;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------------//
     // GhostMotionAdapter //
     //--------------------//
@@ -51,7 +49,7 @@ public class GhostMotionAdapter
         this.glassPane = glassPane;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // mouseDragged //
     //--------------//

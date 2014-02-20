@@ -1,19 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         B o r d e r B u i l d e r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   B o r d e r B u i l d e r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
+import omr.glyph.GlyphLayer;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
@@ -38,13 +39,13 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import omr.glyph.GlyphLayer;
 
 /**
- * Class {@code BorderBuilder} implements a smart approach
- * to define the border between two systems.
+ * Class {@code BorderBuilder} implements a smart approach to define the border between
+ * two systems.
  *
- * <p>Strategy for glyph assignment: <ol>
+ * <p>
+ * Strategy for glyph assignment: <ol>
  * <li>Identify boxes of all glyphs intersected by the intersystem gutter.</li>
  * <li>Elaborate box-based continuous limit of both staves.</li>
  * <li>Use the (not too small) glyphs from yellow zone as free boxes seeds.</li>
@@ -57,7 +58,8 @@ import omr.glyph.GlyphLayer;
  * <li>Exit when no free box is left</li>
  * </ol></ol></p>
  *
- * <p>Strategy for border definition: <ol>
+ * <p>
+ * Strategy for border definition: <ol>
  * <li>Use ordinate middle between the two (enlarged) box-based limits.</li>
  * <li>Remove all unneeded intermediate points.</li>
  * </ol></p>
@@ -74,15 +76,13 @@ import omr.glyph.GlyphLayer;
  */
 public class BorderBuilder
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(BorderBuilder.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related sheet. */
     private final Sheet sheet;
@@ -93,7 +93,7 @@ public class BorderBuilder
     /** System below. */
     private final SystemInfo system;
 
-    // GlyphRect-based limits 
+    // GlyphRect-based limits
     private Limit topLimit;
 
     private Limit botLimit;
@@ -113,7 +113,7 @@ public class BorderBuilder
 
     private final int yMargin;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //---------------//
     // BorderBuilder //
@@ -140,7 +140,7 @@ public class BorderBuilder
         yMargin = scale.toPixels(constants.yMargin);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //-------------//
     // buildBorder //
@@ -152,10 +152,10 @@ public class BorderBuilder
         LineInfo botLine = system.getFirstStaff().getFirstLine();
         Rectangle box = topLine.getBounds();
         box.add(botLine.getBounds());
+
         final Rectangle interBox = box;
 
-        Set<Glyph> glyphs = sheet.getNest().intersectedGlyphs(
-                interBox, GlyphLayer.DEFAULT);
+        Set<Glyph> glyphs = sheet.getNest().intersectedGlyphs(interBox, GlyphLayer.DEFAULT);
 
         // Remove small glyphs and the staff lines themselves
         // Also remove glyphs that embrace the whole intersystem
@@ -173,14 +173,15 @@ public class BorderBuilder
 
                 // Purge abnormally tall glyphs
                 Rectangle glyphBox = glyph.getBounds();
-                if (glyphBox.y <= interBox.y
-                    && glyphBox.y + glyphBox.height >= interBox.y + interBox.height) {
+
+                if ((glyphBox.y <= interBox.y)
+                    && ((glyphBox.y + glyphBox.height) >= (interBox.y + interBox.height))) {
                     return true;
                 }
 
                 return glyph.getWeight() < minGlyphWeight;
             }
-        });
+                });
 
         // Split the set between staff limits and free glyphs in the middle
         topLimit = buildLimit(topLine, glyphs, -1);
@@ -213,8 +214,8 @@ public class BorderBuilder
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("Border between systems #").append(prevSystem.getId())
-                .append(" & #").append(system.getId());
+        sb.append("Border between systems #").append(prevSystem.getId()).append(" & #").append(
+                system.getId());
 
         return sb.toString();
     }
@@ -255,9 +256,7 @@ public class BorderBuilder
                 } else {
                     // Fusion with another blob?
                     if (index < (blobs.size() - 1)) {
-                        for (Rectangle b : blobs.subList(
-                                index + 1,
-                                blobs.size())) {
+                        for (Rectangle b : blobs.subList(index + 1, blobs.size())) {
                             if (b.intersects(rect)) {
                                 logger.debug("{} + {}", b, blob);
 
@@ -335,7 +334,7 @@ public class BorderBuilder
                               Collection<Glyph> glyphs,
                               int dir)
     {
-        List<Glyph> lineGlyphs = new ArrayList<>();
+        List<Glyph> lineGlyphs = new ArrayList<Glyph>();
         FilamentLine filamentLine = (FilamentLine) lineInfo;
         Filament fil = filamentLine.getFilament();
         NaturalSpline line = (NaturalSpline) fil.getLine();
@@ -409,9 +408,8 @@ public class BorderBuilder
 
             int y = (top + bot) / 2;
 
-            if (top > bot && !userWarned) {
-                logger.info("{}{} got closed at x:{} y:{}",
-                        sheet.getLogPrefix(), idString(), x, y);
+            if ((top > bot) && !userWarned) {
+                logger.info("{}{} got closed at x:{} y:{}", sheet.getLogPrefix(), idString(), x, y);
                 userWarned = true;
             }
 
@@ -459,11 +457,9 @@ public class BorderBuilder
             for (int index = lastIndex + 1; index < line.size(); index++) {
                 Point pt = line.getPoint(index);
 
-                if (topLimit.intersects(lastPoint, pt)
-                    || botLimit.intersects(lastPoint, pt)) {
-                    // Step back 
-                    for (int i = lastIndex + 1, iBreak = index - 1; i < iBreak;
-                            i++) {
+                if (topLimit.intersects(lastPoint, pt) || botLimit.intersects(lastPoint, pt)) {
+                    // Step back
+                    for (int i = lastIndex + 1, iBreak = index - 1; i < iBreak; i++) {
                         Point p = line.getPoint(lastIndex + 1);
                         line.removePoint(p);
                         logger.debug("Removed {}", p);
@@ -478,37 +474,35 @@ public class BorderBuilder
             break;
         }
 
-        for (int i = lastIndex + 1, iBreak = line.size() - 1; i < iBreak;
-                i++) {
+        for (int i = lastIndex + 1, iBreak = line.size() - 1; i < iBreak; i++) {
             Point p = line.getPoint(lastIndex + 1);
             line.removePoint(p);
         }
 
-        logger.debug("{}Smart S{}-S{} system border: {}",
-                sheet.getLogPrefix(), prevSystem.getId(), system.getId(), line);
+        logger.debug(
+                "{}Smart S{}-S{} system border: {}",
+                sheet.getLogPrefix(),
+                prevSystem.getId(),
+                system.getId(),
+                line);
 
         return line;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
+        //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.Fraction lineFlatness = new Scale.Fraction(
-                0.5,
-                "Maximum flattening distance");
+        Scale.Fraction lineFlatness = new Scale.Fraction(0.5, "Maximum flattening distance");
 
-        Scale.Fraction xMargin = new Scale.Fraction(
-                2,
-                "Inter blob horizontal margin");
+        Scale.Fraction xMargin = new Scale.Fraction(2, "Inter blob horizontal margin");
 
-        Scale.Fraction yMargin = new Scale.Fraction(
-                0,
-                "Inter blob vertical margin");
+        Scale.Fraction yMargin = new Scale.Fraction(0, "Inter blob vertical margin");
 
         Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
                 0.1,
@@ -517,11 +511,10 @@ public class BorderBuilder
         Constant.Boolean useSmoothBorders = new Constant.Boolean(
                 true,
                 "Should we use smooth inter-system borders?");
-
     }
 
     //-----------//
-    // GlyphRect // 
+    // GlyphRect //
     //-----------//
     /**
      * A standard rectangle, which keeps track of its building glyphs.
@@ -529,19 +522,19 @@ public class BorderBuilder
     private static class GlyphRect
             extends Rectangle
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Related glyphs (just for debug) */
-        final List<Glyph> glyphs = new ArrayList<>();
+        final List<Glyph> glyphs = new ArrayList<Glyph>();
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public GlyphRect (Glyph glyph)
         {
             super(glyph.getBounds());
             glyphs.add(glyph);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public void add (Glyph glyph)
         {
             add(glyph.getBounds());
@@ -570,12 +563,12 @@ public class BorderBuilder
      */
     private static class Limit
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Horizontal sequence of boxes */
-        List<Rectangle> boxes = new ArrayList<>();
+        List<Rectangle> boxes = new ArrayList<Rectangle>();
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public Rectangle getBounds ()
         {
             Rectangle bounds = null;
@@ -661,8 +654,8 @@ public class BorderBuilder
         {
             for (Rectangle rect : boxes) {
                 if (rect.intersectsLine(p1.x, p1.y, p2.x, p2.y)) {
-                    logger.debug("{} intersects from {} to {}",
-                            rect, p1, p2);
+                    logger.debug("{} intersects from {} to {}", rect, p1, p2);
+
                     return true;
                 }
             }
@@ -681,7 +674,7 @@ public class BorderBuilder
     private static class LineRect
             extends Rectangle
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public LineRect (int x1,
                          int y1,

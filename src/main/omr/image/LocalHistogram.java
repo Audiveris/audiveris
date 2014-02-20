@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            LocalHistogram                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         LocalHistogram                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -22,17 +22,15 @@ import org.slf4j.LoggerFactory;
 public class LocalHistogram
         implements MorphoConstants
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            LocalHistogram.class);
+    private static final Logger logger = LoggerFactory.getLogger(LocalHistogram.class);
 
     private static final int MAX = 255;
 
     private static final int MIN = 0;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //  private int[] hist=new int[256];
     private int[] counts = new int[256];
 
@@ -42,7 +40,7 @@ public class LocalHistogram
 
     private int binCount = 0;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LocalHistogram object.
      *
@@ -81,7 +79,7 @@ public class LocalHistogram
         init(index, width, height, pixels, pg, type);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     public void Log ()
     {
         //    IJ.log("min:  "+min + "  max: "+max);
@@ -268,7 +266,6 @@ public class LocalHistogram
          * }
          * }
          */
-
         //Log();
     }
 

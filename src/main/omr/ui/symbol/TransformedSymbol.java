@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     T r a n s f o r m e d S y m b o l                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               T r a n s f o r m e d S y m b o l                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -21,13 +21,12 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code TransformedSymbol} displays a baseShape symbol with
- * applying an AffineTransform.
+ * Class {@code TransformedSymbol} displays a baseShape symbol with AffineTransform.
  */
 public class TransformedSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The baseShape shape */
     protected final Shape baseShape;
@@ -38,7 +37,7 @@ public class TransformedSymbol
     /** Proper transformation */
     private final AffineTransform at;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------------//
     // TransformedSymbol //
     //-------------------//
@@ -61,7 +60,7 @@ public class TransformedSymbol
         this.at = at;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -82,9 +81,7 @@ public class TransformedSymbol
         p.layout = font.layout(baseSymbol.getString(), at);
 
         Rectangle2D r = p.layout.getBounds();
-        p.rect = new Rectangle(
-                (int) Math.ceil(r.getWidth()),
-                (int) Math.ceil(r.getHeight()));
+        p.rect = new Rectangle((int) Math.ceil(r.getWidth()), (int) Math.ceil(r.getHeight()));
 
         return p;
     }

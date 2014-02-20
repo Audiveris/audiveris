@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          G l y p h P a t t e r n                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    G l y p h P a t t e r n                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
@@ -15,14 +15,14 @@ import omr.sheet.Scale;
 import omr.sheet.SystemInfo;
 
 /**
- * Class {@code GlyphPattern} describes a specific pattern applied on
- * glyphs of a given system.
+ * Class {@code GlyphPattern} describes a specific pattern applied on glyph instances
+ * of a system.
  *
  * @author Hervé Bitteur
  */
 public abstract class GlyphPattern
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Name for debugging */
     public final String name;
@@ -33,7 +33,7 @@ public abstract class GlyphPattern
     /** System scale */
     protected final Scale scale;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // GlyphPattern //
     //--------------//
@@ -49,11 +49,10 @@ public abstract class GlyphPattern
         this.name = name;
         this.system = system;
 
-        scale = system.getSheet()
-                .getScale();
+        scale = system.getSheet().getScale();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // runPattern //
     //------------//

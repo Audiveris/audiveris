@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          R a t i o n a l T a s k                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    R a t i o n a l T a s k                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.script;
 
@@ -31,13 +31,13 @@ import javax.xml.bind.annotation.XmlElement;
 public class RationalTask
         extends GlyphUpdateTask
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Type of the rational glyph */
     @XmlElement
     private final TimeRational timeRational;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // RationalTask //
     //--------------//
@@ -65,7 +65,7 @@ public class RationalTask
         timeRational = null;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // core //
     //------//
@@ -73,9 +73,7 @@ public class RationalTask
     public void core (Sheet sheet)
             throws Exception
     {
-        sheet.getSymbolsController()
-                .getModel()
-                .assignTimeRational(
+        sheet.getSymbolsController().getModel().assignTimeRational(
                 getInitialGlyphs(),
                 timeRational,
                 Evaluation.MANUAL);
@@ -91,8 +89,7 @@ public class RationalTask
         sb.append(" rational");
 
         if (timeRational != null) {
-            sb.append(" ")
-                    .append(timeRational);
+            sb.append(" ").append(timeRational);
         }
 
         return sb.toString();

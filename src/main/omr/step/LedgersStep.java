@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            L e d g e r s S t e p                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      L e d g e r s S t e p                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -18,15 +18,15 @@ import omr.sheet.SystemInfo;
 import java.util.Collection;
 
 /**
- * Class {@code LedgersStep} implements <b>LEDGERS</b> step, which
- * retrieves all possible ledger interpretations.
+ * Class {@code LedgersStep} implements <b>LEDGERS</b> step, which retrieves all
+ * possible ledger interpretations.
  *
  * @author Hervé Bitteur
  */
 public class LedgersStep
         extends AbstractSystemStep
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //-------------//
     // LedgersStep //
@@ -44,7 +44,7 @@ public class LedgersStep
                 "Retrieve ledgers & horizontal endings");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -52,8 +52,7 @@ public class LedgersStep
     public void displayUI (Sheet sheet)
     {
         // Add ledger checkboard
-        sheet.getSystems()
-                .get(0).horizontalsBuilder.addCheckBoard();
+        sheet.getSystems().get(0).horizontalsBuilder.addCheckBoard();
     }
 
     //----------//

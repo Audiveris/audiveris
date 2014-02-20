@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        H e a d S t e m R e l a t i o n                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  H e a d S t e m R e l a t i o n                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
@@ -22,29 +22,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code HeadStemRelation} represents the relation support
- * between a head and a stem.
+ * Class {@code HeadStemRelation} represents the relation support between a head and a
+ * stem.
  *
  * @author Hervé Bitteur
  */
 public class HeadStemRelation
         extends AbstractConnection
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            HeadStemRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(HeadStemRelation.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Which side of head is used?. */
     private HorizontalSide headSide;
 
     /** Which part of stem is used?. */
     private StemPortion stemPortion;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new HeadStemRelation object.
      */
@@ -52,29 +51,7 @@ public class HeadStemRelation
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-    /**
-     * @return the headSide
-     */
-    public HorizontalSide getHeadSide ()
-    {
-        return headSide;
-    }
-
-    @Override
-    public String getName ()
-    {
-        return "Head-Stem";
-    }
-
-    /**
-     * @return the stem Portion
-     */
-    public StemPortion getStemPortion ()
-    {
-        return stemPortion;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // getXInGapMaximum //
     //------------------//
@@ -97,6 +74,28 @@ public class HeadStemRelation
     public static Scale.Fraction getYGapMaximum ()
     {
         return constants.yGapMax;
+    }
+
+    /**
+     * @return the headSide
+     */
+    public HorizontalSide getHeadSide ()
+    {
+        return headSide;
+    }
+
+    @Override
+    public String getName ()
+    {
+        return "Head-Stem";
+    }
+
+    /**
+     * @return the stem Portion
+     */
+    public StemPortion getStemPortion ()
+    {
+        return stemPortion;
     }
 
     /**
@@ -155,23 +154,21 @@ public class HeadStemRelation
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(" ")
-                .append(headSide);
+        sb.append(" ").append(headSide);
 
-        sb.append(",")
-                .append(stemPortion);
+        sb.append(",").append(stemPortion);
 
         return sb.toString();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Constant.Ratio supportCoeff = new Constant.Ratio(
                 5,
@@ -188,6 +185,5 @@ public class HeadStemRelation
         final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 0.3,
                 "Maximum horizontal gap between stem & head");
-
     }
 }

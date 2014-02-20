@@ -1,20 +1,19 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            L y r i c s L i n e                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      L y r i c s L i n e                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
 import omr.constant.ConstantSet;
 
 import omr.math.Population;
-
 
 import omr.sheet.Scale;
 
@@ -29,22 +28,19 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code LyricsLine} gathers one line of lyrics within a system
- * part.
- * A lyrics line is composed of instances of LyricsItem, which can be Syllables,
- * Hyphens, Extensions or Elisions
+ * Class {@code LyricsLine} gathers one line of lyrics within a system part.
+ * A lyrics line is composed of instances of LyricsItem, which can be Syllables, Hyphens, Extensions
+ * or Elisions
  *
  * @author Hervé Bitteur
  */
 public class LyricsLine
         extends PartNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(LyricsLine.class);
 
     /** For comparing (TreeNode) LyricsLine instances on their ordinate */
@@ -61,7 +57,7 @@ public class LyricsLine
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The line number */
     private int id;
 
@@ -69,9 +65,9 @@ public class LyricsLine
     private Integer y;
 
     /** The x-ordered collection of lyrics items */
-    private final SortedSet<LyricsItem> items = new TreeSet<>();
+    private final SortedSet<LyricsItem> items = new TreeSet<LyricsItem>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LyricsLine object.
      *
@@ -82,7 +78,7 @@ public class LyricsLine
         super(systemPart);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // populate //
     //----------//
@@ -104,6 +100,7 @@ public class LyricsLine
             if (line.isAlignedWith(item.getReferencePoint())) {
                 line.addItem(item);
                 logger.debug("Added {} into {}", item, line);
+
                 return;
             }
         }
@@ -249,8 +246,8 @@ public class LyricsLine
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("{LyricLine #").append(getId()).append(" y:").append(y).append(
-                " items:").append(items).append("}");
+        sb.append("{LyricLine #").append(getId()).append(" y:").append(y).append(" items:")
+                .append(items).append("}");
 
         return sb.toString();
     }
@@ -289,22 +286,20 @@ public class LyricsLine
      */
     private boolean isAlignedWith (Point sysPt)
     {
-        return Math.abs(sysPt.y - getY()) <= getScale().toPixels(
-                constants.maxItemDy);
+        return Math.abs(sysPt.y - getY()) <= getScale().toPixels(constants.maxItemDy);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction maxItemDy = new Scale.Fraction(
                 2,
                 "Maximum vertical distance between a lyrics line and a lyrics item");
-
     }
 }

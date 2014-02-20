@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            B a s i c S u p p o r t                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      B a s i c S u p p o r t                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
@@ -15,8 +15,7 @@ import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
 /**
- * Class {@code BasicSupport} is the base implementation of {@link
- * Support} interface.
+ * Class {@code BasicSupport} is the base implementation of {@link Support} interface.
  *
  * @author Hervé Bitteur
  */
@@ -24,18 +23,18 @@ public class BasicSupport
         extends BasicRelation
         implements Support
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Quality of the geometric junction. */
     protected double grade;
 
     /** Details about grade (for debugging). */
     protected GradeImpacts impacts;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicSupport object.
      */
@@ -54,7 +53,7 @@ public class BasicSupport
         this.grade = grade;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getGrade //
     //----------//
@@ -141,22 +140,19 @@ public class BasicSupport
         return constants.defaultSupportCoeff.getValue();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio minGrade = new Constant.Ratio(
-                0.1,
-                "Minimum support relation grade");
+        final Constant.Ratio minGrade = new Constant.Ratio(0.1, "Minimum support relation grade");
 
         final Constant.Ratio defaultSupportCoeff = new Constant.Ratio(
                 5,
                 "Default value for coeff in support formula: 1 + coeff*grade");
-
     }
 }

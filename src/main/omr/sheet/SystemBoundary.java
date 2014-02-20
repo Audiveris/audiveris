@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        S y s t e m B o u n d a r y                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  S y s t e m B o u n d a r y                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -40,25 +40,25 @@ import java.util.ListIterator;
 @NotThreadSafe
 public class SystemBoundary
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(SystemBoundary.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SystemBoundary.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related system. */
     @Navigable(false)
     private final SystemInfo system;
 
     /** The north and south limits. */
-    private final EnumMap<VerticalSide, BrokenLine> limits = new EnumMap<>(
+    private final EnumMap<VerticalSide, BrokenLine> limits = new EnumMap<VerticalSide, BrokenLine>(
             VerticalSide.class);
 
     /** Containment is delegated to a Polygon, lazily created. */
     private Polygon polygon;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------------//
     // SystemBoundary //
@@ -75,8 +75,7 @@ public class SystemBoundary
                            BrokenLine south)
     {
         if ((north == null) || (south == null)) {
-            throw new IllegalArgumentException(
-                    "SystemBoundary needs non-null limits");
+            throw new IllegalArgumentException("SystemBoundary needs non-null limits");
         }
 
         this.system = system;
@@ -84,7 +83,7 @@ public class SystemBoundary
         limits.put(VerticalSide.BOTTOM, south);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //----------//
     // contains //
@@ -186,8 +185,7 @@ public class SystemBoundary
     public String toString ()
     {
         return "{Boundary" + " system#" + system.getId() + " north:"
-               + limits.get(VerticalSide.TOP) + " south:"
-               + limits.get(VerticalSide.BOTTOM) + "}";
+               + limits.get(VerticalSide.TOP) + " south:" + limits.get(VerticalSide.BOTTOM) + "}";
     }
 
     //--------//
@@ -222,8 +220,8 @@ public class SystemBoundary
 
             // South side (in reverse order)
             List<Point> points = limits.get(VerticalSide.BOTTOM).getPoints();
-            for (ListIterator<Point> it = points.listIterator(points.size());
-                    it.hasPrevious();) {
+
+            for (ListIterator<Point> it = points.listIterator(points.size()); it.hasPrevious();) {
                 Point point = it.previous();
                 poly.addPoint(point.x, point.y);
             }

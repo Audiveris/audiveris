@@ -1,33 +1,33 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                  B a s i c L e g e n d r e M o m e n t s                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                            B a s i c L e g e n d r e M o m e n t s                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.moments;
 
 import java.util.Locale;
 
 /**
- * Class {@code BasicLegendreMoments} implements a descriptor for
- * orthogonal Legendre moments.
+ * Class {@code BasicLegendreMoments} implements a descriptor for orthogonal Legendre
+ * moments.
  *
  * @author Hervé Bitteur
  */
 public class BasicLegendreMoments
         implements LegendreMoments
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Resulting moments. */
     protected double[][] moments = new double[ORDER + 1][ORDER + 1];
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------------------//
     // BasicLegendreMoments //
     //----------------------//
@@ -38,7 +38,7 @@ public class BasicLegendreMoments
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // distanceTo //
     //------------//
@@ -50,8 +50,7 @@ public class BasicLegendreMoments
         for (int m = 0; m <= ORDER; m++) {
             for (int n = 0; n <= ORDER; n++) {
                 if ((m + n) <= ORDER) {
-                    distance += Math.abs(
-                            that.getMoment(m, n) - getMoment(m, n));
+                    distance += Math.abs(that.getMoment(m, n) - getMoment(m, n));
                 }
             }
         }
@@ -96,10 +95,7 @@ public class BasicLegendreMoments
                     }
 
                     sb.append(
-                            String.format(
-                            Locale.US,
-                            "%04.0f",
-                            1000 * getMoment(m, n)));
+                            String.format(Locale.US, "%04.0f", 1000 * getMoment(m, n)));
                 }
             }
         }

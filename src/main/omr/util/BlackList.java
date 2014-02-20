@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             B l a c k L i s t                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        B l a c k L i s t                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -33,24 +33,24 @@ import java.util.TreeSet;
  * files and subdirectories in a directory, according to the presence
  * and content of a specific black-list in this directory.
  *
- * <b>Nota</b>: The scope of this blacklist is just the directory that contains
- * the black-list file, not its subdirectories if any.
+ * <b>Nota</b>: The scope of this blacklist is just the directory that contains the black-list file,
+ * not its subdirectories if any.
  *
  * @author Hervé Bitteur
  */
 public class BlackList
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(BlackList.class);
 
     /** Name of the specific file where blacklist is kept */
     protected static final String BLACK_LIST_NAME = ".glyphignore";
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Set of black listed file names */
-    protected final SortedSet<String> bl = new TreeSet<>();
+    protected final SortedSet<String> bl = new TreeSet<String>();
 
     /** Containing directory */
     protected final File dir;
@@ -68,7 +68,7 @@ public class BlackList
         }
     };
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a BlackList object, related to provided directory.
      *
@@ -81,7 +81,7 @@ public class BlackList
         load();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // add //
     //-----//
@@ -143,7 +143,7 @@ public class BlackList
         logger.debug("Retrieving legal slots in directory {}", dir);
 
         // Getting all legal files & dirs, w/ additional filter if any
-        List<File> legals = new ArrayList<>();
+        List<File> legals = new ArrayList<File>();
         File[] files = dir.listFiles(blackFilter);
 
         if (files != null) {
@@ -213,8 +213,7 @@ public class BlackList
 
                     in.close();
                 } catch (IOException ex) {
-                    logger.warn("IO error while reading file ''{}''",
-                            blackFile);
+                    logger.warn("IO error while reading file ''{}''", blackFile);
                 }
             } catch (FileNotFoundException ex) {
                 logger.warn("Cannot find file ''{}''", blackFile);
@@ -241,8 +240,7 @@ public class BlackList
         PrintWriter out = null;
 
         try {
-            out = new PrintWriter(
-                    new BufferedWriter(new FileWriter(blackFile)));
+            out = new PrintWriter(new BufferedWriter(new FileWriter(blackFile)));
 
             for (String name : bl) {
                 out.println(name);

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         S h e e t A s s e m b l y                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   S h e e t A s s e m b l y                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet.ui;
 
@@ -16,8 +16,6 @@ import omr.Main;
 import omr.selection.LocationEvent;
 
 import omr.sheet.Sheet;
-
-import omr.step.Step;
 
 import omr.ui.Board;
 import omr.ui.BoardsPane;
@@ -50,30 +48,27 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code SheetAssembly} is a UI assembly dedicated to the
- * display of one sheet.
+ * Class {@code SheetAssembly} is a UI assembly dedicated to the display of one sheet.
  *
  * It gathers: <ul>
  * <li>a {@link Zoom} with its dedicated graphical {@link LogSlider}</li>
  * <li>a mouse adapter {@link Rubber}</li>
  * <li>a tabbed pane of {@link ScrollView}'s for all views of this sheet</li>
  * </ul>
- *
- * <p>Although not part of the same Swing container, the SheetAssembly also
- * refers to a sequence of {@link BoardsPane}'s which is parallel to the
- * sequence of ScrollView's.
+ * <p>
+ * Although not part of the same Swing container, the SheetAssembly also refers to a sequence of
+ * {@link BoardsPane}'s which is parallel to the sequence of ScrollView's.
  *
  * @author Hervé Bitteur
  */
 public class SheetAssembly
         implements ChangeListener
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(SheetAssembly.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Link with sheet. */
     private final Sheet sheet;
@@ -85,13 +80,7 @@ public class SheetAssembly
     private Panel component = new Panel();
 
     /** To manually control the zoom ratio. */
-    private final LogSlider slider = new LogSlider(
-            2,
-            5,
-            LogSlider.VERTICAL,
-            -3,
-            4,
-            0);
+    private final LogSlider slider = new LogSlider(2, 5, LogSlider.VERTICAL, -3, 4, 0);
 
     /** Tabbed container for all views of the sheet. */
     private final JTabbedPane viewsPane = new JTabbedPane();
@@ -103,12 +92,12 @@ public class SheetAssembly
     private final Rubber rubber = new Rubber(zoom);
 
     /** Map: scrollPane -> view tab. */
-    private final Map<JScrollPane, ViewTab> tabs = new HashMap<>();
+    private final Map<JScrollPane, ViewTab> tabs = new HashMap<JScrollPane, ViewTab>();
 
     /** Previously selected tab. */
     private ViewTab previousTab = null;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // SheetAssembly //
     //---------------//
@@ -137,7 +126,7 @@ public class SheetAssembly
         defineLayout();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addBoard //
     //----------//
@@ -183,8 +172,11 @@ public class SheetAssembly
             boardsPane.setName(label);
         }
 
-        logger.debug("addViewTab begin {} boardsPane={} comp=@{}",
-                label, boardsPane, Integer.toHexString(scroll.hashCode()));
+        logger.debug(
+                "addViewTab begin {} boardsPane={} comp=@{}",
+                label,
+                boardsPane,
+                Integer.toHexString(scroll.hashCode()));
 
         // Remove any existing viewTab with the same label
         for (ViewTab tab : tabs.values()) {
@@ -348,8 +340,10 @@ public class SheetAssembly
     public void stateChanged (ChangeEvent e)
     {
         ViewTab currentTab = getCurrentViewTab();
-        logger.debug("SheetAssembly stateChanged previousTab:{} currentTab:{}",
-                previousTab, currentTab);
+        logger.debug(
+                "SheetAssembly stateChanged previousTab:{} currentTab:{}",
+                previousTab,
+                currentTab);
 
         if (currentTab != previousTab) {
             if (previousTab != null) {
@@ -451,7 +445,7 @@ public class SheetAssembly
         return null;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // ViewTab //
     //---------//
@@ -461,7 +455,7 @@ public class SheetAssembly
      */
     private class ViewTab
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         String title; // Title used for the tab
 
@@ -469,7 +463,7 @@ public class SheetAssembly
 
         ScrollView scrollView; // Component in the JTabbedPane
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public ViewTab (String title,
                         BoardsPane boardsPane,
                         ScrollView scrollView)
@@ -492,7 +486,7 @@ public class SheetAssembly
             zoom.fireStateChanged();
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //------------//
         // deselected //
         //------------//
@@ -501,8 +495,7 @@ public class SheetAssembly
          */
         public void deselected ()
         {
-            logger.debug("SheetAssembly: {} viewTab.deselected for {}",
-                    sheet.getId(), this);
+            logger.debug("SheetAssembly: {} viewTab.deselected for {}", sheet.getId(), this);
 
             // Disconnection of events
             RubberPanel rubberPanel = scrollView.getView();
@@ -541,8 +534,11 @@ public class SheetAssembly
          */
         public void selected ()
         {
-            logger.debug("SheetAssembly: {} viewTabSelected for {} dim:{}",
-                    sheet.getId(), this, scrollView.getView().getPreferredSize());
+            logger.debug(
+                    "SheetAssembly: {} viewTabSelected for {} dim:{}",
+                    sheet.getId(),
+                    this,
+                    scrollView.getView().getPreferredSize());
 
             // Link rubber with proper view
             RubberPanel rubberPanel = scrollView.getView();
@@ -562,13 +558,11 @@ public class SheetAssembly
             // Force update of LocationEvent
             LocationEvent locationEvent = (LocationEvent) locationService.getLastEvent(
                     LocationEvent.class);
-            Rectangle location = (locationEvent != null)
-                    ? locationEvent.getData() : null;
+            Rectangle location = (locationEvent != null) ? locationEvent.getData() : null;
 
             if (location != null) {
                 locationService.publish(
-                        new LocationEvent(this, locationEvent.hint, null,
-                        location));
+                        new LocationEvent(this, locationEvent.hint, null, location));
             }
 
             // Keep the same scroll bar positions as with previous tab
@@ -602,8 +596,7 @@ public class SheetAssembly
         private void disconnectKeyboard ()
         {
             if (boardsPane != null) {
-                for (Component topComp : boardsPane.getComponent().
-                        getComponents()) {
+                for (Component topComp : boardsPane.getComponent().getComponents()) {
                     for (Component comp : ((Container) topComp).getComponents()) {
                         if (comp instanceof JComponent) {
                             ((JComponent) comp).resetKeyboardActions();

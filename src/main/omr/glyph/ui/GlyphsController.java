@@ -1,20 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      G l y p h s C o n t r o l l e r                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                G l y p h s C o n t r o l l e r                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
 import omr.glyph.Evaluation;
+import omr.glyph.GlyphNest;
 import omr.glyph.Glyphs;
 import omr.glyph.GlyphsModel;
-import omr.glyph.GlyphNest;
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
@@ -38,19 +38,18 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Class {@code GlyphsController} is a common basis for glyph handling,
- * used by any user interface which needs to act on the actual glyph
- * data.
- *
- * <p>There are two main methods in this class ({@link #asyncAssignGlyphs} and
+ * Class {@code GlyphsController} is a common basis for glyph handling, used by any user
+ * interface which needs to act on the actual glyph data.
+ * <p>
+ * There are two main methods in this class ({@link #asyncAssignGlyphs} and
  * {@link #asyncDeassignGlyphs}). They share common characteristics:
  * <ul>
  * <li>They are processed asynchronously</li>
  * <li>Their action is recorded in the sheet script</li>
  * <li>They update the following steps, if any</li>
  * </ul>
- *
- * <p>Since the bus of user selections is used, the methods of this class are
+ * <p>
+ * Since the bus of user selections is used, the methods of this class are
  * meant to be used from within a user action, otherwise you must use a direct
  * access to similar synchronous actions in the underlying {@link GlyphsModel}.
  *
@@ -58,20 +57,18 @@ import java.util.Set;
  */
 public class GlyphsController
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            GlyphsController.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphsController.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related model */
     protected final GlyphsModel model;
 
     /** Cached sheet */
     protected final Sheet sheet;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // GlyphsController //
     //------------------//
@@ -88,7 +85,7 @@ public class GlyphsController
         sheet = model.getSheet();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // asyncAssignGlyphs //
     //-------------------//
@@ -115,11 +112,9 @@ public class GlyphsController
             }
         }
 
-        if (ShapeSet.Barlines.contains(shape)
-            || Glyphs.containsBarline(glyphs)) {
+        if (ShapeSet.Barlines.contains(shape) || Glyphs.containsBarline(glyphs)) {
             // Special case for barlines assignment or deassignment
-            return new BarlineTask(sheet, shape, compound, glyphs).launch(
-                    sheet);
+            return new BarlineTask(sheet, shape, compound, glyphs).launch(sheet);
         } else {
             // Normal symbol processing
             return new AssignTask(sheet, shape, compound, glyphs).launch(sheet);
@@ -189,8 +184,7 @@ public class GlyphsController
      */
     public SelectionService getLocationService ()
     {
-        return model.getSheet()
-                .getLocationService();
+        return model.getSheet().getLocationService();
     }
 
     //----------//
@@ -251,15 +245,10 @@ public class GlyphsController
 
         if (shape != null) { // Assignment
             // Persistent?
-            model.assignGlyphs(
-                    glyphs,
-                    context.getAssignedShape(),
-                    compound,
-                    Evaluation.MANUAL);
+            model.assignGlyphs(glyphs, context.getAssignedShape(), compound, Evaluation.MANUAL);
 
             // Publish modifications (about new glyph)
-            Glyph firstGlyph = glyphs.iterator()
-                    .next();
+            Glyph firstGlyph = glyphs.iterator().next();
 
             if (firstGlyph != null) {
                 publish(firstGlyph.getMembers().first().getGlyph());
@@ -297,9 +286,7 @@ public class GlyphsController
     {
         // Update immediately the glyph info as displayed
         if (model.getSheet() != null) {
-            getNest()
-                    .getGlyphService()
-                    .publish(
+            getNest().getGlyphService().publish(
                     new GlyphEvent(this, SelectionHint.GLYPH_MODIFIED, null, glyph));
         }
     }

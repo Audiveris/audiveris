@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           T i m e P a t t e r n                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     T i m e P a t t e r n                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
@@ -40,23 +40,20 @@ import java.util.EnumSet;
 public class TimePattern
         extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            TimePattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(TimePattern.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Specific compound adapter. */
     private final TimeSigAdapter adapter;
 
     /** Scale-dependent parameters. */
     private final Parameters params;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TimePattern object.
      *
@@ -68,13 +65,10 @@ public class TimePattern
 
         params = new Parameters(system.getSheet().getScale());
 
-        adapter = new TimeSigAdapter(
-                system,
-                Grades.timeMinGrade,
-                ShapeSet.FullTimes);
+        adapter = new TimeSigAdapter(system, Grades.timeMinGrade, ShapeSet.FullTimes);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // runPattern //
     //------------//
@@ -89,17 +83,12 @@ public class TimePattern
         int successNb = 0;
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (!ShapeSet.Times.contains(glyph.getShape())
-                || glyph.isManualShape()) {
+            if (!ShapeSet.Times.contains(glyph.getShape()) || glyph.isManualShape()) {
                 continue;
             }
 
             // We must find a time out of these glyphs
-            Glyph compound = system.buildCompound(
-                    glyph,
-                    true,
-                    system.getGlyphs(),
-                    adapter);
+            Glyph compound = system.buildCompound(glyph, true, system.getGlyphs(), adapter);
 
             if (compound != null) {
                 successNb++;
@@ -109,35 +98,24 @@ public class TimePattern
         return successNb;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.Fraction xOffset = new Scale.Fraction(
-                0.25d,
-                "Core Time horizontal offset");
+        Scale.Fraction xOffset = new Scale.Fraction(0.25d, "Core Time horizontal offset");
 
-        Scale.Fraction yOffset = new Scale.Fraction(
-                0.25d,
-                "Core Time vertical offset");
+        Scale.Fraction yOffset = new Scale.Fraction(0.25d, "Core Time vertical offset");
 
-        Scale.Fraction timeWidth = new Scale.Fraction(
-                1.6,
-                "Typical width of a time signature");
+        Scale.Fraction timeWidth = new Scale.Fraction(1.6, "Typical width of a time signature");
 
-        Scale.Fraction maxTimeWidth = new Scale.Fraction(
-                4,
-                "Maximum width of a time signature");
+        Scale.Fraction maxTimeWidth = new Scale.Fraction(4, "Maximum width of a time signature");
 
-        Scale.Fraction maxTimeHeight = new Scale.Fraction(
-                8,
-                "Maximum height of a time signature");
-
+        Scale.Fraction maxTimeHeight = new Scale.Fraction(8, "Maximum height of a time signature");
     }
 
     //------------//
@@ -145,7 +123,7 @@ public class TimePattern
     //------------//
     private static class Parameters
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final int xOffset;
 
@@ -157,7 +135,7 @@ public class TimePattern
 
         final int maxTimeHeight;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
             xOffset = scale.toPixels(constants.xOffset);
@@ -177,7 +155,7 @@ public class TimePattern
     private class TimeSigAdapter
             extends CompoundBuilder.TopRawAdapter
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public TimeSigAdapter (SystemInfo system,
                                double minGrade,
@@ -186,7 +164,7 @@ public class TimePattern
             super(system, minGrade, desiredShapes);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Rectangle computeReferenceBox ()
         {
@@ -201,10 +179,8 @@ public class TimePattern
             }
 
             rect.grow(-params.xOffset, 0);
-            rect.y = staff.getFirstLine()
-                    .yAt(center.x) + params.yOffset;
-            rect.height = staff.getLastLine()
-                    .yAt(center.x) - params.yOffset - rect.y;
+            rect.y = staff.getFirstLine().yAt(center.x) + params.yOffset;
+            rect.height = staff.getLastLine().yAt(center.x) - params.yOffset - rect.y;
 
             // Draw the time core box, for visual debug
             seed.addAttachment("t", rect);
@@ -223,11 +199,9 @@ public class TimePattern
         {
             if (super.isCandidateClose(glyph)) {
                 // Check dimension of resulting bounds
-                Rectangle result = glyph.getBounds()
-                        .union(box);
+                Rectangle result = glyph.getBounds().union(box);
 
-                if ((result.width > params.maxTimeWidth)
-                    || (result.height > params.maxTimeHeight)) {
+                if ((result.width > params.maxTimeWidth) || (result.height > params.maxTimeHeight)) {
                     logger.debug("Excluding too large {}", glyph);
 
                     return false;

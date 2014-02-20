@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          L i n e F i l a m e n t                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    L i n e F i l a m e n t                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -31,12 +31,11 @@ import java.util.TreeMap;
 public class LineFilament
         extends Filament
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(LineFilament.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Combs where this filament appears. map (column index -> comb) */
     private SortedMap<Integer, FilamentComb> combs;
@@ -50,7 +49,7 @@ public class LineFilament
      */
     private int clusterPos;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //--------------//
     // LineFilament //
@@ -69,7 +68,7 @@ public class LineFilament
         super(scale, GlyphLayer.DEFAULT, LineFilamentAlignment.class);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //---------//
     // addComb //
@@ -84,7 +83,7 @@ public class LineFilament
                          FilamentComb comb)
     {
         if (combs == null) {
-            combs = new TreeMap<>();
+            combs = new TreeMap<Integer, FilamentComb>();
         }
 
         combs.put(column, comb);
@@ -122,6 +121,15 @@ public class LineFilament
         getAlignment().fillHoles(clusterPos, fils);
     }
 
+    //--------------//
+    // getAlignment //
+    //--------------//
+    @Override
+    public LineFilamentAlignment getAlignment ()
+    {
+        return (LineFilamentAlignment) super.getAlignment();
+    }
+
     //------------//
     // getCluster //
     //------------//
@@ -157,7 +165,7 @@ public class LineFilament
         if (combs != null) {
             return combs;
         } else {
-            return new TreeMap<>();
+            return new TreeMap<Integer, FilamentComb>();
         }
     }
 
@@ -194,15 +202,6 @@ public class LineFilament
         clusterPos = pos;
     }
 
-    //--------------//
-    // getAlignment //
-    //--------------//
-    @Override
-    public LineFilamentAlignment getAlignment ()
-    {
-        return (LineFilamentAlignment) super.getAlignment();
-    }
-
     //-----------------//
     // internalsString //
     //-----------------//
@@ -216,10 +215,7 @@ public class LineFilament
         }
 
         if (cluster != null) {
-            sb.append(" cluster:")
-                    .append(cluster.getId())
-                    .append("p")
-                    .append(clusterPos);
+            sb.append(" cluster:").append(cluster.getId()).append("p").append(clusterPos);
         }
 
         return sb.toString();

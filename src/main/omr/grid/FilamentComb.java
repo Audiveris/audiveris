@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          F i l a m e n t C o m b                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    F i l a m e n t C o m b                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -15,14 +15,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code FilamentComb} describe a series of y values
- * corresponding to horizontal filaments rather regularly separated.
+ * Class {@code FilamentComb} describe a series of y values corresponding to horizontal
+ * filaments rather regularly separated.
  *
  * @author Hervé Bitteur
  */
 public class FilamentComb
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Column index where sample was taken. */
     private final int col;
@@ -36,7 +36,7 @@ public class FilamentComb
     /** To save processing. */
     private boolean processed = false;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // FilamentComb //
     //--------------//
@@ -49,11 +49,11 @@ public class FilamentComb
     {
         this.col = col;
 
-        filaments = new ArrayList<>();
-        ys = new ArrayList<>();
+        filaments = new ArrayList<LineFilament>();
+        ys = new ArrayList<Double>();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // append //
     //--------//
@@ -157,20 +157,14 @@ public class FilamentComb
         StringBuilder sb = new StringBuilder("{");
         sb.append("Pattern");
 
-        sb.append(" col:")
-                .append(col);
+        sb.append(" col:").append(col);
 
-        sb.append(" ")
-                .append(filaments.size());
+        sb.append(" ").append(filaments.size());
 
         for (int i = 0; i < filaments.size(); i++) {
-            LineFilament fil = (LineFilament) filaments.get(i)
-                    .getAncestor();
+            LineFilament fil = (LineFilament) filaments.get(i).getAncestor();
             double y = ys.get(i);
-            sb.append(" F#")
-                    .append(fil.getId())
-                    .append("@")
-                    .append((float) y);
+            sb.append(" F#").append(fil.getId()).append("@").append((float) y);
         }
 
         sb.append("}");

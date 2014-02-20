@@ -1,33 +1,32 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       I n j e c t i o n S o l v e r                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 I n j e c t i o n S o l v e r                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
 import java.util.Arrays;
 
 /**
- * Class {@code InjectionSolver} handles the injection of a collection
- * of elements (called domain) into another collection of elements
- * (called range, or codomain).
+ * Class {@code InjectionSolver} handles the injection of a collection of elements
+ * (called domain) into another collection of elements (called range, or codomain).
  *
- * <p>It finds a mapping that minimizes the global mapping distance, given
- * the individual distance for each domain/range elements pair. This
- * implementation uses brute force, and thus should be used with small
- * sizes only.
+ * <p>
+ * It finds a mapping that minimizes the global mapping distance, given the individual distance for
+ * each domain/range elements pair. This implementation uses brute force, and thus should be used
+ * with small sizes only.
  *
  * @author Hervé Bitteur
  */
 public class InjectionSolver
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final int domainSize;
 
@@ -43,7 +42,7 @@ public class InjectionSolver
 
     private final int[] config;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new instance of InjectionSolver
      *
@@ -69,7 +68,7 @@ public class InjectionSolver
         //            rangeSize);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // solve //
     //-------//
@@ -94,13 +93,11 @@ public class InjectionSolver
     private void dump ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("bestCost=")
-                .append(bestCost);
+        sb.append("bestCost=").append(bestCost);
         sb.append(" [");
 
         for (int i = 0; i < bestConfig.length; i++) {
-            sb.append(" ")
-                    .append(bestConfig[i]);
+            sb.append(" ").append(bestConfig[i]);
         }
 
         sb.append("]");
@@ -138,14 +135,14 @@ public class InjectionSolver
         }
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     /**
      * Interface {@code Distance} provides the measurement for
      * individual mapping costs.
      */
     public static interface Distance
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Report the distance when mapping element 'id' of domain to

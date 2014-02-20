@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 C h e c k                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           C h e c k                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.check;
 
@@ -25,12 +25,10 @@ import org.slf4j.LoggerFactory;
  * Checks are generally gathered in {@link CheckSuite} instances. </p>
  * <p>
  * The strategy is the following:<ul>
- * <li>A successful individual check may eventually result in an interpretation
- * assigned to the checked object (if the suite of checks ends with an
- * acceptable grade).</li>
- * <li>Any failed individual check triggers the immediate end of the containing
- * suite but records this failure in the checked object itself, for later
- * review.</li>
+ * <li>A successful individual check may eventually result in an interpretation checked object (if
+ * the suite of checks ends with an acceptable grade).</li>
+ * <li>Any failed individual check triggers the immediate end of the containing suite but records
+ * this failure in the checked object itself, for later review.</li>
  * </ul>
  *
  * @param <C> precise type of the objects to be checked
@@ -39,11 +37,11 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class Check<C extends Checkable>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Check.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Specifies the Failure to be assigned to the Checkable object,
      * when the result of this individual check is not acceptable.
@@ -65,7 +63,7 @@ public abstract class Check<C extends Checkable>
     /** Covariant: higher is better, contravariant: lower is better. */
     private final boolean covariant;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------//
     // Check //
     //-------//
@@ -96,7 +94,7 @@ public abstract class Check<C extends Checkable>
         verifyRange();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getDescription //
     //----------------//
@@ -223,8 +221,7 @@ public abstract class Check<C extends Checkable>
             } else if (result.value >= high.getValue()) {
                 result.grade = 1;
             } else {
-                result.grade = Grades.clamp(
-                        (result.value - low.getValue()) / range);
+                result.grade = Grades.clamp((result.value - low.getValue()) / range);
             }
         } else {
             if (result.value > high.getValue()) {
@@ -236,8 +233,7 @@ public abstract class Check<C extends Checkable>
             } else if (result.value <= low.getValue()) {
                 result.grade = 1;
             } else {
-                result.grade = Grades.clamp(
-                        ((high.getValue() - result.value) / range));
+                result.grade = Grades.clamp(((high.getValue() - result.value) / range));
             }
         }
 
@@ -270,14 +266,10 @@ public abstract class Check<C extends Checkable>
     public String toString ()
     {
         StringBuilder sb = new StringBuilder(128);
-        sb.append("{Check ")
-                .append(name);
-        sb.append(" Covariant:")
-                .append(covariant);
-        sb.append(" Low:")
-                .append(low);
-        sb.append(" High:")
-                .append(high);
+        sb.append("{Check ").append(name);
+        sb.append(" Covariant:").append(covariant);
+        sb.append(" Low:").append(low);
+        sb.append(" High:").append(high);
         sb.append("}");
 
         return sb.toString();
@@ -310,7 +302,7 @@ public abstract class Check<C extends Checkable>
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Grade //
     //-------//
@@ -320,7 +312,7 @@ public abstract class Check<C extends Checkable>
     public static class Grade
             extends Constant.Double
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later

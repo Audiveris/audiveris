@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             B a s i c L i n e                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       B a s i c L i n e                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -22,22 +22,19 @@ import static java.lang.Math.*;
 import java.util.Collection;
 
 /**
- * Class {@code BasicLine} is a basic Line implementation which switches
- * between horizontal and vertical equations when computing the points
- * regression
+ * Class {@code BasicLine} is a basic Line implementation which switches between
+ * horizontal and vertical equations when computing the points regression
  *
  * @author Hervé Bitteur
  */
 public class BasicLine
         implements Line
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            BasicLine.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicLine.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Flag to indicate that data needs to be recomputed */
     private boolean dirty;
 
@@ -83,7 +80,7 @@ public class BasicLine
     /** Maximum ordinate among all defining points. */
     private double yMax = Double.MIN_VALUE;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // BasicLine //
     //-----------//
@@ -142,14 +139,12 @@ public class BasicLine
 
         // Checks for parameter validity
         if ((xVals == null) || (yVals == null)) {
-            throw new IllegalArgumentException(
-                    "Provided arrays may not be null");
+            throw new IllegalArgumentException("Provided arrays may not be null");
         }
 
         // Checks for parameter validity
         if (xVals.length != yVals.length) {
-            throw new IllegalArgumentException(
-                    "Provided arrays have different lengths");
+            throw new IllegalArgumentException("Provided arrays have different lengths");
         }
 
         // Checks for parameter validity
@@ -180,8 +175,7 @@ public class BasicLine
 
         // Checks for parameter validity
         if ((points == null) || (points.size() < 2)) {
-            throw new IllegalArgumentException(
-                    "Points collection is null or too small");
+            throw new IllegalArgumentException("Points collection is null or too small");
         }
 
         // Include all defining points
@@ -192,7 +186,7 @@ public class BasicLine
         checkLineParameters();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // distanceOf //
     //------------//
@@ -219,8 +213,7 @@ public class BasicLine
     @Override
     public Rectangle getBounds ()
     {
-        return toDouble()
-                .getBounds();
+        return toDouble().getBounds();
     }
 
     //------------------//
@@ -264,8 +257,7 @@ public class BasicLine
     {
         // Check we have at least 2 points
         if (n < 2) {
-            throw new UndefinedLineException(
-                    "Not enough defining points: " + n);
+            throw new UndefinedLineException("Not enough defining points: " + n);
         }
 
         checkLineParameters();
@@ -273,8 +265,8 @@ public class BasicLine
         // abs is used in case of rounding errors
         return sqrt(
                 abs(
-                        (a * a * sx2) + (b * b * sy2) + (c * c * n)
-                        + (2 * a * b * sxy) + (2 * a * c * sx) + (2 * b * c * sy)) / n);
+                        (a * a * sx2) + (b * b * sy2) + (c * c * n) + (2 * a * b * sxy) + (2 * a * c * sx)
+                        + (2 * b * c * sy)) / n);
     }
 
     //----------------//
@@ -494,22 +486,19 @@ public class BasicLine
                 sb.append(" ");
             }
 
-            sb.append((float) a)
-                    .append("*x ");
+            sb.append((float) a).append("*x ");
 
             if (b >= 0) {
                 sb.append("+");
             }
 
-            sb.append((float) b)
-                    .append("*y ");
+            sb.append((float) b).append("*y ");
 
             if (c >= 0) {
                 sb.append("+");
             }
 
-            sb.append((float) c)
-                    .append("}");
+            sb.append((float) c).append("}");
 
             return sb.toString();
         } catch (UndefinedLineException ex) {
@@ -636,8 +625,7 @@ public class BasicLine
 
         // Make sure the parameters are available
         if (Double.isNaN(a) || Double.isNaN(b) || Double.isNaN(c)) {
-            throw new UndefinedLineException(
-                    "Line parameters not properly set");
+            throw new UndefinedLineException("Line parameters not properly set");
         }
     }
 
@@ -650,8 +638,7 @@ public class BasicLine
     private void compute ()
     {
         if (n < 2) {
-            throw new UndefinedLineException(
-                    "Not enough defining points : " + n);
+            throw new UndefinedLineException("Not enough defining points : " + n);
         }
 
         // Make a choice between horizontal vs vertical

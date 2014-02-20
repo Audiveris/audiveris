@@ -1,21 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     G h o s t I m a g e A d a p t e r                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               G h o s t I m a g e A d a p t e r                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.dnd;
 
 import java.awt.image.BufferedImage;
 
 /**
- * Class {@code GhostImageAdapter}is a {@link GhostDropAdapter} with
- * a provided image.
+ * Class {@code GhostImageAdapter}is a {@link GhostDropAdapter} with a provided image.
  *
  * @param <A> The precise type of action carried by the drop
  *
@@ -24,7 +23,7 @@ import java.awt.image.BufferedImage;
 public class GhostImageAdapter<A>
         extends GhostDropAdapter<A>
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create a new GhostImageAdapter object

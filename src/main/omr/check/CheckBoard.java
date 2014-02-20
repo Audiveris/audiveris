@@ -1,18 +1,15 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            C h e c k B o a r d                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      C h e c k B o a r d                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.check;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import omr.selection.MouseMovement;
 import omr.selection.SelectionService;
@@ -24,9 +21,12 @@ import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * Class {@code CheckBoard} defines a board dedicated to the display
- * of check result information.
+ * Class {@code CheckBoard} defines a board dedicated to the display of check result
+ * information.
  *
  * @param <C> The {@link Checkable} entity type to be checked
  *
@@ -35,17 +35,16 @@ import com.jgoodies.forms.layout.FormLayout;
 public class CheckBoard<C extends Checkable>
         extends Board
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(CheckBoard.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** For display of check suite results */
     private final CheckPanel<C> checkPanel;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //------------//
     // CheckBoard //
@@ -63,13 +62,14 @@ public class CheckBoard<C extends Checkable>
                        SelectionService selectionService,
                        Class[] eventList)
     {
-        super(name,
+        super(
+                name,
                 Board.CHECK.position,
                 selectionService,
                 eventList,
                 false, // Dump
                 false); // Selected
-        checkPanel = new CheckPanel<>(suite);
+        checkPanel = new CheckPanel<C>(suite);
 
         if (suite != null) {
             defineLayout(suite.getName());
@@ -79,7 +79,30 @@ public class CheckBoard<C extends Checkable>
         tellObject(null);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // applySuite //
+    //------------//
+    /**
+     * Assign a (new) suite to the check board and apply it to the
+     * provided object.
+     *
+     * @param suite  the (new) check suite to be used
+     * @param object the object to apply the checks suite on
+     */
+    public synchronized void applySuite (CheckSuite<C> suite,
+                                         C object)
+    {
+        final boolean toBuild = checkPanel.getComponent() == null;
+        checkPanel.setSuite(suite);
+
+        if (toBuild) {
+            defineLayout(suite.getName());
+        }
+
+        tellObject(object);
+    }
+
     //
     //---------//
     // onEvent //
@@ -103,29 +126,6 @@ public class CheckBoard<C extends Checkable>
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
-    }
-
-    //------------//
-    // applySuite //
-    //------------//
-    /**
-     * Assign a (new) suite to the check board and apply it to the
-     * provided object.
-     *
-     * @param suite  the (new) check suite to be used
-     * @param object the object to apply the checks suite on
-     */
-    public synchronized void applySuite (CheckSuite<C> suite,
-                                         C object)
-    {
-        final boolean toBuild = checkPanel.getComponent() == null;
-        checkPanel.setSuite(suite);
-
-        if (toBuild) {
-            defineLayout(suite.getName());
-        }
-
-        tellObject(object);
     }
 
     //------------//

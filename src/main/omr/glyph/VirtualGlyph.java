@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          V i r t u a l G l y p h                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    V i r t u a l G l y p h                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -18,16 +18,16 @@ import omr.ui.symbol.Symbols;
 import java.awt.Point;
 
 /**
- * Class {@code VirtualGlyph} is an artificial glyph specifically
- * build from a MusicFont-based symbol, to carry a shape and features
- * just like a standard glyph would.
+ * Class {@code VirtualGlyph} is an artificial glyph specifically build from a
+ * MusicFont-based symbol, to carry a shape and features just like a standard glyph
+ * would.
  *
  * @author Hervé Bitteur
  */
 public class VirtualGlyph
         extends SymbolGlyph
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //--------------//
     // VirtualGlyph //
@@ -44,18 +44,13 @@ public class VirtualGlyph
                          Point center)
     {
         // Build a glyph of proper size
-        super(
-                shape,
-                Symbols.getSymbol(shape),
-                interline,
-                GlyphLayer.DROP,
-                null);
+        super(shape, Symbols.getSymbol(shape), interline, GlyphLayer.DROP, null);
 
         // Translation from generic center to actual center
         translate(GeoUtil.vectorOf(getAreaCenter(), center));
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // isActive //
     //----------//

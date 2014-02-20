@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    T e x t C h e c k e r P a t t e r n                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              T e x t C h e c k e r P a t t e r n                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.text;
 
@@ -20,21 +20,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code TextCheckerPattern} is a debugging utility used to make
- * a global check of text entities in a system.
+ * Class {@code TextCheckerPattern} is a debugging utility used to make a global check
+ * of text entities in a system.
  *
  * @author Hervé Bitteur
  */
 public class TextCheckerPattern
         extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            TextCheckerPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(TextCheckerPattern.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextCheckerPattern object.
      *
@@ -45,7 +43,7 @@ public class TextCheckerPattern
         super("textChecker", system);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //------------//
     // runPattern //
@@ -149,8 +147,7 @@ public class TextCheckerPattern
             return false;
         }
 
-        if (!glyph.getTextValue()
-                .equals(word.getInternalValue())) {
+        if (!glyph.getTextValue().equals(word.getInternalValue())) {
             logger.debug(
                     "{} Value modified: \"{}\" vs \"{}\"",
                     glyph.idString(),
@@ -162,12 +159,8 @@ public class TextCheckerPattern
 
         TextLine line = word.getTextLine();
 
-        if (!line.getWords()
-                .contains(word)) {
-            logger.debug(
-                    "{} Not in containing line {}",
-                    glyph.idString(),
-                    line);
+        if (!line.getWords().contains(word)) {
+            logger.debug("{} Not in containing line {}", glyph.idString(), line);
 
             return false;
         }

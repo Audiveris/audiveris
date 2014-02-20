@@ -1,15 +1,18 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             J a i D e w a r p e r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Brenton Partridge 2007-2008.                                //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       J a i D e w a r p e r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright (C) Brenton Partridge 2007-2008.   4
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image.jai;
+
+import omr.image.ImageUtil;
+import static omr.image.ImageUtil.invert;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
@@ -18,25 +21,21 @@ import javax.media.jai.InterpolationBilinear;
 import javax.media.jai.JAI;
 import javax.media.jai.Warp;
 import javax.media.jai.WarpGrid;
-import omr.image.ImageUtil;
-
-import static omr.image.ImageUtil.invert;
 
 /**
- * Class {@code JaiDewarper} is meant to keep JAI-based dewarping
- * features separate from the rest of Audiveris application, and thus
- * saving on jar download.
+ * Class {@code JaiDewarper} is meant to keep JAI-based de-warping features separate
+ * from the rest of Audiveris application, and thus saving on jar download.
  *
  * @author Hervé Bitteur
  */
 public class JaiDewarper
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The dewarp grid. */
     private Warp dewarpGrid;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new JaiDewarper object.
      */
@@ -44,7 +43,7 @@ public class JaiDewarper
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //----------------//
     // createWarpGrid //
@@ -79,8 +78,7 @@ public class JaiDewarper
         pb.add(dewarpGrid);
         pb.add(new InterpolationBilinear());
 
-        BufferedImage dewarpedImage = invert(
-                JAI.create("warp", pb).getAsBufferedImage());
+        BufferedImage dewarpedImage = invert(JAI.create("warp", pb).getAsBufferedImage());
 
         ///((PlanarImage) dewarpedImage).getTiles();
         return dewarpedImage;

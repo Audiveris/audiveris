@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     S p i n n e r G l y p h M o d e l                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               S p i n n e r G l y p h M o d e l                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
@@ -23,13 +23,11 @@ import org.slf4j.LoggerFactory;
 import javax.swing.AbstractSpinnerModel;
 
 /**
- * Class {@code SpinnerGlyphModel} is a spinner model backed by a
- * {@link GlyphNest}.
- * Any modification in the nest is thus transparently handled, since the nest
- * <b>is</b> the model.
- * <p>A glyph {@link Predicate} can be assigned to this SpinnerGlyphModel at
- * construction time in order to restrict the population of glyphs in the
- * spinner.
+ * Class {@code SpinnerGlyphModel} is a spinner model backed by a {@link GlyphNest}.
+ * Any modification in the nest is thus transparently handled, since the nest <b>is</b> the model.
+ * <p>
+ * A glyph {@link Predicate} can be assigned to this SpinnerGlyphModel at construction time in order
+ * to restrict the population of glyphs in the spinner.
  * This class is used by {@link GlyphBoard} only, but is not coupled with it.
  *
  * @author Hervé Bitteur
@@ -37,13 +35,11 @@ import javax.swing.AbstractSpinnerModel;
 public class SpinnerGlyphModel
         extends AbstractSpinnerModel
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SpinnerGlyphModel.class);
+    private static final Logger logger = LoggerFactory.getLogger(SpinnerGlyphModel.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph nest */
     private final GlyphNest nest;
 
@@ -53,12 +49,12 @@ public class SpinnerGlyphModel
     /** Current glyph id */
     private Integer currentId;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------------//
     // SpinnerGlyphModel //
     //-------------------//
     /**
-     * Creates a new SpinnerGlyphModel object, on all nest glyph 
+     * Creates a new SpinnerGlyphModel object, on all nest glyph
      * instances.
      *
      * @param nest the underlying glyph nest
@@ -82,8 +78,7 @@ public class SpinnerGlyphModel
                               Predicate<Glyph> predicate)
     {
         if (nest == null) {
-            throw new IllegalArgumentException(
-                    "SpinnerGlyphModel expects non-null glyph nest");
+            throw new IllegalArgumentException("SpinnerGlyphModel expects non-null glyph nest");
         }
 
         this.nest = nest;
@@ -92,7 +87,7 @@ public class SpinnerGlyphModel
         currentId = NO_VALUE;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getNextValue //
     //--------------//

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    N o n D r a g g a b l e S y m b o l                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              N o n D r a g g a b l e S y m b o l                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -21,21 +21,18 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code NonDraggableSymbol} implements a double-size
- * non-draggable symbol: X
+ * Class {@code NonDraggableSymbol} implements a double-size non-draggable symbol: X
  *
  * @author Hervé Bitteur
  */
 public class NonDraggableSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final AffineTransform at = AffineTransform.getScaleInstance(
-            2,
-            2);
+    private static final AffineTransform at = AffineTransform.getScaleInstance(2, 2);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------------//
     // NonDraggableSymbol //
     //--------------------//
@@ -61,7 +58,7 @@ public class NonDraggableSymbol
         super(isIcon, Shape.NON_DRAGGABLE, true, codes); // Decorated
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -83,9 +80,7 @@ public class NonDraggableSymbol
 
         Rectangle2D r = p.layout.getBounds();
 
-        p.rect = new Rectangle(
-                (int) Math.ceil(r.getWidth()),
-                (int) Math.ceil(r.getHeight()));
+        p.rect = new Rectangle((int) Math.ceil(r.getWidth()), (int) Math.ceil(r.getHeight()));
 
         return p;
     }

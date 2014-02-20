@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           B a r A l i g n m e n t                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     B a r A l i g n m e n t                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -19,14 +19,14 @@ import omr.util.VerticalSide;
 import java.util.Objects;
 
 /**
- * Class {@code BarAlignment} represents an alignment found between
- * a bar peak in one staff and another bar peak in the staff below.
+ * Class {@code BarAlignment} represents an alignment found between a bar peak in one
+ * staff and another bar peak in the staff below.
  *
  * @author Hervé Bitteur
  */
 public class BarAlignment
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Bar peak in the upper staff. */
     protected final BarPeak topPeak;
@@ -43,7 +43,7 @@ public class BarAlignment
     /** Connection quality. */
     private final GradeImpacts impacts;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarAlignment object.
      *
@@ -63,7 +63,7 @@ public class BarAlignment
         this.impacts = impacts;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // equals //
     //--------//
@@ -73,8 +73,7 @@ public class BarAlignment
         if (obj instanceof BarAlignment) {
             BarAlignment that = (BarAlignment) obj;
 
-            return (topPeak == that.topPeak)
-                   && (bottomPeak == that.bottomPeak);
+            return (topPeak == that.topPeak) && (bottomPeak == that.bottomPeak);
         } else {
             return false;
         }
@@ -134,33 +133,28 @@ public class BarAlignment
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("top:Staff#")
-                .append(topPeak.getStaff().getId())
-                .append("-")
-                .append(topPeak);
-        sb.append(" bot:Staff#")
-                .append(bottomPeak.getStaff().getId())
-                .append("-")
-                .append(bottomPeak);
+        sb.append("top:Staff#").append(topPeak.getStaff().getId()).append("-").append(topPeak);
+        sb.append(" bot:Staff#").append(bottomPeak.getStaff().getId()).append("-").append(
+                bottomPeak);
         sb.append(String.format(" dx:%.1f", dx));
 
         return sb.toString();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
             extends BasicImpacts
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{"align"};
 
         private static final double[] WEIGHTS = new double[]{1};
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double align)
         {
             super(NAMES, WEIGHTS);

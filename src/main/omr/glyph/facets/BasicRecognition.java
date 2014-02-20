@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      B a s i c R e c o g n i t i o n                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                B a s i c R e c o g n i t i o n                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -24,8 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class {@code BasicRecognition} is the basic implementation of a
- * recognition facet.
+ * Class {@code BasicRecognition} is the basic implementation of a recognition facet.
  *
  * @author Hervé Bitteur
  */
@@ -33,10 +32,11 @@ class BasicRecognition
         extends BasicFacet
         implements GlyphRecognition
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(BasicRecognition.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Current evaluation (shape + grade), if any */
     private Evaluation evaluation;
 
@@ -46,6 +46,7 @@ class BasicRecognition
     /** Related time sig rational information, if any */
     private TimeRational timeRational;
 
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // BasicRecognition //
     //------------------//
@@ -59,6 +60,7 @@ class BasicRecognition
         super(glyph);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // allowShape //
     //------------//
@@ -83,6 +85,7 @@ class BasicRecognition
         }
 
         Shape physical = (getShape() != null) ? getShape().getPhysicalShape() : null;
+
         if (physical != null) {
             sb.append(String.format("   physical=%s%n", physical));
         }
@@ -105,7 +108,7 @@ class BasicRecognition
     public void forbidShape (Shape shape)
     {
         if (forbiddenShapes == null) {
-            forbiddenShapes = new HashSet<>();
+            forbiddenShapes = new HashSet<Shape>();
         }
 
         forbiddenShapes.add(shape);
@@ -268,22 +271,22 @@ class BasicRecognition
     public void setShape (Shape shape,
                           double grade)
     {
-//        // Check status
-//        if (glyph.isTransient()) {
-//            logger.error("Setting shape of a transient glyph");
-//        }
+        //        // Check status
+        //        if (glyph.isTransient()) {
+        //            logger.error("Setting shape of a transient glyph");
+        //        }
 
         // Blacklist the old shape if any
         Shape oldShape = getShape();
 
-        if ((oldShape != null) && (oldShape != shape)
-            && (oldShape != Shape.GLYPH_PART)) {
+        if ((oldShape != null) && (oldShape != shape) && (oldShape != Shape.GLYPH_PART)) {
             forbidShape(oldShape);
-//
-//            if (glyph.isVip()) {
-//                logger.info("Shape {} forbidden for {}",
-//                        oldShape, glyph.idString());
-//            }
+
+            //
+            //            if (glyph.isVip()) {
+            //                logger.info("Shape {} forbidden for {}",
+            //                        oldShape, glyph.idString());
+            //            }
         }
 
         if (shape != null) {

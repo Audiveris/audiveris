@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 C l o c k                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           C l o c k                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">                                              //
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.                          //
+//  This software is released under the GNU General Public License.                               //
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.                       //
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -18,24 +18,23 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Class {@code Clock} provides various features related to the current
- * date and time, as well as the elapsed time since the beginning of
- * the application.
+ * Class {@code Clock} provides various features related to the current date and time,
+ * as well as the elapsed time since the beginning of the application.
  *
  * @author Hervé Bitteur
  */
 public class Clock
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** To have a reference time */
     private static long startTime = System.currentTimeMillis();
 
     /** General date formatting */
     private static final DateFormat dateFormatter = DateFormat.getDateTimeInstance(
-            DateFormat.FULL,
-            DateFormat.FULL,
-            Locale.US);
+        DateFormat.FULL,
+        DateFormat.FULL,
+        Locale.US);
 
     /** General time formatting. Locale to be used, could be: //Locale.US;
      * //Locale.FRANCE; */
@@ -51,7 +50,8 @@ public class Clock
         timeFormatter.applyPattern("000,000.00");
     }
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
+
     //-------//
     // Clock // To prevent instantiation
     //-------//
@@ -59,7 +59,8 @@ public class Clock
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // getDate //
     //---------//

@@ -42,7 +42,7 @@ public class Utilities
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
             Utilities.class);
 

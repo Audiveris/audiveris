@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     B a s i c A R T E x t r a c t o r                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               B a s i c A R T E x t r a c t o r                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.moments;
 
@@ -16,9 +16,8 @@ import static omr.moments.ARTMoments.*;
 import java.awt.image.WritableRaster;
 
 /**
- * Class {@code BasicARTExtractor} implements extraction
- * of ART Moments.
- *
+ * Class {@code BasicARTExtractor} implements extraction of ART Moments.
+ * <p>
  * See MPEG-7 Experimentation Model for the original C++ code
  *
  * @author Hervé Bitteur
@@ -26,7 +25,7 @@ import java.awt.image.WritableRaster;
 public class BasicARTExtractor
         extends AbstractExtractor<ARTMoments>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     // Zernike basis function radius
     private static final int LUT_RADIUS = 50;
@@ -41,7 +40,7 @@ public class BasicARTExtractor
         initLUT();
     }
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicARTExtractor object and process
      * the provided foreground points.
@@ -50,7 +49,7 @@ public class BasicARTExtractor
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public void reconstruct (WritableRaster raster)
     {
@@ -138,14 +137,8 @@ public class BasicARTExtractor
                     for (int p = 0; p < ANGULAR; p++) {
                         for (int r = 0; r < RADIAL; r++) {
                             double temp = Math.cos(rad * Math.PI * r);
-                            realLuts[p][r].assign(
-                                    x,
-                                    y,
-                                    temp * Math.cos(angle * p));
-                            imagLuts[p][r].assign(
-                                    x,
-                                    y,
-                                    temp * Math.sin(angle * p));
+                            realLuts[p][r].assign(x, y, temp * Math.cos(angle * p));
+                            imagLuts[p][r].assign(x, y, temp * Math.sin(angle * p));
                         }
                     }
                 } else {

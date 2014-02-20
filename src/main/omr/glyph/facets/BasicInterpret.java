@@ -1,17 +1,15 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            B a s i c I n t e r p r e t                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      B a s i c I n t e r p r e t                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
-
-import omr.sheet.SystemInfo;
 
 import omr.sig.Inter;
 import omr.sig.Relation;
@@ -24,27 +22,23 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class {@code BasicInterpret} is a basic implementation for
- * GlyphInterpret.
+ * Class {@code BasicInterpret} is a basic implementation for GlyphInterpret.
  *
  * @author Hervé Bitteur
  */
 public class BasicInterpret
-    extends BasicFacet
-    implements GlyphInterpret
+        extends BasicFacet
+        implements GlyphInterpret
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-        BasicInterpret.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicInterpret.class);
 
-    //~ Instance fields --------------------------------------------------------
-
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Set of interpretation(s) for this glyph . */
     private final Set<Inter> interpretations = new HashSet<Inter>();
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicInterpret object.
      *
@@ -55,8 +49,7 @@ public class BasicInterpret
         super(glyph);
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // addInterpretation //
     //-------------------//
@@ -76,8 +69,7 @@ public class BasicInterpret
 
         if (!interpretations.isEmpty()) {
             for (Inter inter : interpretations) {
-                sb.append("   interpretation=")
-                  .append(inter);
+                sb.append("   interpretation=").append(inter);
 
                 SIGraph sig = inter.getSig();
 
@@ -85,17 +77,14 @@ public class BasicInterpret
                     for (Relation relation : sig.edgesOf(inter)) {
                         Inter source = sig.getEdgeSource(relation);
                         Inter target = sig.getEdgeTarget(relation);
-                        sb.append(" {")
-                          .append(relation);
+                        sb.append(" {").append(relation);
 
                         if (source != inter) {
-                            sb.append(" <- ")
-                              .append(source);
+                            sb.append(" <- ").append(source);
                         }
 
                         if (target != inter) {
-                            sb.append(" -> ")
-                              .append(target);
+                            sb.append(" -> ").append(target);
                         }
 
                         sb.append("}");

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          O c r B a s e d I t e m                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    O c r B a s e d I t e m                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.text;
 
@@ -21,8 +21,8 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code TextBasedItem} is an abstract TextItem with
- * baseline and confidence informations.
+ * Class {@code TextBasedItem} is an abstract TextItem with baseline and confidence
+ * informations.
  *
  * @author Hervé Bitteur
  */
@@ -30,7 +30,7 @@ public abstract class TextBasedItem
         extends TextItem
         implements Vip
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Baseline. */
     private Line2D baseline;
@@ -41,7 +41,7 @@ public abstract class TextBasedItem
     /** (Debug) flag this object as VIP. */
     private boolean vip;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextBasedItem object.
      *
@@ -61,18 +61,14 @@ public abstract class TextBasedItem
         this.confidence = confidence;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // baselineOf //
     //------------//
     public static Line2D baselineOf (List<? extends TextBasedItem> items)
     {
-        Point2D first = items.get(0)
-                .getBaseline()
-                .getP1();
-        Point2D last = items.get(items.size() - 1)
-                .getBaseline()
-                .getP2();
+        Point2D first = items.get(0).getBaseline().getP1();
+        Point2D last = items.get(items.size() - 1).getBaseline().getP2();
 
         return new Line2D.Double(first, last);
     }
@@ -129,9 +125,7 @@ public abstract class TextBasedItem
             return null;
         }
 
-        return new Point(
-                (int) Math.rint(bl.getX1()),
-                (int) Math.rint(bl.getY1()));
+        return new Point((int) Math.rint(bl.getX1()), (int) Math.rint(bl.getY1()));
     }
 
     //-------//
@@ -214,18 +208,17 @@ public abstract class TextBasedItem
         StringBuilder sb = new StringBuilder(super.internalsString());
 
         if (getConfidence() != null) {
-            sb.append(" conf:")
-                    .append(getConfidence());
+            sb.append(" conf:").append(getConfidence());
         }
 
         if (getBaseline() != null) {
             sb.append(
                     String.format(
-                    " base[%.0f,%.0f]-[%.0f,%.0f]",
-                    baseline.getX1(),
-                    baseline.getY1(),
-                    baseline.getX2(),
-                    baseline.getY2()));
+                            " base[%.0f,%.0f]-[%.0f,%.0f]",
+                            baseline.getX1(),
+                            baseline.getY1(),
+                            baseline.getX2(),
+                            baseline.getY2()));
         }
 
         return sb.toString();

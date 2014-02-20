@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 S c a l e                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           S c a l e                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -78,12 +78,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "scale")
 public class Scale
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Scale.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Line thickness range. */
     private final Range lineRange;
 
@@ -99,7 +98,7 @@ public class Scale
     /** Second interline range, if any. */
     private final Range secondInterlineRange;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------//
     // Scale //
     //-------//
@@ -126,12 +125,7 @@ public class Scale
     public Scale (int interline,
                   int mainFore)
     {
-        this(
-                new Range(-1, mainFore, -1),
-                new Range(-1, interline, -1),
-                -1,
-                -1,
-                null);
+        this(new Range(-1, mainFore, -1), new Range(-1, interline, -1), -1, -1, null);
     }
 
     //-------//
@@ -168,7 +162,7 @@ public class Scale
         this(null, null, -1, -1, null);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // fracToPixels //
     //--------------//
@@ -420,8 +414,7 @@ public class Scale
      */
     public int toPixels (AreaFraction areaFrac)
     {
-        return (int) Math.rint(
-                interlineRange.best * interlineRange.best * areaFrac.getValue());
+        return (int) Math.rint(interlineRange.best * interlineRange.best * areaFrac.getValue());
     }
 
     //----------------//
@@ -455,8 +448,7 @@ public class Scale
      */
     public double toPixelsDouble (LineFraction lineFrac)
     {
-        return (double) lineRange.best * lineFrac.getWrappedValue()
-                .doubleValue();
+        return (double) lineRange.best * lineFrac.getWrappedValue().doubleValue();
     }
 
     //----------//
@@ -468,27 +460,22 @@ public class Scale
         StringBuilder sb = new StringBuilder();
         sb.append("Scale");
 
-        sb.append(" line: ")
-                .append(lineRange);
+        sb.append(" line: ").append(lineRange);
 
-        sb.append(" interline: ")
-                .append(interlineRange);
+        sb.append(" interline: ").append(interlineRange);
 
-        sb.append(" beam: ")
-                .append(beamValue);
+        sb.append(" beam: ").append(beamValue);
 
-        sb.append(" stem: ")
-                .append(stemValue);
+        sb.append(" stem: ").append(stemValue);
 
         if (secondInterlineRange != null) {
-            sb.append(" secondInterline: ")
-                    .append(secondInterlineRange);
+            sb.append(" secondInterline: ").append(secondInterlineRange);
         }
 
         return sb.toString();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // AreaFraction //
     //--------------//
@@ -499,7 +486,7 @@ public class Scale
     public static class AreaFraction
             extends Constant.Double
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned
@@ -528,7 +515,7 @@ public class Scale
     public static class Fraction
             extends Constant.Double
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final Fraction ZERO = new Fraction(0, "zero");
 
@@ -536,7 +523,7 @@ public class Scale
             ZERO.setUnitAndName(Scale.class.getName(), "ZERO");
         }
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Specific constructor, where 'unit' and 'name' are assigned
          * later.
@@ -556,7 +543,7 @@ public class Scale
             this(0d, null);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public DoubleValue getWrappedValue ()
         {
@@ -587,7 +574,7 @@ public class Scale
     public static class LineFraction
             extends Constant.Double
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned
@@ -608,7 +595,7 @@ public class Scale
             this(0d, null);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public DoubleValue getWrappedValue ()
         {
@@ -636,7 +623,7 @@ public class Scale
      */
     public static class Range
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Value at beginning of range */
         public final int min;
@@ -647,7 +634,7 @@ public class Scale
         /** Value at end of range */
         public final int max;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Range (int min,
                       int best,
                       int max)
@@ -657,7 +644,7 @@ public class Scale
             this.max = max;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

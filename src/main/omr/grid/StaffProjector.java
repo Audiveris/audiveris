@@ -1,19 +1,17 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         S t a f f P r o j e c t o r                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   S t a f f P r o j e c t o r                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
-import ij.process.ByteProcessor;
 import omr.constant.ConstantSet;
-
 
 import omr.math.AreaUtil;
 import omr.math.AreaUtil.CoreData;
@@ -31,6 +29,8 @@ import omr.util.HorizontalSide;
 import static omr.util.HorizontalSide.LEFT;
 import static omr.util.HorizontalSide.RIGHT;
 import omr.util.Navigable;
+
+import ij.process.ByteProcessor;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
@@ -55,33 +55,29 @@ import java.util.Map;
 import javax.swing.WindowConstants;
 
 /**
- * Class {@code StaffProjector} is in charge of analyzing a staff
- * projection onto horizontal, in order to retrieve bar lines
- * candidates as well as staff start and stop abscissae.
+ * Class {@code StaffProjector} is in charge of analyzing a staff projection onto
+ * x-axis, in order to retrieve bar lines candidates as well as staff start and stop
+ * abscissae.
  * <p>
- * To do so, we analyze the interior of staff because this is where a bar line
- * must be present.
- * The potential bar portions outside staff height are much less typical of
- * a bar line.
+ * To do so, we analyze the interior of staff because this is where a bar line must be present.
+ * The potential bar portions outside staff height are much less typical of a bar line.
  * <p>
- * The projection also gives information about which abscissa values are outside
- * the staff abscissa range, since the corresponding cumulated value gets close
- * to zero.
- * It also gives indication about lack of chunk (beam or head) on each side of
- * a bar candidate, but this indication is limited to the staff height portion.
+ * The projection also gives information about which abscissa values are outside the staff abscissa
+ * range, since the corresponding cumulated value gets close to zero.
+ * It also gives indication about lack of chunk (beam or head) on each side of a bar candidate, but
+ * this indication is limited to the staff height portion.
  *
  * @author Hervé Bitteur
  */
 public class StaffProjector
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            StaffProjector.class);
+    private static final Logger logger = LoggerFactory.getLogger(StaffProjector.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -111,7 +107,7 @@ public class StaffProjector
     /** Count of cumulated foreground pixels, indexed by abscissa. */
     private short[] values;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StaffProjector object.
      *
@@ -131,7 +127,7 @@ public class StaffProjector
         params = new Parameters(scale);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // plot //
     //------//
@@ -274,8 +270,7 @@ public class StaffProjector
         final int leftChunk = getChunk(start, -1);
         final int rightChunk = getChunk(stop, +1);
         final int chunk = Math.max(leftChunk, rightChunk);
-        final double chunkRange = params.chunkThreshold
-                                  - params.linesThreshold;
+        final double chunkRange = params.chunkThreshold - params.linesThreshold;
 
         if (chunk > params.chunkThreshold) {
             return null;
@@ -283,19 +278,12 @@ public class StaffProjector
 
         // Compute largest white gap
         final int xMid = (start + stop) / 2;
-        final int yTop = staff.getFirstLine()
-                .yAt(xMid);
-        final int yBottom = staff.getLastLine()
-                .yAt(xMid);
+        final int yTop = staff.getFirstLine().yAt(xMid);
+        final int yBottom = staff.getLastLine().yAt(xMid);
 
-        final GeoPath leftLine = new GeoPath(
-                new Line2D.Double(start, yTop, start, yBottom));
-        final GeoPath rightLine = new GeoPath(
-                new Line2D.Double(stop, yTop, stop, yBottom));
-        final CoreData data = AreaUtil.verticalCore(
-                pixelFilter,
-                leftLine,
-                rightLine);
+        final GeoPath leftLine = new GeoPath(new Line2D.Double(start, yTop, start, yBottom));
+        final GeoPath rightLine = new GeoPath(new Line2D.Double(stop, yTop, stop, yBottom));
+        final CoreData data = AreaUtil.verticalCore(pixelFilter, leftLine, rightLine);
 
         if (data.gap > params.gapThreshold) {
             return null;
@@ -305,10 +293,7 @@ public class StaffProjector
         double coreImpact = (value - minValue) / valueRange;
         double beltImpact = (params.chunkThreshold - chunk) / chunkRange;
         double gapImpact = 1 - ((double) data.gap / params.gapThreshold);
-        GradeImpacts impacts = new BarlineInter.Impacts(
-                coreImpact,
-                beltImpact,
-                gapImpact);
+        GradeImpacts impacts = new BarlineInter.Impacts(coreImpact, beltImpact, gapImpact);
         double grade = impacts.getGrade();
 
         if (grade >= Inter.minGrade) {
@@ -419,8 +404,7 @@ public class StaffProjector
         final int xMin = (leftBlank != null) ? leftBlank.stop : 0;
 
         final Blank rightBlank = blanks.get(RIGHT);
-        final int xMax = (rightBlank != null) ? rightBlank.start
-                : (sheet.getWidth() - 1);
+        final int xMax = (rightBlank != null) ? rightBlank.start : (sheet.getWidth() - 1);
 
         int start = -1;
         int stop = -1;
@@ -560,16 +544,14 @@ public class StaffProjector
         final int staffEnd = staff.getAbscissa(side);
 
         if (!peaks.isEmpty()) {
-            final BarPeak peak = peaks.get(
-                    (side == LEFT) ? 0 : (peaks.size() - 1));
+            final BarPeak peak = peaks.get((side == LEFT) ? 0 : (peaks.size() - 1));
             final int peakMid = (peak.getStart() + peak.getStop()) / 2;
 
             // Check side position of peak wrt staff
             // Must be external or close internal
             final int toPeak = peakMid - staffEnd;
 
-            if (((dir * toPeak) >= 0)
-                || (Math.abs(toPeak) <= params.maxBarToEnd)) {
+            if (((dir * toPeak) >= 0) || (Math.abs(toPeak) <= params.maxBarToEnd)) {
                 logger.debug(
                         "Staff#{} {} set at peak {} (vs {})",
                         staff.getId(),
@@ -587,12 +569,7 @@ public class StaffProjector
 
         if (blank != null) {
             int x = (side == LEFT) ? (blank.stop + 1) : (blank.start - 1);
-            logger.debug(
-                    "Staff#{} {} set at blank {} (vs {})",
-                    staff.getId(),
-                    side,
-                    x,
-                    staffEnd);
+            logger.debug("Staff#{} {} set at blank {} (vs {})", staff.getId(), side, x, staffEnd);
             staff.setAbscissa(side, x);
         } else {
             logger.debug("Staff#{} no clear end on {}", staff.getId(), side);
@@ -675,14 +652,55 @@ public class StaffProjector
         return x;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //-------//
+    // Blank //
+    //-------//
+    /**
+     * A abscissa region where no staff lines are detected and thus
+     * indicates possible end of staff.
+     */
+    private static class Blank
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** First abscissa in region. */
+        private final int start;
+
+        /** Last abscissa in region. */
+        private final int stop;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Blank (int start,
+                      int stop)
+        {
+            this.start = start;
+            this.stop = stop;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        public int getWidth ()
+        {
+            return stop - start + 1;
+        }
+
+        @Override
+        public String toString ()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Blank(").append(start).append("-").append(stop).append(")");
+
+            return sb.toString();
+        }
+    }
+
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Scale.Fraction maxThinWidth = new Scale.Fraction(
                 0.4,
@@ -727,52 +745,6 @@ public class StaffProjector
         final Scale.Fraction maxBarToEnd = new Scale.Fraction(
                 3.0,
                 "Maximum dx between bar and end of staff");
-
-    }
-
-    //-------//
-    // Blank //
-    //-------//
-    /**
-     * A abscissa region where no staff lines are detected and thus
-     * indicates possible end of staff.
-     */
-    private static class Blank
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** First abscissa in region. */
-        private final int start;
-
-        /** Last abscissa in region. */
-        private final int stop;
-
-        //~ Constructors -------------------------------------------------------
-        public Blank (int start,
-                      int stop)
-        {
-            this.start = start;
-            this.stop = stop;
-        }
-
-        //~ Methods ------------------------------------------------------------
-        public int getWidth ()
-        {
-            return stop - start + 1;
-        }
-
-        @Override
-        public String toString ()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Blank(")
-                    .append(start)
-                    .append("-")
-                    .append(stop)
-                    .append(")");
-
-            return sb.toString();
-        }
     }
 
     //------------//
@@ -780,7 +752,7 @@ public class StaffProjector
     //------------//
     private static class Parameters
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final int maxThinWidth;
 
@@ -806,7 +778,7 @@ public class StaffProjector
 
         final int maxBarToEnd;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Parameters (Scale scale)
         {
             maxThinWidth = scale.toPixels(constants.maxThinWidth);
@@ -838,7 +810,7 @@ public class StaffProjector
      */
     private class Plotter
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final XYSeriesCollection dataset = new XYSeriesCollection();
 
@@ -861,7 +833,7 @@ public class StaffProjector
         // Series index
         int index = -1;
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public void plot ()
         {
             plot.setRenderer(renderer);
@@ -948,8 +920,7 @@ public class StaffProjector
                     true);
             frame.pack();
             frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            frame.setLocation(
-                    new Point(20 * staff.getId(), 20 * staff.getId()));
+            frame.setLocation(new Point(20 * staff.getId(), 20 * staff.getId()));
             frame.setVisible(true);
         }
 

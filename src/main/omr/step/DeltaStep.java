@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              D e l t a S t e p                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        D e l t a S t e p                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -26,21 +26,19 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code DeltaStep} computes the delta value as a kind of
- * recognition level on a whole sheet.
+ * Class {@code DeltaStep} computes the delta value as a kind of recognition level on a
+ * whole sheet.
  *
  * @author Hervé Bitteur
  */
 public class DeltaStep
         extends AbstractStep
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            DeltaStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(DeltaStep.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // DeltaStep //
     //-----------//
@@ -49,15 +47,10 @@ public class DeltaStep
      */
     public DeltaStep ()
     {
-        super(
-                Steps.DELTA,
-                Level.SCORE_LEVEL,
-                Mandatory.OPTIONAL,
-                DATA_TAB,
-                "Compute page delta");
+        super(Steps.DELTA, Level.SCORE_LEVEL, Mandatory.OPTIONAL, DATA_TAB, "Compute page delta");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // doit //
     //------//
@@ -82,9 +75,7 @@ public class DeltaStep
 
         if (count > 0) {
             globalRatio /= count;
-            logger.info(
-                    "Global score delta: {}%",
-                    String.format("%4.1f", 100 * globalRatio));
+            logger.info("Global score delta: {}%", String.format("%4.1f", 100 * globalRatio));
             score.getBench().recordDelta(globalRatio);
         }
     }

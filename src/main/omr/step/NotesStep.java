@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              N o t e s S t e p                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        N o t e s S t e p                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -26,22 +26,20 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code NotesStep} implements <b>NOTES</b> step,
- * which use distance matching technique to retrieve all possible
- * interpretations of note heads (black and void) or whole notes.
+ * Class {@code NotesStep} implements <b>NOTES</b> step, which use distance matching
+ * technique to retrieve all possible interpretations of note heads (black and void) or
+ * whole notes.
  *
  * @author Hervé Bitteur
  */
 public class NotesStep
-    extends AbstractSystemStep
+        extends AbstractSystemStep
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-        NotesStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(NotesStep.class);
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // NotesStep //
     //-----------//
@@ -51,21 +49,20 @@ public class NotesStep
     public NotesStep ()
     {
         super(
-            Steps.NOTES,
-            Level.SHEET_LEVEL,
-            Mandatory.MANDATORY,
-            DATA_TAB,
-            "Retrieve note heads & whole notes");
+                Steps.NOTES,
+                Level.SHEET_LEVEL,
+                Mandatory.MANDATORY,
+                DATA_TAB,
+                "Retrieve note heads & whole notes");
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
     @Override
     public void doSystem (SystemInfo system)
-        throws StepException
+            throws StepException
     {
         system.notesBuilder.buildNotes();
     }
@@ -79,10 +76,10 @@ public class NotesStep
      */
     @Override
     protected void doProlog (Collection<SystemInfo> systems,
-                             Sheet                  sheet)
-        throws StepException
+                             Sheet sheet)
+            throws StepException
     {
-        Picture       picture = sheet.getPicture();
+        Picture picture = sheet.getPicture();
         ByteProcessor buffer = picture.getSource(Picture.SourceKey.BINARY);
         DistanceTable table = new ChamferDistance.Short().computeToFore(buffer);
         sheet.setDistanceImage(table);

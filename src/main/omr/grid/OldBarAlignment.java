@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       O l d B a r A l i g n m e n t                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 O l d B a r A l i g n m e n t                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -29,7 +29,7 @@ import java.awt.geom.Point2D;
 @Deprecated
 public class OldBarAlignment
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Related sheet. */
     @Navigable(false)
@@ -41,7 +41,7 @@ public class OldBarAlignment
     /** Vertical sequence of bars intersections with staves. */
     private final StickIntersection[] inters;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarAlignment object.
      *
@@ -49,13 +49,13 @@ public class OldBarAlignment
      * @param staffCount the number of staves to check for consistency
      */
     public OldBarAlignment (Sheet sheet,
-                         int staffCount)
+                            int staffCount)
     {
         this.sheet = sheet;
         inters = new StickIntersection[staffCount];
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addInter //
     //----------//
@@ -90,11 +90,8 @@ public class OldBarAlignment
             StickIntersection si = inters[i];
 
             if (si != null) {
-                Point2D dskSi = sheet.getSkew()
-                        .deskewed(new Point2D.Double(si.x, si.y));
-                Point2D dskIt = sheet.getSkew()
-                        .deskewed(
-                        new Point2D.Double(inter.x, inter.y));
+                Point2D dskSi = sheet.getSkew().deskewed(new Point2D.Double(si.x, si.y));
+                Point2D dskIt = sheet.getSkew().deskewed(new Point2D.Double(inter.x, inter.y));
 
                 return dskIt.getX() - dskSi.getX();
             }
@@ -174,20 +171,14 @@ public class OldBarAlignment
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
 
-        sb.append(" ")
-                .append(getFilledCount())
-                .append("/")
-                .append(inters.length);
+        sb.append(" ").append(getFilledCount()).append("/").append(inters.length);
 
         for (int i = 0; i < inters.length; i++) {
-            sb.append(" ")
-                    .append(i)
-                    .append(":");
+            sb.append(" ").append(i).append(":");
 
             if (inters[i] != null) {
                 Glyph stick = inters[i].getStickAncestor();
-                sb.append("#")
-                        .append(stick.getId());
+                sb.append("#").append(stick.getId());
             } else {
                 sb.append("null");
             }

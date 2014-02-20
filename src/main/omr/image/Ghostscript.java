@@ -1,23 +1,22 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            G h o s t s c r i p t                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      G h o s t s c r i p t                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
+import omr.WellKnowns;
+
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-
 import static omr.util.RegexUtil.*;
 import omr.util.WindowsRegistry;
-
-import omr.WellKnowns;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,26 +27,23 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Class {@code Ghostscript} provides the path to a suitable
- * Ghostscript executable, which may depend on underlying OS and
- * architecture, and on versions found.
+ * Class {@code Ghostscript} provides the path to a suitable Ghostscript executable,
+ * which may depend on underlying OS and architecture, and on versions found.
  *
  * @author Hervé Bitteur
  */
 public class Ghostscript
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Ghostscript.class);
 
     /** Path to exec. */
     private static volatile String path;
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //---------//
     // getPath //
@@ -75,6 +71,33 @@ public class Ghostscript
         }
 
         return path;
+    }
+
+    //--------------------//
+    // getRegistryOutputs //
+    //--------------------//
+    /**
+     * Collect the output lines from registry queries.
+     *
+     * @return the output lines
+     */
+    private static List<String> getRegistryOutputs ()
+    {
+        /** Radices used in registry search (32, 64 or Wow). */
+        final String[] radices = new String[]{
+            "HKLM\\SOFTWARE\\GPL Ghostscript", // Pure 32/32 or 64/64
+            "HKLM\\SOFTWARE\\Wow6432Node\\GPL Ghostscript" // Wow (64/32)
+        };
+
+        List<String> outputs = new ArrayList<String>();
+
+        // Access registry twice, one for win32 & win64 and one for Wow
+        for (String radix : radices) {
+            logger.debug("Radix: {}", radix);
+            outputs.addAll(WindowsRegistry.query(radix, "/s"));
+        }
+
+        return outputs;
     }
 
     //----------------//
@@ -106,8 +129,7 @@ public class Ghostscript
                 "^\\s+GS_DLL\\s+REG_SZ\\s+" + group(PATH, ".+") + "$");
 
         /** Regex for dll name. */
-        final Pattern dllPattern = Pattern.compile(
-                "gsdll" + group(ARCH, "\\d+") + "\\.dll$");
+        final Pattern dllPattern = Pattern.compile("gsdll" + group(ARCH, "\\d+") + "\\.dll$");
 
         Double bestVersion = null; // Best version found so far
         String bestPath = null; // Best path found so far
@@ -122,9 +144,11 @@ public class Ghostscript
 
             if (keyMatcher.matches()) {
                 relevant = false;
+
                 // Check version information
                 String versionStr = getGroup(keyMatcher, VERSION);
                 logger.debug("Version read as: {}", versionStr);
+
                 Double version = Double.valueOf(versionStr);
 
                 if ((version != null)
@@ -173,44 +197,18 @@ public class Ghostscript
         }
 
         logger.warn("Could not find suitable Ghostscript software");
+
         return null; // Abnormal exit
     }
 
-    //--------------------//
-    // getRegistryOutputs //
-    //--------------------//
-    /**
-     * Collect the output lines from registry queries.
-     *
-     * @return the output lines
-     */
-    private static List<String> getRegistryOutputs ()
-    {
-        /** Radices used in registry search (32, 64 or Wow). */
-        final String[] radices = new String[]{
-            "HKLM\\SOFTWARE\\GPL Ghostscript", // Pure 32/32 or 64/64
-            "HKLM\\SOFTWARE\\Wow6432Node\\GPL Ghostscript" // Wow (64/32)
-        };
-
-        List<String> outputs = new ArrayList<>();
-
-        // Access registry twice, one for win32 & win64 and one for Wow
-        for (String radix : radices) {
-            logger.debug("Radix: {}", radix);
-            outputs.addAll(WindowsRegistry.query(radix, "/s"));
-        }
-
-        return outputs;
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Double minVersion = new Constant.Double(
                 "version",
@@ -221,6 +219,5 @@ public class Ghostscript
                 "version",
                 9999,
                 "Maximum Ghostscript acceptable version");
-
     }
 }

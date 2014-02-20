@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          S t a f f M a n a g e r                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    S t a f f M a n a g e r                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -42,8 +42,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code StaffManager} handles physical information about all
- * the staves of a given sheet.
+ * Class {@code StaffManager} handles physical information about all the staves of a
+ * sheet.
  * <p>
  * It must be able to correctly handle the sequence of staves even in complex
  * configurations like the following one (referred to as "layout order"):
@@ -64,14 +64,13 @@ import java.util.List;
  */
 public class StaffManager
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            StaffManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(StaffManager.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The related sheet. */
     @Navigable(false)
@@ -80,7 +79,7 @@ public class StaffManager
     /** The sequence of staves, ordered by layout position. */
     private final List<StaffInfo> staves = new ArrayList<StaffInfo>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //--------------//
     // StaffManager //
@@ -95,36 +94,7 @@ public class StaffManager
         this.sheet = sheet;
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //------------//
-    // getStaffAt //
-    //------------//
-    /**
-     * Report the staff, among the sequence provided, whose area
-     * contains the provided point.
-     *
-     * @param point     the provided point
-     * @param theStaves the staves sequence to search
-     * @return the containing staff, or null if none found
-     */
-    public static StaffInfo getStaffAt (Point2D point,
-                                        List<StaffInfo> theStaves)
-    {
-        final double x = point.getX();
-        final double y = point.getY();
-
-        for (StaffInfo staff : theStaves) {
-            // If the point is ON the area boundary, it is NOT contained.
-            // So we use a rectangle of 1x1 pixels
-            if (staff.getArea()
-                    .intersects(x, y, 1, 1)) {
-                return staff;
-            }
-        }
-
-        return null;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //----------//
     // addStaff //
@@ -159,15 +129,14 @@ public class StaffManager
 
         final List<StaffInfo> aboves = vertNeighbors(staff, TOP);
         final PathIterator north = aboves.isEmpty()
-                ? new GeoPath(
-                        new Line2D.Double(0, 0, sheetWidth, 0)).getPathIterator(null)
-                : getGlobalLine(aboves, BOTTOM);
+                ? new GeoPath(new Line2D.Double(0, 0, sheetWidth, 0)).getPathIterator(
+                        null) : getGlobalLine(aboves, BOTTOM);
 
         final List<StaffInfo> belows = vertNeighbors(staff, BOTTOM);
         final PathIterator south = belows.isEmpty()
                 ? new GeoPath(
-                        new Line2D.Double(0, sheetHeight, sheetWidth, sheetHeight)).getPathIterator(
-                        null) : getGlobalLine(belows, TOP);
+                        new Line2D.Double(0, sheetHeight, sheetWidth, sheetHeight)).getPathIterator(null)
+                : getGlobalLine(belows, TOP);
 
         // Define sheet-wide area
         GeoPath wholePath = new GeoPath();
@@ -198,8 +167,7 @@ public class StaffManager
     public void detectShortStaves ()
     {
         for (StaffInfo staff : staves) {
-            if ((horiNeighbor(staff, LEFT) != null)
-                || (horiNeighbor(staff, RIGHT) != null)) {
+            if ((horiNeighbor(staff, LEFT) != null) || (horiNeighbor(staff, RIGHT) != null)) {
                 staff.setShort();
             }
         }
@@ -228,30 +196,23 @@ public class StaffManager
 
         // Point on left
         StaffInfo leftStaff = staffList.get(0);
-        FilamentLine leftLine = (side == TOP) ? leftStaff.getFirstLine()
-                : leftStaff.getLastLine();
-        NaturalSpline leftSpline = (NaturalSpline) leftLine.getFilament()
-                .getLine();
+        FilamentLine leftLine = (side == TOP) ? leftStaff.getFirstLine() : leftStaff.getLastLine();
+        NaturalSpline leftSpline = (NaturalSpline) leftLine.getFilament().getLine();
         globalLine.moveTo(0, leftSpline.getFirstPoint().getY());
 
         // Proper line of each staff
         for (StaffInfo staff : staffList) {
-            FilamentLine fLine = (side == TOP) ? staff.getFirstLine()
-                    : staff.getLastLine();
+            FilamentLine fLine = (side == TOP) ? staff.getFirstLine() : staff.getLastLine();
             globalLine.append(fLine.getFilament().getLine().toPath(), true);
         }
 
         // Point on right
         StaffInfo rightStaff = staffList.get(staffList.size() - 1);
-        FilamentLine rightLine = (side == TOP) ? rightStaff.getFirstLine()
-                : rightStaff.getLastLine();
-        NaturalSpline rightSpline = (NaturalSpline) rightLine.getFilament()
-                .getLine();
+        FilamentLine rightLine = (side == TOP) ? rightStaff.getFirstLine() : rightStaff.getLastLine();
+        NaturalSpline rightSpline = (NaturalSpline) rightLine.getFilament().getLine();
         globalLine.lineTo(sheet.getWidth(), rightSpline.getLastPoint().getY());
 
-        final int verticalMargin = sheet.getScale()
-                .toPixels(
-                        constants.verticalAreaMargin);
+        final int verticalMargin = sheet.getScale().toPixels(constants.verticalAreaMargin);
         AffineTransform at = AffineTransform.getTranslateInstance(
                 0,
                 ((side == TOP) ? (-verticalMargin) : verticalMargin));
@@ -290,6 +251,34 @@ public class StaffManager
     public StaffInfo getStaff (int index)
     {
         return staves.get(index);
+    }
+
+    //------------//
+    // getStaffAt //
+    //------------//
+    /**
+     * Report the staff, among the sequence provided, whose area
+     * contains the provided point.
+     *
+     * @param point     the provided point
+     * @param theStaves the staves sequence to search
+     * @return the containing staff, or null if none found
+     */
+    public static StaffInfo getStaffAt (Point2D point,
+                                        List<StaffInfo> theStaves)
+    {
+        final double x = point.getX();
+        final double y = point.getY();
+
+        for (StaffInfo staff : theStaves) {
+            // If the point is ON the area boundary, it is NOT contained.
+            // So we use a rectangle of 1x1 pixels
+            if (staff.getArea().intersects(x, y, 1, 1)) {
+                return staff;
+            }
+        }
+
+        return null;
     }
 
     //------------//
@@ -485,7 +474,7 @@ public class StaffManager
         return neighbors;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //-----------//
     // Constants //
@@ -493,7 +482,7 @@ public class StaffManager
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction samplingDx = new Scale.Fraction(
                 4d,
@@ -502,6 +491,5 @@ public class StaffManager
         Scale.Fraction verticalAreaMargin = new Scale.Fraction(
                 1.0,
                 "Vertical margin on system & staff areas");
-
     }
 }

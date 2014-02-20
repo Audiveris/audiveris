@@ -1,19 +1,18 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  P a r a m                                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            P a r a m                                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
 /**
- * Class {@code Param} handles the context of operations performed
- * on score and/or pages.
+ * Class {@code Param} handles the context of operations performed on score and/or pages.
  *
  * @param <E> type of parameter handled
  *
@@ -21,7 +20,7 @@ package omr.util;
  */
 public class Param<E>
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     //
     /** Parent param, if any, to inherit from. */
@@ -30,7 +29,7 @@ public class Param<E>
     /** Specifically set parameter, if any. */
     protected E specific;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //-------//
     // Param //
@@ -56,7 +55,7 @@ public class Param<E>
         this.parent = parent;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getSpecific //
     //-------------//
@@ -91,8 +90,7 @@ public class Param<E>
      */
     public boolean setSpecific (E specific)
     {
-        if ((getSpecific() == null) || !getSpecific()
-                .equals(specific)) {
+        if ((getSpecific() == null) || !getSpecific().equals(specific)) {
             this.specific = specific;
 
             return true;
@@ -129,13 +127,11 @@ public class Param<E>
         StringBuilder sb = new StringBuilder();
 
         if (parent != null) {
-            sb.append(" parent:")
-                    .append(parent);
+            sb.append(" parent:").append(parent);
         }
 
         if (getSpecific() != null) {
-            sb.append(" specific:")
-                    .append(getSpecific());
+            sb.append(" specific:").append(getSpecific());
         }
 
         return sb.toString();

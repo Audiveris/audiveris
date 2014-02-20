@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      I n t e g e r H i s t o g r a m                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                I n t e g e r H i s t o g r a m                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -17,20 +17,19 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code IntegerHistogram} is an histogram where buckets are
- * integers.
+ * Class {@code IntegerHistogram} is an histogram where buckets are integers.
  *
  * @author Hervé Bitteur
  */
 public class IntegerHistogram
         extends Histogram<Integer>
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The derivatives values */
     private SortedMap<Integer, Double> derivatives;
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // clear //
     //-------//
@@ -47,7 +46,7 @@ public class IntegerHistogram
     public SortedMap<Integer, Double> getDerivatives ()
     {
         if (derivatives == null) {
-            derivatives = new TreeMap<>();
+            derivatives = new TreeMap<Integer, Double>();
 
             Integer prevKey = null;
             Integer prevValue = null;
@@ -60,11 +59,10 @@ public class IntegerHistogram
 
                 if (key != null) {
                     if (prevKey != null) {
-                        // We can compute a derivative 
+                        // We can compute a derivative
                         derivatives.put(
                                 key,
-                                (double) (nextValue - prevValue) / (nextKey
-                                                                    - prevKey));
+                                (double) (nextValue - prevValue) / (nextKey - prevKey));
                     }
 
                     prevKey = key;

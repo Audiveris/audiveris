@@ -1,34 +1,34 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        G h o s t D r o p E v e n t                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  G h o s t D r o p E v e n t                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.dnd;
 
 /**
- * Class {@code GhostDropEvent} is the type of event that is handed to
- * any {@link GhostDropListener} instance.
+ * Class {@code GhostDropEvent} is the type of event that is handed to any {@link
+ * GhostDropListener} instance.
  *
  * @param <A> the precise type of the action carried by the drop
  * @author Hervé Bitteur (from Romain Guy's demo)
  */
 public class GhostDropEvent<A>
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The drop location with respect to screen */
-    private ScreenPoint screenPoint;
+    private final ScreenPoint screenPoint;
 
     /** The action carried by the drop event */
-    private A action;
+    private final A action;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------------//
     // GhostDropEvent //
     //----------------//
@@ -45,7 +45,7 @@ public class GhostDropEvent<A>
         this.screenPoint = screenPoint;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getAction //
     //-----------//

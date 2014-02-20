@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      B a s i c E n v i r o n m e n t                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                B a s i c E n v i r o n m e n t                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -15,8 +15,6 @@ import omr.lag.Lag;
 import omr.lag.Section;
 
 import omr.run.Run;
-
-import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
 import omr.util.Predicate;
@@ -26,8 +24,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class {@code BasicEnvironment} is the basic implementation of an
- * environment facet.
+ * Class {@code BasicEnvironment} is the basic implementation of an environment facet.
  *
  * @author Hervé Bitteur
  */
@@ -35,7 +32,7 @@ class BasicEnvironment
         extends BasicFacet
         implements GlyphEnvironment
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Position with respect to nearest staff. Key references are : 0 for
      * middle line (B), -2 for top line (F) and +2 for bottom line (E) */
@@ -53,7 +50,7 @@ class BasicEnvironment
     /** Is there a ledger nearby ? */
     private boolean withLedger;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // BasicEnvironment //
     //------------------//
@@ -67,7 +64,7 @@ class BasicEnvironment
         super(glyph);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------------//
     // copyStemInformation //
     //---------------------//
@@ -119,8 +116,7 @@ class BasicEnvironment
                                    Predicate<Section> predicate)
     {
         // Use lag orientation
-        final Rectangle oRoi = lag.getOrientation()
-                .oriented(absRoi);
+        final Rectangle oRoi = lag.getOrientation().oriented(absRoi);
         final int posMin = oRoi.y;
         final int posMax = (oRoi.y + oRoi.height) - 1;
         int count = 0;
@@ -150,9 +146,7 @@ class BasicEnvironment
                 }
 
                 int coordMin = Math.max(oRoi.x, run.getStart());
-                int coordMax = Math.min(
-                        (oRoi.x + oRoi.width) - 1,
-                        run.getStop());
+                int coordMax = Math.min((oRoi.x + oRoi.width) - 1, run.getStop());
 
                 if (coordMax >= coordMin) {
                     count += (coordMax - coordMin + 1);
@@ -172,7 +166,7 @@ class BasicEnvironment
         Set<Section> sections = glyph.getMembers();
 
         // Retrieve sections connected to this glyph
-        Set<Section> connectedSections = new HashSet<>();
+        Set<Section> connectedSections = new HashSet<Section>();
 
         for (Section section : sections) {
             for (Section s : section.getSources()) {
@@ -195,7 +189,7 @@ class BasicEnvironment
         }
 
         // Retrieve their containing glyphs
-        Set<Glyph> connectedGlyphs = new HashSet<>();
+        Set<Glyph> connectedGlyphs = new HashSet<Glyph>();
 
         for (Section s : connectedSections) {
             Glyph g = s.getGlyph();

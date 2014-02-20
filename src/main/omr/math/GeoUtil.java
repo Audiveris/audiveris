@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                G e o U t i l                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                          G e o U t i l                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -22,7 +22,7 @@ import java.awt.geom.Line2D;
  */
 public class GeoUtil
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report whether the two provided rectangles are identical
@@ -34,8 +34,8 @@ public class GeoUtil
     public static boolean areIdentical (Rectangle one,
                                         Rectangle two)
     {
-        return (one.x == two.x) && (one.y == two.y)
-               && (one.width == two.width) && (one.height == two.height);
+        return (one.x == two.x) && (one.y == two.y) && (one.width == two.width)
+               && (one.height == two.height);
     }
 
     //----------//

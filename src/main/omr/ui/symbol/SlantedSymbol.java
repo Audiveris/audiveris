@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         S l a n t e d S y m b o l                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   S l a n t e d S y m b o l                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -21,14 +21,14 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code SlantedSymbol} draws symbols made of several slanted parts
- * (such as in DYNAMICS_FP, where both the F and the P are slanted and appear
- * too far for each other)
+ * Class {@code SlantedSymbol} draws symbols made of several slanted parts.
+ * (such as in DYNAMICS_FP, where both the F and the P are slanted and appear too far for each
+ * other)
  */
 public class SlantedSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //---------------//
     // SlantedSymbol //
@@ -62,7 +62,7 @@ public class SlantedSymbol
         super(isIcon, shape, false, codes);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -117,10 +117,7 @@ public class SlantedSymbol
             if (i == 0) {
                 rect = layout.getPixelBounds(null, x, 0);
             } else {
-                Rectangle2D.union(
-                        rect,
-                        layout.getPixelBounds(null, x, 0),
-                        rect);
+                Rectangle2D.union(rect, layout.getPixelBounds(null, x, 0), rect);
             }
 
             x += (r.getWidth() - dx);
@@ -146,10 +143,7 @@ public class SlantedSymbol
     {
         MyParams p = (MyParams) params;
 
-        Point loc = alignment.translatedPoint(
-                BASELINE_LEFT,
-                p.rect,
-                location);
+        Point loc = alignment.translatedPoint(BASELINE_LEFT, p.rect, location);
 
         // Precise abscissa
         float x = loc.x;
@@ -161,40 +155,20 @@ public class SlantedSymbol
                 x -= smart.dx; // Before symbol
             }
 
-            OmrFont.paint(
-                    g,
-                    smart.layout,
-                    new Point((int) Math.rint(x), loc.y),
-                    BASELINE_LEFT);
+            OmrFont.paint(g, smart.layout, new Point((int) Math.rint(x), loc.y), BASELINE_LEFT);
 
-            x += smart.layout.getBounds()
-                    .getWidth();
+            x += smart.layout.getBounds().getWidth();
             x -= smart.dx; // After symbol
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-    //--------//
-    // Params //
-    //--------//
-    protected class MyParams
-            extends Params
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        // layout not used
-        // rect for global image
-        // Sequence of layouts
-        SmartLayout[] layouts;
-
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // SmartLayout //
     //-------------//
     protected static class SmartLayout
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // The standard character glyph
         final TextLayout layout;
@@ -202,12 +176,26 @@ public class SlantedSymbol
         // Translation before & after
         final float dx;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public SmartLayout (TextLayout layout,
                             float dx)
         {
             this.layout = layout;
             this.dx = dx;
         }
+    }
+
+    //--------//
+    // Params //
+    //--------//
+    protected class MyParams
+            extends Params
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        // layout not used
+        // rect for global image
+        // Sequence of layouts
+        SmartLayout[] layouts;
     }
 }

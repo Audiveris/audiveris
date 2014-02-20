@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                  M e a s u r e B a s i c N u m b e r e r                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                            M e a s u r e B a s i c N u m b e r e r                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -19,23 +19,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code MeasureBasicNumberer} visits a page hierarchy to
- * assign very basic measures ids.
- * These Ids are very basic (and temporary), ranging from 1 for the first
- * measure in the page.
+ * Class {@code MeasureBasicNumberer} visits a page hierarchy to assign very basic
+ * measures ids.
+ * <p>
+ * These Ids are very basic (and temporary), ranging from 1 for the first measure in the page.
  *
  * @author Hervé Bitteur
  */
 public class MeasureBasicNumberer
         extends AbstractScoreVisitor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            MeasureBasicNumberer.class);
+    private static final Logger logger = LoggerFactory.getLogger(MeasureBasicNumberer.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------------------//
     // MeasureBasicNumberer //
     //----------------------//
@@ -46,7 +44,7 @@ public class MeasureBasicNumberer
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // visit Measure //
     //---------------//
@@ -65,9 +63,7 @@ public class MeasureBasicNumberer
                 measure.setPageId(1, false);
             }
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + measure,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + measure, ex);
         }
 
         return true;

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     D u r a t i o n R e t r i e v e r                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               D u r a t i o n R e t r i e v e r                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -39,21 +39,20 @@ import java.util.Map;
 public class DurationRetriever
         extends AbstractScoreVisitor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             DurationRetriever.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Map of Measure id -> Measure duration, whatever the containing part */
-    private final Map<PageBased, Rational> measureDurations = new HashMap<>();
+    private final Map<PageBased, Rational> measureDurations = new HashMap<PageBased, Rational>();
 
     /** Pass number, since we need 2 passes per system */
     private int pass = 1;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //-------------------//
     // DurationRetriever //
@@ -65,7 +64,7 @@ public class DurationRetriever
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //---------------//
     // visit Measure //
@@ -74,8 +73,7 @@ public class DurationRetriever
     public boolean visit (Measure measure)
     {
         try {
-            logger.debug("Visiting Part#{} {}",
-                    measure.getPart().getId(), measure);
+            logger.debug("Visiting Part#{} {}", measure.getPart().getId(), measure);
 
             Rational measureDur = Rational.ZERO;
 
@@ -83,8 +81,7 @@ public class DurationRetriever
             for (Slot slot : measure.getSlots()) {
                 if (slot.getStartTime() != null) {
                     for (Chord chord : slot.getChords()) {
-                        Rational chordEnd = slot.getStartTime().plus(chord.
-                                getDuration());
+                        Rational chordEnd = slot.getStartTime().plus(chord.getDuration());
 
                         if (chordEnd.compareTo(measureDur) > 0) {
                             measureDur = chordEnd;
@@ -110,16 +107,13 @@ public class DurationRetriever
                     if (dur != null) {
                         measure.setActualDuration(dur);
                     } else {
-                        measure.setActualDuration(
-                                measure.getExpectedDuration());
+                        measure.setActualDuration(measure.getExpectedDuration());
                     }
                 }
             }
         } catch (InvalidTimeSignature ex) {
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + measure,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + measure, ex);
         }
 
         return false; // Dead end, we don't go deeper than measure level

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          F o r t e P a t t e r n                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2010. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    F o r t e P a t t e r n                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright (C) Hervé Bitteur 2000-2010. All ri4hts reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
@@ -35,11 +35,9 @@ import java.util.EnumSet;
 public class FortePattern
         extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            FortePattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(FortePattern.class);
 
     /** Pre-forte shapes */
     public static final EnumSet<Shape> forteNeighbors = EnumSet.of(
@@ -47,7 +45,7 @@ public class FortePattern
             Shape.DYNAMICS_CHAR_R,
             Shape.DYNAMICS_CHAR_S);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // FortePattern //
     //--------------//
@@ -61,7 +59,7 @@ public class FortePattern
         super("Forte", system);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // runPattern //
     //------------//
@@ -77,10 +75,7 @@ public class FortePattern
                         forte,
                         false,
                         system.getGlyphs(),
-                        new ForteAdapter(
-                        system,
-                        Grades.forteMinGrade,
-                        forteNeighbors));
+                        new ForteAdapter(system, Grades.forteMinGrade, forteNeighbors));
 
                 if (compound != null) {
                     nb++;
@@ -91,7 +86,7 @@ public class FortePattern
         return nb;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // ForteAdapter //
     //---------------//
@@ -101,7 +96,7 @@ public class FortePattern
     private final class ForteAdapter
             extends CompoundBuilder.TopShapeAdapter
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public ForteAdapter (SystemInfo system,
                              double minGrade,
@@ -110,7 +105,7 @@ public class FortePattern
             super(system, minGrade, desiredShapes);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Rectangle computeReferenceBox ()
         {

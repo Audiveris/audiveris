@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      S y s t e m T r a n s l a t o r                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                S y s t e m T r a n s l a t o r                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -59,18 +59,16 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Class {@code SystemTranslator} performs all translation tasks for
- * a given system, translating glyphs to score entities.
+ * Class {@code SystemTranslator} performs all translation tasks for a given system,
+ * translating glyphs to score entities.
  */
 public class SystemTranslator
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SystemTranslator.class);
+    private static final Logger logger = LoggerFactory.getLogger(SystemTranslator.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The physical system. */
     private final SystemInfo systemInfo;
 
@@ -89,7 +87,7 @@ public class SystemTranslator
     /** The current measure. */
     private Measure currentMeasure;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //------------------//
     // SystemTranslator //
@@ -104,7 +102,7 @@ public class SystemTranslator
         this.systemInfo = systemInfo;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //----------------//
     // translateFinal //
@@ -125,8 +123,7 @@ public class SystemTranslator
         new PageReduction(page).reduce();
 
         // Get the (sub) list of all systems for final processing
-        List<SystemInfo> systems = sheet.getSystems()
-                .subList(
+        List<SystemInfo> systems = sheet.getSystems().subList(
                 system.getId() - 1,
                 sheet.getSystems().size());
 
@@ -153,7 +150,6 @@ public class SystemTranslator
 
         // Whole score impact
         //-------------------
-
         // Brace
         translate(new BraceTranslator());
         // Clef
@@ -165,7 +161,6 @@ public class SystemTranslator
 
         // Measure impact
         //---------------
-
         // Chord, Note
         translate(new ChordTranslator());
         // Beam (-> chord), BeamItem, BeamGroup
@@ -185,7 +180,6 @@ public class SystemTranslator
 
         // Local impact
         //-------------
-
         // Fermata
         translate(new FermataTranslator());
         // Arpeggiate
@@ -228,144 +222,21 @@ public class SystemTranslator
         translator.completeSystem();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-    //------------//
-    // Translator //
-    //------------//
-    /**
-     * Class {@code Translator} is an abstract class that defines the
-     * pattern for every translation engine.
-     */
-    private abstract class Translator
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Name of this translator (for debugging) */
-        protected final String name;
-
-        //~ Constructors -------------------------------------------------------
-        public Translator (String name)
-        {
-            super();
-            this.name = name;
-
-            logger.debug("Creating {}", this);
-        }
-
-        //~ Methods ------------------------------------------------------------
-        /**
-         * Check if provided glyph is relevant.
-         *
-         * @param glyph the glyph at hand
-         * @return true if the glyph at hand is relevant for the translator
-         */
-        public abstract boolean isRelevant (Glyph glyph);
-
-        /**
-         * Specific browsing of a given measure.
-         *
-         * @param measure the given measure
-         */
-        public void browse (Measure measure)
-        {
-        }
-
-        /**
-         * Hook for final processing at end of the system.
-         */
-        public void completeSystem ()
-        {
-            for (TreeNode node : system.getParts()) {
-                SystemPart part = (SystemPart) node;
-
-                for (TreeNode mn : part.getMeasures()) {
-                    Measure measure = (Measure) mn;
-
-                    try {
-                        browse(measure);
-                    } catch (Exception ex) {
-                        logger.warn(
-                                measure.getContextString()
-                                + " Exception in measure browsing",
-                                ex);
-                    }
-                }
-            }
-        }
-
-        /**
-         * Compute the location system environment of the provided glyph.
-         * Results are written in global variables currentXXX.
-         *
-         * @param glyph the glyph to locate
-         */
-        public void computeLocation (Glyph glyph)
-        {
-            currentCenter = glyph.getLocation();
-            currentStaff = system.getStaffAt(currentCenter);
-            currentPart = currentStaff.getPart();
-            currentMeasure = currentPart.getMeasureAt(currentCenter);
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "{Translator " + name + "}";
-        }
-
-        /**
-         * Perform the desired translation
-         *
-         * @param glyph the glyph at hand
-         */
-        public abstract void translate (Glyph glyph);
-
-        /**
-         * Browsing on every glyph within the system.
-         */
-        protected void translateGlyphs ()
-        {
-            for (Glyph glyph : system.getInfo()
-                    .getGlyphs()) {
-                Shape shape = glyph.getShape();
-
-                if (glyph.isWellKnown()
-                    && (shape != Shape.CLUTTER)
-                    && !glyph.isTranslated()) {
-                    // Check for glyph relevance
-                    if (isRelevant(glyph)) {
-                        // Determine part/staff/measure containment
-                        computeLocation(glyph);
-
-                        try {
-                            // Perform the translation on this glyph
-                            translate(glyph);
-                        } catch (Exception ex) {
-                            logger.warn(
-                                    "Error translating glyph #" + glyph.getId()
-                                    + " by " + this,
-                                    ex);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------------//
     // AccidentalTranslator //
     //----------------------//
     private class AccidentalTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public AccidentalTranslator ()
         {
             super("Accidental");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isRelevant (Glyph glyph)
         {
@@ -385,14 +256,14 @@ public class SystemTranslator
     private class ArpeggiateTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public ArpeggiateTranslator ()
         {
             super("Arpeggiate");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isRelevant (Glyph glyph)
         {
@@ -412,14 +283,14 @@ public class SystemTranslator
     private class ArticulationTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public ArticulationTranslator ()
         {
             super("Articulation");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isRelevant (Glyph glyph)
         {
@@ -428,8 +299,7 @@ public class SystemTranslator
             // ARPEGGIATO is processed by ArpeggiateTranslator.
             // DOT_set-shape staccato is processed by DotTranslation,
             // while STACCATO-shape staccato is processed here
-            return Articulations.contains(shape)
-                   && (shape != Shape.ARPEGGIATO);
+            return Articulations.contains(shape) && (shape != Shape.ARPEGGIATO);
         }
 
         @Override
@@ -445,14 +315,14 @@ public class SystemTranslator
     private class BeamTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public BeamTranslator ()
         {
             super("Beam");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void browse (Measure measure)
         {
@@ -470,9 +340,7 @@ public class SystemTranslator
             if (stem != null) {
                 super.computeLocation(stem);
             } else {
-                currentMeasure.addError(
-                        glyph,
-                        "Beam glyph with no attached stem");
+                currentMeasure.addError(glyph, "Beam glyph with no attached stem");
                 super.computeLocation(glyph);
             }
         }
@@ -496,14 +364,14 @@ public class SystemTranslator
     private class BraceTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public BraceTranslator ()
         {
             super("Brace");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isRelevant (Glyph glyph)
         {
@@ -525,21 +393,20 @@ public class SystemTranslator
     private class ChordTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public ChordTranslator ()
         {
             super("Chord");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isRelevant (Glyph glyph)
         {
             Shape shape = glyph.getShape();
 
-            return Rests.contains(shape) || NoteHeads.contains(shape)
-                   || Notes.contains(shape);
+            return Rests.contains(shape) || NoteHeads.contains(shape) || Notes.contains(shape);
         }
 
         @Override
@@ -555,14 +422,14 @@ public class SystemTranslator
     private class ClefTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public ClefTranslator ()
         {
             super("Clef");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void browse (Measure measure)
         {
@@ -589,14 +456,14 @@ public class SystemTranslator
     private class CodaTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public CodaTranslator ()
         {
             super("Coda");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isRelevant (Glyph glyph)
         {
@@ -618,14 +485,14 @@ public class SystemTranslator
     private class DotTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public DotTranslator ()
         {
             super("Dot");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isRelevant (Glyph glyph)
         {
@@ -645,14 +512,14 @@ public class SystemTranslator
     private class DynamicsTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public DynamicsTranslator ()
         {
             super("Dynamics");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isRelevant (Glyph glyph)
         {
@@ -665,10 +532,7 @@ public class SystemTranslator
         @Override
         public void translate (Glyph glyph)
         {
-            omr.score.entity.Dynamics.populate(
-                    glyph,
-                    currentMeasure,
-                    currentCenter);
+            omr.score.entity.Dynamics.populate(glyph, currentMeasure, currentCenter);
         }
     }
 
@@ -678,14 +542,14 @@ public class SystemTranslator
     private class FermataTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public FermataTranslator ()
         {
             super("Fermata");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isRelevant (Glyph glyph)
         {
@@ -706,14 +570,14 @@ public class SystemTranslator
     private class FlagTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public FlagTranslator ()
         {
             super("Flag");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void browse (Measure measure)
         {
@@ -725,8 +589,7 @@ public class SystemTranslator
                     Chord chord = (Chord) node;
                     logger.debug(chord.toString());
 
-                    if (!chord.getBeams()
-                            .isEmpty()) {
+                    if (!chord.getBeams().isEmpty()) {
                         logger.debug("   Beams:{}", chord.getBeams().size());
                     }
 
@@ -735,8 +598,7 @@ public class SystemTranslator
                     }
 
                     // Just to be sure
-                    if ((chord.getBeams()
-                            .size() * chord.getFlagsNumber()) != 0) {
+                    if ((chord.getBeams().size() * chord.getFlagsNumber()) != 0) {
                         chord.addError("Inconsistent Flag/Beam configuration");
                     }
                 }
@@ -752,9 +614,7 @@ public class SystemTranslator
             if (stem != null) {
                 super.computeLocation(stem);
             } else {
-                system.addError(
-                        glyph,
-                        "Flag glyph " + glyph.getId() + " with no attached stem");
+                system.addError(glyph, "Flag glyph " + glyph.getId() + " with no attached stem");
                 super.computeLocation(glyph);
             }
         }
@@ -780,14 +640,14 @@ public class SystemTranslator
     private class KeyTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public KeyTranslator ()
         {
             super("Key");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void completeSystem ()
         {
@@ -801,19 +661,14 @@ public class SystemTranslator
         @Override
         public boolean isRelevant (Glyph glyph)
         {
-            return (glyph.getShape().isSharpBased())
-                   || (glyph.getShape().isFlatBased());
+            return (glyph.getShape().isSharpBased()) || (glyph.getShape().isFlatBased());
         }
 
         @Override
         public void translate (Glyph glyph)
         {
             // Key signature or just accidental ?
-            KeySignature.populate(
-                    glyph,
-                    currentMeasure,
-                    currentStaff,
-                    currentCenter);
+            KeySignature.populate(glyph, currentMeasure, currentStaff, currentCenter);
         }
     }
 
@@ -823,17 +678,17 @@ public class SystemTranslator
     private class MeasureTranslator
             extends Translator
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         SlotBuilder slotBuilder = new SlotBuilder(system);
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public MeasureTranslator ()
         {
             super("Measure");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void browse (Measure measure)
         {
@@ -890,21 +745,20 @@ public class SystemTranslator
     private class OrnamentTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public OrnamentTranslator ()
         {
             super("Ornament");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isRelevant (Glyph glyph)
         {
             final Shape shape = glyph.getShape();
 
-            return (shape == Shape.TR) || (shape == Shape.TURN)
-                   || (shape == Shape.MORDENT)
+            return (shape == Shape.TR) || (shape == Shape.TURN) || (shape == Shape.MORDENT)
                    || (shape == Shape.INVERTED_MORDENT);
         }
 
@@ -921,21 +775,20 @@ public class SystemTranslator
     private class PedalTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public PedalTranslator ()
         {
             super("Pedal");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isRelevant (Glyph glyph)
         {
             Shape shape = glyph.getShape();
 
-            return (shape == Shape.PEDAL_MARK)
-                   || (shape == Shape.PEDAL_UP_MARK);
+            return (shape == Shape.PEDAL_MARK) || (shape == Shape.PEDAL_UP_MARK);
         }
 
         @Override
@@ -951,14 +804,14 @@ public class SystemTranslator
     private class SegnoTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public SegnoTranslator ()
         {
             super("Segno");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isRelevant (Glyph glyph)
         {
@@ -980,14 +833,14 @@ public class SystemTranslator
     private class SlurTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public SlurTranslator ()
         {
             super("Slur");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void computeLocation (Glyph glyph)
         {
@@ -1012,22 +865,21 @@ public class SystemTranslator
     private class TextTranslator
             extends Translator
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Rectangle systemBox;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public TextTranslator ()
         {
             super("Text");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void completeSystem ()
         {
-            for (TextLine sentence : system.getInfo()
-                    .getSentences()) {
+            for (TextLine sentence : system.getInfo().getSentences()) {
                 Text.populate(sentence, sentence.getLocation());
             }
 
@@ -1057,14 +909,14 @@ public class SystemTranslator
     private class TimeTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public TimeTranslator ()
         {
             super("Time");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isRelevant (Glyph glyph)
         {
@@ -1074,11 +926,125 @@ public class SystemTranslator
         @Override
         public void translate (Glyph glyph)
         {
-            TimeSignature.populate(
-                    glyph,
-                    currentMeasure,
-                    currentStaff,
-                    currentCenter);
+            TimeSignature.populate(glyph, currentMeasure, currentStaff, currentCenter);
+        }
+    }
+
+    //------------//
+    // Translator //
+    //------------//
+    /**
+     * Class {@code Translator} is an abstract class that defines the
+     * pattern for every translation engine.
+     */
+    private abstract class Translator
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Name of this translator (for debugging) */
+        protected final String name;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Translator (String name)
+        {
+            super();
+            this.name = name;
+
+            logger.debug("Creating {}", this);
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Perform the desired translation
+         *
+         * @param glyph the glyph at hand
+         */
+        public abstract void translate (Glyph glyph);
+
+        /**
+         * Specific browsing of a given measure.
+         *
+         * @param measure the given measure
+         */
+        public void browse (Measure measure)
+        {
+        }
+
+        /**
+         * Hook for final processing at end of the system.
+         */
+        public void completeSystem ()
+        {
+            for (TreeNode node : system.getParts()) {
+                SystemPart part = (SystemPart) node;
+
+                for (TreeNode mn : part.getMeasures()) {
+                    Measure measure = (Measure) mn;
+
+                    try {
+                        browse(measure);
+                    } catch (Exception ex) {
+                        logger.warn(
+                                measure.getContextString() + " Exception in measure browsing",
+                                ex);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Compute the location system environment of the provided glyph.
+         * Results are written in global variables currentXXX.
+         *
+         * @param glyph the glyph to locate
+         */
+        public void computeLocation (Glyph glyph)
+        {
+            currentCenter = glyph.getLocation();
+            currentStaff = system.getStaffAt(currentCenter);
+            currentPart = currentStaff.getPart();
+            currentMeasure = currentPart.getMeasureAt(currentCenter);
+        }
+
+        /**
+         * Check if provided glyph is relevant.
+         *
+         * @param glyph the glyph at hand
+         * @return true if the glyph at hand is relevant for the translator
+         */
+        public abstract boolean isRelevant (Glyph glyph);
+
+        @Override
+        public String toString ()
+        {
+            return "{Translator " + name + "}";
+        }
+
+        /**
+         * Browsing on every glyph within the system.
+         */
+        protected void translateGlyphs ()
+        {
+            for (Glyph glyph : system.getInfo().getGlyphs()) {
+                Shape shape = glyph.getShape();
+
+                if (glyph.isWellKnown() && (shape != Shape.CLUTTER) && !glyph.isTranslated()) {
+                    // Check for glyph relevance
+                    if (isRelevant(glyph)) {
+                        // Determine part/staff/measure containment
+                        computeLocation(glyph);
+
+                        try {
+                            // Perform the translation on this glyph
+                            translate(glyph);
+                        } catch (Exception ex) {
+                            logger.warn(
+                                    "Error translating glyph #" + glyph.getId() + " by " + this,
+                                    ex);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -1088,14 +1054,14 @@ public class SystemTranslator
     private class TupletTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public TupletTranslator ()
         {
             super("Tuplet");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean isRelevant (Glyph glyph)
         {
@@ -1115,14 +1081,14 @@ public class SystemTranslator
     private class WedgeTranslator
             extends Translator
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public WedgeTranslator ()
         {
             super("Wedge");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void computeLocation (Glyph glyph)
         {

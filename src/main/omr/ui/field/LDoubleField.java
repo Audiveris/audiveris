@@ -1,37 +1,37 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          L D o u b l e F i e l d                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    L D o u b l e F i e l d                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.field;
 
 import java.util.Scanner;
 
 /**
- * Class {@code LDoubleField} is an {@link LTextField}, whose field is
- * meant to handle a double value.
+ * Class {@code LDoubleField} is an {@link LTextField}, whose field is meant to handle
+ * a double value.
  *
  * @author Hervé Bitteur
  */
 public class LDoubleField
         extends LTextField
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Default format for display in the field : {@value} */
     public static final String DEFAULT_FORMAT = "%.5f";
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Specific display format, if any */
     private final String format;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // LDoubleField //
     //--------------//
@@ -103,7 +103,7 @@ public class LDoubleField
         this.format = format;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getValue //
     //----------//
@@ -128,9 +128,7 @@ public class LDoubleField
      */
     public void setValue (double val)
     {
-        getField()
-                .setText(
-                String.format((format != null) ? format : DEFAULT_FORMAT, val));
+        getField().setText(String.format((format != null) ? format : DEFAULT_FORMAT, val));
     }
 
     //----------//
@@ -145,7 +143,6 @@ public class LDoubleField
     public void setValue (double val,
                           String format)
     {
-        getField()
-                .setText(String.format(format, val));
+        getField().setText(String.format(format, val));
     }
 }

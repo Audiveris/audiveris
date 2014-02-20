@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          S t e m S e e d s S t e p                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    S t e m S e e d s S t e p                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -15,16 +15,15 @@ import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
 
 /**
- * Class {@code StemSeedsStep} implements <b>STEM_SEEDS</b> step,
- * which retrieves all vertical sticks that may constitute <i>seeds</i>
- * of future stems.
+ * Class {@code StemSeedsStep} implements <b>STEM_SEEDS</b> step, which retrieves all
+ * vertical sticks that may constitute <i>seeds</i> of future stems.
  *
  * @author Hervé Bitteur
  */
 public class StemSeedsStep
         extends AbstractSystemStep
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //---------------//
     // StemSeedsStep //
@@ -42,7 +41,7 @@ public class StemSeedsStep
                 "Retrieve stem seeds & vertical endings");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -50,8 +49,7 @@ public class StemSeedsStep
     public void displayUI (Sheet sheet)
     {
         // We need a system of this sheet (any one)
-        SystemInfo aSystem = sheet.getSystems()
-                .get(0);
+        SystemInfo aSystem = sheet.getSystems().get(0);
 
         // Add stem checkboard
         aSystem.verticalsBuilder.addCheckBoard();

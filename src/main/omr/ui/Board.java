@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 B o a r d                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           B o a r d                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui;
 
@@ -37,28 +37,28 @@ import javax.swing.JTextField;
 /**
  * Class {@code Board} defines the common properties of any user board
  * such as PixelBoard, SectionBoard, and the like.
- *
- * <p>Each board has a standard header composed of a title, a horizontal
+ * <p>
+ * Each board has a standard header composed of a title, a horizontal
  * separator and perhaps a dump button.
  * The board body is handled by the subclass.</p>
- *
- * <p>Any board can be (de)selected in its containing {@link BoardsPane}.
+ * <p>
+ * Any board can be (de)selected in its containing {@link BoardsPane}.
  * This can be done programmatically using {@link #setSelected(boolean)}
  * and manually (via a right-click in the BoardsPane).</p>
- *
- * <p>Only selected boards can be seen in the BoardsPane display. A selected
+ * <p>
+ * Only selected boards can be seen in the BoardsPane display. A selected
  * board can be made currently (in)visible, programmatically using
  * {@link #setVisible(boolean)}.
  * Typically, {@link omr.check.CheckBoard}'s are visible only when they carry
  * glyph information.</p>
- *
- * <p>By default, any board can have a related SelectionService, used for
+ * <p>
+ * By default, any board can have a related SelectionService, used for
  * subscribe (input) and publish (output). When {@link #connect} is called, the
  * board instance is subscribed to its SelectionService for a specific
  * collection of event classes. Similarly, {@link #disconnect} unsubscribes the
  * Board instance from the same event classes.</p>
- *
- * <p>This is still an abstract class, since the onEvent() method must be
+ * <p>
+ * This is still an abstract class, since the onEvent() method must be
  * provided by every subclass.</p>
  *
  * @author Hervé Bitteur
@@ -66,9 +66,8 @@ import javax.swing.JTextField;
 public abstract class Board
         implements EventSubscriber<UserEvent>, Comparable<Board>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Board.class);
 
     // Predefined boards names with preferred display positions
@@ -92,7 +91,7 @@ public abstract class Board
 
     public static final Desc CHECK = new Desc("Check", 900);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The board instance name */
     private final String name;
 
@@ -120,7 +119,7 @@ public abstract class Board
     /** Board is selected? */
     private boolean selected;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------//
     // Board //
     //-------//
@@ -139,13 +138,7 @@ public abstract class Board
                   boolean withDump,
                   boolean selected)
     {
-        this(
-                desc.name,
-                desc.position,
-                selectionService,
-                eventList,
-                withDump,
-                selected);
+        this(desc.name, desc.position, selectionService, eventList, withDump, selected);
     }
 
     //-------//
@@ -179,7 +172,24 @@ public abstract class Board
         defineBoardLayout();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // emptyFields //
+    //-------------//
+    /**
+     * Convenient method to empty all the text fields of a given JComponent.
+     *
+     * @param component the component to "blank".
+     */
+    public static void emptyFields (JComponent component)
+    {
+        for (Component comp : component.getComponents()) {
+            if (comp instanceof JTextField) {
+                ((JTextField) comp).setText("");
+            }
+        }
+    }
+
     //-----------//
     // compareTo //
     //-----------//
@@ -208,8 +218,7 @@ public abstract class Board
                 selectionService.subscribeStrongly(eventClass, this);
 
                 // Refresh with latest data for this event class
-                UserEvent event = (UserEvent) selectionService.getLastEvent(
-                        eventClass);
+                UserEvent event = (UserEvent) selectionService.getLastEvent(eventClass);
 
                 if (event != null) {
                     event.movement = null;
@@ -230,23 +239,6 @@ public abstract class Board
         if (eventsRead != null) {
             for (Class<?> eventClass : eventsRead) {
                 selectionService.unsubscribe(eventClass, this);
-            }
-        }
-    }
-
-    //-------------//
-    // emptyFields //
-    //-------------//
-    /**
-     * Convenient method to empty all the text fields of a given JComponent.
-     *
-     * @param component the component to "blank".
-     */
-    public static void emptyFields (JComponent component)
-    {
-        for (Component comp : component.getComponents()) {
-            if (comp instanceof JTextField) {
-                ((JTextField) comp).setText("");
             }
         }
     }
@@ -394,7 +386,7 @@ public abstract class Board
         builder.add(body, cst.xy(1, 3));
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Desc //
     //------//
@@ -403,7 +395,7 @@ public abstract class Board
      */
     public static class Desc
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Default name for this board */
         public final String name;
@@ -411,7 +403,7 @@ public abstract class Board
         /** Preferred position within its containing BoardsPane */
         public final int position;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Desc (String name,
                      int position)
         {
@@ -430,7 +422,7 @@ public abstract class Board
     private static class Header
             extends Panel
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** The board title */
         private final String title;
@@ -438,7 +430,7 @@ public abstract class Board
         /** Dump button */
         public final JButton dumpButton;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Header (String title,
                        boolean withDump)
         {
@@ -449,7 +441,7 @@ public abstract class Board
             defineLayout();
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         private void defineLayout ()
         {
             CellConstraints cst = new CellConstraints();

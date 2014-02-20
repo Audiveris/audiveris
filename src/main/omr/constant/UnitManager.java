@@ -1,20 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           U n i t M a n a g e r                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     U n i t M a n a g e r                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.constant;
 
+import net.jcip.annotations.ThreadSafe;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import net.jcip.annotations.ThreadSafe;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,19 +30,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
- * Class {@code UnitManager} manages all units (aka classes),
- * for which we have a ConstantSet.
- *
- * <p>To help {@link UnitTreeTable} display the whole tree of UnitNodes,
- * UnitManager can pre-load all the classes known to contain a ConstantSet.
- * This list is kept up-to-date and stored as a property.
+ * Class {@code UnitManager} manages all units (aka classes), for which we have a
+ * ConstantSet.
+ * <p>
+ * To help {@link UnitTreeTable} display the whole tree of UnitNodes, UnitManager can pre-load all
+ * the classes known to contain a ConstantSet. This list is kept up-to-date and stored as a
+ * property.
  *
  * @author Hervé Bitteur
  */
 @ThreadSafe
 public class UnitManager
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Name of this unit */
     private static final String UNIT = UnitManager.class.getName();
@@ -53,19 +53,19 @@ public class UnitManager
     /** Separator used in property that concatenates all unit names */
     private static final String SEPARATOR = ";";
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(UnitManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            UnitManager.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The root node. */
     private final PackageNode root = new PackageNode("<root>", null);
 
     /** Map of PackageNodes and UnitNodes. */
-    private final ConcurrentHashMap<String, Node> mapOfNodes = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Node> mapOfNodes = new ConcurrentHashMap<String, Node>();
 
     /** Set of names of ConstantSets that still need to be initialized. */
-    private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<>();
+    private final ConcurrentSkipListSet<String> dirtySets = new ConcurrentSkipListSet<String>();
 
     /**
      * Lists of all units known as containing a constantset.
@@ -76,7 +76,7 @@ public class UnitManager
     /** Flag to avoid storing units being pre-loaded. */
     private volatile boolean storeIt = false;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // UnitManager //
     //-------------//
@@ -86,7 +86,7 @@ public class UnitManager
         mapOfNodes.put("<root>", root);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -127,7 +127,7 @@ public class UnitManager
      */
     public void checkAllUnits ()
     {
-        SortedSet<String> constants = new TreeSet<>();
+        SortedSet<String> constants = new TreeSet<String>();
 
         for (Node node : mapOfNodes.values()) {
             if (node instanceof UnitNode) {
@@ -137,8 +137,7 @@ public class UnitManager
                 if (set != null) {
                     for (int i = 0; i < set.size(); i++) {
                         Constant constant = set.getConstant(i);
-                        constants.add(
-                                unit.getName() + "." + constant.getName());
+                        constants.add(unit.getName() + "." + constant.getName());
                     }
                 }
             }
@@ -146,8 +145,7 @@ public class UnitManager
 
         dumpStrings("constants", constants);
 
-        Collection<String> props = ConstantManager.getInstance().
-                getAllProperties();
+        Collection<String> props = ConstantManager.getInstance().getAllProperties();
         props.removeAll(constants);
         dumpStrings("Non set-enclosed properties", props);
 
@@ -200,7 +198,7 @@ public class UnitManager
         sb.append(String.format("UnitManager. All Units:%n"));
 
         // Use alphabetical order for easier reading
-        List<Node> nodes = new ArrayList<>(mapOfNodes.values());
+        List<Node> nodes = new ArrayList<Node>(mapOfNodes.values());
         Collections.sort(nodes, Node.nameComparator);
 
         for (Node node : nodes) {
@@ -286,8 +284,7 @@ public class UnitManager
                 Class.forName(unit); // This loads its ConstantSet
                 //log ("unit '" + unit + "' pre-loaded");
             } catch (ClassNotFoundException ex) {
-                System.err.println(
-                        "*** Cannot load ConstantSet " + unit + " " + ex);
+                System.err.println("*** Cannot load ConstantSet " + unit + " " + ex);
             }
         }
 
@@ -297,6 +294,29 @@ public class UnitManager
         storeUnits();
 
         //log("all units have been pre-loaded from " + main);
+    }
+
+    //---------------//
+    // resetAllUnits //
+    //---------------//
+    /**
+     * Reset all constants to their factory (source) value.
+     */
+    public void resetAllUnits ()
+    {
+        for (Node node : mapOfNodes.values()) {
+            if (node instanceof UnitNode) {
+                UnitNode unit = (UnitNode) node;
+                ConstantSet set = unit.getConstantSet();
+
+                if (set != null) {
+                    for (int i = 0; i < set.size(); i++) {
+                        Constant constant = set.getConstant(i);
+                        constant.reset();
+                    }
+                }
+            }
+        }
     }
 
     //-------------//
@@ -313,15 +333,14 @@ public class UnitManager
     public Set<Object> searchUnits (String string)
     {
         String str = string.toLowerCase(Locale.ENGLISH);
-        Set<Object> found = new LinkedHashSet<>();
+        Set<Object> found = new LinkedHashSet<Object>();
 
         for (Node node : mapOfNodes.values()) {
             if (node instanceof UnitNode) {
                 UnitNode unit = (UnitNode) node;
 
                 // Search in unit name itself
-                if (unit.getSimpleName().toLowerCase(Locale.ENGLISH).contains(
-                        str)) {
+                if (unit.getSimpleName().toLowerCase(Locale.ENGLISH).contains(str)) {
                     found.add(unit);
                 }
 
@@ -333,8 +352,7 @@ public class UnitManager
                         Constant constant = set.getConstant(i);
 
                         if (constant.getName().toLowerCase().contains(str)
-                            || constant.getDescription().toLowerCase().
-                                contains(str)) {
+                            || constant.getDescription().toLowerCase().contains(str)) {
                             found.add(constant);
                         }
                     }
@@ -466,8 +484,7 @@ public class UnitManager
         int length = name.length();
         Node child = unit;
 
-        for (int i = name.lastIndexOf('.', length - 1); i >= 0;
-                i = name.lastIndexOf('.', i - 1)) {
+        for (int i = name.lastIndexOf('.', length - 1); i >= 0; i = name.lastIndexOf('.', i - 1)) {
             String parent = name.substring(0, i);
             Node obj = mapOfNodes.get(parent);
 
@@ -498,28 +515,5 @@ public class UnitManager
 
         // No intermediate parent found, so hook it to the root itself
         getRoot().addChild(child);
-    }
-
-    //---------------//
-    // resetAllUnits //
-    //---------------//
-    /**
-     * Reset all constants to their factory (source) value.
-     */
-    public void resetAllUnits ()
-    {
-        for (Node node : mapOfNodes.values()) {
-            if (node instanceof UnitNode) {
-                UnitNode unit = (UnitNode) node;
-                ConstantSet set = unit.getConstantSet();
-
-                if (set != null) {
-                    for (int i = 0; i < set.size(); i++) {
-                        Constant constant = set.getConstant(i);
-                        constant.reset();
-                    }
-                }
-            }
-        }
     }
 }

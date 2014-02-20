@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                   G h o s t P i c t u r e A d a p t e r                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                             G h o s t P i c t u r e A d a p t e r                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.dnd;
 
@@ -18,8 +18,8 @@ import java.net.MalformedURLException;
 import javax.imageio.ImageIO;
 
 /**
- * Class {@code GhostPictureAdapter}is a {@link GhostDropAdapter} whose
- * image is retrieved from the class resource path.
+ * Class {@code GhostPictureAdapter}is a {@link GhostDropAdapter} whose image is
+ * retrieved from the class resource path.
  *
  * @param <A> The precise type of action carried by the drop
  *
@@ -28,7 +28,7 @@ import javax.imageio.ImageIO;
 public class GhostPictureAdapter<A>
         extends GhostDropAdapter<A>
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Create a new GhostPictureAdapter object
@@ -48,8 +48,7 @@ public class GhostPictureAdapter<A>
 
         try {
             image = ImageIO.read(
-                    new BufferedInputStream(
-                    GhostPictureAdapter.class.getResourceAsStream(picture)));
+                    new BufferedInputStream(GhostPictureAdapter.class.getResourceAsStream(picture)));
         } catch (MalformedURLException mue) {
             throw new IllegalStateException("Invalid picture URL.");
         } catch (IOException ioe) {

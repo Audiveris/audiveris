@@ -1,20 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            A R T M o m e n t s                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      A R T M o m e n t s                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.moments;
 
 /**
- * Interface {@code ARTMoments} defines a region shape features
- * descriptor based on Angular Radial Transform.
- *
+ * Interface {@code ARTMoments} defines a region shape features descriptor based on
+ * Angular Radial Transform.
+ *<p>
  * See MPEG-7 Experimentation Model for the original C++ code
  *
  * @author Hervé Bitteur
@@ -22,7 +22,7 @@ package omr.moments;
 public interface ARTMoments
         extends OrthogonalMoments<ARTMoments>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Number of angular indixes */
     public static final int ANGULAR = 12;
@@ -30,7 +30,7 @@ public interface ARTMoments
     /** Number of radius indices */
     public static final int RADIAL = 3;
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the argument value for provided phase and radius indices.
      *

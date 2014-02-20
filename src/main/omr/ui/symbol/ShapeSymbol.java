@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           S h a p e S y m b o l                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     S h a p e S y m b o l                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -21,15 +21,15 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 
 /**
- * Class {@code ShapeSymbol} extends the {@link BasicSymbol} with the
- * handling of a related {@link Shape}.
+ * Class {@code ShapeSymbol} extends the {@link BasicSymbol} with the handling of a
+ * related {@link Shape}.
  * A ShapeSymbol thus adds several features:<ul>
  *
- * <li>It can be used for Drag & Drop operations, since it implements the
- * {@link Transferable} interface.</li>
+ * <li>It can be used for Drag & Drop operations, since it implements the {@link Transferable}
+ * interface.</li>
  *
- * <li>It can be used to <b>train</b> the glyph evaluator when we don't
- * have enough "real" glyphs available.</li>
+ * <li>It can be used to <b>train</b> the glyph evaluator when we don't have enough "real" glyphs
+ * available.</li>
  * </ul>
  *
  * @author Hervé Bitteur
@@ -38,26 +38,24 @@ public class ShapeSymbol
         extends BasicSymbol
         implements Transferable
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The symbol meta data */
-    public static DataFlavor DATA_FLAVOR = new DataFlavor(
-            Symbol.class,
-            "shape-symbol");
+    public static DataFlavor DATA_FLAVOR = new DataFlavor(Symbol.class, "shape-symbol");
 
     /** Composite used for decoration */
     protected static AlphaComposite decoComposite = AlphaComposite.getInstance(
             AlphaComposite.SRC_OVER,
             0.15f);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related shape */
     protected final Shape shape;
 
     /** Is this a decorated symbol (shape with additional stuff) */
     protected final boolean decorated;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // ShapeSymbol //
     //-------------//
@@ -95,7 +93,26 @@ public class ShapeSymbol
         this(false, shape, false, codes);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // numberCodes //
+    //-------------//
+    public static int[] numberCodes (int number)
+    {
+        ShapeSymbol symbol = Symbols.getSymbol(TIME_ZERO);
+        int base = symbol.codes[0];
+        int[] numberCodes = (number > 9) ? new int[2] : new int[1];
+        int index = 0;
+
+        if (number > 9) {
+            numberCodes[index++] = base + (number / 10);
+        }
+
+        numberCodes[index] = base + (number % 10);
+
+        return numberCodes;
+    }
+
     //----------//
     // getShape //
     //----------//
@@ -155,25 +172,6 @@ public class ShapeSymbol
         return decorated;
     }
 
-    //-------------//
-    // numberCodes //
-    //-------------//
-    public static int[] numberCodes (int number)
-    {
-        ShapeSymbol symbol = Symbols.getSymbol(TIME_ZERO);
-        int base = symbol.codes[0];
-        int[] numberCodes = (number > 9) ? new int[2] : new int[1];
-        int index = 0;
-
-        if (number > 9) {
-            numberCodes[index++] = base + (number / 10);
-        }
-
-        numberCodes[index] = base + (number % 10);
-
-        return numberCodes;
-    }
-
     //------------//
     // createIcon //
     //------------//
@@ -191,8 +189,7 @@ public class ShapeSymbol
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
 
-        sb.append(" ")
-                .append(shape);
+        sb.append(" ").append(shape);
 
         return sb.toString();
     }

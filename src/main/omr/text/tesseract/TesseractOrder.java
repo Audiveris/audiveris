@@ -1,17 +1,16 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        T e s s e r a c t O r d e r                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  T e s s e r a c t O r d e r                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.text.tesseract;
 
-import java.awt.Rectangle;
 import omr.WellKnowns;
 
 import omr.sheet.SystemInfo;
@@ -21,6 +20,9 @@ import omr.text.TextChar;
 import omr.text.TextLine;
 import omr.text.TextWord;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import tesseract.TessBridge;
 
 import tesseract.TessBridge.PIX;
@@ -29,9 +31,7 @@ import tesseract.TessBridge.ResultIterator.Level;
 import tesseract.TessBridge.TessBaseAPI;
 import tesseract.TessBridge.TessBaseAPI.SegmentationMode;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -47,29 +47,29 @@ import javax.imageio.spi.IIORegistry;
 import javax.imageio.stream.ImageOutputStream;
 
 /**
- * Class {@code TesseractOrder} carries a processing order submitted
- * to Tesseract OCR program.
+ * Class {@code TesseractOrder} carries a processing order submitted to Tesseract OCR
+ * program.
  *
  * @author Hervé Bitteur
  */
 public class TesseractOrder
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(TesseractOrder.class);
 
     /** To avoid repetitive warnings if OCR binding failed */
     private static boolean userWarned;
 
-    /** Needed (for OpenJDK) to register TIFF support. */
     static {
         IIORegistry registry = IIORegistry.getDefaultInstance();
-        registry.registerServiceProvider(new com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriterSpi());
-        registry.registerServiceProvider(new com.sun.media.imageioimpl.plugins.tiff.TIFFImageReaderSpi());
+        registry.registerServiceProvider(
+                new com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriterSpi());
+        registry.registerServiceProvider(
+                new com.sun.media.imageioimpl.plugins.tiff.TIFFImageReaderSpi());
     }
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Containing system. */
     private final SystemInfo system;
@@ -95,7 +95,7 @@ public class TesseractOrder
     /** The image being processed. */
     private PIX image;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------------//
     // TesseractOrder //
@@ -134,13 +134,14 @@ public class TesseractOrder
         // Build a PIX from the image provided
         ByteBuffer buf = toTiffBuffer(bufferedImage);
         image = PIX.readMemTiff(buf, buf.capacity(), 0);
+
         if (image == null) {
             logger.warn("Invalid image {}", label);
             throw new RuntimeException("Invalid image");
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //---------//
     // process //
@@ -157,9 +158,7 @@ public class TesseractOrder
 
             // Init API with proper language
             if (!api.Init(lang)) {
-                logger.warn(
-                        "Could not initialize Tesseract with lang {}",
-                        lang);
+                logger.warn("Could not initialize Tesseract with lang {}", lang);
 
                 return finish(null);
             }
@@ -182,9 +181,7 @@ public class TesseractOrder
         } catch (UnsatisfiedLinkError ex) {
             if (!userWarned) {
                 logger.warn("Could not link Tesseract bridge", ex);
-                logger.warn(
-                        "java.library.path="
-                        + System.getProperty("java.library.path"));
+                logger.warn("java.library.path=" + System.getProperty("java.library.path"));
                 userWarned = true;
             }
 
@@ -256,7 +253,7 @@ public class TesseractOrder
 
         ResultIterator it = api.GetIterator();
 
-        List<TextLine> lines = new ArrayList<>(); // Lines built so far
+        List<TextLine> lines = new ArrayList<TextLine>(); // Lines built so far
         TextLine line = null; // Line being built
         TextWord word = null; // Word being built
 
@@ -277,10 +274,13 @@ public class TesseractOrder
                 // Start of word?
                 if (it.IsAtBeginningOf(Level.WORD)) {
                     FontInfo fontInfo = getFont(it.WordFontAttributes());
+
                     if (fontInfo == null) {
                         logger.debug("No font info on {}", label);
+
                         return null;
                     }
+
                     word = new TextWord(
                             it.BoundingBox(Level.WORD),
                             it.GetUTF8Text(Level.WORD),
@@ -303,12 +303,13 @@ public class TesseractOrder
                 }
 
                 // Char/symbol to be processed
-
                 // Fix long "—" vs short "-"
                 String charValue = it.GetUTF8Text(Level.SYMBOL);
                 Rectangle charBox = it.BoundingBox(Level.SYMBOL);
-                if (charValue.equals("—") && charBox.width <= maxDashWidth) {
+
+                if (charValue.equals("—") && (charBox.width <= maxDashWidth)) {
                     charValue = "-";
+
                     // Containing word value will be updated later
                 }
 
@@ -347,7 +348,6 @@ public class TesseractOrder
             writer.setOutput(ios);
             writer.write(image);
         }
-
         ByteBuffer buf = ByteBuffer.allocate(baos.size());
         byte[] bytes = baos.toByteArray();
         buf.put(bytes);
@@ -361,6 +361,7 @@ public class TesseractOrder
             if (!WellKnowns.TEMP_FOLDER.exists()) {
                 WellKnowns.TEMP_FOLDER.mkdir();
             }
+
             try (final FileOutputStream fos = new FileOutputStream(
                     file.getAbsolutePath())) {
                 fos.write(bytes);

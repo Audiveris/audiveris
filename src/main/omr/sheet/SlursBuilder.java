@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           S l u r s B u i l d e r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     S l u r s B u i l d e r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -95,15 +95,14 @@ import java.util.Set;
  */
 public class SlursBuilder
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Point[] breakPoints = new Point[]{ ///new Point(234, 871)
     }; // BINGO
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SlursBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(SlursBuilder.class);
 
     /** Color for a foreground pixel discarded. */
     private static final int HIDDEN = 230;
@@ -179,13 +178,13 @@ public class SlursBuilder
     /** All directions. */
     private static final int[] allDirs = new int[]{2, 4, 6, 8, 1, 3, 5, 7};
 
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
     /**
      * Status for current move along arc.
      */
     private static enum Status
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** One more point on arc. */
         CONTINUE,
@@ -195,7 +194,7 @@ public class SlursBuilder
         END;
     }
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     @Navigable(false)
     private final Sheet sheet;
@@ -233,7 +232,7 @@ public class SlursBuilder
     /** View on skeleton, if any. */
     private MyView view;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // SlursBuilder //
     //--------------//
@@ -253,7 +252,7 @@ public class SlursBuilder
         buf = buildSkeleton();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildSlurs //
     //------------//
@@ -279,6 +278,48 @@ public class SlursBuilder
         new SlurRetriever().retrieveSlurs();
 
         watch.print();
+    }
+
+    //--------//
+    // getDir //
+    //--------//
+    /**
+     * Report the precise direction that goes from 'from' to 'to'.
+     *
+     * @param from p1
+     * @param to   p2
+     * @return direction p1 -> p2
+     */
+    private static int getDir (Point from,
+                               Point to)
+    {
+        int dx = to.x - from.x;
+        int dy = to.y - from.y;
+
+        return deltaToDir[1 + dx][1 + dy];
+    }
+
+    //-------//
+    // sinSq //
+    //-------//
+    /** Sin**2 of angle between (p0,p1) & (p0,p2). */
+    private static double sinSq (int x0,
+                                 int y0,
+                                 int x1,
+                                 int y1,
+                                 int x2,
+                                 int y2)
+    {
+        x1 -= x0;
+        y1 -= y0;
+        x2 -= x0;
+        y2 -= y0;
+
+        double vect = (x1 * y2) - (x2 * y1);
+        double l1Sq = (x1 * x1) + (y1 * y1);
+        double l2Sq = (x2 * x2) + (y2 * y2);
+
+        return (vect * vect) / (l1Sq * l2Sq);
     }
 
     //------------//
@@ -315,8 +356,7 @@ public class SlursBuilder
         Picture picture = sheet.getPicture();
 
         ///ByteProcessor buffer = picture.getSource(Picture.SourceKey.BINARY);
-        ByteProcessor buffer = picture.getSource(
-                Picture.SourceKey.STAFF_LINE_FREE);
+        ByteProcessor buffer = picture.getSource(Picture.SourceKey.STAFF_LINE_FREE);
         buffer = (ByteProcessor) buffer.duplicate();
         buffer.skeletonize();
 
@@ -464,25 +504,6 @@ public class SlursBuilder
         }
     }
 
-    //--------//
-    // getDir //
-    //--------//
-    /**
-     * Report the precise direction that goes from 'from' to 'to'.
-     *
-     * @param from p1
-     * @param to   p2
-     * @return direction p1 -> p2
-     */
-    private static int getDir (Point from,
-                               Point to)
-    {
-        int dx = to.x - from.x;
-        int dy = to.y - from.y;
-
-        return deltaToDir[1 + dx][1 + dy];
-    }
-
     //------------//
     // isJunction //
     //------------//
@@ -576,349 +597,7 @@ public class SlursBuilder
                && ((maxDy - minDy) < params.minStaffLineDistance);
     }
 
-    //-------//
-    // sinSq //
-    //-------//
-    /** Sin**2 of angle between (p0,p1) & (p0,p2). */
-    private static double sinSq (int x0,
-                                 int y0,
-                                 int x1,
-                                 int y1,
-                                 int x2,
-                                 int y2)
-    {
-        x1 -= x0;
-        y1 -= y0;
-        x2 -= x0;
-        y2 -= y0;
-
-        double vect = (x1 * y2) - (x2 * y1);
-        double l1Sq = (x1 * x1) + (y1 * y1);
-        double l2Sq = (x2 * x2) + (y2 * y2);
-
-        return (vect * vect) / (l1Sq * l2Sq);
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final Constant.Boolean keepSkeleton = new Constant.Boolean(
-                false,
-                "Should we store skeleton images on disk?");
-
-        final Constant.Ratio similarRadiusRatio = new Constant.Ratio(
-                0.25,
-                "Maximum difference ratio between radius of similar circles");
-
-        final Constant.Double maxAlpha = new Constant.Double(
-                "degree",
-                2.5,
-                "Maximum angle (in degrees) for 3 points colinearity");
-
-        final Constant.Double maxIncidence = new Constant.Double(
-                "degree",
-                45,
-                "Maximum incidence angle (in degrees) for staff tangency");
-
-        final Scale.Fraction arcMinQuorum = new Scale.Fraction(
-                1.5,
-                "Minimum arc length for quorum");
-
-        final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
-                1.0,
-                "Minimum arc length for starting a slur build");
-
-        final Scale.Fraction maxStaffLineDy = new Scale.Fraction(
-                0.2,
-                "Vertical distance to closest staff line to detect tangency");
-
-        final Scale.Fraction maxLineDistance = new Scale.Fraction(
-                0.1,
-                "Maximum distance from straight line");
-
-        final Scale.Fraction maxSlurDistance = new Scale.Fraction(
-                0.07,
-                "Maximum circle distance for final slur");
-
-        final Scale.Fraction maxExtDistance = new Scale.Fraction(
-                0.35,
-                "Maximum circle distance for extension arc");
-
-        final Scale.Fraction maxArcsDistance = new Scale.Fraction(
-                0.15,
-                "Maximum circle distance for intermediate arcs");
-
-        final Scale.Fraction arcCheckLength = new Scale.Fraction(
-                3,
-                "Number of points checked for extension arc");
-
-        final Scale.Fraction sideCircleLength = new Scale.Fraction(
-                7,
-                "Number of points for side osculatory circle");
-
-        final Scale.Fraction minCircleRadius = new Scale.Fraction(
-                0.5,
-                "Minimum circle radius for a slur");
-
-        final Scale.Fraction maxCircleRadius = new Scale.Fraction(
-                50,
-                "Maximum circle radius for a slur");
-
-        final Scale.Fraction minSlurWidthLow = new Scale.Fraction(
-                0.8,
-                "Low minimum width for a slur");
-
-        final Scale.Fraction minSlurWidthHigh = new Scale.Fraction(
-                1.5,
-                "High minimum width for a slur");
-
-        final Scale.Fraction minSlurHeightLow = new Scale.Fraction(
-                0.2,
-                "Low minimum height for a slur");
-
-        final Scale.Fraction minSlurHeightHigh = new Scale.Fraction(
-                1.0,
-                "High minimum height for a slur");
-
-        final Scale.Fraction minStaffLineDistance = new Scale.Fraction(
-                0.15,
-                "Minimum distance from staff line");
-
-        final Scale.Fraction minStaffArcLength = new Scale.Fraction(
-                0.5,
-                "Minimum length for a staff arc");
-
-        final Scale.Fraction maxStaffArcLength = new Scale.Fraction(
-                5.0,
-                "Maximum length for a staff arc");
-
-        final Scale.Fraction gapBoxLength = new Scale.Fraction(
-                0.5,
-                "Length for gap box");
-
-        final Scale.Fraction gapBoxDeltaIn = new Scale.Fraction(
-                0.15,
-                "Delta for gap box on slur side");
-
-        final Scale.Fraction gapBoxDeltaOut = new Scale.Fraction(
-                0.3,
-                "Delta for gap box on extension side");
-
-        final Scale.Fraction lineBoxLength = new Scale.Fraction(
-                1.75,
-                "Length for box across staff line");
-
-        final Scale.Fraction lineBoxIn = new Scale.Fraction(
-                0.2,
-                "Overlap for line box on slur side");
-
-        final Scale.Fraction lineBoxDeltaIn = new Scale.Fraction(
-                0.2,
-                "Delta for line box on slur side");
-
-        final Scale.Fraction lineBoxDeltaOut = new Scale.Fraction(
-                0.3,
-                "Delta for line box on extension side");
-
-        final Constant.Double maxArcAngleHigh = new Constant.Double(
-                "degree",
-                190.0,
-                "High maximum angle (in degrees) of slur arc");
-
-        final Constant.Double maxArcAngleLow = new Constant.Double(
-                "degree",
-                170.0,
-                "Low maximum angle (in degrees) of slur arc");
-
-        final Constant.Double minAngleFromVerticalLow = new Constant.Double(
-                "degree",
-                20.0,
-                "Low minimum angle (in degrees) between slur and vertical");
-
-        final Constant.Double minAngleFromVerticalHigh = new Constant.Double(
-                "degree",
-                25.0,
-                "High minimum angle (in degrees) between slur and vertical");
-
-        final Constant.Double minSlope = new Constant.Double(
-                "(co)tangent",
-                0.03,
-                "Minimum (inverted) slope, to detect vertical and horizontal lines");
-
-        final Constant.Ratio quorumRatio = new Constant.Ratio(
-                0.75,
-                "Minimum length expressed as ratio of longest in clump");
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * All pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final double similarRadiusRatio;
-
-        final int sideCircleLength;
-
-        final int arcCheckLength;
-
-        final double maxSinSq;
-
-        final int arcMinQuorum;
-
-        final int arcMinSeedLength;
-
-        final double maxStaffLineDy;
-
-        final double maxIncidence;
-
-        final double maxLineDistance;
-
-        final double maxSlurDistance;
-
-        final double maxExtDistance;
-
-        final double maxArcsDistance;
-
-        final double minCircleRadius;
-
-        final double maxCircleRadius;
-
-        final double minSlurWidthLow;
-
-        final double minSlurWidthHigh;
-
-        final double minSlurHeightLow;
-
-        final double minSlurHeightHigh;
-
-        final double maxArcAngleLow;
-
-        final double maxArcAngleHigh;
-
-        final double minAngleFromVerticalLow;
-
-        final double minAngleFromVerticalHigh;
-
-        final double minSlope;
-
-        final double minStaffLineDistance;
-
-        final int minStaffArcLength;
-
-        final int maxStaffArcLength;
-
-        final double gapBoxLength;
-
-        final double gapBoxDeltaIn;
-
-        final double gapBoxDeltaOut;
-
-        final double lineBoxLength;
-
-        final double lineBoxIn;
-
-        final double lineBoxDeltaIn;
-
-        final double lineBoxDeltaOut;
-
-        final double quorumRatio;
-
-        //~ Constructors -------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
-        {
-            double maxSin = sin(toRadians(constants.maxAlpha.getValue()));
-
-            similarRadiusRatio = constants.similarRadiusRatio.getValue();
-            sideCircleLength = scale.toPixels(constants.sideCircleLength);
-            arcCheckLength = scale.toPixels(constants.arcCheckLength);
-            maxSinSq = maxSin * maxSin;
-            arcMinQuorum = scale.toPixels(constants.arcMinQuorum);
-            arcMinSeedLength = scale.toPixels(constants.arcMinSeedLength);
-            maxStaffLineDy = scale.toPixelsDouble(constants.maxStaffLineDy);
-            maxIncidence = toRadians(constants.maxIncidence.getValue());
-            maxLineDistance = scale.toPixelsDouble(constants.maxLineDistance);
-            maxSlurDistance = scale.toPixelsDouble(constants.maxSlurDistance);
-            maxExtDistance = scale.toPixelsDouble(constants.maxExtDistance);
-            maxArcsDistance = scale.toPixelsDouble(constants.maxArcsDistance);
-            minCircleRadius = scale.toPixelsDouble(constants.minCircleRadius);
-            maxCircleRadius = scale.toPixelsDouble(constants.maxCircleRadius);
-            minSlurWidthLow = scale.toPixelsDouble(constants.minSlurWidthLow);
-            minSlurWidthHigh = scale.toPixelsDouble(constants.minSlurWidthHigh);
-            minSlurHeightLow = scale.toPixelsDouble(constants.minSlurHeightLow);
-            minSlurHeightHigh = scale.toPixelsDouble(
-                    constants.minSlurHeightHigh);
-            maxArcAngleHigh = toRadians(constants.maxArcAngleHigh.getValue());
-            maxArcAngleLow = toRadians(constants.maxArcAngleLow.getValue());
-            minAngleFromVerticalLow = toRadians(
-                    constants.minAngleFromVerticalLow.getValue());
-            minAngleFromVerticalHigh = toRadians(
-                    constants.minAngleFromVerticalHigh.getValue());
-            minSlope = constants.minSlope.getValue();
-            minStaffLineDistance = scale.toPixelsDouble(
-                    constants.minStaffLineDistance);
-            minStaffArcLength = scale.toPixels(constants.minStaffArcLength);
-            maxStaffArcLength = scale.toPixels(constants.maxStaffArcLength);
-            gapBoxLength = scale.toPixels(constants.gapBoxLength);
-            gapBoxDeltaIn = scale.toPixels(constants.gapBoxDeltaIn);
-            gapBoxDeltaOut = scale.toPixels(constants.gapBoxDeltaOut);
-            lineBoxLength = scale.toPixels(constants.lineBoxLength);
-            lineBoxIn = scale.toPixels(constants.lineBoxIn);
-            lineBoxDeltaIn = scale.toPixels(constants.lineBoxDeltaIn);
-            lineBoxDeltaOut = scale.toPixels(constants.lineBoxDeltaOut);
-            quorumRatio = constants.quorumRatio.getValue();
-
-            if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
-            }
-        }
-    }
-
-    //----------//
-    // Vicinity //
-    //----------//
-    /**
-     * Gathers the number of immediate neighbors of a pixel and
-     * characterizes the links.
-     */
-    private static class Vicinity
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        int verts; // Number of neighbors vertically connected
-
-        int horis; // Number of neighbors horizontally connected
-
-        int diags; // Number of neighbors diagonally connected
-
-        //~ Methods ------------------------------------------------------------
-        public int getCount ()
-        {
-            return verts + horis + diags;
-        }
-
-        public int getGrade ()
-        {
-            return (2 * verts) + (2 * horis)
-                   + (((verts > 0) && (horis > 0)) ? 1 : 0);
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // ArcRetriever //
     //--------------//
@@ -939,7 +618,7 @@ public class SlursBuilder
      */
     private class ArcRetriever
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Current point abscissa. */
         int cx;
@@ -950,7 +629,7 @@ public class SlursBuilder
         /** Last direction. */
         int lastDir;
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Scan the whole image.
          */
@@ -1283,6 +962,160 @@ public class SlursBuilder
         }
     }
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Constant.Boolean keepSkeleton = new Constant.Boolean(
+                false,
+                "Should we store skeleton images on disk?");
+
+        final Constant.Ratio similarRadiusRatio = new Constant.Ratio(
+                0.25,
+                "Maximum difference ratio between radius of similar circles");
+
+        final Constant.Double maxAlpha = new Constant.Double(
+                "degree",
+                2.5,
+                "Maximum angle (in degrees) for 3 points colinearity");
+
+        final Constant.Double maxIncidence = new Constant.Double(
+                "degree",
+                45,
+                "Maximum incidence angle (in degrees) for staff tangency");
+
+        final Scale.Fraction arcMinQuorum = new Scale.Fraction(
+                1.5,
+                "Minimum arc length for quorum");
+
+        final Scale.Fraction arcMinSeedLength = new Scale.Fraction(
+                1.0,
+                "Minimum arc length for starting a slur build");
+
+        final Scale.Fraction maxStaffLineDy = new Scale.Fraction(
+                0.2,
+                "Vertical distance to closest staff line to detect tangency");
+
+        final Scale.Fraction maxLineDistance = new Scale.Fraction(
+                0.1,
+                "Maximum distance from straight line");
+
+        final Scale.Fraction maxSlurDistance = new Scale.Fraction(
+                0.07,
+                "Maximum circle distance for final slur");
+
+        final Scale.Fraction maxExtDistance = new Scale.Fraction(
+                0.35,
+                "Maximum circle distance for extension arc");
+
+        final Scale.Fraction maxArcsDistance = new Scale.Fraction(
+                0.15,
+                "Maximum circle distance for intermediate arcs");
+
+        final Scale.Fraction arcCheckLength = new Scale.Fraction(
+                3,
+                "Number of points checked for extension arc");
+
+        final Scale.Fraction sideCircleLength = new Scale.Fraction(
+                7,
+                "Number of points for side osculatory circle");
+
+        final Scale.Fraction minCircleRadius = new Scale.Fraction(
+                0.5,
+                "Minimum circle radius for a slur");
+
+        final Scale.Fraction maxCircleRadius = new Scale.Fraction(
+                50,
+                "Maximum circle radius for a slur");
+
+        final Scale.Fraction minSlurWidthLow = new Scale.Fraction(
+                0.8,
+                "Low minimum width for a slur");
+
+        final Scale.Fraction minSlurWidthHigh = new Scale.Fraction(
+                1.5,
+                "High minimum width for a slur");
+
+        final Scale.Fraction minSlurHeightLow = new Scale.Fraction(
+                0.2,
+                "Low minimum height for a slur");
+
+        final Scale.Fraction minSlurHeightHigh = new Scale.Fraction(
+                1.0,
+                "High minimum height for a slur");
+
+        final Scale.Fraction minStaffLineDistance = new Scale.Fraction(
+                0.15,
+                "Minimum distance from staff line");
+
+        final Scale.Fraction minStaffArcLength = new Scale.Fraction(
+                0.5,
+                "Minimum length for a staff arc");
+
+        final Scale.Fraction maxStaffArcLength = new Scale.Fraction(
+                5.0,
+                "Maximum length for a staff arc");
+
+        final Scale.Fraction gapBoxLength = new Scale.Fraction(0.5, "Length for gap box");
+
+        final Scale.Fraction gapBoxDeltaIn = new Scale.Fraction(
+                0.15,
+                "Delta for gap box on slur side");
+
+        final Scale.Fraction gapBoxDeltaOut = new Scale.Fraction(
+                0.3,
+                "Delta for gap box on extension side");
+
+        final Scale.Fraction lineBoxLength = new Scale.Fraction(
+                1.75,
+                "Length for box across staff line");
+
+        final Scale.Fraction lineBoxIn = new Scale.Fraction(
+                0.2,
+                "Overlap for line box on slur side");
+
+        final Scale.Fraction lineBoxDeltaIn = new Scale.Fraction(
+                0.2,
+                "Delta for line box on slur side");
+
+        final Scale.Fraction lineBoxDeltaOut = new Scale.Fraction(
+                0.3,
+                "Delta for line box on extension side");
+
+        final Constant.Double maxArcAngleHigh = new Constant.Double(
+                "degree",
+                190.0,
+                "High maximum angle (in degrees) of slur arc");
+
+        final Constant.Double maxArcAngleLow = new Constant.Double(
+                "degree",
+                170.0,
+                "Low maximum angle (in degrees) of slur arc");
+
+        final Constant.Double minAngleFromVerticalLow = new Constant.Double(
+                "degree",
+                20.0,
+                "Low minimum angle (in degrees) between slur and vertical");
+
+        final Constant.Double minAngleFromVerticalHigh = new Constant.Double(
+                "degree",
+                25.0,
+                "High minimum angle (in degrees) between slur and vertical");
+
+        final Constant.Double minSlope = new Constant.Double(
+                "(co)tangent",
+                0.03,
+                "Minimum (inverted) slope, to detect vertical and horizontal lines");
+
+        final Constant.Ratio quorumRatio = new Constant.Ratio(
+                0.75,
+                "Minimum length expressed as ratio of longest in clump");
+    }
+
     //-------------------//
     // JunctionRetriever //
     //-------------------//
@@ -1292,12 +1125,12 @@ public class SlursBuilder
      */
     private class JunctionRetriever
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Vicinity of current pixel. */
         private final Vicinity vicinity = new Vicinity();
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Scan the whole image.
          */
@@ -1326,7 +1159,7 @@ public class SlursBuilder
         private void checkJunction (int x,
                                     int y)
         {
-            // Neighbors 
+            // Neighbors
             int n = vicinityOf(x, y);
 
             if (n > 2) {
@@ -1435,14 +1268,14 @@ public class SlursBuilder
     private class MyView
             extends ImageView
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public MyView (BufferedImage image)
         {
             super(image);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void renderItems (Graphics2D g)
         {
@@ -1544,6 +1377,135 @@ public class SlursBuilder
         }
     }
 
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * All pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final double similarRadiusRatio;
+
+        final int sideCircleLength;
+
+        final int arcCheckLength;
+
+        final double maxSinSq;
+
+        final int arcMinQuorum;
+
+        final int arcMinSeedLength;
+
+        final double maxStaffLineDy;
+
+        final double maxIncidence;
+
+        final double maxLineDistance;
+
+        final double maxSlurDistance;
+
+        final double maxExtDistance;
+
+        final double maxArcsDistance;
+
+        final double minCircleRadius;
+
+        final double maxCircleRadius;
+
+        final double minSlurWidthLow;
+
+        final double minSlurWidthHigh;
+
+        final double minSlurHeightLow;
+
+        final double minSlurHeightHigh;
+
+        final double maxArcAngleLow;
+
+        final double maxArcAngleHigh;
+
+        final double minAngleFromVerticalLow;
+
+        final double minAngleFromVerticalHigh;
+
+        final double minSlope;
+
+        final double minStaffLineDistance;
+
+        final int minStaffArcLength;
+
+        final int maxStaffArcLength;
+
+        final double gapBoxLength;
+
+        final double gapBoxDeltaIn;
+
+        final double gapBoxDeltaOut;
+
+        final double lineBoxLength;
+
+        final double lineBoxIn;
+
+        final double lineBoxDeltaIn;
+
+        final double lineBoxDeltaOut;
+
+        final double quorumRatio;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (Scale scale)
+        {
+            double maxSin = sin(toRadians(constants.maxAlpha.getValue()));
+
+            similarRadiusRatio = constants.similarRadiusRatio.getValue();
+            sideCircleLength = scale.toPixels(constants.sideCircleLength);
+            arcCheckLength = scale.toPixels(constants.arcCheckLength);
+            maxSinSq = maxSin * maxSin;
+            arcMinQuorum = scale.toPixels(constants.arcMinQuorum);
+            arcMinSeedLength = scale.toPixels(constants.arcMinSeedLength);
+            maxStaffLineDy = scale.toPixelsDouble(constants.maxStaffLineDy);
+            maxIncidence = toRadians(constants.maxIncidence.getValue());
+            maxLineDistance = scale.toPixelsDouble(constants.maxLineDistance);
+            maxSlurDistance = scale.toPixelsDouble(constants.maxSlurDistance);
+            maxExtDistance = scale.toPixelsDouble(constants.maxExtDistance);
+            maxArcsDistance = scale.toPixelsDouble(constants.maxArcsDistance);
+            minCircleRadius = scale.toPixelsDouble(constants.minCircleRadius);
+            maxCircleRadius = scale.toPixelsDouble(constants.maxCircleRadius);
+            minSlurWidthLow = scale.toPixelsDouble(constants.minSlurWidthLow);
+            minSlurWidthHigh = scale.toPixelsDouble(constants.minSlurWidthHigh);
+            minSlurHeightLow = scale.toPixelsDouble(constants.minSlurHeightLow);
+            minSlurHeightHigh = scale.toPixelsDouble(constants.minSlurHeightHigh);
+            maxArcAngleHigh = toRadians(constants.maxArcAngleHigh.getValue());
+            maxArcAngleLow = toRadians(constants.maxArcAngleLow.getValue());
+            minAngleFromVerticalLow = toRadians(constants.minAngleFromVerticalLow.getValue());
+            minAngleFromVerticalHigh = toRadians(constants.minAngleFromVerticalHigh.getValue());
+            minSlope = constants.minSlope.getValue();
+            minStaffLineDistance = scale.toPixelsDouble(constants.minStaffLineDistance);
+            minStaffArcLength = scale.toPixels(constants.minStaffArcLength);
+            maxStaffArcLength = scale.toPixels(constants.maxStaffArcLength);
+            gapBoxLength = scale.toPixels(constants.gapBoxLength);
+            gapBoxDeltaIn = scale.toPixels(constants.gapBoxDeltaIn);
+            gapBoxDeltaOut = scale.toPixels(constants.gapBoxDeltaOut);
+            lineBoxLength = scale.toPixels(constants.lineBoxLength);
+            lineBoxIn = scale.toPixels(constants.lineBoxIn);
+            lineBoxDeltaIn = scale.toPixels(constants.lineBoxDeltaIn);
+            lineBoxDeltaOut = scale.toPixels(constants.lineBoxDeltaOut);
+            quorumRatio = constants.quorumRatio.getValue();
+
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
+            }
+        }
+    }
+
     //---------------//
     // SlurRetriever //
     //---------------//
@@ -1552,7 +1514,7 @@ public class SlursBuilder
      */
     private class SlurRetriever
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Current clump of aggregated slurs candidates. */
         private final Set<SlurInfo> clump = new LinkedHashSet<SlurInfo>();
@@ -1563,7 +1525,7 @@ public class SlursBuilder
         /** Current maximum length for arcs to be tried. */
         private Integer maxLength = null;
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //------------------//
         // discardShortests //
         //------------------//
@@ -1673,11 +1635,7 @@ public class SlursBuilder
                 }
 
                 int id = ++globalSlurId;
-                SlurInfo s = new SlurInfo(
-                        id,
-                        arcs,
-                        null,
-                        params.sideCircleLength);
+                SlurInfo s = new SlurInfo(id, arcs, null, params.sideCircleLength);
                 pageInfos.add(s);
 
                 //                logger.info(
@@ -1839,8 +1797,7 @@ public class SlursBuilder
                 return null;
             }
 
-            double distImpact = 1
-                                - (circle.getDistance() / params.maxSlurDistance);
+            double distImpact = 1 - (circle.getDistance() / params.maxSlurDistance);
 
             // Max arc angle value
             double arcAngle = circle.getArcAngle();
@@ -1871,9 +1828,8 @@ public class SlursBuilder
                 return null;
             }
 
-            double vertImpact = (fromVertical
-                                 - params.minAngleFromVerticalLow) / (params.minAngleFromVerticalHigh
-                                                                      - params.minAngleFromVerticalLow);
+            double vertImpact = (fromVertical - params.minAngleFromVerticalLow) / (params.minAngleFromVerticalHigh
+                                                                                   - params.minAngleFromVerticalLow);
 
             List<Point> points = new ArrayList<Point>();
 
@@ -1898,13 +1854,7 @@ public class SlursBuilder
                                                                      - params.minSlurWidthLow);
 
             // Slur high enough (bent enough)
-            double height = Line2D.ptLineDist(
-                    p0.x,
-                    p0.y,
-                    p2.x,
-                    p2.y,
-                    p1.x,
-                    p1.y);
+            double height = Line2D.ptLineDist(p0.x, p0.y, p2.x, p2.y, p1.x, p1.y);
 
             if (height < params.minSlurHeightLow) {
                 logger.debug("Slur too flat {} at {}", height, p0);
@@ -1915,12 +1865,7 @@ public class SlursBuilder
             double heightImpact = (height - params.minSlurHeightLow) / (params.minSlurHeightHigh
                                                                         - params.minSlurHeightLow);
 
-            return new Impacts(
-                    distImpact,
-                    widthImpact,
-                    heightImpact,
-                    angleImpact,
-                    vertImpact);
+            return new Impacts(distImpact, widthImpact, heightImpact, angleImpact, vertImpact);
         }
 
         /**
@@ -1966,18 +1911,14 @@ public class SlursBuilder
                 }
 
                 double dl1 = params.gapBoxDeltaIn;
-                Point2D dlVect = new Point2D.Double(
-                        -dl1 * uv.getY(),
-                        dl1 * uv.getX());
+                Point2D dlVect = new Point2D.Double(-dl1 * uv.getY(), dl1 * uv.getX());
                 path = new GeoPath(
                         new Line2D.Double(
                                 PointUtil.addition(se, dlVect),
                                 PointUtil.subtraction(se, dlVect)));
 
                 double lg = params.gapBoxLength;
-                Point2D lgVect = new Point2D.Double(
-                        lg * uv.getX(),
-                        lg * uv.getY());
+                Point2D lgVect = new Point2D.Double(lg * uv.getX(), lg * uv.getY());
                 Point2D se2 = PointUtil.addition(se, lgVect);
                 double dl2 = params.gapBoxDeltaOut;
                 dlVect = new Point2D.Double(-dl2 * uv.getY(), dl2 * uv.getX());
@@ -2035,8 +1976,7 @@ public class SlursBuilder
                 for (SlurInfo s : newSlurs) {
                     browsed.add(s.getEndArc(reverse));
 
-                    if ((s.getCrossedLine() == null)
-                        && (slur.getCrossedLine() != null)) {
+                    if ((s.getCrossedLine() == null) && (slur.getCrossedLine() != null)) {
                         s.setCrossedLine(slur.getCrossedLine());
                     }
                 }
@@ -2112,9 +2052,7 @@ public class SlursBuilder
                 public int compare (Arc a1,
                                     Arc a2)
                 {
-                    return Integer.compare(
-                            a2.getLength(),
-                            a1.getLength());
+                    return Integer.compare(a2.getLength(), a1.getLength());
                 }
                     });
 
@@ -2161,8 +2099,7 @@ public class SlursBuilder
                 double backDy = line.yAt(midPoint.getX()) - midPoint.getY();
                 boolean crossing = (uv.getY() * backDy) > 0;
                 Circle gc = slur.getCircle();
-                double incidence = gc.getAngle(reverse)
-                                   - ((gc.ccw() * PI) / 2);
+                double incidence = gc.getAngle(reverse) - ((gc.ccw() * PI) / 2);
 
                 if (crossing && (abs(incidence) <= params.maxIncidence)) {
                     //                logger.info(
@@ -2298,8 +2235,7 @@ public class SlursBuilder
         {
             // What was the last direction?
             final Arc endArc = slur.getEndArc(reverse);
-            final Point prevPoint = (!endArc.points.isEmpty())
-                    ? endArc.getEnd(reverse)
+            final Point prevPoint = (!endArc.points.isEmpty()) ? endArc.getEnd(reverse)
                     : endArc.getJunction(reverse);
             final int lastDir = getDir(prevPoint, pivot);
 
@@ -2402,6 +2338,35 @@ public class SlursBuilder
                     arc.reverse();
                 }
             }
+        }
+    }
+
+    //----------//
+    // Vicinity //
+    //----------//
+    /**
+     * Gathers the number of immediate neighbors of a pixel and
+     * characterizes the links.
+     */
+    private static class Vicinity
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        int verts; // Number of neighbors vertically connected
+
+        int horis; // Number of neighbors horizontally connected
+
+        int diags; // Number of neighbors diagonally connected
+
+        //~ Methods --------------------------------------------------------------------------------
+        public int getCount ()
+        {
+            return verts + horis + diags;
+        }
+
+        public int getGrade ()
+        {
+            return (2 * verts) + (2 * horis) + (((verts > 0) && (horis > 0)) ? 1 : 0);
         }
     }
 }

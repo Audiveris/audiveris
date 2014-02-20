@@ -1,27 +1,26 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              P o i n t U t i l                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        P o i n t U t i l                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code PointUtil} gathers utility methods for points
- * (and vectors).
+ * Class {@code PointUtil} gathers utility methods for points (and vectors).
  *
  * @author Hervé Bitteur
  */
 public class PointUtil
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     //----------//
     // addition //

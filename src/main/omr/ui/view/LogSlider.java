@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             L o g S l i d e r                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       L o g S l i d e r                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.view;
 
@@ -20,22 +20,20 @@ import javax.swing.JLabel;
 import javax.swing.JSlider;
 
 /**
- * Class {@code LogSlider} is a specific {@link JSlider} which handles
- * double values with a logarithmic scale (while normal JSlider
- * handles only integer values).
+ * Class {@code LogSlider} is a specific {@link JSlider} which handles double values
+ * with a logarithmic scale (while normal JSlider handles only integer values).
  *
- * <p>As with a basic JSlider, any external entity can be notified of new
- * slider value, by first registering to this LogSlider via the {@link
- *#addChangeListener} method.
+ * <p>
+ * As with a basic JSlider, any external entity can be notified of new slider value, by first
+ * registering to this LogSlider via the {@link #addChangeListener} method.
  *
  * @author Hervé Bitteur
  */
 public class LogSlider
         extends JSlider
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
     // Internal resolution
@@ -43,11 +41,11 @@ public class LogSlider
 
     private static final double doubleUnit = unit; // To speed up
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     // Base of log (generally 2 or 10)
     private final double base;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // LogSlider //
     //-----------//
@@ -101,16 +99,14 @@ public class LogSlider
         //             break;
         //         case VERTICAL   : setBorder (BorderFactory.createEmptyBorder(0,0,0,5));
         //         }
-
         // Create and populate the label table
-        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
+        Hashtable<Integer, JLabel> labelTable = new Hashtable<Integer, JLabel>();
 
         for (int i = min; i <= max; i++) {
             labelTable.put(
                     Integer.valueOf(i * unit),
                     new JLabel(
-                    (i < 0) ? ("1/" + (int) expOf(-i * unit))
-                    : ("" + (int) expOf(i * unit))));
+                    (i < 0) ? ("1/" + (int) expOf(-i * unit)) : ("" + (int) expOf(i * unit))));
         }
 
         setLabelTable(labelTable);
@@ -120,7 +116,7 @@ public class LogSlider
         setSnapToTicks(true);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getDoubleValue //
     //----------------//
@@ -199,19 +195,18 @@ public class LogSlider
         return (int) Math.rint((doubleUnit * Math.log(d)) / Math.log(base));
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Integer resolution = new Constant.Integer(
                 "Values",
                 480,
                 "Number of values between two major ticks");
-
     }
 }

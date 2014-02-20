@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  T a b l e                                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            T a b l e                                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -17,14 +17,14 @@ import java.awt.Rectangle;
 import java.util.Arrays;
 
 /**
- * Interface {@code Table} provides a rectangular table implemented
- * as a single array of desired type (byte, short, int).
+ * Interface {@code Table} provides a rectangular table implemented as a single array
+ * of desired type (byte, short, int).
  *
  * @author Hervé Bitteur
  */
 public interface Table
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Dump the table content, with a title.
@@ -94,14 +94,15 @@ public interface Table
                    int y,
                    int val);
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
+
     //----------//
     // Abstract //
     //----------//
     public abstract class Abstract
-            implements Table
+        implements Table
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Width of the whole data. */
         protected final int width;
@@ -112,9 +113,10 @@ public interface Table
         /** Rectangular region of interest, if any. */
         protected final Rectangle roi;
 
-        //~ Constructors -------------------------------------------------------
-        protected Abstract (int width,
-                            int height,
+        //~ Constructors ---------------------------------------------------------------------------
+
+        protected Abstract (int       width,
+                            int       height,
                             Rectangle roi)
         {
             this.width = width;
@@ -122,7 +124,8 @@ public interface Table
             this.roi = (roi != null) ? new Rectangle(roi) : null;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
+
         @Override
         public void dump (String title)
         {
@@ -133,8 +136,7 @@ public interface Table
         public void fill (int val)
         {
             if (roi == null) {
-                throw new IllegalArgumentException(
-                        "Abstract fill() needs non-null roi");
+                throw new IllegalArgumentException("Abstract fill() needs non-null roi");
             }
 
             // Not very efficient implementation...
@@ -169,12 +171,12 @@ public interface Table
         {
             if ((roi.x < 0) || ((roi.x + roi.width) > width)) {
                 throw new IllegalArgumentException(
-                        "Illegal abscissa range " + roi + " width:" + width);
+                    "Illegal abscissa range " + roi + " width:" + width);
             }
 
             if ((roi.y < 0) || ((roi.y + roi.height) > height)) {
                 throw new IllegalArgumentException(
-                        "Illegal ordinate range " + roi + " height:" + height);
+                    "Illegal ordinate range " + roi + " height:" + height);
             }
         }
     }
@@ -183,14 +185,15 @@ public interface Table
     // Integer //
     //---------//
     public static class Integer
-            extends Abstract
+        extends Abstract
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Underlying array. */
         private final int[] data;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
+
         public Integer (int width,
                         int height)
         {
@@ -198,14 +201,15 @@ public interface Table
             data = new int[width * height];
         }
 
-        protected Integer (Integer table,
+        protected Integer (Integer   table,
                            Rectangle roi)
         {
             super(table.width, table.height, roi);
             data = table.data;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
+
         @Override
         public void fill (int val)
         {
@@ -231,12 +235,7 @@ public interface Table
 
                 for (int y = 0; y < roi.height; y++) {
                     int p = ((y + roi.y) * width) + roi.x;
-                    System.arraycopy(
-                            data,
-                            p,
-                            copy.data,
-                            y * roi.width,
-                            roi.width);
+                    System.arraycopy(data, p, copy.data, y * roi.width, roi.width);
                 }
             }
 
@@ -258,8 +257,7 @@ public interface Table
         public int[] getValues ()
         {
             if (roi != null) {
-                throw new UnsupportedOperationException(
-                        "getValues() not supported on view");
+                throw new UnsupportedOperationException("getValues() not supported on view");
             }
 
             return data;
@@ -291,14 +289,15 @@ public interface Table
     // Short //
     //-------//
     public static class Short
-            extends Abstract
+        extends Abstract
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Underlying array. */
         private final short[] data;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
+
         public Short (int width,
                       int height)
         {
@@ -306,14 +305,15 @@ public interface Table
             data = new short[width * height];
         }
 
-        protected Short (Short table,
+        protected Short (Short     table,
                          Rectangle roi)
         {
             super(table.width, table.height, roi);
             data = table.data;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
+
         @Override
         public void fill (int val)
         {
@@ -339,12 +339,7 @@ public interface Table
 
                 for (int y = 0; y < roi.height; y++) {
                     int p = ((y + roi.y) * width) + roi.x;
-                    System.arraycopy(
-                            data,
-                            p,
-                            copy.data,
-                            y * roi.width,
-                            roi.width);
+                    System.arraycopy(data, p, copy.data, y * roi.width, roi.width);
                 }
             }
 
@@ -366,8 +361,7 @@ public interface Table
         public short[] getValues ()
         {
             if (roi != null) {
-                throw new UnsupportedOperationException(
-                        "getValues() not supported on view");
+                throw new UnsupportedOperationException("getValues() not supported on view");
             }
 
             return data;
@@ -399,14 +393,15 @@ public interface Table
     // UnsignedByte //
     //--------------//
     public static class UnsignedByte
-            extends Abstract
+        extends Abstract
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Underlying array. */
         protected final byte[] data;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
+
         public UnsignedByte (int width,
                              int height)
         {
@@ -415,13 +410,14 @@ public interface Table
         }
 
         protected UnsignedByte (UnsignedByte table,
-                                Rectangle roi)
+                                Rectangle    roi)
         {
             super(table.width, table.height, roi);
             data = table.data;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
+
         @Override
         public void fill (int val)
         {
@@ -447,12 +443,7 @@ public interface Table
 
                 for (int y = 0; y < roi.height; y++) {
                     int p = ((y + roi.y) * width) + roi.x;
-                    System.arraycopy(
-                            data,
-                            p,
-                            copy.data,
-                            y * roi.width,
-                            roi.width);
+                    System.arraycopy(data, p, copy.data, y * roi.width, roi.width);
                 }
             }
 
@@ -474,8 +465,7 @@ public interface Table
         public byte[] getValues ()
         {
             if (roi != null) {
-                throw new UnsupportedOperationException(
-                        "getValues() not supported on view");
+                throw new UnsupportedOperationException("getValues() not supported on view");
             }
 
             return data;

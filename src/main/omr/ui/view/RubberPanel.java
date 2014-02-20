@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           R u b b e r P a n e l                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     R u b b e r P a n e l                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.view;
 
@@ -44,24 +44,19 @@ import javax.swing.event.ChangeListener;
 /**
  * Class {@code RubberPanel} is a combination of two linked entities:
  * a {@link Zoom} and a {@link Rubber}.
- *
  * <p>
- * Its <i>paintComponent</i> method is declared final to ensure that the
- * rendering is done in proper sequence, with the rubber rectangle rendered at
- * the end on top of any other stuff. Any specific rendering required by a
- * subclass is performed by overriding the {@link #render} method.
- *
+ * Its <i>paintComponent</i> method is declared final to ensure that the rendering is done in proper
+ * sequence, with the rubber rectangle rendered at the end on top of any other stuff. Any specific
+ * rendering required by a subclass is performed by overriding the {@link #render} method.
  * <p>
- * The Zoom instance and the Rubber instance can be provided separately,
- * after this RubberPanel has been constructed. This is meant for cases
- * where the same Zoom and Rubber instances are shared by several views, as in
- * the {@link omr.sheet.ui.SheetAssembly} example.
- *
+ * The Zoom instance and the Rubber instance can be provided separately, after this RubberPanel has
+ * been constructed. This is meant for cases where the same Zoom and Rubber instances are shared by
+ * several views, as in the {@link omr.sheet.ui.SheetAssembly} example.
  * <p>
- * When using this class, we have to provide our own Zoom instance, either at
- * construction time by using the proper constructor or later by using the {@link
- * #setZoom} method. The class then registers itself as an observer of the
- * Zoom instance, to be notified when the zoom ratio is modified.
+ * When using this class, we have to provide our own Zoom instance, either at construction time by
+ * using the proper constructor or later by using the {@link #setZoom} method. The class then
+ * registers itself as an observer of the Zoom instance, to be notified when the zoom ratio is
+ * modified.
  *
  * @author Hervé Bitteur
  */
@@ -69,16 +64,13 @@ public class RubberPanel
         extends JPanel
         implements ChangeListener, MouseMonitor, EventSubscriber<UserEvent>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            RubberPanel.class);
+    private static final Logger logger = LoggerFactory.getLogger(RubberPanel.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Current display zoom, if any */
     protected Zoom zoom;
 
@@ -91,7 +83,7 @@ public class RubberPanel
     /** Location Service if any (for Location event) */
     protected SelectionService locationService;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // RubberPanel //
     //-------------//
@@ -123,7 +115,7 @@ public class RubberPanel
         logger.debug("new RubberPanel zoom={} rubber={}", zoom, rubber);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // setRubber //
     //-----------//
@@ -181,20 +173,6 @@ public class RubberPanel
                                  MouseMovement movement)
     {
         // Nothing by default
-    }
-
-    //-------------//
-    // selectPoint //
-    //-------------//
-    /**
-     * Convenient method to simulate a user point selection and focus.
-     *
-     * @param point the point to focus upon
-     */
-    public void selectPoint (Point point)
-    {
-        pointSelected(point, MouseMovement.PRESSING);
-        showFocusLocation(new Rectangle(point), true);
     }
 
     //--------------//
@@ -367,6 +345,20 @@ public class RubberPanel
         }
     }
 
+    //-------------//
+    // selectPoint //
+    //-------------//
+    /**
+     * Convenient method to simulate a user point selection and focus.
+     *
+     * @param point the point to focus upon
+     */
+    public void selectPoint (Point point)
+    {
+        pointSelected(point, MouseMovement.PRESSING);
+        showFocusLocation(new Rectangle(point), true);
+    }
+
     //--------------------//
     // setLocationService //
     //--------------------//
@@ -395,8 +387,7 @@ public class RubberPanel
      */
     public void setLocationService (SelectionService locationService)
     {
-        if ((this.locationService != null)
-            && (this.locationService != locationService)) {
+        if ((this.locationService != null) && (this.locationService != locationService)) {
             this.locationService.unsubscribe(LocationEvent.class, this);
         }
 
@@ -552,10 +543,7 @@ public class RubberPanel
      */
     public void unsubscribe ()
     {
-        logger.debug(
-                "Unsubscribe {} {}",
-                getClass().getSimpleName(),
-                getName());
+        logger.debug("Unsubscribe {} {}", getClass().getSimpleName(), getName());
 
         // Unsubscribe to location events
         if (locationService != null) {
@@ -640,22 +628,19 @@ public class RubberPanel
 
         // Publish the new user-selected location
         if (locationService != null) {
-            locationService.publish(
-                    new LocationEvent(this, hint, movement, new Rectangle(rect)));
+            locationService.publish(new LocationEvent(this, hint, movement, new Rectangle(rect)));
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        PixelCount focusMargin = new PixelCount(
-                20,
-                "Margin visible around a focus");
+        PixelCount focusMargin = new PixelCount(20, "Margin visible around a focus");
     }
 }

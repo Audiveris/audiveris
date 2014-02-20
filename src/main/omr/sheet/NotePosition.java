@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          N o t e P o s i t i o n                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    N o t e P o s i t i o n                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -15,14 +15,14 @@ import omr.grid.StaffInfo;
 import omr.grid.StaffInfo.IndexedLedger;
 
 /**
- * Class {@code NotePosition} handles the precise position of a
- * note-like entity, with respect to its related staff.
+ * Class {@code NotePosition} handles the precise position of a note-like entity,
+ * with respect to its related staff.
  *
  * @author Hervé Bitteur
  */
 public class NotePosition
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The related staff. */
     private final StaffInfo staff;
@@ -33,7 +33,7 @@ public class NotePosition
     /** The closest ledger if any. */
     private final IndexedLedger indexedLedger;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // NotePosition //
     //--------------//
@@ -53,7 +53,7 @@ public class NotePosition
         this.pitchPosition = pitchPosition;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getLedger //
     //-----------//
@@ -96,15 +96,12 @@ public class NotePosition
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
 
-        sb.append(" staff#")
-                .append(staff.getId());
+        sb.append(" staff#").append(staff.getId());
 
-        sb.append(" pitch:")
-                .append(String.format("%.1f", pitchPosition));
+        sb.append(" pitch:").append(String.format("%.1f", pitchPosition));
 
         if (indexedLedger != null) {
-            sb.append(" ledger#")
-                    .append(indexedLedger.ledger.getId());
+            sb.append(" ledger#").append(indexedLedger.ledger.getId());
         }
 
         sb.append("}");

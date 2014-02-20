@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              S i g S o l v e r                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        S i g S o l v e r                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
@@ -50,12 +50,11 @@ import java.util.SortedSet;
  */
 public class SigSolver
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SigSolver.class);
+    private static final Logger logger = LoggerFactory.getLogger(SigSolver.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system */
     @Navigable(false)
     private final SystemInfo system;
@@ -63,7 +62,7 @@ public class SigSolver
     /** The related SIG. */
     private final SIGraph sig;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // SigSolver //
     //-----------//
@@ -80,7 +79,7 @@ public class SigSolver
         this.sig = sig;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // contextualize //
     //---------------//
@@ -113,8 +112,8 @@ public class SigSolver
         flagOverlaps();
         flagHeadInconsistency();
 
-        int modifs; // modifications done in current iteration        
-        int reductions; // Count of reductions performed        
+        int modifs; // modifications done in current iteration
+        int reductions; // Count of reductions performed
         int deletions; // Count of deletions performed
 
         do {
@@ -145,8 +144,7 @@ public class SigSolver
             } while (modifs > 0);
 
             // Remaining exclusions
-            reductions = sig.reduceExclusions()
-                    .size();
+            reductions = sig.reduceExclusions().size();
 
             if (logging) {
                 logger.info("S#{} reductions: {}", system.getId(), reductions);
@@ -245,8 +243,7 @@ public class SigSolver
             // Side is normal?
             HorizontalSide headSide = rel.getHeadSide();
 
-            if (((headSide == LEFT) && (dir > 0))
-                || ((headSide == RIGHT) && (dir < 0))) {
+            if (((headSide == LEFT) && (dir > 0)) || ((headSide == RIGHT) && (dir < 0))) {
                 continue; // It's OK
             }
 
@@ -358,9 +355,7 @@ public class SigSolver
     {
         // All system notes, sorted by abscissa
         List<Inter> allNotes = sig.inters(
-                ShapeSet.shapesOf(
-                        ShapeSet.NoteHeads.getShapes(),
-                        ShapeSet.Notes.getShapes()));
+                ShapeSet.shapesOf(ShapeSet.NoteHeads.getShapes(), ShapeSet.Notes.getShapes()));
         Collections.sort(allNotes, Inter.byAbscissa);
 
         int modifs = 0;
@@ -382,15 +377,9 @@ public class SigSolver
                             logger.info("VIP ledger {}", ledger);
                         }
 
-                        if (!ledgerHasNoteOrLedger(
-                                staff,
-                                index,
-                                ledger,
-                                allNotes)) {
+                        if (!ledgerHasNoteOrLedger(staff, index, ledger, allNotes)) {
                             if (ledger.isVip() || logger.isDebugEnabled()) {
-                                logger.info(
-                                        "Deleting orphan ledger {}",
-                                        ledger);
+                                logger.info("Deleting orphan ledger {}", ledger);
                             }
 
                             sig.removeVertex(ledger);
@@ -543,8 +532,7 @@ public class SigSolver
 
             for (Inter right : inters.subList(i + 1, inters.size())) {
                 // Overlap test beam/beam doesn't work (and is useless in fact)
-                if (left instanceof AbstractBeamInter
-                    && right instanceof AbstractBeamInter) {
+                if (left instanceof AbstractBeamInter && right instanceof AbstractBeamInter) {
                     continue;
                 }
 
@@ -559,10 +547,7 @@ public class SigSolver
                         Set<Relation> rels2 = sig.getAllEdges(right, left);
 
                         if (rels1.isEmpty() && rels2.isEmpty()) {
-                            sig.insertExclusion(
-                                    left,
-                                    right,
-                                    Exclusion.Cause.OVERLAP);
+                            sig.insertExclusion(left, right, Exclusion.Cause.OVERLAP);
                         }
                     }
                 } else if (rightBox.x > xMax) {
@@ -642,9 +627,7 @@ public class SigSolver
                                            List<Inter> allNotes)
     {
         Rectangle ledgerBox = new Rectangle(ledger.getBounds());
-        int interline = system.getSheet()
-                .getScale()
-                .getInterline();
+        int interline = system.getSheet().getScale().getInterline();
         ledgerBox.grow(0, interline); // Very high box, but that's OK
 
         // Check for another ledger on next line
@@ -664,10 +647,7 @@ public class SigSolver
         final int ledgerPitch = StaffInfo.getLedgerPitchPosition(index);
         final int nextPitch = ledgerPitch + Integer.signum(index);
 
-        final List<Inter> notes = sig.intersectedInters(
-                allNotes,
-                GeoOrder.BY_ABSCISSA,
-                ledgerBox);
+        final List<Inter> notes = sig.intersectedInters(allNotes, GeoOrder.BY_ABSCISSA, ledgerBox);
 
         for (Inter inter : notes) {
             final AbstractNoteInter note = (AbstractNoteInter) inter;
@@ -698,10 +678,7 @@ public class SigSolver
                 Inter weaker = (scp < tcp) ? source : target;
 
                 if (weaker.isVip()) {
-                    logger.info(
-                            "Remaining {} deleting weaker {}",
-                            rel.toLongString(sig),
-                            weaker);
+                    logger.info("Remaining {} deleting weaker {}", rel.toLongString(sig), weaker);
                 }
 
                 toRemove.add(weaker);
@@ -722,8 +699,7 @@ public class SigSolver
     {
         contextualize();
 
-        return sig.deleteWeakInters()
-                .size();
+        return sig.deleteWeakInters().size();
     }
 
     //---------------//
@@ -831,10 +807,7 @@ public class SigSolver
 
                 if (portion == forbidden) {
                     if (stem.isVip() || logger.isDebugEnabled()) {
-                        logger.info(
-                                "Cutting rel between {} and {}",
-                                stem,
-                                sig.getEdgeSource(rel));
+                        logger.info("Cutting rel between {} and {}", stem, sig.getEdgeSource(rel));
                     }
 
                     toRemove.add(rel);

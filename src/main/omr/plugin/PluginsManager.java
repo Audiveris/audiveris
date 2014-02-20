@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        P l u g i n s M a n a g e r                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  P l u g i n s M a n a g e r                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.plugin;
 
@@ -21,6 +21,9 @@ import omr.score.ui.ScoreController;
 import omr.score.ui.ScoreDependent;
 
 import omr.sheet.ui.SheetsController;
+
+import omr.step.PluginStep;
+import omr.step.Steps;
 
 import omr.ui.util.SeparableMenu;
 
@@ -44,31 +47,26 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
-import omr.step.PluginStep;
-import omr.step.Steps;
 
 /**
- * Class {@code PluginsManager} handles the collection of application
- * registered plugins.
+ * Class {@code PluginsManager} handles the collection of registered plugins.
+ * <p>
  * Each registered plugin is represented by a menu item.
- * One of these plugins can be set as the default editor plugin and directly
- * launched by the dedicated toolbar button.
- *
- * <p>Any file, with the ".js" extension, found in the
- * <code>plugins</code>
- * folder will lead to the creation of a corresponding Plugin instance.</p>
+ * One of these plugins can be set as the default editor plugin and directly launched by the
+ * dedicated toolbar button.
+ * <p>
+ * Any file, with the ".js" extension, found in the <code>plugins</code> folder will lead to the
+ * creation of a corresponding Plugin instance.</p>
  *
  * @author Hervé Bitteur
  */
 public class PluginsManager
         extends ScoreDependent
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(PluginsManager.class);
 
     /** Singleton. */
@@ -94,18 +92,18 @@ public class PluginsManager
     /** Default plugin id. */
     public static final Param<String> defaultPluginId = new Default();
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The concrete UI menu. */
     private JMenu menu;
 
     /** The sorted collection of registered plugins: ID -> Plugin. */
-    private final Map<String, Plugin> map = new TreeMap<>();
+    private final Map<String, Plugin> map = new TreeMap<String, Plugin>();
 
     /** The default plugin. */
     private Plugin defaultPlugin;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------------//
     // PluginsManager //
@@ -127,8 +125,7 @@ public class PluginsManager
                     Plugin plugin = new Plugin(file);
                     map.put(plugin.getId(), plugin);
                 } catch (Exception ex) {
-                    logger.warn("Could not process plugin file {} [{}]",
-                            file, ex);
+                    logger.warn("Could not process plugin file {} [{}]", file, ex);
                 }
             }
 
@@ -137,67 +134,7 @@ public class PluginsManager
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //------------//
-    // getPlugins //
-    //------------//
-    /**
-     * Report the collection of plugins ids
-     *
-     * @return the various plugins ids
-     */
-    public Collection<String> getPluginIds ()
-    {
-        return map.keySet();
-    }
-
-    //------------------//
-    // getDefaultPlugin //
-    //------------------//
-    /**
-     * Return the default plugin if any.
-     *
-     * @return the default plugin, or null if none is defined
-     */
-    public Plugin getDefaultPlugin ()
-    {
-        return defaultPlugin;
-    }
-
-    //------------------//
-    // setDefaultPlugin //
-    //------------------//
-    /**
-     * Assign the default plugin.
-     */
-    public final void setDefaultPlugin (String pluginId)
-    {
-        Plugin plugin = findDefaultPlugin(pluginId);
-
-        if (!pluginId.isEmpty() && (plugin == null)) {
-            logger.warn("Could not find default plugin {}", pluginId);
-        } else {
-            setDefaultPlugin(plugin);
-        }
-    }
-
-    //------------------//
-    // setDefaultPlugin //
-    //------------------//
-    /**
-     * Assign the default plugin.
-     */
-    public final void setDefaultPlugin (Plugin defaultPlugin)
-    {
-        Plugin oldDefaultPlugin = this.defaultPlugin;
-        this.defaultPlugin = defaultPlugin;
-
-        if (oldDefaultPlugin != null) {
-            PluginStep pluginStep = (PluginStep) Steps.valueOf(Steps.PLUGIN);
-            pluginStep.setPlugin(defaultPlugin);
-        }
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -269,6 +206,66 @@ public class PluginsManager
         }
     }
 
+    //------------------//
+    // setDefaultPlugin //
+    //------------------//
+    /**
+     * Assign the default plugin.
+     */
+    public final void setDefaultPlugin (String pluginId)
+    {
+        Plugin plugin = findDefaultPlugin(pluginId);
+
+        if (!pluginId.isEmpty() && (plugin == null)) {
+            logger.warn("Could not find default plugin {}", pluginId);
+        } else {
+            setDefaultPlugin(plugin);
+        }
+    }
+
+    //------------------//
+    // setDefaultPlugin //
+    //------------------//
+    /**
+     * Assign the default plugin.
+     */
+    public final void setDefaultPlugin (Plugin defaultPlugin)
+    {
+        Plugin oldDefaultPlugin = this.defaultPlugin;
+        this.defaultPlugin = defaultPlugin;
+
+        if (oldDefaultPlugin != null) {
+            PluginStep pluginStep = (PluginStep) Steps.valueOf(Steps.PLUGIN);
+            pluginStep.setPlugin(defaultPlugin);
+        }
+    }
+
+    //------------------//
+    // getDefaultPlugin //
+    //------------------//
+    /**
+     * Return the default plugin if any.
+     *
+     * @return the default plugin, or null if none is defined
+     */
+    public Plugin getDefaultPlugin ()
+    {
+        return defaultPlugin;
+    }
+
+    //------------//
+    // getPlugins //
+    //------------//
+    /**
+     * Report the collection of plugins ids
+     *
+     * @return the various plugins ids
+     */
+    public Collection<String> getPluginIds ()
+    {
+        return map.keySet();
+    }
+
     //-------------------//
     // findDefaultPlugin //
     //-------------------//
@@ -283,24 +280,50 @@ public class PluginsManager
         return null;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.String defaultPlugin = new Constant.String(
-                "",
-                "Name of default plugin");
-
+        Constant.String defaultPlugin = new Constant.String("", "Name of default plugin");
     }
 
-//----------------//
-// MyMenuListener //
-//----------------//
+    //---------//
+    // Default //
+    //---------//
+    private static class Default
+            extends Param<String>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public String getSpecific ()
+        {
+            return constants.defaultPlugin.getValue();
+        }
+
+        @Override
+        public boolean setSpecific (String specific)
+        {
+            if (!getSpecific().equals(specific)) {
+                constants.defaultPlugin.setValue(specific);
+                getInstance().setDefaultPlugin(specific);
+                logger.info("Default plugin is now ''{}''", specific);
+
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    //----------------//
+    // MyMenuListener //
+    //----------------//
     /**
      * Class {@code MyMenuListener} is triggered when menu is entered.
      * This is meant to enable menu items only when a sheet is selected.
@@ -308,7 +331,7 @@ public class PluginsManager
     private class MyMenuListener
             implements MenuListener
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void menuCanceled (MenuEvent e)
@@ -333,34 +356,6 @@ public class PluginsManager
                     menuItem.setEnabled(enabled);
                 }
             }
-        }
-    }
-
-    //---------//
-    // Default //
-    //---------//
-    private static class Default
-            extends Param<String>
-    {
-
-        @Override
-        public String getSpecific ()
-        {
-            return constants.defaultPlugin.getValue();
-        }
-
-        @Override
-        public boolean setSpecific (String specific)
-        {
-            if (!getSpecific().equals(specific)) {
-                constants.defaultPlugin.setValue(specific);
-                getInstance().setDefaultPlugin(specific);
-                logger.info("Default plugin is now ''{}''", specific);
-
-                return true;
-            }
-
-            return false;
         }
     }
 }

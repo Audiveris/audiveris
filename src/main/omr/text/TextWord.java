@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              T e x t W o r d                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        T e x t W o r d                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.text;
 
@@ -28,17 +28,16 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Class {@code TextWord} defines a structure to report all information
- * about an OCR-decoded (or manual) word.
+ * Class {@code TextWord} defines a structure to report all information about an
+ * OCR-decoded (or manual) word.
  *
  * @author Hervé Bitteur
  */
 public class TextWord
         extends TextBasedItem
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(TextWord.class);
 
     /** Comparator based on word size. */
@@ -48,9 +47,7 @@ public class TextWord
         public int compare (TextWord o1,
                             TextWord o2)
         {
-            return Integer.compare(
-                    o1.getValue().length(),
-                    o2.getValue().length());
+            return Integer.compare(o1.getValue().length(), o2.getValue().length());
         }
     };
 
@@ -65,7 +62,7 @@ public class TextWord
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Containing TextLine. */
     private TextLine textLine;
@@ -74,7 +71,7 @@ public class TextWord
     private final FontInfo fontInfo;
 
     /** Chars that compose this word. */
-    private final List<TextChar> chars = new ArrayList<>();
+    private final List<TextChar> chars = new ArrayList<TextChar>();
 
     /** Underlying glyph, if known. */
     private Glyph glyph;
@@ -85,7 +82,7 @@ public class TextWord
     /** Possible chord info, if any. */
     private ChordInfo chordInfo;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------//
     // TextWord //
@@ -141,20 +138,7 @@ public class TextWord
         this.fontInfo = fontInfo;
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //---------//
-    // addChar //
-    //---------//
-    /**
-     * Append a char descriptor.
-     *
-     * @param ch the char descriptor
-     */
-    public void addChar (TextChar ch)
-    {
-        chars.add(ch);
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //------------------//
     // createManualWord //
@@ -177,11 +161,7 @@ public class TextWord
         TextWord word = new TextWord(
                 box,
                 value,
-                new Line2D.Double(
-                box.x,
-                box.y + box.height,
-                box.x + box.width,
-                box.y + box.height),
+                new Line2D.Double(box.x, box.y + box.height, box.x + box.width, box.y + box.height),
                 100, // Confidence
                 FontInfo.createDefault(fontSize),
                 null);
@@ -189,6 +169,51 @@ public class TextWord
         word.setGlyph(glyph);
 
         return word;
+    }
+
+    //---------//
+    // mergeOf //
+    //---------//
+    /**
+     * Return a word which results from the merge of the provided words.
+     *
+     * @param words the words to merge
+     * @return the compound word
+     */
+    public static TextWord mergeOf (TextWord... words)
+    {
+        List<TextChar> chars = new ArrayList<TextChar>();
+        StringBuilder sb = new StringBuilder();
+
+        for (TextWord word : words) {
+            chars.addAll(word.getChars());
+            sb.append(word.getValue());
+        }
+
+        // Use font info of first word. What else?
+        FontInfo fontInfo = words[0].getFontInfo();
+        TextLine line = words[0].textLine;
+
+        return new TextWord(
+                baselineOf(Arrays.asList(words)),
+                sb.toString(),
+                fontInfo,
+                confidenceOf(Arrays.asList(words)),
+                chars,
+                line);
+    }
+
+    //---------//
+    // addChar //
+    //---------//
+    /**
+     * Append a char descriptor.
+     *
+     * @param ch the char descriptor
+     */
+    public void addChar (TextChar ch)
+    {
+        chars.add(ch);
     }
 
     //----------//
@@ -243,63 +268,6 @@ public class TextWord
         return glyph;
     }
 
-    //--------------------//
-    // getPreciseFontSize //
-    //--------------------//
-    /**
-     * Report the best computed font size for this word, likely to
-     * precisely match the word bounds.
-     *
-     * <p>The size appears to be a bit larger than OCR detected side, by a
-     * factor in the range 1.1 - 1.2. TODO: To be improved, using font
-     * attributes for better font selection</p>
-     *
-     * @return the computed font size
-     */
-    public float getPreciseFontSize ()
-    {
-        if (preciseFontSize == null) {
-            preciseFontSize = TextFont.computeFontSize(
-                    getValue(),
-                    fontInfo,
-                    getBounds().getSize());
-        }
-
-        return preciseFontSize;
-    }
-
-    //---------//
-    // mergeOf //
-    //---------//
-    /**
-     * Return a word which results from the merge of the provided words.
-     *
-     * @param words the words to merge
-     * @return the compound word
-     */
-    public static TextWord mergeOf (TextWord... words)
-    {
-        List<TextChar> chars = new ArrayList<>();
-        StringBuilder sb = new StringBuilder();
-
-        for (TextWord word : words) {
-            chars.addAll(word.getChars());
-            sb.append(word.getValue());
-        }
-
-        // Use font info of first word. What else?
-        FontInfo fontInfo = words[0].getFontInfo();
-        TextLine line = words[0].textLine;
-
-        return new TextWord(
-                baselineOf(Arrays.asList(words)),
-                sb.toString(),
-                fontInfo,
-                confidenceOf(Arrays.asList(words)),
-                chars,
-                line);
-    }
-
     //------------------//
     // getInternalValue //
     //------------------//
@@ -317,8 +285,30 @@ public class TextWord
      */
     public int getLength ()
     {
-        return getValue()
-                .length();
+        return getValue().length();
+    }
+
+    //--------------------//
+    // getPreciseFontSize //
+    //--------------------//
+    /**
+     * Report the best computed font size for this word, likely to
+     * precisely match the word bounds.
+     *
+     * <p>
+     * The size appears to be a bit larger than OCR detected side, by a
+     * factor in the range 1.1 - 1.2. TODO: To be improved, using font
+     * attributes for better font selection</p>
+     *
+     * @return the computed font size
+     */
+    public float getPreciseFontSize ()
+    {
+        if (preciseFontSize == null) {
+            preciseFontSize = TextFont.computeFontSize(getValue(), fontInfo, getBounds().getSize());
+        }
+
+        return preciseFontSize;
     }
 
     //-------------//
@@ -453,12 +443,10 @@ public class TextWord
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
 
-        sb.append(" ")
-                .append(getFontInfo());
+        sb.append(" ").append(getFontInfo());
 
         if (getGlyph() != null) {
-            sb.append(" ")
-                    .append(getGlyph().idString());
+            sb.append(" ").append(getGlyph().idString());
         }
 
         return sb.toString();
@@ -480,8 +468,7 @@ public class TextWord
 
         String sbValue = sb.toString();
 
-        if (!getInternalValue()
-                .equals(sbValue)) {
+        if (!getInternalValue().equals(sbValue)) {
             logger.debug(
                     "Word at {} updated from ''{}'' to ''{}''",
                     getBounds(),

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              L i v e P a r a m                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        L i v e P a r a m                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -22,12 +22,12 @@ package omr.util;
 public class LiveParam<E>
         extends Param<E>
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Actually used parameter, if any. */
     protected E actual;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //-----------//
     // LiveParam //
@@ -42,15 +42,14 @@ public class LiveParam<E>
         super(parent);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //-------------//
     // needsUpdate //
     //-------------//
     public boolean needsUpdate ()
     {
-        return !getTarget()
-                .equals(actual);
+        return !getTarget().equals(actual);
     }
 
     //-----------//
@@ -70,8 +69,7 @@ public class LiveParam<E>
         StringBuilder sb = new StringBuilder(super.internalsString());
 
         if (actual != null) {
-            sb.append(" actual:")
-                    .append(actual);
+            sb.append(" actual:").append(actual);
         }
 
         return sb.toString();

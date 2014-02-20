@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         R e s i z e d S y m b o l                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   R e s i z e d S y m b o l                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -17,8 +17,7 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 
 /**
- * Class {@code ResizedSymbol} is a {@link ShapeSymbol} with a ratio
- * different from 1.
+ * Class {@code ResizedSymbol} is a {@link ShapeSymbol} with a ratio different from 1.
  * This is meant for shapes like G_CLEF_SMALL and F_CLEF_SMALL.
  *
  * @author Hervé Bitteur
@@ -26,12 +25,12 @@ import java.awt.geom.AffineTransform;
 public class ResizedSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The display ratio */
     protected final double ratio;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Create a non decorated standard ResizedSymbol with the provided
      * shape and codes.
@@ -66,7 +65,7 @@ public class ResizedSymbol
         this.ratio = ratio;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -84,8 +83,7 @@ public class ResizedSymbol
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
 
-        sb.append(" ratio:")
-                .append((float) ratio);
+        sb.append(" ratio:").append((float) ratio);
 
         return sb.toString();
     }

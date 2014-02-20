@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            W e b B r o w s e r                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Brenton Partridge 2007.  All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      W e b B r o w s e r                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright (C) Brenton Partridge 2007.  All ri4hts reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.util;
 
@@ -18,18 +18,18 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.Desktop;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 
 /**
- * Class {@code WebBrowser} gathers functionality to
- * browse a webpage in an external web browser. Uses
- * reflection for compatibility with Java 5 and Mac OS X.
+ * Class {@code WebBrowser} gathers functionality to browse a webpage in an external
+ * web browser.
+ * It uses reflection for compatibility with Java 5 and Mac OS X.
  *
- * <p>Nota: Since using Desktop.browse() on a file under Windows crashes JVM 6,
- * this feature is currently delegated to an external and free utility named
- * BareBonesBrowserLaunch, written by Dem Pilafian.
+ * <p>
+ * Nota: Since using Desktop.browse() on a file under Windows crashes JVM 6, this feature is
+ * currently delegated to an external and free utility named BareBonesBrowserLaunch, written by Dem
+ * Pilafian.
  * See its web site on http://www.centerkey.com/java/browser/
  *
  * @author Brenton Partridge
@@ -38,20 +38,20 @@ import java.net.URI;
  */
 public class WebBrowser
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(WebBrowser.class);
 
     /** Major browsers. */
     private static final String[] browsers = {
-        "firefox", "opera", "konqueror", "epiphany", "mozilla", "netscape"
+        "firefox", "opera", "konqueror", "epiphany",
+        "mozilla", "netscape"
     };
 
     /** Singleton instance, initially null. */
     private static WebBrowser instance;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //------------//
     // WebBrowser //
@@ -60,7 +60,7 @@ public class WebBrowser
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // getBrowser //
     //------------//
@@ -105,8 +105,7 @@ public class WebBrowser
         String osName = System.getProperty("os.name");
 
         if (true) {
-            logger.info(
-                    "Desktop.browse {} with {} on {}", uri, this, osName);
+            logger.info("Desktop.browse {} with {} on {}", uri, this, osName);
 
             try {
                 Desktop desktop = Desktop.getDesktop();
@@ -143,21 +142,15 @@ public class WebBrowser
         try {
             if (WellKnowns.MAC_OS_X) {
                 Class fileMgr = Class.forName("com.apple.eio.FileManager");
-                Method openURL = fileMgr.getDeclaredMethod(
-                        "openURL",
-                        new Class[]{String.class});
+                Method openURL = fileMgr.getDeclaredMethod("openURL", new Class[]{String.class});
                 openURL.invoke(null, new Object[]{url});
             } else if (WellKnowns.WINDOWS) {
-                Runtime.getRuntime()
-                        .exec("rundll32 url.dll,FileProtocolHandler " + url);
+                Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
             } else { //assume Unix or Linux
 
                 for (String browser : browsers) {
-                    if (Runtime.getRuntime()
-                            .exec(new String[]{"which", browser})
-                            .waitFor() == 0) {
-                        Runtime.getRuntime()
-                                .exec(new String[]{browser, url});
+                    if (Runtime.getRuntime().exec(new String[]{"which", browser}).waitFor() == 0) {
+                        Runtime.getRuntime().exec(new String[]{browser, url});
 
                         return;
                     }
@@ -165,10 +158,7 @@ public class WebBrowser
 
                 logger.warn("Could not find any suitable web browser");
             }
-        } catch (ClassNotFoundException | NoSuchMethodException |
-                SecurityException | IllegalAccessException |
-                IllegalArgumentException | InvocationTargetException |
-                IOException | InterruptedException ex) {
+        } catch (Exception ex) {
             logger.warn("Could not launch browser", ex);
         }
     }
@@ -189,8 +179,7 @@ public class WebBrowser
                 public boolean isSupported ()
                 {
                     try {
-                        Method supported = desktopClass.getMethod(
-                                "isDesktopSupported");
+                        Method supported = desktopClass.getMethod("isDesktopSupported");
 
                         return (Boolean) supported.invoke(null);
                     } catch (Exception e) {
@@ -211,8 +200,7 @@ public class WebBrowser
         //If it's not supported, see if we have the Mac FileManager
         if (WellKnowns.MAC_OS_X) {
             try {
-                final Class<?> fileMgr = Class.forName(
-                        "com.apple.eio.FileManager");
+                final Class<?> fileMgr = Class.forName("com.apple.eio.FileManager");
 
                 return new WebBrowser()
                 {

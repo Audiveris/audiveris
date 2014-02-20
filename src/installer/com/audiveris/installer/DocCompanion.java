@@ -44,7 +44,7 @@ public class DocCompanion
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
             DocCompanion.class);
 

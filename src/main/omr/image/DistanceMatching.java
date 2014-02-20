@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       D i s t a n c e M a t c h i n g                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 D i s t a n c e M a t c h i n g                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -15,14 +15,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code DistanceMatching} is a basic implementation of image
- * matching based on distances.
+ * Class {@code DistanceMatching} is a basic implementation of image matching based on
+ * distances.
  *
  * @author Hervé Bitteur
  */
 public class DistanceMatching
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * The DistanceTransform image.
@@ -31,7 +31,7 @@ public class DistanceMatching
      */
     private final DistanceTable distances;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------------//
     // DistanceMatching //
     //-----------------//
@@ -46,7 +46,7 @@ public class DistanceMatching
         this.distances = distances;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // matchAll //
     //----------//
@@ -61,10 +61,8 @@ public class DistanceMatching
     public List<PixelDistance> matchAll (Template template,
                                          double maxDistance)
     {
-        final int scanWidth = distances.getWidth()
-                              - template.getWidth();
-        final int scanHeight = distances.getHeight()
-                               - template.getHeight();
+        final int scanWidth = distances.getWidth() - template.getWidth();
+        final int scanHeight = distances.getHeight() - template.getHeight();
         final List<PixelDistance> locations = new ArrayList<PixelDistance>();
 
         for (int x = 0; x < scanWidth; x++) {

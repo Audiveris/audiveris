@@ -1,22 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          B a s i c S e c t i o n                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    B a s i c S e c t i o n                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag;
 
-import ij.process.ByteProcessor;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
 
 import omr.graph.BasicVertex;
-
 
 import omr.math.Barycenter;
 import omr.math.BasicLine;
@@ -28,6 +26,8 @@ import omr.run.Run;
 
 import omr.ui.Colors;
 import omr.ui.util.UIUtil;
+
+import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,25 +57,22 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
- * Class {@code BasicSection} is a basic implementation of {@link
- * Section}.
+ * Class {@code BasicSection} is a basic implementation of {@link Section}.
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "section")
 public class BasicSection
-    extends BasicVertex<Lag, Section>
-    implements Section
+        extends BasicVertex<Lag, Section>
+        implements Section
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
-        BasicSection.class);
+            BasicSection.class);
 
-    //~ Instance fields --------------------------------------------------------
-
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Position of first run */
     @XmlAttribute(name = "first-pos")
     private int firstPos;
@@ -129,8 +126,7 @@ public class BasicSection
     /** Approximating oriented line for this section */
     protected Line orientedLine;
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // BasicSection //
     //--------------//
@@ -141,7 +137,19 @@ public class BasicSection
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //--------------------//
+    // addOppositeSection //
+    //--------------------//
+    @Override
+    public void addOppositeSection (Section otherSection)
+    {
+        if (oppositeSections == null) {
+            oppositeSections = new HashSet<Section>();
+        }
+
+        oppositeSections.add(otherSection);
+    }
 
     //---------------//
     // allocateTable //
@@ -162,57 +170,6 @@ public class BasicSection
         }
 
         return table;
-    }
-
-    //----------------//
-    // drawingOfTable //
-    //----------------//
-    /**
-     * Printout the filled drawing table
-     *
-     * @param table the filled table
-     * @param box   the table limits in the image
-     */
-    public static String drawingOfTable (char[][]  table,
-                                         Rectangle box)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("%n"));
-
-        sb.append(
-            String.format("xMin=%d, xMax=%d%n", box.x, (box.x + box.width) - 1));
-        sb.append(
-            String.format(
-                "yMin=%d, yMax=%d%n",
-                box.y,
-                (box.y + box.height) - 1));
-
-        for (int iy = 0; iy < table.length; iy++) {
-            sb.append(String.format("%d:", iy + box.y));
-
-            char[] line = table[iy];
-
-            for (int ix = 0; ix < line.length; ix++) {
-                sb.append(line[ix]);
-            }
-
-            sb.append(String.format("%n"));
-        }
-
-        return sb.toString();
-    }
-
-    //--------------------//
-    // addOppositeSection //
-    //--------------------//
-    @Override
-    public void addOppositeSection (Section otherSection)
-    {
-        if (oppositeSections == null) {
-            oppositeSections = new HashSet<Section>();
-        }
-
-        oppositeSections.add(otherSection);
     }
 
     //--------//
@@ -244,10 +201,8 @@ public class BasicSection
             return 0;
         }
 
-        final Point ref = this.getBounds()
-                              .getLocation();
-        final Point otherRef = other.getBounds()
-                                    .getLocation();
+        final Point ref = this.getBounds().getLocation();
+        final Point otherRef = other.getBounds().getLocation();
 
         // Are x values different?
         final int dx = ref.x - otherRef.x;
@@ -288,13 +243,12 @@ public class BasicSection
         invalidateCache();
 
         logger.debug(
-            "Parameters of {} maxRunLength={} meanRunLength={}" +
-            " weight={} foreWeight={}",
-            this,
-            getMaxRunLength(),
-            getMeanRunLength(),
-            weight,
-            foreWeight);
+                "Parameters of {} maxRunLength={} meanRunLength={}" + " weight={} foreWeight={}",
+                this,
+                getMaxRunLength(),
+                getMeanRunLength(),
+                weight,
+                foreWeight);
     }
 
     //----------//
@@ -304,8 +258,7 @@ public class BasicSection
     public boolean contains (int x,
                              int y)
     {
-        return getPolygon()
-                   .contains(x, y);
+        return getPolygon().contains(x, y);
     }
 
     //----------//
@@ -313,7 +266,7 @@ public class BasicSection
     //----------//
     @Override
     public void cumulate (Barycenter barycenter,
-                          Rectangle  absRoi)
+                          Rectangle absRoi)
     {
         if (barycenter == null) {
             throw new IllegalArgumentException("Barycenter is null");
@@ -338,8 +291,7 @@ public class BasicSection
 
             // Take only the pixels contained by the oriented roi
             int pos = firstPos - 1;
-            int posMax = Math.min(firstPos + runs.size(), oRoi.y + oRoi.height) -
-                         1;
+            int posMax = Math.min(firstPos + runs.size(), oRoi.y + oRoi.height) - 1;
             int coordMax = (oRoi.x + oRoi.width) - 1;
 
             for (Run run : runs) {
@@ -395,13 +347,10 @@ public class BasicSection
             // Take only the pixels contained by the absolute roi
             Rectangle oRoi = orientation.oriented(roi);
             final int pMin = oRoi.y;
-            final int pMax = -1 +
-                             Math.min(
-                firstPos + runs.size(),
-                oRoi.y + oRoi.height);
+            final int pMax = -1 + Math.min(firstPos + runs.size(), oRoi.y + oRoi.height);
             final int cMin = oRoi.x;
             final int cMax = (oRoi.x + oRoi.width) - 1;
-            int       p = firstPos - 1;
+            int p = firstPos - 1;
 
             for (Run run : runs) {
                 p++;
@@ -442,9 +391,42 @@ public class BasicSection
         // Determine the absolute bounds
         Rectangle box = getBounds();
 
-        char[][]  table = allocateTable(box);
+        char[][] table = allocateTable(box);
         fillTable(table, box);
         drawingOfTable(table, box);
+    }
+
+    //----------------//
+    // drawingOfTable //
+    //----------------//
+    /**
+     * Printout the filled drawing table
+     *
+     * @param table the filled table
+     * @param box   the table limits in the image
+     */
+    public static String drawingOfTable (char[][] table,
+                                         Rectangle box)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%n"));
+
+        sb.append(String.format("xMin=%d, xMax=%d%n", box.x, (box.x + box.width) - 1));
+        sb.append(String.format("yMin=%d, yMax=%d%n", box.y, (box.y + box.height) - 1));
+
+        for (int iy = 0; iy < table.length; iy++) {
+            sb.append(String.format("%d:", iy + box.y));
+
+            char[] line = table[iy];
+
+            for (int ix = 0; ix < line.length; ix++) {
+                sb.append(line[ix]);
+            }
+
+            sb.append(String.format("%n"));
+        }
+
+        return sb.toString();
     }
 
     //-----------//
@@ -452,7 +434,7 @@ public class BasicSection
     //-----------//
     @Override
     public void fillImage (ByteProcessor buf,
-                           Rectangle   box)
+                           Rectangle box)
     {
         if (isVertical()) {
             int x = getFirstPos() - box.x;
@@ -481,7 +463,7 @@ public class BasicSection
     // fillTable //
     //-----------//
     @Override
-    public void fillTable (char[][]  table,
+    public void fillTable (char[][] table,
                            Rectangle box)
     {
         // Determine the bounds
@@ -555,8 +537,7 @@ public class BasicSection
     @Override
     public double getAspect (Orientation orientation)
     {
-        return (double) getLength(orientation) / (double) getThickness(
-            orientation);
+        return (double) getLength(orientation) / (double) getThickness(orientation);
     }
 
     //-----------//
@@ -565,8 +546,7 @@ public class BasicSection
     @Override
     public Rectangle getBounds ()
     {
-        return getPolygon()
-                   .getBounds(); // This is always a fresh copy of rectangle
+        return getPolygon().getBounds(); // This is always a fresh copy of rectangle
     }
 
     //-------------//
@@ -577,7 +557,7 @@ public class BasicSection
     {
         if (centroid == null) {
             Point orientedPoint = new Point(0, 0);
-            int   y = firstPos;
+            int y = firstPos;
 
             for (Run run : runs) {
                 final int length = run.getLength();
@@ -837,8 +817,7 @@ public class BasicSection
     @Override
     public PathIterator getPathIterator ()
     {
-        return getPolygon()
-                   .getPathIterator(null);
+        return getPolygon().getPathIterator(null);
     }
 
     //------------//
@@ -869,8 +848,8 @@ public class BasicSection
 
         if (barycenter.getWeight() != 0) {
             return new Point(
-                (int) Math.rint(barycenter.getX()),
-                (int) Math.rint(barycenter.getY()));
+                    (int) Math.rint(barycenter.getX()),
+                    (int) Math.rint(barycenter.getY()));
         } else {
             return null;
         }
@@ -952,12 +931,10 @@ public class BasicSection
         }
 
         // Proper source section
-        Section source = getSources()
-                             .get(getInDegree() - 1);
+        Section source = getSources().get(getInDegree() - 1);
 
         // Browse till we get to this as target
-        for (Iterator<Section> li = source.getTargets()
-                                          .iterator(); li.hasNext();) {
+        for (Iterator<Section> li = source.getTargets().iterator(); li.hasNext();) {
             Section section = li.next();
 
             if (section == this) {
@@ -985,13 +962,11 @@ public class BasicSection
         }
 
         // Proper source section
-        Section source = getSources()
-                             .get(0);
+        Section source = getSources().get(0);
 
         // Browse till we get to this as target
-        for (ListIterator<Section> li = source.getTargets()
-                                              .listIterator(
-            source.getOutDegree()); li.hasPrevious();) {
+        for (ListIterator<Section> li = source.getTargets().listIterator(source.getOutDegree());
+                li.hasPrevious();) {
             Section section = li.previous();
 
             if (section == this) {
@@ -1014,8 +989,7 @@ public class BasicSection
     @Override
     public boolean intersects (Rectangle rect)
     {
-        return getPolygon()
-                   .intersects(rect);
+        return getPolygon().intersects(rect);
     }
 
     //-------//
@@ -1083,12 +1057,10 @@ public class BasicSection
         }
 
         // Proper target section
-        Section target = getTargets()
-                             .get(getOutDegree() - 1);
+        Section target = getTargets().get(getOutDegree() - 1);
 
         // Browse till we get to this as source
-        for (Iterator<Section> li = target.getSources()
-                                          .iterator(); li.hasNext();) {
+        for (Iterator<Section> li = target.getSources().iterator(); li.hasNext();) {
             Section section = li.next();
 
             if (section == this) {
@@ -1116,13 +1088,11 @@ public class BasicSection
         }
 
         // Proper target section
-        Section target = getTargets()
-                             .get(getOutDegree() - 1);
+        Section target = getTargets().get(getOutDegree() - 1);
 
         // Browse till we get to this as source
-        for (ListIterator<Section> li = target.getSources()
-                                              .listIterator(
-            target.getInDegree()); li.hasPrevious();) {
+        for (ListIterator<Section> li = target.getSources().listIterator(target.getInDegree());
+                li.hasPrevious();) {
             Section section = li.previous();
 
             if (section == this) {
@@ -1159,20 +1129,19 @@ public class BasicSection
     //--------//
     @Override
     public boolean render (Graphics g,
-                           boolean  drawBorders,
-                           Color    specificColor)
+                           boolean drawBorders,
+                           Color specificColor)
     {
         Rectangle clip = g.getClipBounds();
         Rectangle rect = getBounds();
-        Color     oldColor = g.getColor();
+        Color oldColor = g.getColor();
 
         if ((clip == null) || clip.intersects(rect)) {
             if (specificColor != null) {
                 g.setColor(specificColor);
             } else {
                 // Default section color
-                Color color = isVertical() ? Colors.GRID_VERTICAL
-                              : Colors.GRID_HORIZONTAL;
+                Color color = isVertical() ? Colors.GRID_VERTICAL : Colors.GRID_HORIZONTAL;
 
                 // Use color defined for section glyph shape, if any
                 if (glyph != null) {
@@ -1193,10 +1162,7 @@ public class BasicSection
             // Draw polygon borders if so desired
             if (drawBorders) {
                 g.setColor(Color.black);
-                g.drawPolygon(
-                    polygon.xpoints,
-                    polygon.ypoints,
-                    polygon.npoints);
+                g.drawPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
             }
 
             g.setColor(oldColor);
@@ -1217,7 +1183,7 @@ public class BasicSection
         Rectangle rect = getBounds();
 
         if ((clip == null) || clip.intersects(rect)) {
-            Graphics2D   g2 = (Graphics2D) g;
+            Graphics2D g2 = (Graphics2D) g;
             final Stroke oldStroke = UIUtil.setAbsoluteStroke(g2, 1f);
             g.setColor(Color.white);
             g.fillPolygon(polygon.xpoints, polygon.ypoints, polygon.npoints);
@@ -1271,7 +1237,7 @@ public class BasicSection
                 glyph.setVip();
             }
         }
-        
+
         this.glyph = glyph;
     }
 
@@ -1280,6 +1246,7 @@ public class BasicSection
     //----------//
     /**
      * (package access from graph)
+     *
      * @param lag
      */
     @Override
@@ -1326,8 +1293,7 @@ public class BasicSection
             sb.append("?");
         }
 
-        sb.append("#")
-          .append(getId());
+        sb.append("#").append(getId());
 
         sb.append(internalsString());
 
@@ -1344,8 +1310,8 @@ public class BasicSection
     {
         // Get the coord/pos equivalent of dx/dy vector
         Point cp = orientation.oriented(vector);
-        int   dc = cp.x;
-        int   dp = cp.y;
+        int dc = cp.x;
+        int dp = cp.y;
 
         // Apply the needed modifications
         firstPos += dp;
@@ -1367,10 +1333,10 @@ public class BasicSection
      */
     protected Polygon computePolygon ()
     {
-        final int   maxNb = 1 + (4 * getRunCount()); // Upper value
+        final int maxNb = 1 + (4 * getRunCount()); // Upper value
         final int[] xx = new int[maxNb];
         final int[] yy = new int[maxNb];
-        int         idx = 0; // Current filling index in xx & yy arrays
+        int idx = 0; // Current filling index in xx & yy arrays
 
         if (isVertical()) {
             idx = populatePolygon(yy, xx, idx, 1);
@@ -1394,8 +1360,7 @@ public class BasicSection
         StringBuilder sb = new StringBuilder(super.internalsString());
 
         if (oppositeSections != null) {
-            sb.append("/")
-              .append(oppositeSections.size());
+            sb.append("/").append(oppositeSections.size());
         }
 
         //        sb.append(" fPos=")
@@ -1421,12 +1386,10 @@ public class BasicSection
         }
 
         if (glyph != null) {
-            sb.append(" ")
-              .append(glyph.idString());
+            sb.append(" ").append(glyph.idString());
 
             if (glyph.getShape() != null) {
-                sb.append(":")
-                  .append(glyph.getShape());
+                sb.append(":").append(glyph.getShape());
             }
         }
 
@@ -1491,8 +1454,8 @@ public class BasicSection
      */
     private int populatePolygon (int[] xpoints,
                                  int[] ypoints,
-                                 int   index,
-                                 int   dir)
+                                 int index,
+                                 int dir)
     {
         // Precise delimitating points
         int runNb = getRunCount();
@@ -1507,7 +1470,7 @@ public class BasicSection
             // +----------------------------+
             // +--+-------------------------+
             //    +----------------------+--+
-            //    +----------------------+   
+            //    +----------------------+
             //
             // Order of the 4 angle points for a run is
             // Vertical lag:    Horizontal lag:
@@ -1540,8 +1503,7 @@ public class BasicSection
 
         if (dir < 0) {
             // Finish with starting point
-            xpoints[index] = runs.get(0)
-                                 .getStart();
+            xpoints[index] = runs.get(0).getStart();
             ypoints[index] = getFirstPos();
             index++;
         }
@@ -1549,8 +1511,7 @@ public class BasicSection
         return index;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
@@ -1558,9 +1519,9 @@ public class BasicSection
      * Meant for JAXB handling of Section interface
      */
     public static class Adapter
-        extends XmlAdapter<BasicSection, Section>
+            extends XmlAdapter<BasicSection, Section>
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public BasicSection marshal (Section s)

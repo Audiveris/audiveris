@@ -1,20 +1,19 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      S y m b o l G l y p h B o a r d                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                S y m b o l G l y p h B o a r d                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
 import omr.glyph.Shape;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
-import omr.text.TextRole;
 
 import omr.score.entity.Text.CreatorText.CreatorType;
 import omr.score.entity.TimeRational;
@@ -27,9 +26,11 @@ import omr.selection.UserEvent;
 
 import omr.sheet.ui.SheetsController;
 
+import omr.text.TextRole;
 import omr.text.TextRoleInfo;
 import omr.text.TextWord;
 
+import omr.ui.field.LCheckBox;
 import omr.ui.field.LComboBox;
 import omr.ui.field.LDoubleField;
 import omr.ui.field.LIntegerField;
@@ -48,18 +49,16 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import omr.ui.field.LCheckBox;
 
 /**
- * Class {@code SymbolGlyphBoard} defines an extended glyph board,
- * with characteristics (pitch position, stem number, etc) that are
- * specific to a symbol, and an additional symbol glyph spinner.
+ * Class {@code SymbolGlyphBoard} defines an extended glyph board, with characteristics
+ * (pitch position, stem number, etc) that are specific to a symbol, and an additional
+ * symbol glyph spinner.
  * <ul>
- * <li>A <b>symbolSpinner</b> to browse through all glyphs that are
- * considered as symbols, that is built from aggregation of contiguous
- * sections, or by combination of other symbols.
- * Glyphs whose shape is set to {@link omr.glyph.Shape#NOISE}, that is too
- * small glyphs, are not included in this spinner.</ul>
+ * <li>A <b>symbolSpinner</b> to browse through all glyphs that are considered as symbols, that is
+ * built from aggregation of contiguous sections, or by combination of other symbols.
+ * Glyphs whose shape is set to {@link omr.glyph.Shape#NOISE}, that is too small glyphs, are not
+ * included in this spinner.</ul>
  *
  * <h4>Layout of an instance of SymbolGlyphBoard:<br/>
  * <img src="doc-files/SymbolGlyphBoard.png"/>
@@ -71,13 +70,11 @@ public class SymbolGlyphBoard
         extends GlyphBoard
         implements ActionListener
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SymbolGlyphBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolGlyphBoard.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Numerator of time signature */
     private final LIntegerField timeNum;
 
@@ -104,9 +101,7 @@ public class SymbolGlyphBoard
             "%.3f");
 
     /** Glyph characteristics : vip */
-    private final LCheckBox vip = new LCheckBox(
-            "Vip",
-            "Is this glyph flagged as VIP?");
+    private final LCheckBox vip = new LCheckBox("Vip", "Is this glyph flagged as VIP?");
 
     /** Glyph characteristics : normalized weight */
     private final LDoubleField weight = new LDoubleField(
@@ -116,11 +111,7 @@ public class SymbolGlyphBoard
             "%.3f");
 
     /** Glyph characteristics : normalized width */
-    private final LDoubleField width = new LDoubleField(
-            false,
-            "Width",
-            "Normalized width",
-            "%.3f");
+    private final LDoubleField width = new LDoubleField(false, "Width", "Normalized width", "%.3f");
 
     /** Glyph characteristics : normalized height */
     private final LDoubleField height = new LDoubleField(
@@ -135,7 +126,7 @@ public class SymbolGlyphBoard
     /** To avoid unwanted events */
     private boolean selfUpdatingText;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // SymbolGlyphBoard //
     //------------------//
@@ -165,18 +156,12 @@ public class SymbolGlyphBoard
 
         // Additional combo for text role
         paramAction = new ParamAction();
-        roleCombo = new LComboBox<>(
-                "Role",
-                "Role of the Text",
-                TextRole.values());
+        roleCombo = new LComboBox<TextRole>("Role", "Role of the Text", TextRole.values());
         roleCombo.getField().setMaximumRowCount(TextRole.values().length);
         roleCombo.addActionListener(paramAction);
 
         // Additional combo for text type
-        typeCombo = new LComboBox<>(
-                "Type",
-                "Type of the Text",
-                CreatorType.values());
+        typeCombo = new LComboBox<CreatorType>("Type", "Type of the Text", CreatorType.values());
         typeCombo.addActionListener(paramAction);
 
         // Confidence and Text fields
@@ -191,12 +176,13 @@ public class SymbolGlyphBoard
         defineSpecificLayout();
 
         // Needed to process user input when RETURN/ENTER is pressed
-        getComponent().
-                getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).
-                put(KeyStroke.getKeyStroke("ENTER"), "TextAction");
+        getComponent().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
+                KeyStroke.getKeyStroke("ENTER"),
+                "TextAction");
         getComponent().getActionMap().put("TextAction", paramAction);
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -210,8 +196,7 @@ public class SymbolGlyphBoard
     {
         if (vip.getField() == e.getSource()) {
             final JCheckBox box = vip.getField();
-            final Glyph glyph = (Glyph) getSelectionService()
-                    .getSelection(GlyphEvent.class);
+            final Glyph glyph = (Glyph) getSelectionService().getSelection(GlyphEvent.class);
 
             if (glyph != null) {
                 if (!glyph.isVip()) {
@@ -223,7 +208,6 @@ public class SymbolGlyphBoard
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//
@@ -252,12 +236,9 @@ public class SymbolGlyphBoard
 
                 // Fill symbol characteristics
                 if (glyph != null) {
-                    vip.getLabel()
-                            .setEnabled(true);
-                    vip.getField()
-                            .setEnabled(!glyph.isVip());
-                    vip.getField()
-                            .setSelected(glyph.isVip());
+                    vip.getLabel().setEnabled(true);
+                    vip.getField().setEnabled(!glyph.isVip());
+                    vip.getField().setSelected(glyph.isVip());
                     pitchPosition.setValue(glyph.getPitchPosition());
                     weight.setValue(glyph.getNormalizedWeight());
                     width.setValue(glyph.getNormalizedWidth());
@@ -290,8 +271,10 @@ public class SymbolGlyphBoard
 
                         if (glyph.getTextValue() != null) {
                             textField.setText(glyph.getTextValue());
+
                             // Related word?
                             TextWord word = glyph.getTextWord();
+
                             if (word != null) {
                                 confField.setValue(word.getConfidence());
                                 confField.setVisible(true);
@@ -305,8 +288,7 @@ public class SymbolGlyphBoard
 
                             if (glyph.getTextRole().role == TextRole.Creator) {
                                 typeCombo.setVisible(true);
-                                typeCombo.setSelectedItem(
-                                        glyph.getTextRole().creatorType);
+                                typeCombo.setSelectedItem(glyph.getTextRole().creatorType);
                             }
                         } else {
                             roleCombo.setSelectedItem(TextRole.UnknownRole);
@@ -327,15 +309,12 @@ public class SymbolGlyphBoard
                         timeNum.setVisible(true);
                         timeDen.setVisible(true);
 
-                        timeNum.setEnabled(
-                                shape == Shape.CUSTOM_TIME);
-                        timeDen.setEnabled(
-                                shape == Shape.CUSTOM_TIME);
+                        timeNum.setEnabled(shape == Shape.CUSTOM_TIME);
+                        timeDen.setEnabled(shape == Shape.CUSTOM_TIME);
 
                         TimeRational timeRational = (shape == Shape.CUSTOM_TIME)
                                 ? glyph.getTimeRational()
-                                : TimeSignature.rationalOf(
-                                        shape);
+                                : TimeSignature.rationalOf(shape);
 
                         if (timeRational != null) {
                             timeNum.setValue(timeRational.num);
@@ -372,7 +351,6 @@ public class SymbolGlyphBoard
         builder.add(vip.getLabel(), cst.xy(1, r));
         builder.add(vip.getField(), cst.xy(3, r));
         // shape
-
         r += 2; // --------------------------------
         // Glyph characteristics, first line
 
@@ -428,14 +406,14 @@ public class SymbolGlyphBoard
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // ParamAction //
     //-------------//
     private class ParamAction
             extends AbstractAction
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         // Method run whenever user presses Return/Enter in one of the parameter
         // fields
@@ -448,11 +426,9 @@ public class SymbolGlyphBoard
             }
 
             // Get current glyph set
-            GlyphSetEvent glyphsEvent = (GlyphSetEvent) getSelectionService().
-                    getLastEvent(
-                            GlyphSetEvent.class);
-            Set<Glyph> glyphs = (glyphsEvent != null)
-                    ? glyphsEvent.getData() : null;
+            GlyphSetEvent glyphsEvent = (GlyphSetEvent) getSelectionService()
+                    .getLastEvent(GlyphSetEvent.class);
+            Set<Glyph> glyphs = (glyphsEvent != null) ? glyphsEvent.getData() : null;
 
             if ((glyphs != null) && !glyphs.isEmpty()) {
                 // Read shape information
@@ -466,31 +442,31 @@ public class SymbolGlyphBoard
 
                 // Text?
                 if (shape.isText()) {
-                    logger.debug("Text=''{}'' Role={}",
+                    logger.debug(
+                            "Text=''{}'' Role={}",
                             textField.getText().trim(),
                             roleCombo.getSelectedItem());
 
                     CreatorType type = null;
                     TextRole role = roleCombo.getSelectedItem();
+
                     if (role == TextRole.Creator) {
                         type = typeCombo.getSelectedItem();
                     }
+
                     TextRoleInfo roleInfo = new TextRoleInfo(role, type);
-                    SheetsController.getCurrentSheet().getSymbolsController().
-                            asyncAssignTexts(
-                                    glyphs,
-                                    roleInfo,
-                                    textField.getText());
-                } else // Custom time sig?
-                if (shape == Shape.CUSTOM_TIME) {
+                    SheetsController.getCurrentSheet().getSymbolsController().asyncAssignTexts(
+                            glyphs,
+                            roleInfo,
+                            textField.getText());
+                } else if (shape == Shape.CUSTOM_TIME) {
                     int num = timeNum.getValue();
                     int den = timeDen.getValue();
 
                     if ((num != 0) && (den != 0)) {
-                        SheetsController.getCurrentSheet().
-                                getSymbolsController().asyncAssignRationals(
-                                        glyphs,
-                                        new TimeRational(num, den));
+                        SheetsController.getCurrentSheet().getSymbolsController().asyncAssignRationals(
+                                glyphs,
+                                new TimeRational(num, den));
                     } else {
                         logger.warn("Invalid time signature parameters");
                     }

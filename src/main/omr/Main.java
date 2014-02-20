@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  M a i n                                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            M a i n                                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr;
 
@@ -56,21 +56,19 @@ import java.util.concurrent.TimeUnit;
  */
 public class Main
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     static {
         /** Time stamp */
         Clock.resetTime();
     }
 
-    /** Master View */
-    private static MainGui gui;
-
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
+
+    /** Master View */
+    private static MainGui gui;
 
     /** Parameters read from CLI */
     private static CLI.Parameters parameters;
@@ -78,7 +76,7 @@ public class Main
     /** The application dumping service */
     public static final Dumping dumping = new Dumping(Main.class.getPackage());
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------//
     // Main //
     //------//
@@ -86,7 +84,7 @@ public class Main
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // doMain //
     //--------//
@@ -135,11 +133,10 @@ public class Main
                 try {
                     logger.info("Submitting {} task(s)", tasks.size());
 
-                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor()
-                            .invokeAll(
-                                    tasks,
-                                    constants.processTimeOut.getValue(),
-                                    TimeUnit.SECONDS);
+                    List<Future<Void>> futures = OmrExecutors.getCachedLowExecutor().invokeAll(
+                            tasks,
+                            constants.processTimeOut.getValue(),
+                            TimeUnit.SECONDS);
                     logger.info("Checking {} task(s)", tasks.size());
 
                     // Check for time-out
@@ -163,8 +160,7 @@ public class Main
 
             // Store latest constant values on disk?
             if (constants.persistBatchCliConstants.getValue()) {
-                ConstantManager.getInstance()
-                        .storeResource();
+                ConstantManager.getInstance().storeResource();
             }
 
             // Stop the JVM with failure status?
@@ -246,10 +242,7 @@ public class Main
                                         "Launching {} on {} {}",
                                         parameters.desiredSteps,
                                         name,
-                                        (parameters.pages != null)
-                                        ? ("pages "
-                                           + parameters.pages)
-                                        : "");
+                                        (parameters.pages != null) ? ("pages " + parameters.pages) : "");
                             }
 
                             if (file.exists()) {
@@ -262,8 +255,7 @@ public class Main
                                             score);
                                 } catch (ProcessingCancellationException pce) {
                                     logger.warn("Cancelled " + score, pce);
-                                    score.getBench()
-                                    .recordCancellation();
+                                    score.getBench().recordCancellation();
                                     throw pce;
                                 } catch (Throwable ex) {
                                     logger.warn("Exception occurred", ex);
@@ -277,8 +269,7 @@ public class Main
                                     return null;
                                 }
                             } else {
-                                String msg = "Could not find file "
-                                             + file.getCanonicalPath();
+                                String msg = "Could not find file " + file.getCanonicalPath();
                                 logger.warn(msg);
                                 throw new RuntimeException(msg);
                             }
@@ -364,8 +355,7 @@ public class Main
                         public Void call ()
                         throws Exception
                         {
-                            ScriptManager.getInstance()
-                            .loadAndRun(new File(scriptName));
+                            ScriptManager.getInstance().loadAndRun(new File(scriptName));
 
                             return null;
                         }
@@ -393,13 +383,11 @@ public class Main
     //-------------//
     private static void checkLocale ()
     {
-        final String localeStr = constants.locale.getValue()
-                .trim();
+        final String localeStr = constants.locale.getValue().trim();
 
         if (!localeStr.isEmpty()) {
             for (Locale locale : Locale.getAvailableLocales()) {
-                if (locale.toString()
-                        .equalsIgnoreCase(localeStr)) {
+                if (locale.toString().equalsIgnoreCase(localeStr)) {
                     Locale.setDefault(locale);
                     logger.debug("Locale set to {}", locale);
 
@@ -454,8 +442,7 @@ public class Main
             String msg = "Tesseract OCR is not installed properly";
 
             if (Main.getGui() != null) {
-                Main.getGui()
-                        .displayError(msg);
+                Main.getGui().displayError(msg);
             } else {
                 logger.warn(msg);
             }
@@ -474,8 +461,7 @@ public class Main
             logger.warn("Exiting ...");
 
             // Stop the JVM, with failure status (1)
-            Runtime.getRuntime()
-                    .exit(1);
+            Runtime.getRuntime().exit(1);
         }
 
         // Interactive or Batch mode ?
@@ -508,27 +494,25 @@ public class Main
     {
         if (constants.showEnvironment.isSet()) {
             logger.info(
-                    "Environment:\n" + "- Audiveris:    {}\n"
-                    + "- OS:           {}\n" + "- Architecture: {}\n"
-                    + "- Java VM:      {}",
+                    "Environment:\n" + "- Audiveris:    {}\n" + "- OS:           {}\n"
+                    + "- Architecture: {}\n" + "- Java VM:      {}",
                     WellKnowns.TOOL_REF + ":" + WellKnowns.TOOL_BUILD,
-                    System.getProperty("os.name") + " "
-                    + System.getProperty("os.version"),
+                    System.getProperty("os.name") + " " + System.getProperty("os.version"),
                     System.getProperty("os.arch"),
                     System.getProperty("java.vm.name") + " (build "
-                    + System.getProperty("java.vm.version") + ", "
-                    + System.getProperty("java.vm.info") + ")");
+                    + System.getProperty("java.vm.version") + ", " + System.getProperty("java.vm.info")
+                    + ")");
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Boolean showEnvironment = new Constant.Boolean(
                 true,
@@ -550,6 +534,5 @@ public class Main
                 "Seconds",
                 300,
                 "Process time-out, specified in seconds");
-
     }
 }

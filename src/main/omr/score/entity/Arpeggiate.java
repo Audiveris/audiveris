@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            A r p e g g i a t e                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      A r p e g g i a t e                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -35,16 +35,13 @@ import java.util.List;
 public class Arpeggiate
         extends AbstractNotation
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            Arpeggiate.class);
+    private static final Logger logger = LoggerFactory.getLogger(Arpeggiate.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // Arpeggiate //
     //------------//
@@ -64,7 +61,16 @@ public class Arpeggiate
         super(measure, point, chord, glyph);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //----------//
     // populate //
     //----------//
@@ -85,8 +91,7 @@ public class Arpeggiate
 
         // A Arpeggiate relates to ALL the embraced note(s)
         // We look on the right
-        int dx = measure.getScale()
-                .toPixels(constants.areaDx);
+        int dx = measure.getScale().toPixels(constants.areaDx);
         Point shiftedPoint = new Point(point.x + dx, point.y);
         Slot slot = measure.getClosestSlot(shiftedPoint);
 
@@ -99,18 +104,12 @@ public class Arpeggiate
         // We look for ALL embraced chord notes
         Rectangle box = glyph.getBounds();
         Point top = new Point(box.x + (box.width / 2), box.y);
-        Point bottom = new Point(
-                box.x + (box.width / 2),
-                box.y + box.height);
+        Point bottom = new Point(box.x + (box.width / 2), box.y + box.height);
         List<Chord> chords = slot.getEmbracedChords(top, bottom);
 
         if (!chords.isEmpty()) {
             // Allocate an instance with first embraced chord
-            Arpeggiate arpeggiate = new Arpeggiate(
-                    measure,
-                    point,
-                    chords.get(0),
-                    glyph);
+            Arpeggiate arpeggiate = new Arpeggiate(measure, point, chords.get(0), glyph);
             glyph.setTranslation(arpeggiate);
 
             // Add the rest of embraced chords
@@ -123,28 +122,18 @@ public class Arpeggiate
         }
     }
 
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Abscissa translate when looking for embraced notes */
         Scale.Fraction areaDx = new Scale.Fraction(
                 1.5,
                 "Abscissa shift when looking for embraced notes");
-
     }
 }

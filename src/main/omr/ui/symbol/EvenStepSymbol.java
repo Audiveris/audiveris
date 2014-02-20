@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          E v e n S t e p S y m b o l                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    E v e n S t e p S y m b o l                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -21,8 +21,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code EvenStepSymbol} is the basis for symbols located on
- * an even step position.
+ * Class {@code EvenStepSymbol} is the basis for symbols located on an even step position.
  * There is a ledger in the middle of the symbol.
  *
  * @author Hervé Bitteur
@@ -30,7 +29,7 @@ import java.awt.geom.Rectangle2D;
 public class EvenStepSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new EvenStepSymbol object.
@@ -44,7 +43,7 @@ public class EvenStepSymbol
         super(shape, codes);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getParams //
     //-----------//
@@ -56,9 +55,7 @@ public class EvenStepSymbol
 
         Rectangle2D rect = p.layout.getBounds();
 
-        p.rect = new Rectangle(
-                (int) Math.ceil(rect.getWidth()),
-                (int) Math.ceil(rect.getHeight()));
+        p.rect = new Rectangle((int) Math.ceil(rect.getWidth()), (int) Math.ceil(rect.getHeight()));
 
         int interline = font.getFontInterline();
         p.line = Math.max(1, (int) Math.rint(interline * 0.17));
@@ -86,16 +83,15 @@ public class EvenStepSymbol
         g.fillRect(loc.x, loc.y - (p.line / 2), p.rect.width - 1, p.line);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         int line; // Thickness of a ledger or staff line
-
     }
 }

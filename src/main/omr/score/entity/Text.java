@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  T e x t                                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            T e x t                                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -36,18 +36,17 @@ import java.util.List;
 /**
  * Class {@code Text} handles any textual score entity.
  *
- * <p><b>Nota</b>: There is exactly one Text entity per sentence, except for
- * lyrics items for which we build one {@code LyricsItem} (subclass of Text)
- * for each textual glyph.
- * The reason is that, except for lyrics, only the full sentence
- * is meaningful: for example "Ludwig van Beethoven" is meaningful as a Creator
- * Text, but the various words "Ludwig", "van", "Beethoven" are not.
- * For lyrics, since we can have very long sentences, and since the positioning
- * of every syllable must be done with precision, we handle one LyricsItem Text
- * entity per isolated word.</p>
- *
- * <p>Working at the sentence level also allows a better accuracy in the setting
- * of parameters (such as baseline or font) for the whole sentence.</p>
+ * <p>
+ * <b>Nota</b>: There is exactly one Text entity per sentence, except for lyrics items for which we
+ * build one {@code LyricsItem} (subclass of Text) for each textual glyph.
+ * The reason is that, except for lyrics, only the full sentence is meaningful: for example "Ludwig
+ * van Beethoven" is meaningful as a Creator Text, but the various words "Ludwig", "van",
+ * "Beethoven" are not.
+ * For lyrics, since we can have very long sentences, and since the positioning of every syllable
+ * must be done with precision, we handle one LyricsItem Text entity per isolated word.</p>
+ * <p>
+ * Working at the sentence level also allows a better accuracy in the setting of parameters (such as
+ * baseline or font) for the whole sentence.</p>
  *
  * <h4>Synoptic of Text Translation:<br/>
  * <img src="doc-files/TextTranslation.jpg"/>
@@ -58,17 +57,16 @@ import java.util.List;
 public abstract class Text
         extends PartNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Text.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The containing sentence. */
     private final TextLine sentence;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------//
     // Text //
     //------//
@@ -104,7 +102,151 @@ public abstract class Text
         logger.debug("Created {}", this);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //---------------//
+    // getLyricsFont //
+    //---------------//
+    /**
+     * Report the font to be used for handling lyrics text
+     *
+     * @return the lyrics text font
+     */
+    public static Font getLyricsFont ()
+    {
+        return TextFont.baseTextFont;
+    }
+
+    //-------------------//
+    // getLyricsFontSize //
+    //-------------------//
+    /**
+     * Report the font size to be exported for the lyrics
+     *
+     * @return the exported lyrics font size
+     */
+    public static int getLyricsFontSize ()
+    {
+        return TextFont.baseTextFont.getSize();
+    }
+
+    //----------//
+    // populate //
+    //----------//
+    /**
+     * Allocate the proper score entity (or entities) that correspond
+     * to this textual sentence.
+     * This word or sequence of words may be:
+     * <ul>
+     * <li>a Direction</li>
+     * <li>a part Name</li>
+     * <li>a part Number</li>
+     * <li>a Creator</li>
+     * <li>a Copyright</li>
+     * <li>one or several LyricsItem entities</li>
+     * <li>a Chord Statement</li>
+     * </ul>
+     *
+     * @param sentence the whole sentence
+     * @param location its starting reference wrt containing system
+     */
+    public static void populate (TextLine sentence,
+                                 Point location)
+    {
+        final SystemPart systemPart = sentence.getSystemPart();
+        final TextRoleInfo roleInfo = sentence.getRole();
+        final TextRole role = roleInfo.role;
+
+        if ((role == null) || (role == TextRole.UnknownRole)) {
+            systemPart.addError(
+                    sentence.getFirstWord().getGlyph(),
+                    "Sentence with no role defined");
+        }
+
+        logger.debug("Populating {} {} \"{}\"", sentence, role, sentence.getValue());
+
+        if (role == null) {
+            return;
+        }
+
+        switch (role) {
+        case Lyrics:
+
+            // Create as many lyrics items as needed
+            for (TextWord word : sentence.getWords()) {
+                Glyph glyph = word.getGlyph();
+                Rectangle itemBox = word.getBounds();
+                String itemStr = word.getValue();
+
+                if (itemStr == null) {
+                    // A very rough char count ...
+                    //                    int nbChar = (int) Math.rint(
+                    //                            (double) itemBox.width / sentence.getTextHeight());
+                    int nbChar = 5;
+                    itemStr = role.getStringHolder(nbChar);
+                }
+
+                Point2D p1 = word.getBaseline().getP1();
+                Point start = new Point((int) Math.rint(p1.getX()), (int) Math.rint(p1.getY()));
+                glyph.setTranslation(
+                        new LyricsItem(sentence, start, glyph, itemBox.width, itemStr));
+            }
+
+            break;
+
+        case Title:
+            sentence.setGlyphsTranslation(new TitleText(sentence));
+
+            break;
+
+        case Direction:
+
+            Measure measure = systemPart.getMeasureAt(location);
+            sentence.setGlyphsTranslation(
+                    new DirectionStatement(
+                            measure,
+                            location,
+                            measure.getDirectionChord(location),
+                            new DirectionText(sentence)));
+
+            break;
+
+        case Number:
+            sentence.setGlyphsTranslation(new NumberText(sentence));
+
+            break;
+
+        case Name:
+            sentence.setGlyphsTranslation(new NameText(sentence));
+
+            break;
+
+        case Creator:
+            sentence.setGlyphsTranslation(new CreatorText(sentence));
+
+            break;
+
+        case Rights:
+            sentence.setGlyphsTranslation(new RightsText(sentence));
+
+            break;
+
+        case Chord:
+            measure = systemPart.getMeasureAt(location);
+            sentence.setGlyphsTranslation(
+                    new ChordSymbol(
+                            measure,
+                            location,
+                            measure.getEventChord(location),
+                            new ChordText(sentence)));
+
+            break;
+
+        case UnknownRole:
+        default:
+            sentence.setGlyphsTranslation(new DefaultText(sentence));
+        }
+    }
+
     //--------//
     // accept //
     //--------//
@@ -137,34 +279,7 @@ public abstract class Text
      */
     public int getExportedFontSize ()
     {
-        return (int) Math.rint(
-                sentence.getMeanFont().pointsize * TextFont.TO_POINT);
-    }
-
-    //---------------//
-    // getLyricsFont //
-    //---------------//
-    /**
-     * Report the font to be used for handling lyrics text
-     *
-     * @return the lyrics text font
-     */
-    public static Font getLyricsFont ()
-    {
-        return TextFont.baseTextFont;
-    }
-
-    //-------------------//
-    // getLyricsFontSize //
-    //-------------------//
-    /**
-     * Report the font size to be exported for the lyrics
-     *
-     * @return the exported lyrics font size
-     */
-    public static int getLyricsFontSize ()
-    {
-        return TextFont.baseTextFont.getSize();
+        return (int) Math.rint(sentence.getMeanFont().pointsize * TextFont.TO_POINT);
     }
 
     //-------------//
@@ -203,136 +318,6 @@ public abstract class Text
     }
 
     //----------//
-    // populate //
-    //----------//
-    /**
-     * Allocate the proper score entity (or entities) that correspond
-     * to this textual sentence.
-     * This word or sequence of words may be:
-     * <ul>
-     * <li>a Direction</li>
-     * <li>a part Name</li>
-     * <li>a part Number</li>
-     * <li>a Creator</li>
-     * <li>a Copyright</li>
-     * <li>one or several LyricsItem entities</li>
-     * <li>a Chord Statement</li>
-     * </ul>
-     *
-     * @param sentence the whole sentence
-     * @param location its starting reference wrt containing system
-     */
-    public static void populate (TextLine sentence,
-                                 Point location)
-    {
-        final SystemPart systemPart = sentence.getSystemPart();
-        final TextRoleInfo roleInfo = sentence.getRole();
-        final TextRole role = roleInfo.role;
-
-        if ((role == null) || (role == TextRole.UnknownRole)) {
-            systemPart.addError(
-                    sentence.getFirstWord().getGlyph(),
-                    "Sentence with no role defined");
-        }
-
-        logger.debug(
-                "Populating {} {} \"{}\"",
-                sentence,
-                role,
-                sentence.getValue());
-
-        if (role == null) {
-            return;
-        }
-
-        switch (role) {
-        case Lyrics:
-
-            // Create as many lyrics items as needed
-            for (TextWord word : sentence.getWords()) {
-                Glyph glyph = word.getGlyph();
-                Rectangle itemBox = word.getBounds();
-                String itemStr = word.getValue();
-
-                if (itemStr == null) {
-                    // A very rough char count ...
-                    //                    int nbChar = (int) Math.rint(
-                    //                            (double) itemBox.width / sentence.getTextHeight());
-                    int nbChar = 5;
-                    itemStr = role.getStringHolder(nbChar);
-                }
-
-                Point2D p1 = word.getBaseline()
-                        .getP1();
-                Point start = new Point(
-                        (int) Math.rint(p1.getX()),
-                        (int) Math.rint(p1.getY()));
-                glyph.setTranslation(
-                        new LyricsItem(
-                        sentence,
-                        start,
-                        glyph,
-                        itemBox.width,
-                        itemStr));
-            }
-
-            break;
-
-        case Title:
-            sentence.setGlyphsTranslation(new TitleText(sentence));
-
-            break;
-
-        case Direction:
-
-            Measure measure = systemPart.getMeasureAt(location);
-            sentence.setGlyphsTranslation(
-                    new DirectionStatement(
-                    measure,
-                    location,
-                    measure.getDirectionChord(location),
-                    new DirectionText(sentence)));
-
-            break;
-
-        case Number:
-            sentence.setGlyphsTranslation(new NumberText(sentence));
-
-            break;
-
-        case Name:
-            sentence.setGlyphsTranslation(new NameText(sentence));
-
-            break;
-
-        case Creator:
-            sentence.setGlyphsTranslation(new CreatorText(sentence));
-
-            break;
-
-        case Rights:
-            sentence.setGlyphsTranslation(new RightsText(sentence));
-
-            break;
-
-        case Chord:
-            measure = systemPart.getMeasureAt(location);
-            sentence.setGlyphsTranslation(
-                    new ChordSymbol(
-                    measure,
-                    location,
-                    measure.getEventChord(location),
-                    new ChordText(sentence)));
-
-            break;
-
-        case UnknownRole:
-        default:
-            sentence.setGlyphsTranslation(new DefaultText(sentence));
-        }
-    }
-
-    //----------//
     // toString //
     //----------//
     /**
@@ -345,25 +330,19 @@ public abstract class Text
         sb.append("{Text");
 
         if (sentence.getRole() != null) {
-            sb.append(" ")
-                    .append(sentence.getRole());
+            sb.append(" ").append(sentence.getRole());
         }
 
         sb.append(internalsString());
 
         if (getContent() != null) {
-            sb.append(" \"")
-                    .append(getContent())
-                    .append("\"");
+            sb.append(" \"").append(getContent()).append("\"");
         }
 
-        sb.append(" loc:")
-                .append(getReferencePoint());
+        sb.append(" loc:").append(getReferencePoint());
 
-        sb.append(" S")
-                .append(getSystem().getId());
-        sb.append("P")
-                .append(getPart().getId());
+        sb.append(" S").append(getSystem().getId());
+        sb.append("P").append(getPart().getId());
 
         sb.append("}");
 
@@ -393,7 +372,7 @@ public abstract class Text
         return ""; // By default
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // ChordText //
     //-----------//
@@ -401,7 +380,7 @@ public abstract class Text
     public static class ChordText
             extends Text
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public ChordText (TextLine sentence)
         {
@@ -417,17 +396,18 @@ public abstract class Text
     public static class CreatorText
             extends Text
     {
-        //~ Enumerations -------------------------------------------------------
+        //~ Enumerations ---------------------------------------------------------------------------
 
         public enum CreatorType
         {
-            //~ Enumeration constant initializers ------------------------------
+            //~ Enumeration constant initializers --------------------------------------------------
 
-            composer, lyricist, arranger;
-
+            composer,
+            lyricist,
+            arranger;
         }
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public CreatorText (TextLine sentence)
         {
             super(sentence);
@@ -443,7 +423,7 @@ public abstract class Text
     public static class DefaultText
             extends Text
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public DefaultText (TextLine sentence)
         {
@@ -458,7 +438,7 @@ public abstract class Text
     public static class DirectionText
             extends Text
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public DirectionText (TextLine sentence)
         {
@@ -473,15 +453,14 @@ public abstract class Text
     public static class NameText
             extends Text
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public NameText (TextLine sentence)
         {
             super(sentence);
 
             if (getContent() != null) {
-                sentence.getSystemPart()
-                        .setName(getContent());
+                sentence.getSystemPart().setName(getContent());
             }
         }
     }
@@ -493,7 +472,7 @@ public abstract class Text
     public static class NumberText
             extends Text
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public NumberText (TextLine sentence)
         {
@@ -508,7 +487,7 @@ public abstract class Text
     public static class RightsText
             extends Text
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public RightsText (TextLine sentence)
         {
@@ -523,7 +502,7 @@ public abstract class Text
     public static class TitleText
             extends Text
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public TitleText (TextLine sentence)
         {

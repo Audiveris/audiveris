@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            S l u r s L i n k e r                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      S l u r s L i n k e r                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -67,20 +67,19 @@ import java.util.Set;
  */
 public class SlursLinker
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SlursLinker.class);
+    private static final Logger logger = LoggerFactory.getLogger(SlursLinker.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     private final Sheet sheet;
 
     /** Scale-dependent parameters. */
     private final Parameters params;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SlursLinker object.
      *
@@ -93,7 +92,7 @@ public class SlursLinker
         params = new Parameters(sheet.getScale());
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // prune //
     //-------//
@@ -113,8 +112,7 @@ public class SlursLinker
 
         // Define global clump bounds
         Map<HorizontalSide, Rectangle> bounds = getBounds(clump);
-        Rectangle clumpBox = new Rectangle(
-                bounds.get(LEFT));
+        Rectangle clumpBox = new Rectangle(bounds.get(LEFT));
         clumpBox.add(bounds.get(RIGHT));
 
         // Determine the impacted system(s)
@@ -154,11 +152,8 @@ public class SlursLinker
         Point last = info.getEnd(false);
         int vDir = info.isAbove() ? 1 : (-1);
         int hDir = Integer.signum(last.x - first.x);
-        Point2D mid = new Point2D.Double(
-                (first.x + last.x) / 2d,
-                (first.y + last.y) / 2d);
-        Line2D bisector = (vDir == hDir) ? bisector(first, last)
-                : bisector(last, first);
+        Point2D mid = new Point2D.Double((first.x + last.x) / 2d, (first.y + last.y) / 2d);
+        Line2D bisector = (vDir == hDir) ? bisector(first, last) : bisector(last, first);
         Point2D firstExt;
         Point2D lastExt;
         GeoPath firstPath;
@@ -168,8 +163,8 @@ public class SlursLinker
         Point2D lastBase;
 
         // Qualify the slur as horizontal or vertical
-        if (abs(LineUtil.getSlope(first, last)) <= params.slopeSeparator ||
-            abs(first.getX() - last.getX()) >= params.wideSlurWidth) {
+        if ((abs(LineUtil.getSlope(first, last)) <= params.slopeSeparator)
+            || (abs(first.getX() - last.getX()) >= params.wideSlurWidth)) {
             // Horizontal: Use base parallel to slur
             info.setHorizontal(true);
             firstExt = extension(mid, first, params.coverageHExt);
@@ -190,18 +185,14 @@ public class SlursLinker
                 Point2D firstIn = intersectionAtX(first, last, firstInX);
                 firstPath = new GeoPath(new Line2D.Double(firstIn, firstExt));
                 firstPath.append(
-                        new Line2D.Double(
-                                firstBase,
-                                intersectionAtX(baseLine, firstInX)),
+                        new Line2D.Double(firstBase, intersectionAtX(baseLine, firstInX)),
                         true);
 
                 double lastInX = last.x - (hDir * params.coverageHIn);
                 Point2D lastIn = intersectionAtX(first, last, lastInX);
                 lastPath = new GeoPath(new Line2D.Double(lastIn, lastExt));
                 lastPath.append(
-                        new Line2D.Double(
-                                lastBase,
-                                intersectionAtX(baseLine, lastInX)),
+                        new Line2D.Double(lastBase, intersectionAtX(baseLine, lastInX)),
                         true);
             } else {
                 // Narrow slur: just one vertical separation
@@ -229,17 +220,12 @@ public class SlursLinker
 
             if (first.distance(last) > (2 * params.coverageVIn)) {
                 // Tall slur, separate first & last areas
-                Point2D firstIn = extension(
-                        firstExt,
-                        first,
-                        params.coverageVIn);
+                Point2D firstIn = extension(firstExt, first, params.coverageVIn);
                 Point2D firstBaseIn = new Point2D.Double(
                         firstIn.getX() + depth.getX(),
                         firstIn.getY() + depth.getY());
                 firstPath = new GeoPath(new Line2D.Double(firstIn, firstExt));
-                firstPath.append(
-                        new Line2D.Double(firstBase, firstBaseIn),
-                        true);
+                firstPath.append(new Line2D.Double(firstBase, firstBaseIn), true);
 
                 Point2D lastIn = extension(lastExt, last, params.coverageVIn);
                 Point2D lastBaseIn = new Point2D.Double(
@@ -264,11 +250,12 @@ public class SlursLinker
         Area firstArea = new Area(firstPath);
         info.setArea(firstArea, true);
         slur.addAttachment("F", firstArea);
-        ///info.addAttachment("F", firstArea); // Useful?
 
+        ///info.addAttachment("F", firstArea); // Useful?
         Area lastArea = new Area(lastPath);
         info.setArea(lastArea, false);
         slur.addAttachment("L", lastArea);
+
         ///info.addAttachment("L", lastArea); // Useful?
     }
 
@@ -306,13 +293,13 @@ public class SlursLinker
         return bounds;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // NoteLink //
     //----------//
     public static class NoteLink
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         public final Inter note; // Note linked to slur end
 
@@ -320,7 +307,7 @@ public class SlursLinker
 
         public final boolean direct; // False if via stem
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public NoteLink (Inter note,
                          Double distance,
                          boolean direct)
@@ -328,113 +315,6 @@ public class SlursLinker
             this.note = note;
             this.distance = distance;
             this.direct = direct;
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final Scale.Fraction coverageHExt = new Scale.Fraction(
-                1.5,
-                "Length of extension for horizontal slur coverage");
-
-        final Scale.Fraction coverageHIn = new Scale.Fraction(
-                1.5,
-                "Internal abscissa of horizontal slur coverage");
-
-        final Scale.Fraction coverageHDepth = new Scale.Fraction(
-                4.0,
-                "Vertical extension of horizontal slur coverage");
-
-        final Scale.Fraction coverageVExt = new Scale.Fraction(
-                2.0,
-                "Length of extension for vertical slur coverage");
-
-        final Scale.Fraction coverageVIn = new Scale.Fraction(
-                1.5,
-                "Internal abscissa of vertical slur coverage");
-
-        final Scale.Fraction coverageVDepth = new Scale.Fraction(
-                2.0,
-                "Vertical extension of vertical slur coverage");
-
-        final Constant.Double slopeSeparator = new Constant.Double(
-                "tangent",
-                0.5,
-                "Slope that separates vertical slurs from horizontal slurs");
-
-        final Constant.Double maxOrphanSlope = new Constant.Double(
-                "tangent",
-                0.5,
-                "Maximum slope for an orphan slur");
-
-        final Scale.Fraction maxOrphanDx = new Scale.Fraction(
-                5.0,
-                "Maximum dx to staff end for an orphan slur");
-
-        final Scale.Fraction wideSlurWidth = new Scale.Fraction(
-                6.0,
-                "Minimum width to be a wide slur");
-    }
-
-    ///Map<SlurInfo, Map<HorizontalSide, NoteLink>> connections;
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * All pre-scaled constants.
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final int coverageHExt;
-
-        final int coverageVExt;
-
-        final int coverageHIn;
-
-        final int coverageVIn;
-
-        final int coverageHDepth;
-
-        final int coverageVDepth;
-
-        final double slopeSeparator;
-
-        final double maxOrphanSlope;
-
-        final int maxOrphanDx;
-        
-        final int wideSlurWidth;
-
-        //~ Constructors -------------------------------------------------------
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
-        {
-            coverageHExt = scale.toPixels(constants.coverageHExt);
-            coverageHIn = scale.toPixels(constants.coverageHIn);
-            coverageHDepth = scale.toPixels(constants.coverageHDepth);
-            coverageVExt = scale.toPixels(constants.coverageVExt);
-            coverageVIn = scale.toPixels(constants.coverageVIn);
-            coverageVDepth = scale.toPixels(constants.coverageVDepth);
-            slopeSeparator = constants.slopeSeparator.getValue();
-            maxOrphanSlope = constants.maxOrphanSlope.getValue();
-            maxOrphanDx = scale.toPixels(constants.maxOrphanDx);
-            wideSlurWidth = scale.toPixels(constants.wideSlurWidth);
-
-            if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
-            }
         }
     }
 
@@ -447,7 +327,7 @@ public class SlursLinker
      */
     private class ClumpLinker
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final SystemInfo system;
 
@@ -461,7 +341,7 @@ public class SlursLinker
         private final Map<HorizontalSide, List<Inter>> stems = new EnumMap<HorizontalSide, List<Inter>>(
                 HorizontalSide.class);
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public ClumpLinker (SystemInfo system,
                             Set<SlurInter> clump,
                             Map<HorizontalSide, Rectangle> bounds)
@@ -474,7 +354,7 @@ public class SlursLinker
             preselect(bounds);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Select the best slur in clump (within current system)
          *
@@ -555,7 +435,7 @@ public class SlursLinker
 
             for (Inter common : commons) {
                 // Note may be direct on a side and via stem for the other
-                // In that case, keep the direct & discard the stem-based 
+                // In that case, keep the direct & discard the stem-based
                 boolean leftDirect = lefts.get(common).direct;
 
                 if (!leftDirect) {
@@ -600,10 +480,7 @@ public class SlursLinker
 
                 if (map.isEmpty()) {
                     // Check if slur is rather horizontal
-                    if (abs(
-                            LineUtil.getSlope(
-                                    info.getEnd(true),
-                                    info.getEnd(false))) > params.maxOrphanSlope) {
+                    if (abs(LineUtil.getSlope(info.getEnd(true), info.getEnd(false))) > params.maxOrphanSlope) {
                         logger.debug("{} too sloped orphan", slur);
 
                         return false;
@@ -612,8 +489,8 @@ public class SlursLinker
                     // Check horizontal gap to end of staff
                     Point slurEnd = info.getPoint(side);
                     StaffInfo staff = system.getStaffAt(slurEnd);
-                    int staffEnd = (side == LEFT) ? staff.getDmzEnd()
-                            : staff.getAbscissa(side);
+                    int staffEnd = (side == LEFT) ? staff.getDmzEnd() : staff.getAbscissa(
+                            side);
 
                     if (abs(slurEnd.x - staffEnd) > params.maxOrphanDx) {
                         logger.debug("{} too far orphan", slur);
@@ -634,8 +511,7 @@ public class SlursLinker
          * @param map the connection map to browse
          * @return the set of slurs which have links on both sides
          */
-        private Set<SlurInter> getNonOrphans (
-                Map<SlurInter, Map<HorizontalSide, NoteLink>> map)
+        private Set<SlurInter> getNonOrphans (Map<SlurInter, Map<HorizontalSide, NoteLink>> map)
         {
             Set<SlurInter> nonOrphans = new HashSet<SlurInter>();
             EntryLoop:
@@ -692,10 +568,7 @@ public class SlursLinker
 
                         if (area.intersects(glyph.getBounds())) {
                             // Find out the best note on the stem
-                            NoteLink noteLink = pickupStemNote(
-                                    is,
-                                    slurEnd,
-                                    bisUnit);
+                            NoteLink noteLink = pickupStemNote(is, slurEnd, bisUnit);
 
                             if (noteLink != null) {
                                 NoteLink direct = found.get(noteLink.note);
@@ -725,9 +598,7 @@ public class SlursLinker
                                          Point slurEnd,
                                          Point2D bisUnit)
         {
-            Set<Relation> hsRels = sig.getRelations(
-                    stem,
-                    HeadStemRelation.class);
+            Set<Relation> hsRels = sig.getRelations(stem, HeadStemRelation.class);
             Inter bestNote = null;
             double bestDistSq = Double.MAX_VALUE;
 
@@ -812,9 +683,7 @@ public class SlursLinker
             Set<Inter> related = new HashSet<Inter>();
 
             for (Inter ni : notes) {
-                Set<Relation> hsRels = sig.getRelations(
-                        ni,
-                        HeadStemRelation.class);
+                Set<Relation> hsRels = sig.getRelations(ni, HeadStemRelation.class);
 
                 for (Relation rel : hsRels) {
                     StemInter si = (StemInter) sig.getEdgeTarget(rel);
@@ -823,6 +692,113 @@ public class SlursLinker
             }
 
             return related;
+        }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final Scale.Fraction coverageHExt = new Scale.Fraction(
+                1.5,
+                "Length of extension for horizontal slur coverage");
+
+        final Scale.Fraction coverageHIn = new Scale.Fraction(
+                1.5,
+                "Internal abscissa of horizontal slur coverage");
+
+        final Scale.Fraction coverageHDepth = new Scale.Fraction(
+                4.0,
+                "Vertical extension of horizontal slur coverage");
+
+        final Scale.Fraction coverageVExt = new Scale.Fraction(
+                2.0,
+                "Length of extension for vertical slur coverage");
+
+        final Scale.Fraction coverageVIn = new Scale.Fraction(
+                1.5,
+                "Internal abscissa of vertical slur coverage");
+
+        final Scale.Fraction coverageVDepth = new Scale.Fraction(
+                2.0,
+                "Vertical extension of vertical slur coverage");
+
+        final Constant.Double slopeSeparator = new Constant.Double(
+                "tangent",
+                0.5,
+                "Slope that separates vertical slurs from horizontal slurs");
+
+        final Constant.Double maxOrphanSlope = new Constant.Double(
+                "tangent",
+                0.5,
+                "Maximum slope for an orphan slur");
+
+        final Scale.Fraction maxOrphanDx = new Scale.Fraction(
+                5.0,
+                "Maximum dx to staff end for an orphan slur");
+
+        final Scale.Fraction wideSlurWidth = new Scale.Fraction(
+                6.0,
+                "Minimum width to be a wide slur");
+    }
+
+    ///Map<SlurInfo, Map<HorizontalSide, NoteLink>> connections;
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * All pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final int coverageHExt;
+
+        final int coverageVExt;
+
+        final int coverageHIn;
+
+        final int coverageVIn;
+
+        final int coverageHDepth;
+
+        final int coverageVDepth;
+
+        final double slopeSeparator;
+
+        final double maxOrphanSlope;
+
+        final int maxOrphanDx;
+
+        final int wideSlurWidth;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (Scale scale)
+        {
+            coverageHExt = scale.toPixels(constants.coverageHExt);
+            coverageHIn = scale.toPixels(constants.coverageHIn);
+            coverageHDepth = scale.toPixels(constants.coverageHDepth);
+            coverageVExt = scale.toPixels(constants.coverageVExt);
+            coverageVIn = scale.toPixels(constants.coverageVIn);
+            coverageVDepth = scale.toPixels(constants.coverageVDepth);
+            slopeSeparator = constants.slopeSeparator.getValue();
+            maxOrphanSlope = constants.maxOrphanSlope.getValue();
+            maxOrphanDx = scale.toPixels(constants.maxOrphanDx);
+            wideSlurWidth = scale.toPixels(constants.wideSlurWidth);
+
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
+            }
         }
     }
 }

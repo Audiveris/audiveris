@@ -1,18 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      S e l e c t i o n S e r v i c e                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                S e l e c t i o n S e r v i c e                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.selection;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
+import omr.glyph.BasicNest;
 
 import org.bushe.swing.event.EventSubscriber;
 import org.bushe.swing.event.ThreadSafeEventService;
@@ -21,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import omr.glyph.BasicNest;
 
 /**
  * Class {@code SelectionService} is an OMR customized version of an
@@ -32,23 +33,20 @@ import omr.glyph.BasicNest;
 public class SelectionService
         extends ThreadSafeEventService
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SelectionService.class);
+    private static final Logger logger = LoggerFactory.getLogger(SelectionService.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of this service */
     private final String name;
 
     /** Allowed events */
     private final Class[] allowedEvents;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // SelectionService //
     //------------------//
@@ -69,7 +67,7 @@ public class SelectionService
         setDefaultCacheSizePerClassOrTopic(1);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // dumpSubscribers //
     //-----------------//
@@ -138,8 +136,7 @@ public class SelectionService
         logger.debug("{} published: {}", this, event);
 
         // Check whether the event may be published on this service
-        if (!constants.checkPublishedEvents.isSet()
-            || contains(allowedEvents, event.getClass())) {
+        if (!constants.checkPublishedEvents.isSet() || contains(allowedEvents, event.getClass())) {
             super.publish(event);
         } else {
             logger.error("Unexpected event {} published on {}", event, name);
@@ -189,8 +186,7 @@ public class SelectionService
      */
     public int subscribersCount (Class<? extends UserEvent> classe)
     {
-        return getSubscribers(classe)
-                .size();
+        return getSubscribers(classe).size();
     }
 
     //----------//
@@ -201,8 +197,7 @@ public class SelectionService
     {
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
-        sb.append(" ")
-                .append(name);
+        sb.append(" ").append(name);
         sb.append("}");
 
         return sb.toString();
@@ -239,18 +234,17 @@ public class SelectionService
         return false;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Boolean checkPublishedEvents = new Constant.Boolean(
                 true,
                 "(debug) Should we check published events?");
-
     }
 }

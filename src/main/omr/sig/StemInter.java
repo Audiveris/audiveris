@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               S t e m I n t e r                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         S t e m I n t e r                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
@@ -17,15 +17,14 @@ import omr.glyph.facets.Glyph;
 import omr.util.HorizontalSide;
 
 /**
- * Class {@code StemInter} represents instances of Stem
- * interpretations.
+ * Class {@code StemInter} represents instances of Stem interpretations.
  *
  * @author Hervé Bitteur
  */
 public class StemInter
         extends AbstractInter
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new StemInter object.
@@ -41,15 +40,7 @@ public class StemInter
         setImpacts(impacts);
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    public static double getMinGrade ()
-    {
-        return AbstractInter.getMinGrade();
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -57,6 +48,14 @@ public class StemInter
     public void accept (InterVisitor visitor)
     {
         visitor.visit(this);
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    public static double getMinGrade ()
+    {
+        return AbstractInter.getMinGrade();
     }
 
     //------------//
@@ -81,8 +80,7 @@ public class StemInter
                 // Check side
                 if (hsRel.getHeadSide() == side) {
                     // Check itch
-                    AbstractNoteInter head = (AbstractNoteInter) sig.getEdgeSource(
-                            rel);
+                    AbstractNoteInter head = (AbstractNoteInter) sig.getEdgeSource(rel);
 
                     if (head.getPitch() == pitch) {
                         return head;

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            R e s t S y m b o l                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      R e s t S y m b o l                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -22,20 +22,20 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code RestSymbol} implements rest symbols whose decoration
- * uses staff lines as background
+ * Class {@code RestSymbol} implements rest symbols whose decoration uses staff lines
+ * as background.
  *
  * @author Hervé Bitteur
  */
 public class RestSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     // The lines
     protected static final BasicSymbol linesSymbol = Symbols.SYMBOL_STAFF_LINES;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // RestSymbol //
     //------------//
@@ -72,7 +72,7 @@ public class RestSymbol
         super(isIcon, shape, decorated, codes);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -102,16 +102,12 @@ public class RestSymbol
             r = p.linesLayout.getBounds();
 
             // Define specific offset
-            p.offset = new Point(
-                    0,
-                    (int) Math.rint(rs.getY() + (rs.getHeight() / 2)));
+            p.offset = new Point(0, (int) Math.rint(rs.getY() + (rs.getHeight() / 2)));
         } else {
             r = rs;
         }
 
-        p.rect = new Rectangle(
-                (int) Math.ceil(r.getWidth()),
-                (int) Math.ceil(r.getHeight()));
+        p.rect = new Rectangle((int) Math.ceil(r.getWidth()), (int) Math.ceil(r.getHeight()));
 
         return p;
     }
@@ -151,18 +147,17 @@ public class RestSymbol
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // layout for just rest layout
         // rect for global image (=lines if decorated, rest if not)
         TextLayout linesLayout; // For lines
-
     }
 }

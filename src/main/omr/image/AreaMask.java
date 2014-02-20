@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               A r e a M a s k                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         A r e a M a s k                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -19,21 +19,20 @@ import java.awt.Rectangle;
 import java.awt.geom.Area;
 
 /**
- * Class {@code AreaMask} drives processing of locations using an
- * absolute mask.
+ * Class {@code AreaMask} drives processing of locations using an absolute mask.
  *
  * @author Hervé Bitteur
  */
 public class AreaMask
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Mask area. */
     private final Area area;
 
     private final Rectangle rect;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AreaMask object.
      *
@@ -45,7 +44,7 @@ public class AreaMask
         rect = area.getBounds();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // apply //
     //-------//
@@ -61,8 +60,7 @@ public class AreaMask
         int count = 0;
 
         for (int y = rect.y, yBreak = rect.y + rect.height; y < yBreak; y++) {
-            for (int x = rect.x, xBreak = rect.x + rect.width; x < xBreak;
-                    x++) {
+            for (int x = rect.x, xBreak = rect.x + rect.width; x < xBreak; x++) {
                 if (area.contains(x, y)) {
                     adapter.process(x, y);
                     count++;
@@ -102,13 +100,13 @@ public class AreaMask
                 });
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //---------//
     // Adapter //
     //---------//
     public static interface Adapter
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Method called on each mask relevant point.

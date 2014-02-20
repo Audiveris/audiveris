@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          S e c t i o n B o a r d                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    S e c t i o n B o a r d                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag.ui;
 
@@ -50,32 +50,27 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code SectionBoard} defines a board dedicated to the display
- * of {@link omr.lag.Section} information, it can also be used as an
- * input means by directly entering the section id in the proper Id
- * spinner.
+ * Class {@code SectionBoard} defines a board dedicated to the display of {@link
+ * Section} information, it can also be used as an input means by directly entering the
+ * section id in the proper Id spinner.
  *
  * @author Hervé Bitteur
  */
 public class SectionBoard
         extends Board
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SectionBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(SectionBoard.class);
 
     /** Events this board is interested in */
     private static final Class<?>[] eventsRead = new Class<?>[]{
-        SectionEvent.class,
-        SectionSetEvent.class
+        SectionEvent.class, SectionSetEvent.class
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying lag */
     protected final Lag lag;
 
@@ -93,16 +88,10 @@ public class SectionBoard
     // Output for plain Section
     //
     /** Field for left abscissa */
-    private final LIntegerField x = new LIntegerField(
-            false,
-            "X",
-            "Left abscissa in pixels");
+    private final LIntegerField x = new LIntegerField(false, "X", "Left abscissa in pixels");
 
     /** Field for top ordinate */
-    private final LIntegerField y = new LIntegerField(
-            false,
-            "Y",
-            "Top ordinate in pixels");
+    private final LIntegerField y = new LIntegerField(false, "Y", "Top ordinate in pixels");
 
     /** Field for width */
     private final LIntegerField width = new LIntegerField(
@@ -128,7 +117,7 @@ public class SectionBoard
     /** To avoid loop, indicate that update() method id being processed */
     private boolean updating = false;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // SectionBoard //
     //--------------//
@@ -144,8 +133,7 @@ public class SectionBoard
         super(
                 Board.SECTION.name
                 + ((lag.getOrientation() == Orientation.VERTICAL) ? " Vert" : " Hori"),
-                Board.SECTION.position
-                + ((lag.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
+                Board.SECTION.position + ((lag.getOrientation() == Orientation.VERTICAL) ? 100 : 0),
                 lag.getSectionService(),
                 eventsRead,
                 true, // Dump
@@ -158,48 +146,46 @@ public class SectionBoard
         dump.setToolTipText("Dump this section");
         dump.addActionListener(
                 new ActionListener()
-        {
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                // Retrieve current section selection
-                Section section = (Section) lag.getSectionService()
-                        .getSelection(
-                        SectionEvent.class);
+                {
+                    @Override
+                    public void actionPerformed (ActionEvent e)
+                    {
+                        // Retrieve current section selection
+                        Section section = (Section) lag.getSectionService()
+                        .getSelection(SectionEvent.class);
 
-                if (section != null) {
-                    section.dump();
-                }
-            }
-        });
+                        if (section != null) {
+                            section.dump();
+                        }
+                    }
+                });
         dump.setEnabled(false); // Until a section selection is made
 
         // ID Spinner
         id.setToolTipText("General spinner for any section id");
         id.addChangeListener(
                 new ChangeListener()
-        {
-            @Override
-            public void stateChanged (ChangeEvent e)
-            {
-                // Make sure this new Id value is due to user
-                // action on an Id spinner, and not the mere update
-                // of section fields (which include this id).
-                if (!updating) {
-                    Integer sectionId = (Integer) id.getValue();
-                    logger.debug("sectionId={} for {}", sectionId, lag);
+                {
+                    @Override
+                    public void stateChanged (ChangeEvent e)
+                    {
+                        // Make sure this new Id value is due to user
+                        // action on an Id spinner, and not the mere update
+                        // of section fields (which include this id).
+                        if (!updating) {
+                            Integer sectionId = (Integer) id.getValue();
+                            logger.debug("sectionId={} for {}", sectionId, lag);
 
-                    idSelecting = true;
-                    lag.getSectionService()
-                            .publish(
-                            new SectionIdEvent(
-                            SectionBoard.this,
-                            SelectionHint.SECTION_INIT,
-                            sectionId));
-                    idSelecting = false;
-                }
-            }
-        });
+                            idSelecting = true;
+                            lag.getSectionService().publish(
+                                    new SectionIdEvent(
+                                            SectionBoard.this,
+                                            SelectionHint.SECTION_INIT,
+                                            sectionId));
+                            idSelecting = false;
+                        }
+                    }
+                });
         id.setModel(new SpinnerSectionModel(lag));
         SpinnerUtil.setEditable(id, true);
         SpinnerUtil.setRightAlignment(id);
@@ -208,7 +194,7 @@ public class SectionBoard
         defineLayout();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//
@@ -292,8 +278,7 @@ public class SectionBoard
             // Update section fields in this board
             updating = true;
 
-            final Section section = (sectionEvent != null)
-                    ? sectionEvent.getData() : null;
+            final Section section = (sectionEvent != null) ? sectionEvent.getData() : null;
             dump.setEnabled(section != null);
 
             Integer sectionId = null;
@@ -349,18 +334,17 @@ public class SectionBoard
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Boolean hideRelationFields = new Constant.Boolean(
                 true,
                 "Should we hide section relation fields when empty?");
-
     }
 }

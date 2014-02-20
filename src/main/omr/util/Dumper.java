@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                D u m p e r                                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                          D u m p e r                                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -20,25 +20,22 @@ import java.util.Map;
 /**
  * Class {@code Dumper} is a debugging utility that reports, in a brute
  * force manner, any internal data of a class instance.
- *
- * <p> When used on a class instance, all class internal fields which are
- * considered as "relevant" are printed using their toString() method, then we
- * walk up the inheritance tree and repeat the same actions, until there is no
- * more superclass or until the superclass we have reached is considered as
- * non-relevant. </p>
- *
- * <p> A (super)class is considered "relevant" if the static method
- * {@code isClassRelevant(class)} returns true. This method can be
- * overridden in a subclass of Dumper to adapt to local needs. </p>
- *
- * <p> A field is considered "relevant" if the following condition if the method
- * {@code isFieldRelevant(field)} returns true. Similarly, the behavior of
- * this predicate can be customized by subclassing the Dumper class. </p>
- *
- * <p> There are several kinds of print outs available through subclassing. Each
- * of them export two public methods: {@code dump()} which prints the
- * result on default output stream, and {@code dumpOf()} which simply
- * returns the generated dump string.
+ * <p>
+ * When used on a class instance, all class internal fields which are considered as "relevant" are
+ * printed using their toString() method, then we walk up the inheritance tree and repeat the same
+ * actions, until there is no more superclass or until the superclass we have reached is considered
+ * as non-relevant. </p>
+ * <p>
+ * A (super)class is considered "relevant" if the static method {@code isClassRelevant(class)}
+ * returns true. This method can be overridden in a subclass of Dumper to adapt to local needs. </p>
+ * <p>
+ * A field is considered "relevant" if the following condition if the method
+ * {@code isFieldRelevant(field)} returns true. Similarly, the behavior of this predicate can be
+ * customized by subclassing the Dumper class. </p>
+ * <p>
+ * There are several kinds of print outs available through subclassing. Each of them export two
+ * public methods: {@code dump()} which prints the result on default output stream, and
+ * {@code dumpOf()} which simply returns the generated dump string.
  *
  * <ul> <li> <b>Column</b> a dump with one line per field </li>
  *
@@ -92,8 +89,7 @@ public class Dumper
     protected final boolean useHtml;
 
     /**
-     * Class (beware, this variable is updated as we walk up the inheritance
-     * tree)
+     * Class (beware, this variable is updated as we walk up the inheritance tree)
      */
     protected Class<?> classe;
 

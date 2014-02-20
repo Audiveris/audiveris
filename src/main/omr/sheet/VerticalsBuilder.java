@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      V e r t i c a l s B u i l d e r                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                V e r t i c a l s B u i l d e r                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -58,33 +58,27 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code VerticalsBuilder} is in charge of retrieving major
- * vertical seeds of a dedicated system.
+ * Class {@code VerticalsBuilder} is in charge of retrieving major vertical seeds of a
+ * dedicated system.
  *
- * The purpose is to use these major vertical sticks as seeds for stems,
- * vertical edges of endings, and potential parts of alteration signs
- * (sharp, natural, flat).
+ * The purpose is to use these major vertical sticks as seeds for stems, vertical edges of endings,
+ * and potential parts of alteration signs (sharp, natural, flat).
  * <p>
- * Since bar lines are significantly longer that stems, they require to be based
- * on filaments (natural splines) rather than the straight lines used here.
+ * Since bar lines are significantly longer that stems, they require to be based on filaments
+ * (natural splines) rather than the straight lines used here.
  *
  * @author Hervé Bitteur
  */
 public class VerticalsBuilder
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            VerticalsBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(VerticalsBuilder.class);
 
     /** Events this entity is interested in */
-    private static final Class<?>[] eventClasses = new Class<?>[]{
-        GlyphEvent.class
-    };
+    private static final Class<?>[] eventClasses = new Class<?>[]{GlyphEvent.class};
 
     /** Global seed grade is too low. */
     private static final Failure TOO_LIMITED = new Failure("Stem-TooLimited");
@@ -93,8 +87,7 @@ public class VerticalsBuilder
     private static final Failure TOO_SHORT = new Failure("Stem-TooShort");
 
     /** Clean portion of seed is too short. */
-    private static final Failure TOO_HIGH_ADJACENCY = new Failure(
-            "Stem-TooHighAdjacency");
+    private static final Failure TOO_HIGH_ADJACENCY = new Failure("Stem-TooHighAdjacency");
 
     /** Seed is located in 'DMZ' at beginning of staff. */
     private static final Failure IN_DMZ = new Failure("Stem-InDMZ");
@@ -108,7 +101,7 @@ public class VerticalsBuilder
     /** Seed is not straight enough. */
     private static final Failure NON_STRAIGHT = new Failure("Stem-NonStraight");
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The system to process. */
     private final SystemInfo system;
 
@@ -127,7 +120,7 @@ public class VerticalsBuilder
     /** Suite of checks for a vertical seed. */
     private final SeedCheckSuite suite = new SeedCheckSuite();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // VerticalsBuilder //
     //------------------//
@@ -145,7 +138,7 @@ public class VerticalsBuilder
         typicalWidth = scale.getMainStem();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addCheckBoard //
     //---------------//
@@ -154,10 +147,9 @@ public class VerticalsBuilder
      */
     public void addCheckBoard ()
     {
-        sheet.getAssembly()
-                .addBoard(
-                        Step.DATA_TAB,
-                        new VertCheckBoard(sheet.getNest().getGlyphService(), eventClasses));
+        sheet.getAssembly().addBoard(
+                Step.DATA_TAB,
+                new VertCheckBoard(sheet.getNest().getGlyphService(), eventClasses));
     }
 
     //----------------//
@@ -238,10 +230,7 @@ public class VerticalsBuilder
             stick = system.registerGlyph(stick);
 
             if (stick.isVip()) {
-                logger.info(
-                        "VIP checkVerticals for {} in system#{}",
-                        stick,
-                        system.getId());
+                logger.info("VIP checkVerticals for {} in system#{}", stick, system.getId());
             }
 
             // Check seed is not in DMZ
@@ -307,10 +296,8 @@ public class VerticalsBuilder
         }
 
         for (int y = stickBox.y; y < (stickBox.y + stickBox.height); y++) {
-            final int leftLimit = (int) Math.rint(
-                    LineUtil.intersectionAtY(leftLine, y).getX());
-            final int rightLimit = (int) Math.rint(
-                    LineUtil.intersectionAtY(rightLine, y).getX());
+            final int leftLimit = (int) Math.rint(LineUtil.intersectionAtY(leftLine, y).getX());
+            final int rightLimit = (int) Math.rint(LineUtil.intersectionAtY(rightLine, y).getX());
 
             // Make sure the stem row is not empty
             boolean empty = true;
@@ -419,126 +406,7 @@ public class VerticalsBuilder
         return factory.retrieveFilaments(sections);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
-                1.0,
-                "Maximum delta position between two overlapping filaments");
-
-        Scale.LineFraction maxOverlapSpace = new Scale.LineFraction(
-                0.3,
-                "Maximum space between overlapping filaments");
-
-        Scale.Fraction maxCoordGap = new Scale.Fraction(
-                0,
-                "Maximum delta coordinate for a gap between filaments");
-
-        Scale.Fraction beltMarginDx = new Scale.Fraction(
-                0.15,
-                "Horizontal belt margin checked around stem");
-
-        Check.Grade minCheckResult = new Check.Grade(
-                0.2,
-                "Minimum result for suite of check");
-
-        Check.Grade goodCheckResult = new Check.Grade(
-                0.5,
-                "Good result for suite of check");
-
-        Scale.Fraction blackHigh = new Scale.Fraction(
-                2.5,
-                "High length for a stem");
-
-        Scale.Fraction blackLow = new Scale.Fraction(
-                1.5,
-                "Low length for a stem");
-
-        Scale.Fraction cleanHigh = new Scale.Fraction(
-                2.0,
-                "High clean length for a stem");
-
-        Scale.Fraction cleanLow = new Scale.Fraction(
-                0.75,
-                "Low clean length for a stem");
-
-        Scale.Fraction gapHigh = new Scale.Fraction(
-                0.5,
-                "High vertical gap between stem segments");
-
-        Constant.Double slopeHigh = new Constant.Double(
-                "tangent",
-                0.05,
-                "High difference with global slope");
-
-        Scale.Fraction straightHigh = new Scale.Fraction(
-                0.2,
-                "High mean distance to average stem line");
-
-        Constant.Double maxCoTangentForCheck = new Constant.Double(
-                "cotangent",
-                0.1,
-                "Maximum cotangent for interactive check of a stem candidate");
-    }
-
-    //--------------//
-    // GlyphContext //
-    //--------------//
-    private static class GlyphContext
-            implements Checkable
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** The stick being checked. */
-        Glyph stick;
-
-        /** Length of largest gap found. */
-        int gap;
-
-        /** Total length of black portions of stem. */
-        int black;
-
-        /** Total length of white portions of stem. */
-        int white;
-
-        //~ Constructors -------------------------------------------------------
-        public GlyphContext (Glyph stick)
-        {
-            this.stick = stick;
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public void addFailure (Failure failure)
-        {
-            stick.addFailure(failure);
-        }
-
-        @Override
-        public boolean isVip ()
-        {
-            return stick.isVip();
-        }
-
-        @Override
-        public void setVip ()
-        {
-            stick.setVip();
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "stick#" + stick.getId();
-        }
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // BlackCheck //
     //------------//
@@ -548,7 +416,7 @@ public class VerticalsBuilder
     private class BlackCheck
             extends Check<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         protected BlackCheck ()
         {
@@ -561,7 +429,7 @@ public class VerticalsBuilder
                     TOO_SHORT);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         // Retrieve the length data
         @Override
         protected double getValue (GlyphContext context)
@@ -582,7 +450,7 @@ public class VerticalsBuilder
     private class CleanCheck
             extends Check<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         protected CleanCheck ()
         {
@@ -595,7 +463,7 @@ public class VerticalsBuilder
                     TOO_HIGH_ADJACENCY);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected double getValue (GlyphContext context)
         {
@@ -647,8 +515,7 @@ public class VerticalsBuilder
             }
 
             for (int y = yMin; y <= yMax; y++) {
-                final int leftLimit = (int) Math.ceil(
-                        LineUtil.intersectionAtY(leftLine, y).getX());
+                final int leftLimit = (int) Math.ceil(LineUtil.intersectionAtY(leftLine, y).getX());
                 final int rightLimit = (int) Math.floor(
                         LineUtil.intersectionAtY(rightLine, y).getX());
 
@@ -735,6 +602,63 @@ public class VerticalsBuilder
         }
     }
 
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        Scale.LineFraction maxOverlapDeltaPos = new Scale.LineFraction(
+                1.0,
+                "Maximum delta position between two overlapping filaments");
+
+        Scale.LineFraction maxOverlapSpace = new Scale.LineFraction(
+                0.3,
+                "Maximum space between overlapping filaments");
+
+        Scale.Fraction maxCoordGap = new Scale.Fraction(
+                0,
+                "Maximum delta coordinate for a gap between filaments");
+
+        Scale.Fraction beltMarginDx = new Scale.Fraction(
+                0.15,
+                "Horizontal belt margin checked around stem");
+
+        Check.Grade minCheckResult = new Check.Grade(
+                0.2,
+                "Minimum result for suite of check");
+
+        Check.Grade goodCheckResult = new Check.Grade(0.5, "Good result for suite of check");
+
+        Scale.Fraction blackHigh = new Scale.Fraction(2.5, "High length for a stem");
+
+        Scale.Fraction blackLow = new Scale.Fraction(1.5, "Low length for a stem");
+
+        Scale.Fraction cleanHigh = new Scale.Fraction(2.0, "High clean length for a stem");
+
+        Scale.Fraction cleanLow = new Scale.Fraction(0.75, "Low clean length for a stem");
+
+        Scale.Fraction gapHigh = new Scale.Fraction(
+                0.5,
+                "High vertical gap between stem segments");
+
+        Constant.Double slopeHigh = new Constant.Double(
+                "tangent",
+                0.05,
+                "High difference with global slope");
+
+        Scale.Fraction straightHigh = new Scale.Fraction(
+                0.2,
+                "High mean distance to average stem line");
+
+        Constant.Double maxCoTangentForCheck = new Constant.Double(
+                "cotangent",
+                0.1,
+                "Maximum cotangent for interactive check of a stem candidate");
+    }
+
     //----------//
     // GapCheck //
     //----------//
@@ -744,7 +668,7 @@ public class VerticalsBuilder
     private class GapCheck
             extends Check<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         protected GapCheck ()
         {
@@ -757,12 +681,64 @@ public class VerticalsBuilder
                     TOO_HOLLOW);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         // Retrieve the length data
         @Override
         protected double getValue (GlyphContext context)
         {
             return scale.pixelsToFrac(context.gap);
+        }
+    }
+
+    //--------------//
+    // GlyphContext //
+    //--------------//
+    private static class GlyphContext
+            implements Checkable
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** The stick being checked. */
+        Glyph stick;
+
+        /** Length of largest gap found. */
+        int gap;
+
+        /** Total length of black portions of stem. */
+        int black;
+
+        /** Total length of white portions of stem. */
+        int white;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public GlyphContext (Glyph stick)
+        {
+            this.stick = stick;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void addFailure (Failure failure)
+        {
+            stick.addFailure(failure);
+        }
+
+        @Override
+        public boolean isVip ()
+        {
+            return stick.isVip();
+        }
+
+        @Override
+        public void setVip ()
+        {
+            stick.setVip();
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "stick#" + stick.getId();
         }
     }
 
@@ -775,7 +751,7 @@ public class VerticalsBuilder
     private class MySectionPredicate
             implements Predicate<Section>
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public boolean check (Section section)
@@ -783,8 +759,7 @@ public class VerticalsBuilder
             // Check section is within system left and right boundaries
             Point center = section.getAreaCenter();
 
-            return (center.x > system.getLeft())
-                   && (center.x < system.getRight());
+            return (center.x > system.getLeft()) && (center.x < system.getRight());
         }
     }
 
@@ -797,7 +772,7 @@ public class VerticalsBuilder
     private class SeedCheckSuite
             extends CheckSuite<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Create a new instance
@@ -820,7 +795,7 @@ public class VerticalsBuilder
             }
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void dumpSpecific (StringBuilder sb)
         {
@@ -838,7 +813,7 @@ public class VerticalsBuilder
     private class SlopeCheck
             extends Check<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         protected SlopeCheck ()
         {
@@ -851,7 +826,7 @@ public class VerticalsBuilder
                     NON_VERTICAL);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         // Retrieve the difference between stick slope and global slope
         @Override
         protected double getValue (GlyphContext context)
@@ -861,8 +836,7 @@ public class VerticalsBuilder
             Point2D stop = stick.getStopPoint(VERTICAL);
 
             // Beware of sign of stickSlope (it is the opposite of globalSlope)
-            double stickSlope = -(stop.getX() - start.getX()) / (stop.getY()
-                                                                 - start.getY());
+            double stickSlope = -(stop.getX() - start.getX()) / (stop.getY() - start.getY());
 
             return Math.abs(stickSlope - sheet.getSkew().getSlope());
         }
@@ -877,7 +851,7 @@ public class VerticalsBuilder
     private class StraightCheck
             extends Check<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         protected StraightCheck ()
         {
@@ -890,7 +864,7 @@ public class VerticalsBuilder
                     NON_STRAIGHT);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected double getValue (GlyphContext context)
         {
@@ -910,7 +884,7 @@ public class VerticalsBuilder
     private class VertCheckBoard
             extends CheckBoard<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public VertCheckBoard (SelectionService eventService,
                                Class[] eventList)
@@ -918,7 +892,7 @@ public class VerticalsBuilder
             super("SeedCheck", null, eventService, eventList);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void onEvent (UserEvent event)
         {

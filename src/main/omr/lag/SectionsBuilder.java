@@ -1,20 +1,21 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       S e c t i o n s B u i l d e r                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 S e c t i o n s B u i l d e r                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag;
 
-import ij.process.ByteProcessor;
 import omr.run.Run;
 import omr.run.RunsTable;
 import omr.run.RunsTableFactory;
+
+import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,26 +24,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code SectionsBuilder} populates a full lag, by building the
- * lag sections and junctions, out of a provided {@link RunsTable}
- * instance.
+ * Class {@code SectionsBuilder} populates a full lag, by building the lag sections and
+ * junctions, out of a provided {@link RunsTable} instance.
  *
  * @author Hervé Bitteur
  */
 public class SectionsBuilder
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SectionsBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(SectionsBuilder.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Policy for detection of junctions */
-    private JunctionPolicy junctionPolicy;
+    private final JunctionPolicy junctionPolicy;
 
     /** The lag to populate */
-    private Lag lag;
+    private final Lag lag;
 
     /** List of sections just created by createSections() */
     private List<Section> created;
@@ -61,7 +59,7 @@ public class SectionsBuilder
      */
     private List<Section> prevActives;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------------//
     // SectionsBuilder //
     //-----------------//
@@ -78,7 +76,7 @@ public class SectionsBuilder
         this.junctionPolicy = junctionPolicy;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // createSections //
     //----------------//
@@ -94,10 +92,10 @@ public class SectionsBuilder
                                          boolean include)
     {
         // Get brand new collections
-        created = new ArrayList<>();
-        nextActives = new ArrayList<>();
-        overlappingSections = new ArrayList<>();
-        prevActives = new ArrayList<>();
+        created = new ArrayList<Section>();
+        nextActives = new ArrayList<Section>();
+        overlappingSections = new ArrayList<Section>();
+        prevActives = new ArrayList<Section>();
 
         // All runs (if any) in first column start each their own section
         for (Run run : runsTable.getSequence(0)) {
@@ -113,7 +111,7 @@ public class SectionsBuilder
                 // Copy the former next actives sections
                 // as the new previous active sections
                 prevActives = nextActives;
-                nextActives = new ArrayList<>();
+                nextActives = new ArrayList<Section>();
 
                 // Process all sections of previous column, then prevActives
                 // will contain only active sections (that may be continued)
@@ -173,10 +171,7 @@ public class SectionsBuilder
                                          int minRunLength)
     {
         // Define a proper table factory
-        RunsTableFactory factory = new RunsTableFactory(
-                lag.getOrientation(),
-                source,
-                minRunLength);
+        RunsTableFactory factory = new RunsTableFactory(lag.getOrientation(), source, minRunLength);
 
         // Create the runs table
         RunsTable table = factory.createTable(name);
@@ -282,8 +277,8 @@ public class SectionsBuilder
             break;
 
         default: // Converging sections, end them, start a new one
-
             logger.debug("Converging at {}", run);
+
             Section newSection = createSection(col, run);
             nextActives.add(newSection);
 
@@ -333,17 +328,18 @@ public class SectionsBuilder
         switch (overlapNb) {
         case 0: // Nothing : end of the section
             logger.debug("Ending section {}", section);
+
             break;
 
         case 1: // Continue if consistent
+
             if (junctionPolicy.consistentRun(overlapRun, section)) {
-                logger.debug("Perhaps extending section {} with run {}",
-                             section, overlapRun);
+                logger.debug("Perhaps extending section {} with run {}", section, overlapRun);
             } else {
-                logger.debug("Incompatible height between {} and run {}",
-                             section, overlapRun);
+                logger.debug("Incompatible height between {} and run {}", section, overlapRun);
                 finish(section);
             }
+
             break;
 
         default: // Diverging, so conclude the section here

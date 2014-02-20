@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           M e m o r y M e t e r                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     M e m o r y M e t e r                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui;
 
@@ -33,26 +33,25 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code MemoryMeter} encapsulates the display of a linear memory
- * meter in MB (both used and total), together with a garbage-collection
- * button.
+ * Class {@code MemoryMeter} encapsulates the display of a linear memory meter in MB
+ * (both used and total), together with a garbage-collection button.
  *
- * <P>There is a alarm threshold that triggers a color switch to red whenever
- * the used memory exceeds the threshold.
+ * <P>
+ * There is a alarm threshold that triggers a color switch to red whenever the used memory exceeds
+ * the threshold.
  *
  * @author Hervé Bitteur
  */
 public class MemoryMeter
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
     /** A mega as 2**20 */
     private static final double MEGA = 1024 * 1024;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Default foreground color, when under alarm threshold */
     private Color defaultForeground;
 
@@ -77,7 +76,7 @@ public class MemoryMeter
     /** Last value for threshold, in order to save on display */
     private int lastThreshold = 0;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // MemoryMeter //
     //-------------//
@@ -96,7 +95,7 @@ public class MemoryMeter
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // collectGarbage //
     //----------------//
@@ -149,8 +148,7 @@ public class MemoryMeter
     //----------//
     private void defineUI ()
     {
-        ApplicationContext applicationContext = MainGui.getInstance()
-                .getContext();
+        ApplicationContext applicationContext = MainGui.getInstance().getContext();
         component.setLayout(new BorderLayout());
 
         // Progress bar
@@ -161,8 +159,7 @@ public class MemoryMeter
         component.add(progressBar, BorderLayout.CENTER);
 
         // Garbage collector button
-        JButton button = new JButton(
-                applicationContext.getActionMap(this).get("collectGarbage"));
+        JButton button = new JButton(applicationContext.getActionMap(this).get("collectGarbage"));
         button.setBorder(UIUtil.getToolBorder());
         component.add(button, BorderLayout.EAST);
 
@@ -187,16 +184,12 @@ public class MemoryMeter
             {
                 int total = (int) Math.rint(Memory.total() / MEGA);
                 int used = (int) Math.rint(Memory.occupied() / MEGA);
-                int threshold = (int) Math.rint(
-                        constants.alarmThreshold.getValue() * total);
+                int threshold = (int) Math.rint(constants.alarmThreshold.getValue() * total);
 
-                if ((total != lastTotal)
-                    || (used != lastUsed)
-                    || (threshold != lastThreshold)) {
+                if ((total != lastTotal) || (used != lastUsed) || (threshold != lastThreshold)) {
                     progressBar.setMaximum(total);
                     progressBar.setValue(used);
-                    progressBar.setString(
-                            String.format("%d/%d MB", used, total));
+                    progressBar.setString(String.format("%d/%d MB", used, total));
                     lastTotal = total;
                     lastUsed = used;
                     lastThreshold = threshold;
@@ -235,14 +228,14 @@ public class MemoryMeter
         monitorThread.start();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Display period */
         Constant.Integer displayPeriod = new Constant.Integer(
@@ -254,6 +247,5 @@ public class MemoryMeter
         Constant.Ratio alarmThreshold = new Constant.Ratio(
                 0.75,
                 "Memory alarm threshold, expressed in ratio of total memory");
-
     }
 }

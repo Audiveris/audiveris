@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              I m a g e U t i l                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        I m a g e U t i l                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -28,24 +28,21 @@ import javax.imageio.ImageIO;
 import javax.media.jai.JAI;
 
 /**
- * Class {@code ImageUtil} gathers convenient static methods working
- * on images.
+ * Class {@code ImageUtil} gathers convenient static methods working on images.
  * <p>
- * TODO: Perhaps chaining JAI commands into a single operation would be more
- * efficient (memory-wise & performance-wise) that performing each bulk
- * operation one after the other. It would also save multiple calls to
- * "getAsBufferedImage()".
+ * TODO: Perhaps chaining JAI commands into a single operation would be more efficient (memory-wise
+ * & performance-wise) that performing each bulk operation one after the other. It would also save
+ * multiple calls to "getAsBufferedImage()".
  *
  * @author Hervé Bitteur
  */
 public class ImageUtil
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            ImageUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(ImageUtil.class);
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // invert //
     //--------//
@@ -57,10 +54,7 @@ public class ImageUtil
      */
     public static BufferedImage invert (BufferedImage image)
     {
-        return JAI.create(
-                "Invert",
-                new ParameterBlock().addSource(image).add(null),
-                null)
+        return JAI.create("Invert", new ParameterBlock().addSource(image).add(null), null)
                 .getAsBufferedImage();
     }
 
@@ -81,10 +75,7 @@ public class ImageUtil
         // We use the max value among the RGB channels
         int width = image.getWidth();
         int height = image.getHeight();
-        BufferedImage img = new BufferedImage(
-                width,
-                height,
-                BufferedImage.TYPE_BYTE_GRAY);
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         WritableRaster raster = img.getRaster();
         Raster source = image.getData();
         int[] levels = new int[3];
@@ -170,10 +161,7 @@ public class ImageUtil
             {0.114d, 0.587d, 0.299d, 0.0d}
         };
 
-        return JAI.create(
-                "bandcombine",
-                new ParameterBlock().addSource(rgb).add(matrix),
-                null)
+        return JAI.create("bandcombine", new ParameterBlock().addSource(rgb).add(matrix), null)
                 .getAsBufferedImage();
     }
 
@@ -208,8 +196,7 @@ public class ImageUtil
     {
         logger.info("Discarding alpha band ...");
 
-        return JAI.create("bandselect", rgba, new int[]{0, 1, 2})
-                .getAsBufferedImage();
+        return JAI.create("bandselect", rgba, new int[]{0, 1, 2}).getAsBufferedImage();
     }
 
     //------------//
@@ -226,10 +213,7 @@ public class ImageUtil
                                    String name)
     {
         try {
-            ImageIO.write(
-                    image,
-                    "png",
-                    new File(WellKnowns.TEMP_FOLDER, name + ".png"));
+            ImageIO.write(image, "png", new File(WellKnowns.TEMP_FOLDER, name + ".png"));
         } catch (IOException ex) {
             logger.warn("Error storing " + name, ex);
         }
@@ -248,8 +232,7 @@ public class ImageUtil
     public static BufferedImage xor (BufferedImage image1,
                                      BufferedImage image2)
     {
-        return JAI.create("Xor", image1, image2)
-                .getAsBufferedImage();
+        return JAI.create("Xor", image1, image2).getAsBufferedImage();
     }
 
     //--------//

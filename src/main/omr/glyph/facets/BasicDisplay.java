@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          B a s i c D i s p l a y                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    B a s i c D i s p l a y                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -28,21 +28,21 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * Class {@code BasicDisplay} is the basic implementation of a display
- * facet.
+ * Class {@code BasicDisplay} is the basic implementation of a display facet.
  *
  * @author Hervé Bitteur
  */
 class BasicDisplay
-        extends BasicFacet
-        implements GlyphDisplay
+    extends BasicFacet
+    implements GlyphDisplay
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Potential attachments, lazily allocated. */
     protected AttachmentHolder attachments;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
+
     //--------------//
     // BasicDisplay //
     //--------------//
@@ -56,12 +56,13 @@ class BasicDisplay
         super(glyph);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+
     //---------------//
     // addAttachment //
     //---------------//
     @Override
-    public void addAttachment (String id,
+    public void addAttachment (String         id,
                                java.awt.Shape attachment)
     {
         if (attachment != null) {
@@ -141,8 +142,7 @@ class BasicDisplay
         if (glyph.getShape() == null) {
             return Colors.SHAPE_UNKNOWN;
         } else {
-            return glyph.getShape()
-                    .getColor();
+            return glyph.getShape().getColor();
         }
     }
 
@@ -153,7 +153,7 @@ class BasicDisplay
     public ByteProcessor getImage ()
     {
         // Determine the bounding box
-        final Rectangle box = glyph.getBounds();
+        final Rectangle     box = glyph.getBounds();
         final ByteProcessor image = new ByteProcessor(box.width, box.height);
         image.invert();
 

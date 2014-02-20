@@ -1,19 +1,22 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              P a g e M e n u                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        P a g e M e n u                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.ui;
 
 import omr.glyph.facets.Glyph;
 import omr.glyph.ui.SymbolMenu;
 import omr.glyph.ui.SymbolsController;
+
+import omr.grid.StaffInfo;
+import omr.grid.StaffManager;
 
 import omr.score.entity.Chord;
 import omr.score.entity.Measure;
@@ -23,6 +26,9 @@ import omr.score.entity.Slot;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+
+import omr.sig.ui.GlyphMenu;
+import omr.sig.ui.InterMenu;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,34 +46,28 @@ import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import omr.grid.StaffInfo;
-import omr.grid.StaffManager;
-import omr.sig.ui.InterMenu;
-import omr.sig.ui.GlyphMenu;
 
 /**
- * Class {@code PageMenu} defines the pop-up menu which is linked to
- * the current selection in page editor view.
+ * Class {@code PageMenu} defines the pop-up menu which is linked to the current
+ * selection in page editor view.
  * <p>
  * It points to several sub-menus: measure, slot, chords, glyphs
- * </p>
  *
  * @author Hervé Bitteur
  */
 public class PageMenu
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(PageMenu.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The related page. */
     private final Page page;
 
     /** Actions to update according to current selections. */
-    private final Collection<DynAction> dynActions = new HashSet<>();
+    private final Collection<DynAction> dynActions = new HashSet<DynAction>();
 
     /** Concrete popup menu. */
     private final JPopupMenu popup;
@@ -97,7 +97,7 @@ public class PageMenu
     //
     /** Selected staff, if any. */
     private StaffInfo staff;
-    
+
     /** Selected measure. */
     private Measure measure;
 
@@ -119,7 +119,7 @@ public class PageMenu
     /** Number of symbols in the selection. */
     private int symbolNb = 0;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------//
     // PageMenu //
@@ -147,7 +147,7 @@ public class PageMenu
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //----------//
     // getPopup //
@@ -174,15 +174,16 @@ public class PageMenu
     {
         // Analyze the context to retrieve designated system, measure & slot
         Sheet sheet = page.getSheet();
-        
+
         StaffManager staffManager = sheet.getStaffManager();
         staff = staffManager.getStaffAt(point);
         staffMenu.update();
-        
+
         List<SystemInfo> systems = sheet.getSystems();
 
         if (systems != null) {
             slot = sheet.getSymbolsEditor().getSlotAt(point);
+
             if (slot != null) {
                 measure = slot.getMeasure();
             } else {
@@ -217,12 +218,11 @@ public class PageMenu
     {
         popup.removeAll();
 
-        
         // Staff
         if (staff != null) {
             popup.add(staffMenu.getMenu());
         }
-        
+
         // Measure
         if (measure != null) {
             popup.add(measureMenu.getMenu());
@@ -254,7 +254,7 @@ public class PageMenu
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //-----------//
     // DynAction //
@@ -266,7 +266,7 @@ public class PageMenu
     public abstract class DynAction
             extends AbstractAction
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public DynAction ()
         {
@@ -274,8 +274,137 @@ public class PageMenu
             dynActions.add(this);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public abstract void update ();
+    }
+
+    //-----------//
+    // ChordMenu //
+    //-----------//
+    /**
+     * Dump the chords that translate the selected glyphs.
+     */
+    private class ChordMenu
+            extends DynAction
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Concrete menu */
+        private final JMenu menu;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public ChordMenu ()
+        {
+            menu = new JMenu("Chord");
+            defineLayout();
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Void
+        }
+
+        public JMenuItem getMenu ()
+        {
+            return menu;
+        }
+
+        @Override
+        public void update ()
+        {
+            if (chordNb > 0) {
+                menu.setText("Chords");
+            } else {
+                menu.setText("no chords");
+            }
+        }
+
+        public int updateMenu ()
+        {
+            SymbolsController controller = page.getSheet().getSymbolsController();
+            Set<Glyph> glyphs = controller.getNest().getSelectedGlyphSet();
+            selectedChords = new HashSet<Chord>();
+
+            if (glyphs != null) {
+                for (Glyph glyph : glyphs) {
+                    for (Object obj : glyph.getTranslations()) {
+                        if (obj instanceof Note) {
+                            Note note = (Note) obj;
+                            Chord chord = note.getChord();
+
+                            if (chord != null) {
+                                selectedChords.add(chord);
+                            }
+                        } else if (obj instanceof Chord) {
+                            selectedChords.add((Chord) obj);
+                        }
+                    }
+                }
+
+                if (!selectedChords.isEmpty()) {
+                    List<Chord> chordList = new ArrayList<Chord>(selectedChords);
+                    Collections.sort(chordList, Chord.byAbscissa);
+
+                    StringBuilder sb = new StringBuilder();
+
+                    for (Chord chord : chordList) {
+                        if (sb.length() > 0) {
+                            sb.append(", ");
+                        }
+
+                        sb.append("Chord #").append(chord.getId());
+                    }
+
+                    sb.append(" ...");
+
+                    menu.setText(sb.toString());
+                }
+            }
+
+            return selectedChords.size();
+        }
+
+        private void defineLayout ()
+        {
+            menu.add(new JMenuItem(new DumpAction()));
+        }
+
+        //~ Inner Classes --------------------------------------------------------------------------
+        //------------//
+        // DumpAction //
+        //------------//
+        /**
+         * Dump the current chord(s)
+         */
+        private class DumpAction
+                extends DynAction
+        {
+            //~ Constructors -----------------------------------------------------------------------
+
+            public DumpAction ()
+            {
+                putValue(NAME, "Dump chord(s)");
+                putValue(SHORT_DESCRIPTION, "Dump the selected chord(s)");
+            }
+
+            //~ Methods ----------------------------------------------------------------------------
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                // Dump the selected chords
+                for (Chord chord : selectedChords) {
+                    logger.info(chord.toString());
+                }
+            }
+
+            @Override
+            public void update ()
+            {
+                setEnabled(chordNb > 0);
+            }
+        }
     }
 
     //-------------//
@@ -284,12 +413,12 @@ public class PageMenu
     private class MeasureMenu
             extends DynAction
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Concrete menu */
         private final JMenu menu;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create the popup menu
          *
@@ -301,7 +430,7 @@ public class PageMenu
             defineLayout();
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -333,7 +462,7 @@ public class PageMenu
             menu.add(new JMenuItem(new DumpAction()));
         }
 
-        //~ Inner Classes ------------------------------------------------------
+        //~ Inner Classes --------------------------------------------------------------------------
         //------------//
         // DumpAction //
         //------------//
@@ -343,16 +472,15 @@ public class PageMenu
         private class DumpAction
                 extends DynAction
         {
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
 
             public DumpAction ()
             {
                 putValue(NAME, "Dump voices");
-                putValue(SHORT_DESCRIPTION,
-                         "Dump the voices of the selected measure");
+                putValue(SHORT_DESCRIPTION, "Dump the voices of the selected measure");
             }
 
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -367,237 +495,25 @@ public class PageMenu
         }
     }
 
-    //-----------//
-    // StaffMenu //
-    //-----------//
-    private class StaffMenu
-            extends DynAction
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Concrete menu */
-        private final JMenu menu;
-
-        //~ Constructors -------------------------------------------------------
-        /**
-         * Create the staff menu
-         */
-        public StaffMenu ()
-        {
-            menu = new JMenu("Staff");
-            defineLayout();
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            // Default action is to open the menu
-            assert false;
-        }
-
-        public JMenu getMenu ()
-        {
-            return menu;
-        }
-
-        @Override
-        public void update ()
-        {
-            menu.setEnabled(staff != null);
-
-            if (staff != null) {
-                menu.setText("Staff #" + staff.getId() + " ...");
-            } else {
-                menu.setText("no staff");
-            }
-        }
-
-        private void defineLayout ()
-        {
-            // Staff
-            menu.add(new JMenuItem(new PlotAction()));
-        }
-
-        //~ Inner Classes ------------------------------------------------------
-        //------------//
-        // PlotAction //
-        //------------//
-        /**
-         * Plot the projection of the current staff.
-         */
-        private class PlotAction
-                extends DynAction
-        {
-            //~ Constructors ---------------------------------------------------
-
-            public PlotAction ()
-            {
-                putValue(NAME, "Projection");
-                putValue(SHORT_DESCRIPTION,
-                         "Display staff horizontal projection");
-            }
-
-            //~ Methods --------------------------------------------------------
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                page.getSheet().getGridBuilder().barsRetriever.plot(staff);
-            }
-
-            @Override
-            public void update ()
-            {
-                setEnabled(staff != null);
-            }
-        }
-    }
-
-    //-----------//
-    // ChordMenu //
-    //-----------//
-    /**
-     * Dump the chords that translate the selected glyphs.
-     */
-    private class ChordMenu
-            extends DynAction
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        /** Concrete menu */
-        private final JMenu menu;
-
-        //~ Constructors -------------------------------------------------------
-        public ChordMenu ()
-        {
-            menu = new JMenu("Chord");
-            defineLayout();
-        }
-
-        public JMenuItem getMenu ()
-        {
-            return menu;
-        }
-
-        @Override
-        public void update ()
-        {
-            if (chordNb > 0) {
-                menu.setText("Chords");
-            } else {
-                menu.setText("no chords");
-            }
-        }
-
-        @Override
-        public void actionPerformed (ActionEvent e)
-        {
-            // Void
-        }
-
-        public int updateMenu ()
-        {
-            SymbolsController controller = page.getSheet().getSymbolsController();
-            Set<Glyph> glyphs = controller.getNest().getSelectedGlyphSet();
-            selectedChords = new HashSet<>();
-
-            if (glyphs != null) {
-                for (Glyph glyph : glyphs) {
-                    for (Object obj : glyph.getTranslations()) {
-                        if (obj instanceof Note) {
-                            Note note = (Note) obj;
-                            Chord chord = note.getChord();
-                            if (chord != null) {
-                                selectedChords.add(chord);
-                            }
-                        } else if (obj instanceof Chord) {
-                            selectedChords.add((Chord) obj);
-                        }
-                    }
-                }
-
-                if (!selectedChords.isEmpty()) {
-                    List<Chord> chordList = new ArrayList<>(selectedChords);
-                    Collections.sort(chordList, Chord.byAbscissa);
-
-                    StringBuilder sb = new StringBuilder();
-                    for (Chord chord : chordList) {
-                        if (sb.length() > 0) {
-                            sb.append(", ");
-                        }
-                        sb.append("Chord #")
-                                .append(chord.getId());
-                    }
-                    sb.append(" ...");
-
-                    menu.setText(sb.toString());
-                }
-            }
-
-            return selectedChords.size();
-        }
-
-        private void defineLayout ()
-        {
-            menu.add(new JMenuItem(new DumpAction()));
-        }
-
-        //~ Inner Classes ------------------------------------------------------
-        //------------//
-        // DumpAction //
-        //------------//
-        /**
-         * Dump the current chord(s)
-         */
-        private class DumpAction
-                extends DynAction
-        {
-            //~ Constructors ---------------------------------------------------
-
-            public DumpAction ()
-            {
-                putValue(NAME, "Dump chord(s)");
-                putValue(SHORT_DESCRIPTION,
-                         "Dump the selected chord(s)");
-            }
-
-            //~ Methods --------------------------------------------------------
-            @Override
-            public void actionPerformed (ActionEvent e)
-            {
-                // Dump the selected chords
-                for (Chord chord : selectedChords) {
-                    logger.info(chord.toString());
-                }
-            }
-
-            @Override
-            public void update ()
-            {
-                setEnabled(chordNb > 0);
-            }
-        }
-    }
-
     //----------//
     // SlotMenu //
     //----------//
     private class SlotMenu
             extends DynAction
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Concrete menu */
         private final JMenu menu;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public SlotMenu ()
         {
             menu = new JMenu("Slot");
             defineLayout();
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void actionPerformed (ActionEvent e)
         {
@@ -632,7 +548,7 @@ public class PageMenu
             menu.add(new JMenuItem(new DumpVoicesAction()));
         }
 
-        //~ Inner Classes ------------------------------------------------------
+        //~ Inner Classes --------------------------------------------------------------------------
         //
         //----------------------//
         // DumpSlotChordsAction //
@@ -643,16 +559,15 @@ public class PageMenu
         private class DumpSlotChordsAction
                 extends DynAction
         {
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
 
             public DumpSlotChordsAction ()
             {
                 putValue(NAME, "Dump chords");
-                putValue(SHORT_DESCRIPTION,
-                         "Dump the chords of the selected slot");
+                putValue(SHORT_DESCRIPTION, "Dump the chords of the selected slot");
             }
 
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -675,16 +590,15 @@ public class PageMenu
         private class DumpVoicesAction
                 extends DynAction
         {
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
 
             public DumpVoicesAction ()
             {
                 putValue(NAME, "Dump voices");
-                putValue(SHORT_DESCRIPTION,
-                         "Dump the voices of the selected slot");
+                putValue(SHORT_DESCRIPTION, "Dump the voices of the selected slot");
             }
 
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -695,6 +609,91 @@ public class PageMenu
             public void update ()
             {
                 setEnabled(slot != null);
+            }
+        }
+    }
+
+    //-----------//
+    // StaffMenu //
+    //-----------//
+    private class StaffMenu
+            extends DynAction
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        /** Concrete menu */
+        private final JMenu menu;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Create the staff menu
+         */
+        public StaffMenu ()
+        {
+            menu = new JMenu("Staff");
+            defineLayout();
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void actionPerformed (ActionEvent e)
+        {
+            // Default action is to open the menu
+            assert false;
+        }
+
+        public JMenu getMenu ()
+        {
+            return menu;
+        }
+
+        @Override
+        public void update ()
+        {
+            menu.setEnabled(staff != null);
+
+            if (staff != null) {
+                menu.setText("Staff #" + staff.getId() + " ...");
+            } else {
+                menu.setText("no staff");
+            }
+        }
+
+        private void defineLayout ()
+        {
+            // Staff
+            menu.add(new JMenuItem(new PlotAction()));
+        }
+
+        //~ Inner Classes --------------------------------------------------------------------------
+        //------------//
+        // PlotAction //
+        //------------//
+        /**
+         * Plot the projection of the current staff.
+         */
+        private class PlotAction
+                extends DynAction
+        {
+            //~ Constructors -----------------------------------------------------------------------
+
+            public PlotAction ()
+            {
+                putValue(NAME, "Projection");
+                putValue(SHORT_DESCRIPTION, "Display staff horizontal projection");
+            }
+
+            //~ Methods ----------------------------------------------------------------------------
+            @Override
+            public void actionPerformed (ActionEvent e)
+            {
+                page.getSheet().getGridBuilder().barsRetriever.plot(staff);
+            }
+
+            @Override
+            public void update ()
+            {
+                setEnabled(staff != null);
             }
         }
     }

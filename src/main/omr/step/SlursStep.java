@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              S l u r s S t e p                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        S l u r s S t e p                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -23,9 +23,9 @@ import java.util.Collection;
  * @author Hervé Bitteur
  */
 public class SlursStep
-    extends AbstractStep
+        extends AbstractStep
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //-----------//
     // SlursStep //
@@ -36,22 +36,21 @@ public class SlursStep
     public SlursStep ()
     {
         super(
-            Steps.SLURS,
-            Level.SHEET_LEVEL,
-            Mandatory.MANDATORY,
-            SKELETON_TAB,
-            "Retrieve slurs & ties");
+                Steps.SLURS,
+                Level.SHEET_LEVEL,
+                Mandatory.MANDATORY,
+                SKELETON_TAB,
+                "Retrieve slurs & ties");
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // doit //
     //------//
     @Override
     protected void doit (Collection<SystemInfo> systems,
-                         Sheet                  sheet)
-        throws StepException
+                         Sheet sheet)
+            throws StepException
     {
         new SlursBuilder(sheet).buildSlurs(); // -> slurs
     }

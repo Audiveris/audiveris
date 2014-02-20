@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              T e x t I t e m                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        T e x t I t e m                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.text;
 
@@ -22,7 +22,7 @@ import java.util.List;
  */
 public abstract class TextItem
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Item bounds. */
     private Rectangle bounds;
@@ -30,7 +30,7 @@ public abstract class TextItem
     /** Item value. */
     private String value;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //---------//
     // TextItem //
@@ -51,7 +51,7 @@ public abstract class TextItem
         this.value = value;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // boundsOf //
     //----------//
@@ -74,24 +74,6 @@ public abstract class TextItem
         }
 
         return bounds;
-    }
-
-    //---------//
-    // valueOf //
-    //---------//
-    public static String valueOf (List<? extends TextItem> items)
-    {
-        StringBuilder sb = new StringBuilder();
-
-        for (TextItem item : items) {
-            if (sb.length() > 0) {
-                sb.append(" ");
-            }
-
-            sb.append(item.getValue());
-        }
-
-        return sb.toString();
     }
 
     //-----------//
@@ -172,6 +154,24 @@ public abstract class TextItem
         }
     }
 
+    //---------//
+    // valueOf //
+    //---------//
+    public static String valueOf (List<? extends TextItem> items)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (TextItem item : items) {
+            if (sb.length() > 0) {
+                sb.append(" ");
+            }
+
+            sb.append(item.getValue());
+        }
+
+        return sb.toString();
+    }
+
     //-----------------//
     // internalsString //
     //-----------------//
@@ -179,18 +179,16 @@ public abstract class TextItem
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(" \"")
-                .append(getValue())
-                .append("\"");
+        sb.append(" \"").append(getValue()).append("\"");
 
         if (getBounds() != null) {
             sb.append(
                     String.format(
-                    " bounds[%d,%d,%d,%d]",
-                    bounds.x,
-                    bounds.y,
-                    bounds.width,
-                    bounds.height));
+                            " bounds[%d,%d,%d,%d]",
+                            bounds.x,
+                            bounds.y,
+                            bounds.width,
+                            bounds.height));
         }
 
         return sb.toString();

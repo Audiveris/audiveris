@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         W i n d o w s R e g i s t r y                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   W i n d o w s R e g i s t r y                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -20,24 +20,21 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-
 import java.util.List;
 
 /**
- * Class {@code WindowsRegistry} provides a basic interface to
- * Windows registry, implemented to top on CLI "reg" command.
+ * Class {@code WindowsRegistry} provides a basic interface to Windows registry,
+ * implemented to top on CLI "reg" command.
  *
  * @author Hervé Bitteur
  */
 public class WindowsRegistry
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            WindowsRegistry.class);
+    private static final Logger logger = LoggerFactory.getLogger(WindowsRegistry.class);
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // query //
     //-------//
@@ -50,12 +47,11 @@ public class WindowsRegistry
     public static List<String> query (String... args)
     {
         // Output lines
-        List<String> output = new ArrayList<>();
+        List<String> output = new ArrayList<String>();
 
         // Command arguments
-        List<String> cmdArgs = new ArrayList<>();
-        cmdArgs.addAll(Arrays.asList(
-                "cmd.exe", "/c", "reg", "query"));
+        List<String> cmdArgs = new ArrayList<String>();
+        cmdArgs.addAll(Arrays.asList("cmd.exe", "/c", "reg", "query"));
         cmdArgs.addAll(Arrays.asList(args));
         logger.debug("cmdArgs: {}", cmdArgs);
 
@@ -79,6 +75,7 @@ public class WindowsRegistry
             // Wait for process completion
             int exitValue = process.waitFor();
             logger.debug("Exit value is: {}", exitValue);
+
         } catch (IOException | InterruptedException ex) {
             logger.warn("Error running " + cmdArgs, ex);
         }

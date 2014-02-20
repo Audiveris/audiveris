@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    A b s t r a c t S y s t e m S t e p                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              A b s t r a c t S y s t e m S t e p                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -26,21 +26,19 @@ import java.util.Collection;
 import java.util.concurrent.Callable;
 
 /**
- * Abstract class {@code AbstractSystemStep} is a basis for any step
- * working on the sheet systems, perhaps in parallel.
+ * Abstract class {@code AbstractSystemStep} is a basis for any step working on the
+ * sheet systems, perhaps in parallel.
  *
  * @author Hervé Bitteur
  */
 public abstract class AbstractSystemStep
         extends AbstractStep
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractSystemStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractSystemStep.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------------//
     // AbstractSystemStep //
     //--------------------//
@@ -62,7 +60,7 @@ public abstract class AbstractSystemStep
         super(name, level, mandatory, label, description);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //-------------//
     // clearErrors //
@@ -71,21 +69,6 @@ public abstract class AbstractSystemStep
     public void clearErrors (Sheet sheet)
     {
         // Void, since this is done system per system
-    }
-
-    //-------------------//
-    // clearSystemErrors //
-    //-------------------//
-    /**
-     * Clear the errors of just the provided system
-     *
-     * @param system the system to clear of errors
-     */
-    protected void clearSystemErrors (SystemInfo system)
-    {
-        if (Main.getGui() != null) {
-            system.getSheet().getErrorsEditor().clearSystem(this, system.getId());
-        }
     }
 
     //----------//
@@ -101,30 +84,19 @@ public abstract class AbstractSystemStep
     public abstract void doSystem (SystemInfo system)
             throws StepException;
 
-    //------//
-    // doit //
-    //------//
+    //-------------------//
+    // clearSystemErrors //
+    //-------------------//
     /**
-     * Actually perform the step.
-     * This method is run when this step is explicitly selected
+     * Clear the errors of just the provided system
      *
-     * @param systems systems to process (null means all systems)
-     * @param sheet   the sheet to process
-     * @throws StepException raised if processing failed
+     * @param system the system to clear of errors
      */
-    @Override
-    protected void doit (Collection<SystemInfo> systems,
-                         Sheet sheet)
-            throws StepException
+    protected void clearSystemErrors (SystemInfo system)
     {
-        // Preliminary actions
-        doProlog(systems, sheet);
-
-        // Processing system per system
-        doitPerSystem(systems, sheet);
-
-        // Final actions
-        doEpilog(systems, sheet);
+        if (Main.getGui() != null) {
+            system.getSheet().getErrorsEditor().clearSystem(this, system.getId());
+        }
     }
 
     //----------//
@@ -163,6 +135,32 @@ public abstract class AbstractSystemStep
         // Empty by default
     }
 
+    //------//
+    // doit //
+    //------//
+    /**
+     * Actually perform the step.
+     * This method is run when this step is explicitly selected
+     *
+     * @param systems systems to process (null means all systems)
+     * @param sheet   the sheet to process
+     * @throws StepException raised if processing failed
+     */
+    @Override
+    protected void doit (Collection<SystemInfo> systems,
+                         Sheet sheet)
+            throws StepException
+    {
+        // Preliminary actions
+        doProlog(systems, sheet);
+
+        // Processing system per system
+        doitPerSystem(systems, sheet);
+
+        // Final actions
+        doEpilog(systems, sheet);
+    }
+
     //---------------//
     // doitPerSystem //
     //---------------//
@@ -176,7 +174,7 @@ public abstract class AbstractSystemStep
                                 final Sheet sheet)
     {
         try {
-            Collection<Callable<Void>> tasks = new ArrayList<>();
+            Collection<Callable<Void>> tasks = new ArrayList<Callable<Void>>();
 
             if (systems == null) {
                 systems = sheet.getSystems();
@@ -192,17 +190,17 @@ public abstract class AbstractSystemStep
                             throws Exception
                             {
                                 try {
-                                    logger.debug("{} doSystem #{}",
-                                                 AbstractSystemStep.this,
-                                                 system.idString());
+                                    logger.debug(
+                                            "{} doSystem #{}",
+                                            AbstractSystemStep.this,
+                                            system.idString());
 
                                     doSystem(system);
                                 } catch (Exception ex) {
-                                    logger.warn(sheet.getLogPrefix()
-                                                + "Interrupt on "
-                                                + system.idString()
-                                                + " (" + ex + ") ",
-                                                ex);
+                                    logger.warn(
+                                            sheet.getLogPrefix() + "Interrupt on " + system.idString()
+                                            + " (" + ex + ") ",
+                                            ex);
                                 }
 
                                 return null;

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          S c o r e C l e a n e r                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    S c o r e C l e a n e r                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -23,22 +23,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code ScoreCleaner} can visit the score hierarchy to get rid
- * of all measure items except barlines, ready for a new score
- * translation.
+ * Class {@code ScoreCleaner} can visit the score hierarchy to get rid of all measure
+ * items except bar lines, ready for a new score translation.
  *
  * @author Hervé Bitteur
  */
 public class ScoreCleaner
         extends AbstractScoreVisitor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ScoreCleaner.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreCleaner.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // ScoreCleaner //
     //--------------//
@@ -49,7 +46,7 @@ public class ScoreCleaner
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // visit System //
     //--------------//
@@ -60,8 +57,7 @@ public class ScoreCleaner
             logger.debug("Cleaning up {}", system);
 
             // Remove recorded translations for all system glyphs
-            for (Glyph glyph : system.getInfo()
-                    .getGlyphs()) {
+            for (Glyph glyph : system.getInfo().getGlyphs()) {
                 if (glyph.getShape() != Shape.LEDGER) {
                     glyph.clearTranslations();
                 }
@@ -69,9 +65,7 @@ public class ScoreCleaner
 
             system.acceptChildren(this);
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + system,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + system, ex);
         }
 
         return false;
@@ -85,9 +79,7 @@ public class ScoreCleaner
     {
         try {
             if (systemPart.isDummy()) {
-                systemPart.getParent()
-                        .getChildren()
-                        .remove(systemPart);
+                systemPart.getParent().getChildren().remove(systemPart);
 
                 return false;
             } else {
@@ -97,9 +89,7 @@ public class ScoreCleaner
                 return true;
             }
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + systemPart,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + systemPart, ex);
         }
 
         return false;
@@ -114,9 +104,7 @@ public class ScoreCleaner
         try {
             measure.cleanupNode();
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + measure,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + measure, ex);
         }
 
         return false;

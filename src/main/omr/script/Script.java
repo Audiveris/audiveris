@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                S c r i p t                                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                          S c r i p t                                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.script;
 
@@ -39,11 +39,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * Class {@code Script} handles a complete script applied to a score.
- *
- * <p>A script is a sequence of {@link ScriptTask} instances tasks that are
- * recorded as the user interacts with the score data.
- *
- * <p>A script can be stored and reloaded/replayed.
+ * <p>
+ * A script is a sequence of {@link ScriptTask} instances tasks that are recorded as the user
+ * interacts with the score data.
+ * <p>
+ * A script can be stored and reloaded/replayed.
  *
  * @author Hervé Bitteur
  */
@@ -51,12 +51,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "script")
 public class Script
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(Script.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Script.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Score to which the script is applied. */
     private Score score;
 
@@ -72,39 +72,26 @@ public class Script
 
     /** Sequence of tasks that compose the script. */
     @XmlElements({
-        @XmlElement(name = "assign",
-                    type = AssignTask.class),
-        @XmlElement(name = "barline",
-                    type = BarlineTask.class),
-        @XmlElement(name = "delete",
-                    type = DeleteTask.class),
-        @XmlElement(name = "export",
-                    type = ExportTask.class),
-        @XmlElement(name = "insert",
-                    type = InsertTask.class),
-        @XmlElement(name = "parameters",
-                    type = ParametersTask.class),
-        @XmlElement(name = "print",
-                    type = PrintTask.class),
-        @XmlElement(name = "rational",
-                    type = RationalTask.class),
-        @XmlElement(name = "remove",
-                    type = RemoveTask.class),
-        @XmlElement(name = "segment",
-                    type = SegmentTask.class),
-        @XmlElement(name = "slur",
-                    type = SlurTask.class),
-        @XmlElement(name = "step",
-                    type = StepTask.class),
-        @XmlElement(name = "text",
-                    type = TextTask.class)
+        @XmlElement(name = "assign", type = AssignTask.class),
+        @XmlElement(name = "barline", type = BarlineTask.class),
+        @XmlElement(name = "delete", type = DeleteTask.class),
+        @XmlElement(name = "export", type = ExportTask.class),
+        @XmlElement(name = "insert", type = InsertTask.class),
+        @XmlElement(name = "parameters", type = ParametersTask.class),
+        @XmlElement(name = "print", type = PrintTask.class),
+        @XmlElement(name = "rational", type = RationalTask.class),
+        @XmlElement(name = "remove", type = RemoveTask.class),
+        @XmlElement(name = "segment", type = SegmentTask.class),
+        @XmlElement(name = "slur", type = SlurTask.class),
+        @XmlElement(name = "step", type = StepTask.class),
+        @XmlElement(name = "text", type = TextTask.class)
     })
-    private final List<ScriptTask> tasks = new ArrayList<>();
+    private final List<ScriptTask> tasks = new ArrayList<ScriptTask>();
 
     /** Flag a script that needs to be stored. */
     private boolean modified;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------//
     // Script //
     //--------//
@@ -120,6 +107,7 @@ public class Script
 
         // Store page ids
         pages = new TreeSet<Integer>();
+
         for (TreeNode pn : score.getPages()) {
             Page page = (Page) pn;
             pages.add(page.getIndex());
@@ -135,7 +123,7 @@ public class Script
         scorePath = null;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // addTask //
     //---------//
@@ -161,7 +149,7 @@ public class Script
     {
         logger.info(toString());
 
-        if (pages != null && !pages.isEmpty()) {
+        if ((pages != null) && !pages.isEmpty()) {
             logger.info("Included pages: {}", pages);
         }
 
@@ -207,8 +195,10 @@ public class Script
      */
     public void run ()
     {
-        logger.debug("Running {}{}",
-                this, (score != null) ? (" on score " + score.getRadix()) : "");
+        logger.debug(
+                "Running {}{}",
+                this,
+                (score != null) ? (" on score " + score.getRadix()) : "");
 
         // Make score concrete (with its pages/sheets)
         if (score == null) {
@@ -232,8 +222,7 @@ public class Script
                     page = score.getPage(pageIndex);
 
                     if (page == null) {
-                        logger.warn("Script error. No page for index {}",
-                                pageIndex);
+                        logger.warn("Script error. No page for index {}", pageIndex);
 
                         continue;
                     }
@@ -285,7 +274,7 @@ public class Script
             sb.append(" ").append(score.getRadix());
         }
 
-        if (pages != null && !pages.isEmpty()) {
+        if ((pages != null) && !pages.isEmpty()) {
             sb.append(" pages:").append(pages);
         }
 

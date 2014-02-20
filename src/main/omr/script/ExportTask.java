@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            E x p o r t T a s k                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      E x p o r t T a s k                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.script;
 
@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 public class ExportTask
         extends ScriptTask
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The file used for export */
     @XmlAttribute
@@ -40,7 +40,7 @@ public class ExportTask
     @XmlAttribute(name = "inject-signature")
     private Boolean injectSignature;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // ExportTask //
     //------------//
@@ -62,15 +62,14 @@ public class ExportTask
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // core //
     //------//
     @Override
     public void core (Sheet sheet)
     {
-        ScoresManager.getInstance()
-                .export(
+        ScoresManager.getInstance().export(
                 sheet.getScore(),
                 (path != null) ? new File(path) : null,
                 injectSignature);

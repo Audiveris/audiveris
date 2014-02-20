@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              D y n a m i c s                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        D y n a m i c s                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -38,16 +38,14 @@ public class Dynamics
         extends MeasureElement
         implements Direction, Notation
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Dynamics.class);
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
     /** Map Shape -> Signature. */
-    private static final Map<Shape, String> sigs = new HashMap<>();
+    private static final Map<Shape, String> sigs = new HashMap<Shape, String>();
 
     static {
         // Additional characters : m, r, s & z
@@ -77,7 +75,7 @@ public class Dynamics
     }
 
     /** Map Signature -> Shape. */
-    private static final Map<String, Shape> shapes = new HashMap<>();
+    private static final Map<String, Shape> shapes = new HashMap<String, Shape>();
 
     static {
         shapes.put("f", Shape.DYNAMICS_F);
@@ -100,7 +98,7 @@ public class Dynamics
     }
 
     /** Map Shape -> Sound. (TODO: complete the table) */
-    private static final Map<Shape, Integer> sounds = new HashMap<>();
+    private static final Map<Shape, Integer> sounds = new HashMap<Shape, Integer>();
 
     static {
         sounds.put(Shape.DYNAMICS_FFF, 144);
@@ -126,7 +124,7 @@ public class Dynamics
         //        sounds.put(Shape.DYNAMICS_SFZ, "sfz");
     }
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // Dynamics //
     //----------//
@@ -150,7 +148,7 @@ public class Dynamics
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getSoundLevel //
     //---------------//
@@ -198,8 +196,7 @@ public class Dynamics
         }
 
         // Otherwise, create a brand new instance
-        glyph.setTranslation(
-                new Dynamics(measure, point, findChord(measure, point), glyph));
+        glyph.setTranslation(new Dynamics(measure, point, findChord(measure, point), glyph));
     }
 
     //--------//
@@ -247,8 +244,7 @@ public class Dynamics
     private boolean isCompatibleWith (Point point)
     {
         // Check x-proximity and y-alignment
-        Scale scale = getSystem()
-                .getScale();
+        Scale scale = getSystem().getScale();
         int dx = scale.toPixels(constants.maxDx);
         int dy = scale.toPixels(constants.maxDy);
 
@@ -263,24 +259,19 @@ public class Dynamics
         return (xDist <= dx) && (yDist <= dy);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Maximum abscissa difference */
-        Scale.Fraction maxDx = new Scale.Fraction(
-                1.5,
-                "Maximum abscissa difference");
+        Scale.Fraction maxDx = new Scale.Fraction(1.5, "Maximum abscissa difference");
 
         /** Maximum ordinate difference */
-        Scale.Fraction maxDy = new Scale.Fraction(
-                0.5,
-                "Maximum ordinate difference");
-
+        Scale.Fraction maxDy = new Scale.Fraction(0.5, "Maximum ordinate difference");
     }
 }

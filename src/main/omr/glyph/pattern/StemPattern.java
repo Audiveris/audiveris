@@ -1,21 +1,21 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           S t e m P a t t e r n                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     S t e m P a t t e r n                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
 import omr.glyph.Evaluation;
-import omr.glyph.ShapeEvaluator;
 import omr.glyph.GlyphNetwork;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
+import omr.glyph.ShapeEvaluator;
 import omr.glyph.ShapeSet;
 import omr.glyph.facets.Glyph;
 
@@ -36,17 +36,16 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class {@code StemPattern} is a GlyphInspector dedicated to the
- * inspection of Stems at System level
+ * Class {@code StemPattern} is a GlyphInspector dedicated to the inspection of Stems
+ * at System level
  *
  * @author Hervé Bitteur
  */
 public class StemPattern
         extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(StemPattern.class);
 
     /** Predicate to filter reliable symbols attached to a stem. */
@@ -57,15 +56,14 @@ public class StemPattern
         {
             Shape shape = glyph.getShape();
 
-            boolean res = glyph.isWellKnown()
-                          && ShapeSet.StemSymbols.contains(shape)
+            boolean res = glyph.isWellKnown() && ShapeSet.StemSymbols.contains(shape)
                           && (shape != Shape.BEAM_HOOK);
 
             return res;
         }
     };
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new StemPattern object.
      *
@@ -76,7 +74,7 @@ public class StemPattern
         super("Stem", system);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // runPattern //
     //------------//
@@ -93,15 +91,15 @@ public class StemPattern
     {
         int nb = 0;
 
-        Map<Glyph, Set<Glyph>> badsMap = new HashMap<>();
+        Map<Glyph, Set<Glyph>> badsMap = new HashMap<Glyph, Set<Glyph>>();
 
         // Collect all undue stems
-        List<Glyph> SuspectedStems = new ArrayList<>();
+        List<Glyph> SuspectedStems = new ArrayList<Glyph>();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.isStem() && !glyph.isManualShape() && glyph.isActive()) {
-                Set<Glyph> goods = new HashSet<>();
-                Set<Glyph> bads = new HashSet<>();
+                Set<Glyph> goods = new HashSet<Glyph>();
+                Set<Glyph> bads = new HashSet<Glyph>();
                 glyph.getSymbolsBefore(reliableStemSymbols, goods, bads);
                 glyph.getSymbolsAfter(reliableStemSymbols, goods, bads);
 
@@ -131,15 +129,12 @@ public class StemPattern
         system.retrieveGlyphs();
 
         // Try to recognize each glyph in turn
-        List<Glyph> symbols = new ArrayList<>();
+        List<Glyph> symbols = new ArrayList<Glyph>();
         final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
 
         for (Glyph glyph : system.getGlyphs()) {
             if (glyph.getShape() == null) {
-                Evaluation vote = evaluator.vote(
-                        glyph,
-                        system,
-                        Grades.patternsMinGrade);
+                Evaluation vote = evaluator.vote(glyph, system, Grades.patternsMinGrade);
 
                 if (vote != null) {
                     glyph.setEvaluation(vote);

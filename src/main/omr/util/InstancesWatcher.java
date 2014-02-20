@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       I n s t a n c e s W a t c h e r                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 I n s t a n c e s W a t c h e r                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -23,16 +23,19 @@ import java.util.Set;
  * A debug utility to keep track of active instances of a given class.
  *
  * @author Hervé Bitteur
+ * @param <E> precise instances class
  */
 public class InstancesWatcher<E>
 {
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(InstancesWatcher.class);
 
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Weak references to instances. */
-    private Set<WeakReference<E>> actives = new LinkedHashSet<>();
+    private final Set<WeakReference<E>> actives = new LinkedHashSet<WeakReference<E>>();
 
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Register an instance.
      * (to be called in class constructor)
@@ -51,11 +54,13 @@ public class InstancesWatcher<E>
     public synchronized void listRefs ()
     {
         logger.info("Actives left:");
+
         int count = 0;
 
         for (Iterator<WeakReference<E>> it = actives.iterator(); it.hasNext();) {
             WeakReference<E> weak = it.next();
             E ref = weak.get();
+
             if (ref != null) {
                 logger.info("  @{} {}", Integer.toHexString(ref.hashCode()), ref);
                 count++;

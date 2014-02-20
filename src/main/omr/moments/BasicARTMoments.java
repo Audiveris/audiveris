@@ -1,20 +1,19 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       B a s i c A R T M o m e n t s                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 B a s i c A R T M o m e n t s                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.moments;
 
 /**
- * Class {@code BasicARTMoments} implements a basic region-based
- * shape descriptor.
- *
+ * Class {@code BasicARTMoments} implements a basic region-based shape descriptor.
+ * <p>
  * See MPEG-7 Experimentation Model for the original C++ code
  *
  * @author Hervé Bitteur
@@ -22,7 +21,7 @@ package omr.moments;
 public class BasicARTMoments
         implements ARTMoments
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Module values */
     private final double[][] modules = new double[ANGULAR][RADIAL];
@@ -36,7 +35,7 @@ public class BasicARTMoments
     /** Real values */
     private final double[][] reals = new double[ANGULAR][RADIAL];
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // BasicARTMoments //
     //------------------//
@@ -47,28 +46,7 @@ public class BasicARTMoments
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //-----------//
-    // getModule //
-    //-----------//
-    @Override
-    public final double getModule (int p,
-                                   int r)
-    {
-        return modules[p][r];
-    }
-
-    //-----------//
-    // setModule //
-    //-----------//
-    @Override
-    public final void setModule (int p,
-                                 int r,
-                                 double value)
-    {
-        modules[p][r] = value;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // distanceTo //
     //------------//
@@ -86,8 +64,7 @@ public class BasicARTMoments
         for (int p = 0; p < ANGULAR; p++) {
             for (int r = 0; r < RADIAL; r++) {
                 if ((p != 0) || (r != 0)) {
-                    distance += Math.abs(
-                            that.getModule(p, r) - getModule(p, r));
+                    distance += Math.abs(that.getModule(p, r) - getModule(p, r));
 
                     //                    distance += Math.abs(that.getReal(p, r) - getReal(p, r));
                     //                    distance += Math.abs(that.getImag(p, r) - getImag(p, r));
@@ -113,6 +90,16 @@ public class BasicARTMoments
                            int r)
     {
         return imags[p][r];
+    }
+
+    //-----------//
+    // getModule //
+    //-----------//
+    @Override
+    public final double getModule (int p,
+                                   int r)
+    {
+        return modules[p][r];
     }
 
     //-----------//
@@ -149,6 +136,17 @@ public class BasicARTMoments
                          double value)
     {
         imags[p][r] = value;
+    }
+
+    //-----------//
+    // setModule //
+    //-----------//
+    @Override
+    public final void setModule (int p,
+                                 int r,
+                                 double value)
+    {
+        modules[p][r] = value;
     }
 
     //-----------//

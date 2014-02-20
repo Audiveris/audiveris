@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            I m a g e L o a d e r                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Brenton Partridge 2007-2008.                                //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      I m a g e L o a d e r                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright (C) Brenton Partridge 2007-2008.   4
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -38,8 +38,8 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
 /**
- * Class {@code ImageLoader} gathers helper functions to handle the 
- * loading of one or several images out of an input file.
+ * Class {@code ImageLoader} gathers helper functions to handle the loading of one or
+ * several images out of an input file.
  * <p>
  * It leverages several software pieces: JAI, ImageIO, and Ghostscript.
  *
@@ -49,15 +49,13 @@ import javax.imageio.stream.ImageInputStream;
  */
 public class ImageLoader
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(ImageLoader.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * To disallow instantiation.
      */
@@ -65,7 +63,7 @@ public class ImageLoader
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //----------//
     // loadFile //
@@ -168,20 +166,22 @@ public class ImageLoader
                 int imageCount = reader.getNumImages(true);
 
                 if (imageCount > 1) {
-                    logger.info("{} contains {} images",
-                                imgFile.getName(), imageCount);
+                    logger.info("{} contains {} images", imgFile.getName(), imageCount);
                 }
 
-                SortedMap<Integer, BufferedImage> images = new TreeMap<>();
+                SortedMap<Integer, BufferedImage> images = new TreeMap<Integer, BufferedImage>();
 
                 for (int i = 1; i <= imageCount; i++) {
                     int id = i + offset;
-                    if ((pages == null) || pages.isEmpty()
-                        || (pages.contains(id))) {
+
+                    if ((pages == null) || pages.isEmpty() || (pages.contains(id))) {
                         BufferedImage img = reader.read(i - 1);
                         images.put(id, img);
-                        logger.info("Loaded image #{} ({} x {})",
-                                    id, img.getWidth(), img.getHeight());
+                        logger.info(
+                                "Loaded image #{} ({} x {})",
+                                id,
+                                img.getWidth(),
+                                img.getHeight());
                     }
                 }
 
@@ -222,15 +222,17 @@ public class ImageLoader
 
         // Create a temporary tiff file from the PDF input
         Path temp = null;
+
         try {
             temp = Files.createTempFile("pic-", ".tif");
         } catch (IOException ex) {
             logger.warn("Cannot create temporary file " + temp, ex);
+
             return null;
         }
 
         // Arguments for Ghostscript
-        List<String> gsArgs = new ArrayList<>();
+        List<String> gsArgs = new ArrayList<String>();
         gsArgs.add(Ghostscript.getPath());
         gsArgs.add("-dQUIET");
         gsArgs.add("-dNOPAUSE");
@@ -239,10 +241,12 @@ public class ImageLoader
         gsArgs.add("-sDEVICE=" + constants.pdfDevice.getValue());
         gsArgs.add("-r" + constants.pdfResolution.getValue());
         gsArgs.add("-sOutputFile=" + temp);
-        if (pages != null && !pages.isEmpty()) {
+
+        if ((pages != null) && !pages.isEmpty()) {
             gsArgs.add("-dFirstPage=" + pages.first());
             gsArgs.add("-dLastPage=" + pages.last());
         }
+
         gsArgs.add(imgFile.toString());
         logger.debug("gsArgs:{}", gsArgs);
 
@@ -251,13 +255,14 @@ public class ImageLoader
             new ProcessBuilder(gsArgs).start().waitFor();
 
             // Now load the temporary tiff file
-            if (pages != null && !pages.isEmpty()) {
+            if ((pages != null) && !pages.isEmpty()) {
                 return loadImageIO(temp.toFile(), pages, pages.first() - 1);
             } else {
                 return loadImageIO(temp.toFile(), null, 0);
             }
-        } catch (IOException | InterruptedException ex) {
+        } catch (Exception ex) {
             logger.warn("Error running Ghostscript " + gsArgs, ex);
+
             return null;
         } finally {
             try {
@@ -268,14 +273,14 @@ public class ImageLoader
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Integer pdfResolution = new Constant.Integer(
                 "DPI",
@@ -285,6 +290,5 @@ public class ImageLoader
         Constant.String pdfDevice = new Constant.String(
                 "tiff24nc",
                 "Ghostscript output device (tiff24nc or tiffscaled8)");
-
     }
 }

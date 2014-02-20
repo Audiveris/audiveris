@@ -1,19 +1,19 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          G l y p h N e t w o r k                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    G l y p h N e t w o r k                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
-
+import static omr.glyph.AbstractEvaluationEngine.shapeCount;
 import omr.glyph.facets.Glyph;
 
 import omr.math.NeuralNetwork;
@@ -34,39 +34,33 @@ import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
-import static omr.glyph.AbstractEvaluationEngine.shapeCount;
-
 /**
- * Class {@code GlyphNetwork} encapsulates a neural network customized
- * for glyph recognition.
- * It wraps the generic {@link NeuralNetwork} with application
- * information, for training, storing, loading and using the neural network.
- *
- * <p>The application neural network data is loaded as follows: <ol>
- * <li>It first tries to find a file named 'eval/neural-network.xml' in the
- * application user area.
- * If any, this file contains a custom definition of the network, typically
- * after a user training.</li>
- *
- * <li>If not found, it falls back reading the default definition from the
- * application resource, reading the 'res/neural-network.xml' file in the
- * application program area.</ol></p>
- *
- * <p>After a user training of the neural network, the data is stored as
- * the custom definition in the user local file 'eval/neural-network.xml',
- * which will be picked up first when the application is run again.</p>
+ * Class {@code GlyphNetwork} encapsulates a neural network customized for glyph
+ * recognition.
+ * <p>
+ * It wraps the generic {@link NeuralNetwork} with application information, for training, storing,
+ * loading and using the neural network.
+ * <p>
+ * The application neural network data is loaded as follows: <ol>
+ * <li>It first tries to find a file named 'eval/neural-network.xml' in the application user area.
+ * If any, this file contains a custom definition of the network, typically after a user
+ * training.</li>
+ * <li>If not found, it falls back reading the default definition from the application resource,
+ * reading the 'res/neural-network.xml' file in the application program area.</ol></p>
+ * <p>
+ * After a user training of the neural network, the data is stored as the custom definition in the
+ * user local file 'eval/neural-network.xml', which will be picked up first when the application is
+ * run again.</p>
  *
  * @author Hervé Bitteur
  */
 public class GlyphNetwork
         extends AbstractEvaluationEngine
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(GlyphNetwork.class);
 
     /** The singleton. */
@@ -75,12 +69,12 @@ public class GlyphNetwork
     /** Neural network file name. */
     private static final String FILE_NAME = "neural-network.xml";
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The underlying neural network. */
     private NeuralNetwork engine;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //--------------//
     // GlyphNetwork //
@@ -100,7 +94,7 @@ public class GlyphNetwork
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //-------------//
     // getInstance //
@@ -121,41 +115,6 @@ public class GlyphNetwork
         }
 
         return INSTANCE;
-    }
-
-    //--------------//
-    // isCompatible //
-    //--------------//
-    @Override
-    protected final boolean isCompatible (Object obj)
-    {
-        if (obj instanceof NeuralNetwork) {
-            NeuralNetwork anEngine = (NeuralNetwork) obj;
-
-            if (!Arrays.equals(anEngine.getInputLabels(),
-                    ShapeDescription.getParameterLabels())) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Engine inputs: {}",
-                            Arrays.toString(anEngine.getInputLabels()));
-                    logger.debug("Shape  inputs: {}",
-                            Arrays.toString(ShapeDescription.getParameterLabels()));
-                }
-                return false;
-            }
-            if (!Arrays.equals(anEngine.getOutputLabels(),
-                    ShapeSet.getPhysicalShapeNames())) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Engine  outputs: {}",
-                            Arrays.toString(anEngine.getOutputLabels()));
-                    logger.debug("Physical shapes: {}",
-                            Arrays.toString(ShapeSet.getPhysicalShapeNames()));
-                }
-                return false;
-            }
-            return true;
-        } else {
-            return false;
-        }
     }
 
     //------//
@@ -373,19 +332,21 @@ public class GlyphNetwork
         int quorum = constants.quorum.getValue();
 
         // Determine cardinality for each shape
-        EnumMap<Shape, List<Glyph>> shapeGlyphs = new EnumMap<>(Shape.class);
+        EnumMap<Shape, List<Glyph>> shapeGlyphs = new EnumMap<Shape, List<Glyph>>(Shape.class);
 
         for (Glyph glyph : glyphs) {
             Shape shape = glyph.getShape();
             List<Glyph> list = shapeGlyphs.get(shape);
+
             if (list == null) {
-                list = new ArrayList<>();
+                list = new ArrayList<Glyph>();
                 shapeGlyphs.put(shape, list);
             }
+
             list.add(glyph);
         }
 
-        List<Glyph> newGlyphs = new ArrayList<>();
+        List<Glyph> newGlyphs = new ArrayList<Glyph>();
 
         for (List<Glyph> list : shapeGlyphs.values()) {
             int card = 0;
@@ -436,6 +397,45 @@ public class GlyphNetwork
 
         // Train on the patterns
         engine.train(inputs, desiredOutputs, monitor);
+    }
+
+    //--------------//
+    // isCompatible //
+    //--------------//
+    @Override
+    protected final boolean isCompatible (Object obj)
+    {
+        if (obj instanceof NeuralNetwork) {
+            NeuralNetwork anEngine = (NeuralNetwork) obj;
+
+            if (!Arrays.equals(anEngine.getInputLabels(), ShapeDescription.getParameterLabels())) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Engine inputs: {}", Arrays.toString(anEngine.getInputLabels()));
+                    logger.debug(
+                            "Shape  inputs: {}",
+                            Arrays.toString(ShapeDescription.getParameterLabels()));
+                }
+
+                return false;
+            }
+
+            if (!Arrays.equals(anEngine.getOutputLabels(), ShapeSet.getPhysicalShapeNames())) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "Engine  outputs: {}",
+                            Arrays.toString(anEngine.getOutputLabels()));
+                    logger.debug(
+                            "Physical shapes: {}",
+                            Arrays.toString(ShapeSet.getPhysicalShapeNames()));
+                }
+
+                return false;
+            }
+
+            return true;
+        } else {
+            return false;
+        }
     }
 
     //-------------//
@@ -511,19 +511,15 @@ public class GlyphNetwork
         return nn;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Ratio amplitude = new Constant.Ratio(
-                0.5,
-                "Initial weight amplitude");
+        Constant.Ratio amplitude = new Constant.Ratio(0.5, "Initial weight amplitude");
 
-        Constant.Ratio learningRate = new Constant.Ratio(
-                0.2,
-                "Learning Rate");
+        Constant.Ratio learningRate = new Constant.Ratio(0.2, "Learning Rate");
 
         Constant.Integer listEpochs = new Constant.Integer(
                 "Epochs",
@@ -535,11 +531,8 @@ public class GlyphNetwork
                 10,
                 "Minimum number of glyphs for each shape");
 
-        Evaluation.Grade maxError = new Evaluation.Grade(
-                1E-3,
-                "Threshold to stop training");
+        Evaluation.Grade maxError = new Evaluation.Grade(1E-3, "Threshold to stop training");
 
         Constant.Ratio momentum = new Constant.Ratio(0.2, "Training momentum");
-
     }
 }

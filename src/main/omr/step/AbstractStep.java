@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          A b s t r a c t S t e p                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    A b s t r a c t S t e p                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -22,21 +22,19 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Abstract class {@code AbstractStep} provides a convenient basis for
- * any {@link Step} implementation.
+ * Abstract class {@code AbstractStep} provides a convenient basis for any {@link Step}
+ * implementation.
  *
  * @author Hervé Bitteur
  */
 public abstract class AbstractStep
         implements Step
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractStep.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Step name */
     protected final String name;
 
@@ -52,7 +50,7 @@ public abstract class AbstractStep
     /** Description of the step */
     protected final String description;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     /**
      * Creates a new AbstractStep object.
@@ -76,7 +74,7 @@ public abstract class AbstractStep
         this.description = description;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // clearErrors //
     //-------------//
@@ -84,8 +82,7 @@ public abstract class AbstractStep
     public void clearErrors (Sheet sheet)
     {
         if (Main.getGui() != null) {
-            sheet.getErrorsEditor()
-                    .clearStep(this);
+            sheet.getErrorsEditor().clearStep(this);
         }
     }
 
@@ -211,14 +208,10 @@ public abstract class AbstractStep
     public String toLongString ()
     {
         StringBuilder sb = new StringBuilder("{Step");
-        sb.append(" ")
-                .append(name);
-        sb.append(" ")
-                .append(level);
-        sb.append(" ")
-                .append(mandatory);
-        sb.append(" label:")
-                .append(label);
+        sb.append(" ").append(name);
+        sb.append(" ").append(level);
+        sb.append(" ").append(mandatory);
+        sb.append(" label:").append(label);
         sb.append("}");
 
         return sb.toString();

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              B a s i c L U T                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        B a s i c L U T                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.moments;
 
@@ -19,7 +19,7 @@ package omr.moments;
 public final class BasicLUT
         implements LUT
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** LUT radius. */
     private final int RADIUS;
@@ -30,7 +30,7 @@ public final class BasicLUT
     /** The table of values for each integer (x,y) location. */
     private final double[][] table;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicLUT object.
      *
@@ -39,8 +39,7 @@ public final class BasicLUT
     public BasicLUT (int radius)
     {
         if (radius <= 0) {
-            throw new IllegalArgumentException(
-                    "Cannot allocate LUT with radius " + radius);
+            throw new IllegalArgumentException("Cannot allocate LUT with radius " + radius);
         }
 
         this.RADIUS = radius;
@@ -48,7 +47,7 @@ public final class BasicLUT
         table = new double[SIZE][SIZE];
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // assign //
     //--------//
@@ -137,8 +136,7 @@ public final class BasicLUT
                 final double vxy1 = table[x][y + 1];
 
                 // Value at [px, y+1]
-                final double vpxy1 = vxy1
-                                     + (ix * (table[x + 1][y + 1] - vxy1));
+                final double vpxy1 = vxy1 + (ix * (table[x + 1][y + 1] - vxy1));
 
                 return vpxy + (iy * (vpxy1 - vpxy)); // v[px,py]
             }

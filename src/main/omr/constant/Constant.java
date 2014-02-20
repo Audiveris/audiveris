@@ -1,56 +1,58 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              C o n s t a n t                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        C o n s t a n t                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.constant;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import omr.util.DoubleValue;
 
 import net.jcip.annotations.ThreadSafe;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * This abstract class handles the mapping between one application
- * variable and a property name and value.
- * It is meant essentially to handle any kind of symbolic constant, whose value
- * may have to be tuned and saved for future runs of the application.
- *
+ * This abstract class handles the mapping between one application variable and a
+ * property name and value.
  * <p>
- * Please refer to {@link ConstantManager} for a detailed explanation on how
- * the current value of any given Constant is determined at run-time.
- *
+ * It is meant essentially to handle any kind of symbolic constant, whose value may have to be tuned
+ * and saved for future runs of the application.
  * <p>
- * The class {@code Constant} is not meant to be used directly (it is
- * abstract), but rather through any of its subclasses:
- *
- * <ul> <li> {@link Constant.Angle} </li> <li> {@link Constant.Boolean} </li>
- * <li> {@link Constant.Color} </li> <li> {@link Constant.Double} </li> <li>
- * {@link Constant.Integer} </li> <li> {@link Constant.Ratio} </li>
+ * Please refer to {@link ConstantManager} for a detailed explanation on how the current value of
+ * any given Constant is determined at run-time.
+ * <p>
+ * The class {@code Constant} is not meant to be used directly (it is abstract), but rather through
+ * any of its subclasses:
+ * <ul>
+ * <li> {@link Constant.Angle} </li>
+ * <li> {@link Constant.Boolean} </li>
+ * <li> {@link Constant.Color} </li>
+ * <li> {@link Constant.Double} </li>
+ * <li> {@link Constant.Integer} </li>
+ * <li> {@link Constant.Ratio} </li>
  * <li> {@link Constant.String} </li>
- * <li>and others...</li></ul> </p>
+ * <li>and others...</li>
+ * </ul>
  *
  * @author Hervé Bitteur
  */
 @ThreadSafe
 public abstract class Constant
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Constant.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     // Data assigned at construction time
     //-----------------------------------
@@ -77,9 +79,9 @@ public abstract class Constant
     private java.lang.String initialString;
 
     /** Current data. */
-    private AtomicReference<Tuple> tuple = new AtomicReference<>();
+    private AtomicReference<Tuple> tuple = new AtomicReference<Tuple>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------//
     // Constant //
@@ -98,11 +100,8 @@ public abstract class Constant
                         java.lang.String description)
     {
         if (sourceString == null) {
-            logger.warn(
-                    "*** Constant with no sourceString. Description: {}",
-                    description);
-            throw new IllegalArgumentException(
-                    "Any constant must have a source-provided String");
+            logger.warn("*** Constant with no sourceString. Description: {}", description);
+            throw new IllegalArgumentException("Any constant must have a source-provided String");
         }
 
         this.quantityUnit = quantityUnit;
@@ -114,21 +113,7 @@ public abstract class Constant
         //            description);
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //
-    //----------//
-    // setValue //
-    //----------//
-    /**
-     * Modify the current value of the constant.
-     * This abstract method is actually defined in each subclass, to enforce
-     * validation of the provided string with respect to the target constant
-     * type.
-     *
-     * @param string the new value, as a string to be checked
-     */
-    public abstract void setValue (java.lang.String string);
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // getCurrentString //
     //------------------//
@@ -302,8 +287,7 @@ public abstract class Constant
 
         // We can now try to register that constant
         try {
-            java.lang.String prop = ConstantManager.getInstance().addConstant(
-                    qName, this);
+            java.lang.String prop = ConstantManager.getInstance().addConstant(qName, this);
 
             // Now we can assign a first current value
             if (prop != null) {
@@ -326,6 +310,20 @@ public abstract class Constant
             ex.printStackTrace();
         }
     }
+
+    //
+    //----------//
+    // setValue //
+    //----------//
+    /**
+     * Modify the current value of the constant.
+     * This abstract method is actually defined in each subclass, to enforce
+     * validation of the provided string with respect to the target constant
+     * type.
+     *
+     * @param string the new value, as a string to be checked
+     */
+    public abstract void setValue (java.lang.String string);
 
     //------------------//
     // toDetailedString //
@@ -462,8 +460,7 @@ public abstract class Constant
         // For monitoring/debugging only
         if (i > 1) {
             System.out.println(
-                    "*** " + Thread.currentThread().getName()
-                    + " checkInitialized loop:" + i);
+                    "*** " + Thread.currentThread().getName() + " checkInitialized loop:" + i);
         }
     }
 
@@ -484,7 +481,7 @@ public abstract class Constant
         return tuple.get();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------//
     // Angle //
     //-------//
@@ -494,7 +491,7 @@ public abstract class Constant
     public static class Angle
             extends Constant.Double
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
@@ -518,7 +515,7 @@ public abstract class Constant
     public static class Boolean
             extends Constant
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
@@ -532,7 +529,7 @@ public abstract class Constant
             super(null, java.lang.Boolean.toString(defaultValue), description);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Retrieve the current constant value
          *
@@ -593,7 +590,7 @@ public abstract class Constant
     public static class Color
             extends Constant
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Normal constructor, with a String type for default value
@@ -612,7 +609,7 @@ public abstract class Constant
             setUnitAndName(unit, name);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //-------------//
         // decodeColor //
         //-------------//
@@ -681,6 +678,7 @@ public abstract class Constant
     public static class Double
             extends Constant
     {
+        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final Double ZERO = new Double("none", 0, "Zero");
 
@@ -697,18 +695,15 @@ public abstract class Constant
             TWO.setUnitAndName(Constant.class.getName(), "doubleTwo");
         }
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Double (java.lang.String quantityUnit,
                        double defaultValue,
                        java.lang.String description)
         {
-            super(
-                    quantityUnit,
-                    java.lang.Double.toString(defaultValue),
-                    description);
+            super(quantityUnit, java.lang.Double.toString(defaultValue), description);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public double getValue ()
         {
             return ((DoubleValue) getCachedValue()).doubleValue();
@@ -752,7 +747,7 @@ public abstract class Constant
     public static class Integer
             extends Constant
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
@@ -765,13 +760,10 @@ public abstract class Constant
                         int defaultValue,
                         java.lang.String description)
         {
-            super(
-                    quantityUnit,
-                    java.lang.Integer.toString(defaultValue),
-                    description);
+            super(quantityUnit, java.lang.Integer.toString(defaultValue), description);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Retrieve the current constant value
          *
@@ -820,6 +812,7 @@ public abstract class Constant
     public static class Ratio
             extends Constant.Double
     {
+        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final Ratio ZERO = new Ratio(0, "zero");
 
@@ -827,7 +820,7 @@ public abstract class Constant
             ZERO.setUnitAndName(Constant.class.getName(), "ratioZero");
         }
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
          *
@@ -850,7 +843,7 @@ public abstract class Constant
     public static class String
             extends Constant
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Normal constructor, with a string type for default value
@@ -881,7 +874,7 @@ public abstract class Constant
             super(null, defaultValue, description);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Retrieve the current constant value.
          * Actually this is synonymous with currentString()
@@ -920,13 +913,13 @@ public abstract class Constant
      */
     private static class Tuple
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final java.lang.String currentString;
 
         final Object cachedValue;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Tuple (java.lang.String currentString,
                       Object cachedValue)
         {
@@ -937,7 +930,7 @@ public abstract class Constant
             this.cachedValue = cachedValue;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public java.lang.String toString ()
         {

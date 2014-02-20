@@ -32,7 +32,7 @@ public class LicenseCompanion
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
             LicenseCompanion.class);
 

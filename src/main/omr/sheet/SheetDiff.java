@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              S h e e t D i f f                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        S h e e t D i f f                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -50,25 +50,23 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
- * Class {@code SheetDiff} measures the difference between input
- * data (the input sheet picture) and output data (the recognized
- * entities).
+ * Class {@code SheetDiff} measures the difference between input data (the input sheet
+ * picture) and output data (the recognized entities).
  *
  * @author Hervé Bitteur
  */
 public class SheetDiff
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
+    private static final Logger    logger = LoggerFactory.getLogger(SheetDiff.class);
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SheetDiff.class);
+    //~ Enumerations -------------------------------------------------------------------------------
 
-    //~ Enumerations -----------------------------------------------------------
-    public static enum DiffKind
-    {
-        //~ Enumeration constant initializers ----------------------------------
+    public static enum DiffKind {
+        //~ Enumeration constant initializers ------------------------------------------------------
+
 
         /**
          * Non recognized entities.
@@ -84,7 +82,8 @@ public class SheetDiff
         FALSE_POSITIVES;
     }
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
+
     /** The related sheet. */
     private final Sheet sheet;
 
@@ -94,7 +93,8 @@ public class SheetDiff
     /** Cached number of foreground pixels in input image. */
     private Integer inputCount;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
+
     //-----------//
     // SheetDiff //
     //-----------//
@@ -103,7 +103,8 @@ public class SheetDiff
         this.sheet = sheet;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+
     //-------------//
     // computeDiff //
     //-------------//
@@ -116,12 +117,12 @@ public class SheetDiff
      */
     public double computeDiff ()
     {
-        final StopWatch watch = new StopWatch("computeDiff");
-        final int width = sheet.getWidth();
-        final int height = sheet.getHeight();
+        final StopWatch     watch = new StopWatch("computeDiff");
+        final int           width = sheet.getWidth();
+        final int           height = sheet.getHeight();
         final ByteProcessor in = new GlobalFilter(
-                sheet.getPicture().getSource(Picture.SourceKey.BINARY),
-                constants.binaryThreshold.getValue()).filteredImage();
+            sheet.getPicture().getSource(Picture.SourceKey.BINARY),
+            constants.binaryThreshold.getValue()).filteredImage();
 
         watch.start("count input");
         inputCount = getInputCount();
@@ -151,20 +152,18 @@ public class SheetDiff
         xor.medianFilter();
 
         watch.start("filtered to disk");
-        ImageUtil.saveOnDisk(
-                xor.getBufferedImage(),
-                sheet.getPage().getId() + ".filtered");
+        ImageUtil.saveOnDisk(xor.getBufferedImage(), sheet.getPage().getId() + ".filtered");
         watch.start("count filtered");
 
         // Count all filtered differences
-        final int count = getForeCount(xor);
+        final int    count = getForeCount(xor);
         final double ratio = (double) count / inputCount;
 
         logger.info(
-                "Delta {}% ({} differences wrt {} input pixels)",
-                String.format("%4.1f", 100 * ratio),
-                count,
-                inputCount);
+            "Delta {}% ({} differences wrt {} input pixels)",
+            String.format("%4.1f", 100 * ratio),
+            count,
+            inputCount);
 
         if (constants.printWatch.isSet()) {
             watch.print();
@@ -172,15 +171,13 @@ public class SheetDiff
 
         // Display the filtered differences
         if (Main.getGui() != null) {
-            sheet.getAssembly()
-                    .addViewTab(
-                            Step.DIFF_TAB,
-                            new ScrollView(new MyView(xor)),
-                            new BoardsPane(new PixelBoard(sheet)));
+            sheet.getAssembly().addViewTab(
+                Step.DIFF_TAB,
+                new ScrollView(new MyView(xor)),
+                new BoardsPane(new PixelBoard(sheet)));
         }
 
-        sheet.getBench()
-                .recordDelta(ratio);
+        sheet.getBench().recordDelta(ratio);
 
         return ratio;
     }
@@ -199,17 +196,16 @@ public class SheetDiff
 
         watch.start("input");
 
-        final ByteProcessor source = sheet.getPicture()
-                .getSource(Picture.SourceKey.BINARY);
+        final ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
         final BufferedImage input = source.getBufferedImage();
 
         watch.start("inputCount");
         getInputCount();
         logger.info(
-                "INPUT count: {} ratio: {}% (out of {} image pixels)",
-                inputCount,
-                String.format("%.1f", (100d * inputCount) / total),
-                total);
+            "INPUT count: {} ratio: {}% (out of {} image pixels)",
+            inputCount,
+            String.format("%.1f", (100d * inputCount) / total),
+            total);
 
         watch.start("output");
         output = getOutput();
@@ -224,13 +220,10 @@ public class SheetDiff
 
             int count = getCount(kind);
             logger.info(
-                    "{}% ({} wrt {} input pixels)",
-                    String.format(
-                    "%15s ratio: %4.1f",
-                    kind,
-                    (100d * count) / inputCount),
-                    count,
-                    inputCount);
+                "{}% ({} wrt {} input pixels)",
+                String.format("%15s ratio: %4.1f", kind, (100d * count) / inputCount),
+                count,
+                inputCount);
         }
 
         if (constants.printWatch.isSet()) {
@@ -272,38 +265,32 @@ public class SheetDiff
      */
     public BufferedImage getImage (DiffKind kind)
     {
-        final Color veryLight = new Color(222, 222, 200);
-        final RunsTable input = sheet.getWholeVerticalTable();
-        final Page page = sheet.getPage();
+        final Color         veryLight = new Color(222, 222, 200);
+        final RunsTable     input = sheet.getWholeVerticalTable();
+        final Page          page = sheet.getPage();
         final BufferedImage img = new BufferedImage(
-                sheet.getWidth(),
-                sheet.getHeight(),
-                BufferedImage.TYPE_INT_ARGB_PRE);
-        final Graphics2D gbi = img.createGraphics();
+            sheet.getWidth(),
+            sheet.getHeight(),
+            BufferedImage.TYPE_INT_ARGB_PRE);
+        final Graphics2D    gbi = img.createGraphics();
 
         // Anti-aliasing
-        gbi.setRenderingHint(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
+        gbi.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         gbi.setComposite(AlphaComposite.SrcOver);
         gbi.setColor(Color.BLACK);
 
-        final PagePhysicalPainter outputPainter = new PagePhysicalPainter(
-                gbi,
-                false,
-                true,
-                false);
+        final PagePhysicalPainter outputPainter = new PagePhysicalPainter(gbi, false, true, false);
 
         switch (kind) {
-        case NEGATIVES:
+        case NEGATIVES :
             input.render(gbi);
             gbi.setComposite(AlphaComposite.DstOut);
             page.accept(outputPainter);
 
             break;
 
-        case POSITIVES:
+        case POSITIVES :
             gbi.setColor(veryLight); // Could be totally white...
             input.render(gbi);
             gbi.setComposite(AlphaComposite.SrcIn);
@@ -312,14 +299,14 @@ public class SheetDiff
 
             break;
 
-        case FALSE_POSITIVES:
+        case FALSE_POSITIVES :
             page.accept(outputPainter);
             gbi.setComposite(AlphaComposite.DstOut);
             input.render(gbi);
 
             break;
 
-        default:
+        default :
             assert false : "Unhandled DeltaKind";
         }
 
@@ -346,7 +333,7 @@ public class SheetDiff
     {
         final int width = filter.getWidth();
         final int height = filter.getHeight();
-        int count = 0;
+        int       count = 0;
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
@@ -370,8 +357,7 @@ public class SheetDiff
     private int getInputCount ()
     {
         if (inputCount == null) {
-            ByteProcessor source = sheet.getPicture()
-                    .getSource(Picture.SourceKey.BINARY);
+            ByteProcessor source = sheet.getPicture().getSource(Picture.SourceKey.BINARY);
             inputCount = getForeCount(source);
         }
 
@@ -390,16 +376,15 @@ public class SheetDiff
     {
         if (output == null) {
             output = new BufferedImage(
-                    sheet.getWidth(),
-                    sheet.getHeight(),
-                    BufferedImage.TYPE_BYTE_GRAY);
+                sheet.getWidth(),
+                sheet.getHeight(),
+                BufferedImage.TYPE_BYTE_GRAY);
 
             Graphics2D gbi = output.createGraphics();
             gbi.setColor(Color.WHITE);
             gbi.fillRect(0, 0, sheet.getWidth(), sheet.getHeight());
             gbi.setColor(Color.BLACK);
-            sheet.getPage()
-                    .accept(new PagePhysicalPainter(gbi, false, true, false));
+            sheet.getPage().accept(new PagePhysicalPainter(gbi, false, true, false));
             gbi.dispose();
 
             ///ImageUtil.saveOnDisk(output, sheet.getPage().getId() + ".OUTPUT");
@@ -408,37 +393,38 @@ public class SheetDiff
         return output;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Constant.Boolean printWatch = new Constant.Boolean(
-                false,
-                "Should we print out the stop watch?");
-
-        Constant.Integer binaryThreshold = new Constant.Integer(
-                "gray level",
-                127,
-                "Global threshold to binarize delta results");
+            false,
+            "Should we print out the stop watch?");
+        Constant.Integer       binaryThreshold = new Constant.Integer(
+            "gray level",
+            127,
+            "Global threshold to binarize delta results");
     }
 
     //--------//
     // MyView //
     //--------//
     private class MyView
-            extends RubberPanel
-            implements PropertyChangeListener
+        extends RubberPanel
+        implements PropertyChangeListener
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final BufferedImage img;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
+
         public MyView (ByteProcessor filtered)
         {
             setModelSize(sheet.getDimension());
@@ -448,13 +434,13 @@ public class SheetDiff
 
             // Listen to all painting parameters
             PaintingParameters.getInstance()
-                    .addPropertyChangeListener(
-                            new WeakPropertyChangeListener(this));
+                              .addPropertyChangeListener(new WeakPropertyChangeListener(this));
 
             img = filtered.getBufferedImage();
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
+
         //----------------//
         // propertyChange //
         //----------------//

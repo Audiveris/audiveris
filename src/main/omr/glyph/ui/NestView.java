@@ -1,21 +1,21 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              N e s t V i e w                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        N e s t V i e w                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.glyph.Glyphs;
 import omr.glyph.GlyphNest;
+import omr.glyph.Glyphs;
 import omr.glyph.facets.Glyph;
 
 import omr.graph.DigraphView;
@@ -59,8 +59,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code GlyphNestView} is a view that combines the display of
- * several lags to represent a nest of glyphs.
+ * Class {@code GlyphNestView} is a view that combines the display of several lags to
+ * represent a nest of glyphs.
  *
  * @author Hervé Bitteur
  */
@@ -68,16 +68,13 @@ public class NestView
         extends RubberPanel
         implements DigraphView, PropertyChangeListener
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            NestView.class);
+    private static final Logger logger = LoggerFactory.getLogger(NestView.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying nest */
     protected final GlyphNest nest;
 
@@ -90,7 +87,7 @@ public class NestView
     /** Additional items rendering */
     protected final Collection<ItemRenderer> itemRenderers;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // NestView //
     //----------//
@@ -119,16 +116,13 @@ public class NestView
         setName(nest.getName() + "-View");
 
         ///setBackground(Color.white);
-
         // (Weakly) listening on ViewParameters and PaintingParameters
         PropertyChangeListener listener = new WeakPropertyChangeListener(this);
-        ViewParameters.getInstance()
-                .addPropertyChangeListener(listener);
-        PaintingParameters.getInstance()
-                .addPropertyChangeListener(listener);
+        ViewParameters.getInstance().addPropertyChangeListener(listener);
+        PaintingParameters.getInstance().addPropertyChangeListener(listener);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // propertyChange //
     //----------------//
@@ -161,8 +155,7 @@ public class NestView
     public void render (Graphics2D g)
     {
         // Should we draw the section borders?
-        final boolean drawBorders = ViewParameters.getInstance()
-                .isSectionMode();
+        final boolean drawBorders = ViewParameters.getInstance().isSectionMode();
 
         // Stroke for borders
         final Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
@@ -221,16 +214,14 @@ public class NestView
             }
         }
 
-        if (!ViewParameters.getInstance()
-                .isSectionMode()) {
+        if (!ViewParameters.getInstance().isSectionMode()) {
             // Render the selected glyph(s) if any
             Set<Glyph> glyphs = nest.getSelectedGlyphSet();
 
             if (glyphs != null) {
                 // Decorations first
                 // Should we draw the section borders?
-                final boolean drawBorders = ViewParameters.getInstance()
-                        .isSectionMode();
+                final boolean drawBorders = ViewParameters.getInstance().isSectionMode();
                 Stroke oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
                 g.setColor(Color.blue);
 
@@ -242,8 +233,7 @@ public class NestView
 
                     // Draw character boxes for textual glyphs?
                     if (glyph.isText()) {
-                        if (ViewParameters.getInstance()
-                                .isLetterBoxPainting()) {
+                        if (ViewParameters.getInstance().isLetterBoxPainting()) {
                             TextWord word = glyph.getTextWord();
 
                             if (word != null) {
@@ -259,8 +249,7 @@ public class NestView
                     glyph.renderAttachments(g);
 
                     // Draw glyph line?
-                    if (ViewParameters.getInstance()
-                            .isLinePainting()) {
+                    if (ViewParameters.getInstance().isLinePainting()) {
                         glyph.renderLine(g);
                     }
                 }
@@ -283,16 +272,14 @@ public class NestView
                 g2.dispose();
 
                 // Display words of a sentence, if any
-                if (ViewParameters.getInstance()
-                        .isSentencePainting()) {
+                if (ViewParameters.getInstance().isSentencePainting()) {
                     for (Glyph glyph : glyphs) {
                         renderGlyphSentence(glyph, g);
                     }
                 }
 
                 // Display translation links, if any
-                if (ViewParameters.getInstance()
-                        .isTranslationPainting()) {
+                if (ViewParameters.getInstance().isTranslationPainting()) {
                     for (Glyph glyph : glyphs) {
                         renderGlyphTranslations(glyph, g);
                     }
@@ -329,8 +316,7 @@ public class NestView
             return;
         }
 
-        TextLine sentence = glyph.getTextWord()
-                .getTextLine();
+        TextLine sentence = glyph.getTextWord().getTextLine();
         Color oldColor = g.getColor();
 
         if (constants.showSentenceBaseline.isSet()) {
@@ -343,8 +329,7 @@ public class NestView
             TextWord prevWord = null;
 
             for (TextWord word : sentence.getWords()) {
-                Point2D left = word.getBaseline()
-                        .getP1();
+                Point2D left = word.getBaseline().getP1();
 
                 if (prevWord == null) {
                     path.moveTo(left.getX(), left.getY());
@@ -352,8 +337,7 @@ public class NestView
                     path.lineTo(left.getX(), left.getY());
                 }
 
-                Point2D right = word.getBaseline()
-                        .getP2();
+                Point2D right = word.getBaseline().getP2();
                 path.lineTo(right.getX(), right.getY());
                 prevWord = word;
             }
@@ -373,13 +357,11 @@ public class NestView
             for (TextWord word : sentence.getWords()) {
                 if (prevWord != null) {
                     Path2D path = new Path2D.Double();
-                    Point2D from = prevWord.getBaseline()
-                            .getP2();
+                    Point2D from = prevWord.getBaseline().getP2();
                     path.moveTo(from.getX(), from.getY());
                     path.lineTo(from.getX(), from.getY() - height);
 
-                    Point2D to = word.getBaseline()
-                            .getP1();
+                    Point2D to = word.getBaseline().getP1();
                     path.lineTo(to.getX(), to.getY() - height);
                     path.lineTo(to.getX(), to.getY());
                     path.closePath();
@@ -400,8 +382,7 @@ public class NestView
     private void renderGlyphTranslations (Glyph glyph,
                                           Graphics2D g)
     {
-        if (glyph.getTranslations()
-                .isEmpty()) {
+        if (glyph.getTranslations().isEmpty()) {
             return;
         }
 
@@ -410,8 +391,7 @@ public class NestView
         g.setColor(Colors.TRANSLATION_LINK);
 
         // Compute end radius, with fixed size whatever the current zoom
-        double r = 1 / g.getTransform()
-                .getScaleX();
+        double r = 1 / g.getTransform().getScaleX();
 
         for (PartNode node : glyph.getTranslations()) {
             for (Line2D line : node.getTranslationLinks(glyph)) {
@@ -439,18 +419,17 @@ public class NestView
         g.setStroke(oldStroke);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Boolean showSentenceBaseline = new Constant.Boolean(
                 true,
                 "Should we show sentence baseline (vs inter-word gaps)?");
-
     }
 }

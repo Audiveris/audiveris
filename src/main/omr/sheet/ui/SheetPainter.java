@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          S h e e t P a i n t e r                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    S h e e t P a i n t e r                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet.ui;
 
@@ -61,28 +61,22 @@ import java.awt.geom.CubicCurve2D;
 import java.util.ConcurrentModificationException;
 
 /**
- * Class {@code SheetPainter} defines for every node in Page hierarchy
- * the rendering of related sections (with preset colors) in the
- * dedicated <b>Sheet</b> display.
- *
+ * Class {@code SheetPainter} defines for every node in Page hierarchy the rendering of
+ * related sections (with preset colors) in the dedicated <b>Sheet</b> display.
  * <p>
- * Nota: It has been extended to deal with rendering of initial sheet
- * elements.
+ * Nota: It has been extended to deal with rendering of initial sheet elements.
  *
  * @author Hervé Bitteur
  */
 public class SheetPainter
-    extends AbstractScoreVisitor
-    implements InterVisitor
+        extends AbstractScoreVisitor
+        implements InterVisitor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-        SheetPainter.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetPainter.class);
 
-    //~ Instance fields --------------------------------------------------------
-
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Graphic context. */
     private final Graphics2D g;
 
@@ -91,13 +85,13 @@ public class SheetPainter
 
     /** Alpha composite for interpretations. */
     private final AlphaComposite composite = AlphaComposite.getInstance(
-        AlphaComposite.SRC_OVER,
-        0.5f);
+            AlphaComposite.SRC_OVER,
+            0.5f);
 
     /** Default full composite. */
     private final AlphaComposite fullComposite = AlphaComposite.getInstance(
-        AlphaComposite.SRC_OVER,
-        1f);
+            AlphaComposite.SRC_OVER,
+            1f);
 
     /** Saved stroke for restoration at the end of the painting. */
     private Stroke oldStroke;
@@ -120,8 +114,7 @@ public class SheetPainter
     /** Stroke for stems. */
     private final Stroke stemStroke;
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // SheetPainter //
     //--------------//
@@ -134,20 +127,16 @@ public class SheetPainter
      *                 as possible to input image
      */
     public SheetPainter (Graphics g,
-                         boolean  enriched)
+                         boolean enriched)
     {
         this.g = (Graphics2D) g;
         this.clip = g.getClipBounds();
         this.enriched = enriched;
 
-        stemStroke = new BasicStroke(
-            3f,
-            BasicStroke.CAP_ROUND,
-            BasicStroke.JOIN_ROUND);
+        stemStroke = new BasicStroke(3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // visit Measure //
     //---------------//
@@ -161,9 +150,7 @@ public class SheetPainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                getClass().getSimpleName() + " Error visiting " + measure,
-                ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + measure, ex);
         }
 
         // Nothing lower than measure
@@ -181,16 +168,16 @@ public class SheetPainter
             scale = page.getScale();
 
             ledgerStroke = new BasicStroke(
-                sheet.getScale().getMainFore(),
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND);
+                    sheet.getScale().getMainFore(),
+                    BasicStroke.CAP_ROUND,
+                    BasicStroke.JOIN_ROUND);
 
             // Determine staff lines parameters
             int lineThickness = scale.getMainFore();
             lineStroke = new BasicStroke(
-                lineThickness,
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND);
+                    lineThickness,
+                    BasicStroke.CAP_ROUND,
+                    BasicStroke.JOIN_ROUND);
 
             if (enriched) {
                 oldStroke = UIUtil.setAbsoluteStroke(g, 1f);
@@ -219,9 +206,7 @@ public class SheetPainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                getClass().getSimpleName() + " Error visiting " + page,
-                ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + page, ex);
         } finally {
             g.setStroke(oldStroke);
         }
@@ -242,9 +227,7 @@ public class SheetPainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                getClass().getSimpleName() + " Error visiting " + part,
-                ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + part, ex);
         }
 
         return true;
@@ -265,9 +248,7 @@ public class SheetPainter
         } catch (ConcurrentModificationException ignored) {
             return false;
         } catch (Exception ex) {
-            logger.warn(
-                getClass().getSimpleName() + " Error visiting " + system,
-                ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + system, ex);
 
             return false;
         }
@@ -322,9 +303,8 @@ public class SheetPainter
             return false;
         } catch (Exception ex) {
             logger.warn(
-                getClass().getSimpleName() + " Error visiting " +
-                systemInfo.idString(),
-                ex);
+                    getClass().getSimpleName() + " Error visiting " + systemInfo.idString(),
+                    ex);
         }
 
         return false;
@@ -339,9 +319,9 @@ public class SheetPainter
         setColor(inter);
 
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
-        Glyph       glyph = inter.getGlyph();
-        Point       center = (glyph != null) ? glyph.getCentroid()
-                             : GeoUtil.centerOf(inter.getBounds());
+        Glyph glyph = inter.getGlyph();
+        Point center = (glyph != null) ? glyph.getCentroid()
+                : GeoUtil.centerOf(inter.getBounds());
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
     }
 
@@ -369,11 +349,10 @@ public class SheetPainter
     {
         setColor(ledger);
         g.setStroke(
-            new BasicStroke(
-                (float) ledger.getGlyph()
-                              .getMeanThickness(Orientation.HORIZONTAL),
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND));
+                new BasicStroke(
+                        (float) ledger.getGlyph().getMeanThickness(Orientation.HORIZONTAL),
+                        BasicStroke.CAP_ROUND,
+                        BasicStroke.JOIN_ROUND));
 
         ledger.getGlyph().renderLine(g);
         g.setStroke(oldStroke);
@@ -447,14 +426,10 @@ public class SheetPainter
 
                 if (symbol == null) {
                     systemInfo.getScoreSystem().addError(
-                        glyph,
-                        "No symbol for " + glyph.idString());
+                            glyph,
+                            "No symbol for " + glyph.idString());
                 } else {
-                    symbol.paintSymbol(
-                        g,
-                        musicFont,
-                        glyph.getAreaCenter(),
-                        Alignment.AREA_CENTER);
+                    symbol.paintSymbol(g, musicFont, glyph.getAreaCenter(), Alignment.AREA_CENTER);
                 }
             }
         }
@@ -485,14 +460,8 @@ public class SheetPainter
                 grade = inter.getGrade();
             }
 
-            final int   alpha = Math.min(
-                255,
-                Math.max(0, (int) Math.rint(255 * grade)));
-            final Color color = new Color(
-                base.getRed(),
-                base.getGreen(),
-                base.getBlue(),
-                alpha);
+            final int alpha = Math.min(255, Math.max(0, (int) Math.rint(255 * grade)));
+            final Color color = new Color(base.getRed(), base.getGreen(), base.getBlue(), alpha);
             g.setColor(color);
         }
     }

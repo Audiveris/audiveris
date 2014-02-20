@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                C i r c l e                                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                          C i r c l e                                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -27,30 +27,30 @@ import java.util.List;
 /**
  * Class {@code Circle} handles a portion of circle which approximates
  * a collection of points.
- * Besides usual characteristics of a circle (center, radius), and of a circle
- * arc (start and stop angles defined in -PI..+PI), it also defines the
- * rotation from first to last as counter-clockwise (ccw) or not.
- * First and last angles can be swapped via reverse() method.
  * <p>
- * The approximating Bézier curve is always defined from left to right, so that
- * left point is P1 and right point is P2.
+ * Besides usual characteristics of a circle (center, radius), and of a circle arc (start and stop
+ * angles defined in -PI..+PI), it also defines the rotation from first to last as counter-clockwise
+ * (ccw) or not. First and last angles can be swapped via reverse() method.
  * <p>
- * If arc shape is /--\ it is said above.
- * If arc shape is \--/ it is said below.
+ * The approximating Bézier curve is always defined from left to right, so that left point is P1 and
+ * right point is P2.
+ * <p>
+ * If arc shape is /--\ it is said "above".
+ * If arc shape is \--/ it is said "below".
  * <p>
  *
  * @author Hervé Bitteur
  */
 public class Circle
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Logger logger = LoggerFactory.getLogger(Circle.class);
 
     /** Size for matrices used to compute the circle. */
     private static final int DIM = 4;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Center. */
     private Point2D.Double center;
 
@@ -75,7 +75,7 @@ public class Circle
     /** Bézier curve for circle arc. */
     private CubicCurve2D curve;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------//
     // Circle //
     //--------//
@@ -190,7 +190,7 @@ public class Circle
         computeAngles(first, middle, last);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // ccw //
     //-----//
@@ -220,9 +220,7 @@ public class Circle
         double sum = 0;
 
         for (Point2D point : points) {
-            double delta = Math.hypot(
-                    point.getX() - center.x,
-                    point.getY() - center.y) - radius;
+            double delta = Math.hypot(point.getX() - center.x, point.getY() - center.y) - radius;
             sum += (delta * delta);
         }
 
@@ -256,8 +254,7 @@ public class Circle
      */
     public double getArcAngle ()
     {
-        double arc = (ccw == 1) ? (firstAngle - lastAngle)
-                : (lastAngle - firstAngle);
+        double arc = (ccw == 1) ? (firstAngle - lastAngle) : (lastAngle - firstAngle);
 
         if (arc < 0) {
             arc += (2 * PI);
@@ -310,19 +307,6 @@ public class Circle
         return distance;
     }
 
-    //-------------//
-    // getDistance //
-    //-------------//
-    /**
-     * Record the mean distance (useful for 2-point definitions)
-     *
-     * @param distance the computed mean distance
-     */
-    public void setDistance (double distance)
-    {
-        this.distance = distance;
-    }
-
     //---------------//
     // getFirstAngle //
     //---------------//
@@ -360,8 +344,7 @@ public class Circle
     public double getMidAngle ()
     {
         double halfArc = getArcAngle() / 2;
-        double mid = (ccw == 1) ? (firstAngle - halfArc) : (firstAngle
-                                                            + halfArc);
+        double mid = (ccw == 1) ? (firstAngle - halfArc) : (firstAngle + halfArc);
 
         if (mid < -PI) {
             mid += (2 * PI);
@@ -427,6 +410,19 @@ public class Circle
         ccw = -ccw;
     }
 
+    //-------------//
+    // getDistance //
+    //-------------//
+    /**
+     * Record the mean distance (useful for 2-point definitions)
+     *
+     * @param distance the computed mean distance
+     */
+    public void setDistance (double distance)
+    {
+        this.distance = distance;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -443,10 +439,7 @@ public class Circle
 
         if ((firstAngle != null) && (lastAngle != null)) {
             sb.append(
-                    String.format(
-                            " degrees=(%.0f,%.0f)",
-                            toDegrees(firstAngle),
-                            toDegrees(lastAngle)));
+                    String.format(" degrees=(%.0f,%.0f)", toDegrees(firstAngle), toDegrees(lastAngle)));
         }
 
         sb.append("}");
@@ -712,9 +705,7 @@ public class Circle
         Line2D bisector1 = LineUtil.bisector(first, middle);
         Line2D bisector2 = LineUtil.bisector(middle, last);
         center = LineUtil.intersection(bisector1, bisector2);
-        radius = hypot(
-                center.getX() - middle.getX(),
-                center.getY() - middle.getY());
+        radius = hypot(center.getX() - middle.getX(), center.getY() - middle.getY());
     }
 
     //-----//

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          B a s i c D i g r a p h                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    B a s i c D i g r a p h                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.graph;
 
@@ -30,12 +30,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
         implements Digraph<D, V>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Digraph.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of this instance, meant to ease debugging */
     private final String name;
 
@@ -43,12 +42,12 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
     private final Class<? extends V> vertexClass;
 
     /** All current Vertices of the graph, handled by a map: Id -> Vertex */
-    private final ConcurrentHashMap<Integer, V> vertices = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, V> vertices = new ConcurrentHashMap<Integer, V>();
 
     /** Global id to uniquely identify a vertex */
     private final AtomicInteger globalVertexId = new AtomicInteger(0);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // BasicDigraph //
     //--------------//
@@ -69,7 +68,7 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
         this.vertexClass = vertexClass;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // addVertex //
     //-----------//
@@ -99,12 +98,10 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
 
             return vertex;
         } catch (NullPointerException ex) {
-            throw new RuntimeException(
-                    "BasicDigraph cannot create vertex, vertexClass not set");
+            throw new RuntimeException("BasicDigraph cannot create vertex, vertexClass not set");
         } catch (InstantiationException ex) {
             throw new RuntimeException(
-                    "Cannot createVertex with an abstract class or interface: "
-                    + vertexClass);
+                    "Cannot createVertex with an abstract class or interface: " + vertexClass);
         } catch (IllegalAccessException ex) {
             throw new RuntimeException(ex);
         }
@@ -181,13 +178,11 @@ public class BasicDigraph<D extends Digraph<D, V>, V extends Vertex>
         logger.debug("remove {}", vertex);
 
         if (vertex == null) {
-            throw new IllegalArgumentException(
-                    "Trying to remove a null vertex");
+            throw new IllegalArgumentException("Trying to remove a null vertex");
         }
 
         if (vertices.remove(vertex.getId()) == null) { // Atomic removal
-            throw new RuntimeException(
-                    "Trying to remove an unknown vertex: " + vertex);
+            throw new RuntimeException("Trying to remove an unknown vertex: " + vertex);
         }
     }
 

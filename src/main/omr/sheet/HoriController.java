@@ -1,18 +1,18 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         H o r i C o n t r o l l e r                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   H o r i C o n t r o l l e r                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
-import omr.glyph.GlyphsModel;
 import omr.glyph.GlyphNest;
+import omr.glyph.GlyphsModel;
 import omr.glyph.ui.GlyphsController;
 import omr.glyph.ui.NestView;
 import omr.glyph.ui.SymbolGlyphBoard;
@@ -27,6 +27,8 @@ import omr.selection.UserEvent;
 
 import omr.sheet.ui.PixelBoard;
 
+import omr.step.Step;
+
 import omr.ui.BoardsPane;
 import omr.ui.view.ScrollView;
 
@@ -34,30 +36,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
-import omr.step.Step;
 
 /**
- * Class {@code HoriController} display horizontal glyphs for ledgers
- * etc.
+ * Class {@code HoriController} display horizontal glyphs for ledgers etc.
  *
  * @author Hervé Bitteur
  */
 public class HoriController
         extends GlyphsController
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            HoriController.class);
+    private static final Logger logger = LoggerFactory.getLogger(HoriController.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     private final Lag lag;
 
     /** Related user display if any */
     private MyView view;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------------//
     // HoriController //
     //----------------//
@@ -74,7 +72,7 @@ public class HoriController
         this.lag = lag;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // refresh //
     //---------//
@@ -98,25 +96,24 @@ public class HoriController
         // Specific rubber display
         view = new MyView(getNest());
 
-        sheet.getAssembly()
-                .addViewTab(
-                        Step.HORI_TAB,
-                        new ScrollView(view),
-                        new BoardsPane(
-                                new PixelBoard(sheet),
-                                new RunBoard(lag, false),
-                                new SectionBoard(lag, false),
-                                new SymbolGlyphBoard(this, true, true)));
+        sheet.getAssembly().addViewTab(
+                Step.HORI_TAB,
+                new ScrollView(view),
+                new BoardsPane(
+                new PixelBoard(sheet),
+                new RunBoard(lag, false),
+                new SectionBoard(lag, false),
+                new SymbolGlyphBoard(this, true, true)));
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//
     private final class MyView
             extends NestView
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public MyView (GlyphNest nest)
         {
@@ -127,7 +124,7 @@ public class HoriController
             setName("HoriController-MyView");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //---------//
         // onEvent //
         //---------//

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              B e a m s S t e p                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        B e a m s S t e p                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -17,16 +17,15 @@ import omr.sheet.SystemInfo;
 import java.util.Collection;
 
 /**
- * Class {@code BeamsStep} implements <b>BEAMS</b> step, which uses
- * the spots produced by an image closing operation to retrieve all
- * possible beam interpretations.
+ * Class {@code BeamsStep} implements <b>BEAMS</b> step, which uses the spots produced
+ * by an image closing operation to retrieve all possible beam interpretations.
  *
  * @author Hervé Bitteur
  */
 public class BeamsStep
         extends AbstractSystemStep
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //-----------//
     // BeamsStep //
@@ -44,7 +43,7 @@ public class BeamsStep
                 "Retrieve beams");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -70,7 +69,6 @@ public class BeamsStep
             throws StepException
     {
         // Retrieve significant spots for the whole sheet
-        sheet.getSpotsBuilder()
-                .buildPageSpots();
+        sheet.getSpotsBuilder().buildPageSpots();
     }
 }

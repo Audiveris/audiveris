@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             S h e e t T a s k                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       S h e e t T a s k                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -19,21 +19,18 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code SheetTask} defines the task for a step at the whole
- * sheet level. This is meant for steps where the systems have not yet been
- * retrieved.
+ * Class {@code SheetTask} defines the task for a step at the whole sheet level.
+ * This is meant for steps where the systems have not yet been retrieved.
  *
  * @author Hervé Bitteur
  */
 public abstract class SheetTask
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SheetTask.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetTask.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related step for this task */
     protected final Step step;
 
@@ -43,7 +40,7 @@ public abstract class SheetTask
     /** Flag to indicate the task has been done */
     protected volatile boolean stepDone;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // SheetTask //
     //-----------//
@@ -57,7 +54,19 @@ public abstract class SheetTask
         this.step = step;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //------//
+    // doit //
+    //------//
+    /**
+     * Actually perform the step
+     *
+     * @param systems the collection of systems to process
+     * @throws StepException raised if processing failed
+     */
+    public abstract void doit (Collection<SystemInfo> systems)
+            throws StepException;
+
     //-----------//
     // displayUI //
     //-----------//
@@ -85,18 +94,6 @@ public abstract class SheetTask
         doit(systems);
         done();
     }
-
-    //------//
-    // doit //
-    //------//
-    /**
-     * Actually perform the step
-     *
-     * @param systems the collection of systems to process
-     * @throws StepException raised if processing failed
-     */
-    public abstract void doit (Collection<SystemInfo> systems)
-            throws StepException;
 
     //------//
     // done //

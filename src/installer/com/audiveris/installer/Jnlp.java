@@ -36,7 +36,7 @@ public class Jnlp
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(Jnlp.class);
 
     /** Extension installer service. */

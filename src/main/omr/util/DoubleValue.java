@@ -1,33 +1,33 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           D o u b l e V a l u e                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     D o u b l e V a l u e                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
 import javax.xml.bind.annotation.XmlValue;
 
 /**
- * Class {@code DoubleValue} is a "poor man" version of java.lang.Double,
- * when we need a non-final class (whereas Double is declared as final)
+ * Class {@code DoubleValue} is a "poor man" version of java.lang.Double, when we need
+ * a non-final class (whereas Double is declared as final)
  *
  * @author Hervé Bitteur
  */
 public class DoubleValue
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The underlying double value */
     @XmlValue
     protected final double value;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // DoubleValue //
     //-------------//
@@ -78,7 +78,7 @@ public class DoubleValue
         this(0d);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // doubleValue //
     //-------------//

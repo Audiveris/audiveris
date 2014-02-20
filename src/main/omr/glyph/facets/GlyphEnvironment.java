@@ -1,20 +1,18 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      G l y p h E n v i r o n m e n t                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                G l y p h E n v i r o n m e n t                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
 import omr.lag.Lag;
 import omr.lag.Section;
-
-import omr.sheet.SystemInfo;
 
 import omr.util.HorizontalSide;
 import omr.util.Predicate;
@@ -23,16 +21,16 @@ import java.awt.Rectangle;
 import java.util.Set;
 
 /**
- * Interface {@code GlyphEnvironment} defines the facet in charge of
- * the surrounding environment of a glyph, in terms of staff-based
- * pitch position, of presence of stem or ledgers, etc.
+ * Interface {@code GlyphEnvironment} defines the facet in charge of the surrounding
+ * environment of a glyph, in terms of staff-based pitch position, of presence of stem
+ * or ledgers, etc.
  *
  * @author Hervé Bitteur
  */
 interface GlyphEnvironment
         extends GlyphFacet
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Forward stem-related information from the provided glyph

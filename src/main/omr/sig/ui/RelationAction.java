@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         R e l a t i o n A c t i o n                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   R e l a t i o n A c t i o n                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig.ui;
 
@@ -26,15 +26,15 @@ import javax.swing.AbstractAction;
 import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**
- * Class {@code RelationAction} displays a relation and selects the
- * other interpretation (source or target).
+ * Class {@code RelationAction} displays a relation and selects the other interpretation
+ * (source or target).
  *
  * @author Hervé Bitteur
  */
 class RelationAction
         extends AbstractAction
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Originating inter. */
     private final Inter inter;
@@ -45,7 +45,7 @@ class RelationAction
     /** The other inter, if any. */
     private final Inter other;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------------//
     // RelationAction //
     //----------------//
@@ -82,7 +82,7 @@ class RelationAction
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//

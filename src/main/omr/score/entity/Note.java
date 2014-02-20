@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  N o t e                                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            N o t e                                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -59,10 +59,8 @@ public class Note
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Note.class);
 
     /** The quarter duration value */
@@ -225,11 +223,11 @@ public class Note
         if (center != null) {
             setCenter(
                     new Point(
-                    center.x,
-                    (int) Math.rint(
-                    (staff.getTopLeft().y
-                     - staff.getSystem().getTopLeft().y)
-                    + ((chord.getScale().getInterline() * (4d + pitchPosition)) / 2))));
+                            center.x,
+                            (int) Math.rint(
+                            (staff.getTopLeft().y
+                             - staff.getSystem().getTopLeft().y)
+                            + ((chord.getScale().getInterline() * (4d + pitchPosition)) / 2))));
         }
 
         // Note box
@@ -294,11 +292,13 @@ public class Note
      * Within a pack, notes are numbered by their vertical top down index,
      * counted from 0.
      *
-     * <p>If we have 0 or 1 stem attached to the provided glyph, no specific
+     * <p>
+     * If we have 0 or 1 stem attached to the provided glyph, no specific
      * test is needed, all the note instances are created on the provided chord.
      * </p>
      *
-     * <p>When the underlying glyph is stuck to 2 stems, we have to decide
+     * <p>
+     * When the underlying glyph is stuck to 2 stems, we have to decide
      * which notes go to one stem (the left chord), which notes go to the other
      * (the right chord) and which notes go to both.
      * Every stem gets at least the vertically closest note.
@@ -306,12 +306,14 @@ public class Note
      * actually assigned, we force the unassigned notes to the stem at hand.
      * </p>
      *
-     * <p>(On the diagram below with a note pack of 3, the two upper notes
+     * <p>
+     * (On the diagram below with a note pack of 3, the two upper notes
      * will go to the right stem, and the third note will go to the left stem).
      * </p>
      * <img src="doc-files/Note-Pack.png" alt="Pack of 3">
      *
-     * <p>(On the diagram below with a note pack of 1, the "mirrored" note is
+     * <p>
+     * (On the diagram below with a note pack of 1, the "mirrored" note is
      * duplicated, one instance goes to the left stem and the other to the
      * right stem).
      * </p>
@@ -521,8 +523,8 @@ public class Note
             bestNote.accidental = glyph;
             glyph.addTranslation(bestNote);
             logger.debug("{} accidental {} at {}",
-                    bestNote.getContextString(),
-                    glyph.getShape(), bestNote.getCenter());
+                         bestNote.getContextString(),
+                         glyph.getShape(), bestNote.getCenter());
 
             // Apply also to mirrored note if any
             Note mirrored = bestNote.getMirroredNote();
@@ -531,8 +533,8 @@ public class Note
                 mirrored.accidental = glyph;
                 glyph.addTranslation(mirrored);
                 logger.debug("{} accidental {} at {} (mirrored)",
-                        mirrored.getContextString(),
-                        glyph.getShape(), mirrored.getCenter());
+                             mirrored.getContextString(),
+                             glyph.getShape(), mirrored.getCenter());
             }
         } else {
             // Deassign the glyph
@@ -595,7 +597,7 @@ public class Note
 //            }
 //
 //        case 1:
-            return base;
+        return base;
 //
 //        default:
 //            return null;
@@ -684,7 +686,7 @@ public class Note
             return 0;
         default:
             logger.warn("Weird shape {} for accidental {}",
-                    accidental.getShape(), accidental.idString());
+                        accidental.getShape(), accidental.idString());
             return 0; // Should not happen
         }
     }
@@ -1125,7 +1127,7 @@ public class Note
 //            return Shape.WHOLE_NOTE;
 //
 //        default:
-            return shape;
+        return shape;
 //        }
     }
 
@@ -1194,7 +1196,7 @@ public class Note
 //            return 2;
 //
 //        default:
-            return 1;
+        return 1;
 //        }
     }
 

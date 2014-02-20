@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                R u b b e r                                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                          R u b b e r                                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.view;
 
@@ -45,34 +45,28 @@ import javax.swing.event.MouseInputAdapter;
  * The rectangle can be degenerated to a simple point, when both its width and
  * height are zero. Moreover, the display can be moved or resized
  * (see the precise triggers below).
- *
- * <p> The rubber data is rendered as a 'rubber', so the name, using a
+ * <p>
+ * The rubber data is rendered as a 'rubber', so the name, using a
  * rectangle, reflecting the dragged position of the mouse.
- *
- * <p> Rubber data is meant to be modified by the user when he presses
+ * <p>
+ * Rubber data is meant to be modified by the user when he presses
  * and/or drags the mouse. But it can also be modified programmatically,
  * thanks to the {@link #resetOrigin} and {@link #resetRectangle} methods.
- *
- * <p> Basic mouse handling is provided in the following way : <ul>
- *
+ * <p>
+ * Basic mouse handling is provided in the following way : <ul>
  * <li> Define the point of interest. Default trigger is to click with the
  * <b>Left</b> button. </li>
- *
  * <li> Define the rectangle of interest. Default trigger is to keep
  * <b>Shift</b> pressed when mouse is moved. </li>
- *
  * <li> Zoom the display to the area delimited by the rubber. Default
  * trigger is <b>Shift + Control</b> when mouse is released. </li>
- *
  * <li> Drag the component itself. Default trigger is when both <b>Left +
  * Right</b> buttons are dragged. </li> </ul>
- *
  * <p/>
  * Note: Actual triggers are defined by protected predicate methods
  * that can be redefined in a subclass.
- * <p/>
- *
- * <p> Mouse Events are handled in the following way: <ul>
+ * <p>
+ * Mouse Events are handled in the following way: <ul>
  *
  * <li> <b>Low-level events</b> originate from a JComponent, where the
  * Rubber is registered as a MouseListener and a MouseMotionListener. The
@@ -86,8 +80,8 @@ import javax.swing.event.MouseInputAdapter;
  * rectangleSelected, rectangleZoomed</i> methods. Generally, this
  * MouseMonitor is the originating JComponent, but this is not mandatory.
  * </ul>
- *
- * <p> The Rubber can be linked to a {@link Zoom} to cope with display
+ * <p>
+ * The Rubber can be linked to a {@link Zoom} to cope with display
  * factor of the related component, but this is not mandatory: If no zoom
  * is connected, a display factor of 1.0 is assumed.
  *
@@ -96,12 +90,12 @@ import javax.swing.event.MouseInputAdapter;
 public class Rubber
         extends MouseInputAdapter
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
+    
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(Rubber.class);
 
     private static AtomicInteger globalId = new AtomicInteger(0);
@@ -113,7 +107,7 @@ public class Rubber
 
     private static final double factor = Math.pow(base, 1d / intervals);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** View from which the rubber will receive physical mouse events */
     protected JComponent component;
 
@@ -135,7 +129,7 @@ public class Rubber
     // To ease debugging
     private final int id;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------//
     // Rubber //
     //--------//
@@ -182,7 +176,7 @@ public class Rubber
         setZoom(zoom);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // connectComponent //
     //------------------//
@@ -245,9 +239,7 @@ public class Rubber
         Point pt = null;
 
         if (rect != null) {
-            pt = new Point(
-                    rect.x + (rect.width / 2),
-                    rect.y + (rect.height / 2));
+            pt = new Point(rect.x + (rect.width / 2), rect.y + (rect.height / 2));
         }
 
         return pt;
@@ -293,13 +285,13 @@ public class Rubber
                     vr.height);
             SwingUtilities.invokeLater(
                     new Runnable()
-            {
-                @Override
-                public void run ()
-                {
-                    component.scrollRectToVisible(vr);
-                }
-            });
+                    {
+                        @Override
+                        public void run ()
+                        {
+                            component.scrollRectToVisible(vr);
+                        }
+                    });
         } else if (isRubberWanted(e)) {
             updateSize(e);
             mouseMonitor.rectangleSelected(rect, DRAGGING);
@@ -379,11 +371,7 @@ public class Rubber
             mouseMonitor.rectangleZoomed(rect, RELEASING);
         } else if (isDragWanted(e)) {
             Rectangle vr = component.getVisibleRect();
-            rawRect.setBounds(
-                    vr.x + (vr.width / 2),
-                    vr.y + (vr.height / 2),
-                    0,
-                    0);
+            rawRect.setBounds(vr.x + (vr.width / 2), vr.y + (vr.height / 2), 0, 0);
             normalize();
         } else if (isAdditionWanted(e)) {
             if (isContextWanted(e)) {
@@ -404,8 +392,7 @@ public class Rubber
             }
         }
 
-        e.getComponent()
-                .setCursor(Cursor.getDefaultCursor());
+        e.getComponent().setCursor(Cursor.getDefaultCursor());
     }
 
     //-----------------//
@@ -704,23 +691,17 @@ public class Rubber
     private void setCursor (MouseEvent e)
     {
         if (isDragWanted(e)) {
-            e.getComponent()
-                    .setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
         } else if (isAdditionWanted(e)) {
-            e.getComponent()
-                    .setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
         } else if (isContextWanted(e)) {
-            e.getComponent()
-                    .setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         } else if (isRubberWanted(e)) {
-            e.getComponent()
-                    .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
         } else if (isRezoomWanted(e)) {
-            e.getComponent()
-                    .setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
         } else {
-            e.getComponent()
-                    .setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            e.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     }
 
@@ -749,14 +730,14 @@ public class Rubber
         component.repaint();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Boolean displayCross = new Constant.Boolean(
                 true,
@@ -766,6 +747,5 @@ public class Rubber
                 "Pixels",
                 100,
                 "Length for each leg of the rubber cross");
-
     }
 }

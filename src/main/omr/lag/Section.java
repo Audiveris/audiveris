@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               S e c t i o n                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         S e c t i o n                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag;
 
@@ -40,28 +40,21 @@ import java.util.Set;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Interface {@code Section} handles a section of contiguous and
- * compatible {@link Run} instances.
- *
+ * Interface {@code Section} handles a section of contiguous and compatible {@link Run}
+ * instances.
  * <p>
- * A section carries orientation information, which is the orientation for
- * all runs in this section.
- *
- * <ol> <li> Positions increase in parallel with run numbers, so the thickness
- * of a section is defined as the delta between last and first positions, in
- * other words its number of runs. </li>
- *
- * <li> Coordinates increase along any section run, so the section start is the
- * minimum of all run starting coordinates, and the section stop is the maximum
- * of all run stopping coordinates. We define section length as the value: stop
- * - start +1 </li> </ol>
- *
+ * A section carries orientation information, which is the orientation for all runs in this section.
+ * <ol> <li> Positions increase in parallel with run numbers, so the thickness of a section is
+ * defined as the delta between last and first positions, in other words its number of runs. </li>
+ * <li> Coordinates increase along any section run, so the section start is the minimum of all run
+ * starting coordinates, and the section stop is the maximum of all run stopping coordinates.
+ * We define section length as the value: stop - start +1 </li> </ol>
  * <p>
  * <b>Beware</b>, the section orientation only governs the runs orientation.
- * It by no means implies that the section dimension is longer in the direction
- * along the runs than in the direction across.
- * To enforce this, the {@link #getLength(Orientation)} requires that an
- * explicit orientation be provided, just like for {@link Glyph} instances.
+ * It by no means implies that the section dimension is longer in the direction along the runs than
+ * in the direction across.
+ * To enforce this, the {@link #getLength(Orientation)} requires that an explicit orientation be
+ * provided, just like for {@link Glyph} instances.
  *
  * @author Hervé Bitteur
  */
@@ -69,7 +62,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public interface Section
         extends Vertex<Lag, Section>, Comparable<Section>, Oriented, SectionView, Vip
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** A section comparator, using section id */
     public static final Comparator<Section> idComparator = new Comparator<Section>()
@@ -126,7 +119,7 @@ public interface Section
         }
     };
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Register the adjacency of a section from the other orientation.
      *

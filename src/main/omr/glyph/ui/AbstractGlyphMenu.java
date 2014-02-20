@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      A b s t r a c t G l y p h M e n u                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                A b s t r a c t G l y p h M e n u                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
@@ -24,20 +24,18 @@ import org.slf4j.LoggerFactory;
 import java.util.Set;
 
 /**
- * Abstract class {@code AbstractGlyphMenu} is the base for
- * glyph-based menus such as {@link SymbolMenu}.
+ * Abstract class {@code AbstractGlyphMenu} is the base for glyph-based menus such as
+ * {@link SymbolMenu}.
  *
  * @author Hervé Bitteur
  */
 public abstract class AbstractGlyphMenu
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractGlyphMenu.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractGlyphMenu.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Concrete menu. */
     protected final SeparableMenu menu = new SeparableMenu();
 
@@ -56,7 +54,7 @@ public abstract class AbstractGlyphMenu
     /** To manage elaboration. */
     protected boolean initDone = false;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //-------------------//
     // AbstractGlyphMenu //
@@ -64,8 +62,8 @@ public abstract class AbstractGlyphMenu
     /**
      * Creates a new AbstractGlyphMenu object.
      *
-     * @param sheet     the related sheet
-     * @param text      the menu text
+     * @param sheet the related sheet
+     * @param text  the menu text
      */
     public AbstractGlyphMenu (Sheet sheet,
                               String text)
@@ -75,7 +73,7 @@ public abstract class AbstractGlyphMenu
         menu.setText(text);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getMenu //
     //---------//
@@ -103,7 +101,7 @@ public abstract class AbstractGlyphMenu
             initMenu();
             initDone = true;
         }
-        
+
         this.glyphs = glyphs;
 
         // Analyze the context

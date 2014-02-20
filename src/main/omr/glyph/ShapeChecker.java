@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          S h a p e C h e c k e r                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    S h a p e C h e c k e r                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -47,46 +47,37 @@ import java.util.EnumSet;
 import java.util.List;
 
 /**
- * Class {@code ShapeChecker} gathers additional specific shape checks,
- * still working on symbols in isolation from other symbols, meant to
- * complement the work done by a shape evaluator.
- *
+ * Class {@code ShapeChecker} gathers additional specific shape checks, still working
+ * on symbols in isolation from other symbols, meant to complement the work done by a
+ * shape evaluator.
  * <p>
- * Typically, physical shapes (the *_set shape names) must be mapped to
- * the right logical shapes using proper additional tests.</p>
- *
+ * Typically, physical shapes (the *_set shape names) must be mapped to the right logical shapes
+ * using proper additional tests.
  * <p>
- * Checks are made on the glyph only, the only knowledge about current glyph
- * environment being its staff-based pitch position and the attached stems and
- * ledgers.</p>
- *
+ * Checks are made on the glyph only, the only knowledge about current glyph environment being its
+ * staff-based pitch position and the attached stems and ledgers.
  * <p>
- * Checks made in relation with other symbols are not handled here (because
- * the other symbols may not have been recognized yet). Such more elaborated
- * checks are the purpose of {@link omr.glyph.pattern.PatternsChecker}.</p>
+ * Checks made in relation with other symbols are not handled here (because the other symbols may
+ * not have been recognized yet). Such more elaborated checks are the purpose of
+ * {@link omr.glyph.pattern.PatternsChecker}.
  *
  * @author Hervé Bitteur
  */
 public class ShapeChecker
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ShapeChecker.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ShapeChecker.class);
 
     /** Singleton */
     private static ShapeChecker INSTANCE;
 
     /** Small dynamics with no 'P' or 'F' */
     private static final EnumSet<Shape> SmallDynamics = EnumSet.copyOf(
-            shapesOf(
-                    DYNAMICS_CHAR_M,
-                    DYNAMICS_CHAR_R,
-                    DYNAMICS_CHAR_S,
-                    DYNAMICS_CHAR_Z));
+            shapesOf(DYNAMICS_CHAR_M, DYNAMICS_CHAR_R, DYNAMICS_CHAR_S, DYNAMICS_CHAR_Z));
 
     /** Medium dynamics with a 'P' (but no 'F') */
     private static final EnumSet<Shape> MediumDynamics = EnumSet.copyOf(
@@ -109,24 +100,24 @@ public class ShapeChecker
                     DYNAMICS_SFPP,
                     DYNAMICS_SFZ));
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Map of Shape => Sequence of checkers */
     private final EnumMap<Shape, Collection<Checker>> checkerMap;
 
     /** Checker that can be used on its own. */
     private Checker stemChecker;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // ShapeChecker //
     //--------------//
     private ShapeChecker ()
     {
-        checkerMap = new EnumMap<>(Shape.class);
+        checkerMap = new EnumMap<Shape, Collection<Checker>>(Shape.class);
         registerChecks();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -137,22 +128,6 @@ public class ShapeChecker
         }
 
         return INSTANCE;
-    }
-
-    //-----------//
-    // checkStem //
-    //-----------//
-    /**
-     * Basic check for a stem candidate, using gap to closest staff.
-     *
-     * @param system containing system
-     * @param glyph  stem candidate
-     * @return true if OK
-     */
-    public boolean checkStem (SystemInfo system,
-                              Glyph glyph)
-    {
-        return stemChecker.check(system, null, glyph, null);
     }
 
     //----------//
@@ -192,8 +167,7 @@ public class ShapeChecker
         for (Checker checker : checks) {
             if (!(checker.check(system, eval, glyph, features))) {
                 if (eval.failure != null) {
-                    eval.failure = new Evaluation.Failure(
-                            checker.name + ":" + eval.failure);
+                    eval.failure = new Evaluation.Failure(checker.name + ":" + eval.failure);
                 } else {
                     eval.failure = new Evaluation.Failure(checker.name);
                 }
@@ -201,6 +175,22 @@ public class ShapeChecker
                 return;
             }
         }
+    }
+
+    //-----------//
+    // checkStem //
+    //-----------//
+    /**
+     * Basic check for a stem candidate, using gap to closest staff.
+     *
+     * @param system containing system
+     * @param glyph  stem candidate
+     * @return true if OK
+     */
+    public boolean checkStem (SystemInfo system,
+                              Glyph glyph)
+    {
+        return stemChecker.check(system, null, glyph, null);
     }
 
     //-------//
@@ -248,7 +238,7 @@ public class ShapeChecker
             Collection<Checker> checks = checkerMap.get(shape);
 
             if (checks == null) {
-                checks = new ArrayList<>();
+                checks = new ArrayList<Checker>();
                 checkerMap.put(shape, checks);
             }
 
@@ -309,9 +299,14 @@ public class ShapeChecker
     {
         // For debugging only
         if (eval.grade >= 0.1) {
-            logger.info("{}{} {} weight:{} {} corrected as {}",
-                        system.getLogPrefix(), glyph, eval, glyph.getWeight(),
-                        glyph.getBounds(), newShape);
+            logger.info(
+                    "{}{} {} weight:{} {} corrected as {}",
+                    system.getLogPrefix(),
+                    glyph,
+                    eval,
+                    glyph.getWeight(),
+                    glyph.getBounds(),
+                    newShape);
         }
     }
 
@@ -453,8 +448,7 @@ public class ShapeChecker
                 // They must be rather close to the left side of the measure
                 ScoreSystem scoreSystem = system.getScoreSystem();
                 Scale scale = scoreSystem.getScale();
-                double maxKeyXOffset = scale.toPixels(
-                        constants.maxKeyXOffset);
+                double maxKeyXOffset = scale.toPixels(constants.maxKeyXOffset);
                 Rectangle box = glyph.getBounds();
                 Point point = box.getLocation();
                 SystemPart part = scoreSystem.getPartAt(point);
@@ -466,14 +460,14 @@ public class ShapeChecker
 
                 Barline insideBar = measure.getInsideBarline();
                 Staff staff = part.getStaffAt(point);
+
                 if (staff == null) {
                     return false;
                 }
+
                 Clef clef = measure.getFirstMeasureClef(staff.getId());
-                int start = (clef != null)
-                        ? (clef.getBox().x + clef.getBox().width)
-                        : ((insideBar != null)
-                        ? insideBar.getLeftX() : measure.getLeftX());
+                int start = (clef != null) ? (clef.getBox().x + clef.getBox().width)
+                        : ((insideBar != null) ? insideBar.getLeftX() : measure.getLeftX());
 
                 return (point.x - start) <= maxKeyXOffset;
             }
@@ -501,9 +495,7 @@ public class ShapeChecker
                 Rectangle box = glyph.getBounds();
                 box.grow(-box.width / 4, 0);
 
-                List<Glyph> neighbors = system.lookupIntersectedGlyphs(
-                        box,
-                        glyph);
+                List<Glyph> neighbors = system.lookupIntersectedGlyphs(box, glyph);
 
                 if (Glyphs.contains(neighbors, stemPredicate)) {
                     eval.shape = Shape.CUT_TIME;
@@ -546,28 +538,25 @@ public class ShapeChecker
                                   Glyph glyph,
                                   double[] features)
             {
-                Integer singleThickness = system.getScoreSystem().getScale().
-                        getMainBeam();
+                Integer singleThickness = system.getScoreSystem().getScale().getMainBeam();
 
                 if (singleThickness != null) {
-                    // Check we have thickness consistent with the number of 
+                    // Check we have thickness consistent with the number of
                     // beams (since we know single beam thickness)
-                    double meanThickness = glyph.getMeanThickness(
-                            Orientation.HORIZONTAL);
+                    double meanThickness = glyph.getMeanThickness(Orientation.HORIZONTAL);
 
-                    int nb = (int) Math.rint(
-                            meanThickness / singleThickness);
+                    int nb = (int) Math.rint(meanThickness / singleThickness);
 
                     switch (nb) {
                     case 1:
                         return correctShape(system, glyph, eval, BEAM);
-//
-//                    case 2:
-//                        return correctShape(system, glyph, eval, BEAM_2);
-//
-//                    case 3:
-//                        return correctShape(system, glyph, eval, BEAM_3);
 
+                    //
+                    //                    case 2:
+                    //                        return correctShape(system, glyph, eval, BEAM_2);
+                    //
+                    //                    case 3:
+                    //                        return correctShape(system, glyph, eval, BEAM_3);
                     default:
                         ///logger.warn("Bad beam #" + glyph.getId() + " nb:" + nb);
                         eval.failure = new Evaluation.Failure("beamThickness");
@@ -581,19 +570,17 @@ public class ShapeChecker
         };
 
         // Shapes that require a stem on the left side
-        new Checker(
-                "noLeftStem",
-                shapesOf(FlagSets, shapesOf(Flags.getShapes())))
-                {
-                    @Override
-                    public boolean check (SystemInfo system,
-                                          Evaluation eval,
-                                          Glyph glyph,
-                                          double[] features)
-                    {
-                        return glyph.getStem(HorizontalSide.LEFT) != null;
-                    }
-                };
+        new Checker("noLeftStem", shapesOf(FlagSets, shapesOf(Flags.getShapes())))
+        {
+            @Override
+            public boolean check (SystemInfo system,
+                                  Evaluation eval,
+                                  Glyph glyph,
+                                  double[] features)
+            {
+                return glyph.getStem(HorizontalSide.LEFT) != null;
+            }
+        };
 
         // Shapes that require a stem nearby
         new Checker("noStem", StemSymbols)
@@ -617,8 +604,7 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Check reasonable height (Cannot be too tall when close to staff)
-                double maxHeight = (Math.abs(glyph.getPitchPosition()) >= constants.minTitlePitchPosition.
-                        getValue())
+                double maxHeight = (Math.abs(glyph.getPitchPosition()) >= constants.minTitlePitchPosition.getValue())
                         ? constants.maxTitleHeight.getValue()
                         : constants.maxLyricsHeight.getValue();
 
@@ -636,6 +622,7 @@ public class ShapeChecker
                 //                    }
                 return true;
             }
+
             //                /**
             //                 * Browse the collection of provided glyphs to make sure there
             //                 * is no huge horizontal gap included
@@ -735,63 +722,69 @@ public class ShapeChecker
             }
         };
 
-        new Checker("StaffGap", Notes.getShapes(), NoteHeads.getShapes(),
-                    Rests.getShapes(), Dynamics.getShapes(),
-                    Articulations.getShapes())
-                {
-                    @Override
-                    public boolean check (SystemInfo system,
-                                          Evaluation eval,
-                                          Glyph glyph,
-                                          double[] features)
-                    {
-                        // A note / rest / dynamic cannot be too far from a staff
-                        Point center = glyph.getAreaCenter();
-                        StaffInfo staff = system.getStaffAt(center);
+        new Checker(
+                "StaffGap",
+                Notes.getShapes(),
+                NoteHeads.getShapes(),
+                Rests.getShapes(),
+                Dynamics.getShapes(),
+                Articulations.getShapes())
+        {
+            @Override
+            public boolean check (SystemInfo system,
+                                  Evaluation eval,
+                                  Glyph glyph,
+                                  double[] features)
+            {
+                // A note / rest / dynamic cannot be too far from a staff
+                Point center = glyph.getAreaCenter();
+                StaffInfo staff = system.getStaffAt(center);
 
-                        // Staff may be null when we are modifying system boundaries
-                        if (staff == null) {
-                            return false;
-                        }
+                // Staff may be null when we are modifying system boundaries
+                if (staff == null) {
+                    return false;
+                }
 
-                        int gap = staff.gapTo(glyph.getBounds());
-                        int maxGap = system.getScoreSystem().getScale().toPixels(
-                                constants.maxGapToStaff);
-                        return gap <= maxGap;
-                    }
-                };
+                int gap = staff.gapTo(glyph.getBounds());
+                int maxGap = system.getScoreSystem().getScale().toPixels(
+                        constants.maxGapToStaff);
 
-        stemChecker = new Checker("StaffStemGap",
-                                  shapesOf(shapesOf(STEM),
-                                           shapesOf(Beams.getShapes(),
-                                                    Flags.getShapes(),
-                                                    FlagSets)))
-                {
-                    @Override
-                    public boolean check (SystemInfo system,
-                                          Evaluation eval,
-                                          Glyph glyph,
-                                          double[] features)
-                    {
-                        // A beam / flag / stem  cannot be too far from a staff
-                        Point center = glyph.getAreaCenter();
-                        StaffInfo staff = system.getStaffAt(center);
-                        // Staff may be null for a very long glyph across systems
-                        if (staff == null) {
-                            return false;
-                        }
-                        // Horizontal: not in DMZ
-                        if (center.x < staff.getDmzEnd()) {
-                            return false;
-                        }
+                return gap <= maxGap;
+            }
+        };
 
-                        // Vertical: A beam / flag / stem  cannot be too far from a staff
-                        int yGap = staff.gapTo(glyph.getBounds());
-                        int maxYGap = system.getScoreSystem().getScale().toPixels(
-                                constants.maxStemGapToStaff);
-                        return yGap <= maxYGap;
-                    }
-                };
+        stemChecker = new Checker(
+                "StaffStemGap",
+                shapesOf(shapesOf(STEM), shapesOf(Beams.getShapes(), Flags.getShapes(), FlagSets)))
+        {
+            @Override
+            public boolean check (SystemInfo system,
+                                  Evaluation eval,
+                                  Glyph glyph,
+                                  double[] features)
+            {
+                // A beam / flag / stem  cannot be too far from a staff
+                Point center = glyph.getAreaCenter();
+                StaffInfo staff = system.getStaffAt(center);
+
+                // Staff may be null for a very long glyph across systems
+                if (staff == null) {
+                    return false;
+                }
+
+                // Horizontal: not in DMZ
+                if (center.x < staff.getDmzEnd()) {
+                    return false;
+                }
+
+                // Vertical: A beam / flag / stem  cannot be too far from a staff
+                int yGap = staff.gapTo(glyph.getBounds());
+                int maxYGap = system.getScoreSystem().getScale()
+                        .toPixels(constants.maxStemGapToStaff);
+
+                return yGap <= maxYGap;
+            }
+        };
 
         new Checker("SmallDynamics", SmallDynamics)
         {
@@ -802,8 +795,7 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Check height
-                return glyph.getNormalizedHeight() <= constants.maxSmallDynamicsHeight.
-                        getValue();
+                return glyph.getNormalizedHeight() <= constants.maxSmallDynamicsHeight.getValue();
             }
         };
 
@@ -816,8 +808,7 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Check height
-                return glyph.getNormalizedHeight() <= constants.maxMediumDynamicsHeight.
-                        getValue();
+                return glyph.getNormalizedHeight() <= constants.maxMediumDynamicsHeight.getValue();
             }
         };
 
@@ -830,8 +821,7 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Check height
-                return glyph.getNormalizedHeight() <= constants.maxTallDynamicsHeight.
-                        getValue();
+                return glyph.getNormalizedHeight() <= constants.maxTallDynamicsHeight.getValue();
             }
         };
 
@@ -857,8 +847,7 @@ public class ShapeChecker
                                   double[] features)
             {
                 // Tuplets cannot be too far from a staff
-                if (Math.abs(glyph.getPitchPosition()) > constants.maxTupletPitchPosition.
-                        getValue()) {
+                if (Math.abs(glyph.getPitchPosition()) > constants.maxTupletPitchPosition.getValue()) {
                     eval.failure = new Evaluation.Failure("pitch");
 
                     return false;
@@ -967,9 +956,7 @@ public class ShapeChecker
             {
                 // Must be centered on left of part barline
                 Rectangle box = glyph.getBounds();
-                Point left = new Point(
-                        box.x,
-                        box.y + (box.height / 2));
+                Point left = new Point(box.x, box.y + (box.height / 2));
 
                 if (left.x > system.getLeft()) {
                     eval.failure = new Evaluation.Failure("notOnLeft");
@@ -985,8 +972,7 @@ public class ShapeChecker
                     if (intervalTop != Integer.MIN_VALUE) {
                         int intervalBottom = staff.getFirstLine().yAt(box.x);
 
-                        if ((intervalTop >= box.y)
-                            && (intervalBottom <= (box.y + box.height))) {
+                        if ((intervalTop >= box.y) && (intervalBottom <= (box.y + box.height))) {
                             embraced = true; // Ok for this one
 
                             break;
@@ -997,8 +983,7 @@ public class ShapeChecker
                 }
 
                 if (!embraced) {
-                    eval.failure = new Evaluation.Failure(
-                            "noStaffEmbraced");
+                    eval.failure = new Evaluation.Failure("noStaffEmbraced");
 
                     return false;
                 }
@@ -1019,9 +1004,11 @@ public class ShapeChecker
                 // without ledgers
                 Point point = glyph.getAreaCenter();
                 StaffInfo staff = system.getStaffAt(point);
+
                 if (staff == null) {
                     return false;
                 }
+
                 double pitch = staff.pitchPositionOf(point);
 
                 if (Math.abs(pitch) <= 6) {
@@ -1186,7 +1173,7 @@ public class ShapeChecker
         };
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Checker //
     //---------//
@@ -1196,12 +1183,12 @@ public class ShapeChecker
      */
     private abstract class Checker
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Unique name for this check */
         public final String name;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Checker (String name,
                         Shape... shapes)
         {
@@ -1220,10 +1207,13 @@ public class ShapeChecker
                         Collection<Shape>... shapes)
         {
             this.name = name;
-            Collection<Shape> allShapes = new ArrayList<>();
+
+            Collection<Shape> allShapes = new ArrayList<Shape>();
+
             for (Collection<Shape> col : shapes) {
                 allShapes.addAll(col);
             }
+
             addChecker(this, allShapes.toArray(new Shape[allShapes.size()]));
         }
 
@@ -1240,7 +1230,7 @@ public class ShapeChecker
         {
             this.name = name;
 
-            List<Shape> all = new ArrayList<>();
+            List<Shape> all = new ArrayList<Shape>();
             all.add(shape);
 
             all.addAll(collection);
@@ -1253,13 +1243,13 @@ public class ShapeChecker
         {
             this.name = name;
 
-            List<Shape> all = new ArrayList<>();
+            List<Shape> all = new ArrayList<Shape>();
             all.add(shape);
 
             addChecker(this, all.toArray(new Shape[0]));
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Run the specific test.
          *
@@ -1306,7 +1296,7 @@ public class ShapeChecker
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Boolean applySpecificCheck = new Constant.Boolean(
                 true,
@@ -1366,6 +1356,5 @@ public class ShapeChecker
         Scale.Fraction maxStemGapToStaff = new Scale.Fraction(
                 12,
                 "Maximum vertical gap between a stem and closest staff");
-
     }
 }

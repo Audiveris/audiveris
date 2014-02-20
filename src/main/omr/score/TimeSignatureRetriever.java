@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                T i m e S i g n a t u r e R e t r i e v e r                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                          T i m e S i g n a t u r e R e t r i e v e r                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -51,30 +51,27 @@ import java.awt.Rectangle;
 import java.util.EnumSet;
 
 /**
- * Class {@code TimeSignatureRetriever} checks carefully the first
- * measure of each staff for a time signature.
+ * Class {@code TimeSignatureRetriever} checks carefully the first measure of each staff
+ * for a time signature.
  *
  * @author Hervé Bitteur
  */
 public class TimeSignatureRetriever
         extends AbstractScoreVisitor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            TimeSignatureRetriever.class);
+    private static final Logger logger = LoggerFactory.getLogger(TimeSignatureRetriever.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     // Scale-dependent constants
     private int timeSigWidth;
 
     private int yOffset;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------------//
     // TimeSignatureRetriever //
     //------------------------//
@@ -85,7 +82,7 @@ public class TimeSignatureRetriever
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // visit Page //
     //------------//
@@ -105,8 +102,7 @@ public class TimeSignatureRetriever
         try {
             // We simply consider the very first measure of every staff
             ScoreSystem system = page.getFirstSystem();
-            Measure firstMeasure = system.getFirstRealPart()
-                    .getFirstMeasure();
+            Measure firstMeasure = system.getFirstRealPart().getFirstMeasure();
 
             // If we have some TS, then it's OK
             if (hasTimeSig(firstMeasure)) {
@@ -122,8 +118,7 @@ public class TimeSignatureRetriever
                 return false;
             }
 
-            for (Staff.SystemIterator sit = new Staff.SystemIterator(
-                    firstMeasure); sit.hasNext();) {
+            for (Staff.SystemIterator sit = new Staff.SystemIterator(firstMeasure); sit.hasNext();) {
                 Staff staff = sit.next();
 
                 if (staff.isDummy()) {
@@ -131,8 +126,7 @@ public class TimeSignatureRetriever
                 }
 
                 int center = roi.x + (roi.width / 2);
-                Glyph compound = system.getInfo()
-                        .buildCompound(
+                Glyph compound = system.getInfo().buildCompound(
                         null,
                         false,
                         system.getInfo().getGlyphs(),
@@ -145,16 +139,11 @@ public class TimeSignatureRetriever
 
                 if (compound != null) {
                     // Insert time sig in proper measure
-                    TimeSignature.populateFullTime(
-                            compound,
-                            firstMeasure,
-                            staff);
+                    TimeSignature.populateFullTime(compound, firstMeasure, staff);
                 }
             }
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + page,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + page, ex);
         }
 
         return false; // No navigation
@@ -174,11 +163,9 @@ public class TimeSignatureRetriever
     {
         ScoreSystem system = firstMeasure.getSystem();
         int left = 0; // Min
-        int right = system.getTopLeft().x
-                    + system.getDimension().width; // Max
+        int right = system.getTopLeft().x + system.getDimension().width; // Max
 
-        for (Staff.SystemIterator sit = new Staff.SystemIterator(firstMeasure);
-                sit.hasNext();) {
+        for (Staff.SystemIterator sit = new Staff.SystemIterator(firstMeasure); sit.hasNext();) {
             Staff staff = sit.next();
 
             if (staff.isDummy()) {
@@ -243,12 +230,10 @@ public class TimeSignatureRetriever
      */
     private boolean hasTimeSig (Measure measure)
     {
-        for (Staff.SystemIterator sit = new Staff.SystemIterator(measure);
-                sit.hasNext();) {
+        for (Staff.SystemIterator sit = new Staff.SystemIterator(measure); sit.hasNext();) {
             Staff staff = sit.next();
 
-            if (sit.getMeasure()
-                    .getTimeSignature(staff) != null) {
+            if (sit.getMeasure().getTimeSignature(staff) != null) {
                 return true;
             }
         }
@@ -256,23 +241,20 @@ public class TimeSignatureRetriever
         return false;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.Fraction timeSigWidth = new Scale.Fraction(
-                2d,
-                "Width of a time signature");
+        Scale.Fraction timeSigWidth = new Scale.Fraction(2d, "Width of a time signature");
 
         Scale.Fraction yOffset = new Scale.Fraction(
                 0.5d,
                 "Time signature vertical offset since staff line");
-
     }
 
     //----------------//
@@ -284,13 +266,13 @@ public class TimeSignatureRetriever
     private class TimeSigAdapter
             extends CompoundBuilder.TopShapeAdapter
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Staff staff;
 
         final int center;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public TimeSigAdapter (SystemInfo system,
                                double minGrade,
                                EnumSet<Shape> desiredShapes,
@@ -302,31 +284,25 @@ public class TimeSignatureRetriever
             this.center = center;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Rectangle computeReferenceBox ()
         {
             StaffInfo staffInfo = staff.getInfo();
             Rectangle newBox = new Rectangle(
                     center,
-                    staffInfo.getFirstLine().yAt(center)
-                    + (staffInfo.getHeight() / 2),
+                    staffInfo.getFirstLine().yAt(center) + (staffInfo.getHeight() / 2),
                     0,
                     0);
-            newBox.grow(
-                    (timeSigWidth / 2),
-                    (staffInfo.getHeight() / 2) - yOffset);
+            newBox.grow((timeSigWidth / 2), (staffInfo.getHeight() / 2) - yOffset);
 
             // Draw the box, for visual debug
-            SystemPart part = system.getScoreSystem()
-                    .getPartAt(GeoUtil.centerOf(newBox));
+            SystemPart part = system.getScoreSystem().getPartAt(GeoUtil.centerOf(newBox));
             Barline barline = part.getStartingBarline();
             Glyph line = null;
 
             if (barline != null) {
-                line = Glyphs.firstOf(
-                        barline.getGlyphs(),
-                        Barline.linePredicate);
+                line = Glyphs.firstOf(barline.getGlyphs(), Barline.linePredicate);
 
                 if (line != null) {
                     line.addAttachment("ti" + staff.getId(), newBox);

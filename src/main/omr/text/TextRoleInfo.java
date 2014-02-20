@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          T e x t R o l e I n f o                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    T e x t R o l e I n f o                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.text;
 
@@ -20,8 +20,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code TextRoleInfo} gathers information about the role of a
- * piece of text (typically a sentence).
+ * Class {@code TextRoleInfo} gathers information about the role of a piece of text
+ * (typically a sentence).
  *
  * @author Hervé Bitteur
  */
@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "text-role-info")
 public class TextRoleInfo
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Role of this piece of text. */
     @XmlAttribute(name = "role")
@@ -39,7 +39,7 @@ public class TextRoleInfo
     @XmlAttribute(name = "creator-type")
     public final Text.CreatorText.CreatorType creatorType;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new TextRoleInfo object.
      *
@@ -72,7 +72,7 @@ public class TextRoleInfo
         this(null, null);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // toString //
     //----------//
@@ -81,12 +81,10 @@ public class TextRoleInfo
     {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(" role:")
-                .append(role);
+        sb.append(" role:").append(role);
 
         if (creatorType != null) {
-            sb.append("/")
-                    .append(creatorType);
+            sb.append("/").append(creatorType);
         }
 
         return sb.toString();

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          M o u s e M o n i t o r                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    M o u s e M o n i t o r                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.view;
 
@@ -17,15 +17,15 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Interface {@code MouseMonitor} defines the entries of an entity to
- * be notified of mouse actions. This is ordinarily used in conjunction
- * with a {@link omr.ui.view.Rubber}.
+ * Interface {@code MouseMonitor} defines the entries of an entity to be notified of
+ * mouse actions.
+ * This is ordinarily used in conjunction with a {@link omr.ui.view.Rubber}.
  *
  * @author Hervé Bitteur
  */
 public interface MouseMonitor
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Contextual action (by right button click + control) of an

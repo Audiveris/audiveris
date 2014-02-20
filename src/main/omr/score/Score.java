@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 S c o r e                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           S c o r e                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -16,14 +16,10 @@ import omr.Main;
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
 
-import omr.text.Language;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import omr.image.FilterDescriptor;
+import omr.image.ImageLoader;
 
 import omr.math.Rational;
-
-import omr.image.FilterDescriptor;
 
 import omr.score.entity.MeasureId.MeasureRange;
 import omr.score.entity.Page;
@@ -38,15 +34,19 @@ import omr.script.Script;
 import omr.script.ScriptActions;
 
 import omr.sheet.Sheet;
-import omr.image.ImageLoader;
 import omr.sheet.ui.SheetActions;
 import omr.sheet.ui.SheetsController;
 
 import omr.step.StepException;
 
-import omr.util.Param;
+import omr.text.Language;
+
 import omr.util.FileUtil;
+import omr.util.Param;
 import omr.util.TreeNode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -59,26 +59,23 @@ import java.util.SortedSet;
 import javax.swing.JFrame;
 
 /**
- * Class {@code Score} handles a score hierarchy, composed of one or
- * several pages.
+ * Class {@code Score} handles a score hierarchy, composed of one or several pages.
  *
  * @author Hervé Bitteur
  */
 public class Score
         extends ScoreNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Score.class);
 
     /** Number of lines in a staff */
     public static final int LINE_NB = 5;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Input file of the related image(s) */
     private final File imageFile;
 
@@ -125,21 +122,19 @@ public class Score
     private Script script;
 
     /** Handling of binarization filter parameter. */
-    private final Param<FilterDescriptor> filterParam =
-            new Param<>(FilterDescriptor.defaultFilter);
+    private final Param<FilterDescriptor> filterParam = new Param<FilterDescriptor>(
+            FilterDescriptor.defaultFilter);
 
     /** Handling of tempo parameter. */
-    private final Param<Integer> tempoParam =
-            new Param<>(Tempo.defaultTempo);
+    private final Param<Integer> tempoParam = new Param<Integer>(Tempo.defaultTempo);
 
     /** Handling of language parameter. */
-    private final Param<String> textParam =
-            new Param<>(Language.defaultSpecification);
+    private final Param<String> textParam = new Param<String>(Language.defaultSpecification);
 
     /** Handling of parts name and program. */
     private final Param<List<PartData>> partsParam = new PartsParam();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------//
     // Score //
     //-------//
@@ -162,7 +157,7 @@ public class Score
         ScoresManager.getInstance().addInstance(this);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -188,7 +183,7 @@ public class Score
         }
 
         // Close contained sheets (and pages)
-        for (TreeNode pn : new ArrayList<>(getPages())) {
+        for (TreeNode pn : new ArrayList<TreeNode>(getPages())) {
             Page page = (Page) pn;
             Sheet sheet = page.getSheet();
             sheet.remove(true);
@@ -218,9 +213,7 @@ public class Score
      */
     public void createPages (SortedSet<Integer> pageIds)
     {
-        SortedMap<Integer, BufferedImage> images = ImageLoader.loadImages(
-                imageFile,
-                pageIds);
+        SortedMap<Integer, BufferedImage> images = ImageLoader.loadImages(imageFile, pageIds);
 
         if (images != null) {
             Page firstPage = null;
@@ -239,8 +232,7 @@ public class Score
 
                         // Let the UI focus on first page
                         if (Main.getGui() != null) {
-                            SheetsController.getInstance().showAssembly(firstPage.
-                                    getSheet());
+                            SheetsController.getInstance().showAssembly(firstPage.getSheet());
                         }
                     }
                 } catch (StepException ex) {
@@ -252,11 +244,11 @@ public class Score
             }
 
             // Remember (even across runs) the parent directory
-            ScoresManager.getInstance().setDefaultInputDirectory(getImageFile().
-                    getParent());
+            ScoresManager.getInstance().setDefaultInputDirectory(getImageFile().getParent());
 
             // Insert in sheet history
             ScoresManager.getInstance().getHistory().add(getImagePath());
+
             if (Main.getGui() != null) {
                 SheetActions.HistoryMenu.getInstance().setEnabled(true);
             }
@@ -271,47 +263,45 @@ public class Score
      */
     public void dump ()
     {
-        System.out.println(
-                "----------------------------------------------------------------");
+        System.out.println("----------------------------------------------------------------");
 
         if (dumpNode()) {
             dumpChildren(1);
         }
 
-        System.out.println(
-                "----------------------------------------------------------------");
+        System.out.println("----------------------------------------------------------------");
     }
 
-    //----------------//
-    // getFilterParam //
-    //----------------//
-    public Param<FilterDescriptor> getFilterParam ()
+    //----------//
+    // getBench //
+    //----------//
+    /**
+     * Report the related sheet bench.
+     *
+     * @return the related bench
+     */
+    public ScoreBench getBench ()
     {
-        return filterParam;
+        return bench;
     }
 
-    //----------------//
-    // getTempoParam //
-    //----------------//
-    public Param<Integer> getTempoParam ()
+    //-----------------//
+    // getBrowserFrame //
+    //-----------------//
+    /**
+     * Create a dedicated frame, where all score elements can be
+     * browsed in the tree hierarchy.
+     *
+     * @return the created frame
+     */
+    public JFrame getBrowserFrame ()
     {
-        return tempoParam;
-    }
+        if (scoreTree == null) {
+            // Build the ScoreTree on the score
+            scoreTree = new ScoreTree(this);
+        }
 
-    //--------------//
-    // getTextParam //
-    //--------------//
-    public Param<String> getTextParam ()
-    {
-        return textParam;
-    }
-
-    //---------------//
-    // getPartsParam //
-    //---------------//
-    public Param<List<PartData>> getPartsParam ()
-    {
-        return partsParam;
+        return scoreTree.getFrame();
     }
 
     //------------------//
@@ -358,6 +348,14 @@ public class Score
         return exportFile;
     }
 
+    //----------------//
+    // getFilterParam //
+    //----------------//
+    public Param<FilterDescriptor> getFilterParam ()
+    {
+        return filterParam;
+    }
+
     //--------------//
     // getFirstPage //
     //--------------//
@@ -394,6 +392,23 @@ public class Score
         return imageFile.getPath();
     }
 
+    //--------------//
+    // getLogPrefix //
+    //--------------//
+    /**
+     * Report the proper prefix to use when logging a message
+     *
+     * @return the proper prefix
+     */
+    public String getLogPrefix ()
+    {
+        if (ScoresManager.isMultiScore()) {
+            return "[" + radix + "] ";
+        } else {
+            return "";
+        }
+    }
+
     //--------------------//
     // getMeasureIdOffset //
     //--------------------//
@@ -422,6 +437,33 @@ public class Score
                     // This page has no measures yet, so ...
                     return null;
                 }
+            }
+        }
+
+        throw new IllegalArgumentException(page + " not found in score");
+    }
+
+    //------------------//
+    // getMeasureOffset //
+    //------------------//
+    /**
+     * Report the offset to add to page-based measure index of the
+     * provided page to get absolute (score-based) indices.
+     *
+     * @param page the provided page
+     * @return the measure index offset for the page
+     */
+    public int getMeasureOffset (Page page)
+    {
+        int offset = 0;
+
+        for (TreeNode pn : getPages()) {
+            Page p = (Page) pn;
+
+            if (p == page) {
+                return offset;
+            } else {
+                offset += p.getMeasureCount();
             }
         }
 
@@ -490,36 +532,24 @@ public class Score
     }
 
     //-------------//
-    // isMultiPage //
+    // getPartList //
     //-------------//
     /**
-     * @return the multiPage
+     * Report the global list of parts.
+     *
+     * @return partList the list of score parts
      */
-    public boolean isMultiPage ()
+    public List<ScorePart> getPartList ()
     {
-        return multiPage;
+        return partList;
     }
 
-    //--------//
-    // isIdle //
-    //--------//
-    /**
-     * Check whether this score is idle or not.
-     * The score is busy when at least one of its pages/sheets is under a step
-     * processing.
-     *
-     * @return true if idle, false if busy
-     */
-    public boolean isIdle ()
+    //---------------//
+    // getPartsParam //
+    //---------------//
+    public Param<List<PartData>> getPartsParam ()
     {
-        for (TreeNode pn : getPages()) {
-            Page page = (Page) pn;
-            Sheet sh = page.getSheet();
-            if (sh != null && sh.getCurrentStep() != null) {
-                return false;
-            }
-        }
-        return true;
+        return partsParam;
     }
 
     //-----------------//
@@ -548,38 +578,6 @@ public class Score
         constants.defaultVolume.setValue(volume);
     }
 
-    //----------//
-    // getBench //
-    //----------//
-    /**
-     * Report the related sheet bench.
-     *
-     * @return the related bench
-     */
-    public ScoreBench getBench ()
-    {
-        return bench;
-    }
-
-    //-----------------//
-    // getBrowserFrame //
-    //-----------------//
-    /**
-     * Create a dedicated frame, where all score elements can be
-     * browsed in the tree hierarchy.
-     *
-     * @return the created frame
-     */
-    public JFrame getBrowserFrame ()
-    {
-        if (scoreTree == null) {
-            // Build the ScoreTree on the score
-            scoreTree = new ScoreTree(this);
-        }
-
-        return scoreTree.getFrame();
-    }
-
     //-------------//
     // getLastPage //
     //-------------//
@@ -590,46 +588,6 @@ public class Score
         } else {
             return (Page) children.get(children.size() - 1);
         }
-    }
-
-    //------------------//
-    // getMeasureOffset //
-    //------------------//
-    /**
-     * Report the offset to add to page-based measure index of the
-     * provided page to get absolute (score-based) indices.
-     *
-     * @param page the provided page
-     * @return the measure index offset for the page
-     */
-    public int getMeasureOffset (Page page)
-    {
-        int offset = 0;
-
-        for (TreeNode pn : getPages()) {
-            Page p = (Page) pn;
-
-            if (p == page) {
-                return offset;
-            } else {
-                offset += p.getMeasureCount();
-            }
-        }
-
-        throw new IllegalArgumentException(page + " not found in score");
-    }
-
-    //-------------//
-    // getPartList //
-    //-------------//
-    /**
-     * Report the global list of parts.
-     *
-     * @return partList the list of score parts
-     */
-    public List<ScorePart> getPartList ()
-    {
-        return partList;
     }
 
     //--------------//
@@ -660,23 +618,6 @@ public class Score
         return radix;
     }
 
-    //--------------//
-    // getLogPrefix //
-    //--------------//
-    /**
-     * Report the proper prefix to use when logging a message
-     *
-     * @return the proper prefix
-     */
-    public String getLogPrefix ()
-    {
-        if (ScoresManager.isMultiScore()) {
-            return "[" + radix + "] ";
-        } else {
-            return "";
-        }
-    }
-
     //-----------//
     // getScript //
     //-----------//
@@ -700,6 +641,22 @@ public class Score
     public File getScriptFile ()
     {
         return scriptFile;
+    }
+
+    //----------------//
+    // getTempoParam //
+    //----------------//
+    public Param<Integer> getTempoParam ()
+    {
+        return tempoParam;
+    }
+
+    //--------------//
+    // getTextParam //
+    //--------------//
+    public Param<String> getTextParam ()
+    {
+        return textParam;
     }
 
     //-----------//
@@ -744,6 +701,41 @@ public class Score
     public boolean hasVolume ()
     {
         return volume != null;
+    }
+
+    //--------//
+    // isIdle //
+    //--------//
+    /**
+     * Check whether this score is idle or not.
+     * The score is busy when at least one of its pages/sheets is under a step
+     * processing.
+     *
+     * @return true if idle, false if busy
+     */
+    public boolean isIdle ()
+    {
+        for (TreeNode pn : getPages()) {
+            Page page = (Page) pn;
+            Sheet sh = page.getSheet();
+
+            if ((sh != null) && (sh.getCurrentStep() != null)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    //-------------//
+    // isMultiPage //
+    //-------------//
+    /**
+     * @return the multiPage
+     */
+    public boolean isMultiPage ()
+    {
+        return multiPage;
     }
 
     //--------//
@@ -921,14 +913,14 @@ public class Score
         this.multiPage = multiPage;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Integer defaultTempo = new Constant.Integer(
                 "QuartersPerMn",
@@ -939,7 +931,6 @@ public class Score
                 "Volume",
                 78,
                 "Default Volume in 0..127 range");
-
     }
 
     //------------//
@@ -948,22 +939,24 @@ public class Score
     private class PartsParam
             extends Param<List<PartData>>
     {
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public List<PartData> getSpecific ()
         {
             List<ScorePart> list = getPartList();
-            if (list != null) {
-                List<PartData> data = new ArrayList<>();
-                for (ScorePart scorePart : list) {
 
+            if (list != null) {
+                List<PartData> data = new ArrayList<PartData>();
+
+                for (ScorePart scorePart : list) {
                     // Initial setting for part midi program
-                    int prog = (scorePart.getMidiProgram() != null)
-                            ? scorePart.getMidiProgram()
+                    int prog = (scorePart.getMidiProgram() != null) ? scorePart.getMidiProgram()
                             : scorePart.getDefaultProgram();
 
                     data.add(new PartData(scorePart.getName(), prog));
                 }
+
                 return data;
             } else {
                 return null;

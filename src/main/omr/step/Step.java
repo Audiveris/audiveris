@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  S t e p                                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            S t e p                                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -20,16 +20,15 @@ import java.util.Collection;
  * Interface {@code Step} describes a sheet processing step.
  *
  * <p>
- * Implementation note: {@code Step} is no longer an enum type, to allow a
- * better decoupling between code parts of the application, since all steps
- * no longer need to be available at the same build time. To some extent,
- * different steps could be provided by separate modules.
+ * Implementation note: {@code Step} is no longer an enum type, to allow a better decoupling between
+ * code parts of the application, since all steps no longer need to be available at the same build
+ * time. To some extent, different steps could be provided by separate modules.
  *
  * @author Hervé Bitteur
  */
 public interface Step
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Labels for view in tabbed panel. */
     public static final String PICTURE_TAB = "Picture";
@@ -46,10 +45,10 @@ public interface Step
 
     public static final String SKELETON_TAB = "Skeleton";
 
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
     public enum Mandatory
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** Must be performed before any output */
         MANDATORY,
@@ -59,7 +58,7 @@ public interface Step
 
     public enum Level
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** Step makes sense at score level only */
         SCORE_LEVEL,
@@ -68,7 +67,7 @@ public interface Step
         SHEET_LEVEL;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     /**
      * Clear the errors that relate to this step on the provided sheet.

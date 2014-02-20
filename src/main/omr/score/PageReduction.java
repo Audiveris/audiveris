@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         P a g e R e d u c t i o n                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   P a g e R e d u c t i o n                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -25,23 +25,22 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Class {@code PageReduction} reduces the parts of each system to a list of
- * parts defined at page level.
+ * Class {@code PageReduction} reduces the parts of each system to a list of parts
+ * defined at page level.
  *
  * @author Hervé Bitteur
  */
 public class PageReduction
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(PageReduction.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related page */
     private final Page page;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new PageReduction object.
      *
@@ -52,7 +51,7 @@ public class PageReduction
         this.page = page;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // reduce //
     //--------//
@@ -69,7 +68,7 @@ public class PageReduction
         PartConnection connection = PartConnection.connectPageSystems(page);
 
         // Build part list
-        List<ScorePart> scoreParts = new ArrayList<>();
+        List<ScorePart> scoreParts = new ArrayList<ScorePart>();
 
         for (Result result : connection.getResultMap().keySet()) {
             scoreParts.add((ScorePart) result.getUnderlyingObject());

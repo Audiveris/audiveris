@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        S h e e t P d f O u t p u t                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  S h e e t P d f O u t p u t                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.ui;
 
@@ -33,27 +33,24 @@ import java.io.File;
 import java.io.FileOutputStream;
 
 /**
- * Class {@code SheetPdfOutput} produces a physical PDF output of a
- * score.
+ * Class {@code SheetPdfOutput} produces a physical PDF output of a score.
  *
  * @author Hervé Bitteur
  */
 public class SheetPdfOutput
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ScoresManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoresManager.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related score. */
     private final Score score;
 
     /** The file to print to. */
     private final File file;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SheetPdfOutput object.
      *
@@ -67,7 +64,7 @@ public class SheetPdfOutput
         this.file = file;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     public void write ()
             throws Exception
     {
@@ -81,8 +78,7 @@ public class SheetPdfOutput
                 Dimension dim = page.getDimension();
 
                 if (document == null) {
-                    document = new Document(
-                            new Rectangle(dim.width, dim.height));
+                    document = new Document(new Rectangle(dim.width, dim.height));
                     writer = PdfWriter.getInstance(document, fos);
                     document.open();
                 } else {
@@ -92,7 +88,7 @@ public class SheetPdfOutput
 
                 PdfContentByte cb = writer.getDirectContent();
                 Graphics2D g2 = cb.createGraphics(dim.width, dim.height);
-                
+
                 // Scale: 1
                 g2.scale(1, 1);
 
@@ -103,6 +99,7 @@ public class SheetPdfOutput
 
                 // Painting
                 g2.setColor(Color.BLACK);
+
                 PagePhysicalPainter painter = new PagePhysicalPainter(
                         g2,
                         false, // No voice painting

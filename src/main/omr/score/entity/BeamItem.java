@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              B e a m I t e m                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        B e a m I t e m                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -35,8 +35,8 @@ import java.util.Comparator;
 /**
  * Class {@code BeamItem} represents either a single beam hook
  * (stuck to 1 stem) or a beam (stuck to 2 stems).
- * By extension, a BeamItem can be a logical part of thick beam "pack" due to
- * glyphs stuck vertically.
+ * By extension, a BeamItem can be a logical part of thick beam "pack" due to glyphs stuck
+ * vertically.
  *
  * @author Hervé Bitteur
  */
@@ -44,14 +44,11 @@ public class BeamItem
         extends MeasureNode
         implements Vip
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            BeamItem.class);
+    private static final Logger logger = LoggerFactory.getLogger(BeamItem.class);
 
     /** Compare two BeamItem instances by abscissa within a Beam. */
     public static final Comparator<TreeNode> byNodeAbscissa = new Comparator<TreeNode>()
@@ -68,7 +65,7 @@ public class BeamItem
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** (Debug) flag this object as VIP. */
     private boolean vip;
@@ -91,7 +88,7 @@ public class BeamItem
     /** Right point of beam item. */
     private Point right;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------//
     // BeamItem //
@@ -134,27 +131,7 @@ public class BeamItem
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //----------//
-    // populate //
-    //----------//
-    /**
-     * Populate a BeamItem with this glyph, or a series of BeamItem's
-     * if the glyph is a beam pack.
-     *
-     * @param glyph   glyph of the beam, or beam pack
-     * @param measure the containing measure
-     */
-    public static void populate (Glyph glyph,
-                                 Measure measure)
-    {
-        if (glyph.isVip()) {
-            logger.info("BeamItem. populate {}", glyph.idString());
-        }
-
-        createPack(measure, glyph);
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getGlyph //
     //----------//
@@ -216,8 +193,7 @@ public class BeamItem
      */
     public Glyph getStem (HorizontalSide side)
     {
-        return getGlyph()
-                .getStem(side);
+        return getGlyph().getStem(side);
     }
 
     //--------//
@@ -230,8 +206,7 @@ public class BeamItem
      */
     public boolean isHook ()
     {
-        return getGlyph()
-                .getShape() == Shape.BEAM_HOOK;
+        return getGlyph().getShape() == Shape.BEAM_HOOK;
     }
 
     //-------//
@@ -241,6 +216,26 @@ public class BeamItem
     public boolean isVip ()
     {
         return vip;
+    }
+
+    //----------//
+    // populate //
+    //----------//
+    /**
+     * Populate a BeamItem with this glyph, or a series of BeamItem's
+     * if the glyph is a beam pack.
+     *
+     * @param glyph   glyph of the beam, or beam pack
+     * @param measure the containing measure
+     */
+    public static void populate (Glyph glyph,
+                                 Measure measure)
+    {
+        if (glyph.isVip()) {
+            logger.info("BeamItem. populate {}", glyph.idString());
+        }
+
+        createPack(measure, glyph);
     }
 
     //----------//
@@ -285,34 +280,17 @@ public class BeamItem
         sb.append("{BeamItem");
 
         try {
-            sb.append(" ")
-                    .append(getGlyph().idString());
+            sb.append(" ").append(getGlyph().idString());
 
             if (packCard != 1) {
-                sb.append(" [")
-                        .append(packIndex)
-                        .append("/")
-                        .append(packCard)
-                        .append("]");
+                sb.append(" [").append(packIndex).append("/").append(packCard).append("]");
             }
 
-            sb.append(" left=[")
-                    .append(left.x)
-                    .append(",")
-                    .append(left.y)
+            sb.append(" left=[").append(left.x).append(",").append(left.y).append("]");
+            sb.append(" center=[").append(getCenter().x).append(",").append(getCenter().y)
                     .append("]");
-            sb.append(" center=[")
-                    .append(getCenter().x)
-                    .append(",")
-                    .append(getCenter().y)
-                    .append("]");
-            sb.append(" right=[")
-                    .append(right.x)
-                    .append(",")
-                    .append(right.y)
-                    .append("]");
-            sb.append(" slope=")
-                    .append((float) getLine().getSlope());
+            sb.append(" right=[").append(right.x).append(",").append(right.y).append("]");
+            sb.append(" slope=").append((float) getLine().getSlope());
         } catch (NullPointerException e) {
             sb.append(" INVALID");
         }
@@ -363,9 +341,7 @@ public class BeamItem
                 if (glyph.getShape() == Shape.BEAM_HOOK) {
                     // Make a simple horizontal beam item
                     left = new Point(box.x, box.y + (box.height / 2));
-                    right = new Point(
-                            (box.x + box.width) - 1,
-                            box.y + (box.height / 2));
+                    right = new Point((box.x + box.width) - 1, box.y + (box.height / 2));
                 } else {
                     // Check line slope
                     Line glyphLine = glyph.getLine();
@@ -373,22 +349,17 @@ public class BeamItem
                     if (Math.abs(glyphLine.getSlope()) > constants.maxBeamSlope.getValue()) {
                         // Slope is not realistic, use horizontal lines
                         double halfHeight = box.height / (card * 2);
-                        int y = box.y
-                                + (int) Math.rint(halfHeight * ((2 * i) + 1));
+                        int y = box.y + (int) Math.rint(halfHeight * ((2 * i) + 1));
                         left = new Point(box.x, y);
                         right = new Point((box.x + box.width) - 1, y);
                     } else {
                         double yMidLeft = glyphLine.yAtX((double) box.x);
-                        double yMidRight = glyphLine.yAtX(
-                                (double) ((box.x + box.width) - 1));
-                        double deltaMid1 = Math.min(yMidLeft, yMidRight)
-                                           - box.y;
-                        double deltaMid2 = (box.y + box.height)
-                                           - Math.max(yMidLeft, yMidRight);
+                        double yMidRight = glyphLine.yAtX((double) ((box.x + box.width) - 1));
+                        double deltaMid1 = Math.min(yMidLeft, yMidRight) - box.y;
+                        double deltaMid2 = (box.y + box.height) - Math.max(yMidLeft, yMidRight);
 
                         double deltaMid = (deltaMid1 + deltaMid2) / 2.0;
-                        double deltaY = (((4 * i) + 1) * deltaMid) / ((2 * card)
-                                                                      - 1);
+                        double deltaY = (((4 * i) + 1) * deltaMid) / ((2 * card) - 1);
                         int highY = (int) Math.rint(box.y + deltaY);
                         int lowY = (int) Math.rint(
                                 (box.y + box.height) - (2 * deltaMid) + deltaY);
@@ -414,8 +385,7 @@ public class BeamItem
             }
         } catch (Exception ex) {
             logger.warn(
-                    measure.getContextString() + " Error creating BeamItem from "
-                    + glyph.idString(),
+                    measure.getContextString() + " Error creating BeamItem from " + glyph.idString(),
                     ex);
         }
     }
@@ -431,37 +401,37 @@ public class BeamItem
      */
     private static int packCardOf (Shape shape)
     {
-//        switch (shape) {
-//        case BEAM_3:
-//            return 3;
-//
-//        case BEAM_2:
-//            return 2;
-//
-//        case BEAM:
-//        case BEAM_HOOK:
-            return 1;
-//
-//        default:
-//            logger.error("Use of BeamItem.packCardOf with shape {}", shape);
-//
-//            return 0;
-//        }
+        //        switch (shape) {
+        //        case BEAM_3:
+        //            return 3;
+        //
+        //        case BEAM_2:
+        //            return 2;
+        //
+        //        case BEAM:
+        //        case BEAM_HOOK:
+        return 1;
+
+        //
+        //        default:
+        //            logger.error("Use of BeamItem.packCardOf with shape {}", shape);
+        //
+        //            return 0;
+        //        }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Double maxBeamSlope = new Constant.Double(
                 "slope",
                 1.0,
                 "Maximum slope for a beam item line");
-
     }
 }

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             B e a m G r o u p                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       B e a m G r o u p                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -16,7 +16,6 @@ import omr.constant.ConstantSet;
 
 import omr.math.Line;
 import omr.math.Rational;
-
 
 import omr.sheet.Scale;
 
@@ -39,64 +38,62 @@ import java.util.TreeSet;
 
 /**
  * Class {@code BeamGroup} represents a group of related beams.
+ * <p>
  * It handles the level of each beam within the group.
- * The contained beams are sorted in increasing order from stem/chord tail to
- * stem/chord head
+ * The contained beams are sorted in increasing order from stem/chord tail to stem/chord head
  *
  * @author Hervé Bitteur
  */
 public class BeamGroup
         implements Vip
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(BeamGroup.class);
 
-//    /** A Beam comparator based on level. (within the same group only) */
-//    private static final Comparator<Beam> byLevel = new Comparator<Beam>()
-//    {
-//        @Override
-//        public int compare (Beam b1,
-//                            Beam b2)
-//        {
-//            if (b1 == b2) {
-//                return 0;
-//            }
-//
-//            // Find a common chord, and use reverse order from head location
-//            for (Chord chord : b1.getChords()) {
-//                if (b2.getChords().contains(chord)) {
-//                    int x = chord.getStem().getLocation().x;
-//                    int y = b1.getLine().yAtX(x);
-//                    int yOther = b2.getLine().yAtX(x);
-//                    int yHead = chord.getHeadLocation().y;
-//
-//                    int result = Integer.signum(
-//                            Math.abs(yHead - yOther) - Math.abs(yHead - y));
-//
-//                    if (result == 0) {
-//                        // This should not happen
-//                        //                    logger.warn(
-//                        //                        other.getContextString() + " equality between " +
-//                        //                        this.toLongString() + " and " + other.toLongString());
-//                        //                    logger.warn(
-//                        //                        "Beam comparison data " + "x=" + x + " y=" + y +
-//                        //                        " yOther=" + yOther + " yHead=" + yHead);
-//                        b1.addError(chord.getStem(), "Weird beam configuration");
-//                    }
-//
-//                    return result;
-//                }
-//            }
-//
-//            // No common chord
-//        }
-//    };
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
+    //    /** A Beam comparator based on level. (within the same group only) */
+    //    private static final Comparator<Beam> byLevel = new Comparator<Beam>()
+    //    {
+    //        @Override
+    //        public int compare (Beam b1,
+    //                            Beam b2)
+    //        {
+    //            if (b1 == b2) {
+    //                return 0;
+    //            }
+    //
+    //            // Find a common chord, and use reverse order from head location
+    //            for (Chord chord : b1.getChords()) {
+    //                if (b2.getChords().contains(chord)) {
+    //                    int x = chord.getStem().getLocation().x;
+    //                    int y = b1.getLine().yAtX(x);
+    //                    int yOther = b2.getLine().yAtX(x);
+    //                    int yHead = chord.getHeadLocation().y;
+    //
+    //                    int result = Integer.signum(
+    //                            Math.abs(yHead - yOther) - Math.abs(yHead - y));
+    //
+    //                    if (result == 0) {
+    //                        // This should not happen
+    //                        //                    logger.warn(
+    //                        //                        other.getContextString() + " equality between " +
+    //                        //                        this.toLongString() + " and " + other.toLongString());
+    //                        //                    logger.warn(
+    //                        //                        "Beam comparison data " + "x=" + x + " y=" + y +
+    //                        //                        " yOther=" + yOther + " yHead=" + yHead);
+    //                        b1.addError(chord.getStem(), "Weird beam configuration");
+    //                    }
+    //
+    //                    return result;
+    //                }
+    //            }
+    //
+    //            // No common chord
+    //        }
+    //    };
     //
     /** (Debug) flag this object as VIP. */
     private boolean vip;
@@ -109,12 +106,12 @@ public class BeamGroup
     private final Measure measure;
 
     /** Collection of contained beams. */
-    private List<Beam> beams = new ArrayList<>();
+    private List<Beam> beams = new ArrayList<Beam>();
 
     /** Same voice for all chords of this beam group. */
     private Voice voice;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // BeamGroup //
     //-----------//
@@ -132,7 +129,7 @@ public class BeamGroup
         logger.debug("{} Created {}", measure.getContextString(), this);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // populate //
     //----------//
@@ -211,8 +208,7 @@ public class BeamGroup
         }
 
         if (isVip() || logger.isDebugEnabled()) {
-            logger.info("{} Added {} to {}",
-                    measure.getContextString(), beam, this);
+            logger.info("{} Added {} to {}", measure.getContextString(), beam, this);
         }
     }
 
@@ -241,13 +237,11 @@ public class BeamGroup
                         chord.setStartTime(prevChord.getEndTime());
                     }
                 } catch (Exception ex) {
-                    chord.addError(
-                            "Cannot compute chord time based on previous chord");
+                    chord.addError("Cannot compute chord time based on previous chord");
                 }
             } else {
                 if (chord.getStartTime() == null) {
-                    chord.addError(
-                            "Computing beam group times with first chord not set");
+                    chord.addError("Computing beam group times with first chord not set");
                 }
             }
 
@@ -279,7 +273,7 @@ public class BeamGroup
      */
     public List<Chord> getChords ()
     {
-        List<Chord> chords = new ArrayList<>();
+        List<Chord> chords = new ArrayList<Chord>();
 
         for (Beam beam : getBeams()) {
             for (Chord chord : beam.getChords()) {
@@ -290,25 +284,8 @@ public class BeamGroup
         }
 
         Collections.sort(chords, Chord.byAbscissa);
-        return chords;
-    }
 
-    //--------------//
-    // getLastChord //
-    //--------------//
-    /**
-     * Report the last chord on the right.
-     *
-     * @return the last chord
-     */
-    public Chord getLastChord ()
-    {
-        List<Chord> chords = getChords();
-        if (!chords.isEmpty()) {
-            return chords.get(chords.size() - 1);
-        } else {
-            return null;
-        }
+        return chords;
     }
 
     //-------------//
@@ -323,7 +300,7 @@ public class BeamGroup
     public Rational getDuration ()
     {
         Rational duration = null;
-        SortedSet<Chord> chords = new TreeSet<>(Chord.byAbscissa);
+        SortedSet<Chord> chords = new TreeSet<Chord>(Chord.byAbscissa);
 
         for (Beam beam : beams) {
             for (Chord chord : beam.getChords()) {
@@ -357,6 +334,25 @@ public class BeamGroup
     public int getId ()
     {
         return id;
+    }
+
+    //--------------//
+    // getLastChord //
+    //--------------//
+    /**
+     * Report the last chord on the right.
+     *
+     * @return the last chord
+     */
+    public Chord getLastChord ()
+    {
+        List<Chord> chords = getChords();
+
+        if (!chords.isEmpty()) {
+            return chords.get(chords.size() - 1);
+        } else {
+            return null;
+        }
     }
 
     //----------//
@@ -453,8 +449,7 @@ public class BeamGroup
             }
         } else if (!this.voice.equals(voice)) {
             getChords().get(0).addError(
-                    "Group. Reassigning voice from " + this.voice + " to " + voice
-                    + " in " + this);
+                    "Group. Reassigning voice from " + this.voice + " to " + voice + " in " + this);
         }
     }
 
@@ -497,8 +492,8 @@ public class BeamGroup
                 continue;
             }
 
-            double length = beam.getPoint(HorizontalSide.LEFT).distance(beam.
-                    getPoint(HorizontalSide.RIGHT));
+            double length = beam.getPoint(HorizontalSide.LEFT).distance(
+                    beam.getPoint(HorizontalSide.RIGHT));
 
             if (length > bestLength) {
                 bestLength = length;
@@ -561,20 +556,24 @@ public class BeamGroup
         // above or below the chord.
         for (Chord chord : getChords()) {
             Rectangle chordBox = chord.getBox();
+
             for (Beam beam : beams) {
                 // Beam hooks are not concerned
                 if (beam.isHook()) {
                     continue;
                 }
+
                 // Skip beams attached to this chord
                 if (beam.getChords().contains(chord)) {
                     continue;
                 }
+
                 // Check abscissa overlap
                 Rectangle beamBox = beam.getBox();
-                int xOverlap = Math.min(chordBox.x + chordBox.width,
-                        beamBox.x + beamBox.width)
-                               - Math.max(chordBox.x, beamBox.x);
+                int xOverlap = Math.min(
+                        chordBox.x + chordBox.width,
+                        beamBox.x + beamBox.width) - Math.max(chordBox.x, beamBox.x);
+
                 if (xOverlap <= 0) {
                     continue;
                 }
@@ -585,20 +584,27 @@ public class BeamGroup
                 int lineY = line.yAtX(tail.x);
                 int yOverlap = Math.min(lineY, chordBox.y + chordBox.height)
                                - Math.max(lineY, chordBox.y);
+
                 if (yOverlap >= 0) {
                     continue;
                 }
+
                 int tailDy = Math.abs(lineY - tail.y);
                 double normedDy = chord.getScale().pixelsToFrac(tailDy);
                 double maxChordDy = constants.maxChordDy.getValue();
+
                 if (normedDy > maxChordDy) {
-                    logger.debug("Vertical gap between {} and {}, {} vs {}",
-                            chord, beam, normedDy, maxChordDy);
+                    logger.debug(
+                            "Vertical gap between {} and {}, {} vs {}",
+                            chord,
+                            beam,
+                            normedDy,
+                            maxChordDy);
+
                     // Split the beam group here
                     return new SplitOrder(this, chord);
                 }
             }
-
         }
 
         return null; // everything is OK
@@ -625,6 +631,7 @@ public class BeamGroup
         Chord cloneChord = pivotChord.duplicate();
 
         List<Beam> alienBeams = alienGroup.getBeams();
+
         for (Iterator<Beam> bit = pivotChord.getBeams().iterator(); bit.hasNext();) {
             Beam beam = bit.next();
 
@@ -661,7 +668,7 @@ public class BeamGroup
 
         // Check all former beams: any beam linked to the alienChord should be
         // moved to the chordGroup.
-        List<Beam> chordBeams = new ArrayList<>(); // To avoid concurrent modifs
+        List<Beam> chordBeams = new ArrayList<Beam>(); // To avoid concurrent modifs
 
         for (Beam beam : beams) {
             if (beam.getChords().contains(split.alienChord)) {
@@ -693,14 +700,14 @@ public class BeamGroup
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Integer maxSplitLoops = new Constant.Integer(
                 "loops",
@@ -710,7 +717,6 @@ public class BeamGroup
         Scale.Fraction maxChordDy = new Scale.Fraction(
                 0.5,
                 "Maximum vertical gap between a chord and a beam");
-
     }
 
     //------------//
@@ -723,7 +729,7 @@ public class BeamGroup
      */
     private static class SplitOrder
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** The beam group to be split. */
         final BeamGroup group;
@@ -731,7 +737,7 @@ public class BeamGroup
         /** A chord of this group, where multiplicity was detected. */
         final Chord alienChord;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public SplitOrder (BeamGroup group,
                            Chord alienChord)
         {
@@ -739,7 +745,7 @@ public class BeamGroup
             this.alienChord = alienChord;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

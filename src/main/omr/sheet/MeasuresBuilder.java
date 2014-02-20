@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       M e a s u r e s B u i l d e r                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 M e a s u r e s B u i l d e r                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -40,12 +40,12 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code MeasuresBuilder} is in charge, at system info level, of
- * building measures from the bar sticks found.
- * At this moment, the only glyphs in the system collection are the barline
- * candidates.
+ * Class {@code MeasuresBuilder} is in charge, at system info level, of building
+ * measures from the bar sticks found.
+ * At this moment, the only glyphs in the system collection are the barline candidates.
  *
- * <p>Each instance of this class is meant to be called by a single thread,
+ * <p>
+ * Each instance of this class is meant to be called by a single thread,
  * dedicated to the processing of one system. So this class does not need to be
  * thread-safe.</p>
  *
@@ -54,12 +54,10 @@ import java.util.List;
 @NotThreadSafe
 public class MeasuresBuilder
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             MeasuresBuilder.class);
 
@@ -73,7 +71,7 @@ public class MeasuresBuilder
     private static final Failure NOT_SYSTEM_ALIGNED = new Failure(
             "Bar-NotSystemAligned");
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system */
     @Navigable(false)
     private final SystemInfo system;
@@ -90,7 +88,7 @@ public class MeasuresBuilder
     @Navigable(false)
     private final Scale scale;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------------//
     // MeasuresBuilder //
     //-----------------//
@@ -107,7 +105,7 @@ public class MeasuresBuilder
         scale = sheet.getScale();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // buildMeasures //
     //---------------//
@@ -137,14 +135,12 @@ public class MeasuresBuilder
         // Clear the collection of Measure instances
         for (TreeNode node : scoreSystem.getParts()) {
             SystemPart part = (SystemPart) node;
-            part.getMeasures()
-                    .clear();
+            part.getMeasures().clear();
         }
 
         // Create measures out of OldBarAlignment instances
         List<OldBarAlignment> alignments = system.getBarAlignments();
-        int firstId = system.getFirstStaff()
-                .getId();
+        int firstId = system.getFirstStaff().getId();
 
         for (OldBarAlignment align : alignments) {
             if (logger.isDebugEnabled()) {
@@ -156,8 +152,7 @@ public class MeasuresBuilder
 
             for (TreeNode node : scoreSystem.getParts()) {
                 SystemPart part = (SystemPart) node;
-                PartInfo partInfo = system.getParts()
-                        .get(ip++);
+                PartInfo partInfo = system.getParts().get(ip++);
                 Measure measure = new Measure(part);
                 Barline barline = new Barline(measure);
 
@@ -170,10 +165,7 @@ public class MeasuresBuilder
                         barline.addGlyph(stick);
                     } else {
                         // TODO
-                        logger.warn(
-                                "No intersection at index {} in {}",
-                                is,
-                                align);
+                        logger.warn("No intersection at index {} in {}", is, align);
                     }
                 }
 
@@ -189,8 +181,7 @@ public class MeasuresBuilder
         for (TreeNode node : scoreSystem.getParts()) {
             SystemPart part = (SystemPart) node;
 
-            if (part.getMeasures()
-                    .isEmpty()) {
+            if (part.getMeasures().isEmpty()) {
                 logger.debug("{} - Creating artificial measure", part);
 
                 Measure measure = new Measure(part);
@@ -219,8 +210,7 @@ public class MeasuresBuilder
             int lastX = barline.getRightX();
             int minWidth = scale.toPixels(constants.minMeasureWidth);
 
-            if (((scoreSystem.getTopLeft().x + part.getFirstStaff()
-                    .getWidth()) - lastX) < minWidth) {
+            if (((scoreSystem.getTopLeft().x + part.getFirstStaff().getWidth()) - lastX) < minWidth) {
                 logger.debug("Adjusting EndingBar {}", system);
 
                 // Adjust end of system & staff(s) to this one
@@ -229,19 +219,14 @@ public class MeasuresBuilder
                 for (TreeNode pnode : scoreSystem.getParts()) {
                     SystemPart prt = (SystemPart) pnode;
 
-                    for (Iterator<TreeNode> sit = prt.getStaves()
-                            .iterator();
-                            sit.hasNext();) {
+                    for (Iterator<TreeNode> sit = prt.getStaves().iterator(); sit.hasNext();) {
                         Staff stv = (Staff) sit.next();
                         stv.setWidth(scoreSystem.getDimension().width);
                     }
                 }
             }
         } catch (Exception ex) {
-            logger.warn(
-                    scoreSystem.getContextString()
-                    + " Error in checking ending bar",
-                    ex);
+            logger.warn(scoreSystem.getContextString() + " Error in checking ending bar", ex);
         }
     }
 
@@ -285,30 +270,22 @@ public class MeasuresBuilder
             SystemPart part = (SystemPart) node;
             Measure prevMeasure = null;
 
-            for (Iterator<TreeNode> mit = part.getMeasures()
-                    .iterator(); mit.hasNext();) {
+            for (Iterator<TreeNode> mit = part.getMeasures().iterator(); mit.hasNext();) {
                 Measure measure = (Measure) mit.next();
 
                 if (prevMeasure != null) {
-                    final int measureWidth = measure.getBarline()
-                            .getCenter().x
-                                             - prevMeasure.getBarline()
-                            .getCenter().x;
+                    final int measureWidth = measure.getBarline().getCenter().x
+                                             - prevMeasure.getBarline().getCenter().x;
 
                     if (measureWidth <= maxDoubleDx) {
                         // Lines are side by side or one above the other?
-                        Glyph stick = (Glyph) measure.getBarline()
-                                .getGlyphs()
-                                .toArray()[0];
-                        Glyph prevStick = (Glyph) prevMeasure.getBarline()
-                                .getGlyphs()
-                                .toArray()[0];
+                        Glyph stick = (Glyph) measure.getBarline().getGlyphs().toArray()[0];
+                        Glyph prevStick = (Glyph) prevMeasure.getBarline().getGlyphs().toArray()[0];
 
                         if (yOverlap(stick, prevStick)) {
                             // Overlap => side by side
                             // Merge the two bar lines into the first one
-                            prevMeasure.getBarline()
-                                    .mergeWith(measure.getBarline());
+                            prevMeasure.getBarline().mergeWith(measure.getBarline());
 
                             logger.debug(
                                     "Merged two close barlines into {}",
@@ -343,9 +320,7 @@ public class MeasuresBuilder
     private void removeStartingMeasure ()
     {
         int minWidth = scale.toPixels(constants.minMeasureWidth);
-        Barline firstBarline = scoreSystem.getFirstRealPart()
-                .getFirstMeasure()
-                .getBarline();
+        Barline firstBarline = scoreSystem.getFirstRealPart().getFirstMeasure().getBarline();
 
         if (firstBarline == null) {
             return;
@@ -359,8 +334,7 @@ public class MeasuresBuilder
             if (dx != 0) {
                 logger.debug("Adjusting firstX={} {}", dx, system);
 
-                scoreSystem.getTopLeft()
-                        .translate(dx, 0);
+                scoreSystem.getTopLeft().translate(dx, 0);
                 scoreSystem.getDimension().width -= dx;
             }
 
@@ -381,8 +355,7 @@ public class MeasuresBuilder
                     // Update abscissa of top-left corner of every staff
                     for (TreeNode sNode : part.getStaves()) {
                         Staff staff = (Staff) sNode;
-                        staff.getTopLeft()
-                                .translate(dx, 0);
+                        staff.getTopLeft().translate(dx, 0);
                     }
 
                     // Update other bar lines abscissae accordingly
@@ -411,14 +384,14 @@ public class MeasuresBuilder
         return start < stop;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction maxAlignShiftDx = new Scale.Fraction(
                 0.5,
@@ -430,14 +403,11 @@ public class MeasuresBuilder
                 "Maximum horizontal distance between the two bars of a double bar");
 
         //
-        Scale.Fraction minMeasureWidth = new Scale.Fraction(
-                2.0,
-                "Minimum width for a measure");
+        Scale.Fraction minMeasureWidth = new Scale.Fraction(2.0, "Minimum width for a measure");
 
         //
         Scale.Fraction maxBarOffset = new Scale.Fraction(
                 1.0,
                 "Vertical offset used to detect that a bar extends past a staff");
-
     }
 }

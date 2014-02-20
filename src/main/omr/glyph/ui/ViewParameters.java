@@ -34,11 +34,11 @@ public class ViewParameters
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
             ViewParameters.class);
 
-    /** Specific application parameters */
+    
     private static final Constants constants = new Constants();
 
     /** Should the letter boxes be painted */

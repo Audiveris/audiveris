@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          M e a s u r e s S t e p                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    M e a s u r e s S t e p                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -22,21 +22,18 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code MeasuresStep} retrieves the measures from the barline
- * glyphs.
+ * Class {@code MeasuresStep} retrieves the measures from the barline glyphs.
  *
  * @author Hervé Bitteur
  */
 public class MeasuresStep
         extends AbstractSystemStep
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            MeasuresStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(MeasuresStep.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // MeasuresStep //
     //--------------//
@@ -53,7 +50,7 @@ public class MeasuresStep
                 "Retrieve measures from bar sticks");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -74,11 +71,9 @@ public class MeasuresStep
             throws StepException
     {
         // Assign basic measure ids
-        sheet.getPage()
-                .accept(new MeasureBasicNumberer());
+        sheet.getPage().accept(new MeasureBasicNumberer());
 
         // Log the number of measures per system
-        sheet.getPage()
-                .dumpMeasureCounts();
+        sheet.getPage().dumpMeasureCounts();
     }
 }

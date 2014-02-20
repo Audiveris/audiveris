@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           B a r l i n e I n t e r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     B a r l i n e I n t e r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
@@ -18,15 +18,15 @@ import omr.math.AreaUtil;
 import omr.math.Line;
 
 /**
- * Class {@code BarlineInter} represents an interpretation of bar
- * line (thin or thick vertical segment).
+ * Class {@code BarlineInter} represents an interpretation of bar line (thin or thick
+ * vertical segment).
  *
  * @author Hervé Bitteur
  */
 public class BarlineInter
         extends AbstractInter
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** True if this bar line defines a part. */
     private boolean partDefining;
@@ -37,7 +37,7 @@ public class BarlineInter
     /** Line width. */
     private final double width;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarlineInter object.
      *
@@ -66,7 +66,7 @@ public class BarlineInter
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -135,20 +135,20 @@ public class BarlineInter
         this.partDefining = partDefining;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
             extends BasicImpacts
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{"core", "belt", "gap"};
 
         private static final double[] WEIGHTS = new double[]{1, 1, 1};
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double core,
                         double belt,
                         double gap)

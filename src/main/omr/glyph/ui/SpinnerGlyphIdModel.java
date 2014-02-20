@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    S p i n n e r G l y p h I d M o d e l                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              S p i n n e r G l y p h I d M o d e l                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
@@ -29,19 +29,18 @@ import javax.swing.AbstractSpinnerModel;
 public class SpinnerGlyphIdModel
         extends AbstractSpinnerModel
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SpinnerGlyphIdModel.class);
+    private static final Logger logger = LoggerFactory.getLogger(SpinnerGlyphIdModel.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph nest */
     private final GlyphNest nest;
 
     /** Current glyph id */
     private int currentId = NO_VALUE;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SpinnerGlyphIdModel object.
      *
@@ -52,7 +51,7 @@ public class SpinnerGlyphIdModel
         this.nest = nest;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public Object getNextValue ()
     {

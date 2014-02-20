@@ -38,7 +38,7 @@ public class VersionNumber
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
         VersionNumber.class);
 

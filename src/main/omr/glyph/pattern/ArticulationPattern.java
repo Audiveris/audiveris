@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                   A r t i c u l a t i o n P a t t e r n                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                             A r t i c u l a t i o n P a t t e r n                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
@@ -44,16 +44,13 @@ import java.util.List;
 public class ArticulationPattern
         extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ArticulationPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(ArticulationPattern.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------------//
     // ArticulationPattern //
     //---------------------//
@@ -67,21 +64,18 @@ public class ArticulationPattern
         super("Articulation", system);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // runPattern //
     //------------//
     @Override
     public int runPattern ()
     {
-        int xMargin = system.getSheet()
-                .getScale()
-                .toPixels(constants.xMargin);
+        int xMargin = system.getSheet().getScale().toPixels(constants.xMargin);
         int nb = 0;
 
         for (Glyph glyph : system.getGlyphs()) {
-            if (!ShapeSet.Articulations.contains(glyph.getShape())
-                || glyph.isManualShape()) {
+            if (!ShapeSet.Articulations.contains(glyph.getShape()) || glyph.isManualShape()) {
                 continue;
             }
 
@@ -111,7 +105,7 @@ public class ArticulationPattern
                            || ShapeSet.Notes.contains(shape)
                            || ShapeSet.Rests.contains(shape);
                 }
-            });
+                    });
 
             if (!hasNote) {
                 logger.debug("Deassign articulation {}", glyph.idString());
@@ -124,18 +118,15 @@ public class ArticulationPattern
         return nb;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        Scale.Fraction xMargin = new Scale.Fraction(
-                0.5,
-                "Abscissa margin around articulation");
-
+        Scale.Fraction xMargin = new Scale.Fraction(0.5, "Abscissa margin around articulation");
     }
 }

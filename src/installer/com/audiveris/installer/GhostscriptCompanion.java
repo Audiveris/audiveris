@@ -24,7 +24,7 @@ class GhostscriptCompanion
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(
             GhostscriptCompanion.class);
 

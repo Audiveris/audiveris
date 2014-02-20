@@ -1,52 +1,50 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  N o d e                                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            N o d e                                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.constant;
 
 import java.util.Comparator;
 
 /**
- * Abstract class {@code Node} represents a node in the hierarchy of
- * packages and units (aka classes).
+ * Abstract class {@code Node} represents a node in the hierarchy of packages and units
+ * (aka classes).
  *
  * @author Hervé Bitteur
  */
 public abstract class Node
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** For comparing Node instances according to their name */
-    public static final Comparator<Node> nameComparator = new Comparator<Node>() {
+    public static final Comparator<Node> nameComparator = new Comparator<Node>()
+    {
         @Override
         public int compare (Node n1,
                             Node n2)
         {
-            return n1.getName()
-                     .compareTo(n2.getName());
+            return n1.getName().compareTo(n2.getName());
         }
     };
 
-
-    //~ Instance fields --------------------------------------------------------
-
+    //~ Instance fields ----------------------------------------------------------------------------
     /** (Fully qualified) name of the node */
     private final String name;
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     //------//
     // Node //
     //------//
     /**
      * Create a new Node.
+     *
      * @param name the fully qualified node name
      */
     public Node (String name)
@@ -54,13 +52,13 @@ public abstract class Node
         this.name = name;
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getName //
     //---------//
     /**
      * Report the fully qualified name for this node.
+     *
      * @return the fully qualified node name
      */
     public String getName ()
@@ -73,6 +71,7 @@ public abstract class Node
     //---------------//
     /**
      * Return the last path component (non-qualified).
+     *
      * @return the non-qualified node name
      */
     public String getSimpleName ()
@@ -93,6 +92,7 @@ public abstract class Node
      * Since {@code toString()} is used by JTreeTable to display the
      * node name, this method returns the last path component of the
      * node, in other words the non-qualified name.
+     *
      * @return the non-qualified node name
      */
     @Override

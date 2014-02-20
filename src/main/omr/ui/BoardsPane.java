@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            B o a r d s P a n e                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      B o a r d s P a n e                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui;
 
@@ -52,17 +52,16 @@ import javax.swing.SwingConstants;
  */
 public class BoardsPane
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(BoardsPane.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The concrete UI component */
     private final Panel component;
 
     /** Sequence of current boards, kept ordered by board preferred position */
-    private final List<Board> boards = new ArrayList<>();
+    private final List<Board> boards = new ArrayList<Board>();
 
     /** Unique (application-wide) name for this pane. */
     private String name;
@@ -70,7 +69,7 @@ public class BoardsPane
     /** Mouse listener */
     private MouseAdapter mouseAdapter = new MyMouseAdapter();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // BoardsPane //
     //------------//
@@ -109,7 +108,7 @@ public class BoardsPane
         this(Arrays.asList(boards));
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addBoard //
     //----------//
@@ -122,6 +121,7 @@ public class BoardsPane
     {
         // Replace any board with same name, if any
         Board oldBoard = getBoard(board.getName());
+
         if (oldBoard != null) {
             boards.remove(oldBoard);
             oldBoard.disconnect();
@@ -229,9 +229,7 @@ public class BoardsPane
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
 
-        sb.append(" ")
-                .append(name)
-                .append(" [");
+        sb.append(" ").append(name).append(" [");
 
         boolean first = true;
 
@@ -287,9 +285,7 @@ public class BoardsPane
                 if (first) {
                     first = false;
                 } else {
-                    sbr.append(", ")
-                            .append(panelInterline)
-                            .append(", ");
+                    sbr.append(", ").append(panelInterline).append(", ");
                 }
 
                 sbr.append("pref");
@@ -328,8 +324,7 @@ public class BoardsPane
     private Board getBoard (String title)
     {
         for (Board b : boards) {
-            if (b.getName()
-                    .equals(title)) {
+            if (b.getName().equals(title)) {
                 return b;
             }
         }
@@ -337,7 +332,7 @@ public class BoardsPane
         return null;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------//
     // MyMouseAdapter //
     //----------------//
@@ -348,7 +343,7 @@ public class BoardsPane
             extends MouseAdapter
             implements ItemListener
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         //------------------//
         // itemStateChanged //
@@ -388,13 +383,10 @@ public class BoardsPane
                 popup.addSeparator();
 
                 for (Board board : boards) {
-                    JMenuItem item = new JCheckBoxMenuItem(
-                            board.getName(),
-                            board.isSelected());
+                    JMenuItem item = new JCheckBoxMenuItem(board.getName(), board.isSelected());
                     item.addItemListener(this);
                     item.setToolTipText(
-                            board.isSelected() ? "Deselect this board?"
-                            : "Select this board?");
+                            board.isSelected() ? "Deselect this board?" : "Select this board?");
                     popup.add(item);
                 }
 

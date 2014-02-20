@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              L C h e c k B o x                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        L C h e c k B o x                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.field;
 
@@ -16,16 +16,15 @@ import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
 
 /**
- * Class {@code LCheckBox} is a logical combination of a JLabel and a
- * JCheckBox, a "Labeled Check", where the label describes
- * the dynamic content of the check box.
+ * Class {@code LCheckBox} is a logical combination of a JLabel and a JCheckBox,
+ * a "Labeled Check", where the label describes the dynamic content of the check box.
  *
  * @author Hervé Bitteur
  */
 public class LCheckBox
         extends LField<JCheckBox>
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //-----------//
     // LCheckBox //
@@ -42,7 +41,7 @@ public class LCheckBox
         super(label, tip, new JCheckBox());
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------------//
     // addActionListener //
     //-------------------//
@@ -53,7 +52,6 @@ public class LCheckBox
      */
     public void addActionListener (ActionListener listener)
     {
-        getField()
-                .addActionListener(listener);
+        getField().addActionListener(listener);
     }
 }

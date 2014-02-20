@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  B e a m                                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            B e a m                                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -55,15 +55,13 @@ public class Beam
         extends MeasureNode
         implements Vip
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Beam.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** (Debug) flag this object as VIP. */
     private boolean vip;
@@ -75,12 +73,12 @@ public class Beam
     private BeamGroup group;
 
     /** Chords that are linked by this beam. */
-    private List<Chord> chords = new ArrayList<>();
+    private List<Chord> chords = new ArrayList<Chord>();
 
     /** Line equation for the beam. */
     private Line line;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //------//
     // Beam //
@@ -98,7 +96,7 @@ public class Beam
         logger.debug("{} Created {}", measure.getContextString(), this);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //----------//
     // populate //
@@ -137,9 +135,8 @@ public class Beam
             beam = new Beam(measure);
         }
 
-//////////////////        beam.addItem(item);
+        //////////////////        beam.addItem(item);
         // TODO: preserve order in items !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
         logger.debug("{} {}", beam.getContextString(), beam);
 
         return beam;
@@ -152,6 +149,17 @@ public class Beam
     public boolean accept (ScoreVisitor visitor)
     {
         return visitor.visit(this);
+    }
+
+    //----------//
+    // addChild //
+    //----------//
+    @Override
+    public void addChild (TreeNode node)
+    {
+        super.addChild(node);
+
+        reset();
     }
 
     //----------//
@@ -182,6 +190,7 @@ public class Beam
             addError("No chords connected to " + this);
         } else {
             Collections.sort(chords, Chord.byAbscissa);
+
             Chord first = chords.get(0);
             Chord last = chords.get(chords.size() - 1);
             boolean started = false;
@@ -226,8 +235,7 @@ public class Beam
                         // We have a chord in common with this beam, so we are
                         // part of the same group
                         switchToGroup(group);
-                        logger.debug("{} Reused {} for {}",
-                                getContextString(), group, this);
+                        logger.debug("{} Reused {} for {}", getContextString(), group, this);
 
                         return;
                     }
@@ -238,8 +246,7 @@ public class Beam
         // No compatible group found, let's build a new one
         switchToGroup(new BeamGroup(getMeasure()));
 
-        logger.debug("{} Created new {} for {}",
-                getContextString(), getGroup(), this);
+        logger.debug("{} Created new {} for {}", getContextString(), getGroup(), this);
     }
 
     //------//
@@ -265,6 +272,35 @@ public class Beam
     public List<Chord> getChords ()
     {
         return Collections.unmodifiableList(chords);
+    }
+
+    //--------------//
+    // getFirstItem //
+    //--------------//
+    /**
+     * Report the first of beam items
+     *
+     * @return the first item (on left)
+     */
+    public BeamItem getFirstItem ()
+    {
+        return (BeamItem) getItems().get(0);
+    }
+
+    //-----------//
+    // getGlyphs //
+    //-----------//
+    @Override
+    public Collection<Glyph> getGlyphs ()
+    {
+        List<Glyph> glyphs = new ArrayList<Glyph>();
+
+        for (TreeNode node : getItems()) {
+            BeamItem item = (BeamItem) node;
+            glyphs.add(item.getGlyph());
+        }
+
+        return glyphs;
     }
 
     //----------//
@@ -308,19 +344,6 @@ public class Beam
         return children;
     }
 
-    //--------------//
-    // getFirstItem //
-    //--------------//
-    /**
-     * Report the first of beam items
-     *
-     * @return the first item (on left)
-     */
-    public BeamItem getFirstItem ()
-    {
-        return (BeamItem) getItems().get(0);
-    }
-
     //-------------//
     // getLastItem //
     //-------------//
@@ -350,6 +373,7 @@ public class Beam
             // Take left side of first item, and right side of last item
             Point left = getPoint(LEFT);
             line.includePoint(left.x, left.y);
+
             Point right = getPoint(RIGHT);
             line.includePoint(right.x, right.y);
         }
@@ -372,27 +396,6 @@ public class Beam
         } else {
             return getLastItem().getPoint(RIGHT);
         }
-    }
-
-    //----------//
-    // setPoint //
-    //----------//
-    /**
-     * Assign the point that define the desired edge of the beam.
-     *
-     * @param side  the desired side
-     * @param point the Point coordinates of the point on desired side
-     */
-    public void setPoint (HorizontalSide side,
-                          Point point)
-    {
-        if (side == LEFT) {
-            getFirstItem().setPoint(LEFT, point);
-        } else {
-            getLastItem().setPoint(RIGHT, point);
-        }
-
-        reset();
     }
 
     //--------//
@@ -440,6 +443,27 @@ public class Beam
         chords.remove(chord);
     }
 
+    //----------//
+    // setPoint //
+    //----------//
+    /**
+     * Assign the point that define the desired edge of the beam.
+     *
+     * @param side  the desired side
+     * @param point the Point coordinates of the point on desired side
+     */
+    public void setPoint (HorizontalSide side,
+                          Point point)
+    {
+        if (side == LEFT) {
+            getFirstItem().setPoint(LEFT, point);
+        } else {
+            getLastItem().setPoint(RIGHT, point);
+        }
+
+        reset();
+    }
+
     //--------//
     // setVip //
     //--------//
@@ -460,8 +484,7 @@ public class Beam
      */
     public void switchToGroup (BeamGroup group)
     {
-        logger.debug("Switching {} from {} to {}",
-                this, this.group, group);
+        logger.debug("Switching {} from {} to {}", this, this.group, group);
 
         // Trivial noop case
         if (this.group == group) {
@@ -499,12 +522,13 @@ public class Beam
             }
 
             sb.append(" items[");
+
             for (TreeNode node : getItems()) {
                 BeamItem item = (BeamItem) node;
                 sb.append("#").append(item.getGlyph().getId());
             }
-            sb.append("]");
 
+            sb.append("]");
         } catch (NullPointerException e) {
             sb.append(" INVALID");
         }
@@ -526,8 +550,7 @@ public class Beam
         Point left = getPoint(LEFT);
         Point right = getPoint(RIGHT);
 
-        setCenter(
-                new Point((left.x + right.x) / 2, (left.y + right.y) / 2));
+        setCenter(new Point((left.x + right.x) / 2, (left.y + right.y) / 2));
     }
 
     //-------//
@@ -542,17 +565,6 @@ public class Beam
         super.reset();
 
         line = null;
-    }
-
-    //----------//
-    // addChild //
-    //----------//
-    @Override
-    public void addChild (TreeNode node)
-    {
-        super.addChild(node);
-
-        reset();
     }
 
     //------------------//
@@ -574,12 +586,10 @@ public class Beam
         // Check alignment, using distance to line
         int centerX = (left.x + right.x) / 2;
         int centerY = (left.y + right.y) / 2;
-        double dy = getScale().pixelsToFrac(
-                getLine().distanceOf(centerX, centerY));
+        double dy = getScale().pixelsToFrac(getLine().distanceOf(centerX, centerY));
 
         if (logging) {
-            logger.info("dy={} vs {}", (float) Math.abs(dy),
-                    constants.maxDistance.getValue());
+            logger.info("dy={} vs {}", (float) Math.abs(dy), constants.maxDistance.getValue());
         }
 
         if (Math.abs(dy) > constants.maxDistance.getValue()) {
@@ -593,15 +603,13 @@ public class Beam
             double dx = getScale().pixelsToFrac(itemPoint.distance(beamPoint));
 
             if (logging) {
-                logger.info("dx={} vs {}", (float) dx,
-                        constants.maxGap.getValue());
+                logger.info("dx={} vs {}", (float) dx, constants.maxGap.getValue());
             }
 
             if (dx <= constants.maxGap.getValue()) {
                 return true;
             }
         }
-
 
         return false;
     }
@@ -615,9 +623,7 @@ public class Beam
             Glyph stem = item.getStem(side);
 
             if (stem != null) {
-                List<Chord> sideChords = Chord.getStemChords(
-                        getMeasure(),
-                        stem);
+                List<Chord> sideChords = Chord.getStemChords(getMeasure(), stem);
 
                 if (!sideChords.isEmpty()) {
                     for (Chord chord : sideChords) {
@@ -631,29 +637,14 @@ public class Beam
         }
     }
 
-    //-----------//
-    // getGlyphs //
-    //-----------//
-    @Override
-    public Collection<Glyph> getGlyphs ()
-    {
-        List<Glyph> glyphs = new ArrayList<>();
-
-        for (TreeNode node : getItems()) {
-            BeamItem item = (BeamItem) node;
-            glyphs.add(item.getGlyph());
-        }
-        return glyphs;
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction maxDistance = new Scale.Fraction(
                 0.5,
@@ -662,6 +653,5 @@ public class Beam
         Scale.Fraction maxGap = new Scale.Fraction(
                 0.5,
                 "Maximum gap along alignment with beam left or right extremum");
-
     }
 }

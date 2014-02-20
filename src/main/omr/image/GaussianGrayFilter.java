@@ -1,32 +1,33 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     G a u s s i a n G r a y F i l t e r                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               G a u s s i a n G r a y F i l t e r                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
 import ij.process.ByteProcessor;
+
 import java.awt.image.Kernel;
 
 /**
- * Class {@code GaussianGrayFilter} allows to run a Gaussian filter on
- * an input image, assumed to contain only gray values [0..255].
+ * Class {@code GaussianGrayFilter} allows to run a Gaussian filter on an input image,
+ * assumed to contain only gray values [0..255].
  * <p>
- * This implementation is derived from Jerry Huxtable more general filter
- * but limited to BufferedImage class.
+ * This implementation is derived from Jerry Huxtable more general filter but limited to
+ * BufferedImage class.
  *
  * @author Hervé Bitteur
  */
 public class GaussianGrayFilter
         extends AbstractGrayFilter
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Radius of the kernel. */
     private final float radius;
@@ -34,7 +35,7 @@ public class GaussianGrayFilter
     /** The kernel to apply. */
     private final Kernel kernel;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new GaussianGrayFilter object with a default radius
      * value.
@@ -55,49 +56,7 @@ public class GaussianGrayFilter
         kernel = makeKernel(radius);
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //------------//
-    // makeKernel //
-    //------------//
-    /**
-     * Make a Gaussian blur kernel.
-     *
-     * @param radius desired kernel radius specified in pixels around center
-     * @return the Gaussian kernel of desired radius
-     */
-    public static Kernel makeKernel (float radius)
-    {
-        final int r = (int) Math.ceil(radius);
-        final int rows = (r * 2) + 1;
-        final float[] matrix = new float[rows];
-        final float sigma = 1f; //HB: was radius / 3;
-        final float sigmaSq2 = 2 * sigma * sigma;
-        final float radiusSq = radius * radius;
-
-        float total = 0;
-        int index = 0;
-
-        for (int row = -r; row <= r; row++) {
-            float distanceSq = row * row;
-
-            if (distanceSq > radiusSq) {
-                matrix[index] = 0;
-            } else {
-                matrix[index] = (float) Math.exp(-distanceSq / sigmaSq2);
-            }
-
-            total += matrix[index];
-            index++;
-        }
-
-        // Normalize all matrix items
-        for (int i = 0; i < rows; i++) {
-            matrix[i] /= total;
-        }
-
-        return new Kernel(rows, 1, matrix);
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // filter //
     //--------//
@@ -143,6 +102,48 @@ public class GaussianGrayFilter
     public float getRadius ()
     {
         return radius;
+    }
+
+    //------------//
+    // makeKernel //
+    //------------//
+    /**
+     * Make a Gaussian blur kernel.
+     *
+     * @param radius desired kernel radius specified in pixels around center
+     * @return the Gaussian kernel of desired radius
+     */
+    public static Kernel makeKernel (float radius)
+    {
+        final int r = (int) Math.ceil(radius);
+        final int rows = (r * 2) + 1;
+        final float[] matrix = new float[rows];
+        final float sigma = 1f; //HB: was radius / 3;
+        final float sigmaSq2 = 2 * sigma * sigma;
+        final float radiusSq = radius * radius;
+
+        float total = 0;
+        int index = 0;
+
+        for (int row = -r; row <= r; row++) {
+            float distanceSq = row * row;
+
+            if (distanceSq > radiusSq) {
+                matrix[index] = 0;
+            } else {
+                matrix[index] = (float) Math.exp(-distanceSq / sigmaSq2);
+            }
+
+            total += matrix[index];
+            index++;
+        }
+
+        // Normalize all matrix items
+        for (int i = 0; i < rows; i++) {
+            matrix[i] /= total;
+        }
+
+        return new Kernel(rows, 1, matrix);
     }
 
     //-------//

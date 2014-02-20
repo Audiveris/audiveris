@@ -1,36 +1,35 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      J u n c t i o n S h i f t P o l i c y                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                J u n c t i o n S h i f t P o l i c y                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag;
 
 import omr.run.Run;
 
 /**
- * Class {@code JunctionShiftPolicy} defines a junction policy based
- * on the shift between the candidate run and the last run of the
- * section.
+ * Class {@code JunctionShiftPolicy} defines a junction policy based on the shift
+ * between the candidate run and the last run of the section.
  *
  * @author Hervé Bitteur
  */
 public class JunctionShiftPolicy
         implements JunctionPolicy
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * Maximum value acceptable for shift.
      */
     private final int maxShift;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------------//
     // JunctionShiftPolicy //
     //---------------------//
@@ -45,7 +44,7 @@ public class JunctionShiftPolicy
         this.maxShift = maxShift;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // consistentRun //
     //---------------//

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       P a t t e r n s C h e c k e r                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 P a t t e r n s C h e c k e r                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
@@ -21,21 +21,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code PatternsChecker} gathers for a given system a series of
- * specific patterns to process (verify, recognize, fix, ...) glyphs
- * in their sheet environment.
+ * Class {@code PatternsChecker} gathers for a given system a series of specific
+ * patterns to process (verify, recognize, fix, ...) glyphs in their sheet environment.
  *
  * @author Hervé Bitteur
  */
 public class PatternsChecker
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            PatternsChecker.class);
+    private static final Logger logger = LoggerFactory.getLogger(PatternsChecker.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Sequence of patterns to run. */
     private final GlyphPattern[] patterns;
@@ -43,7 +40,7 @@ public class PatternsChecker
     /** Dedicated system. */
     private final SystemInfo system;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //-----------------//
     // PatternsChecker //
@@ -59,15 +56,13 @@ public class PatternsChecker
 
         patterns = new GlyphPattern[]{
             //
-            new CaesuraPattern(system), new BeamHookPattern(system),
-            new DotPattern(system),
+            new CaesuraPattern(system), new BeamHookPattern(system), new DotPattern(system),
             // Refresh ...
             new RefreshPattern(system, false), new DoubleBeamPattern(system),
             new FermataDotPattern(system), new FlagPattern(system),
             new FortePattern(system), new HiddenSlurPattern(system),
-            new SplitPattern(system), new LedgerPattern(system),
-            new AlterPattern(system), new StemPattern(system),
-            system.getSlurInspector(), new BassPattern(system),
+            new SplitPattern(system), new LedgerPattern(system), new AlterPattern(
+            system), new StemPattern(system), system.getSlurInspector(), new BassPattern(system),
             new ClefPattern(system), new TimePattern(system),
             // Refresh ...
             new RefreshPattern(system, true),
@@ -82,7 +77,7 @@ public class PatternsChecker
         };
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //-------------//
     // runPatterns //
@@ -120,18 +115,12 @@ public class PatternsChecker
                 int modifs = pattern.runPattern();
 
                 if (logger.isDebugEnabled()) {
-                    sb.append(" ")
-                            .append(pattern.name)
-                            .append(":")
-                            .append(modifs);
+                    sb.append(" ").append(pattern.name).append(":").append(modifs);
                 }
 
                 totalModifs += modifs;
             } catch (Throwable ex) {
-                logger.warn(
-                        system.getLogPrefix() + " error running pattern "
-                        + pattern.name,
-                        ex);
+                logger.warn(system.getLogPrefix() + " error running pattern " + pattern.name, ex);
             }
         }
 
@@ -144,7 +133,7 @@ public class PatternsChecker
         return totalModifs != 0;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //----------------//
     // RefreshPattern //
@@ -155,11 +144,11 @@ public class PatternsChecker
     private static class RefreshPattern
             extends GlyphPattern
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final boolean wide;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public RefreshPattern (SystemInfo system,
                                boolean wide)
         {
@@ -167,7 +156,7 @@ public class PatternsChecker
             this.wide = wide;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int runPattern ()
         {

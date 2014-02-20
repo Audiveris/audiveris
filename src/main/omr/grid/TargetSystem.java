@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          T a r g e t S y s t e m                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    T a r g e t S y s t e m                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -17,14 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code TargetSystem} is an immutable perfect destination
- * object for a system.
+ * Class {@code TargetSystem} is an immutable perfect destination object for a system.
  *
  * @author Hervé Bitteur
  */
 public class TargetSystem
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Raw information */
     public final SystemInfo info;
@@ -42,9 +41,9 @@ public class TargetSystem
     public final double right;
 
     /** Sequence of staves */
-    public final List<TargetStaff> staves = new ArrayList<>();
+    public final List<TargetStaff> staves = new ArrayList<TargetStaff>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // TargetSystem //
     //--------------//
@@ -69,7 +68,7 @@ public class TargetSystem
         id = info.getId();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // toString //
     //----------//
@@ -77,14 +76,10 @@ public class TargetSystem
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("{System");
-        sb.append("#")
-                .append(id);
-        sb.append(" top:")
-                .append(top);
-        sb.append(" left:")
-                .append(left);
-        sb.append(" right:")
-                .append(right);
+        sb.append("#").append(id);
+        sb.append(" top:").append(top);
+        sb.append(" left:").append(left);
+        sb.append(" right:").append(right);
         sb.append("}");
 
         return sb.toString();

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          G l y p h D i s p l a y                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    G l y p h D i s p l a y                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -18,15 +18,15 @@ import ij.process.ByteProcessor;
 import java.awt.Color;
 
 /**
- * Interface {@code GlyphDisplay} defines the facet which handles the
- * way a glyph is displayed (its color, its image).
+ * Interface {@code GlyphDisplay} defines the facet which handles the way a glyph is
+ * displayed (its color, its image).
  *
  * @author Hervé Bitteur
  */
 interface GlyphDisplay
         extends GlyphFacet, AttachmentHolder
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report a basic representation of the glyph, using ascii chars.

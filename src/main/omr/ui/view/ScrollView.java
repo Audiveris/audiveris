@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            S c r o l l V i e w                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      S c r o l l V i e w                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.view;
 
@@ -25,14 +25,13 @@ import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 
 /**
- * Class {@code ScrollView} contains a JScrollPane, which provides a
- * comprehensive combination of the following entities.
+ * Class {@code ScrollView} contains a JScrollPane, which provides a comprehensive
+ * combination of the following entities.
  * <dl>
- * <dt> <b>view:</b> </dt> <dd>the display of a {@link RubberPanel},
- * a component potentially linked to a {@link Zoom} and a mouse adapter
- * {@link Rubber}</dd>
- * <dt> <b>zoom:</b> </dt> <dd>the {@link Zoom} whose ratio is to be used
- * when the component is rendered </dd>
+ * <dt> <b>view:</b> </dt> <dd>the display of a {@link RubberPanel}, a component potentially linked
+ * to a {@link Zoom} and a mouse adapter {@link Rubber}</dd>
+ * <dt> <b>zoom:</b> </dt> <dd>the {@link Zoom} whose ratio is to be used when the component is
+ * rendered </dd>
  * </dl>
  *
  * @author Hervé Bitteur
@@ -40,23 +39,20 @@ import javax.swing.JScrollPane;
  */
 public class ScrollView
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ScrollView.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScrollView.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Current view inside the scrolled pane */
     protected RubberPanel view;
 
     // The concrete UI component
     private final JScrollPane component = new JScrollPane();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // ScrollView //
     //------------//
@@ -64,7 +60,8 @@ public class ScrollView
      * Create a bare view pane.
      * Other related entities, such as view, pixel monitor or zoom, can be
      * added later programmatically via setXXX() methods).
-     * <p>The increment related to mouse wheel movement can be adapted via the
+     * <p>
+     * The increment related to mouse wheel movement can be adapted via the
      * unitIncrement class constant.
      */
     public ScrollView ()
@@ -87,7 +84,7 @@ public class ScrollView
         setView(view);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // fitHeight //
     //-----------//
@@ -120,8 +117,8 @@ public class ScrollView
 
         setZoomRatio(
                 Math.min(
-                (double) (vr.width) / (double) dim.width,
-                (double) (vr.height) / (double) dim.height));
+                        (double) (vr.width) / (double) dim.width,
+                        (double) (vr.height) / (double) dim.height));
     }
 
     //----------//
@@ -183,9 +180,7 @@ public class ScrollView
 
                 return center; // Of rubber band
             } else {
-                logger.debug(
-                        "getRubberFocus panelcenter={}",
-                        view.getPanelCenter());
+                logger.debug("getRubberFocus panelcenter={}", view.getPanelCenter());
 
                 return view.getPanelCenter(); // Of visible rectangle
             }
@@ -267,26 +262,24 @@ public class ScrollView
         logger.debug("setZoomRatio zoomRatio={}", zoomRatio);
 
         if (view.getZoom() != null) {
-            view.getZoom()
-                    .setRatio(zoomRatio);
+            view.getZoom().setRatio(zoomRatio);
         } else {
             logger.warn("setZoomRatio. No zoom assigned");
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Integer unitIncrement = new Constant.Integer(
                 "Pixels",
                 20,
                 "Size of mouse wheel increment for ScrollView");
-
     }
 }

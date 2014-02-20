@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      B a s i c T r a n s l a t i o n                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                B a s i c T r a n s l a t i o n                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -18,8 +18,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class {@code BasicTranslation} is the basic implementation of the
- * translation facet
+ * Class {@code BasicTranslation} is the basic implementation of the translation facet
  *
  * @author Hervé Bitteur
  */
@@ -27,12 +26,12 @@ class BasicTranslation
         extends BasicFacet
         implements GlyphTranslation
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Set of translation(s) of this glyph on the score side */
-    private Set<PartNode> translations = new HashSet<>();
+    private final Set<PartNode> translations = new HashSet<PartNode>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // BasicTranslation //
     //------------------//
@@ -46,7 +45,7 @@ class BasicTranslation
         super(glyph);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // addTranslation //
     //----------------//

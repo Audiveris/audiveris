@@ -1,25 +1,25 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              P i x e l S i n k                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        P i x e l S i n k                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
 /**
- * Interface {@code PixelSink} defines the operations expected from
- * a rectangular pixel sink.
+ * Interface {@code PixelSink} defines the operations expected from a rectangular pixel
+ * sink.
  *
  * @author Hervé Bitteur
  */
 public interface PixelSink
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the height of the rectangular sink

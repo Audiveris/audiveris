@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 U I U t i l                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur and Brenton Partridge 2000-2013.              //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           U I U t i l                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.util;
 
@@ -51,9 +51,8 @@ import javax.swing.border.Border;
  */
 public class UIUtil
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(UIUtil.class);
 
     /**
@@ -67,17 +66,16 @@ public class UIUtil
         @Override
         public void windowClosing (WindowEvent e)
         {
-            e.getWindow()
-                    .dispose();
+            e.getWindow().dispose();
         }
     };
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     private UIUtil ()
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // directoryChooser //
     //------------------//
@@ -91,14 +89,10 @@ public class UIUtil
     public static File directoryChooser (Component parent,
                                          File startDir)
     {
-        String oldMacProperty = System.getProperty(
-                "apple.awt.fileDialogForDirectories",
-                "false");
+        String oldMacProperty = System.getProperty("apple.awt.fileDialogForDirectories", "false");
         System.setProperty("apple.awt.fileDialogForDirectories", "true");
 
-        OmrFileFilter directoryFilter = new OmrFileFilter(
-                "directory",
-                new String[]{})
+        OmrFileFilter directoryFilter = new OmrFileFilter("directory", new String[]{})
         {
             @Override
             public boolean accept (File f)
@@ -108,9 +102,7 @@ public class UIUtil
         };
 
         File file = fileChooser(false, parent, startDir, directoryFilter);
-        System.setProperty(
-                "apple.awt.fileDialogForDirectories",
-                oldMacProperty);
+        System.setProperty("apple.awt.fileDialogForDirectories", oldMacProperty);
 
         return file;
     }
@@ -164,14 +156,12 @@ public class UIUtil
 
         if (WellKnowns.MAC_OS_X) {
             if ((parent == null) && (omr.Main.getGui() != null)) {
-                parent = omr.Main.getGui()
-                        .getFrame();
+                parent = omr.Main.getGui().getFrame();
             }
 
             Component parentFrame = parent;
 
-            while (!(parentFrame instanceof Frame)
-                   && (parentFrame.getParent() != null)) {
+            while (!(parentFrame instanceof Frame) && (parentFrame.getParent() != null)) {
                 parentFrame = parentFrame.getParent();
             }
 
@@ -180,8 +170,7 @@ public class UIUtil
 
                 if (startFile != null) {
                     fd.setDirectory(
-                            startFile.isDirectory() ? startFile.getPath()
-                            : startFile.getParent());
+                            startFile.isDirectory() ? startFile.getPath() : startFile.getParent());
                 }
 
                 fd.setMode(save ? FileDialog.SAVE : FileDialog.LOAD);
@@ -197,8 +186,7 @@ public class UIUtil
                 String dir = fd.getDirectory();
 
                 if ((dir != null) && (fileName != null)) {
-                    String fullName = dir + WellKnowns.FILE_SEPARATOR
-                                      + fileName;
+                    String fullName = dir + WellKnowns.FILE_SEPARATOR + fileName;
                     file = new File(fullName);
                 }
             } catch (ClassCastException e) {
@@ -230,8 +218,7 @@ public class UIUtil
 
             fc.addChoosableFileFilter(filter);
 
-            int result = save ? fc.showSaveDialog(parent)
-                    : fc.showOpenDialog(parent);
+            int result = save ? fc.showSaveDialog(parent) : fc.showOpenDialog(parent);
 
             if (result == JFileChooser.APPROVE_OPTION) {
                 file = fc.getSelectedFile();

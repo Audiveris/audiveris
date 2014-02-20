@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     B r o k e n L i n e C o n t e x t                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               B r o k e n L i n e C o n t e x t                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "limit")
 public class BrokenLineContext
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Id of system above, if any */
     @XmlAttribute(name = "system-above")
@@ -43,7 +43,7 @@ public class BrokenLineContext
     @XmlElement(name = "line")
     public final BrokenLine line;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //-------------------//
     // BrokenLineContext //
@@ -74,17 +74,14 @@ public class BrokenLineContext
         this.line = null;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("{Context");
-        sb.append(" above:")
-                .append(systemAbove);
-        sb.append(" below:")
-                .append(systemBelow);
-        sb.append(" line:")
-                .append(line);
+        sb.append(" above:").append(systemAbove);
+        sb.append(" below:").append(systemBelow);
+        sb.append(" line:").append(line);
 
         return sb.toString();
     }

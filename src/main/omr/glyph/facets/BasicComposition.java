@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      B a s i c C o m p o s i t i o n                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                B a s i c C o m p o s i t i o n                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -16,8 +16,6 @@ import omr.check.Failure;
 import omr.glyph.Shape;
 
 import omr.lag.Section;
-
-import omr.sheet.SystemInfo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,17 +34,14 @@ import java.util.TreeSet;
  * @author Hervé Bitteur
  */
 class BasicComposition
-    extends BasicFacet
-    implements GlyphComposition
+        extends BasicFacet
+        implements GlyphComposition
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-        BasicComposition.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicComposition.class);
 
-    //~ Instance fields --------------------------------------------------------
-
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Sections that compose this glyph.
      * The collection is kept sorted on natural Section order (abscissa then
@@ -56,7 +51,7 @@ class BasicComposition
 
     /** Unmodifiable view on members */
     private final SortedSet<Section> unmodifiableMembers = Collections.unmodifiableSortedSet(
-        members);
+            members);
 
     /** Failures found for this glyph */
     private final Set<Failure> failures = new LinkedHashSet<Failure>();
@@ -64,8 +59,7 @@ class BasicComposition
     /** Link to the compound, if any, this one is a part of */
     private Glyph partOf;
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // BasicComposition //
     //------------------//
@@ -79,8 +73,7 @@ class BasicComposition
         super(glyph);
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // addFailure //
     //------------//
@@ -123,7 +116,7 @@ class BasicComposition
     //-------------//
     // addSections //
     //-------------//
-    public void addSections (Glyph   other,
+    public void addSections (Glyph other,
                              Linking linkSections)
     {
         // Update glyph info in other sections
@@ -211,8 +204,7 @@ class BasicComposition
     @Override
     public Section getFirstSection ()
     {
-        return glyph.getMembers()
-                    .first();
+        return glyph.getMembers().first();
     }
 
     //------------//

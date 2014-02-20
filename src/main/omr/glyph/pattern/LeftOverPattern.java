@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       L e f t O v e r P a t t e r n                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 L e f t O v e r P a t t e r n                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
@@ -26,26 +26,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code LeftOverPattern} processes the significant glyphs
- * which have been left over.
- * It addresses glyphs of non-assigned shape with significant weight, and
- * assigns them the top 1 shape.
+ * Class {@code LeftOverPattern} processes the significant glyph instances which have
+ * been left over.
+ * <p>
+ * It addresses glyphs of non-assigned shape with significant weight, and assigns them the top 1
+ * shape.
  *
  * @author Hervé Bitteur
  */
 public class LeftOverPattern
         extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            LeftOverPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(LeftOverPattern.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------------//
     // LeftOverPattern //
     //-----------------//
@@ -59,7 +57,7 @@ public class LeftOverPattern
         super("LeftOver", system);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // runPattern //
     //------------//
@@ -77,10 +75,7 @@ public class LeftOverPattern
                 continue;
             }
 
-            Evaluation vote = evaluator.vote(
-                    glyph,
-                    system,
-                    Grades.leftOverMinGrade);
+            Evaluation vote = evaluator.vote(glyph, system, Grades.leftOverMinGrade);
 
             if (vote != null) {
                 glyph = system.registerGlyph(glyph);
@@ -97,18 +92,17 @@ public class LeftOverPattern
         return successNb;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.AreaFraction minWeight = new Scale.AreaFraction(
                 0.3,
                 "Minimum normalized weight to be a left over glyph");
-
     }
 }

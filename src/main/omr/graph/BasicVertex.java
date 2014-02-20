@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           B a s i c V e r t e x                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     B a s i c V e r t e x                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.graph;
 
@@ -25,11 +25,11 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Class {@code BasicVertex} is a basic implementation of {@link Vertex}.
- *
- * <p>NOTA: This plain Vertex type has no room for user-defined data, if such
+ * <p>
+ * NOTA: This plain Vertex type has no room for user-defined data, if such
  * feature is needed then a proper subtype of BasicVertex should be used.
- *
- * <p>This class is not thread-safe, because it is not intended to be used by
+ * <p>
+ * This class is not thread-safe, because it is not intended to be used by
  * several threads simultaneously. However, the graph structure which contains
  * instances of vertices is indeed thread-safe.
  *
@@ -43,12 +43,11 @@ import javax.xml.bind.annotation.XmlAttribute;
 public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
         implements Vertex<D, V>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(BasicVertex.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Unique vertex Id (for debugging mainly)
      */
@@ -57,12 +56,12 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     /**
      * Incoming edges from other vertices
      */
-    protected final List<V> sources = new ArrayList<>();
+    protected final List<V> sources = new ArrayList<V>();
 
     /**
      * Outgoing edges to other vertices
      */
-    protected final List<V> targets = new ArrayList<>();
+    protected final List<V> targets = new ArrayList<V>();
 
     /**
      * Containing graph
@@ -76,7 +75,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
      */
     protected List<VertexView> views;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------//
     // Vertex //
     //--------//
@@ -103,7 +102,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
         graph.addVertex(this); // Compiler warning here
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // addTarget //
     //-----------//
@@ -114,14 +113,12 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
 
         // Assert we have real target
         if (target == null) {
-            throw new IllegalArgumentException(
-                    "Cannot add an edge to a null target");
+            throw new IllegalArgumentException("Cannot add an edge to a null target");
         }
 
         // Assert this vertex and target vertex belong to the same graph
         if (this.getGraph() != target.getGraph()) {
-            throw new RuntimeException(
-                    "An edge can link vertices of the same graph only");
+            throw new RuntimeException("An edge can link vertices of the same graph only");
         }
 
         // Avoid duplicates
@@ -160,12 +157,12 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
             logger.debug("deleting vertex {}", this);
 
             // Remove in vertices of the vertex
-            for (V source : new ArrayList<>(getSources())) {
+            for (V source : new ArrayList<V>(getSources())) {
                 source.removeTarget((V) this, false);
             }
 
             // Remove out vertices of the vertex
-            for (V target : new ArrayList<>(getTargets())) {
+            for (V target : new ArrayList<V>(getTargets())) {
                 removeTarget(target, false);
             }
 
@@ -281,20 +278,17 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     {
         // Assert we have real target
         if (target == null) {
-            throw new IllegalArgumentException(
-                    "Cannot remove an edge to a null target");
+            throw new IllegalArgumentException("Cannot remove an edge to a null target");
         }
 
         if (!this.targets.remove(target) && strict) {
             throw new RuntimeException(
-                    "Attempting to remove non-existing edge between " + this
-                    + " and " + target);
+                    "Attempting to remove non-existing edge between " + this + " and " + target);
         }
 
         if (!target.getSources().remove((V) this) && strict) {
             throw new RuntimeException(
-                    "Attempting to remove non-existing edge between " + this
-                    + " and " + target);
+                    "Attempting to remove non-existing edge between " + this + " and " + target);
         }
     }
 
@@ -368,7 +362,7 @@ public abstract class BasicVertex<D extends Digraph, V extends Vertex<D, V>>
     private List<VertexView> getViews ()
     {
         if (views == null) {
-            views = new ArrayList<>();
+            views = new ArrayList<VertexView>();
         }
 
         return views;

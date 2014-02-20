@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           S u i t e I m p a c t s                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     S u i t e I m p a c t s                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.check;
 
@@ -17,8 +17,8 @@ import omr.sig.Grades;
 import java.util.List;
 
 /**
- * Class {@code SuiteImpacts} is a GradeImpacts implementation based
- * on an underlying CheckSuite.
+ * Class {@code SuiteImpacts} is a GradeImpacts implementation based on an underlying
+ * CheckSuite.
  *
  * @param <C> precise Checkable type
  *
@@ -27,7 +27,7 @@ import java.util.List;
 public class SuiteImpacts<C extends Checkable>
         extends AbstractImpacts
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The underlying suite of check instances. */
     private final CheckSuite<C> suite;
@@ -44,7 +44,7 @@ public class SuiteImpacts<C extends Checkable>
     /** Resulting suite grade. */
     private double grade;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // SuiteImpacts //
     //--------------//
@@ -60,13 +60,12 @@ public class SuiteImpacts<C extends Checkable>
         this.suite = suite;
         this.checkable = checkable;
 
-        final int size = suite.getChecks()
-                .size();
+        final int size = suite.getChecks().size();
         values = new double[size];
         impacts = new double[size];
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getDump //
     //---------//
@@ -74,16 +73,12 @@ public class SuiteImpacts<C extends Checkable>
     {
         final List<Check<C>> checks = suite.getChecks();
         final StringBuilder sb = new StringBuilder();
-        sb.append(suite.getName())
-                .append(" ")
-                .append(checkable);
+        sb.append(suite.getName()).append(" ").append(checkable);
 
         for (int i = 0; i < checks.size(); i++) {
             Check<C> check = checks.get(i);
-            sb.append(" ")
-                    .append(check.getName())
-                    .append(":")
-                    .append(String.format("%.2f", values[i]));
+            sb.append(" ").append(check.getName()).append(":").append(
+                    String.format("%.2f", values[i]));
         }
 
         sb.append(
@@ -129,9 +124,7 @@ public class SuiteImpacts<C extends Checkable>
     @Override
     public String getName (int index)
     {
-        return suite.getChecks()
-                .get(index)
-                .getName();
+        return suite.getChecks().get(index).getName();
     }
 
     //----------//
@@ -148,8 +141,7 @@ public class SuiteImpacts<C extends Checkable>
     @Override
     public double getWeight (int index)
     {
-        return suite.getWeights()
-                .get(index);
+        return suite.getWeights().get(index);
     }
 
     //----------//

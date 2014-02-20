@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        G l y p h I n s p e c t o r                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  G l y p h I n s p e c t o r                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -27,20 +27,18 @@ import java.util.EnumSet;
 import java.util.List;
 
 /**
- * Class {@code GlyphInspector} is at a system level, dedicated to the
- * inspection of retrieved glyphs, their recognition being usually
- * based on features used by a shape evaluator.
+ * Class {@code GlyphInspector} is at a system level, dedicated to the inspection of
+ * retrieved glyphs, their recognition being usually based on features used by a shape
+ * evaluator.
  *
  * @author Hervé Bitteur
  */
 public class GlyphInspector
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(GlyphInspector.class);
 
     /** Shapes acceptable for a part candidate */
@@ -53,11 +51,11 @@ public class GlyphInspector
             Shape.FLAG_1,
             Shape.FLAG_1_UP);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Dedicated system */
     private final SystemInfo system;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------------//
     // GlyphInspector //
     //----------------//
@@ -71,7 +69,7 @@ public class GlyphInspector
         this.system = system;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // evaluateGlyphs //
     //----------------//
@@ -141,7 +139,7 @@ public class GlyphInspector
                                     boolean wide)
     {
         // Use a copy to avoid concurrent modifications
-        List<Glyph> glyphs = new ArrayList<>(system.getGlyphs());
+        List<Glyph> glyphs = new ArrayList<Glyph>(system.getGlyphs());
 
         for (Glyph seed : glyphs) {
             // Now process this seed, by looking at neighbors
@@ -153,14 +151,14 @@ public class GlyphInspector
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction boxMargin = new Scale.Fraction(
                 0.25,
@@ -169,7 +167,6 @@ public class GlyphInspector
         Scale.Fraction boxWiden = new Scale.Fraction(
                 0.5,
                 "Box special abscissa margin to check intersection with compound");
-
     }
 
     //--------------//
@@ -182,7 +179,7 @@ public class GlyphInspector
     private static class BasicAdapter
             extends CompoundBuilder.AbstractAdapter
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private Glyph stem = null;
 
@@ -192,7 +189,7 @@ public class GlyphInspector
 
         private final boolean wide;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Construct a BasicAdapter around a given seed
          *
@@ -216,13 +213,12 @@ public class GlyphInspector
             }
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Rectangle computeReferenceBox ()
         {
             if (seed == null) {
-                throw new NullPointerException(
-                        "Compound seed has not been set");
+                throw new NullPointerException("Compound seed has not been set");
             }
 
             Rectangle newBox = seed.getBounds();
@@ -251,8 +247,7 @@ public class GlyphInspector
 
             if (glyph.isKnown()
                 && (glyph.isManualShape()
-                    || (!partShapes.contains(shape)
-                        && (glyph.getGrade() > Grades.compoundPartMaxGrade)))) {
+                    || (!partShapes.contains(shape) && (glyph.getGrade() > Grades.compoundPartMaxGrade)))) {
                 return false;
             }
 
@@ -267,8 +262,7 @@ public class GlyphInspector
         @Override
         public boolean isCompoundValid (Glyph compound)
         {
-            Evaluation eval = GlyphNetwork.getInstance().vote(compound, system,
-                    minGrade);
+            Evaluation eval = GlyphNetwork.getInstance().vote(compound, system, minGrade);
 
             if ((eval != null)
                 && eval.shape.isWellKnown()

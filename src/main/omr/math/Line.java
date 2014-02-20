@@ -1,28 +1,27 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  L i n e                                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            L i n e                                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
 import java.awt.Rectangle;
 
 /**
- * Interface {@code Line} handles the equation of a line (or more
- * generally some curved line for which Y can be computed from X),
- * whatever its orientation.
+ * Interface {@code Line} handles the equation of a line (or more generally some curved
+ * line for which Y can be computed from X), whatever its orientation.
  *
  * @author Hervé Bitteur
  */
 public interface Line
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Compute the orthogonal distance between the line and the
@@ -185,7 +184,7 @@ public interface Line
      */
     double yAtXExt (double x);
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     /**
      * Specific exception raised when trying to invert a
      * non-invertible line.
@@ -193,7 +192,7 @@ public interface Line
     static class NonInvertibleLineException
             extends RuntimeException
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         NonInvertibleLineException (String message)
         {
@@ -208,7 +207,7 @@ public interface Line
     static class UndefinedLineException
             extends RuntimeException
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         UndefinedLineException (String message)
         {

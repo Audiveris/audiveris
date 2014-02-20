@@ -1,19 +1,18 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             N a v i g a b l e                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       N a v i g a b l e                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
 /**
- * Annotation {@code Navigable} is used to drive the browsing done by
- * ScoreTree.
+ * Annotation {@code Navigable} is used to drive the browsing done by ScoreTree.
  */
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

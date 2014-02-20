@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              T e x t R o l e                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        T e x t R o l e                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.text;
 
@@ -32,8 +32,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class {@code TextRole} describes the role of a piece of text
- * (typically a sentence).
+ * Class {@code TextRole} describes the role of a piece of text (typically a sentence).
  *
  * @author Hervé Bitteur
  */
@@ -64,8 +63,7 @@ public enum TextRole
     private static final Constants constants = new Constants();
 
     /** Usual logger utility. */
-    private static final Logger logger = LoggerFactory.getLogger(
-            TextRole.class);
+    private static final Logger logger = LoggerFactory.getLogger(TextRole.class);
 
     //
     //-----------------//
@@ -88,8 +86,7 @@ public enum TextRole
             StringBuilder sb = new StringBuilder("[");
 
             while (sb.length() < (NbOfChars - 1)) {
-                sb.append(toString())
-                        .append("-");
+                sb.append(toString()).append("-");
             }
 
             return sb.substring(0, Math.max(NbOfChars - 1, 0)) + "]";
@@ -138,8 +135,7 @@ public enum TextRole
         }
 
         // Is line made entirely of potential chord symbols?
-        boolean isAllChord = chordCount == line.getWords()
-                .size();
+        boolean isAllChord = chordCount == line.getWords().size();
 
         Rectangle box = line.getBounds();
 
@@ -147,24 +143,20 @@ public enum TextRole
             return null;
         }
 
-        // Is line mainly in italic? 
-        boolean isMainlyItalic = systemInfo.getTextBuilder()
-                .isMainlyItalic(line);
+        // Is line mainly in italic?
+        boolean isMainlyItalic = systemInfo.getTextBuilder().isMainlyItalic(line);
 
         Sheet sheet = systemInfo.getSheet();
         ScoreSystem system = systemInfo.getScoreSystem();
         Scale scale = system.getScale();
         Point left = new Point(box.x, box.y + (box.height / 2));
-        Point right = new Point(
-                box.x + box.width,
-                box.y + (box.height / 2));
+        Point right = new Point(box.x + box.width, box.y + (box.height / 2));
 
         // First system in page?
         boolean firstSystem = system.getId() == 1;
 
         // Last system in page?
-        boolean lastSystem = sheet.getSystems()
-                .size() == system.getId();
+        boolean lastSystem = sheet.getSystems().size() == system.getId();
 
         // Vertical position wrt (system) staves
         StaffPosition systemPosition = system.getStaffPosition(left);
@@ -206,8 +198,7 @@ public enum TextRole
         logger.debug(
                 "{} firstSystem={} lastSystem={} systemPosition={}"
                 + " partPosition={} closeToStaff={} leftOfStaves={}"
-                + " pageCentered={} rightAligned={} shortSentence={}"
-                + " highText={10}",
+                + " pageCentered={} rightAligned={} shortSentence={}" + " highText={10}",
                 box,
                 firstSystem,
                 lastSystem,
@@ -269,8 +260,7 @@ public enum TextRole
 
             if (leftOfStaves) {
                 return new TextRoleInfo(TextRole.Name);
-            } else if ((partPosition == StaffPosition.BELOW_STAVES)
-                       && !isMainlyItalic) {
+            } else if ((partPosition == StaffPosition.BELOW_STAVES) && !isMainlyItalic) {
                 return new TextRoleInfo(TextRole.Lyrics);
             } else {
                 return new TextRoleInfo(TextRole.Direction);
@@ -286,10 +276,8 @@ public enum TextRole
                 return new TextRoleInfo(TextRole.Rights);
             }
 
-            if (part.getStaves()
-                    .size() == 1) {
-                if ((partPosition == StaffPosition.BELOW_STAVES)
-                    && !isMainlyItalic) {
+            if (part.getStaves().size() == 1) {
+                if ((partPosition == StaffPosition.BELOW_STAVES) && !isMainlyItalic) {
                     return new TextRoleInfo(TextRole.Lyrics);
                 }
             }
@@ -326,9 +314,6 @@ public enum TextRole
                 7,
                 "Maximum distance above staff for a direction");
 
-        Scale.Fraction minTitleHeight = new Scale.Fraction(
-                3,
-                "Minimum height for a title text");
-
+        Scale.Fraction minTitleHeight = new Scale.Fraction(3, "Minimum height for a title text");
     }
 }

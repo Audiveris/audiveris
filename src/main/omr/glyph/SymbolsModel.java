@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          S y m b o l s M o d e l                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    S y m b o l s M o d e l                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -35,29 +35,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
- * Class {@code SymbolsModel} is a GlyphsModel specifically meant for
- * symbol glyphs.
+ * Class {@code SymbolsModel} is a GlyphsModel specifically meant for symbol glyphs.
  *
  * @author Hervé Bitteur
  */
 public class SymbolsModel
         extends GlyphsModel
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SymbolsModel.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolsModel.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Standard evaluator */
     private final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // SymbolsModel //
     //--------------//
@@ -71,7 +67,7 @@ public class SymbolsModel
         super(sheet, sheet.getNest(), Steps.valueOf(Steps.SYMBOLS));
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // assignText //
     //------------//
@@ -94,10 +90,7 @@ public class SymbolsModel
             final Point centroid = glyph.getCentroid();
 
             for (SystemInfo system : systemManager.getSystemsOf(centroid)) {
-                String language = system.getSheet()
-                        .getPage()
-                        .getTextParam()
-                        .getTarget();
+                String language = system.getSheet().getPage().getTextParam().getTarget();
                 TextBuilder textBuilder = system.getTextBuilder();
                 TextWord word = glyph.getTextWord();
                 List<TextLine> lines = new ArrayList<TextLine>();
@@ -109,10 +102,8 @@ public class SymbolsModel
                     TextLine line = new TextLine(system, Arrays.asList(word));
                     lines = Arrays.asList(line);
                     lines = textBuilder.recomposeLines(lines);
-                    system.getSentences()
-                            .remove(line);
-                    system.getSentences()
-                            .addAll(lines);
+                    system.getSentences().remove(line);
+                    system.getSentences().addAll(lines);
                 } else if (word.getTextLine() != null) {
                     lines = Arrays.asList(word.getTextLine());
                 }
@@ -123,25 +114,19 @@ public class SymbolsModel
                 for (TextLine line : lines) {
                     // For Chord role, we don't spread the role to other words
                     // but rather trigger a line split
-                    if ((roleInfo.role == TextRole.Chord)
-                        && (line.getWords()
-                            .size() > 1)) {
+                    if ((roleInfo.role == TextRole.Chord) && (line.getWords().size() > 1)) {
                         line.setRole(roleInfo);
 
-                        List<TextLine> subLines = textBuilder.recomposeLines(
-                                Arrays.asList(line));
-                        system.getSentences()
-                                .remove(line);
+                        List<TextLine> subLines = textBuilder.recomposeLines(Arrays.asList(line));
+                        system.getSentences().remove(line);
 
                         for (TextLine l : subLines) {
-                            if (!l.getWords()
-                                    .contains(word)) {
+                            if (!l.getWords().contains(word)) {
                                 l.setRole(null);
                             }
                         }
 
-                        system.getSentences()
-                                .addAll(subLines);
+                        system.getSentences().addAll(subLines);
                     } else {
                         line.setRole(roleInfo);
                     }

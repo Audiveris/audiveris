@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                   L a g                                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                             L a g                                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag;
 
@@ -30,47 +30,53 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Interface {@code Lag} defines a graph of {@link Section} instances
- * (sets of contiguous runs with compatible lengths), linked by
- * Junctions when there is no more contiguous run or when the
- * compatibility is no longer met.
+ * Interface {@code Lag} defines a graph of {@link Section} instances (sets of
+ * contiguous runs with compatible lengths), linked by Junctions when there is no more
+ * contiguous run or when the compatibility is no longer met.
  *
- * Sections are thus vertices of the graph, while junctions are directed edges
- * between sections. All the sections (and runs) have the same orientation
- * shared by the lag.
- *
- * <p>A lag may have a related UI selection service accessible through {@link
- * #getSectionService}. This selection service handles Section, SectionId and
- * SectionSet events. The {@link #getSelectedSection} and
- * {@link #getSelectedSectionSet} methods are just convenient ways to retrieve
- * the last selected section, sectionId or sectionSet from the lag selection
- * service.</p>
- *
- * <p>Run selection is provided by a separate selection service hosted by the
- * underlying RunsTable instance. For convenience, one can use the method
- * {@link #getRunService()} to get access to this run service.</p>
+ * Sections are thus vertices of the graph, while junctions are directed edges between sections. All
+ * the sections (and runs) have the same orientation shared by the lag.
+ * <p>
+ * A lag may have a related UI selection service accessible through {@link #getSectionService}. This
+ * selection service handles Section, SectionId and SectionSet events.
+ * The {@link #getSelectedSection} and {@link #getSelectedSectionSet} methods are just convenient
+ * ways to retrieve the last selected section, sectionId or sectionSet from the lag selection
+ * service.
+ * <p>
+ * Run selection is provided by a separate selection service hosted by the underlying RunsTable
+ * instance. For convenience, one can use the method {@link #getRunService()} to get access to this
+ * run service.
  *
  * @author Hervé Bitteur
  */
 public interface Lag
         extends Digraph<Lag, Section>, Oriented
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Events that can be published on lag section service */
     static final Class<?>[] eventsWritten = new Class<?>[]{
-        SectionIdEvent.class,
-        SectionEvent.class,
+        SectionIdEvent.class, SectionEvent.class,
         SectionSetEvent.class
     };
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Include the content of runs table to the lag.
      *
      * @param runsTable the populated runs
      */
     void addRuns (RunsTable runsTable);
+
+    /**
+     * Lookup for lag sections that are <b>contained</b> in the
+     * provided rectangle.
+     * Specific sections are not considered.
+     *
+     * @param rect the given rectangle
+     * @return the set of lag sections contained, which may be empty
+     */
+    Set<Section> containedSections (Rectangle rect);
 
     /**
      * Create a section in the lag (using the defined vertexClass).
@@ -151,16 +157,6 @@ public interface Lag
      * @return the set of lag sections intersected, which may be empty
      */
     Set<Section> intersectedSections (Rectangle rect);
-
-    /**
-     * Lookup for lag sections that are <b>contained</b> in the
-     * provided rectangle.
-     * Specific sections are not considered.
-     *
-     * @param rect the given rectangle
-     * @return the set of lag sections contained, which may be empty
-     */
-    Set<Section> containedSections (Rectangle rect);
 
     /**
      * Purge the lag of all sections for which provided predicate holds.

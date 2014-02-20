@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           B a s i c S y m b o l                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     B a s i c S y m b o l                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -30,20 +30,19 @@ import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
 /**
- * Class {@code BasicSymbol} is the base for implementing instances of
- * {@link Symbol} interface.
- * It does not handle a specific Shape as its subclass ShapeSymbol, but only
- * handles a sequence of MusicFont codes.
+ * Class {@code BasicSymbol} is the base for implementing instances of {@link Symbol}
+ * interface.
+ * It does not handle a specific Shape as its subclass ShapeSymbol, but only handles a sequence of
+ * MusicFont codes.
  *
  * @author Hervé Bitteur
  */
 public class BasicSymbol
         implements Symbol
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    protected static final Logger logger = LoggerFactory.getLogger(
-            BasicSymbol.class);
+    protected static final Logger logger = LoggerFactory.getLogger(BasicSymbol.class);
 
     /** Painting origin for images. */
     protected static final Point ORIGIN = new Point(0, 0);
@@ -75,11 +74,9 @@ public class BasicSymbol
             2);
 
     /** A transformation for really small icon display. */
-    protected static AffineTransform tiny = AffineTransform.getScaleInstance(
-            0.5,
-            0.5);
+    protected static AffineTransform tiny = AffineTransform.getScaleInstance(0.5, 0.5);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** To flag an icon symbol. */
     protected final boolean isIcon;
 
@@ -95,7 +92,7 @@ public class BasicSymbol
     /** Image dimension corresponding to standard interline. */
     private Dimension dimension;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // BasicSymbol //
     //-------------//
@@ -125,7 +122,15 @@ public class BasicSymbol
         this(false, codes);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //-----------//
+    // getString //
+    //-----------//
+    public final String getString ()
+    {
+        return new String(codes, 0, codes.length);
+    }
+
     //------------//
     // buildImage //
     //------------//
@@ -136,17 +141,12 @@ public class BasicSymbol
         Params p = getParams(font);
 
         // Allocate image of proper size
-        SymbolImage img = new SymbolImage(
-                p.rect.width,
-                p.rect.height,
-                p.offset);
+        SymbolImage img = new SymbolImage(p.rect.width, p.rect.height, p.offset);
 
         // Paint the image
         Graphics2D g = (Graphics2D) img.getGraphics();
         g.setColor(OmrFont.defaultImageColor);
-        g.setRenderingHint(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_OFF);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         paint(g, p, ORIGIN, TOP_LEFT);
 
         return img;
@@ -174,8 +174,7 @@ public class BasicSymbol
     @Override
     public int getIconHeight ()
     {
-        return getIcon()
-                .getHeight();
+        return getIcon().getHeight();
     }
 
     //--------------//
@@ -184,8 +183,7 @@ public class BasicSymbol
     @Override
     public BufferedImage getIconImage ()
     {
-        return getIcon()
-                .getImage();
+        return getIcon().getImage();
     }
 
     //--------------//
@@ -199,8 +197,7 @@ public class BasicSymbol
     @Override
     public int getIconWidth ()
     {
-        return getIcon()
-                .getWidth();
+        return getIcon().getWidth();
     }
 
     //-------------//
@@ -210,14 +207,6 @@ public class BasicSymbol
     public Point getRefPoint (Rectangle box)
     {
         return new Point(box.x + (box.width / 2), box.y + (box.height / 2));
-    }
-
-    //-----------//
-    // getString //
-    //-----------//
-    public final String getString ()
-    {
-        return new String(codes, 0, codes.length);
     }
 
     //-----------------//
@@ -358,9 +347,7 @@ public class BasicSymbol
 
         Rectangle2D r = p.layout.getBounds();
 
-        p.rect = new Rectangle(
-                (int) Math.ceil(r.getWidth()),
-                (int) Math.ceil(r.getHeight()));
+        p.rect = new Rectangle((int) Math.ceil(r.getWidth()), (int) Math.ceil(r.getHeight()));
 
         return p;
     }
@@ -399,8 +386,7 @@ public class BasicSymbol
         //          .append(getHeight());
         //
         if (codes != null) {
-            sb.append(" codes:")
-                    .append(Arrays.toString(codes));
+            sb.append(" codes:").append(Arrays.toString(codes));
         }
 
         return sb.toString();
@@ -445,8 +431,7 @@ public class BasicSymbol
     //--------------//
     private void computeImage ()
     {
-        image = buildImage(
-                isIcon ? MusicFont.iconMusicFont : MusicFont.baseMusicFont);
+        image = buildImage(isIcon ? MusicFont.iconMusicFont : MusicFont.baseMusicFont);
 
         dimension = new Dimension(image.getWidth(), image.getHeight());
     }
@@ -491,7 +476,7 @@ public class BasicSymbol
         return values;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
@@ -501,7 +486,7 @@ public class BasicSymbol
      */
     protected class Params
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Specific offset, if any, from area center. */
         Point offset;

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         S c o r e s M a n a g e r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   S c o r e s M a n a g e r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -37,8 +37,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code ScoresManager} is a singleton which provides
- * administrative features for score instances.
+ * Class {@code ScoresManager} is a singleton which provides administrative features
+ * for score instances.
  * <p>
  * It handles the collection of all loaded score instances.</p>
  * <p>
@@ -49,12 +49,10 @@ import java.util.List;
  */
 public class ScoresManager
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(ScoresManager.class);
 
     /** The extension used for score output files: {@value} */
@@ -66,14 +64,14 @@ public class ScoresManager
     /** The single instance of this class */
     private static volatile ScoresManager INSTANCE;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Instances of Score */
-    private List<Score> instances = new ArrayList<>();
+    private List<Score> instances = new ArrayList<Score>();
 
     /** Image file history (filled only when images are successfully loaded) */
     private NameSet history;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // ScoresManager //
     //---------------//
@@ -84,41 +82,37 @@ public class ScoresManager
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //-----------------//
-    // getExitListener //
-    //-----------------//
+    //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
     /**
-     * The Exit listener meant for GUI.
+     * Report the single instance of this class.
      *
-     * @return the listener to register
+     * @return the single instance
      */
-    public ExitListener getExitListener ()
+    public static ScoresManager getInstance ()
     {
-        return new ExitListener()
-        {
-            @Override
-            public boolean canExit (EventObject e)
-            {
-                // Are all scripts stored (or explicitly ignored)?
-                for (Score score : instances) {
-                    if (!ScriptActions.checkStored(
-                            score.getScript())) {
-                        return false;
-                    }
-                }
+        if (INSTANCE == null) {
+            INSTANCE = new ScoresManager();
+        }
 
-                return true;
-            }
-
-            @Override
-            public void willExit (EventObject e)
-            {
-                // Close all sheets, to record their bench data
-                closeAllScores();
-            }
-        };
+        return INSTANCE;
     }
+
+    //--------------//
+    // isMultiScore //
+    //--------------//
+    /**
+     * Report whether we are handling more than one score.
+     *
+     * @return true if more than one score
+     */
+    public static boolean isMultiScore ()
+    {
+        return getInstance().instances.size() > 1;
+    }
+
     //-------------//
     // addInstance //
     //-------------//
@@ -197,9 +191,7 @@ public class ScoresManager
             if (injectSignature != null) {
                 exporter.export(file, injectSignature);
             } else {
-                exporter.export(
-                        file,
-                        constants.defaultInjectSignature.getValue());
+                exporter.export(file, constants.defaultInjectSignature.getValue());
             }
 
             logger.info("Score exported to {}", file);
@@ -247,36 +239,6 @@ public class ScoresManager
     public File getDefaultDewarpDirectory ()
     {
         return new File(constants.defaultDewarpDirectory.getValue());
-    }
-
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the single instance of this class.
-     *
-     * @return the single instance
-     */
-    public static ScoresManager getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new ScoresManager();
-        }
-
-        return INSTANCE;
-    }
-
-    //--------------//
-    // isMultiScore //
-    //--------------//
-    /**
-     * Report whether we are handling more than one score.
-     *
-     * @return true if more than one score
-     */
-    public static boolean isMultiScore ()
-    {
-        return getInstance().instances.size() > 1;
     }
 
     //----------------------//
@@ -342,6 +304,40 @@ public class ScoresManager
         } else {
             return new File(constants.defaultPrintDirectory.getValue(), child);
         }
+    }
+
+    //-----------------//
+    // getExitListener //
+    //-----------------//
+    /**
+     * The Exit listener meant for GUI.
+     *
+     * @return the listener to register
+     */
+    public ExitListener getExitListener ()
+    {
+        return new ExitListener()
+        {
+            @Override
+            public boolean canExit (EventObject e)
+            {
+                // Are all scripts stored (or explicitly ignored)?
+                for (Score score : instances) {
+                    if (!ScriptActions.checkStored(score.getScript())) {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            @Override
+            public void willExit (EventObject e)
+            {
+                // Close all sheets, to record their bench data
+                closeAllScores();
+            }
+        };
     }
 
     //------------//
@@ -477,8 +473,7 @@ public class ScoresManager
                             boolean complete)
     {
         // Check if we do save bench data
-        if ((Main.getBenchPath() == null)
-            && !constants.saveBenchToDisk.getValue()) {
+        if ((Main.getBenchPath() == null) && !constants.saveBenchToDisk.getValue()) {
             return;
         }
 
@@ -486,16 +481,12 @@ public class ScoresManager
             File path = new File(Main.getBenchPath());
 
             if (path.isDirectory()) {
-                file = getActualFile(
-                        file,
-                        getDefaultBenchFile(path, bench.getScore()));
+                file = getActualFile(file, getDefaultBenchFile(path, bench.getScore()));
             } else {
                 file = getActualFile(file, path);
             }
         } else {
-            file = getActualFile(
-                    file,
-                    getDefaultBenchFile(null, bench.getScore()));
+            file = getActualFile(file, getDefaultBenchFile(null, bench.getScore()));
         }
 
         // Actually store the score bench
@@ -571,7 +562,7 @@ public class ScoresManager
         int count = 0;
 
         // NB: Use a COPY of instances, to avoid concurrent modification
-        for (Score score : new ArrayList<>(instances)) {
+        for (Score score : new ArrayList<Score>(instances)) {
             score.close();
             count++;
         }
@@ -616,14 +607,14 @@ public class ScoresManager
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.String defaultExportDirectory = new Constant.String(
                 WellKnowns.DEFAULT_SCORES_FOLDER.toString(),
@@ -645,9 +636,7 @@ public class ScoresManager
                 true,
                 "Should we inject our signature in the exported scores?");
 
-        Constant.String imagesHistory = new Constant.String(
-                "",
-                "History of loaded images");
+        Constant.String imagesHistory = new Constant.String("", "History of loaded images");
 
         Constant.Integer historySize = new Constant.Integer(
                 "count",
@@ -661,6 +650,5 @@ public class ScoresManager
         Constant.String defaultDewarpDirectory = new Constant.String(
                 WellKnowns.TEMP_FOLDER.toString(),
                 "Default directory for saved dewarped images");
-
     }
 }

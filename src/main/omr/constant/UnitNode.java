@@ -1,28 +1,28 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              U n i t N o d e                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        U n i t N o d e                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.constant;
 
 import org.slf4j.Logger;
+
 /**
- * Class {@code UnitNode} represents a unit (class) in the hierarchy of
- * nodes.
+ * Class {@code UnitNode} represents a unit (class) in the hierarchy of nodes.
  * It represents a class and can have either a Logger, a ConstantSet, or both.
  *
  * @author Hervé Bitteur
  */
 public class UnitNode
-    extends Node
+        extends Node
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The contained Constant set if any */
     private ConstantSet set;
@@ -30,13 +30,13 @@ public class UnitNode
     /** The logger if any */
     private Logger logger;
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // UnitNode //
     //----------//
     /**
      * Create a new UnitNode.
+     *
      * @param name the fully qualified class/unit name
      */
     public UnitNode (String name)
@@ -44,13 +44,13 @@ public class UnitNode
         super(name);
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getConstantSet //
     //----------------//
     /**
      * Retrieves the ConstantSet associated to the unit (if any).
+     *
      * @return the ConstantSet instance, or null
      */
     public ConstantSet getConstantSet ()
@@ -63,6 +63,7 @@ public class UnitNode
     //-----------//
     /**
      * Retrieves the Logger instance associated to the unit (if any).
+     *
      * @return the Logger instance, or null
      */
     public Logger getLogger ()
@@ -75,6 +76,7 @@ public class UnitNode
     //----------------//
     /**
      * Assigns the provided ConstantSet to this enclosing unit.
+     *
      * @param set the ConstantSet to be assigned
      */
     public void setConstantSet (ConstantSet set)
@@ -87,6 +89,7 @@ public class UnitNode
     //-----------//
     /**
      * Assigns the provided Logger to the unit.
+     *
      * @param logger the Logger instance
      */
     public void setLogger (Logger logger)

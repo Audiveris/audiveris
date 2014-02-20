@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                 G h o s t C o m p o n e n t A d a p t e r                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                           G h o s t C o m p o n e n t A d a p t e r                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.dnd;
 
@@ -17,9 +17,8 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 
 /**
- * Class {@code GhostComponentAdapter} is a {@link GhostDropAdapter}
- * whose image is copied from the appearance of the component where
- * the mouse is pressed.
+ * Class {@code GhostComponentAdapter} is a {@link GhostDropAdapter} whose image is
+ * copied from the appearance of the component where the mouse is pressed.
  *
  * @param <A> The precise type of action carried by the drop
  *
@@ -28,7 +27,7 @@ import java.awt.image.BufferedImage;
 public class GhostComponentAdapter<A>
         extends GhostDropAdapter<A>
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //-----------------------//
     // GhostComponentAdapter //
@@ -45,7 +44,7 @@ public class GhostComponentAdapter<A>
         super(glassPane, action);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // mousePressed //
     //--------------//
@@ -55,10 +54,7 @@ public class GhostComponentAdapter<A>
         Component c = e.getComponent();
 
         // Copy the component current appearance
-        image = new BufferedImage(
-                c.getWidth(),
-                c.getHeight(),
-                BufferedImage.TYPE_INT_ARGB);
+        image = new BufferedImage(c.getWidth(), c.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
         Graphics g = image.getGraphics();
         c.paint(g);

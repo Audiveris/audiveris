@@ -1,25 +1,24 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 G r a d e s                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           G r a d e s                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
 /**
- * Class {@code Grades} gathers utility methods dealing with grade
- * values.
+ * Class {@code Grades} gathers utility methods dealing with grade values.
  *
  * @author Hervé Bitteur
  */
 public class Grades
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     //-------//
     // clamp //

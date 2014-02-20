@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    I n t e g e r L i s t S p i n n e r                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              I n t e g e r L i s t S p i n n e r                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.field;
 
@@ -16,15 +16,14 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerListModel;
 
 /**
- * Class {@code IntegerListSpinner} is a spinner whose model is a list
- * of integers.
+ * Class {@code IntegerListSpinner} is a spinner whose model is a list of integers.
  *
  * @author Hervé Bitteur
  */
 public class IntegerListSpinner
         extends JSpinner
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //--------------------//
     // IntegerListSpinner //
@@ -39,7 +38,6 @@ public class IntegerListSpinner
         // Right alignment
         JSpinner.DefaultEditor editor;
         editor = (JSpinner.DefaultEditor) getEditor();
-        editor.getTextField()
-                .setHorizontalAlignment(JTextField.RIGHT);
+        editor.getTextField().setHorizontalAlignment(JTextField.RIGHT);
     }
 }

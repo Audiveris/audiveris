@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      G e o m e t r i c M o m e n t s                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                G e o m e t r i c M o m e n t s                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.moments;
 
@@ -17,20 +17,18 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 
 /**
- * Class {@code GeometricMoments} encapsulates the set of all
- * geometric moments that characterize an image.
- *
+ * Class {@code GeometricMoments} encapsulates the set of all geometric moments that
+ * characterize an image.
+ * <p>
  * We use only central moments (invariant Hu moments are disabled by default).
  *
  * @author Hervé Bitteur
  */
 public class GeometricMoments
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            GeometricMoments.class);
+    private static final Logger logger = LoggerFactory.getLogger(GeometricMoments.class);
 
     // Hu coefficients are optional
     public static final boolean useHuCoefficients = false;
@@ -73,12 +71,12 @@ public class GeometricMoments
         "h7", // 18
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The various moments, implemented as an array of double's. */
     private final double[] k = new double[size];
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // GeometricMoments //
     //------------------//
@@ -223,27 +221,18 @@ public class GeometricMoments
             //
             k[i++] = ((n30 + n12) * (n30 + n12)) + ((n03 + n21) * (n03 + n21));
             //
-            k[i++] = ((n30 - (3 * n12)) * (n30 + n12) * (((n30 + n12) * (n30
-                                                                         + n12))
-                                                         - (3 * (n21 + n03) * (n21
-                                                                               + n03))))
-                     + ((n03 - (3 * n21)) * (n03 + n21) * (((n03 + n21) * (n03
-                                                                           + n21))
-                                                           - (3 * (n12 + n30) * (n12
-                                                                                 + n30))));
+            k[i++] = ((n30 - (3 * n12)) * (n30 + n12) * (((n30 + n12) * (n30 + n12))
+                                                         - (3 * (n21 + n03) * (n21 + n03))))
+                     + ((n03 - (3 * n21)) * (n03 + n21) * (((n03 + n21) * (n03 + n21))
+                                                           - (3 * (n12 + n30) * (n12 + n30))));
             //
-            k[i++] = ((n20 - n02) * (((n30 + n12) * (n30 + n12))
-                                     - ((n03 + n21) * (n03 + n21))))
+            k[i++] = ((n20 - n02) * (((n30 + n12) * (n30 + n12)) - ((n03 + n21) * (n03 + n21))))
                      + (4 * n11 * (n30 + n12) * (n03 + n21));
             //
-            k[i++] = (((3 * n21) - n03) * (n30 + n12) * (((n30 + n12) * (n30
-                                                                         + n12))
-                                                         - (3 * (n21 + n03) * (n21
-                                                                               + n03))))
-                     - (((3 * n12) - n30) * (n03 + n21) * (((n03 + n21) * (n03
-                                                                           + n21))
-                                                           - (3 * (n12 + n30) * (n12
-                                                                                 + n30))));
+            k[i++] = (((3 * n21) - n03) * (n30 + n12) * (((n30 + n12) * (n30 + n12))
+                                                         - (3 * (n21 + n03) * (n21 + n03))))
+                     - (((3 * n12) - n30) * (n03 + n21) * (((n03 + n21) * (n03 + n21))
+                                                           - (3 * (n12 + n30) * (n12 + n30))));
         }
     }
 
@@ -257,21 +246,7 @@ public class GeometricMoments
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //----------//
-    // getLabel //
-    //----------//
-    /**
-     * Report the label related to moment at specified index.
-     *
-     * @param index the moment index
-     * @return the related index
-     */
-    public static String getLabel (int index)
-    {
-        return labels[index];
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getCentroid //
     //-------------//
@@ -296,6 +271,20 @@ public class GeometricMoments
     public double getHeight ()
     {
         return k[2];
+    }
+
+    //----------//
+    // getLabel //
+    //----------//
+    /**
+     * Report the label related to moment at specified index.
+     *
+     * @param index the moment index
+     * @return the related index
+     */
+    public static String getLabel (int index)
+    {
+        return labels[index];
     }
 
     //--------//
@@ -386,10 +375,7 @@ public class GeometricMoments
         sb.append("{");
 
         for (int i = 0; i < k.length; i++) {
-            sb.append(" ")
-                    .append(labels[i])
-                    .append("=")
-                    .append(String.format("%g", k[i]));
+            sb.append(" ").append(labels[i]).append("=").append(String.format("%g", k[i]));
         }
 
         sb.append("}");

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          G l y p h T r a i n e r                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    G l y p h T r a i n e r                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui.panel;
 
@@ -42,7 +42,8 @@ import javax.swing.event.ChangeListener;
  * training and testing of a glyph evaluator.
  * This class can be launched as a stand-alone program.
  *
- * <p>The frame is divided vertically in 4 parts:
+ * <p>
+ * The frame is divided vertically in 4 parts:
  * <ol>
  * <li>The selection in repository of known glyphs ({@link SelectionPanel})
  * <li>The training of the neural network evaluator ({@link TrainingPanel})
@@ -54,11 +55,9 @@ import javax.swing.event.ChangeListener;
  */
 public class GlyphTrainer
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            GlyphTrainer.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphTrainer.class);
 
     /** The single instance of this class */
     private static volatile GlyphTrainer INSTANCE;
@@ -76,15 +75,14 @@ public class GlyphTrainer
         public void windowClosing (WindowEvent e)
         {
             // Store latest constant values
-            ConstantManager.getInstance()
-                    .storeResource();
+            ConstantManager.getInstance().storeResource();
 
             // That's all folks !
             System.exit(0);
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related frame */
     private final JFrame frame;
 
@@ -106,7 +104,7 @@ public class GlyphTrainer
     /** Frame title */
     private String frameTitle;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // GlyphTrainer //
     //--------------//
@@ -129,21 +127,13 @@ public class GlyphTrainer
             @Override
             public void stateChanged (ChangeEvent e)
             {
-                frame.setTitle(
-                        String.format(
-                        "%.5f - %s",
-                        networkPanel.getBestError(),
-                        frameTitle));
+                frame.setTitle(String.format("%.5f - %s", networkPanel.getBestError(), frameTitle));
             }
         };
 
         // Create the three companions
         selectionPanel = new SelectionPanel(task, standardWidth);
-        networkPanel = new NetworkPanel(
-                task,
-                standardWidth,
-                errorListener,
-                selectionPanel);
+        networkPanel = new NetworkPanel(task, standardWidth, errorListener, selectionPanel);
         selectionPanel.setTrainingPanel(networkPanel);
         validationPanel = new ValidationPanel(
                 task,
@@ -151,10 +141,7 @@ public class GlyphTrainer
                 GlyphNetwork.getInstance(),
                 selectionPanel,
                 networkPanel);
-        regressionPanel = new RegressionPanel(
-                task,
-                standardWidth,
-                selectionPanel);
+        regressionPanel = new RegressionPanel(task, standardWidth, selectionPanel);
         frame.add(createGlobalPanel());
 
         // Initial state
@@ -166,14 +153,12 @@ public class GlyphTrainer
         }
 
         // Resource injection
-        ResourceMap resource = MainGui.getInstance()
-                .getContext()
-                .getResourceMap(getClass());
+        ResourceMap resource = MainGui.getInstance().getContext().getResourceMap(getClass());
         resource.injectComponents(frame);
         frameTitle = frame.getTitle();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // launch //
     //--------//
@@ -182,8 +167,7 @@ public class GlyphTrainer
      */
     public static void launch ()
     {
-        MainGui.getInstance()
-                .show(getInstance().frame);
+        MainGui.getInstance().show(getInstance().frame);
     }
 
     //------//
@@ -200,18 +184,6 @@ public class GlyphTrainer
         getInstance();
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    private static GlyphTrainer getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new GlyphTrainer();
-        }
-
-        return INSTANCE;
-    }
-
     //-------------------//
     // createGlobalPanel //
     //-------------------//
@@ -220,8 +192,8 @@ public class GlyphTrainer
         final String panelInterline = Panel.getPanelInterline();
         FormLayout layout = new FormLayout(
                 "pref",
-                "pref," + panelInterline + "," + "pref," + panelInterline + ","
-                + "pref," + panelInterline + "," + "pref");
+                "pref," + panelInterline + "," + "pref," + panelInterline + "," + "pref,"
+                + panelInterline + "," + "pref");
 
         CellConstraints cst = new CellConstraints();
         PanelBuilder builder = new PanelBuilder(layout, new Panel());
@@ -242,7 +214,19 @@ public class GlyphTrainer
         return builder.getPanel();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
+    private static GlyphTrainer getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new GlyphTrainer();
+        }
+
+        return INSTANCE;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Task //
     //------//
@@ -253,7 +237,7 @@ public class GlyphTrainer
     static class Task
             extends Observable
     {
-        //~ Enumerations -------------------------------------------------------
+        //~ Enumerations ---------------------------------------------------------------------------
 
         /**
          * Enum {@code Activity} defines the possible activities in
@@ -261,7 +245,7 @@ public class GlyphTrainer
          */
         static enum Activity
         {
-            //~ Enumeration constant initializers ------------------------------
+            //~ Enumeration constant initializers --------------------------------------------------
 
             /** No ongoing activity */
             INACTIVE,
@@ -271,14 +255,13 @@ public class GlyphTrainer
             /** Using the
              * population to train the evaluator */
             TRAINING;
-
         }
 
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
         /** Current activity */
         private Activity activity = Activity.INACTIVE;
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //-------------//
         // getActivity //
         //-------------//

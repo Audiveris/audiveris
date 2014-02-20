@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     D o u b l e B e a m P a t t e r n                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               D o u b l e B e a m P a t t e r n                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
@@ -17,7 +17,6 @@ import omr.glyph.Glyphs;
 import omr.glyph.Grades;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.GlyphComposition;
 
 import omr.sheet.SystemInfo;
 
@@ -39,13 +38,11 @@ import java.util.Set;
 public class DoubleBeamPattern
         extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            DoubleBeamPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(DoubleBeamPattern.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------------//
     // DoubleBeamPattern //
     //-------------------//
@@ -59,7 +56,7 @@ public class DoubleBeamPattern
         super("DoubleBeam", system);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // runPattern //
     //------------//
@@ -94,29 +91,22 @@ public class DoubleBeamPattern
                 {
                     return (glyph != stem) && (glyph != beam)
                            && (glyph.getShape() == Shape.BEAM)
-                           && glyph.getBounds()
-                            .intersects(beamBox);
+                           && glyph.getBounds().intersects(beamBox);
                 }
                     });
 
             for (Glyph candidate : candidates) {
-                if (beam.isVip()
-                    || candidate.isVip()
-                    || logger.isDebugEnabled()) {
+                if (beam.isVip() || candidate.isVip() || logger.isDebugEnabled()) {
                     logger.info("Beam candidate #{}", candidate);
                 }
 
-                GlyphNest nest = system.getSheet()
-                        .getNest();
+                GlyphNest nest = system.getSheet().getNest();
                 Glyph compound = nest.buildGlyph(
                         Arrays.asList(beam, candidate),
                         false,
                         Glyph.Linking.NO_LINK);
                 Evaluation eval = GlyphNetwork.getInstance()
-                        .vote(
-                                compound,
-                                system,
-                                Grades.noMinGrade);
+                        .vote(compound, system, Grades.noMinGrade);
 
                 if (eval != null) {
                     // Assign and insert into system & lag environments

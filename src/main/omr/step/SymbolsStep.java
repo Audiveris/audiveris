@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           S y m b o l s S t e p                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     S y m b o l s S t e p                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -33,25 +33,21 @@ import org.slf4j.LoggerFactory;
 import java.util.Iterator;
 
 /**
- * Class {@code SymbolsStep} builds symbols glyphs and
- * performs specific patterns at symbol level
- * (clefs, sharps, naturals, stems, slurs, etc).
+ * Class {@code SymbolsStep} builds symbols glyphs and performs specific patterns at
+ * symbol level (clefs, sharps, naturals, stems, slurs, etc).
  *
  * @author Hervé Bitteur
  */
 public class SymbolsStep
         extends AbstractSystemStep
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SymbolsStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(SymbolsStep.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // SymbolsStep //
     //-------------//
@@ -68,7 +64,7 @@ public class SymbolsStep
                 "Apply specific glyph patterns");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -82,10 +78,8 @@ public class SymbolsStep
         }
 
         // Update glyph board if needed (to see OCR'ed data)
-        SelectionService service = sheet.getNest()
-                .getGlyphService();
-        GlyphEvent glyphEvent = (GlyphEvent) service.getLastEvent(
-                GlyphEvent.class);
+        SelectionService service = sheet.getNest().getGlyphService();
+        GlyphEvent glyphEvent = (GlyphEvent) service.getLastEvent(GlyphEvent.class);
 
         if (glyphEvent != null) {
             service.publish(glyphEvent);
@@ -105,8 +99,7 @@ public class SymbolsStep
         // Cleanup system dummy parts
         ScoreSystem scoreSystem = system.getScoreSystem();
 
-        for (Iterator<TreeNode> it = scoreSystem.getParts()
-                .iterator(); it.hasNext();) {
+        for (Iterator<TreeNode> it = scoreSystem.getParts().iterator(); it.hasNext();) {
             SystemPart part = (SystemPart) it.next();
 
             if (part.isDummy()) {
@@ -115,8 +108,7 @@ public class SymbolsStep
         }
 
         // Iterate
-        for (int iter = 1; iter <= constants.MaxPatternsIterations.getValue();
-                iter++) {
+        for (int iter = 1; iter <= constants.MaxPatternsIterations.getValue(); iter++) {
             logger.debug("System#{} patterns iter #{}", system.getId(), iter);
             clearSystemErrors(system);
 
@@ -126,19 +118,18 @@ public class SymbolsStep
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Integer MaxPatternsIterations = new Constant.Integer(
                 "count",
                 1,
                 "Maximum number of iterations for PATTERNS task");
-
     }
 }

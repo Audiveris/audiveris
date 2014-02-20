@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                  A b s t r a c t S c o r e V i s i t o r                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                            A b s t r a c t S c o r e V i s i t o r                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.visitor;
 
@@ -45,17 +45,16 @@ import omr.score.entity.VisitableNode;
 import omr.score.entity.Wedge;
 
 /**
- * Class {@code AbstractScoreVisitor} provides a default
- * implementation of the ScoreVisitor interface, where by default all
- * visit() methods are void and return true (to allow automatic visit
- * of the children of each node).
+ * Class {@code AbstractScoreVisitor} provides a default implementation of the
+ * ScoreVisitor interface, where by default all visit() methods are void and return true
+ * (to allow automatic visit of the children of each node).
  *
  * @author Hervé Bitteur
  */
 public class AbstractScoreVisitor
         implements ScoreVisitor
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //----------------------//
     // AbstractScoreVisitor //
@@ -67,7 +66,7 @@ public class AbstractScoreVisitor
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------------//
     // visit Articulation //
     //--------------------//

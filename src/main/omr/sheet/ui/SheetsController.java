@@ -1,18 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      S h e e t s C o n t r o l l e r                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                S h e e t s C o n t r o l l e r                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet.ui;
 
 import omr.constant.Constant;
 import omr.constant.ConstantSet;
+
+import omr.lag.Lag;
 
 import omr.score.Score;
 import omr.score.entity.Page;
@@ -35,45 +37,41 @@ import javax.swing.JComponent;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import omr.lag.Lag;
 
 /**
- * Class {@code SheetsController} is the UI Controller in charge of
- * user interactions with the sheets.
- *
- * <p>Multiple sheets are handled by means of a tabbed pane. For each tab, and
+ * Class {@code SheetsController} is the UI Controller in charge of user interactions
+ * with the sheets.
+ * <p>
+ * Multiple sheets are handled by means of a tabbed pane. For each tab, and
  * thus for each sheet, we have a separate {@link SheetAssembly}. All methods
  * that access these shared entities (tabbedPane, assemblies) are synchronized.
  * </p>
- *
- * <p>This class encapsulates an event service, which publishes the sheet
+ * <p>
+ * This class encapsulates an event service, which publishes the sheet
  * currently selected by a user interface. See {@link #subscribe},
  * {@link #unsubscribe} and {@link #getSelectedSheet}.</p>
- *
- * <p>This class is meant to be a Singleton</p>
+ * <p>
+ * This class is meant to be a Singleton</p>
  *
  * @author Hervé Bitteur
  */
 public class SheetsController
         implements ChangeListener
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             SheetsController.class);
 
     /** Events that can be published on sheet service */
-    private static final Class<?>[] eventsWritten = new Class<?>[]{
-        SheetEvent.class};
+    private static final Class<?>[] eventsWritten = new Class<?>[]{SheetEvent.class};
 
     /** The single instance of this class */
     private static volatile SheetsController INSTANCE;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Ordered sequence of sheet assemblies */
     private final ArrayList<SheetAssembly> assemblies;
 
@@ -88,7 +86,7 @@ public class SheetsController
             getClass().getSimpleName(),
             eventsWritten);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // SheetsController //
     //------------------//
@@ -98,13 +96,13 @@ public class SheetsController
     private SheetsController ()
     {
         tabbedPane = new JTabbedPane();
-        assemblies = new ArrayList<>();
+        assemblies = new ArrayList<SheetAssembly>();
 
         // Listener on sheet tab operations
         tabbedPane.addChangeListener(this);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // callAboutSheet //
     //----------------//
@@ -148,11 +146,7 @@ public class SheetsController
             assemblies.add(assembly);
 
             JComponent comp = assembly.getComponent();
-            tabbedPane.addTab(
-                    defineTitleFor(sheet),
-                    null,
-                    comp,
-                    sheet.getScore().getImagePath());
+            tabbedPane.addTab(defineTitleFor(sheet), null, comp, sheet.getScore().getImagePath());
         }
 
         return assembly;
@@ -254,8 +248,7 @@ public class SheetsController
      */
     public Sheet getSelectedSheet ()
     {
-        SheetEvent sheetEvent = (SheetEvent) sheetService.getLastEvent(
-                SheetEvent.class);
+        SheetEvent sheetEvent = (SheetEvent) sheetService.getLastEvent(SheetEvent.class);
 
         return (sheetEvent != null) ? sheetEvent.getData() : null;
     }
@@ -271,8 +264,7 @@ public class SheetsController
     public synchronized void removeAssembly (Sheet sheet)
     {
         SheetAssembly assembly = sheet.getAssembly();
-        int sheetIndex = tabbedPane.indexOfComponent(
-                assembly.getComponent());
+        int sheetIndex = tabbedPane.indexOfComponent(assembly.getComponent());
 
         if (sheetIndex != -1) {
             logger.debug("Removing assembly {}", sheet);
@@ -299,9 +291,7 @@ public class SheetsController
                         firstSheet.getAssembly().getComponent());
 
                 if (firstIndex != -1) {
-                    tabbedPane.setTitleAt(
-                            firstIndex,
-                            defineTitleFor(firstSheet));
+                    tabbedPane.setTitleAt(firstIndex, defineTitleFor(firstSheet));
                 }
             }
         }
@@ -323,8 +313,7 @@ public class SheetsController
             SheetAssembly assembly = sheet.getAssembly();
 
             // Make sure the assembly is part of the tabbed pane
-            int sheetIndex = tabbedPane.indexOfComponent(
-                    assembly.getComponent());
+            int sheetIndex = tabbedPane.indexOfComponent(assembly.getComponent());
 
             if (sheetIndex != -1) {
                 tabbedPane.setSelectedIndex(sheetIndex);
@@ -342,7 +331,8 @@ public class SheetsController
      * whether programmatically (by means of {@link #showAssembly})
      * or by user action (manual selection of the sheet tab).
      *
-     * <p> Set the state (enabled or disabled) of all menu items that depend on
+     * <p>
+     * Set the state (enabled or disabled) of all menu items that depend on
      * status of current sheet.
      */
     @Override
@@ -372,6 +362,15 @@ public class SheetsController
         sheetService.subscribeStrongly(SheetEvent.class, subscriber);
     }
 
+    //----------//
+    // toString //
+    //----------//
+    @Override
+    public String toString ()
+    {
+        return getClass().getSimpleName();
+    }
+
     //-------------//
     // unsubscribe //
     //-------------//
@@ -383,15 +382,6 @@ public class SheetsController
     public void unsubscribe (EventSubscriber<SheetEvent> subscriber)
     {
         sheetService.unsubscribe(SheetEvent.class, subscriber);
-    }
-
-    //----------//
-    // toString //
-    //----------//
-    @Override
-    public String toString ()
-    {
-        return getClass().getSimpleName();
     }
 
     //----------------//
@@ -445,18 +435,17 @@ public class SheetsController
         assembly.assemblySelected();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Ratio initialZoomRatio = new Constant.Ratio(
                 0.5,
                 "Initial zoom ratio for displayed sheet pictures");
-
     }
 }

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 V o i c e                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           V o i c e                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -29,32 +29,29 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code Voice} gathers all informations related to a voice
- * within a measure.
+ * Class {@code Voice} gathers all informations related to a voice within a measure.
  *
  * @author Hervé Bitteur
  */
 public class Voice
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Voice.class);
 
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
     public static enum Status
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** A chord begins at this slot. */
         BEGIN,
         /** A chord is still active
          * at this slot. */
         CONTINUE;
-
     }
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Containing measure */
     @Navigable(false)
@@ -73,7 +70,7 @@ public class Voice
      * difference between a slot where the chord starts, and the potential
      * following slots for which the chord is still active.
      */
-    private final SortedMap<Integer, VoiceChord> slotTable = new TreeMap<>();
+    private final SortedMap<Integer, VoiceChord> slotTable = new TreeMap<Integer, VoiceChord>();
 
     /**
      * How the voice finishes (value = voiceEndTime - expectedMeasureEndTime)
@@ -90,7 +87,7 @@ public class Voice
     /** Inferred time signature based on this voice content */
     private TimeRational inferredTimeSig;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //-------//
     // Voice //
@@ -109,31 +106,10 @@ public class Voice
         logger.debug("Created voice#{}", id);
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //----------------//
-    // getChordBefore //
-    //----------------//
-    /**
-     * Retrieve the latest chord, if any, before the provided slot.
-     *
-     * @param slot the provided slot
-     * @return the latest chord, in this voice, before this slot
-     */
-    public Chord getChordBefore (Slot slot)
-    {
-        for (int sid = slot.getId() - 1; sid > 0; sid--) {
-            VoiceChord info = slotTable.get(sid);
-            if (info != null) {
-                return info.getChord();
-            }
-        }
-
-        return null;
-    }
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // checkDuration //
     //---------------//
-
     /**
      * Check the duration of the voice, compared to measure expected
      * duration.
@@ -166,20 +142,15 @@ public class Voice
                 }
 
                 // Need an ending forward ?
-                Rational delta = timeCounter.minus(
-                        measure.getExpectedDuration());
+                Rational delta = timeCounter.minus(measure.getExpectedDuration());
                 setTermination(delta);
 
                 if (delta.compareTo(Rational.ZERO) < 0) {
                     // Insert a forward mark
-                    insertForward(
-                            delta.opposite(),
-                            Mark.Position.AFTER,
-                            getLastChord());
+                    insertForward(delta.opposite(), Mark.Position.AFTER, getLastChord());
                 } else if (delta.compareTo(Rational.ZERO) > 0) {
                     // Flag the measure as too long
-                    measure.addError(
-                            "Voice #" + getId() + " too long for " + delta);
+                    measure.addError("Voice #" + getId() + " too long for " + delta);
                     measure.setExcess(delta);
                 }
             }
@@ -206,19 +177,26 @@ public class Voice
         return voice;
     }
 
-    //-------//
-    // setId //
-    //-------//
+    //----------------//
+    // getChordBefore //
+    //----------------//
     /**
-     * Change the voice id (to rename voices)
+     * Retrieve the latest chord, if any, before the provided slot.
      *
-     * @param id the new id value
+     * @param slot the provided slot
+     * @return the latest chord, in this voice, before this slot
      */
-    public void setId (int id)
+    public Chord getChordBefore (Slot slot)
     {
-        logger.debug("measure#{} {} renamed as {}",
-                measure.getIdValue(), this, id);
-        this.id = id;
+        for (int sid = slot.getId() - 1; sid > 0; sid--) {
+            VoiceChord info = slotTable.get(sid);
+
+            if (info != null) {
+                return info.getChord();
+            }
+        }
+
+        return null;
     }
 
     //-------//
@@ -250,7 +228,7 @@ public class Voice
             // TODO: update for the use of tuplets
 
             // Sequence of group (beamed or isolated chords) durations
-            List<Rational> durations = new ArrayList<>();
+            List<Rational> durations = new ArrayList<Rational>();
 
             // Current beam group, if any
             BeamGroup currentGroup = null;
@@ -437,8 +415,7 @@ public class Voice
      */
     public boolean isFree (Slot slot)
     {
-        return ((getWholeChord() == null)
-                && (slotTable.get(slot.getId()) == null));
+        return ((getWholeChord() == null) && (slotTable.get(slot.getId()) == null));
     }
 
     //---------//
@@ -452,6 +429,20 @@ public class Voice
     public boolean isWhole ()
     {
         return wholeChord != null;
+    }
+
+    //-------//
+    // setId //
+    //-------//
+    /**
+     * Change the voice id (to rename voices)
+     *
+     * @param id the new id value
+     */
+    public void setId (int id)
+    {
+        logger.debug("measure#{} {} renamed as {}", measure.getIdValue(), this, id);
+        this.id = id;
     }
 
     //-------------//
@@ -520,8 +511,7 @@ public class Voice
                 if (info != null) { // Active chord => busy
 
                     if (info.getStatus() == Status.BEGIN) {
-                        sb.append("|Ch#").append(
-                                String.format("%02d", info.getChord().getId()));
+                        sb.append("|Ch#").append(String.format("%02d", info.getChord().getId()));
                     } else { // CONTINUE
                         sb.append("======");
                     }
@@ -554,11 +544,8 @@ public class Voice
 
                 if (info == null) {
                     if ((lastChord != null)
-                        && (lastChord.getEndTime().compareTo(slot.
-                            getStartTime()) > 0)) {
-                        setSlotInfo(
-                                slot,
-                                new VoiceChord(lastChord, Status.CONTINUE));
+                        && (lastChord.getEndTime().compareTo(slot.getStartTime()) > 0)) {
+                        setSlotInfo(slot, new VoiceChord(lastChord, Status.CONTINUE));
                     }
                 } else {
                     lastChord = info.chord;
@@ -584,12 +571,7 @@ public class Voice
             point.x -= 10;
         }
 
-        Mark mark = new Mark(
-                chord.getSystem(),
-                point,
-                position,
-                Symbols.SYMBOL_MARK,
-                duration);
+        Mark mark = new Mark(chord.getSystem(), point, position, Symbols.SYMBOL_MARK, duration);
 
         chord.addMark(mark);
     }
@@ -617,9 +599,7 @@ public class Voice
                                     Rational common)
     {
         // Determine the time rational value of measure total duration
-        TimeRational timeRational = new TimeRational(
-                count * common.num,
-                common.den);
+        TimeRational timeRational = new TimeRational(count * common.num, common.den);
 
         int gcd = GCD.gcd(count, timeRational.num);
 
@@ -630,22 +610,20 @@ public class Voice
 
         // No 1 as num
         if (timeRational.num == 1) {
-            timeRational = new TimeRational(
-                    2 * timeRational.num,
-                    2 * timeRational.den);
+            timeRational = new TimeRational(2 * timeRational.num, 2 * timeRational.den);
         }
 
         return timeRational;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //------------//
     // VoiceChord //
     //------------//
     public static class VoiceChord
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Related chord */
         private final Chord chord;
@@ -653,7 +631,7 @@ public class Voice
         /** Current status */
         private final Status status;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public VoiceChord (Chord chord,
                            Status status)
         {
@@ -661,7 +639,7 @@ public class Voice
             this.status = status;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public Chord getChord ()
         {
             return chord;

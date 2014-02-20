@@ -1,21 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       W a t e r s h e d G r a y L e v e l                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 W a t e r s h e d G r a y L e v e l                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 package omr.image;
 
 import java.util.LinkedList;
 
 /**
- * Class {@code WatershedGrayLevel} implements Gray-Level Watershed
- * Segmentation
+ * Class {@code WatershedGrayLevel} implements Gray-Level Watershed Segmentation
  *
  * @author Xavier Philippeau
  */
 public class WatershedGrayLevel
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Number of gray level values. */
     private static final int GRAYLEVEL = 256;
@@ -29,7 +28,7 @@ public class WatershedGrayLevel
     /** Ordinate offsets of the 8 neighbors, clockwise. */
     private static final int[] dy8 = new int[]{-1, -1, -1, 0, 1, 1, 1, 0};
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Original gray-level image, organized row per row. */
     private Table image;
 
@@ -53,7 +52,7 @@ public class WatershedGrayLevel
     /** List of pixels (one per level) to process. */
     private ListOfPixels[] exploreList;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new WatershedGrayLevel object.
      *
@@ -80,7 +79,7 @@ public class WatershedGrayLevel
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // getRegionCount //
     //----------------//
@@ -197,7 +196,7 @@ public class WatershedGrayLevel
     {
         int region = rmap.getValue(p.x, p.y);
 
-        // this pixel is a watershed => cannot extend it 
+        // this pixel is a watershed => cannot extend it
         if (region == WATERSHED) {
             return;
         }
@@ -248,7 +247,7 @@ public class WatershedGrayLevel
     /**
      * Find a seed ( = unassigned pixel ) at the specified level.
      *
-     * @param level the specified level
+     * @param level   the specified level
      * @param yoffset offset on ordinate
      * @return the first seed found, or null
      */
@@ -257,8 +256,7 @@ public class WatershedGrayLevel
     {
         for (int y = yoffset; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                if ((image.getValue(x, y) == level)
-                    && (rmap.getValue(x, y) == 0)) {
+                if ((image.getValue(x, y) == level) && (rmap.getValue(x, y) == 0)) {
                     return new Pixel(x, y, level);
                 }
             }
@@ -307,7 +305,7 @@ public class WatershedGrayLevel
         return null;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // ListOfPixels //
     //--------------//
@@ -327,7 +325,7 @@ public class WatershedGrayLevel
      */
     private static class Pixel
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         int x;
 
@@ -335,7 +333,7 @@ public class WatershedGrayLevel
 
         int level;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Pixel (int x,
                       int y,
                       int level)
@@ -345,7 +343,7 @@ public class WatershedGrayLevel
             this.level = level;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {

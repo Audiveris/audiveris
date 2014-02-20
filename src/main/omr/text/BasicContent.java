@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          B a s i c C o n t e n t                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    B a s i c C o n t e n t                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.text;
 
@@ -23,13 +23,15 @@ import java.awt.Point;
 /**
  * Class {@code BasicContent} handles the textual aspects of a glyph.
  *
- * <p>It handles several text values, by decreasing priority:</p>
+ * <p>
+ * It handles several text values, by decreasing priority:</p>
  * <ol>
  * <li>manual value (entered manually by the user)</li>
  * <li>ocr value (as computed by the OCR engine)</li>
  * </ol>
  *
- * <p>The {@link #getTextValue} method returns the manual value if any,
+ * <p>
+ * The {@link #getTextValue} method returns the manual value if any,
  * otherwise the ocr value.</p>
  *
  * @author Hervé Bitteur
@@ -38,13 +40,12 @@ public class BasicContent
         extends BasicFacet
         implements GlyphContent
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Usual logger utility. */
-    private static final Logger logger = LoggerFactory.getLogger(
-            BasicContent.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicContent.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Manual value if any. */
     private String manualValue;
@@ -58,7 +59,7 @@ public class BasicContent
     /** Related TextWord, if any. */
     private TextWord textWord;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //--------------//
     // BasicContent //
@@ -73,7 +74,24 @@ public class BasicContent
         super(glyph);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //
+    //-------------//
+    // isSeparator //
+    //-------------//
+    /**
+     * Predicate to detect a separator.
+     *
+     * @param str the character to check
+     *
+     * @return true if this is a separator
+     */
+    public static boolean isSeparator (String str)
+    {
+        return str.equals(EXTENSION_STRING) || str.equals(ELISION_STRING)
+               || str.equals(HYPHEN_STRING);
+    }
+
     //--------//
     // dumpOf //
     //--------//
@@ -91,10 +109,7 @@ public class BasicContent
 
         if (textWord != null) {
             sb.append(
-                    String.format(
-                    "   textWord=%s textLine=%s%n",
-                    textWord,
-                    textWord.getTextLine()));
+                    String.format("   textWord=%s textLine=%s%n", textWord, textWord.getTextLine()));
         }
 
         return sb.toString();
@@ -196,23 +211,6 @@ public class BasicContent
         // TBD
     }
 
-    //
-    //-------------//
-    // isSeparator //
-    //-------------//
-    /**
-     * Predicate to detect a separator.
-     *
-     * @param str the character to check
-     *
-     * @return true if this is a separator
-     */
-    public static boolean isSeparator (String str)
-    {
-        return str.equals(EXTENSION_STRING) || str.equals(ELISION_STRING)
-               || str.equals(HYPHEN_STRING);
-    }
-
     //---------------//
     // setManualRole //
     //---------------//
@@ -257,17 +255,10 @@ public class BasicContent
         StringBuilder sb = new StringBuilder("{Content");
 
         if (manualValue != null) {
-            sb.append(" manual:")
-                    .append("\"")
-                    .append(manualValue)
-                    .append("\"");
+            sb.append(" manual:").append("\"").append(manualValue).append("\"");
         } else if (textWord != null) {
-            sb.append(" ocr(")
-                    .append(ocrLanguage)
-                    .append("):")
-                    .append("\"")
-                    .append(textWord.getValue())
-                    .append("\"");
+            sb.append(" ocr(").append(ocrLanguage).append("):").append("\"")
+                    .append(textWord.getValue()).append("\"");
         }
 
         sb.append("}");
@@ -284,9 +275,7 @@ public class BasicContent
         String value = getTextValue();
 
         if (value != null) {
-            sb.append(" \"")
-                    .append(value)
-                    .append("\"");
+            sb.append(" \"").append(value).append("\"");
         }
 
         return sb.toString();

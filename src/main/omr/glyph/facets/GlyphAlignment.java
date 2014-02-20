@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        G l y p h A l i g n m e n t                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  G l y p h A l i g n m e n t                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -21,28 +21,25 @@ import java.awt.geom.Point2D;
 
 /**
  * Interface {@code GlyphAlignment} describes glyph alignment.
+ * <p>
  * The key feature is the approximating Line on all points of the glyph.
- * The line can be the least-square fitted line, or a natural spline for more
- * complex cases.
- *
+ * The line can be the least-square fitted line, or a natural spline for more complex cases.
  * <ul>
- * <li>Staff lines, ledgers, alternate ends are examples of rather
- * horizontal glyphs.</li>
+ * <li>Staff lines, ledgers, alternate ends are examples of rather horizontal glyphs.</li>
  * <li>Bar lines, stems are examples of rather vertical glyphs.</li>
  * <li>Other glyphs have no dominant orientation.</li>
  * </ul>
- *
- * <p>Note that a glyph has no predefined orientation, only the slope of its
- * approximating line is relevant and allows to disambiguate between the
- * start point and the stop point. If abs(tangent) is less than 45 degrees we
- * have a rather horizontal glyph, otherwise a rather vertical glyph.</p>
+ * <p>
+ * Note that a glyph has no predefined orientation, only the slope of its approximating line is
+ * relevant and allows to disambiguate between the start point and the stop point. If abs(tangent)
+ * is less than 45 degrees we have a rather horizontal glyph, otherwise a rather vertical glyph.
  *
  * @author Hervé Bitteur
  */
 public interface GlyphAlignment
         extends GlyphFacet
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the average thickness, using the provided orientation.

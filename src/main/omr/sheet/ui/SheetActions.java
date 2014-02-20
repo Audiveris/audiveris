@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          S h e e t A c t i o n s                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    S h e e t A c t i o n s                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet.ui;
 
@@ -55,27 +55,24 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 
 /**
- * Class {@code SheetActions} simply gathers UI actions related to sheet
- * handling. These methods are ready to be picked up by the plugins mechanism.
+ * Class {@code SheetActions} simply gathers UI actions related to sheet handling.
+ * These methods are ready to be picked up by the plugins mechanism.
  *
  * @author Hervé Bitteur
  */
 public class SheetActions
-        extends SheetDependent
+    extends SheetDependent
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
-
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SheetActions.class);
+    private static final Logger    logger = LoggerFactory.getLogger(SheetActions.class);
 
     /** Singleton */
     private static SheetActions INSTANCE;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
+
     //--------------//
     // SheetActions //
     //--------------//
@@ -86,23 +83,7 @@ public class SheetActions
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //-------------//
-    // getInstance //
-    //-------------//
-    /**
-     * Report the singleton
-     *
-     * @return the unique instance of this class
-     */
-    public static synchronized SheetActions getInstance ()
-    {
-        if (INSTANCE == null) {
-            INSTANCE = new SheetActions();
-        }
-
-        return INSTANCE;
-    }
+    //~ Methods ------------------------------------------------------------------------------------
 
     //------------//
     // closeScore //
@@ -122,6 +103,23 @@ public class SheetActions
         }
     }
 
+    //-------------//
+    // getInstance //
+    //-------------//
+    /**
+     * Report the singleton
+     *
+     * @return the unique instance of this class
+     */
+    public static synchronized SheetActions getInstance ()
+    {
+        if (INSTANCE == null) {
+            INSTANCE = new SheetActions();
+        }
+
+        return INSTANCE;
+    }
+
     //---------------//
     // openImageFile //
     //---------------//
@@ -136,11 +134,11 @@ public class SheetActions
     {
         String suffixes = constants.validImageExtensions.getValue();
         String allSuffixes = suffixes + " " + suffixes.toUpperCase();
-        File file = UIUtil.fileChooser(
-                false,
-                Main.getGui().getFrame(),
-                new File(ScoresManager.getInstance().getDefaultInputDirectory()),
-                new OmrFileFilter(
+        File   file = UIUtil.fileChooser(
+            false,
+            Main.getGui().getFrame(),
+            new File(ScoresManager.getInstance().getDefaultInputDirectory()),
+            new OmrFileFilter(
                 "Major image files" + " (" + suffixes + ")",
                 allSuffixes.split("\\s")));
 
@@ -174,8 +172,7 @@ public class SheetActions
             if (scaleBuilder != null) {
                 scaleBuilder.displayChart();
             } else {
-                logger.warn(
-                        "Cannot display scale plot, for lack of scale data");
+                logger.warn("Cannot display scale plot, for lack of scale data");
             }
         }
     }
@@ -214,12 +211,11 @@ public class SheetActions
             popup.add(title);
             popup.addSeparator();
 
-            ActionListener listener = new ActionListener()
-            {
+            ActionListener listener = new ActionListener() {
                 @Override
                 public void actionPerformed (ActionEvent e)
                 {
-                    int index = Integer.decode(e.getActionCommand()) - 1;
+                    int       index = Integer.decode(e.getActionCommand()) - 1;
                     StaffInfo staff = staffManager.getStaff(index);
                     sheet.getGridBuilder().barsRetriever.plot(staff);
                 }
@@ -233,8 +229,7 @@ public class SheetActions
             }
 
             // Display popup menu
-            JFrame frame = Main.getGui()
-                    .getFrame();
+            JFrame frame = Main.getGui().getFrame();
             popup.show(frame, frame.getWidth() / 6, frame.getHeight() / 4);
         }
     }
@@ -246,8 +241,8 @@ public class SheetActions
     public RecordGlyphsTask recordGlyphs ()
     {
         int answer = JOptionPane.showConfirmDialog(
-                null,
-                "Are you sure of all the symbols of this sheet ?");
+            null,
+            "Are you sure of all the symbols of this sheet ?");
 
         if (answer == JOptionPane.YES_OPTION) {
             return new RecordGlyphsTask();
@@ -271,9 +266,8 @@ public class SheetActions
 
         if (sheet != null) {
             int answer = JOptionPane.showConfirmDialog(
-                    null,
-                    "Do you confirm the removal of this sheet"
-                    + " from its containing score ?");
+                null,
+                "Do you confirm the removal of this sheet" + " from its containing score ?");
 
             if (answer == JOptionPane.YES_OPTION) {
                 new RemoveTask(sheet).launch(sheet);
@@ -305,8 +299,7 @@ public class SheetActions
             return;
         }
 
-        assembly.getSelectedView()
-                .fitHeight();
+        assembly.getSelectedView().fitHeight();
     }
 
     //-----------//
@@ -333,11 +326,11 @@ public class SheetActions
             return;
         }
 
-        assembly.getSelectedView()
-                .fitWidth();
+        assembly.getSelectedView().fitWidth();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
+
     //-------------//
     // HistoryMenu //
     //-------------//
@@ -346,22 +339,25 @@ public class SheetActions
      */
     public static class HistoryMenu
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         private static HistoryMenu INSTANCE;
 
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
+
         //
         /** Concrete menu. */
         private JMenu menu;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
+
         //
         private HistoryMenu ()
         {
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
+
         public static HistoryMenu getInstance ()
         {
             if (INSTANCE == null) {
@@ -374,17 +370,14 @@ public class SheetActions
         public JMenu getMenu ()
         {
             if (menu == null) {
-                NameSet history = ScoresManager.getInstance()
-                        .getHistory();
+                NameSet history = ScoresManager.getInstance().getHistory();
                 menu = history.menu("Sheet History", new HistoryListener());
                 menu.setEnabled(!history.isEmpty());
 
                 menu.setName("historyMenu");
 
-                ResourceMap resource = MainGui.getInstance()
-                        .getContext()
-                        .getResourceMap(
-                                SheetActions.class);
+                ResourceMap resource = MainGui.getInstance().getContext()
+                                              .getResourceMap(SheetActions.class);
                 resource.injectComponents(menu);
             }
 
@@ -393,25 +386,24 @@ public class SheetActions
 
         public void setEnabled (boolean bool)
         {
-            getMenu()
-                    .setEnabled(bool);
+            getMenu().setEnabled(bool);
         }
 
-        //~ Inner Classes ------------------------------------------------------
+        //~ Inner Classes --------------------------------------------------------------------------
+
         /**
          * Class {@code HistoryListener} is used to reload an image file,
          * when selected from the history of previous image files.
          */
         private static class HistoryListener
-                implements ActionListener
+            implements ActionListener
         {
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
 
             @Override
             public void actionPerformed (ActionEvent e)
             {
-                final String name = e.getActionCommand()
-                        .trim();
+                final String name = e.getActionCommand().trim();
 
                 if (!name.isEmpty()) {
                     File file = new File(name);
@@ -425,22 +417,24 @@ public class SheetActions
     // OpenTask //
     //----------//
     public static class OpenTask
-            extends BasicTask
+        extends BasicTask
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final File file;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
+
         public OpenTask (File file)
         {
             this.file = file;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
+
         @Override
         protected Void doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             if (file.exists()) {
                 // Actually load the image file
@@ -458,34 +452,32 @@ public class SheetActions
     // Constants //
     //-----------//
     private static final class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Valid extensions for image files */
         Constant.String validImageExtensions = new Constant.String(
-                ".bmp .gif .jpg .png .tiff .tif .pdf",
-                "Valid image file extensions, whitespace-separated");
-
+            ".bmp .gif .jpg .png .tiff .tif .pdf",
+            "Valid image file extensions, whitespace-separated");
     }
 
     //------------------//
     // RecordGlyphsTask //
     //------------------//
     private static class RecordGlyphsTask
-            extends BasicTask
+        extends BasicTask
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         protected Void doInBackground ()
-                throws InterruptedException
+            throws InterruptedException
         {
             Sheet sheet = SheetsController.getCurrentSheet();
-            GlyphRepository.getInstance()
-                    .recordSheetGlyphs(
-                            sheet, /* emptyStructures => */
-                            sheet.isOnPatterns());
+            GlyphRepository.getInstance().recordSheetGlyphs(
+                sheet, /* emptyStructures => */
+                sheet.isOnPatterns());
 
             return null;
         }

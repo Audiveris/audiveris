@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            G l y p h A c t i o n                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      G l y p h A c t i o n                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig.ui;
 
@@ -26,12 +26,12 @@ import javax.swing.AbstractAction;
 class GlyphAction
         extends AbstractAction
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The underlying glyph. */
     private final Glyph glyph;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // GlyphAction //
     //-------------//
@@ -62,7 +62,7 @@ class GlyphAction
         putValue(SHORT_DESCRIPTION, tipOf(glyph));
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -78,13 +78,8 @@ class GlyphAction
     public void publish ()
     {
         GlyphNest nest = glyph.getNest();
-        nest.getGlyphService()
-                .publish(
-                new GlyphEvent(
-                this,
-                SelectionHint.GLYPH_INIT,
-                MouseMovement.PRESSING,
-                glyph));
+        nest.getGlyphService().publish(
+                new GlyphEvent(this, SelectionHint.GLYPH_INIT, MouseMovement.PRESSING, glyph));
     }
 
     //-------//

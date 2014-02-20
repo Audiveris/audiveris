@@ -1,17 +1,18 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    A d a p t i v e D e s c r i p t o r                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              A d a p t i v e D e s c r i p t o r                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
 import ij.process.ByteProcessor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,13 +33,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AdaptiveDescriptor
         extends FilterDescriptor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             AdaptiveDescriptor.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Coefficient for mean. */
     @XmlAttribute(name = "mean-coeff")
@@ -48,7 +48,7 @@ public class AdaptiveDescriptor
     @XmlAttribute(name = "std-dev-coeff")
     public final double stdDevCoeff;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //--------------------//
     // AdaptiveDescriptor //
@@ -75,7 +75,17 @@ public class AdaptiveDescriptor
         stdDevCoeff = 0;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // getDefault //
+    //------------//
+    public static AdaptiveDescriptor getDefault ()
+    {
+        return new AdaptiveDescriptor(
+                AdaptiveFilter.getDefaultMeanCoeff(),
+                AdaptiveFilter.getDefaultStdDevCoeff());
+    }
+
     //--------//
     // equals //
     //--------//
@@ -85,21 +95,10 @@ public class AdaptiveDescriptor
         if ((obj instanceof AdaptiveDescriptor) && super.equals(obj)) {
             AdaptiveDescriptor that = (AdaptiveDescriptor) obj;
 
-            return (this.meanCoeff == that.meanCoeff)
-                   && (this.stdDevCoeff == that.stdDevCoeff);
+            return (this.meanCoeff == that.meanCoeff) && (this.stdDevCoeff == that.stdDevCoeff);
         }
 
         return false;
-    }
-
-    //------------//
-    // getDefault //
-    //------------//
-    public static AdaptiveDescriptor getDefault ()
-    {
-        return new AdaptiveDescriptor(
-                AdaptiveFilter.getDefaultMeanCoeff(),
-                AdaptiveFilter.getDefaultStdDevCoeff());
     }
 
     //-----------//
@@ -114,10 +113,7 @@ public class AdaptiveDescriptor
             Constructor cons = classe.getConstructor(
                     new Class[]{ByteProcessor.class, double.class, double.class});
 
-            return (PixelFilter) cons.newInstance(
-                    source,
-                    meanCoeff,
-                    stdDevCoeff);
+            return (PixelFilter) cons.newInstance(source, meanCoeff, stdDevCoeff);
         } catch (Exception ex) {
             logger.error("Error on getFilter {}", ex);
 
@@ -159,10 +155,8 @@ public class AdaptiveDescriptor
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
-        sb.append(" meanCoeff: ")
-                .append(meanCoeff);
-        sb.append(" stdDevCoeff: ")
-                .append(stdDevCoeff);
+        sb.append(" meanCoeff: ").append(meanCoeff);
+        sb.append(" stdDevCoeff: ").append(stdDevCoeff);
 
         return sb.toString();
     }

@@ -48,7 +48,7 @@ public class FolderSelector
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
             FolderSelector.class);
 

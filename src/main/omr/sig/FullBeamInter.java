@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          F u l l B e a m I n t e r                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    F u l l B e a m I n t e r                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
@@ -17,8 +17,8 @@ import omr.glyph.facets.Glyph;
 import java.awt.geom.Line2D;
 
 /**
- * Class {@code FullAbstractBeamInter} represents a full beam
- * interpretation, as opposed to a beam hook interpretation.
+ * Class {@code FullAbstractBeamInter} represents a full beam interpretation, as opposed
+ * to a beam hook interpretation.
  *
  * @see BeamHookInter
  *
@@ -27,7 +27,7 @@ import java.awt.geom.Line2D;
 public class FullBeamInter
         extends AbstractBeamInter
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new FullBeamInter object.

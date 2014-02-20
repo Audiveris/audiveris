@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            R u n s V i e w e r                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      R u n s V i e w e r                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet.ui;
 
@@ -31,12 +31,13 @@ import java.awt.Graphics2D;
  */
 public class RunsViewer
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The related sheet */
     private final Sheet sheet;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
+
     //------------//
     // RunsViewer //
     //------------//
@@ -50,7 +51,8 @@ public class RunsViewer
         this.sheet = sheet;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+
     //---------//
     // display //
     //---------//
@@ -66,15 +68,15 @@ public class RunsViewer
         view.setPreferredSize(table.getDimension());
 
         BoardsPane boards = new BoardsPane(
-                new PixelBoard(sheet),
-                new BinarizationBoard(sheet),
-                new RunBoard(table, true));
+            new PixelBoard(sheet),
+            new BinarizationBoard(sheet),
+            new RunBoard(table, true));
 
-        sheet.getAssembly()
-                .addViewTab(table.getName(), new ScrollView(view), boards);
+        sheet.getAssembly().addViewTab(table.getName(), new ScrollView(view), boards);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------------//
     // MyRunsTableView //
     //-----------------//
@@ -83,16 +85,17 @@ public class RunsViewer
      * on top of the runs.
      */
     private class MyRunsTableView
-            extends RunsTableView
+        extends RunsTableView
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public MyRunsTableView (RunsTable table)
         {
             super(table, sheet.getLocationService());
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
+
         @Override
         protected void renderItems (Graphics2D g)
         {

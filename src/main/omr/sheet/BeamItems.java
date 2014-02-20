@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              B e a m I t e m s                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        B e a m I t e m s                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -41,16 +41,15 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code BeamItems} handles one or several beam items, all
- * retrieved from a single glyph.
+ * Class {@code BeamItems} handles one or several beam items, all retrieved from a
+ * single glyph.
  * This is a private working companion of {@link BeamsBuilder}.
  */
 public class BeamItems
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BeamItems.class);
+    private static final Logger logger = LoggerFactory.getLogger(BeamItems.class);
 
     public static final Comparator<BeamItems> byAbscissa = new Comparator<BeamItems>()
     {
@@ -58,15 +57,11 @@ public class BeamItems
         public int compare (BeamItems b1,
                             BeamItems b2)
         {
-            return Integer.compare(
-                    b1.getGlyph()
-                    .getBounds().x,
-                    b2.getGlyph()
-                    .getBounds().x);
+            return Integer.compare(b1.getGlyph().getBounds().x, b2.getGlyph().getBounds().x);
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying glyph. */
     private final Glyph glyph;
 
@@ -79,7 +74,7 @@ public class BeamItems
     /** Sequence of items retrieved for the same glyph. */
     private final List<BeamItem> items = new ArrayList<BeamItem>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // BeamItems //
     //-----------//
@@ -99,7 +94,7 @@ public class BeamItems
         this.typicalBeamHeight = typicalBeamHeight;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // adjustSides //
     //-------------//
@@ -211,11 +206,7 @@ public class BeamItems
             double ytr = top.yAtX(xMax);
             double ybr = bot.yAtX(xMax);
             double height = ((ybl - ytl) + (ybr - ytr)) / 2;
-            Line2D median = new Line2D.Double(
-                    xMin,
-                    (ytl + ybl) / 2,
-                    xMax,
-                    (ytr + ybr) / 2);
+            Line2D median = new Line2D.Double(xMin, (ytl + ybl) / 2, xMax, (ytr + ybr) / 2);
             BeamItem item = new BeamItem(median, height);
 
             if (glyph.isVip()) {
@@ -226,8 +217,7 @@ public class BeamItems
         }
 
         if (glyph.isVip()) {
-            logger.info(
-                    String.format("VIP %s globalDist:%.2f", this, meanDist));
+            logger.info(String.format("VIP %s globalDist:%.2f", this, meanDist));
         }
 
         return meanDist;
@@ -317,8 +307,7 @@ public class BeamItems
      */
     public void splitItems ()
     {
-        final double meanHeight = glyph.getMeanThickness(
-                Orientation.HORIZONTAL);
+        final double meanHeight = glyph.getMeanThickness(Orientation.HORIZONTAL);
         final double ratio = meanHeight / typicalBeamHeight;
         final int targetCount = (int) Math.rint(ratio);
 
@@ -335,9 +324,7 @@ public class BeamItems
 
         if (gutter < 0) {
             if (glyph.isVip()) {
-                logger.info(
-                        "VIP glyph#{} not enough room for 2 beams",
-                        glyph.getId());
+                logger.info("VIP glyph#{} not enough room for 2 beams", glyph.getId());
             }
 
             return;
@@ -381,12 +368,10 @@ public class BeamItems
     public String toString ()
     {
         final StringBuilder sb = new StringBuilder();
-        sb.append("beamGlyph#")
-                .append(glyph.getId());
+        sb.append("beamGlyph#").append(glyph.getId());
 
         for (BeamItem item : items) {
-            sb.append(" ")
-                    .append(item);
+            sb.append(" ").append(item);
         }
 
         return sb.toString();
@@ -422,8 +407,7 @@ public class BeamItems
                 for (Run run : section.getRuns()) {
                     sectionLine.includePoint(
                             x,
-                            (side == VerticalSide.TOP) ? run.getStart()
-                            : run.getStop());
+                            (side == VerticalSide.TOP) ? run.getStart() : run.getStop());
                     x++;
                 }
 
@@ -492,7 +476,7 @@ public class BeamItems
         return lines;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // SectionBorder //
     //---------------//
@@ -502,7 +486,7 @@ public class BeamItems
     private static class SectionBorder
             implements Comparable<SectionBorder>
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Section section; // Underlying section
 
@@ -510,7 +494,7 @@ public class BeamItems
 
         int dy; // Ordinate offset WRT glyph mean line
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public SectionBorder (Section section,
                               BasicLine line)
         {
@@ -518,7 +502,7 @@ public class BeamItems
             this.line = line;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int compareTo (SectionBorder that)
         {
@@ -536,14 +520,10 @@ public class BeamItems
         {
             StringBuilder sb = new StringBuilder("{");
             sb.append(getClass().getSimpleName());
-            sb.append(" dy:")
-                    .append(dy);
-            sb.append(" lg:")
-                    .append(line.getNumberOfPoints());
-            sb.append(" line:")
-                    .append(line);
-            sb.append(" section:")
-                    .append(section);
+            sb.append(" dy:").append(dy);
+            sb.append(" lg:").append(line.getNumberOfPoints());
+            sb.append(" line:").append(line);
+            sb.append(" section:").append(section);
             sb.append("}");
 
             return sb.toString();

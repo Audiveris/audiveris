@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       R e c t a n g l e F a c a d e                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 R e c t a n g l e F a c a d e                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -19,10 +19,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code RectangleFacade} is a (hopefully temporary) fix to
- * allow Xml binding of standard class Rectangle that we cannot
- * annotate.
- *
+ * Class {@code RectangleFacade} is a (hopefully temporary) fix to allow Xml binding of
+ * standard class Rectangle that we cannot annotate.
  *
  * @author Hervé Bitteur
  */
@@ -30,12 +28,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "rectangle")
 public class RectangleFacade
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The interfaced Rectangle instance */
     private final Rectangle rectangle;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------------//
     // RectangleFacade //
     //-----------------//
@@ -60,7 +58,7 @@ public class RectangleFacade
         this.rectangle = rectangle;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getHeight //
     //-----------//

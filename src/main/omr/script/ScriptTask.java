@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            S c r i p t T a s k                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      S c r i p t T a s k                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.script;
 
@@ -24,29 +24,30 @@ import org.slf4j.LoggerFactory;
  * Class {@code ScriptTask} is the root class of all possible tasks
  * within a score script.
  *
- * <p>The processing of any task is defined by its {@link #core} method. In
+ * <p>
+ * The processing of any task is defined by its {@link #core} method. In
  * order to factorize pre and post processing, a subclass may also redefine the
  * {@link #prolog} and {@link #epilog} methods respectively.</p>
  *
- * <p>The whole processing of a task is run synchronously by the {@link #run}
+ * <p>
+ * The whole processing of a task is run synchronously by the {@link #run}
  * method, and this is what the calling {@link Script} engine does. To run a
  * task asynchronously, use the {@link #launch} method, and this is what any
  * UI module should do.</p>
  *
- * <p>Running a task has the side-effect of writing this task in the current
+ * <p>
+ * Running a task has the side-effect of writing this task in the current
  * score script, unless the task is defined as not recordable.</p>
  *
  * @author Hervé Bitteur
  */
 public abstract class ScriptTask
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    protected static final Logger logger = LoggerFactory.getLogger(
-            ScriptTask.class);
+    protected static final Logger logger = LoggerFactory.getLogger(ScriptTask.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ScriptTask object.
      */
@@ -54,7 +55,33 @@ public abstract class ScriptTask
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //-----//
+    // run //
+    //-----//
+    /**
+     * Run this task synchronously (prolog + core + epilog)
+     * This is meant to be called by the script engine, to ensure that
+     * every task is completed before the next is run.
+     * This method is final, subclasses should define core() and potentially
+     * customize prolog() and epilog().
+     *
+     * @param sheet the sheet to run this task against
+     * @exception Exception
+     */
+    public final void run (Sheet sheet)
+            throws Exception
+    {
+        prolog(sheet);
+        core(sheet);
+        epilog(sheet);
+
+        // Record the task instance in the current script?
+        if (isRecordable()) {
+            sheet.getScore().getScript().addTask(this);
+        }
+    }
+
     //------//
     // core //
     //------//
@@ -121,34 +148,6 @@ public abstract class ScriptTask
     public void prolog (Sheet sheet)
     {
         // Empty by default
-    }
-
-    //-----//
-    // run //
-    //-----//
-    /**
-     * Run this task synchronously (prolog + core + epilog)
-     * This is meant to be called by the script engine, to ensure that
-     * every task is completed before the next is run.
-     * This method is final, subclasses should define core() and potentially
-     * customize prolog() and epilog().
-     *
-     * @param sheet the sheet to run this task against
-     * @exception Exception
-     */
-    public final void run (Sheet sheet)
-            throws Exception
-    {
-        prolog(sheet);
-        core(sheet);
-        epilog(sheet);
-
-        // Record the task instance in the current script?
-        if (isRecordable()) {
-            sheet.getScore()
-                    .getScript()
-                    .addTask(this);
-        }
     }
 
     //----------//

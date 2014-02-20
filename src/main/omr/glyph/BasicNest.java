@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             B a s i c N e s t                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       B a s i c N e s t                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -18,7 +18,6 @@ import omr.constant.ConstantSet;
 
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.GlyphComposition;
 import omr.glyph.ui.ViewParameters;
 
 import omr.lag.Section;
@@ -39,7 +38,6 @@ import omr.selection.UserEvent;
 
 import omr.sheet.Scale;
 import omr.sheet.Sheet;
-import omr.sheet.SystemInfo;
 
 import omr.util.VipUtil;
 
@@ -70,7 +68,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class BasicNest
         implements GlyphNest, EventSubscriber<UserEvent>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
@@ -78,19 +76,15 @@ public class BasicNest
             BasicNest.class);
 
     /** Events read on location service. */
-    public static final Class<?>[] locEventsRead = new Class<?>[]{
-        LocationEvent.class
-    };
+    public static final Class<?>[] locEventsRead = new Class<?>[]{LocationEvent.class};
 
     /** Events read on nest (glyph) service. */
     public static final Class<?>[] glyphEventsRead = new Class<?>[]{
-        GlyphIdEvent.class,
-        GlyphEvent.class,
-        GlyphSetEvent.class,
-        GlyphLayerEvent.class
+        GlyphIdEvent.class, GlyphEvent.class,
+        GlyphSetEvent.class, GlyphLayerEvent.class
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** (Debug) a unique name for this nest. */
     private final String name;
 
@@ -128,7 +122,7 @@ public class BasicNest
     /** Current layer used for glyph lookup. */
     private GlyphLayer currentLayer = GlyphLayer.DEFAULT;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //-----------//
     // BasicNest //
@@ -158,7 +152,7 @@ public class BasicNest
         glyphService = new SelectionService(name, GlyphNest.eventsWritten);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildGlyph //
     //------------//
@@ -266,8 +260,7 @@ public class BasicNest
     @Override
     public Collection<Glyph> getGlyphs (GlyphLayer layer)
     {
-        return byLayer.get(layer)
-                .getGlyphs();
+        return byLayer.get(layer).getGlyphs();
     }
 
     //---------//
@@ -295,8 +288,7 @@ public class BasicNest
     public Glyph getOriginal (GlyphSignature signature,
                               GlyphLayer layer)
     {
-        return byLayer.get(layer)
-                .getOriginal(signature);
+        return byLayer.get(layer).getOriginal(signature);
     }
 
     //------------------//
@@ -305,8 +297,7 @@ public class BasicNest
     @Override
     public Glyph getSelectedGlyph ()
     {
-        return (Glyph) getGlyphService()
-                .getSelection(GlyphEvent.class);
+        return (Glyph) getGlyphService().getSelection(GlyphEvent.class);
     }
 
     //-----------------------//
@@ -315,8 +306,7 @@ public class BasicNest
     @Override
     public GlyphLayer getSelectedGlyphLayer ()
     {
-        return (GlyphLayer) getGlyphService()
-                .getSelection(GlyphLayerEvent.class);
+        return (GlyphLayer) getGlyphService().getSelection(GlyphLayerEvent.class);
     }
 
     //----------------------//
@@ -326,8 +316,7 @@ public class BasicNest
     @Override
     public Set<Glyph> getSelectedGlyphPile ()
     {
-        return (Set<Glyph>) getGlyphService()
-                .getSelection(GlyphPileEvent.class);
+        return (Set<Glyph>) getGlyphService().getSelection(GlyphPileEvent.class);
     }
 
     //---------------------//
@@ -337,8 +326,7 @@ public class BasicNest
     @Override
     public Set<Glyph> getSelectedGlyphSet ()
     {
-        return (Set<Glyph>) getGlyphService()
-                .getSelection(GlyphSetEvent.class);
+        return (Set<Glyph>) getGlyphService().getSelection(GlyphSetEvent.class);
     }
 
     //-------------------//
@@ -367,8 +355,7 @@ public class BasicNest
     public Glyph lookupVirtualGlyph (Point point)
     {
         for (Glyph virtual : dropNest.getGlyphs()) {
-            if (virtual.getBounds()
-                    .contains(point)) {
+            if (virtual.getBounds().contains(point)) {
                 return virtual;
             }
         }
@@ -415,8 +402,7 @@ public class BasicNest
     @Override
     public Glyph registerGlyph (Glyph glyph)
     {
-        return byLayer.get(glyph.getLayer())
-                .registerGlyph(glyph);
+        return byLayer.get(glyph.getLayer()).registerGlyph(glyph);
     }
 
     //-------------//
@@ -425,8 +411,7 @@ public class BasicNest
     @Override
     public void removeGlyph (Glyph glyph)
     {
-        byLayer.get(glyph.getLayer())
-                .removeGlyph(glyph);
+        byLayer.get(glyph.getLayer()).removeGlyph(glyph);
     }
 
     //----------------//
@@ -490,12 +475,10 @@ public class BasicNest
     {
         StringBuilder sb = new StringBuilder("{Nest");
 
-        sb.append(" ")
-                .append(name);
+        sb.append(" ").append(name);
 
         if (!allGlyphsEver.isEmpty()) {
-            sb.append(" ")
-                    .append(allGlyphsEver.size());
+            sb.append(" ").append(allGlyphsEver.size());
 
             // Active/All glyphs per layer
             for (GlyphLayer layer : GlyphLayer.values()) {
@@ -643,9 +626,7 @@ public class BasicNest
             Set<Glyph> glyphsFound = containedGlyphs(rect, currentLayer);
 
             // Publish first Glyph of the set
-            Glyph glyph = glyphsFound.isEmpty() ? null
-                    : glyphsFound.iterator()
-                    .next();
+            Glyph glyph = glyphsFound.isEmpty() ? null : glyphsFound.iterator().next();
             publish(new GlyphEvent(this, hint, movement, glyph));
 
             // Publish GlyphSet
@@ -664,10 +645,7 @@ public class BasicNest
             Set<Glyph> pile = new LinkedHashSet<Glyph>();
 
             for (LayerNest layerNest : byLayer.values()) {
-                pile.addAll(
-                        Glyphs.containingGlyphs(
-                                layerNest.getGlyphs(),
-                                rect.getLocation()));
+                pile.addAll(Glyphs.containingGlyphs(layerNest.getGlyphs(), rect.getLocation()));
             }
 
             publish(new GlyphPileEvent(this, hint, movement, pile));
@@ -699,8 +677,7 @@ public class BasicNest
         // In glyph-selection mode, for non-transient glyphs
         // (and only if we have interested subscribers)
         if ((hint != GLYPH_TRANSIENT)
-            && !ViewParameters.getInstance()
-                .isSectionMode()
+            && !ViewParameters.getInstance().isSectionMode()
             && (subscribersCount(GlyphSetEvent.class) > 0)) {
             // Update glyph set
             Set<Glyph> glyphs = getSelectedGlyphSet();
@@ -745,8 +722,7 @@ public class BasicNest
      */
     private void handleEvent (GlyphSetEvent glyphSetEvent)
     {
-        if (ViewParameters.getInstance()
-                .isSectionMode()) {
+        if (ViewParameters.getInstance().isSectionMode()) {
             // Section mode
             return;
         }
@@ -757,12 +733,7 @@ public class BasicNest
 
         if ((glyphs != null) && (glyphs.size() > 1)) {
             Glyph compound = buildGlyph(glyphs, false, Glyph.Linking.NO_LINK);
-            publish(
-                    new GlyphEvent(
-                            this,
-                            SelectionHint.GLYPH_TRANSIENT,
-                            movement,
-                            compound));
+            publish(new GlyphEvent(this, SelectionHint.GLYPH_TRANSIENT, movement, compound));
         }
     }
 
@@ -799,32 +770,53 @@ public class BasicNest
 
         // Should we publish a new glyph, according to new layer?
         // Forge a new event (to avoid the RELEASING mouvement) & publish it
-        LocationEvent locEvent = (LocationEvent) locationService.getLastEvent(
-                LocationEvent.class);
+        LocationEvent locEvent = (LocationEvent) locationService.getLastEvent(LocationEvent.class);
 
         if (locEvent != null) {
             publish(
-                    new LocationEvent(
-                            this,
-                            locEvent.hint,
-                            MouseMovement.PRESSING,
-                            locEvent.getData()));
+                    new LocationEvent(this, locEvent.hint, MouseMovement.PRESSING, locEvent.getData()));
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.String vipGlyphs = new Constant.String(
                 "",
                 "(Debug) Comma-separated list of VIP glyphs");
+    }
 
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all constants related to nest
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final List<Integer> vipGlyphs; // List of IDs for VIP glyphs
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public Parameters ()
+        {
+            vipGlyphs = VipUtil.decodeIds(constants.vipGlyphs.getValue());
+
+            if (logger.isDebugEnabled()) {
+                Main.dumping.dump(this);
+            }
+
+            if (!vipGlyphs.isEmpty()) {
+                logger.info("VIP glyphs: {}", vipGlyphs);
+            }
+        }
     }
 
     //-----------//
@@ -835,7 +827,7 @@ public class BasicNest
      */
     private class LayerNest
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** The corresponding glyph layer. */
         private final GlyphLayer glyphLayer;
@@ -847,13 +839,13 @@ public class BasicNest
          */
         private final ConcurrentHashMap<GlyphSignature, Glyph> originals = new ConcurrentHashMap<GlyphSignature, Glyph>();
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public LayerNest (GlyphLayer glyphLayer)
         {
             this.glyphLayer = glyphLayer;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //-----------//
         // getGlyphs //
         //-----------//
@@ -883,8 +875,7 @@ public class BasicNest
             }
 
             // Check the old signature is still valid
-            if (oldGlyph.getSignature()
-                    .compareTo(signature) == 0) {
+            if (oldGlyph.getSignature().compareTo(signature) == 0) {
                 return oldGlyph;
             } else {
                 logger.debug("Obsolete signature for {}", oldGlyph);
@@ -909,9 +900,7 @@ public class BasicNest
                                 "new avatar of #{}{}{}",
                                 original.getId(),
                                 Sections.toString(" members", glyph.getMembers()),
-                                Sections.toString(
-                                " original",
-                                original.getMembers()));
+                                Sections.toString(" original", original.getMembers()));
                     }
 
                     glyph = original;
@@ -938,9 +927,7 @@ public class BasicNest
                         Glyph oldGlyph = originals.remove(oldSig);
 
                         if (oldGlyph != null) {
-                            logger.debug(
-                                    "Updating registration of glyph#{}",
-                                    glyph.getId());
+                            logger.debug("Updating registration of glyph#{}", glyph.getId());
                         }
                     }
                 }
@@ -966,33 +953,6 @@ public class BasicNest
 
             // Should we keep track of every glyph ever added?
             ///??? allGlyphs.remove(glyph.getId(), glyph);
-        }
-    }
-
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all constants related to nest
-     */
-    private static class Parameters
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final List<Integer> vipGlyphs; // List of IDs for VIP glyphs
-
-        //~ Constructors -------------------------------------------------------
-        public Parameters ()
-        {
-            vipGlyphs = VipUtil.decodeIds(constants.vipGlyphs.getValue());
-
-            if (logger.isDebugEnabled()) {
-                Main.dumping.dump(this);
-            }
-
-            if (!vipGlyphs.isEmpty()) {
-                logger.info("VIP glyphs: {}", vipGlyphs);
-            }
         }
     }
 }

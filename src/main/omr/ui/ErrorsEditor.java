@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          E r r o r s E d i t o r                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    E r r o r s E d i t o r                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui;
 
@@ -54,12 +54,11 @@ import javax.swing.event.ListSelectionListener;
  */
 public class ErrorsEditor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(ErrorsEditor.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet */
     private final Sheet sheet;
 
@@ -73,12 +72,12 @@ public class ErrorsEditor
     private final ListSelectionListener listener = new MyListener();
 
     /** Set of error records */
-    private final SortedSet<Record> recordSet = new TreeSet<>();
+    private final SortedSet<Record> recordSet = new TreeSet<Record>();
 
     /** Facade model for the JList */
-    private final DefaultListModel<Record> model = new DefaultListModel<>();
+    private final DefaultListModel<Record> model = new DefaultListModel<Record>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // ErrorsEditor //
     //--------------//
@@ -90,14 +89,14 @@ public class ErrorsEditor
     public ErrorsEditor (Sheet sheet)
     {
         this.sheet = sheet;
-        list = new JList<>(model);
+        list = new JList<Record>(model);
         scrollPane = new JScrollPane(list);
         scrollPane.setBorder(null);
         list.addListSelectionListener(listener);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // addError //
     //----------//
@@ -132,21 +131,21 @@ public class ErrorsEditor
 
         SwingUtilities.invokeLater(
                 new Runnable()
-        {
-            // This part is run on swing thread
-            @Override
-            public void run ()
-            {
-                if (recordSet.add(new Record(step, node, glyph, text))) {
-                    // Update the model
-                    model.removeAllElements();
+                {
+                    // This part is run on swing thread
+                    @Override
+                    public void run ()
+                    {
+                        if (recordSet.add(new Record(step, node, glyph, text))) {
+                            // Update the model
+                            model.removeAllElements();
 
-                    for (Record record : recordSet) {
-                        model.addElement(record);
+                            for (Record record : recordSet) {
+                                model.addElement(record);
+                            }
+                        }
                     }
-                }
-            }
-        });
+                });
     }
 
     //-------//
@@ -159,15 +158,15 @@ public class ErrorsEditor
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-        {
-            // This part is run on swing thread
-            @Override
-            public void run ()
-            {
-                recordSet.clear();
-                model.removeAllElements();
-            }
-        });
+                {
+                    // This part is run on swing thread
+                    @Override
+                    public void run ()
+                    {
+                        recordSet.clear();
+                        model.removeAllElements();
+                    }
+                });
     }
 
     //-----------//
@@ -182,29 +181,29 @@ public class ErrorsEditor
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-        {
-            // This part is run on swing thread
-            @Override
-            public void run ()
-            {
-                logger.debug("Clearing errors for {}", step);
-                for (Iterator<Record> it = recordSet.iterator();
-                        it.hasNext();) {
-                    Record record = it.next();
+                {
+                    // This part is run on swing thread
+                    @Override
+                    public void run ()
+                    {
+                        logger.debug("Clearing errors for {}", step);
 
-                    if (record.step == step) {
-                        it.remove();
+                        for (Iterator<Record> it = recordSet.iterator(); it.hasNext();) {
+                            Record record = it.next();
+
+                            if (record.step == step) {
+                                it.remove();
+                            }
+                        }
+
+                        // Update the model
+                        model.removeAllElements();
+
+                        for (Record record : recordSet) {
+                            model.addElement(record);
+                        }
                     }
-                }
-
-                // Update the model
-                model.removeAllElements();
-
-                for (Record record : recordSet) {
-                    model.addElement(record);
-                }
-            }
-        });
+                });
     }
 
     //-------------//
@@ -223,31 +222,30 @@ public class ErrorsEditor
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-        {
-            // This part is run on swing thread
-            @Override
-            public void run ()
-            {
-                logger.debug("Clearing errors for {} system {}",
-                        step, systemId);
-                for (Iterator<Record> it = recordSet.iterator();
-                        it.hasNext();) {
-                    Record record = it.next();
+                {
+                    // This part is run on swing thread
+                    @Override
+                    public void run ()
+                    {
+                        logger.debug("Clearing errors for {} system {}", step, systemId);
 
-                    if ((record.step == step)
-                        && (record.node.getSystem().getId() == systemId)) {
-                        it.remove();
+                        for (Iterator<Record> it = recordSet.iterator(); it.hasNext();) {
+                            Record record = it.next();
+
+                            if ((record.step == step)
+                                && (record.node.getSystem().getId() == systemId)) {
+                                it.remove();
+                            }
+                        }
+
+                        // Update the model
+                        model.removeAllElements();
+
+                        for (Record record : recordSet) {
+                            model.addElement(record);
+                        }
                     }
-                }
-
-                // Update the model
-                model.removeAllElements();
-
-                for (Record record : recordSet) {
-                    model.addElement(record);
-                }
-            }
-        });
+                });
     }
 
     //--------------//
@@ -285,7 +283,68 @@ public class ErrorsEditor
         return step;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
+    //------------//
+    // MyListener //
+    //------------//
+    /**
+     * A specific listener to handle user selection in the list of
+     * errors.
+     */
+    private class MyListener
+            implements ListSelectionListener
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        @Override
+        public void valueChanged (ListSelectionEvent e)
+        {
+            if ((e.getSource() == list) && !e.getValueIsAdjusting()) {
+                Record record = list.getSelectedValue();
+
+                if (record != null) {
+                    logger.debug("value={}", record);
+
+                    // Use glyph location if available
+                    if (record.glyph != null) {
+                        sheet.getNest().getGlyphService().publish(
+                                new GlyphEvent(this, SelectionHint.GLYPH_INIT, null, record.glyph));
+                    } else {
+                        // Otherwise use node location as possible
+                        try {
+                            Point pixPt = null;
+
+                            try {
+                                pixPt = record.node.getCenter();
+                            } catch (Exception ex) {
+                            }
+
+                            if (pixPt == null) {
+                                if (record.node instanceof MeasureNode) {
+                                    MeasureNode mn = (MeasureNode) record.node;
+                                    Measure measure = mn.getMeasure();
+
+                                    if (measure != null) {
+                                        pixPt = measure.getCenter();
+                                    }
+                                }
+                            }
+
+                            sheet.getLocationService().publish(
+                                    new LocationEvent(
+                                            ErrorsEditor.this,
+                                            SelectionHint.LOCATION_INIT,
+                                            null,
+                                            new Rectangle(pixPt)));
+                        } catch (Exception ex) {
+                            logger.warn("Failed pointing to " + record.node, ex);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     //--------//
     // Record //
     //--------//
@@ -295,7 +354,7 @@ public class ErrorsEditor
     private static class Record
             implements Comparable<Record>
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Step step;
 
@@ -305,7 +364,7 @@ public class ErrorsEditor
 
         final String text;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Record (Step step,
                        SystemNode node,
                        Glyph glyph,
@@ -317,7 +376,7 @@ public class ErrorsEditor
             this.text = text;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int compareTo (Record other)
         {
@@ -342,73 +401,6 @@ public class ErrorsEditor
             sb.append(" ").append(text);
 
             return sb.toString();
-        }
-    }
-
-    //------------//
-    // MyListener //
-    //------------//
-    /**
-     * A specific listener to handle user selection in the list of
-     * errors.
-     */
-    private class MyListener
-            implements ListSelectionListener
-    {
-        //~ Methods ------------------------------------------------------------
-
-        @Override
-        public void valueChanged (ListSelectionEvent e)
-        {
-            if ((e.getSource() == list) && !e.getValueIsAdjusting()) {
-                Record record = list.getSelectedValue();
-
-                if (record != null) {
-                    logger.debug("value={}", record);
-
-                    // Use glyph location if available
-                    if (record.glyph != null) {
-                        sheet.getNest().getGlyphService().publish(
-                                new GlyphEvent(
-                                this,
-                                SelectionHint.GLYPH_INIT,
-                                null,
-                                record.glyph));
-                    } else {
-                        // Otherwise use node location as possible
-                        try {
-                            Point pixPt = null;
-
-                            try {
-                                pixPt = record.node.getCenter();
-                            } catch (Exception ex) {
-                            }
-
-                            if (pixPt == null) {
-                                if (record.node instanceof MeasureNode) {
-                                    MeasureNode mn = (MeasureNode) record.node;
-                                    Measure measure = mn.getMeasure();
-
-                                    if (measure != null) {
-                                        pixPt = measure.getCenter();
-                                    }
-                                }
-                            }
-
-                            sheet.getLocationService().publish(
-                                    new LocationEvent(
-                                    ErrorsEditor.this,
-                                    SelectionHint.LOCATION_INIT,
-                                    null,
-                                    new Rectangle(pixPt)));
-                        } catch (Exception ex) {
-                            logger.warn(
-                                    "Failed pointing to " + record.node,
-                                    ex);
-                        }
-                    }
-                }
-            }
         }
     }
 }

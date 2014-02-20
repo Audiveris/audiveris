@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            B a r P a i n t e r                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      B a r P a i n t e r                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.ui;
 
@@ -32,18 +32,15 @@ import java.awt.geom.Point2D;
 import java.util.List;
 
 /**
- * Class {code BarPainter} handles the painting of a barline, according
- * to its shape.
+ * Class {code BarPainter} handles the painting of a bar line, according to its shape.
  *
  * @author Hervé Bitteur
  */
 public class BarPainter
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            BarPainter.class);
+    private static final Logger logger = LoggerFactory.getLogger(BarPainter.class);
 
     /** Thin barline item. */
     private static final BarItem thin = new BarItem(0.2);
@@ -69,33 +66,20 @@ public class BarPainter
 
     private static final BarPainter FINAL_BP = new BarPainter(thin, thick);
 
-    private static final BarPainter REVERSE_FINAL_BP = new BarPainter(
-            thick,
-            thin);
+    private static final BarPainter REVERSE_FINAL_BP = new BarPainter(thick, thin);
 
-    private static final BarPainter LEFT_REPEAT_BP = new BarPainter(
-            thick,
-            thin,
-            dots);
+    private static final BarPainter LEFT_REPEAT_BP = new BarPainter(thick, thin, dots);
 
-    private static final BarPainter RIGHT_REPEAT_BP = new BarPainter(
-            dots,
-            thin,
-            thick);
+    private static final BarPainter RIGHT_REPEAT_BP = new BarPainter(dots, thin, thick);
 
-    private static final BarPainter B2B_REPEAT_BP = new BarPainter(
-            dots,
-            thin,
-            thick,
-            thin,
-            dots);
+    private static final BarPainter B2B_REPEAT_BP = new BarPainter(dots, thin, thick, thin, dots);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Sequence of items to paint. */
     private final BarItem[] items;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //------------//
     // BarPainter //
@@ -105,7 +89,39 @@ public class BarPainter
         this.items = items;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //------//
+    // draw //
+    //------//
+    /**
+     * Perform the drawing of the barline structure.
+     *
+     * @param g         graphics context
+     * @param topCenter center on top line
+     * @param botCenter center on bottom line
+     * @param part      containing part
+     */
+    public void draw (Graphics2D g,
+                      Point2D topCenter,
+                      Point2D botCenter,
+                      SystemPart part)
+    {
+        double offset = -getGlobalWidth() / 2;
+        BarItem prev = null;
+
+        for (BarItem item : items) {
+            // Translate to beginning of current item
+            offset += gap(prev, item);
+
+            // Draw current item
+            item.draw(g, topCenter, botCenter, part, offset);
+
+            // Move to end of current item
+            offset += item.width;
+            prev = item;
+        }
+    }
+
     //
     //---------------//
     // getBarPainter //
@@ -149,38 +165,6 @@ public class BarPainter
             logger.error("Illegal barline shape " + shape);
 
             return null;
-        }
-    }
-
-    //------//
-    // draw //
-    //------//
-    /**
-     * Perform the drawing of the barline structure.
-     *
-     * @param g         graphics context
-     * @param topCenter center on top line
-     * @param botCenter center on bottom line
-     * @param part      containing part
-     */
-    public void draw (Graphics2D g,
-                      Point2D topCenter,
-                      Point2D botCenter,
-                      SystemPart part)
-    {
-        double offset = -getGlobalWidth() / 2;
-        BarItem prev = null;
-
-        for (BarItem item : items) {
-            // Translate to beginning of current item
-            offset += gap(prev, item);
-
-            // Draw current item
-            item.draw(g, topCenter, botCenter, part, offset);
-
-            // Move to end of current item
-            offset += item.width;
-            prev = item;
         }
     }
 
@@ -231,7 +215,7 @@ public class BarPainter
         return w;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // BarItem //
     //---------//
@@ -240,26 +224,25 @@ public class BarPainter
      */
     private static class BarItem
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Typical item width, expressed in interline fraction. */
         final double width;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public BarItem (double width)
         {
             this.width = width;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public void draw (Graphics2D g,
                           Point2D topCenter,
                           Point2D botCenter,
                           SystemPart part,
                           double offset)
         {
-            int il = part.getScale()
-                    .getInterline();
+            int il = part.getScale().getInterline();
 
             // Use a line stroke (=> problem with clipping)
             //            g.setStroke(new BasicStroke((float) (il * width)));
@@ -298,14 +281,14 @@ public class BarPainter
     private static class DotItem
             extends BarItem
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public DotItem (double width)
         {
             super(width);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void draw (Graphics2D g,
                           Point2D topCenter,
@@ -317,16 +300,13 @@ public class BarPainter
                     new double[]{topCenter.getX(), botCenter.getX()},
                     new double[]{topCenter.getY(), botCenter.getY()});
 
-            int il = part.getScale()
-                    .getInterline();
+            int il = part.getScale().getInterline();
 
-            for (StaffInfo staff : part.getInfo()
-                    .getStaves()) {
+            for (StaffInfo staff : part.getInfo().getStaves()) {
                 // Compute staff-based center
                 List<FilamentLine> lines = staff.getLines();
                 LineInfo staffMidLine = lines.get(lines.size() / 2);
-                Point2D inter = staffMidLine.verticalIntersection(
-                        bar);
+                Point2D inter = staffMidLine.verticalIntersection(bar);
 
                 // Draw each point
                 int scaledWidth = (int) Math.rint(il * width);
@@ -334,8 +314,7 @@ public class BarPainter
                 for (int i = -1; i <= 1; i += 2) {
                     g.fillOval(
                             (int) Math.rint(inter.getX() + (il * offset)),
-                            (int) Math.rint(
-                            inter.getY() + ((il * (i - width)) / 2)),
+                            (int) Math.rint(inter.getY() + ((il * (i - width)) / 2)),
                             scaledWidth,
                             scaledWidth);
                 }

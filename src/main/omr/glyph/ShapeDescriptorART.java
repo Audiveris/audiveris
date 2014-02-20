@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    S h a p e D e s c r i p t o r A R T                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              S h a p e D e s c r i p t o r A R T                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -21,24 +21,22 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class {@code ShapeDescriptorART} defines shape descriptions based
- * on ART moments.
+ * Class {@code ShapeDescriptorART} defines shape descriptions based on ART moments.
  *
  * @author Hervé Bitteur
  */
 public class ShapeDescriptorART
         implements ShapeDescription.Descriptor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Number of orthogonal moments used */
-    private static final int momentCount = -1
-                                           + (ARTMoments.ANGULAR * ARTMoments.RADIAL);
+    private static final int momentCount = -1 + (ARTMoments.ANGULAR * ARTMoments.RADIAL);
 
     /** Use the orthogonal moments + weight + stems + aspect */
     private static final int length = momentCount + 3;
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // features //
     //----------//
@@ -93,7 +91,7 @@ public class ShapeDescriptorART
         return length;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // LabelsHolder //
     //--------------//
@@ -104,10 +102,10 @@ public class ShapeDescriptorART
      */
     private static class LabelsHolder
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         /** Label -> Index */
-        public static final Map<String, Integer> indices = new HashMap<>();
+        public static final Map<String, Integer> indices = new HashMap<String, Integer>();
 
         /** Index -> Label */
         public static final String[] labels = new String[length];
@@ -134,6 +132,7 @@ public class ShapeDescriptorART
             }
         }
 
+        //~ Constructors ---------------------------------------------------------------------------
         private LabelsHolder ()
         {
         }

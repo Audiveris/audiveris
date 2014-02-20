@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//            W e a k P r o p e r t y C h a n g e L i s t e n e r             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                      W e a k P r o p e r t y C h a n g e L i s t e n e r                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -16,9 +16,8 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 
 /**
- * Class {@code WeakPropertyChangeListener} is a wrapper meant to
- * weakly reference a concrete PropertyChangeListener, and thus avoid
- * memory leaks.
+ * Class {@code WeakPropertyChangeListener} is a wrapper meant to weakly reference a
+ * concrete PropertyChangeListener, and thus avoid memory leaks.
  *
  * @author Hervé Bitteur
  */

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              P a r t N o d e                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        P a r t N o d e                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -30,20 +30,19 @@ import java.util.SortedSet;
  * Class {@code PartNode} is an abstract class that is subclassed for
  * any SystemNode that is contained in a system part.
  * So this class encapsulates a direct link to the enclosing part.
- *
- * <p>A link to a related staff is provided as a potential tag only, since all
- * PartNode instances (Slur for example) are not related to a specific staff,
- * whereas a Wedge is.
- *
- * <p>Similarly, we handle a sorted set of underlying glyphs which is useful for
- * most of the subclasses.
+ * <p>
+ * A link to a related staff is provided as a potential tag only, since all PartNode instances (Slur
+ * for example) are not related to a specific staff, whereas a Wedge is.
+ * <p>
+ * Similarly, we handle a sorted set of underlying glyphs which is useful for most of the
+ * subclasses.
  *
  * @author Hervé Bitteur
  */
 public abstract class PartNode
         extends SystemNode
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The glyph(s) that compose this element, sorted by abscissa */
     protected final SortedSet<Glyph> glyphs = Glyphs.sortedSet();
@@ -54,7 +53,7 @@ public abstract class PartNode
     /** Reference point */
     private Point referencePoint;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // PartNode //
     //----------//
@@ -68,7 +67,7 @@ public abstract class PartNode
         super(container);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -101,8 +100,7 @@ public abstract class PartNode
     public String getContextString ()
     {
         StringBuilder sb = new StringBuilder(super.getContextString());
-        sb.append("P")
-                .append(getPart().getId());
+        sb.append("P").append(getPart().getId());
 
         return sb.toString();
     }

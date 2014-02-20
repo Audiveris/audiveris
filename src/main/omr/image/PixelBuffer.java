@@ -1,20 +1,21 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           P i x e l B u f f e r                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     P i x e l B u f f e r                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
-import ij.process.ByteProcessor;
 import static omr.image.PixelSource.BACKGROUND;
 
 import omr.util.StopWatch;
+
+import ij.process.ByteProcessor;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -29,8 +30,8 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 
 /**
- * Class {@code PixelBuffer} handles a plain rectangular buffer of
- * bytes.
+ * Class {@code PixelBuffer} handles a plain rectangular buffer of bytes.
+ * <p>
  * It is an efficient {@link PixelFilter} both for writing and for reading.
  *
  * @author Hervé Bitteur
@@ -40,13 +41,11 @@ public class PixelBuffer
         extends Table.UnsignedByte
         implements PixelFilter, PixelSink
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            PixelBuffer.class);
+    private static final Logger logger = LoggerFactory.getLogger(PixelBuffer.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // PixelBuffer //
     //-------------//
@@ -78,8 +77,7 @@ public class PixelBuffer
         final StopWatch watch = new StopWatch("PixelBuffer");
         watch.start("image->buffer");
 
-        final int numBands = image.getSampleModel()
-                .getNumBands();
+        final int numBands = image.getSampleModel().getNumBands();
         final int[] pixel = new int[numBands];
         final Raster raster = image.getRaster();
 
@@ -120,6 +118,7 @@ public class PixelBuffer
         ///watch.print();
     }
 
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public ByteProcessor filteredImage ()
     {
@@ -133,7 +132,6 @@ public class PixelBuffer
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    //~ Methods ----------------------------------------------------------------
     //------------//
     // getContext //
     //------------//
@@ -211,10 +209,7 @@ public class PixelBuffer
         StopWatch watch = new StopWatch("PixelBuffer");
         watch.start("toImage");
 
-        final BufferedImage img = new BufferedImage(
-                width,
-                height,
-                BufferedImage.TYPE_BYTE_GRAY);
+        final BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
         final WritableRaster raster = img.getRaster();
         final int[] pixel = new int[1];
 

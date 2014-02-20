@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         L o g G u i A p p e n d e r                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   L o g G u i A p p e n d e r                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.log;
 
@@ -21,17 +21,18 @@ import ch.qos.logback.core.AppenderBase;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
- * Class {@code LogGuiAppender} is a log appender that appends the
- * logging messages to the GUI.
- * It uses an intermediate queue to cope with initial conditions when the GUI
- * is not yet ready to accept messages.
+ * Class {@code LogGuiAppender} is a log appender that appends the logging messages to
+ * the GUI.
+ * <p>
+ * It uses an intermediate queue to cope with initial conditions when the GUI is not yet ready to
+ * accept messages.
  *
  * @author Hervé Bitteur
  */
 public class LogGuiAppender
         extends AppenderBase<ILoggingEvent>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
      * Size of the mail box.
@@ -43,7 +44,7 @@ public class LogGuiAppender
     private static ArrayBlockingQueue<ILoggingEvent> logMbx = new ArrayBlockingQueue<ILoggingEvent>(
             LOG_MBX_SIZE);
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getEventCount //
     //---------------//

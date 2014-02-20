@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                   J u n c t i o n R a t i o P o l i c y                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                             J u n c t i o n R a t i o P o l i c y                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag;
 
@@ -17,21 +17,19 @@ import omr.constant.ConstantSet;
 import omr.run.Run;
 
 /**
- * Class {@code JunctionRatioPolicy} defines a junction policy based
- * on the ratio between the length of the candidate run and the mean
- * length of the section runs so far.
+ * Class {@code JunctionRatioPolicy} defines a junction policy based on the ratio
+ * between the length of the candidate run and the mean length of the section runs so far.
  *
  * @author Hervé Bitteur
  */
 public class JunctionRatioPolicy
         implements JunctionPolicy
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Maximum value acceptable for length ratio.
      */
@@ -42,7 +40,7 @@ public class JunctionRatioPolicy
      */
     private final double minLengthRatio;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------------//
     // JunctionRatioPolicy //
     //---------------------//
@@ -70,7 +68,7 @@ public class JunctionRatioPolicy
         this.minLengthRatio = 1f / maxLengthRatio;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // consistentRun //
     //---------------//
@@ -99,23 +97,21 @@ public class JunctionRatioPolicy
     @Override
     public String toString ()
     {
-        return "{JunctionRatioPolicy" + " maxLengthRatio=" + maxLengthRatio
-               + " minLengthRatio=" + minLengthRatio + "}";
+        return "{JunctionRatioPolicy" + " maxLengthRatio=" + maxLengthRatio + " minLengthRatio="
+               + minLengthRatio + "}";
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Constant.Ratio maxLengthRatio = new Constant.Ratio(
                 1.25,
-                "Maximum ratio in length for a run to be combined with"
-                + " an existing section");
-
+                "Maximum ratio in length for a run to be combined with" + " an existing section");
     }
 }

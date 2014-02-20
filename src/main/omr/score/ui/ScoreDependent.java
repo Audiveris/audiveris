@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        S c o r e D e p e n d e n t                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  S c o r e D e p e n d e n t                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.ui;
 
@@ -21,19 +21,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code ScoreDependent} handles the dependency on score
- * availability
+ * Class {@code ScoreDependent} handles the dependency on score availability
  *
  * @author Hervé Bitteur
  */
 public abstract class ScoreDependent
         extends SheetDependent
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ScoreDependent.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreDependent.class);
 
     /** Is a Score available. */
     protected static final String SCORE_AVAILABLE = "scoreAvailable";
@@ -41,7 +38,7 @@ public abstract class ScoreDependent
     /** Is the Score idle. (available, but not being processed by a step) */
     protected static final String SCORE_IDLE = "scoreIdle";
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Indicates whether there is a current score. */
     protected boolean scoreAvailable = false;
@@ -49,7 +46,7 @@ public abstract class ScoreDependent
     /** Indicates whether there the current score is non busy. */
     protected boolean scoreIdle = false;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------------//
     // ScoreDependent //
@@ -61,7 +58,7 @@ public abstract class ScoreDependent
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //------------------//
     // isScoreAvailable //

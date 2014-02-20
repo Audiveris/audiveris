@@ -43,7 +43,7 @@ public final class Expander
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
             Expander.class);
 

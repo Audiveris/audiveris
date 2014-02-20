@@ -1,26 +1,26 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        A b s t r a c t I m p a c t s                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  A b s t r a c t I m p a c t s                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
 /**
- * Class {@code AbstractImpacts} is an abstract implementation of
- * {@link GradeImpacts} interface
+ * Class {@code AbstractImpacts} is an abstract implementation of {@link GradeImpacts}
+ * interface.
  *
  * @author Hervé Bitteur
  */
 public abstract class AbstractImpacts
         implements GradeImpacts
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     //-------------------//
     // getIntrinsicRatio //

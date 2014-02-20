@@ -1,19 +1,19 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          G r a y M o r p h o l o g y                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    G r a y M o r p h o l o g y                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
-import ij.process.ByteProcessor;
 import omr.lag.Roi;
 
+import ij.process.ByteProcessor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +26,9 @@ import org.slf4j.LoggerFactory;
 public class GrayMorphology
         implements MorphoConstants
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            GrayMorphology.class);
+    private static final Logger logger = LoggerFactory.getLogger(GrayMorphology.class);
 
     private static final String R = "SE_r";
 
@@ -51,21 +49,18 @@ public class GrayMorphology
     private static int morphoptions = 3; // Close
 
     public static final String[] strelitems = {
-        "circle", "diamond", "square",
-        "hor line", "ver line", "2p h",
-        "2p v", "free form"
+        "circle", "diamond", "square", "hor line",
+        "ver line", "2p h", "2p v", "free form"
     };
 
     public static final int[] constitems = {
-        CIRCLE, DIAMOND, SQARE, HLINE,
-        VLINE, HPOINTS, VPOINTS, FREE
+        CIRCLE, DIAMOND, SQARE, HLINE, VLINE, HPOINTS,
+        VPOINTS, FREE
     };
 
     public static final String[] morphitems = {
-        "erode", "dilate", "open",
-        "close", "fast erode",
-        "fast dilate", "fast open",
-        "fast close"
+        "erode", "dilate", "open", "close", "fast erode",
+        "fast dilate", "fast open", "fast close"
     };
 
     public static final int ERODE = 0;
@@ -84,9 +79,8 @@ public class GrayMorphology
 
     public static final int FCLOSE = 7;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     ///ImagePlus imp;
-
     public String kernelText = " 0 0 0 0 0\n 0 0 255 0 0\n 0 255 255 255 0\n 0 0 255 0 0\n 0 0 0 0 0\n";
 
     boolean canceled = true;
@@ -104,7 +98,6 @@ public class GrayMorphology
     MorphoProcessor mp;
 
     ///ImageWindow win;
-
     private Roi roi;
 
     boolean isLineRoi;
@@ -113,7 +106,7 @@ public class GrayMorphology
 
     private boolean seshown = false;
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //    /* Extracts the ByteProcessor within a rectangular roi
     //     *
     //     * @param ip
@@ -171,11 +164,10 @@ public class GrayMorphology
             slice++;
 
             //IJ.showStatus("Doing slice " + slice);
-//            if (slice > 1) {
-//                logger.info(
-//                        imp.getTitle() + " : " + slice + "/" + imp.getStackSize());
-//            }
-
+            //            if (slice > 1) {
+            //                logger.info(
+            //                        imp.getTitle() + " : " + slice + "/" + imp.getStackSize());
+            //            }
             // ip.snapshot();
             //            Rectangle r = ip.getRoi();
             //
@@ -188,40 +180,39 @@ public class GrayMorphology
             //                doOptions(ipmask, mp, morphoptions);
             //                ip.insert(ipmask, r.x, r.y);
             //            } // end if
-//            if (slice == imp.getImageStackSize()) {
-//                imp.updateAndDraw();
-//            }
+            //            if (slice == imp.getImageStackSize()) {
+            //                imp.updateAndDraw();
+            //            }
         }
     }
 
-//    public int setup (String arg,
-//                      ImagePlus imp)
-//    {
-//        this.imp = imp;
-//
-//        IJ.register(GrayMorphology_.class);
-//
-//        if (arg.equals("about")) {
-//            showAbout();
-//
-//            return DONE;
-//        } else {
-//            if (imp != null) {
-//                win = imp.getWindow();
-//                win.running = true;
-//
-//                roi = imp.getRoi();
-//                isLineRoi = ((roi != null) && (roi.getType() == Roi.LINE));
-//            }
-//
-//            if (IJ.versionLessThan("1.35") || !showDialog(imp)) {
-//                return DONE;
-//            } else {
-//                return DOES_8G + DOES_STACKS;
-//            }
-//        }
-//    }
-
+    //    public int setup (String arg,
+    //                      ImagePlus imp)
+    //    {
+    //        this.imp = imp;
+    //
+    //        IJ.register(GrayMorphology_.class);
+    //
+    //        if (arg.equals("about")) {
+    //            showAbout();
+    //
+    //            return DONE;
+    //        } else {
+    //            if (imp != null) {
+    //                win = imp.getWindow();
+    //                win.running = true;
+    //
+    //                roi = imp.getRoi();
+    //                isLineRoi = ((roi != null) && (roi.getType() == Roi.LINE));
+    //            }
+    //
+    //            if (IJ.versionLessThan("1.35") || !showDialog(imp)) {
+    //                return DONE;
+    //            } else {
+    //                return DOES_8G + DOES_STACKS;
+    //            }
+    //        }
+    //    }
     //
     //    /** displays the StructureElement */
     //    /**
@@ -254,50 +245,49 @@ public class GrayMorphology
     //                + "The develpoment of this alogorithm was inspired by the book of Jean Serra \n"
     //                + "\"Image Analysis and Mathematical Morphology\"");
     //    } /* showAbout */
-//    boolean showDialog (ImagePlus imp)
-//    {
-//        if (imp == null) {
-//            return true;
-//        }
-//
-//        GenericDialog gd = new GenericDialog("Parameters");
-//
-//        // Dialog box for user input
-//        gd.addMessage(
-//                "This plugin performs morphology operators on graylevel images\n");
-//
-//        gd.addNumericField(
-//                "Radius of the structure element (pixels):",
-//                radius,
-//                1);
-//
-//        gd.addChoice(
-//                "Type of structure element",
-//                strelitems,
-//                strelitems[options]);
-//        gd.addCheckbox("Show mask", showoptions);
-//        gd.addChoice("Operator", morphitems, morphitems[morphoptions]);
-//
-//        gd.showDialog();
-//        radius = (float) gd.getNextNumber();
-//        options = gd.getNextChoiceIndex();
-//
-//        showoptions = gd.getNextBoolean();
-//        morphoptions = gd.getNextChoiceIndex();
-//
-//        if (gd.wasCanceled()) {
-//            return false;
-//        }
-//
-//        if (!validate(radius, 2)) {
-//            logger.warn("Invalid Numbers!\n" + "Enter floats 0.5 or 1");
-//
-//            return false;
-//        }
-//
-//        return true;
-//    }
-
+    //    boolean showDialog (ImagePlus imp)
+    //    {
+    //        if (imp == null) {
+    //            return true;
+    //        }
+    //
+    //        GenericDialog gd = new GenericDialog("Parameters");
+    //
+    //        // Dialog box for user input
+    //        gd.addMessage(
+    //                "This plugin performs morphology operators on graylevel images\n");
+    //
+    //        gd.addNumericField(
+    //                "Radius of the structure element (pixels):",
+    //                radius,
+    //                1);
+    //
+    //        gd.addChoice(
+    //                "Type of structure element",
+    //                strelitems,
+    //                strelitems[options]);
+    //        gd.addCheckbox("Show mask", showoptions);
+    //        gd.addChoice("Operator", morphitems, morphitems[morphoptions]);
+    //
+    //        gd.showDialog();
+    //        radius = (float) gd.getNextNumber();
+    //        options = gd.getNextChoiceIndex();
+    //
+    //        showoptions = gd.getNextBoolean();
+    //        morphoptions = gd.getNextChoiceIndex();
+    //
+    //        if (gd.wasCanceled()) {
+    //            return false;
+    //        }
+    //
+    //        if (!validate(radius, 2)) {
+    //            logger.warn("Invalid Numbers!\n" + "Enter floats 0.5 or 1");
+    //
+    //            return false;
+    //        }
+    //
+    //        return true;
+    //    }
     private void doOptions (ByteProcessor ip,
                             MorphoProcessor mp,
                             int morphoptions)
@@ -327,47 +317,44 @@ public class GrayMorphology
             break;
         }
 
-//        case FERODE: {
-//            if ((se.getType() == HLINE) || (se.getType() == VLINE)) {
-//                mp.LineErode(ip);
-//            } else {
-//                mp.fastErode(ip);
-//            }
-//
-//            break;
-//        }
-
-//        case FDILATE: {
-//            if ((se.getType() == HLINE) || (se.getType() == VLINE)) {
-//                mp.LineDilate(ip);
-//            } else {
-//                mp.fastDilate(ip);
-//            }
-//
-//            break;
-//        }
-
-//        case FOPEN: {
-//            if ((se.getType() == HLINE) || (se.getType() == VLINE)) {
-//                mp.LineErode(ip);
-//                mp.LineDilate(ip);
-//            } else {
-//                mp.fopen(ip);
-//            }
-//
-//            break;
-//        }
-
-//        case FCLOSE: {
-//            if ((se.getType() == HLINE) || (se.getType() == VLINE)) {
-//                mp.LineDilate(ip);
-//                mp.LineErode(ip);
-//            } else {
-//                mp.fclose(ip);
-//            }
-//
-//            break;
-//        }
+            //        case FERODE: {
+        //            if ((se.getType() == HLINE) || (se.getType() == VLINE)) {
+        //                mp.LineErode(ip);
+        //            } else {
+        //                mp.fastErode(ip);
+        //            }
+        //
+        //            break;
+        //        }
+        //        case FDILATE: {
+        //            if ((se.getType() == HLINE) || (se.getType() == VLINE)) {
+        //                mp.LineDilate(ip);
+        //            } else {
+        //                mp.fastDilate(ip);
+        //            }
+        //
+        //            break;
+        //        }
+        //        case FOPEN: {
+        //            if ((se.getType() == HLINE) || (se.getType() == VLINE)) {
+        //                mp.LineErode(ip);
+        //                mp.LineDilate(ip);
+        //            } else {
+        //                mp.fopen(ip);
+        //            }
+        //
+        //            break;
+        //        }
+        //        case FCLOSE: {
+        //            if ((se.getType() == HLINE) || (se.getType() == VLINE)) {
+        //                mp.LineDilate(ip);
+        //                mp.LineErode(ip);
+        //            } else {
+        //                mp.fclose(ip);
+        //            }
+        //
+        //            break;
+        //        }
         } // switch
     }
 

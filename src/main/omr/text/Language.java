@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              L a n g u a g e                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        L a n g u a g e                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.text;
 
@@ -36,28 +36,25 @@ import java.util.TreeMap;
 import javax.swing.AbstractListModel;
 
 /**
- * Class {@code Language} handles the collection of language codes
- * with their related full name, as well as the default language
- * specification.
+ * Class {@code Language} handles the collection of language codes with their related
+ * full name, as well as the default language specification.
+ * <p>
+ * A language specification specifies a list of languages.
+ * It is a string formatted as LAN[+LAN]
  *
- * <p>A language specification specifies a list of languages.
- * It is a string formatted as LAN[+LAN]*
- *
- * <p>Note: languages are implemented as a (sorted) map, since a compiled enum
- * would not provide the ability to add new items at run time.
+ * <p>
+ * Note: languages are implemented as a (sorted) map, since a compiled enum would not provide the
+ * ability to add new items at run time.
  *
  * @author Hervé Bitteur
  */
 public class Language
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            Language.class);
+    private static final Logger logger = LoggerFactory.getLogger(Language.class);
 
     /** Languages file name. */
     private static final String LANG_FILE_NAME = "ISO639-3.xml";
@@ -74,7 +71,7 @@ public class Language
     /** Collection of supported languages, lazily created. */
     private static SupportedLanguages supportedLanguages;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------//
     // Language //
@@ -84,8 +81,7 @@ public class Language
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------------//
     // getSupportedLanguages //
     //-----------------------//
@@ -98,7 +94,7 @@ public class Language
         return supportedLanguages;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // ListModel //
     //-----------//
@@ -108,25 +104,23 @@ public class Language
     public static class ListModel
             extends AbstractListModel<String>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public ListModel ()
         {
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String getElementAt (int index)
         {
-            return getSupportedLanguages()
-                    .getElementAt(index);
+            return getSupportedLanguages().getElementAt(index);
         }
 
         @Override
         public int getSize ()
         {
-            return getSupportedLanguages()
-                    .getSize();
+            return getSupportedLanguages().getSize();
         }
 
         /**
@@ -138,8 +132,7 @@ public class Language
          */
         public int[] indicesOf (String spec)
         {
-            return getSupportedLanguages()
-                    .indicesOf(spec);
+            return getSupportedLanguages().indicesOf(spec);
         }
 
         /**
@@ -151,8 +144,7 @@ public class Language
          */
         public String specOf (Collection<String> list)
         {
-            return getSupportedLanguages()
-                    .specOf(list);
+            return getSupportedLanguages().specOf(list);
         }
     }
 
@@ -163,12 +155,11 @@ public class Language
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.String defaultSpecification = new Constant.String(
                 NO_SPEC,
                 "List of 3-letter codes, separated by '+'");
-
     }
 
     //---------//
@@ -177,7 +168,7 @@ public class Language
     private static class Default
             extends Param<String>
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String getSpecific ()
@@ -188,12 +179,9 @@ public class Language
         @Override
         public boolean setSpecific (String specific)
         {
-            if (!getSpecific()
-                    .equals(specific)) {
+            if (!getSpecific().equals(specific)) {
                 constants.defaultSpecification.setValue(specific);
-                logger.info(
-                        "Default language specification is now ''{}''",
-                        specific);
+                logger.info("Default language specification is now ''{}''", specific);
 
                 return true;
             }
@@ -210,7 +198,7 @@ public class Language
      */
     private static class SupportedLanguages
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Map of language code -> language full name. */
         private final SortedMap<String, String> codes = new TreeMap<String, String>();
@@ -218,7 +206,7 @@ public class Language
         /** Convenient sequence of codes, parallel to sorted map. */
         private final List<String> codesList;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public SupportedLanguages ()
         {
             // Build the map of all possible codes
@@ -238,16 +226,14 @@ public class Language
 
             // Now, keep only the supported codes
             // TODO: Protect against no OCR!
-            Set<String> supported = TextBuilder.getOcr()
-                    .getLanguages();
-            codes.keySet()
-                    .retainAll(supported);
+            Set<String> supported = TextBuilder.getOcr().getLanguages();
+            codes.keySet().retainAll(supported);
 
             // Create parallel list of codes
             codesList = new ArrayList<String>(codes.keySet());
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Report the code out of a list item.
          *
@@ -275,7 +261,6 @@ public class Language
             } else {
                 return code;
             }
-
         }
 
         public int getSize ()
@@ -285,8 +270,7 @@ public class Language
 
         public int[] indicesOf (String spec)
         {
-            if (spec.trim()
-                    .isEmpty()) {
+            if (spec.trim().isEmpty()) {
                 return new int[0];
             } else {
                 List<String> list = codesOf(spec);

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               M e a s u r e                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         M e a s u r e                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -31,15 +31,14 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Class {@code Measure} handles a measure of a system part, that is
- * all entities within the same measure time frame, for all staves
- * that compose the system part.
- *
- * <p>As a ScoreNode, the children of a Measure are : ending Barline, list of
+ * Class {@code Measure} handles a measure of a system part, that is all entities within
+ * the same measure time frame, for all staves that compose the system part.
+ * <p>
+ * As a ScoreNode, the children of a Measure are : ending Barline, list of
  * TimeSignature(s), list of Clef(s), list of KeySignature(s), list of Chord(s)
  * and list of Beam(s).</p>
- *
- * <p>Measure Ids are stored with respect to their containing page only, they
+ * <p>
+ * Measure Ids are stored with respect to their containing page only, they
  * are page-based ids. Displayed to the user are score-based ids.</p>
  *
  * @author Hervé Bitteur
@@ -47,12 +46,11 @@ import java.util.List;
 public class Measure
         extends MeasureNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Measure.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** To flag dummy barline instances */
     private boolean dummy;
 
@@ -113,7 +111,7 @@ public class Measure
     /** Voices within this measure, sorted by increasing voice id */
     private List<Voice> voices;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------//
     // Measure //
     //---------//
@@ -128,7 +126,7 @@ public class Measure
         cleanupNode();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -192,48 +190,56 @@ public class Measure
         voices.add(voice);
     }
 
-//    //-------------//
-//    // buildVoices //
-//    //-------------//
-//    /**
-//     * Browse the slots and chords, in order to compute the various
-//     * voices and start times.
-//     */
-//    public void buildVoices ()
-//    {
-//        // Debug
-//        if (logger.isDebugEnabled()) {
-//            printChords("Initial chords for ");
-//        }
-//
-//        // The 'activeChords' collection gathers the chords that are "active"
-//        // (not terminated) at the time slot being considered. Initially, it
-//        // contains just the whole chords.
-//        List<Chord> activeChords = new ArrayList<>(getWholeChords());
-//        Collections.sort(activeChords, Chord.byAbscissa);
-//
-//        // Create voices for whole chords
-//        for (Chord chord : activeChords) {
-//            chord.setStartTime(Rational.ZERO);
-//            Voice.createWholeVoice(chord);
-//        }
-//
-//        // Process slot after slot, if any
-//        try {
-//            for (Slot slot : getSlots()) {
-//                slot.buildVoices(activeChords);
-//            }
-//        } catch (Exception ex) {
-//            logger.warn(
-//                    "Error building voices in measure " + getPageId(),
-//                    ex);
-//        }
-//
-//        // Debug
-//        if (logger.isDebugEnabled()) {
-//            printVoices("Final voices for ");
-//        }
-//    }
+    //---------------//
+    // addWholeChord //
+    //---------------//
+    public void addWholeChord (Chord chord)
+    {
+        wholeChords.add(chord);
+    }
+
+    //    //-------------//
+    //    // buildVoices //
+    //    //-------------//
+    //    /**
+    //     * Browse the slots and chords, in order to compute the various
+    //     * voices and start times.
+    //     */
+    //    public void buildVoices ()
+    //    {
+    //        // Debug
+    //        if (logger.isDebugEnabled()) {
+    //            printChords("Initial chords for ");
+    //        }
+    //
+    //        // The 'activeChords' collection gathers the chords that are "active"
+    //        // (not terminated) at the time slot being considered. Initially, it
+    //        // contains just the whole chords.
+    //        List<Chord> activeChords = new ArrayList<>(getWholeChords());
+    //        Collections.sort(activeChords, Chord.byAbscissa);
+    //
+    //        // Create voices for whole chords
+    //        for (Chord chord : activeChords) {
+    //            chord.setStartTime(Rational.ZERO);
+    //            Voice.createWholeVoice(chord);
+    //        }
+    //
+    //        // Process slot after slot, if any
+    //        try {
+    //            for (Slot slot : getSlots()) {
+    //                slot.buildVoices(activeChords);
+    //            }
+    //        } catch (Exception ex) {
+    //            logger.warn(
+    //                    "Error building voices in measure " + getPageId(),
+    //                    ex);
+    //        }
+    //
+    //        // Debug
+    //        if (logger.isDebugEnabled()) {
+    //            printVoices("Final voices for ");
+    //        }
+    //    }
     //---------------//
     // checkDuration //
     //---------------//
@@ -297,12 +303,11 @@ public class Measure
         //        dynamics = new DynamicList(this);
         //        lyriclines = new LyricList(this);
         //        texts = new TextList(this);
-
         // Should this be a MeasureNode ??? TODO
-        slots = new ArrayList<>();
-        beamGroups = new ArrayList<>();
-        wholeChords = new ArrayList<>();
-        voices = new ArrayList<>();
+        slots = new ArrayList<Slot>();
+        beamGroups = new ArrayList<BeamGroup>();
+        wholeChords = new ArrayList<Chord>();
+        voices = new ArrayList<Voice>();
     }
 
     //-----------------------//
@@ -347,18 +352,14 @@ public class Measure
             KeySignature key = getKeyBefore(staffPoint, staff);
 
             if (key != null) {
-                key.createDummyCopy(
-                        dummyMeasure,
-                        new Point(right - 30, midY));
+                key.createDummyCopy(dummyMeasure, new Point(right - 30, midY));
             }
 
             // Time?
             TimeSignature time = getCurrentTimeSignature();
 
             if (time != null) {
-                time.createDummyCopy(
-                        dummyMeasure,
-                        new Point(right - 20, midY));
+                time.createDummyCopy(dummyMeasure, new Point(right - 20, midY));
             }
         }
 
@@ -450,14 +451,15 @@ public class Measure
     public Collection<Chord> getChordsAbove (Point point)
     {
         Staff desiredStaff = getSystem().getStaffAbove(point);
-        Collection<Chord> found = new ArrayList<>();
+        Collection<Chord> found = new ArrayList<Chord>();
 
         for (TreeNode node : getChords()) {
             Chord chord = (Chord) node;
 
             if (chord.getStaff() == desiredStaff) {
                 Point head = chord.getHeadLocation();
-                if (head != null && head.y < point.y) {
+
+                if ((head != null) && (head.y < point.y)) {
                     found.add(chord);
                 }
             }
@@ -479,14 +481,15 @@ public class Measure
     public Collection<Chord> getChordsBelow (Point point)
     {
         Staff desiredStaff = getSystem().getStaffBelow(point);
-        Collection<Chord> found = new ArrayList<>();
+        Collection<Chord> found = new ArrayList<Chord>();
 
         for (TreeNode node : getChords()) {
             Chord chord = (Chord) node;
 
             if (chord.getStaff() == desiredStaff) {
                 Point head = chord.getHeadLocation();
-                if (head != null && head.y > point.y) {
+
+                if ((head != null) && (head.y > point.y)) {
                     found.add(chord);
                 }
             }
@@ -516,8 +519,7 @@ public class Measure
         for (TreeNode cn : getClefs()) {
             clef = (Clef) cn;
 
-            if ((clef.getStaff().getId() == staffId)
-                && (clef.getCenter().x >= point.x)) {
+            if ((clef.getStaff().getId() == staffId) && (clef.getCenter().x >= point.x)) {
                 return clef;
             }
         }
@@ -752,7 +754,8 @@ public class Measure
      * whether a time signature actually starts this measure in
      * whatever staff, or whether a time signature was found in a
      * previous measure, even in preceding pages.
-     * <p><b>NOTA</b>This method looks up for time sig in preceding pages
+     * <p>
+     * <b>NOTA</b>This method looks up for time sig in preceding pages
      * as well</p>
      *
      * @return the current time signature, or null if not found at all
@@ -780,8 +783,7 @@ public class Measure
                 if (page == null) {
                     return null;
                 } else {
-                    measure = page.getLastSystem().getLastPart().
-                            getLastMeasure();
+                    measure = page.getLastSystem().getLastPart().getLastMeasure();
                 }
             }
         }
@@ -832,12 +834,14 @@ public class Measure
         if (slot != null) {
             // First, try staff just above
             Chord chordAbove = slot.getChordJustAbove(point);
+
             if (chordAbove != null) {
                 return chordAbove;
             }
 
             // Second, try staff just below
             Chord chordBelow = slot.getChordJustBelow(point);
+
             if (chordBelow != null) {
                 return chordBelow;
             }
@@ -1019,8 +1023,7 @@ public class Measure
         for (int ik = getKeySignatures().size() - 1; ik >= 0; ik--) {
             ks = (KeySignature) getKeySignatures().get(ik);
 
-            if ((ks.getStaff().getId() == staffId)
-                && (ks.getCenter().x < point.x)) {
+            if ((ks.getStaff().getId() == staffId) && (ks.getCenter().x < point.x)) {
                 return ks;
             }
         }
@@ -1177,8 +1180,7 @@ public class Measure
         for (int ic = getClefs().size() - 1; ic >= 0; ic--) {
             clef = (Clef) getClefs().get(ic);
 
-            if ((clef.getStaff().getId() == staffId)
-                && (clef.getCenter().x <= point.x)) {
+            if ((clef.getStaff().getId() == staffId) && (clef.getCenter().x <= point.x)) {
                 return clef;
             }
         }
@@ -1250,6 +1252,7 @@ public class Measure
     public String getScoreId ()
     {
         MeasureId.PageBased mid = id;
+
         if (mid != null) {
             return mid.toScoreString();
         } else {
@@ -1283,8 +1286,7 @@ public class Measure
     public int getStaffId (Point point,
                            Staff staff)
     {
-        return (staff != null) ? staff.getId()
-                : getPart().getStaffAt(point).getId();
+        return (staff != null) ? staff.getId() : getPart().getStaffAt(point).getId();
     }
 
     //----------------//
@@ -1388,11 +1390,10 @@ public class Measure
     public Collection<Chord> getWholeChordsAbove (Point point)
     {
         Staff desiredStaff = getSystem().getStaffAbove(point);
-        Collection<Chord> found = new ArrayList<>();
+        Collection<Chord> found = new ArrayList<Chord>();
 
         for (Chord chord : getWholeChords()) {
-            if ((chord.getStaff() == desiredStaff)
-                && (chord.getHeadLocation().y < point.y)) {
+            if ((chord.getStaff() == desiredStaff) && (chord.getHeadLocation().y < point.y)) {
                 found.add(chord);
             }
         }
@@ -1413,11 +1414,10 @@ public class Measure
     public Collection<Chord> getWholeChordsBelow (Point point)
     {
         Staff desiredStaff = getSystem().getStaffBelow(point);
-        Collection<Chord> found = new ArrayList<>();
+        Collection<Chord> found = new ArrayList<Chord>();
 
         for (Chord chord : getWholeChords()) {
-            if ((chord.getStaff() == desiredStaff)
-                && (chord.getHeadLocation().y > point.y)) {
+            if ((chord.getStaff() == desiredStaff) && (chord.getHeadLocation().y > point.y)) {
                 found.add(chord);
             }
         }
@@ -1587,8 +1587,7 @@ public class Measure
 
             for (Slot slot : slots) {
                 if (slot.getStartTime() != null) {
-                    sb.append("|").append(String.format("%-5s", slot.
-                            getStartTime()));
+                    sb.append("|").append(String.format("%-5s", slot.getStartTime()));
                 }
             }
 
@@ -1753,14 +1752,13 @@ public class Measure
 
                             if (nbMarks > 0) {
                                 Mark mark = chord.getMarks().get(nbMarks - 1);
-                                logger.debug("{} Removing final forward: {}",
+                                logger.debug(
+                                        "{} Removing final forward: {}",
                                         getContextString(),
                                         (Rational) mark.getData());
                                 chord.getMarks().remove(mark);
                             } else {
-                                chord.
-                                        addError(
-                                        "No final mark to remove in a partial measure");
+                                chord.addError("No final mark to remove in a partial measure");
 
                                 return;
                             }
@@ -1772,13 +1770,46 @@ public class Measure
                     }
                 } else {
                     addError(
-                            "Non consistent partial measure shortening:"
-                            + shortening.opposite() + " " + voice + ": "
-                            + duration.opposite());
+                            "Non consistent partial measure shortening:" + shortening.opposite() + " "
+                            + voice + ": " + duration.opposite());
 
                     return;
                 }
             }
+        }
+    }
+
+    //-------------//
+    // swapVoiceId //
+    //-------------//
+    /**
+     * Change the id of the provided voice to the provided id
+     * (and change the other voice, if any, which owned the provided id).
+     *
+     * @param voice the voice whose id must be changed
+     * @param id    the new id
+     */
+    public void swapVoiceId (Voice voice,
+                             int id)
+    {
+        // Existing voice?
+        Voice oldOwner = null;
+
+        for (Voice v : getVoices()) {
+            if (v.getId() == id) {
+                oldOwner = v;
+
+                break;
+            }
+        }
+
+        // Change voice id
+        int oldId = voice.getId();
+        voice.setId(id);
+
+        // Assign the oldId to the oldOwner, if any
+        if (oldOwner != null) {
+            oldOwner.setId(oldId);
         }
     }
 
@@ -1819,12 +1850,7 @@ public class Measure
         }
 
         Rectangle partBox = getPart().getBox();
-        setBox(
-                new Rectangle(
-                leftX,
-                partBox.y,
-                rightX - leftX,
-                partBox.height));
+        setBox(new Rectangle(leftX, partBox.y, rightX - leftX, partBox.height));
     }
 
     //---------------//
@@ -1857,14 +1883,6 @@ public class Measure
         wholeChords.add(chord);
     }
 
-    //---------------//
-    // addWholeChord //
-    //---------------//
-    public void addWholeChord (Chord chord)
-    {
-        wholeChords.add(chord);
-    }
-
     //--------------//
     // addWholeRest //
     //--------------//
@@ -1882,7 +1900,6 @@ public class Measure
 
         chord.setStartTime(Rational.ZERO);
         Voice.createWholeVoice(chord);
-
     }
 
     //--------------------//
@@ -1895,8 +1912,7 @@ public class Measure
         for (Slot slot : getSlots()) {
             if (slot.getStartTime() != null) {
                 for (Chord chord : slot.getChords()) {
-                    Rational chordEnd = slot.getStartTime().plus(chord.
-                            getDuration());
+                    Rational chordEnd = slot.getStartTime().plus(chord.getDuration());
 
                     if (chordEnd.compareTo(measureDur) > 0) {
                         measureDur = chordEnd;
@@ -1910,37 +1926,5 @@ public class Measure
         }
 
         return String.format("%-5s", measureDur.toString());
-    }
-
-    //-------------//
-    // swapVoiceId //
-    //-------------//
-    /**
-     * Change the id of the provided voice to the provided id
-     * (and change the other voice, if any, which owned the provided id).
-     *
-     * @param voice the voice whose id must be changed
-     * @param id    the new id
-     */
-    public void swapVoiceId (Voice voice,
-                             int id)
-    {
-        // Existing voice?
-        Voice oldOwner = null;
-        for (Voice v : getVoices()) {
-            if (v.getId() == id) {
-                oldOwner = v;
-                break;
-            }
-        }
-
-        // Change voice id
-        int oldId = voice.getId();
-        voice.setId(id);
-
-        // Assign the oldId to the oldOwner, if any
-        if (oldOwner != null) {
-            oldOwner.setId(oldId);
-        }
     }
 }

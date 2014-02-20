@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            D e l e t e T a s k                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      D e l e t e T a s k                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.script;
 
@@ -33,15 +33,14 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
 /**
- * Class {@code DeleteTask} deletes a set of (virtual) glyphs from the
- * sheet environment
+ * Class {@code DeleteTask} deletes a set of (virtual) glyphs from the sheet environment
  *
  * @author Hervé Bitteur
  */
 public class DeleteTask
         extends GlyphTask
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Locations */
     private List<Point> locations;
@@ -51,7 +50,7 @@ public class DeleteTask
     @XmlElement(name = "point")
     private PointFacade[] points;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //------------//
     // DeleteTask //
@@ -68,7 +67,7 @@ public class DeleteTask
     {
         super(sheet, glyphs);
 
-        locations = new ArrayList<>();
+        locations = new ArrayList<Point>();
 
         for (Glyph glyph : glyphs) {
             locations.add(glyph.getAreaCenter());
@@ -83,7 +82,7 @@ public class DeleteTask
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //------//
     // core //
@@ -135,24 +134,23 @@ public class DeleteTask
     @Override
     protected SortedSet<SystemInfo> retrieveCurrentImpact (Sheet sheet)
     {
-        SortedSet<SystemInfo> impactedSystems = new TreeSet<>();
+        SortedSet<SystemInfo> impactedSystems = new TreeSet<SystemInfo>();
         logger.error("Not yet implemented");
 
-//        for (Glyph glyph : glyphs) {
-//            Point location = glyph.getAreaCenter();
-//            SystemInfo system = sheet.getSystemOf(location);
-//
-//            if (system != null) {
-//                // Include this system
-//                impactedSystems.add(system);
-//            }
-//
-//            if (glyph.getShape().isPersistent()) {
-//                // Include all following systems as well
-//                impactedSystems.addAll(remaining(system));
-//            }
-//        }
-
+        //        for (Glyph glyph : glyphs) {
+        //            Point location = glyph.getAreaCenter();
+        //            SystemInfo system = sheet.getSystemOf(location);
+        //
+        //            if (system != null) {
+        //                // Include this system
+        //                impactedSystems.add(system);
+        //            }
+        //
+        //            if (glyph.getShape().isPersistent()) {
+        //                // Include all following systems as well
+        //                impactedSystems.addAll(remaining(system));
+        //            }
+        //        }
         return impactedSystems;
     }
 
@@ -165,7 +163,7 @@ public class DeleteTask
     @Override
     protected void retrieveGlyphs ()
     {
-        glyphs = new LinkedHashSet<>();
+        glyphs = new LinkedHashSet<Glyph>();
 
         for (Point location : locations) {
             Glyph glyph = sheet.getNest().lookupVirtualGlyph(location);
@@ -187,7 +185,7 @@ public class DeleteTask
     {
         // Convert array of point facades -> locations
         if (locations == null) {
-            locations = new ArrayList<>();
+            locations = new ArrayList<Point>();
 
             for (PointFacade facade : points) {
                 locations.add(new Point(facade.getX(), facade.getY()));
@@ -205,7 +203,7 @@ public class DeleteTask
     {
         // Convert locations -> array of point facades
         if (points == null) {
-            List<PointFacade> facades = new ArrayList<>();
+            List<PointFacade> facades = new ArrayList<PointFacade>();
 
             for (Point point : locations) {
                 facades.add(new PointFacade(point));

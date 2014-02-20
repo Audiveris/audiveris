@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 P a n e l                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           P a n e l                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.util;
 
@@ -27,37 +27,33 @@ import java.awt.Insets;
 import javax.swing.JPanel;
 
 /**
- * Class {@code Panel} is a JPanel with specific features to define
- * and position label and text fields.
+ * Class {@code Panel} is a JPanel with specific features to define and position label
+ * and text fields.
  *
- * <P><B>note</B> : To actually display the cell limits as a debugging aid
- * to refine the panel layout, you have to edit this class and make it
- * extend FormDebugPanel, instead of JPanel. There is also a line to
- * uncomment in both methods : the constructor and the paintComponent
- * method.
- *
+ * <P>
+ * <B>note</B> : To actually display the cell limits as a debugging aid to refine the panel layout,
+ * you have to edit this class and make it extend FormDebugPanel, instead of JPanel. There is also a
+ * line to uncomment in both methods : the constructor and the paintComponent method.
  *
  * @author Hervé Bitteur
  */
 public class Panel
         extends JPanel
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Panel.class);
 
     /** Default Insets */
     private static Insets DEFAULT_INSETS;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Room for potential specific insets */
     private Insets insets;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new Panel object.
      */
@@ -68,7 +64,7 @@ public class Panel
         setBorder(null);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Selector to the default button width.
      *
@@ -109,25 +105,6 @@ public class Panel
         return constants.fieldWidth.getValue();
     }
 
-    //-----------//
-    // getInsets //
-    //-----------//
-    /**
-     * By this way, Swing will paint the component with its specific
-     * inset values.
-     *
-     * @return the panel insets
-     */
-    @Override
-    public Insets getInsets ()
-    {
-        if (insets != null) {
-            return insets;
-        } else {
-            return getDefaultInsets();
-        }
-    }
-
     /**
      * Selector to the default label - field interval.
      *
@@ -163,11 +140,7 @@ public class Panel
     //-------------//
     public static String makeColumns (int cols)
     {
-        return makeColumns(
-                cols,
-                "right:",
-                Panel.getLabelWidth(),
-                Panel.getFieldWidth());
+        return makeColumns(cols, "right:", Panel.getLabelWidth(), Panel.getFieldWidth());
     }
 
     //-------------//
@@ -185,17 +158,11 @@ public class Panel
         StringBuilder sbc = new StringBuilder();
 
         for (int i = cols - 1; i >= 0; i--) {
-            sbc.append(labelAlignment)
-                    .append(labelWidth)
-                    .append(",")
-                    .append(labelInterval)
-                    .append(",")
-                    .append(fieldWidth);
+            sbc.append(labelAlignment).append(labelWidth).append(",").append(labelInterval)
+                    .append(",").append(fieldWidth);
 
             if (i != 0) {
-                sbc.append(",")
-                        .append(fieldInterval)
-                        .append(",");
+                sbc.append(",").append(fieldInterval).append(",");
             }
         }
 
@@ -218,12 +185,7 @@ public class Panel
     public static FormLayout makeFormLayout (int rows,
                                              int cols)
     {
-        return makeFormLayout(
-                rows,
-                cols,
-                "right:",
-                Panel.getLabelWidth(),
-                Panel.getFieldWidth());
+        return makeFormLayout(rows, cols, "right:", Panel.getLabelWidth(), Panel.getFieldWidth());
     }
 
     //----------------//
@@ -246,11 +208,7 @@ public class Panel
                                              String fieldWidth)
     {
         // Columns
-        final String colSpec = makeColumns(
-                cols,
-                labelAlignment,
-                labelWidth,
-                fieldWidth);
+        final String colSpec = makeColumns(cols, labelAlignment, labelWidth, fieldWidth);
 
         // Rows
         final String fieldInterline = Panel.getFieldInterline();
@@ -260,9 +218,7 @@ public class Panel
             sbr.append("pref");
 
             if (i != 0) {
-                sbr.append(",")
-                        .append(fieldInterline)
-                        .append(",");
+                sbr.append(",").append(fieldInterline).append(",");
             }
         }
 
@@ -270,6 +226,25 @@ public class Panel
         logger.debug("sbr={}", sbr);
 
         return new FormLayout(colSpec, sbr.toString());
+    }
+
+    //-----------//
+    // getInsets //
+    //-----------//
+    /**
+     * By this way, Swing will paint the component with its specific
+     * inset values.
+     *
+     * @return the panel insets
+     */
+    @Override
+    public Insets getInsets ()
+    {
+        if (insets != null) {
+            return insets;
+        } else {
+            return getDefaultInsets();
+        }
     }
 
     //-----------//
@@ -334,18 +309,16 @@ public class Panel
         return DEFAULT_INSETS;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.String buttonWidth = new Constant.String(
-                "45dlu",
-                "Width of a standard button");
+        Constant.String buttonWidth = new Constant.String("45dlu", "Width of a standard button");
 
         Constant.String fieldInterline = new Constant.String(
                 "1dlu",
@@ -355,13 +328,9 @@ public class Panel
                 "3dlu",
                 "Horizontal gap between two fields");
 
-        Constant.String fieldWidth = new Constant.String(
-                "35dlu",
-                "Width of a field value");
+        Constant.String fieldWidth = new Constant.String("35dlu", "Width of a field value");
 
-        PixelCount insetBottom = new PixelCount(
-                6,
-                "Value of Bottom inset");
+        PixelCount insetBottom = new PixelCount(6, "Value of Bottom inset");
 
         PixelCount insetLeft = new PixelCount(6, "Value of Left inset");
 
@@ -373,13 +342,10 @@ public class Panel
                 "1dlu",
                 "Gap between a field label and its field value");
 
-        Constant.String labelWidth = new Constant.String(
-                "25dlu",
-                "Width of the label of a field");
+        Constant.String labelWidth = new Constant.String("25dlu", "Width of the label of a field");
 
         Constant.String panelInterline = new Constant.String(
                 "6dlu",
                 "Vertical Gap between two panels");
-
     }
 }

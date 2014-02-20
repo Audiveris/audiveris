@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           S c o r e S y s t e m                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     S c o r e S y s t e m                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -30,21 +30,19 @@ import java.util.List;
 
 /**
  * Class {@code ScoreSystem} encapsulates a system in a score.
- *
- * <p>A system contains only one kind of direct children : SystemPart instances
+ * <p>
+ * A system contains only one kind of direct children : SystemPart instances
  *
  * @author Hervé Bitteur
  */
 public class ScoreSystem
         extends SystemNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ScoreSystem.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreSystem.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Id for debug */
     private final int id;
 
@@ -58,7 +56,7 @@ public class ScoreSystem
     /** Related info from sheet analysis */
     private final SystemInfo info;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // ScoreSystem //
     //-------------//
@@ -83,16 +81,11 @@ public class ScoreSystem
 
         id = 1 + getChildIndex();
 
-        setBox(
-                new Rectangle(
-                topLeft.x,
-                topLeft.y,
-                dimension.width,
-                dimension.height));
+        setBox(new Rectangle(topLeft.x, topLeft.y, dimension.width, dimension.height));
         getCenter();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -119,14 +112,11 @@ public class ScoreSystem
         }
 
         // If very first page, we are done
-        if (getPage()
-                .getChildIndex() == 0) {
+        if (getPage().getChildIndex() == 0) {
             return;
         }
 
-        ScoreSystem precedingSystem = getPage()
-                .getPrecedingInScore()
-                .getLastSystem();
+        ScoreSystem precedingSystem = getPage().getPrecedingInScore().getLastSystem();
 
         if (precedingSystem != null) {
             // Examine every part in sequence
@@ -134,8 +124,7 @@ public class ScoreSystem
                 SystemPart part = (SystemPart) pNode;
 
                 // Find out the proper preceding part (across pages)
-                SystemPart precedingPart = precedingSystem.getPart(
-                        part.getId());
+                SystemPart precedingPart = precedingSystem.getPart(part.getId());
 
                 // Ending orphans in preceding system/part (if such part exists)
                 part.connectSlursWith(precedingPart);
@@ -188,11 +177,9 @@ public class ScoreSystem
     public void fillMissingParts ()
     {
         // Check we have all the defined parts in this system
-        for (ScorePart scorePart : getPage()
-                .getPartList()) {
+        for (ScorePart scorePart : getPage().getPartList()) {
             if (getPart(scorePart.getId()) == null) {
-                getFirstRealPart()
-                        .createDummyPart(scorePart.getId());
+                getFirstRealPart().createDummyPart(scorePart.getId());
                 Collections.sort(getParts(), SystemPart.idComparator);
             }
         }
@@ -203,8 +190,10 @@ public class ScoreSystem
     //--------------//
     /**
      * Report the system dimension.
-     * <p>Width is the distance, in pixels, between left edge and right edge.
-     * <p>Height is the distance, in pixels, from top of first staff, down to
+     * <p>
+     * Width is the distance, in pixels, between left edge and right edge.
+     * <p>
+     * Height is the distance, in pixels, from top of first staff, down to
      * top (and not bottom) of last staff.
      * Nota: It does not count the height of the last staff
      *
@@ -229,8 +218,7 @@ public class ScoreSystem
      */
     public SystemPart getFirstPart ()
     {
-        return (SystemPart) getParts()
-                .get(0);
+        return (SystemPart) getParts().get(0);
     }
 
     //------------------//
@@ -287,8 +275,7 @@ public class ScoreSystem
      */
     public SystemPart getLastPart ()
     {
-        return (SystemPart) getParts()
-                .get(getParts().size() - 1);
+        return (SystemPart) getParts().get(getParts().size() - 1);
     }
 
     //---------//
@@ -469,15 +456,13 @@ public class ScoreSystem
      */
     public StaffPosition getStaffPosition (Point point)
     {
-        Staff firstStaff = getFirstRealPart()
-                .getFirstStaff();
+        Staff firstStaff = getFirstRealPart().getFirstStaff();
 
         if (point.y < firstStaff.getTopLeft().y) {
             return StaffPosition.ABOVE_STAVES;
         }
 
-        Staff lastStaff = getLastPart()
-                .getLastStaff();
+        Staff lastStaff = getLastPart().getLastStaff();
 
         if (point.y > (lastStaff.getTopLeft().y + lastStaff.getHeight())) {
             return StaffPosition.BELOW_STAVES;
@@ -580,21 +565,13 @@ public class ScoreSystem
     public String toString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("{System#")
-                .append(id);
+        sb.append("{System#").append(id);
 
         if (topLeft != null) {
-            sb.append(" topLeft=[")
-                    .append(topLeft.x)
-                    .append(",")
-                    .append(topLeft.y)
-                    .append("]");
+            sb.append(" topLeft=[").append(topLeft.x).append(",").append(topLeft.y).append("]");
         }
 
-        sb.append(" dimension=")
-                .append(getBox().width)
-                .append("x")
-                .append(getBox().height);
+        sb.append(" dimension=").append(getBox().width).append("x").append(getBox().height);
 
         sb.append("}");
 

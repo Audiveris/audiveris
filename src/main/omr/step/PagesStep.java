@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             P a g e s S t e p                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       P a g e s S t e p                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -32,24 +32,20 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code PagesStep} translates glyphs into score entities for
- * a page.
+ * Class {@code PagesStep} translates glyphs into score entities for a page.
  *
  * @author Hervé Bitteur
  */
 public class PagesStep
         extends AbstractSystemStep
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            PagesStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(PagesStep.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // PagesStep //
     //-----------//
@@ -66,7 +62,7 @@ public class PagesStep
                 "Translate glyphs to score items");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -74,11 +70,9 @@ public class PagesStep
     public void displayUI (Sheet sheet)
     {
         // Since we may have purged slots, let's reset highlighted slot if any
-        sheet.getSymbolsEditor()
-                .highLight(null);
+        sheet.getSymbolsEditor().highLight(null);
 
-        Steps.valueOf(Steps.SYMBOLS)
-                .displayUI(sheet);
+        Steps.valueOf(Steps.SYMBOLS).displayUI(sheet);
     }
 
     //----------//
@@ -97,10 +91,7 @@ public class PagesStep
 
         for (int iter = 1; modified.isSet() && (iter <= iterMax); iter++) {
             modified.set(false);
-            logger.debug(
-                    "System#{} translation iter #{}",
-                    system.getId(),
-                    iter);
+            logger.debug("System#{} translation iter #{}", system.getId(), iter);
 
             // Clear errors for this system only (and this step)
             clearSystemErrors(system);
@@ -112,7 +103,7 @@ public class PagesStep
             // Real translation
             system.translateSystem();
 
-            // Final checks at system level 
+            // Final checks at system level
             scoreSystem.acceptChildren(new ScoreChecker(modified));
         }
     }
@@ -131,11 +122,7 @@ public class PagesStep
 
             // Reperform SYMBOLS once
             try {
-                Stepping.reprocessSheet(
-                        Steps.valueOf(Steps.SYMBOLS),
-                        sheet,
-                        systems,
-                        true);
+                Stepping.reprocessSheet(Steps.valueOf(Steps.SYMBOLS), sheet, systems, true);
             } catch (Exception ex) {
                 logger.warn("Error in re-processing from " + this, ex);
             }
@@ -146,9 +133,7 @@ public class PagesStep
             }
 
             if (!systems.isEmpty()) {
-                systems.iterator()
-                        .next()
-                        .translateFinal();
+                systems.iterator().next().translateFinal();
 
                 // Finally, all actions for completed page (in proper order)
                 Page page = sheet.getPage();
@@ -162,19 +147,18 @@ public class PagesStep
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final Constant.Integer maxPageIterations = new Constant.Integer(
                 "count",
                 2,
                 "Maximum number of iterations for PAGES task");
-
     }
 }

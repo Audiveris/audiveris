@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                 L i n e F i l a m e n t A l i g n m e n t                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                           L i n e F i l a m e n t A l i g n m e n t                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -28,24 +28,21 @@ import java.awt.geom.Point2D;
 import java.util.List;
 
 /**
- * Class {@code LineFilamentAlignment} is a GlyphAlignment
- * implementation meant for long staff lines filaments.
+ * Class {@code LineFilamentAlignment} is a GlyphAlignment implementation meant for
+ * long staff lines filaments.
  *
  * @author Hervé Bitteur
  */
 public class LineFilamentAlignment
         extends FilamentAlignment
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            LineFilamentAlignment.class);
+    private static final Logger logger = LoggerFactory.getLogger(LineFilamentAlignment.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //-----------------------//
     // LineFilamentAlignment //
@@ -60,7 +57,7 @@ public class LineFilamentAlignment
         super(glyph);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //-----------//
     // fillHoles //
@@ -96,31 +93,20 @@ public class LineFilamentAlignment
 
                 if (holeLength > maxHoleLength) {
                     // Try to insert artificial intermediate point(s)
-                    int insert = (int) Math.rint(holeLength / virtualLength)
-                                 - 1;
+                    int insert = (int) Math.rint(holeLength / virtualLength) - 1;
 
                     if (insert > 0) {
-                        logger.debug(
-                                "Hole before ip: {} insert:{} for {}",
-                                ip,
-                                insert,
-                                this);
+                        logger.debug("Hole before ip: {} insert:{} for {}", ip, insert, this);
 
                         double dx = holeLength / (insert + 1);
 
                         for (int i = 1; i <= insert; i++) {
                             int x = (int) Math.rint(holeStart + (i * dx));
-                            Point2D pt = new Filler(
-                                    x,
-                                    pos,
-                                    fils,
-                                    virtualLength / 2).findInsertion();
+                            Point2D pt = new Filler(x, pos, fils, virtualLength / 2).findInsertion();
 
                             if (pt == null) {
                                 // Take default line point instead
-                                pt = new VirtualPoint(
-                                        x,
-                                        getPositionAt(x, Orientation.HORIZONTAL));
+                                pt = new VirtualPoint(x, getPositionAt(x, Orientation.HORIZONTAL));
                             }
 
                             logger.debug("Inserted {}", pt);
@@ -136,19 +122,18 @@ public class LineFilamentAlignment
 
         if (modified) {
             // Regenerate the underlying curve
-            line = NaturalSpline.interpolate(
-                    points.toArray(new Point2D[points.size()]));
+            line = NaturalSpline.interpolate(points.toArray(new Point2D[points.size()]));
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Scale.Fraction virtualSegmentLength = new Scale.Fraction(
                 6,
@@ -157,7 +142,6 @@ public class LineFilamentAlignment
         final Scale.Fraction maxHoleLength = new Scale.Fraction(
                 8,
                 "Maximum length for holes without intermediate points");
-
     }
 
     //--------//
@@ -168,7 +152,7 @@ public class LineFilamentAlignment
      */
     private static class Filler
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final int x; // Preferred abscissa for point insertion
 
@@ -178,7 +162,7 @@ public class LineFilamentAlignment
 
         final int margin; // Margin on abscissa to lookup refs
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Filler (int x,
                        int pos,
                        List<LineFilament> fils,
@@ -190,7 +174,7 @@ public class LineFilamentAlignment
             this.margin = margin;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //---------------//
         // findInsertion //
         //---------------//
@@ -239,11 +223,7 @@ public class LineFilamentAlignment
 
             for (int i = firstIdx; i != breakIdx; i += dir) {
                 LineFilament fil = subfils.get(i);
-                Point2D pt = fil.getAlignment()
-                        .findPoint(
-                        x,
-                        Orientation.HORIZONTAL,
-                        margin);
+                Point2D pt = fil.getAlignment().findPoint(x, Orientation.HORIZONTAL, margin);
 
                 if (pt != null) {
                     return new Neighbor(fil.getClusterPos(), pt);
@@ -253,17 +233,17 @@ public class LineFilamentAlignment
             return null;
         }
 
-        //~ Inner Classes ------------------------------------------------------
+        //~ Inner Classes --------------------------------------------------------------------------
         /** Convey a point together with its relative cluster position */
         private class Neighbor
         {
-            //~ Instance fields ------------------------------------------------
+            //~ Instance fields --------------------------------------------------------------------
 
             final int pos;
 
             final Point2D point;
 
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
             public Neighbor (int pos,
                              Point2D point)
             {
@@ -282,7 +262,7 @@ public class LineFilamentAlignment
     private static class VirtualPoint
             extends Point2D.Double
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public VirtualPoint (double x,
                              double y)

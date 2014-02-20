@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       E v a l u a t i o n B o a r d                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 E v a l u a t i o n B o a r d                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
@@ -28,18 +28,19 @@ import omr.selection.UserEvent;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.SystemManager;
 
 import omr.ui.Board;
 import omr.ui.Colors;
 import omr.ui.util.Panel;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.FormSpecs;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -53,13 +54,11 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import omr.sheet.SystemManager;
 
 /**
- * Class {@code EvaluationBoard} is a board dedicated to the
- * display of evaluation results performed by an evaluator.
- * It also provides through buttons the ability to manually assign a shape to
- * the glyph at hand.
+ * Class {@code EvaluationBoard} is a board dedicated to the display of evaluation
+ * results performed by an evaluator.
+ * It also provides through buttons the ability to manually assign a shape to the glyph at hand.
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
@@ -67,14 +66,11 @@ import omr.sheet.SystemManager;
 class EvaluationBoard
         extends Board
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            EvaluationBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(EvaluationBoard.class);
 
     /** Events this board is interested in */
     private static final Class<?>[] eventsRead = new Class<?>[]{GlyphEvent.class};
@@ -85,7 +81,7 @@ class EvaluationBoard
     /** Color for hardly recognized glyphs */
     private static final Color EVAL_SOSO_COLOR = new Color(150, 150, 150);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The evaluator this display is related to */
     private final ShapeEvaluator evaluator = GlyphNetwork.getInstance();
 
@@ -101,7 +97,7 @@ class EvaluationBoard
     /** Do we use GlyphChecker annotations? */
     private boolean useAnnotations;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------------//
     // EvaluationBoard //
     //-----------------//
@@ -132,22 +128,17 @@ class EvaluationBoard
                             GlyphsController glyphController,
                             boolean expanded)
     {
-        super(
-                Board.EVAL,
-                glyphController.getNest().getGlyphService(),
-                eventsRead,
-                false,
-                expanded);
+        super(Board.EVAL, glyphController.getNest().getGlyphService(), eventsRead, false, expanded);
 
         this.glyphsController = glyphController;
         this.sheet = sheet;
 
         selector = new Selector();
         defineLayout();
-        useAnnotations = false; //true; 
+        useAnnotations = false; //true;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // evaluate //
     //----------//
@@ -159,15 +150,14 @@ class EvaluationBoard
      */
     public void evaluate (Glyph glyph)
     {
-        if ((glyph == null)
-            || (glyph.getShape() == Shape.STEM)
-            || glyph.isBar()) {
+        if ((glyph == null) || (glyph.getShape() == Shape.STEM) || glyph.isBar()) {
             // Blank the output
             selector.setEvals(null, null);
         } else {
             if (evaluator != null) {
                 if (useAnnotations) {
                     SystemManager systemManager = sheet.getSystemManager();
+
                     for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
                         selector.setEvals(
                                 evaluator.evaluate(
@@ -178,6 +168,7 @@ class EvaluationBoard
                                         EnumSet.of(ShapeEvaluator.Condition.CHECKED),
                                         null),
                                 glyph);
+
                         return;
                     }
                 } else {
@@ -224,8 +215,7 @@ class EvaluationBoard
                 evaluate(glyph);
             }
         } catch (Exception ex) {
-            logger.warn(sheet.getLogPrefix()
-                        + getClass().getName() + " output error", ex);
+            logger.warn(sheet.getLogPrefix() + getClass().getName() + " output error", ex);
         }
     }
 
@@ -244,8 +234,8 @@ class EvaluationBoard
         for (int i = 0; i < visibleButtons; i++) {
             layout.appendRow(FormSpecs.PREF_ROWSPEC);
         }
-        ///SystemUtils.IS_OS_WINDOWS
 
+        ///SystemUtils.IS_OS_WINDOWS
         // Uncomment following line to have fixed sized rows, whether
         // they are filled or not
         ///layout.setRowGroups(new int[][]{{1, 3, 4, 5 }});
@@ -258,30 +248,25 @@ class EvaluationBoard
             int r = i + 1; // --------------------------------
             EvalButton evb = selector.buttons.get(i);
             builder.add(evb.grade, cst.xy(5, r));
-            builder.add(
-                    (sheet != null) ? evb.button : evb.field,
-                    cst.xyw(7, r, 5));
+            builder.add((sheet != null) ? evb.button : evb.field, cst.xyw(7, r, 5));
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        Evaluation.Grade minGrade = new Evaluation.Grade(
-                0.0,
-                "Threshold on displayable grade");
+        Evaluation.Grade minGrade = new Evaluation.Grade(0.0, "Threshold on displayable grade");
 
         Constant.Integer visibleButtons = new Constant.Integer(
                 "buttons",
                 5,
                 "Max number of buttons in the shape selector");
-
     }
 
     //------------//
@@ -290,7 +275,7 @@ class EvaluationBoard
     private class EvalButton
             implements ActionListener
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // Shape button or text field. Only one of them will be created and used
         final JButton button;
@@ -300,7 +285,7 @@ class EvaluationBoard
         // The related grade
         JLabel grade = new JLabel("", SwingConstants.RIGHT);
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public EvalButton ()
         {
             grade.setToolTipText("Grade of the evaluation");
@@ -320,25 +305,21 @@ class EvaluationBoard
             }
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         // Triggered by button
         @Override
         public void actionPerformed (ActionEvent e)
         {
             // Assign current glyph with selected shape
             if (glyphsController != null) {
-                Glyph glyph = glyphsController.getNest()
-                        .getSelectedGlyph();
+                Glyph glyph = glyphsController.getNest().getSelectedGlyph();
 
                 if (glyph != null) {
                     String str = button.getText();
                     Shape shape = Shape.valueOf(str);
 
                     // Actually assign the shape
-                    glyphsController.asyncAssignGlyphs(
-                            Glyphs.sortedSet(glyph),
-                            shape,
-                            false);
+                    glyphsController.asyncAssignGlyphs(Glyphs.sortedSet(glyph), shape, false);
                 }
             }
         }
@@ -358,8 +339,7 @@ class EvaluationBoard
             if (eval != null) {
                 Evaluation.Failure failure = eval.failure;
                 String text = eval.shape.toString();
-                String tip = (failure != null) ? failure.toString()
-                        : null;
+                String tip = (failure != null) ? failure.toString() : null;
 
                 if (sheet != null) {
                     button.setEnabled(enabled);
@@ -407,12 +387,12 @@ class EvaluationBoard
     //----------//
     private class Selector
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // A collection of EvalButton's
-        final List<EvalButton> buttons = new ArrayList<>();
+        final List<EvalButton> buttons = new ArrayList<EvalButton>();
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Selector ()
         {
             for (int i = 0; i < evalCount(); i++) {
@@ -422,7 +402,7 @@ class EvaluationBoard
             setEvals(null, null);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //-----------//
         // evalCount //
         //-----------//
@@ -472,17 +452,12 @@ class EvaluationBoard
                 }
 
                 // Barred on non-barred button
-                buttons.get(i)
-                        .setEval(
-                                eval,
-                                glyph.isShapeForbidden(eval.shape),
-                                enabled);
+                buttons.get(i).setEval(eval, glyph.isShapeForbidden(eval.shape), enabled);
             }
 
             // Zero the remaining buttons
             for (; i < evalCount(); i++) {
-                buttons.get(i)
-                        .setEval(null, false, false);
+                buttons.get(i).setEval(null, false, false);
             }
         }
     }

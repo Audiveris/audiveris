@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 W e d g e                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           W e d g e                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -23,24 +23,22 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class {@code Wedge} represents a crescendo (&lt;) or a
- * decrescendo (&gt;).
+ * Class {@code Wedge} represents a crescendo (&lt;) or a decrescendo (&gt;).
  *
  * @author Hervé Bitteur
  */
 public class Wedge
         extends AbstractDirection
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Wedge.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Vertical spread in units */
     private final int spread;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------//
     // Wedge //
     //-------//
@@ -71,29 +69,7 @@ public class Wedge
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //-----------//
-    // getSpread //
-    //-----------//
-    /**
-     * Report the vertical spread of the wedge
-     *
-     * @return vertical spread in units
-     */
-    public int getSpread ()
-    {
-        return spread;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // populate //
     //----------//
@@ -118,23 +94,43 @@ public class Wedge
         // Start
         glyph.setTranslation(
                 new Wedge(
-                startingMeasure,
-                true,
-                startingPoint,
-                findChord(startingMeasure, startingPoint),
-                glyph));
+                        startingMeasure,
+                        true,
+                        startingPoint,
+                        findChord(startingMeasure, startingPoint),
+                        glyph));
 
         // Stop
-        Point endingPoint = new Point(
-                box.x + box.width,
-                box.y + (box.height / 2));
+        Point endingPoint = new Point(box.x + box.width, box.y + (box.height / 2));
         Measure endingMeasure = part.getMeasureAt(endingPoint);
         glyph.addTranslation(
                 new Wedge(
-                endingMeasure,
-                false,
-                endingPoint,
-                findChord(endingMeasure, endingPoint),
-                glyph));
+                        endingMeasure,
+                        false,
+                        endingPoint,
+                        findChord(endingMeasure, endingPoint),
+                        glyph));
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //-----------//
+    // getSpread //
+    //-----------//
+    /**
+     * Report the vertical spread of the wedge
+     *
+     * @return vertical spread in units
+     */
+    public int getSpread ()
+    {
+        return spread;
     }
 }

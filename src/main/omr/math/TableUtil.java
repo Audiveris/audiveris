@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              T a b l e U t i l                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        T a b l e U t i l                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -20,14 +20,13 @@ import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 
 /**
- * Class {@code TableUtil} gathers utilities to dump basic table
- * content.
+ * Class {@code TableUtil} gathers utilities to dump basic table content.
  *
  * @author Hervé Bitteur
  */
 public class TableUtil
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Print out a table of int values.
@@ -35,7 +34,7 @@ public class TableUtil
      * @param title a title for the print
      * @param table the input table
      */
-    public static void dump (String  title,
+    public static void dump (String title,
                              int[][] table)
     {
         final int width = table.length;
@@ -64,7 +63,7 @@ public class TableUtil
      * @param title a title for the print
      * @param table the input table
      */
-    public static void dump (String      title,
+    public static void dump (String title,
                              boolean[][] table)
     {
         final int width = table.length;
@@ -93,7 +92,7 @@ public class TableUtil
      * @param title a title for the print
      * @param table the input table
      */
-    public static void dump (String     title,
+    public static void dump (String title,
                              double[][] table)
     {
         final int width = table.length;
@@ -145,14 +144,13 @@ public class TableUtil
     //            System.out.println();
     //        }
     //    }
-
     /**
      * Print out a ByteProcessor.
      *
      * @param title a title for the print
      * @param buf   the input buffer
      */
-    public static void dump (String        title,
+    public static void dump (String title,
                              ByteProcessor buf)
     {
         final int width = buf.getWidth();
@@ -182,7 +180,7 @@ public class TableUtil
      * @param table the table to print
      */
     public static void dump (String title,
-                             Table  table)
+                             Table table)
     {
         final int width = table.getWidth();
         final int height = table.getHeight();
@@ -218,10 +216,10 @@ public class TableUtil
                                          int cell)
     {
         // # of x digits
-        final int    wn = Math.max(1, (int) Math.ceil(Math.log10(width)));
+        final int wn = Math.max(1, (int) Math.ceil(Math.log10(width)));
 
         // # of y digits
-        final int    hn = Math.max(1, (int) Math.ceil(Math.log10(height)));
+        final int hn = Math.max(1, (int) Math.ceil(Math.log10(height)));
         final String margin = "%" + hn + "s ";
         final String dFormat = "%" + cell + "d";
         final String sFormat = "%" + cell + "s";
@@ -259,7 +257,7 @@ public class TableUtil
     //-------//
     // store //
     //-------//
-    public static void store (String    id,
+    public static void store (String id,
                               short[][] table)
     {
         final int width = table.length;
@@ -274,12 +272,9 @@ public class TableUtil
             }
         }
 
-        BufferedImage  img = new BufferedImage(
-            width,
-            height,
-            BufferedImage.TYPE_BYTE_GRAY);
+        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 
-        int[]          pix = new int[1];
+        int[] pix = new int[1];
         WritableRaster raster = img.getRaster();
 
         for (int x = 0; x < width; x++) {
@@ -301,7 +296,7 @@ public class TableUtil
     {
         final int width = doubles.length;
         final int height = doubles[0].length;
-        double    max = 0;
+        double max = 0;
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {

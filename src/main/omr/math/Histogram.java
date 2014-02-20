@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             H i s t o g r a m                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       H i s t o g r a m                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -24,9 +24,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code Histogram} is an histogram implementation which handles
- * integer counts in buckets, the buckets identities being values of
- * type K.
+ * Class {@code Histogram} is an histogram implementation which handles integer counts
+ * in buckets, the buckets identities being values of type K.
  *
  * @param <K> the precise type for histogram buckets
  *
@@ -34,7 +33,7 @@ import java.util.TreeMap;
  */
 public class Histogram<K extends Number>
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** To sort peaks by decreasing value */
     public final Comparator<PeakEntry<K>> reversePeakComparator = new Comparator<PeakEntry<K>>()
@@ -77,12 +76,12 @@ public class Histogram<K extends Number>
      * - K for the type of entity to be accumulated
      * - Integer for the cumulated number in each bucket
      */
-    protected final SortedMap<K, Integer> map = new TreeMap<>();
+    protected final SortedMap<K, Integer> map = new TreeMap<K, Integer>();
 
     /** Total count */
     protected int totalCount = 0;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // Histogram //
     //-----------//
@@ -109,7 +108,7 @@ public class Histogram<K extends Number>
         map.put(last, 0);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // bucketSet //
     //-----------//
@@ -199,7 +198,7 @@ public class Histogram<K extends Number>
      */
     public List<PeakEntry<Double>> getDoublePeaks (int minCount)
     {
-        final List<PeakEntry<Double>> peaks = new ArrayList<>();
+        final List<PeakEntry<Double>> peaks = new ArrayList<PeakEntry<Double>>();
         K start = null;
         K stop = null;
         K best = null;
@@ -222,7 +221,7 @@ public class Histogram<K extends Number>
             } else {
                 if (isAbove) { // Above -> Below
                     peaks.add(
-                            new PeakEntry<>(
+                            new PeakEntry<Double>(
                                     createDoublePeak(start, best, stop, minCount),
                                     (double) bestCount / totalCount));
                     stop = start = best = null;
@@ -236,7 +235,7 @@ public class Histogram<K extends Number>
         // Last range
         if (isAbove) {
             peaks.add(
-                    new PeakEntry<>(
+                    new PeakEntry<Double>(
                             createDoublePeak(start, best, stop, minCount),
                             (double) bestCount / totalCount));
         }
@@ -257,7 +256,7 @@ public class Histogram<K extends Number>
      */
     public List<MaxEntry<K>> getLocalMaxima ()
     {
-        final List<MaxEntry<K>> maxima = new ArrayList<>();
+        final List<MaxEntry<K>> maxima = new ArrayList<MaxEntry<K>>();
         K prevKey = null;
         int prevValue = 0;
         boolean growing = false;
@@ -272,10 +271,7 @@ public class Histogram<K extends Number>
                 } else {
                     if (growing) {
                         // End of a local max
-                        maxima.add(
-                                new MaxEntry<>(
-                                        prevKey,
-                                        prevValue / (double) totalCount));
+                        maxima.add(new MaxEntry<K>(prevKey, prevValue / (double) totalCount));
                     }
 
                     growing = false;
@@ -375,7 +371,7 @@ public class Histogram<K extends Number>
                                         boolean absolute,
                                         boolean sorted)
     {
-        final List<PeakEntry<K>> peaks = new ArrayList<>();
+        final List<PeakEntry<K>> peaks = new ArrayList<PeakEntry<K>>();
         K start = null;
         K stop = null;
         K best = null;
@@ -398,8 +394,8 @@ public class Histogram<K extends Number>
             } else {
                 if (isAbove) { // Above -> Below
                     peaks.add(
-                            new PeakEntry<>(
-                                    new Peak<>(start, best, stop),
+                            new PeakEntry<K>(
+                                    new Peak<K>(start, best, stop),
                                     absolute ? bestCount : ((double) bestCount / totalCount)));
                     stop = start = best = null;
                     bestCount = null;
@@ -412,8 +408,8 @@ public class Histogram<K extends Number>
         // Last range
         if (isAbove) {
             peaks.add(
-                    new PeakEntry<>(
-                            new Peak<>(start, best, stop),
+                    new PeakEntry<K>(
+                            new Peak<K>(start, best, stop),
                             absolute ? bestCount : ((double) bestCount / totalCount)));
         }
 
@@ -512,11 +508,9 @@ public class Histogram<K extends Number>
                         " %s-%s",
                         (firstBucket() != null) ? firstBucket().toString() : "",
                         (lastBucket() != null) ? lastBucket().toString() : ""));
-        sb.append(" size:")
-                .append(size());
+        sb.append(" size:").append(size());
 
-        sb.append(" ")
-                .append(dataString());
+        sb.append(" ").append(dataString());
 
         sb.append("}");
 
@@ -587,8 +581,7 @@ public class Histogram<K extends Number>
         double nextCount = getCount(next);
 
         return ((prev.doubleValue() * (nextCount - count))
-                + (next.doubleValue() * (count - prevCount))) / (nextCount
-                                                                 - prevCount);
+                + (next.doubleValue() * (count - prevCount))) / (nextCount - prevCount);
     }
 
     //---------//
@@ -609,14 +602,27 @@ public class Histogram<K extends Number>
         return null;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Interfaces ---------------------------------------------------------------------------
+    //------------//
+    // HistoEntry //
+    //------------//
+    public static interface HistoEntry<K extends Number>
+    {
+        //~ Methods --------------------------------------------------------------------------------
+
+        K getBest ();
+
+        double getValue ();
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // DoublePeak //
     //------------//
     public static class DoublePeak
             extends Peak<Double>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         private DoublePeak (double first,
                             double best,
@@ -637,7 +643,7 @@ public class Histogram<K extends Number>
     public static class MaxEntry<K extends Number>
             implements HistoEntry<K>
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Key at local maximum */
         private final K key;
@@ -645,7 +651,7 @@ public class Histogram<K extends Number>
         /** Related count (normalized by total histogram count) */
         private final double value;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public MaxEntry (K key,
                          double value)
         {
@@ -653,7 +659,13 @@ public class Histogram<K extends Number>
             this.value = value;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public K getBest ()
+        {
+            return getKey();
+        }
+
         /**
          * @return the key
          */
@@ -676,12 +688,6 @@ public class Histogram<K extends Number>
         {
             return getKey() + "=" + (float) getValue();
         }
-
-        @Override
-        public K getBest ()
-        {
-            return getKey();
-        }
     }
 
     //------//
@@ -694,7 +700,7 @@ public class Histogram<K extends Number>
      */
     public static class Peak<K extends Number>
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Value at beginning of range */
         public final K first;
@@ -705,7 +711,7 @@ public class Histogram<K extends Number>
         /** Value at end of range */
         public final K second;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Peak (K first,
                      K best,
                      K second)
@@ -715,12 +721,12 @@ public class Histogram<K extends Number>
             this.second = second;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
-            return "(" + first.floatValue() + "," + best.floatValue() + ","
-                   + second.floatValue() + ")";
+            return "(" + first.floatValue() + "," + best.floatValue() + "," + second.floatValue()
+                   + ")";
         }
     }
 
@@ -735,7 +741,7 @@ public class Histogram<K extends Number>
     public static class PeakEntry<K extends Number>
             implements HistoEntry<K>
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** The peak data */
         private final Peak<K> key;
@@ -743,7 +749,7 @@ public class Histogram<K extends Number>
         /** Count at best value (normalized by total histogram count) */
         private final double value;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public PeakEntry (Peak<K> key,
                           double value)
         {
@@ -751,7 +757,13 @@ public class Histogram<K extends Number>
             this.value = value;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public K getBest ()
+        {
+            return key.best;
+        }
+
         /**
          * Returns the key.
          *
@@ -778,22 +790,5 @@ public class Histogram<K extends Number>
         {
             return key + "=" + (float) value;
         }
-
-        @Override
-        public K getBest ()
-        {
-            return key.best;
-        }
-    }
-
-    //------------//
-    // HistoEntry //
-    //------------//
-    public static interface HistoEntry<K extends Number>
-    {
-
-        double getValue ();
-
-        K getBest ();
     }
 }

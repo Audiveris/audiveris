@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         S c r i p t M a n a g e r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   S c r i p t M a n a g e r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.script;
 
@@ -32,16 +32,14 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 /**
- * Class {@code ScriptManager} is in charge of handling the storing
- * and loading of scripts.
+ * Class {@code ScriptManager} is in charge of handling storing and loading of scripts.
  *
  * @author Hervé Bitteur
  */
 public class ScriptManager
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(ScriptManager.class);
 
     /** File extension for script files. */
@@ -50,7 +48,7 @@ public class ScriptManager
     /** Un/marshalling context for use with JAXB. */
     private static volatile JAXBContext jaxbContext;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // ScriptManager //
     //---------------//
@@ -61,7 +59,7 @@ public class ScriptManager
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -108,6 +106,7 @@ public class ScriptManager
     public void loadAndRun (File file)
     {
         Script script = null;
+
         try {
             long start = System.currentTimeMillis();
             logger.info("Loading script file {} ...", file);
@@ -115,6 +114,7 @@ public class ScriptManager
                 script = load(fis);
             }
             script.run();
+
             long stop = System.currentTimeMillis();
             logger.info("Script file {} run in {} ms", file, stop - start);
         } catch (ProcessingCancellationException pce) {
@@ -182,15 +182,14 @@ public class ScriptManager
         return jaxbContext;
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //--------//
     // Holder //
     //--------//
     private static interface Holder
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final ScriptManager INSTANCE = new ScriptManager();
-
     }
 }

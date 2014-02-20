@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         R u n s R e t r i e v e r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   R u n s R e t r i e v e r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.run;
 
@@ -25,21 +25,20 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
- * Class {@code RunsRetriever} is in charge of reading a source of 
- * pixels and retrieving foreground runs and background runs from it.
- * What is done with the retrieved runs is essentially the purpose of the
- * provided adapter.
+ * Class {@code RunsRetriever} is in charge of reading a source of pixels and
+ * retrieving foreground runs and background runs from it.
+ * <p>
+ * What is done with the retrieved runs is essentially the purpose of the provided adapter.
  *
  * @author Hervé Bitteur
  */
 public class RunsRetriever
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(RunsRetriever.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The orientation of desired runs */
     private final Orientation orientation;
@@ -47,7 +46,7 @@ public class RunsRetriever
     /** The adapter for pixel access and call-backs at run level */
     private final Adapter adapter;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //---------------//
     // RunsRetriever //
@@ -67,7 +66,7 @@ public class RunsRetriever
         this.adapter = adapter;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //--------------//
     // retrieveRuns //
@@ -173,8 +172,7 @@ public class RunsRetriever
                                     final int cMin,
                                     final int cMax)
     {
-        if (OmrExecutors.defaultParallelism.getSpecific() == false
-            || !adapter.isThreadSafe()) {
+        if ((OmrExecutors.defaultParallelism.getSpecific() == false) || !adapter.isThreadSafe()) {
             // Sequential
             for (int p = pMin; p <= pMax; p++) {
                 processPosition(p, cMin, cMax);
@@ -183,28 +181,26 @@ public class RunsRetriever
             // Parallel (TODO: should use Java 7 fork/join someday...)
             try {
                 // Browse one dimension
-                List<Callable<Void>> tasks = new ArrayList<>(
-                        pMax - pMin + 1);
+                List<Callable<Void>> tasks = new ArrayList<Callable<Void>>(pMax - pMin + 1);
 
                 for (int p = pMin; p <= pMax; p++) {
                     final int pp = p;
                     tasks.add(
                             new Callable<Void>()
-                    {
-                        @Override
-                        public Void call ()
+                            {
+                                @Override
+                                public Void call ()
                                 throws Exception
-                        {
-                            processPosition(pp, cMin, cMax);
+                                {
+                                    processPosition(pp, cMin, cMax);
 
-                            return null;
-                        }
-                    });
+                                    return null;
+                                }
+                            });
                 }
 
                 // Launch the tasks and wait for their completion
-                OmrExecutors.getHighExecutor()
-                        .invokeAll(tasks);
+                OmrExecutors.getHighExecutor().invokeAll(tasks);
             } catch (InterruptedException ex) {
                 logger.warn("ParallelRuns got interrupted");
                 throw new ProcessingCancellationException(ex);
@@ -217,7 +213,7 @@ public class RunsRetriever
         }
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //
     //---------//
     // Adapter //
@@ -229,10 +225,11 @@ public class RunsRetriever
     public static interface Adapter
             extends Concurrency
     {
+        //~ Methods --------------------------------------------------------------------------------
+
         //---------//
         // backRun //
         //---------//
-
         /**
          * Called at end of a background run, with the related coordinates
          *

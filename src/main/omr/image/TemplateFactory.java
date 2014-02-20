@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          T e m p l a t e F a c t o r y                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    T e m p l a t e F a c t o r y                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -24,28 +24,26 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Class {@code TemplateFactory} builds needed instances of
- * {@link Template} class and keeps a catalog per desired size and
- * shape.
+ * Class {@code TemplateFactory} builds needed instances of {@link Template} class
+ * and keeps a catalog per desired size and shape.
  *
  * @author Hervé Bitteur
  */
 public class TemplateFactory
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            TemplateFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(TemplateFactory.class);
 
     /** Singleton. */
     private static final TemplateFactory INSTANCE = new TemplateFactory();
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Catalog of all templates already allocated. */
     private final Map<Integer, Catalog> allSizes;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * (Private) Creates the singleton object.
      */
@@ -54,7 +52,15 @@ public class TemplateFactory
         allSizes = new HashMap<Integer, Catalog>();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //-------------//
+    // getInstance //
+    //-------------//
+    public static TemplateFactory getInstance ()
+    {
+        return INSTANCE;
+    }
+
     //------------//
     // getCatalog //
     //------------//
@@ -82,15 +88,7 @@ public class TemplateFactory
         return catalog;
     }
 
-    //-------------//
-    // getInstance //
-    //-------------//
-    public static TemplateFactory getInstance ()
-    {
-        return INSTANCE;
-    }
-
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Catalog //
     //---------//
@@ -99,7 +97,7 @@ public class TemplateFactory
      */
     public static class Catalog
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** InterhasLine value for this catalog. */
         final int interline;
@@ -108,14 +106,14 @@ public class TemplateFactory
         final Map<Shape, ShapeDescriptor> descriptors = new EnumMap<Shape, ShapeDescriptor>(
                 Shape.class);
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Catalog (int interline)
         {
             this.interline = interline;
             buildAllTemplates();
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //---------------//
         // getDescriptor //
         //---------------//

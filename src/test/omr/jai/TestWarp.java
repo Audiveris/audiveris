@@ -37,7 +37,7 @@ public class TestWarp
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
         TestWarp.class);
 

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    H o r i z o n t a l s B u i l d e r                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              H o r i z o n t a l s B u i l d e r                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -90,17 +90,14 @@ import java.util.Set;
  */
 public class HorizontalsBuilder
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            HorizontalsBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(HorizontalsBuilder.class);
 
     /** Events this entity is interested in. */
-    private static final Class<?>[] eventClasses = new Class<?>[]{
-        GlyphEvent.class
-    };
+    private static final Class<?>[] eventClasses = new Class<?>[]{GlyphEvent.class};
 
     /** Failure codes */
     private static final Failure TOO_SHORT = new Failure("Hori-TooShort");
@@ -109,15 +106,13 @@ public class HorizontalsBuilder
 
     private static final Failure TOO_THICK = new Failure("Hori-TooThick");
 
-    private static final Failure TOO_CONCAVE = new Failure(
-            "Hori-TooConcave");
+    private static final Failure TOO_CONCAVE = new Failure("Hori-TooConcave");
 
     private static final Failure TOO_SLOPED = new Failure("Hori-TooSloped");
 
-    private static final Failure TOO_SHIFTED = new Failure(
-            "Hori-TooShifted");
+    private static final Failure TOO_SHIFTED = new Failure("Hori-TooShifted");
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related sheet. */
     private final Sheet sheet;
@@ -143,7 +138,7 @@ public class HorizontalsBuilder
     /** Input image. (with staves removed) */
     private ByteProcessor pixelFilter;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------------//
     // HorizontalsBuilder //
     //--------------------//
@@ -159,7 +154,7 @@ public class HorizontalsBuilder
         scale = sheet.getScale();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addCheckBoard //
     //---------------//
@@ -236,8 +231,7 @@ public class HorizontalsBuilder
         Integer bestIndex = null;
         Double bestTarget = null;
         double bestDy = Double.MAX_VALUE;
-        double yMid = getMiddle(stick)
-                .getY();
+        double yMid = getMiddle(stick).getY();
 
         for (int i = iMin; i <= iMax; i++) {
             int index = i * sign;
@@ -262,6 +256,25 @@ public class HorizontalsBuilder
         }
     }
 
+    //-----------//
+    // getMiddle //
+    //-----------//
+    /**
+     * Retrieve the middle point of a stick, assumed rather horizontal.
+     *
+     * @param stick the stick to process
+     * @return the middle point
+     */
+    private static Point2D getMiddle (Glyph stick)
+    {
+        final Point2D startPoint = stick.getStartPoint(HORIZONTAL);
+        final Point2D stopPoint = stick.getStopPoint(HORIZONTAL);
+
+        return new Point2D.Double(
+                (startPoint.getX() + stopPoint.getX()) / 2,
+                (startPoint.getY() + stopPoint.getY()) / 2);
+    }
+
     //-------------//
     // beamOverlap //
     //-------------//
@@ -278,20 +291,15 @@ public class HorizontalsBuilder
         for (Inter inter : systemBeams) {
             AbstractBeamInter beam = (AbstractBeamInter) inter;
 
-            if (beam.getArea()
-                    .contains(middle)) {
+            if (beam.getArea().contains(middle)) {
                 if (stick.isVip() || logger.isDebugEnabled()) {
-                    logger.info(
-                            "ledger stick#{} overlaps beam#{}",
-                            stick.getId(),
-                            beam.getId());
+                    logger.info("ledger stick#{} overlaps beam#{}", stick.getId(), beam.getId());
                 }
 
                 return true;
             } else {
                 // Speedup, since beams are sorted by abscissa
-                if (beam.getBounds()
-                        .getLocation().x > middle.getX()) {
+                if (beam.getBounds().getLocation().x > middle.getX()) {
                     return false;
                 }
             }
@@ -411,10 +419,7 @@ public class HorizontalsBuilder
             keptSections.add(section);
         }
 
-        logger.debug(
-                "S#{} keptSections: {}",
-                system.getId(),
-                keptSections.size());
+        logger.debug("S#{} keptSections: {}", system.getId(), keptSections.size());
 
         return keptSections;
     }
@@ -436,33 +441,13 @@ public class HorizontalsBuilder
                     @Override
                     public boolean check (Inter inter)
                     {
-                        return (inter instanceof AbstractBeamInter)
-                               && inter.isGood();
+                        return (inter instanceof AbstractBeamInter) && inter.isGood();
                     }
                 });
 
         Collections.sort(beams, Inter.byAbscissa);
 
         return beams;
-    }
-
-    //-----------//
-    // getMiddle //
-    //-----------//
-    /**
-     * Retrieve the middle point of a stick, assumed rather horizontal.
-     *
-     * @param stick the stick to process
-     * @return the middle point
-     */
-    private static Point2D getMiddle (Glyph stick)
-    {
-        final Point2D startPoint = stick.getStartPoint(HORIZONTAL);
-        final Point2D stopPoint = stick.getStopPoint(HORIZONTAL);
-
-        return new Point2D.Double(
-                (startPoint.getX() + stopPoint.getX()) / 2,
-                (startPoint.getY() + stopPoint.getY()) / 2);
     }
 
     //---------------//
@@ -513,14 +498,12 @@ public class HorizontalsBuilder
 
                     // Middle of stick may fall outside of ledger width
                     if (GeoUtil.xEmbraces(ledgerBox, xMid)) {
-                        return ledgerGlyph.getLine()
-                                .yAtX(xMid);
+                        return ledgerGlyph.getLine().yAtX(xMid);
                     } else {
                         return LineUtil.intersectionAtX(
                                 ledgerGlyph.getStartPoint(HORIZONTAL),
                                 ledgerGlyph.getStopPoint(HORIZONTAL),
-                                xMid)
-                                .getY();
+                                xMid).getY();
                     }
                 }
             }
@@ -532,8 +515,7 @@ public class HorizontalsBuilder
             return null;
         } else {
             // Use staff line as reference
-            LineInfo staffLine = (index < 0) ? staff.getFirstLine()
-                    : staff.getLastLine();
+            LineInfo staffLine = (index < 0) ? staff.getFirstLine() : staff.getLastLine();
 
             return staffLine.yAt(stick.getAreaCenter().getX());
         }
@@ -563,8 +545,7 @@ public class HorizontalsBuilder
         logger.debug("Checking staff: {} line: {}", staff.getId(), index);
 
         final int yMargin = scale.toPixels(constants.ledgerMarginY);
-        final LineInfo staffLine = (index < 0) ? staff.getFirstLine()
-                : staff.getLastLine();
+        final LineInfo staffLine = (index < 0) ? staff.getFirstLine() : staff.getLastLine();
 
         // Define bounds for the virtual line, properly shifted and enlarged
         Rectangle staffLineBox = staffLine.getBounds();
@@ -599,19 +580,13 @@ public class HorizontalsBuilder
             }
 
             // Check precise vertical distance WRT the target ordinate
-            final double yTarget = yRef
-                                   + (Integer.signum(index) * scale.getInterline());
+            final double yTarget = yRef + (Integer.signum(index) * scale.getInterline());
 
-            SuiteImpacts impacts = ledgerSuite.getImpacts(
-                    new GlyphContext(stick, yTarget));
+            SuiteImpacts impacts = ledgerSuite.getImpacts(new GlyphContext(stick, yTarget));
             double grade = impacts.getGrade();
 
             if (stick.isVip()) {
-                logger.info(
-                        "VIP staff#{} at {} {}",
-                        staff.getId(),
-                        index,
-                        impacts.getDump());
+                logger.info("VIP staff#{} at {} {}", staff.getId(), index, impacts.getDump());
             }
 
             if (grade >= ledgerSuite.getMinThreshold()) {
@@ -645,8 +620,7 @@ public class HorizontalsBuilder
             //
             // Populate staff with ledgers kept
             for (LedgerInter ledger : ledgers) {
-                ledger.getGlyph()
-                        .setShape(Shape.LEDGER); // Useful???
+                ledger.getGlyph().setShape(Shape.LEDGER); // Useful???
                 staff.addLedger(ledger, index);
 
                 if (ledger.isVip()) {
@@ -699,11 +673,7 @@ public class HorizontalsBuilder
             for (LedgerInter other : ledgers.subList(i + 1, ledgers.size())) {
                 if (GeoUtil.xOverlap(ledgerBox, other.getBounds()) > 0) {
                     // Abscissa overlap
-                    exclusions.add(
-                            sig.insertExclusion(
-                                    ledger,
-                                    other,
-                                    Exclusion.Cause.OVERLAP));
+                    exclusions.add(sig.insertExclusion(ledger, other, Exclusion.Cause.OVERLAP));
                 } else {
                     break; // End of reachable neighbors
                 }
@@ -725,14 +695,14 @@ public class HorizontalsBuilder
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Double maxSlopeHigh = new Constant.Double(
                 "slope",
@@ -822,23 +792,51 @@ public class HorizontalsBuilder
                 "Maximum inter-ledger ordinate gap");
     }
 
-    //-------------//
-    // IndexTarget //
-    //-------------//
-    private static class IndexTarget
+    //--------------//
+    // GlyphContext //
+    //--------------//
+    private static class GlyphContext
+            implements Checkable
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        final int index;
+        /** The stick being checked. */
+        final Glyph stick;
 
-        final double target;
+        /** Target ordinate. */
+        final double yTarget;
 
-        //~ Constructors -------------------------------------------------------
-        public IndexTarget (int index,
-                            double target)
+        //~ Constructors ---------------------------------------------------------------------------
+        public GlyphContext (Glyph stick,
+                             double yTarget)
         {
-            this.index = index;
-            this.target = target;
+            this.stick = stick;
+            this.yTarget = yTarget;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        @Override
+        public void addFailure (Failure failure)
+        {
+            stick.addFailure(failure);
+        }
+
+        @Override
+        public boolean isVip ()
+        {
+            return stick.isVip();
+        }
+
+        @Override
+        public void setVip ()
+        {
+            stick.setVip();
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "stick#" + stick.getId();
         }
     }
 
@@ -848,7 +846,7 @@ public class HorizontalsBuilder
     private class ConvexityCheck
             extends Check<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public ConvexityCheck ()
         {
@@ -861,7 +859,7 @@ public class HorizontalsBuilder
                     TOO_CONCAVE);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         // Retrieve the density
         @Override
         protected double getValue (GlyphContext context)
@@ -896,51 +894,23 @@ public class HorizontalsBuilder
         }
     }
 
-    //--------------//
-    // GlyphContext //
-    //--------------//
-    private static class GlyphContext
-            implements Checkable
+    //-------------//
+    // IndexTarget //
+    //-------------//
+    private static class IndexTarget
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        /** The stick being checked. */
-        final Glyph stick;
+        final int index;
 
-        /** Target ordinate. */
-        final double yTarget;
+        final double target;
 
-        //~ Constructors -------------------------------------------------------
-        public GlyphContext (Glyph stick,
-                             double yTarget)
+        //~ Constructors ---------------------------------------------------------------------------
+        public IndexTarget (int index,
+                            double target)
         {
-            this.stick = stick;
-            this.yTarget = yTarget;
-        }
-
-        //~ Methods ------------------------------------------------------------
-        @Override
-        public void addFailure (Failure failure)
-        {
-            stick.addFailure(failure);
-        }
-
-        @Override
-        public boolean isVip ()
-        {
-            return stick.isVip();
-        }
-
-        @Override
-        public void setVip ()
-        {
-            stick.setVip();
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "stick#" + stick.getId();
+            this.index = index;
+            this.target = target;
         }
     }
 
@@ -953,18 +923,14 @@ public class HorizontalsBuilder
     private class LedgerCheckBoard
             extends CheckBoard<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public LedgerCheckBoard ()
         {
-            super(
-                    "Ledger",
-                    null,
-                    sheet.getNest().getGlyphService(),
-                    eventClasses);
+            super("Ledger", null, sheet.getNest().getGlyphService(), eventClasses);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void onEvent (UserEvent event)
         {
@@ -985,16 +951,12 @@ public class HorizontalsBuilder
                         // For this we have to operate from some relevant system
                         SystemManager systemManager = sheet.getSystemManager();
 
-                        for (SystemInfo system : systemManager.getSystemsOf(
-                                glyph)) {
-                            IndexTarget it = system.horizontalsBuilder.getLedgerTarget(
-                                    glyph);
+                        for (SystemInfo system : systemManager.getSystemsOf(glyph)) {
+                            IndexTarget it = system.horizontalsBuilder.getLedgerTarget(glyph);
 
                             // Run the check suite?
                             if (it != null) {
-                                applySuite(
-                                        ledgerSuite,
-                                        new GlyphContext(glyph, it.target));
+                                applySuite(ledgerSuite, new GlyphContext(glyph, it.target));
 
                                 return;
                             }
@@ -1015,7 +977,7 @@ public class HorizontalsBuilder
     private class LedgerSuite
             extends CheckSuite<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Create a check suite.
@@ -1027,11 +989,7 @@ public class HorizontalsBuilder
             add(0.5, new MinThicknessCheck());
             add(0, new MaxThicknessCheck());
             ///add(0.5, new SlopeCheck());
-            add(
-                    4,
-                    new MinLengthCheck(
-                    constants.minLedgerLengthLow,
-                    constants.minLedgerLengthHigh));
+            add(4, new MinLengthCheck(constants.minLedgerLengthLow, constants.minLedgerLengthHigh));
             add(2, new ConvexityCheck());
 
             add(0.5, new LeftPitchCheck());
@@ -1045,7 +1003,7 @@ public class HorizontalsBuilder
     private class LeftPitchCheck
             extends Check<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         protected LeftPitchCheck ()
         {
@@ -1058,17 +1016,15 @@ public class HorizontalsBuilder
                     TOO_SHIFTED);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected double getValue (GlyphContext context)
         {
             Glyph stick = context.stick;
             double yTarget = context.yTarget;
-            double y = stick.getStartPoint(HORIZONTAL)
-                    .getY();
+            double y = stick.getStartPoint(HORIZONTAL).getY();
 
-            return sheet.getScale()
-                    .pixelsToFrac(Math.abs(y - yTarget));
+            return sheet.getScale().pixelsToFrac(Math.abs(y - yTarget));
         }
     }
 
@@ -1078,7 +1034,7 @@ public class HorizontalsBuilder
     private class MaxThicknessCheck
             extends Check<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         protected MaxThicknessCheck ()
         {
@@ -1091,15 +1047,14 @@ public class HorizontalsBuilder
                     TOO_THICK);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         // Retrieve the thickness data
         @Override
         protected double getValue (GlyphContext context)
         {
             Glyph stick = context.stick;
 
-            return sheet.getScale()
-                    .pixelsToLineFrac(stick.getMeanThickness(HORIZONTAL));
+            return sheet.getScale().pixelsToLineFrac(stick.getMeanThickness(HORIZONTAL));
         }
     }
 
@@ -1109,29 +1064,22 @@ public class HorizontalsBuilder
     private class MinLengthCheck
             extends Check<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         protected MinLengthCheck (Constant.Double low,
                                   Constant.Double high)
         {
-            super(
-                    "Length",
-                    "Check that stick is long enough",
-                    low,
-                    high,
-                    true,
-                    TOO_SHORT);
+            super("Length", "Check that stick is long enough", low, high, true, TOO_SHORT);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         // Retrieve the length data
         @Override
         protected double getValue (GlyphContext context)
         {
             Glyph stick = context.stick;
 
-            return sheet.getScale()
-                    .pixelsToFrac(stick.getLength(HORIZONTAL));
+            return sheet.getScale().pixelsToFrac(stick.getLength(HORIZONTAL));
         }
     }
 
@@ -1141,7 +1089,7 @@ public class HorizontalsBuilder
     private class MinThicknessCheck
             extends Check<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         protected MinThicknessCheck ()
         {
@@ -1154,15 +1102,14 @@ public class HorizontalsBuilder
                     TOO_THIN);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         // Retrieve the thickness data
         @Override
         protected double getValue (GlyphContext context)
         {
             Glyph stick = context.stick;
 
-            return sheet.getScale()
-                    .pixelsToFrac(stick.getMeanThickness(HORIZONTAL));
+            return sheet.getScale().pixelsToFrac(stick.getMeanThickness(HORIZONTAL));
         }
     }
 
@@ -1172,7 +1119,7 @@ public class HorizontalsBuilder
     private class RightPitchCheck
             extends Check<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         protected RightPitchCheck ()
         {
@@ -1185,17 +1132,15 @@ public class HorizontalsBuilder
                     TOO_SHIFTED);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected double getValue (GlyphContext context)
         {
             Glyph stick = context.stick;
             double yTarget = context.yTarget;
-            double y = stick.getStopPoint(HORIZONTAL)
-                    .getY();
+            double y = stick.getStopPoint(HORIZONTAL).getY();
 
-            return sheet.getScale()
-                    .pixelsToFrac(Math.abs(y - yTarget));
+            return sheet.getScale().pixelsToFrac(Math.abs(y - yTarget));
         }
     }
 
@@ -1205,7 +1150,7 @@ public class HorizontalsBuilder
     private class SlopeCheck
             extends Check<GlyphContext>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         protected SlopeCheck ()
         {
@@ -1218,7 +1163,7 @@ public class HorizontalsBuilder
                     TOO_SLOPED);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         // Retrieve the absolute slope
         @Override
         protected double getValue (GlyphContext context)

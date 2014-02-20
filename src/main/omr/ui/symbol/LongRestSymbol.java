@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        L o n g R e s t S y m b o l                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  L o n g R e s t S y m b o l                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -17,15 +17,14 @@ import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 
 /**
- * Class {@code LongRestSymbol} is a basis for WHOLE_REST and HALF_REST
- * symbols.
+ * Class {@code LongRestSymbol} is a basis for WHOLE_REST and HALF_REST symbols.
  *
  * @author Hervé Bitteur
  */
 public class LongRestSymbol
         extends RestSymbol
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //----------------//
     // LongRestSymbol //
@@ -55,7 +54,7 @@ public class LongRestSymbol
         super(isIcon, Shape.LONG_REST, decorated, 227);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -76,8 +75,7 @@ public class LongRestSymbol
     protected TextLayout getRestLayout (MusicFont font)
     {
         TextLayout layout = super.getRestLayout(font);
-        double restHeight = layout.getBounds()
-                .getHeight() * 1.03;
+        double restHeight = layout.getBounds().getHeight() * 1.03;
         AffineTransform at = new AffineTransform(1, 0, 0, 2, 0, restHeight);
 
         return font.layout(getString(), at);

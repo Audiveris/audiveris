@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  I n t e r                                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            I n t e r                                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
@@ -31,32 +31,28 @@ import java.util.Comparator;
  * <p>
  * Every Inter instance is assigned an <i>intrinsic</i> grade in range [0..1].
  * There usually exists two thresholds on grade value:<ol>
- * <li><b>Minimum</b> grade: this is the minimum value required to actually
- * create (or keep) any interpretation instance.</li>
- * <li><b>Good</b> grade: this is the value which designates a really reliable
- * interpretation, which could save the need to explore other possible
- * interpretations.</li>
+ * <li><b>Minimum</b> grade: this is the minimum value required to actually create (or keep) any
+ * interpretation instance.</li>
+ * <li><b>Good</b> grade: this is the value which designates a really reliable interpretation, which
+ * could save the need to explore other possible interpretations.</li>
  * </ol>
  * <p>
- * Besides the intrinsic grade, we can generally compute a <i>contextual</i>
- * grade, which augments the intrinsic value by some increment brought by
- * supporting interpretation(s) nearby, depending on the intrinsic grade of the
- * supporting interpretation as well as the quality of the geometric
+ * Besides the intrinsic grade, we can generally compute a <i>contextual</i> grade, which augments
+ * the intrinsic value by some increment brought by supporting interpretation(s) nearby, depending
+ * on the intrinsic grade of the supporting interpretation as well as the quality of the geometric
  * relationship itself.
- * The <i>contextual</i> grade provides a more reliable quality evaluation than
- * the mere <i>intrinsic</i> grade, because it takes the surrounding entities
- * into account.
+ * The <i>contextual</i> grade provides a more reliable quality evaluation than the mere
+ * <i>intrinsic</i> grade, because it takes the surrounding entities into account.
  * <p>
- * To leave room for potential improvement brought by contextual data, the
- * raw value computed for any intrinsic grade is multiplied by an
- * <i>intrinsicRatio</i>.
+ * To leave room for potential improvement brought by contextual data, the raw value computed for
+ * any intrinsic grade is multiplied by an <i>intrinsicRatio</i>.
  *
  * @author Hervé Bitteur
  */
 public interface Inter
         extends VisitableInter, Vip, AttachmentHolder
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
      * For comparing interpretations by id.
@@ -99,10 +95,8 @@ public interface Inter
                 return 0;
             }
 
-            Point loc1 = o1.getBounds()
-                    .getLocation();
-            Point loc2 = o2.getBounds()
-                    .getLocation();
+            Point loc1 = o1.getBounds().getLocation();
+            Point loc2 = o2.getBounds().getLocation();
 
             // Are x values different?
             int dx = loc1.x - loc2.x;
@@ -163,7 +157,7 @@ public interface Inter
     /** The minimum grade to consider an interpretation as good. */
     static double goodGrade = intrinsicRatio * constants.goodGrade.getValue();
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Delete this instance, and remove it from its containing SIG.
      */
@@ -323,14 +317,14 @@ public interface Inter
      */
     void setSig (SIGraph sig);
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Constant.Ratio intrinsicRatio = new Constant.Ratio(
                 0.8,

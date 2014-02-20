@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              G l y p h N e s t                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        G l y p h N e s t                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -76,18 +76,16 @@ import java.util.Set;
  */
 public interface GlyphNest
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Events that can be published on a nest service. */
     static final Class<?>[] eventsWritten = new Class<?>[]{
-        GlyphEvent.class,
-        GlyphIdEvent.class,
-        GlyphSetEvent.class,
-        GlyphPileEvent.class,
+        GlyphEvent.class, GlyphIdEvent.class,
+        GlyphSetEvent.class, GlyphPileEvent.class,
         GlyphLayerEvent.class
     };
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Build one glyph in provided layer from a collection of sections.
      * The returned glyph will be transient (not known by nest) unless the
@@ -139,15 +137,6 @@ public interface GlyphNest
     void cutServices (SelectionService locationService);
 
     /**
-     * Export the unmodifiable collection of glyph instances of
-     * the nest for the provided layer.
-     *
-     * @param layer the containing glyph layer
-     * @return the collection of glyph instances for specified layer
-     */
-    Collection<Glyph> getGlyphs (GlyphLayer layer);
-
-    /**
      * Export the whole unmodifiable collection of glyph instances
      * of all layers in the nest.
      *
@@ -178,6 +167,15 @@ public interface GlyphNest
      * @return the nest selection service (Glyph, GlyphSet, GlyphId)
      */
     SelectionService getGlyphService ();
+
+    /**
+     * Export the unmodifiable collection of glyph instances of
+     * the nest for the provided layer.
+     *
+     * @param layer the containing glyph layer
+     * @return the collection of glyph instances for specified layer
+     */
+    Collection<Glyph> getGlyphs (GlyphLayer layer);
 
     /**
      * Report a name for this nest instance.

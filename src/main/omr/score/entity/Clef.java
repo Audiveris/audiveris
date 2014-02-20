@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  C l e f                                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            C l e f                                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -25,10 +25,11 @@ import java.awt.Point;
 /**
  * Class {@code Clef} encapsulates a clef.
  *
- * <p>The following image, directly pulled from wikipedia, explains the most
- * popular clefs today (Treble, Alto, Tenor and Bass) and for each presents
- * where the "Middle C" note (C4) would take place. These informations are used
- * by methods {@link #octaveOf(omr.score.entity.Clef, int)} and
+ * <p>
+ * The following image, directly pulled from wikipedia, explains the most popular clefs today
+ * (Treble, Alto, Tenor and Bass) and for each presents where the "Middle C" note (C4) would take
+ * place.
+ * These informations are used by methods {@link #octaveOf(omr.score.entity.Clef, int)} and
  * {@link #noteStepOf(omr.score.entity.Clef, int)}.</p>
  * <p>
  * <img
@@ -40,21 +41,14 @@ import java.awt.Point;
 public class Clef
         extends MeasureNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Clef.class);
 
     /** A dummy default clef to be used when no current clef is defined */
-    private static Clef defaultClef = new Clef(
-            null,
-            null,
-            Shape.G_CLEF,
-            null,
-            +2,
-            null);
+    private static Clef defaultClef = new Clef(null, null, Shape.G_CLEF, null, +2, null);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Precise clef shape, from Clefs range in Shape class */
     private Shape shape;
 
@@ -66,7 +60,7 @@ public class Clef
      */
     private int pitchPosition;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------//
     // Clef //
     //------//
@@ -115,73 +109,10 @@ public class Clef
                  Staff staff,
                  Clef other)
     {
-        this(
-                measure,
-                staff,
-                other.getShape(),
-                other.getCenter(),
-                other.getPitchPosition(),
-                null);
+        this(measure, staff, other.getShape(), other.getCenter(), other.getPitchPosition(), null);
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //------------//
-    // noteStepOf //
-    //------------//
-    /**
-     * Report the note step that corresponds to a note in the provided pitch
-     * position, using the current clef if any, otherwise using the default clef
-     * (G_CLEF)
-     *
-     * @param clef          the provided current clef
-     * @param pitchPosition the pitch position of the provided note
-     * @return the corresponding note step
-     */
-    public static Note.Step noteStepOf (Clef clef,
-                                        int pitchPosition)
-    {
-        if (clef == null) {
-            return defaultClef.noteStepOf(pitchPosition);
-        } else {
-            return clef.noteStepOf(pitchPosition);
-        }
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
-    }
-
-    //------------------//
-    // getPitchPosition //
-    //------------------//
-    /**
-     * Report the vertical position of this clef within the staff
-     *
-     * @return the pitch position
-     */
-    public int getPitchPosition ()
-    {
-        return pitchPosition;
-    }
-
-    //----------//
-    // getShape //
-    //----------//
-    /**
-     * Report the precise shape of this clef
-     *
-     * @return the clef shape
-     */
-    public Shape getShape ()
-    {
-        return shape;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // octaveOf //
     //----------//
@@ -229,8 +160,7 @@ public class Clef
         case G_CLEF_SMALL:
         case G_CLEF_8VA:
         case G_CLEF_8VB:
-            glyph.setTranslation(
-                    new Clef(measure, staff, shape, center, 2, glyph));
+            glyph.setTranslation(new Clef(measure, staff, shape, center, 2, glyph));
 
             return true;
 
@@ -239,8 +169,7 @@ public class Clef
             // Depending on precise clef position, we can have
             // an Alto C-clef (pp=0) or a Tenor C-clef (pp=+2) [or other stuff]
             int pp = (int) Math.rint(staff.pitchPositionOf(center));
-            glyph.setTranslation(
-                    new Clef(measure, staff, shape, center, pp, glyph));
+            glyph.setTranslation(new Clef(measure, staff, shape, center, pp, glyph));
 
             return true;
 
@@ -248,14 +177,12 @@ public class Clef
         case F_CLEF_SMALL:
         case F_CLEF_8VA:
         case F_CLEF_8VB:
-            glyph.setTranslation(
-                    new Clef(measure, staff, shape, center, -2, glyph));
+            glyph.setTranslation(new Clef(measure, staff, shape, center, -2, glyph));
 
             return true;
 
         case PERCUSSION_CLEF:
-            glyph.setTranslation(
-                    new Clef(measure, staff, shape, center, 0, glyph));
+            glyph.setTranslation(new Clef(measure, staff, shape, center, 0, glyph));
 
             return true;
 
@@ -263,6 +190,63 @@ public class Clef
             measure.addError(glyph, "No implementation yet for " + shape);
 
             return false;
+        }
+    }
+
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
+    //------------------//
+    // getPitchPosition //
+    //------------------//
+    /**
+     * Report the vertical position of this clef within the staff
+     *
+     * @return the pitch position
+     */
+    public int getPitchPosition ()
+    {
+        return pitchPosition;
+    }
+
+    //----------//
+    // getShape //
+    //----------//
+    /**
+     * Report the precise shape of this clef
+     *
+     * @return the clef shape
+     */
+    public Shape getShape ()
+    {
+        return shape;
+    }
+
+    //------------//
+    // noteStepOf //
+    //------------//
+    /**
+     * Report the note step that corresponds to a note in the provided pitch
+     * position, using the current clef if any, otherwise using the default clef
+     * (G_CLEF)
+     *
+     * @param clef          the provided current clef
+     * @param pitchPosition the pitch position of the provided note
+     * @return the corresponding note step
+     */
+    public static Note.Step noteStepOf (Clef clef,
+                                        int pitchPosition)
+    {
+        if (clef == null) {
+            return defaultClef.noteStepOf(pitchPosition);
+        } else {
+            return clef.noteStepOf(pitchPosition);
         }
     }
 
@@ -274,14 +258,11 @@ public class Clef
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{Clef");
-        sb.append(" ")
-                .append(shape);
+        sb.append(" ").append(shape);
 
-        sb.append(" pp=")
-                .append(pitchPosition);
+        sb.append(" pp=").append(pitchPosition);
 
-        sb.append(" ")
-                .append(Glyphs.toString(getGlyphs()));
+        sb.append(" ").append(Glyphs.toString(getGlyphs()));
 
         sb.append("}");
 

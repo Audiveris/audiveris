@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         B a s i c G e o m e t r y                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   B a s i c G e o m e t r y                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -33,8 +33,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * Class {@code BasicGeometry} is the basic implementation of the
- * geometry facet.
+ * Class {@code BasicGeometry} is the basic implementation of the geometry facet.
  *
  * @author Hervé Bitteur
  */
@@ -42,13 +41,11 @@ class BasicGeometry
         extends BasicFacet
         implements GlyphGeometry
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            BasicGeometry.class);
+    private static final Logger logger = LoggerFactory.getLogger(BasicGeometry.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Interline of the containing staff (or sheet) */
     private final int interline;
 
@@ -79,7 +76,7 @@ class BasicGeometry
     /** Approximating circle, if any */
     private Circle circle;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // BasicGeometry //
     //---------------//
@@ -96,7 +93,7 @@ class BasicGeometry
         this.interline = interline;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // dumpOf //
     //--------//
@@ -141,9 +138,7 @@ class BasicGeometry
     {
         if (center == null) {
             Rectangle box = glyph.getBounds();
-            center = new Point(
-                    box.x + (box.width / 2),
-                    box.y + (box.height / 2));
+            center = new Point(box.x + (box.width / 2), box.y + (box.height / 2));
         }
 
         return center;
@@ -183,8 +178,7 @@ class BasicGeometry
     public Point getCentroid ()
     {
         if (centroid == null) {
-            centroid = getGeometricMoments()
-                    .getCentroid();
+            centroid = getGeometricMoments().getCentroid();
         }
 
         return centroid;
@@ -272,8 +266,7 @@ class BasicGeometry
     @Override
     public double getNormalizedHeight ()
     {
-        return getGeometricMoments()
-                .getHeight();
+        return getGeometricMoments().getHeight();
     }
 
     //---------------------//
@@ -282,8 +275,7 @@ class BasicGeometry
     @Override
     public double getNormalizedWeight ()
     {
-        return getGeometricMoments()
-                .getWeight();
+        return getGeometricMoments().getWeight();
     }
 
     //--------------------//
@@ -292,8 +284,7 @@ class BasicGeometry
     @Override
     public double getNormalizedWidth ()
     {
-        return getGeometricMoments()
-                .getWidth();
+        return getGeometricMoments().getWidth();
     }
 
     //--------------------//
@@ -440,10 +431,7 @@ class BasicGeometry
 
         BasicARTExtractor extractor = new BasicARTExtractor();
         extractor.setDescriptor(artMoments);
-        extractor.extract(
-                collector.getXValues(),
-                collector.getYValues(),
-                collector.getSize());
+        extractor.extract(collector.getXValues(), collector.getYValues(), collector.getSize());
     }
 
     //-------------------------//
@@ -462,9 +450,7 @@ class BasicGeometry
                     collector.getSize(),
                     getInterline());
         } catch (Exception ex) {
-            logger.warn(
-                    "Glyph #{} Cannot compute moments with unit set to 0",
-                    glyph.getId());
+            logger.warn("Glyph #{} Cannot compute moments with unit set to 0", glyph.getId());
         }
     }
 }

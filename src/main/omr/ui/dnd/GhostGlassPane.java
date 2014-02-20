@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        G h o s t G l a s s P a n e                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  G h o s t G l a s s P a n e                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.dnd;
 
@@ -26,31 +26,29 @@ import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
 /**
- * Class {@code GhostGlassPane} is a special glasspane, meant for
- * displaying a shape being dragged and finally dropped.
+ * Class {@code GhostGlassPane} is a special glasspane, meant for displaying a shape
+ * being dragged and finally dropped.
  *
  * @author Hervé Bitteur (from Romain Guy's demo)
  */
 public class GhostGlassPane
         extends JPanel
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            GhostGlassPane.class);
+    private static final Logger logger = LoggerFactory.getLogger(GhostGlassPane.class);
 
     /** Composite to be used over a droppable target */
-    private static AlphaComposite targetComposite = AlphaComposite.getInstance(
+    private static final AlphaComposite targetComposite = AlphaComposite.getInstance(
             AlphaComposite.SRC_OVER,
             0.5f);
 
     /** Composite to be used over a non-droppable target */
-    private static AlphaComposite nonTargetComposite = AlphaComposite.getInstance(
+    private static final AlphaComposite nonTargetComposite = AlphaComposite.getInstance(
             AlphaComposite.SRC_OVER,
             0.2f);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The image to be dragged */
     private BufferedImage draggedImage = null;
 
@@ -63,7 +61,7 @@ public class GhostGlassPane
     /** Are we over a droppable target? */
     private boolean overTarget = false;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------------//
     // GhostGlassPane //
     //----------------//
@@ -76,7 +74,7 @@ public class GhostGlassPane
         setName("GhostGlassPane");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // paintComponent //
     //----------------//

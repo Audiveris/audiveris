@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            S c o r e B e n c h                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      S c o r e B e n c h                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -70,16 +70,14 @@ import java.util.TreeSet;
 public class ScoreBench
         extends Bench
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ScoreBench.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreBench.class);
 
     /** Special key which indicates that an interruption has occurred */
     private static final String INTERRUPTION_KEY = "whole.interrupted";
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related score. */
     private final Score score;
 
@@ -89,7 +87,7 @@ public class ScoreBench
     /** Starting date. */
     private final Date date = new Date(startTime);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // ScoreBench //
     //------------//
@@ -113,7 +111,7 @@ public class ScoreBench
         flushBench();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // flushBench //
     //------------//
@@ -123,8 +121,7 @@ public class ScoreBench
     @Override
     public final synchronized void flushBench ()
     {
-        ScoresManager.getInstance()
-                .storeBench(this, null, false);
+        ScoresManager.getInstance().storeBench(this, null, false);
     }
 
     //----------//
@@ -240,8 +237,7 @@ public class ScoreBench
                 // We have several properties, so we keep all the intermediate values
                 // Special case for step radix: we sum up the durations
                 // Standard radix case: we use the latest value
-                boolean isStep = radix.startsWith("step.")
-                                 && radix.endsWith(".duration");
+                boolean isStep = radix.startsWith("step.") && radix.endsWith(".duration");
                 int sum = 0;
 
                 for (int index = 1;; index++) {

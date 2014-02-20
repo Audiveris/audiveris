@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             S t o p W a t c h                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       S t o p W a t c h                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code StopWatch}
+ * Class {@code StopWatch} is a watch that measures elapse time.
  *
  * @author Hervé Bitteur
  */
@@ -78,10 +78,10 @@ public class StopWatch
             if (t != task) {
                 out.println(
                         String.format(
-                        format,
-                        t.elapsed,
-                        (total != 0) ? ((100 * t.elapsed) / total) : 100,
-                        t.label));
+                                format,
+                                t.elapsed,
+                                (total != 0) ? ((100 * t.elapsed) / total) : 100,
+                                t.label));
             }
         }
 

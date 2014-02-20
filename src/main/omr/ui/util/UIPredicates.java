@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          U I P r e d i c a t e s                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    U I P r e d i c a t e s                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.util;
 
@@ -18,14 +18,13 @@ import java.awt.event.MouseEvent;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code UIPredicates} gathers convenient methods to check
- * user gesture.
+ * Class {@code UIPredicates} gathers convenient methods to check user gesture.
  *
  * @author Hervé Bitteur
  */
 public class UIPredicates
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //--------------//
     // UIPredicates //
@@ -37,7 +36,7 @@ public class UIPredicates
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // isAdditionWanted //
     //------------------//
@@ -57,8 +56,8 @@ public class UIPredicates
 
             return left && command && !e.isPopupTrigger();
         } else {
-            return (SwingUtilities.isRightMouseButton(e) != SwingUtilities.isLeftMouseButton(
-                    e)) && e.isControlDown();
+            return (SwingUtilities.isRightMouseButton(e) != SwingUtilities.isLeftMouseButton(e))
+                   && e.isControlDown();
         }
     }
 
@@ -77,8 +76,7 @@ public class UIPredicates
         if (WellKnowns.MAC_OS_X) {
             return e.isPopupTrigger();
         } else {
-            return SwingUtilities.isRightMouseButton(e)
-                   && !SwingUtilities.isLeftMouseButton(e);
+            return SwingUtilities.isRightMouseButton(e) && !SwingUtilities.isLeftMouseButton(e);
         }
     }
 
@@ -139,10 +137,10 @@ public class UIPredicates
      */
     public static boolean isRubberWanted (MouseEvent e)
     {
-//        int onmask = BUTTON1_DOWN_MASK | SHIFT_DOWN_MASK;
-//        int offmask = BUTTON2_DOWN_MASK | BUTTON3_DOWN_MASK;
-        int onmask =  SHIFT_DOWN_MASK;
-        int offmask =  BUTTON2_DOWN_MASK; // middle button = wheel
+        //        int onmask = BUTTON1_DOWN_MASK | SHIFT_DOWN_MASK;
+        //        int offmask = BUTTON2_DOWN_MASK | BUTTON3_DOWN_MASK;
+        int onmask = SHIFT_DOWN_MASK;
+        int offmask = BUTTON2_DOWN_MASK; // middle button = wheel
 
         return (e.getModifiersEx() & (onmask | offmask)) == onmask;
     }

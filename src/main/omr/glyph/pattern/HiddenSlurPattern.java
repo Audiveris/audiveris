@@ -30,16 +30,13 @@ import org.slf4j.LoggerFactory;
 public class HiddenSlurPattern
         extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            HiddenSlurPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(HiddenSlurPattern.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------------//
     // HiddenSlurPattern //
     //-------------------//
@@ -53,7 +50,7 @@ public class HiddenSlurPattern
         super("HiddenSlur", system);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // runPattern //
     //------------//
@@ -87,18 +84,17 @@ public class HiddenSlurPattern
         return successNb;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
                 0.5,
                 "Minimum normalized glyph weight to lookup a slur section");
-
     }
 }

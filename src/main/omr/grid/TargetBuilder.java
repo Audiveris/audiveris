@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         T a r g e t B u i l d e r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   T a r g e t B u i l d e r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -26,6 +26,7 @@ import omr.sheet.Skew;
 import omr.sheet.SystemInfo;
 
 import omr.ui.Colors;
+import omr.ui.util.ItemRenderer;
 import omr.ui.view.RubberPanel;
 import omr.ui.view.ScrollView;
 
@@ -51,29 +52,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
-import omr.ui.util.ItemRenderer;
 
 /**
- * Class {@code TargetBuilder} is in charge of building a "perfect"
- * definition of target systems, staves and lines as well as the
- * dewarp grid that allows to transform the original image in to the
- * perfect image.
+ * Class {@code TargetBuilder} is in charge of building a "perfect" definition of target
+ * systems, staves and lines as well as the de-warp grid that allows to transform the
+ * original image in to the perfect image.
  *
  * @author Hervé Bitteur
  */
 public class TargetBuilder
         implements ItemRenderer
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            TargetBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(TargetBuilder.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet */
     private final Sheet sheet;
 
@@ -98,7 +94,7 @@ public class TargetBuilder
     /** Destination points */
     private final List<Point2D> dstPoints = new ArrayList<Point2D>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // TargetBuilder //
     //---------------//
@@ -112,7 +108,7 @@ public class TargetBuilder
         this.sheet = sheet;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // buildInfo //
     //-----------//
@@ -126,16 +122,14 @@ public class TargetBuilder
         buildWarpGrid(dewarper);
 
         // Dewarp the initial image
-        RenderedImage dewarpedImage = dewarper.dewarpImage(
-                sheet.getPicture().getInitialImage());
+        RenderedImage dewarpedImage = dewarper.dewarpImage(sheet.getPicture().getInitialImage());
 
         // Add a view on dewarped image?
         if (Main.getGui() != null) {
-            sheet.getAssembly()
-                    .addViewTab(
-                            "Dewarped",
-                            new ScrollView(new DewarpedView(dewarpedImage)),
-                            null);
+            sheet.getAssembly().addViewTab(
+                    "Dewarped",
+                    new ScrollView(new DewarpedView(dewarpedImage)),
+                    null);
         }
 
         // Store dewarped image on disk
@@ -183,12 +177,8 @@ public class TargetBuilder
 
         for (SystemInfo system : sheet.getSystems()) {
             for (HorizontalSide side : HorizontalSide.values()) {
-                Point2D top = system.getFirstStaff()
-                        .getFirstLine()
-                        .getEndPoint(side);
-                Point2D bot = system.getLastStaff()
-                        .getLastLine()
-                        .getEndPoint(side);
+                Point2D top = system.getFirstStaff().getFirstLine().getEndPoint(side);
+                Point2D bot = system.getLastStaff().getLastLine().getEndPoint(side);
 
                 // Draw something like a vertical bracket
                 double dx = (side == LEFT) ? (-absDx) : absDx;
@@ -222,18 +212,13 @@ public class TargetBuilder
 
         Graphics2D g2 = (Graphics2D) g;
         List<Point2D> points = useSource ? srcPoints : dstPoints;
-        double radius = sheet.getScale()
-                .toPixelsDouble(constants.gridPointSize);
+        double radius = sheet.getScale().toPixelsDouble(constants.gridPointSize);
         g2.setColor(Colors.WARP_POINT);
 
         Rectangle2D rect = new Rectangle2D.Double();
 
         for (Point2D pt : points) {
-            rect.setRect(
-                    pt.getX() - radius,
-                    pt.getY() - radius,
-                    2 * radius,
-                    2 * radius);
+            rect.setRect(pt.getX() - radius, pt.getY() - radius, 2 * radius, 2 * radius);
             g2.fill(rect);
         }
     }
@@ -265,15 +250,12 @@ public class TargetBuilder
 
             if (prevLine != null) {
                 // Preserve position relative to bottom left of previous system
-                Point2D prevDskLeft = skew.deskewed(
-                        prevLine.info.getEndPoint(LEFT));
+                Point2D prevDskLeft = skew.deskewed(prevLine.info.getEndPoint(LEFT));
                 TargetSystem prevSystem = prevLine.staff.system;
                 double dx = prevSystem.left - prevDskLeft.getX();
                 double dy = prevLine.y - prevDskLeft.getY();
                 dskLeft.setLocation(dskLeft.getX() + dx, dskLeft.getY() + dy);
-                dskRight.setLocation(
-                        dskRight.getX() + dx,
-                        dskRight.getY() + dy);
+                dskRight.setLocation(dskRight.getX() + dx, dskRight.getY() + dy);
             }
 
             TargetSystem targetSystem = new TargetSystem(
@@ -289,17 +271,13 @@ public class TargetBuilder
 
                 if (prevLine != null) {
                     // Preserve inter-staff vertical gap
-                    Point2D prevDskLeft = skew.deskewed(
-                            prevLine.info.getEndPoint(LEFT));
+                    Point2D prevDskLeft = skew.deskewed(prevLine.info.getEndPoint(LEFT));
                     dskLeft.setLocation(
                             dskLeft.getX(),
                             dskLeft.getY() + (prevLine.y - prevDskLeft.getY()));
                 }
 
-                TargetStaff targetStaff = new TargetStaff(
-                        staff,
-                        dskLeft.getY(),
-                        targetSystem);
+                TargetStaff targetStaff = new TargetStaff(staff, dskLeft.getY(), targetSystem);
                 targetSystem.staves.add(targetStaff);
 
                 // Target line parameters
@@ -311,8 +289,7 @@ public class TargetBuilder
                     // Enforce perfect staff interline
                     TargetLine targetLine = new TargetLine(
                             line,
-                            targetStaff.top
-                            + (staff.getSpecificScale().getInterline() * lineIdx),
+                            targetStaff.top + (staff.getSpecificScale().getInterline() * lineIdx),
                             targetStaff);
                     allTargetLines.add(targetLine);
                     targetStaff.lines.add(targetLine);
@@ -350,14 +327,7 @@ public class TargetBuilder
             warpPositions[i++] = (float) p.getY();
         }
 
-        dewarper.createWarpGrid(
-                0,
-                xStep,
-                xNumCells,
-                0,
-                yStep,
-                yNumCells,
-                warpPositions);
+        dewarper.createWarpGrid(0, xStep, xNumCells, 0, yStep, yNumCells, warpPositions);
     }
 
     //----------//
@@ -417,8 +387,7 @@ public class TargetBuilder
     //------------//
     private void storeImage (RenderedImage dewarpedImage)
     {
-        String pageId = sheet.getPage()
-                .getId();
+        String pageId = sheet.getPage().getId();
         File file = new File(
                 ScoresManager.getInstance().getDefaultDewarpDirectory(),
                 pageId + ".dewarped.png");
@@ -432,14 +401,14 @@ public class TargetBuilder
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Boolean displayGrid = new Constant.Boolean(
                 false,
@@ -449,9 +418,7 @@ public class TargetBuilder
                 0.2,
                 "Size of displayed grid points");
 
-        Scale.Fraction systemMarkWidth = new Scale.Fraction(
-                2.0,
-                "Width of system marks");
+        Scale.Fraction systemMarkWidth = new Scale.Fraction(2.0, "Width of system marks");
 
         Scale.LineFraction systemMarkStroke = new Scale.LineFraction(
                 2.0,
@@ -460,7 +427,6 @@ public class TargetBuilder
         Constant.Boolean storeDewarp = new Constant.Boolean(
                 false,
                 "Should we store the dewarped image on disk?");
-
     }
 
     //--------------//
@@ -469,13 +435,13 @@ public class TargetBuilder
     private class DewarpedView
             extends RubberPanel
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final AffineTransform identity = new AffineTransform();
 
         private final RenderedImage image;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public DewarpedView (RenderedImage image)
         {
             this.image = image;
@@ -488,7 +454,7 @@ public class TargetBuilder
             setName("DewarpedView");
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void render (Graphics2D g)
         {

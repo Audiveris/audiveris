@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      R u n s T a b l e F a c t o r y                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                R u n s T a b l e F a c t o r y                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.run;
 
@@ -23,21 +23,18 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 
 /**
- * Class {@code RunsTableFactory} retrieves the runs structure out of
- * a given pixel source and builds the related {@link RunsTable}
- * structure.
+ * Class {@code RunsTableFactory} retrieves the runs structure out of a given pixel
+ * source and builds the related {@link RunsTable} structure.
  *
  * @author Hervé Bitteur
  */
 public class RunsTableFactory
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            RunsTableFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(RunsTableFactory.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The source to read runs of pixels from. */
     private final ByteProcessor source;
@@ -54,7 +51,7 @@ public class RunsTableFactory
     /** The created RunsTable. */
     private RunsTable table;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     // -----------------//
     // RunsTableFactory //
@@ -79,7 +76,7 @@ public class RunsTableFactory
         swapNeeded = orientation.isVertical();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     // ------------//
     // createTable //
@@ -115,17 +112,14 @@ public class RunsTableFactory
                 orientation,
                 new Dimension(source.getWidth(), source.getHeight()));
 
-        RunsRetriever retriever = new RunsRetriever(
-                orientation,
-                new MyAdapter(filter));
+        RunsRetriever retriever = new RunsRetriever(orientation, new MyAdapter(filter));
 
-        retriever.retrieveRuns(
-                new Rectangle(0, 0, source.getWidth(), source.getHeight()));
+        retriever.retrieveRuns(new Rectangle(0, 0, source.getWidth(), source.getHeight()));
 
         return table;
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //--------//
     // Filter //
     //--------//
@@ -134,7 +128,7 @@ public class RunsTableFactory
      */
     public static interface Filter
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Perform the filter on the provided run candidate.
@@ -149,7 +143,7 @@ public class RunsTableFactory
                        int length);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //
     // ----------//
     // MyAdapter //
@@ -157,18 +151,18 @@ public class RunsTableFactory
     private class MyAdapter
             implements RunsRetriever.Adapter
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Potential filter on candidates. */
         private final Filter filter;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public MyAdapter (Filter filter)
         {
             this.filter = filter;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         // --------//
         // backRun //
         // --------//
@@ -193,16 +187,16 @@ public class RunsTableFactory
             if (length >= minLength) {
                 // Run filter if any
                 if (filter != null) {
-                    final boolean ok = swapNeeded
-                            ? filter.check(pos, coord - length, length)
+                    final boolean ok = swapNeeded ? filter.check(pos, coord - length, length)
                             : filter.check(coord - length, pos, length);
+
                     if (!ok) {
                         return;
                     }
                 }
+
                 final int level = ((2 * cumul) + length) / (2 * length);
-                table.getSequence(pos)
-                        .add(new Run(coord - length, length, level));
+                table.getSequence(pos).add(new Run(coord - length, length, level));
             }
         }
 
@@ -232,6 +226,15 @@ public class RunsTableFactory
             } else {
                 return source.get(coord, pos) == 0;
             }
+        }
+
+        // ----------//
+        // terminate //
+        // ----------//
+        @Override
+        public final void terminate ()
+        {
+            logger.debug("{} Retrieved runs: {}", table, table.getRunCount());
         }
 
         //--------------//
@@ -264,15 +267,6 @@ public class RunsTableFactory
 
             // No annotation: it's safer to assume no thread safety
             return false;
-        }
-
-        // ----------//
-        // terminate //
-        // ----------//
-        @Override
-        public final void terminate ()
-        {
-            logger.debug("{} Retrieved runs: {}", table, table.getRunCount());
         }
     }
 }

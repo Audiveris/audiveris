@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               S y m b o l s                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         S y m b o l s                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -20,44 +20,40 @@ import org.slf4j.LoggerFactory;
 import java.util.EnumMap;
 
 /**
- * Class {@code Symbols} manages all {@link ShapeSymbol} instances,
- * both for the simple symbols and for a few decorated symbols.
+ * Class {@code Symbols} manages all {@link ShapeSymbol} instances, both for the simple
+ * symbols and for a few decorated symbols.
  *
  * @author Hervé Bitteur
  */
 public class Symbols
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(Symbols.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            Symbols.class);
 
     /** Map of (simple) symbols */
-    private static final EnumMap<Shape, ShapeSymbol> sym = new EnumMap<>(
+    private static final EnumMap<Shape, ShapeSymbol> sym = new EnumMap<Shape, ShapeSymbol>(
             Shape.class);
 
     /** Map of decorated symbols */
-    private static final EnumMap<Shape, ShapeSymbol> dec = new EnumMap<>(
+    private static final EnumMap<Shape, ShapeSymbol> dec = new EnumMap<Shape, ShapeSymbol>(
             Shape.class);
 
     /** Symbol of '8' char for ottava sign (alta or bassa) on F & G clefs */
     public static final BasicSymbol SYMBOL_OTTAVA = new BasicSymbol(false, 165);
 
     /** Symbol for upper part of brace */
-    public static final BasicSymbol SYMBOL_BRACE_UPPER_HALF = new BasicSymbol(
-            167);
+    public static final BasicSymbol SYMBOL_BRACE_UPPER_HALF = new BasicSymbol(167);
 
     /** Symbol for lower part of brace */
-    public static final BasicSymbol SYMBOL_BRACE_LOWER_HALF = new BasicSymbol(
-            234);
+    public static final BasicSymbol SYMBOL_BRACE_LOWER_HALF = new BasicSymbol(234);
 
     /** Symbol for upper serif of bracket */
-    public static final BasicSymbol SYMBOL_BRACKET_UPPER_SERIF = new BasicSymbol(
-            194);
+    public static final BasicSymbol SYMBOL_BRACKET_UPPER_SERIF = new BasicSymbol(194);
 
     /** Symbol for lower serif of bracket */
-    public static final BasicSymbol SYMBOL_BRACKET_LOWER_SERIF = new BasicSymbol(
-            76);
+    public static final BasicSymbol SYMBOL_BRACKET_LOWER_SERIF = new BasicSymbol(76);
 
     /** Symbol for staff lines */
     public static final BasicSymbol SYMBOL_STAFF_LINES = new BasicSymbol(61);
@@ -75,31 +71,23 @@ public class Symbols
     public static final BasicSymbol SYMBOL_MARK = new BasicSymbol(205);
 
     /** Symbol for FLAG_1 */
-    public static final ShapeSymbol SYMBOL_FLAG_1 = new ShapeSymbol(
-            FLAG_1,
-            106);
+    public static final ShapeSymbol SYMBOL_FLAG_1 = new ShapeSymbol(FLAG_1, 106);
 
     /** Symbol for FLAG_2 */
-    public static final ShapeSymbol SYMBOL_FLAG_2 = new ShapeSymbol(
-            FLAG_2,
-            107);
+    public static final ShapeSymbol SYMBOL_FLAG_2 = new ShapeSymbol(FLAG_2, 107);
 
     /** Symbol for FLAG_1_UP */
-    public static final ShapeSymbol SYMBOL_FLAG_1_UP = new ShapeSymbol(
-            FLAG_1_UP,
-            74);
+    public static final ShapeSymbol SYMBOL_FLAG_1_UP = new ShapeSymbol(FLAG_1_UP, 74);
 
     /** Symbol for FLAG_2_UP */
-    public static final ShapeSymbol SYMBOL_FLAG_2_UP = new ShapeSymbol(
-            FLAG_2_UP,
-            75);
+    public static final ShapeSymbol SYMBOL_FLAG_2_UP = new ShapeSymbol(FLAG_2_UP, 75);
 
     static {
         assignSymbols();
         assignDecoratedSymbols();
     }
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------//
     // Symbols // This is just a functional class, no instance is needed
     //---------//
@@ -107,7 +95,7 @@ public class Symbols
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // getSymbol //
     //-----------//
@@ -358,24 +346,16 @@ public class Symbols
         map(TURN, 84);
         sym.put(
                 INVERTED_TURN,
-                new TransformedSymbol(
-                false,
-                INVERTED_TURN,
-                TURN,
-                ShapeSymbol.verticalFlip));
+                new TransformedSymbol(false, INVERTED_TURN, TURN, ShapeSymbol.verticalFlip));
         sym.put(TURN_SLASH, new TurnSlashSymbol(false));
         sym.put(
                 TURN_UP,
-                new TransformedSymbol(
-                false,
-                TURN_UP,
-                TURN,
-                ShapeSymbol.quadrantRotateOne));
+                new TransformedSymbol(false, TURN_UP, TURN, ShapeSymbol.quadrantRotateOne));
 
         map(NOTEHEAD_VOID, 250);
         small(NOTEHEAD_VOID_SMALL, 250);
         map(WHOLE_NOTE, 119);
-        small( WHOLE_NOTE_SMALL, 119);
+        small(WHOLE_NOTE_SMALL, 119);
         sym.put(WHOLE_REST, new RestSymbol(WHOLE_REST, false, 183));
         sym.put(WEDGE_set, new CrescendoSymbol(false, CRESCENDO));
     }

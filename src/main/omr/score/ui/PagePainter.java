@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           P a g e P a i n t e r                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     P a g e P a i n t e r                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.ui;
 
@@ -92,8 +92,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * Class {@code PagePainter} is an abstract class that defines common
- * features of a page painter.
+ * Class {@code PagePainter} is an abstract class that defines common features of a
+ * page painter.
  * <p>
  * It is specialized by: <ul>
  * <li>{@link PagePhysicalPainter} for the presentation of page entities over
@@ -105,22 +105,17 @@ import java.util.Set;
 public abstract class PagePainter
         extends AbstractScoreVisitor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(PagePainter.class);
 
     /** The alignment used by default */
     protected static final Alignment defaultAlignment = AREA_CENTER;
 
     /** A transformation to half scale (used for slot time annotation) */
-    protected static final AffineTransform halfAT = AffineTransform.
-            getScaleInstance(
-                    0.5,
-                    0.5);
+    protected static final AffineTransform halfAT = AffineTransform.getScaleInstance(0.5, 0.5);
 
     /** Font for annotations */
     protected static final Font basicFont = new Font(
@@ -135,8 +130,7 @@ public abstract class PagePainter
     protected static final int annotationDy = 15;
 
     // Painting parameters
-    protected static final PaintingParameters parameters = PaintingParameters.
-            getInstance();
+    protected static final PaintingParameters parameters = PaintingParameters.getInstance();
 
     /** Sequence of colors for voices. TODO: Choose better colors, with alpha! */
     private static final int alpha = 150;
@@ -158,7 +152,7 @@ public abstract class PagePainter
         new Color(255, 255, 0, alpha)
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Clipping area */
     protected final Rectangle oldClip;
 
@@ -208,7 +202,7 @@ public abstract class PagePainter
 
     protected SystemInfo systemInfo;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // PagePainter //
     //-------------//
@@ -238,7 +232,7 @@ public abstract class PagePainter
         g.setFont(basicFont);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // visit Arpeggiate //
     //------------------//
@@ -257,8 +251,7 @@ public abstract class PagePainter
 
             // How many half arpeggiate symbols do we need?
             final int halfHeight = scale.getInterline();
-            final int count = (int) Math.rint(
-                    (double) box.height / halfHeight);
+            final int count = (int) Math.rint((double) box.height / halfHeight);
             final TextLayout layout = musicFont.layout(ARPEGGIATO);
             final Point start = new Point(box.x, box.y + box.height);
 
@@ -288,9 +281,7 @@ public abstract class PagePainter
             g.setClip(oldClip);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + arpeggiate,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + arpeggiate, ex);
         }
 
         return true;
@@ -312,10 +303,8 @@ public abstract class PagePainter
     public boolean visit (Beam beam)
     {
         try {
-            final Point left = new Point(
-                    beam.getPoint(HorizontalSide.LEFT));
-            final Point right = new Point(
-                    beam.getPoint(HorizontalSide.RIGHT));
+            final Point left = new Point(beam.getPoint(HorizontalSide.LEFT));
+            final Point right = new Point(beam.getPoint(HorizontalSide.RIGHT));
             final int dx = (int) Math.rint(scale.getMainStem() / 2d);
             final int dy = (int) Math.rint(beamHalfThickness);
 
@@ -350,9 +339,11 @@ public abstract class PagePainter
             polygon.addPoint(right.x, right.y - dy);
 
             // Use related voices (if already set)
-            Set<Voice> voices = new LinkedHashSet<>();
+            Set<Voice> voices = new LinkedHashSet<Voice>();
+
             for (Chord chord : beam.getChords()) {
                 Voice voice = chord.getVoice();
+
                 if (voice != null) {
                     voices.add(voice);
                 }
@@ -371,9 +362,7 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + beam,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + beam, ex);
         }
 
         return true;
@@ -405,9 +394,7 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + chord,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + chord, ex);
         }
 
         return true;
@@ -423,9 +410,7 @@ public abstract class PagePainter
             paint(clef.getShape(), clef.getReferencePoint());
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + clef,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + clef, ex);
         }
 
         return true;
@@ -482,9 +467,7 @@ public abstract class PagePainter
 
             // Flats : use vertical stick on left
             // Sharps : use center of the two vertical sticks
-            final Alignment alignment = new Alignment(
-                    BASELINE,
-                    (key < 0) ? LEFT : CENTER);
+            final Alignment alignment = new Alignment(BASELINE, (key < 0) ? LEFT : CENTER);
             Point point = new Point(box.x, 0);
 
             for (int i = 1; i <= (key * sign); i++) {
@@ -502,9 +485,7 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + keySignature,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + keySignature, ex);
         }
 
         return true;
@@ -522,9 +503,7 @@ public abstract class PagePainter
             if (measureElement.getShape() != null) {
                 try {
                     paint(
-                            musicFont.layout(
-                                    measureElement.getShape(),
-                                    measureElement.getDimension()),
+                            musicFont.layout(measureElement.getShape(), measureElement.getDimension()),
                             measureElement.getReferencePoint());
                 } catch (ConcurrentModificationException ignored) {
                 } catch (Exception ex) {
@@ -533,10 +512,7 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting "
-                    + measureElement,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + measureElement, ex);
         }
 
         return true;
@@ -557,10 +533,10 @@ public abstract class PagePainter
             // Note head
             if (stem != null) {
                 // Note is attached to a stem, link note display to the stem
-                paint(shape,
-                      noteLocation(note),
-                      (center.x < chord.getTailLocation().x) ? MIDDLE_RIGHT
-                      : MIDDLE_LEFT);
+                paint(
+                        shape,
+                        noteLocation(note),
+                        (center.x < chord.getTailLocation().x) ? MIDDLE_RIGHT : MIDDLE_LEFT);
             } else {
                 // Standard display
                 paint(shape.getPhysicalShape(), noteLocation(note));
@@ -570,15 +546,11 @@ public abstract class PagePainter
             final Glyph accid = note.getAccidental();
 
             if (accid != null) {
-                paint(accid.getShape(),
-                      accidentalLocation(note, accid),
-                      BASELINE_CENTER);
+                paint(accid.getShape(), accidentalLocation(note, accid), BASELINE_CENTER);
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + note,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + note, ex);
         }
 
         return true;
@@ -637,8 +609,7 @@ public abstract class PagePainter
 
                     if (voice == null) {
                         voice = chord.getVoice();
-                    } else if ((chord.getVoice() != null)
-                               && (chord.getVoice() != voice)) {
+                    } else if ((chord.getVoice() != null) && (chord.getVoice() != voice)) {
                         ///slur.addError("Tie with different voices");
                     }
                 }
@@ -655,9 +626,7 @@ public abstract class PagePainter
             g.setStroke(defaultStroke);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + slur,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + slur, ex);
         }
 
         return true;
@@ -683,17 +652,12 @@ public abstract class PagePainter
                     // We have nice half braces in MusicalSymbols font
                     final Rectangle box = braceBox(part);
                     final Point center = GeoUtil.centerOf(box);
-                    final Dimension halfDim = new Dimension(
-                            box.width,
-                            box.height / 2);
+                    final Dimension halfDim = new Dimension(box.width, box.height / 2);
                     paint(
                             musicFont.layout(SYMBOL_BRACE_UPPER_HALF, halfDim),
                             center,
                             BOTTOM_CENTER);
-                    paint(
-                            musicFont.layout(SYMBOL_BRACE_LOWER_HALF, halfDim),
-                            center,
-                            TOP_CENTER);
+                    paint(musicFont.layout(SYMBOL_BRACE_LOWER_HALF, halfDim), center, TOP_CENTER);
                 } else if (part.getBrace().getShape() == Shape.BRACKET) {
                     TextLayout trunk = musicFont.layout(Shape.THICK_BARLINE);
                     double width = trunk.getBounds().getWidth();
@@ -702,14 +666,18 @@ public abstract class PagePainter
 
                     final Line2D line = bracketLine(part);
                     Point topLeft = new Point(
-                            (int) Math.rint(line.getX1() - barWidth / 2),
+                            (int) Math.rint(line.getX1() - (barWidth / 2)),
                             (int) Math.rint(line.getY1()));
                     Point botLeft = new Point(
-                            (int) Math.rint(line.getX2() - barWidth / 2),
+                            (int) Math.rint(line.getX2() - (barWidth / 2)),
                             (int) Math.rint(line.getY2()));
 
-                    TextLayout upper = musicFont.layout(SYMBOL_BRACKET_UPPER_SERIF.getString(), at);
-                    TextLayout lower = musicFont.layout(SYMBOL_BRACKET_LOWER_SERIF.getString(), at);
+                    TextLayout upper = musicFont.layout(
+                            SYMBOL_BRACKET_UPPER_SERIF.getString(),
+                            at);
+                    TextLayout lower = musicFont.layout(
+                            SYMBOL_BRACKET_LOWER_SERIF.getString(),
+                            at);
                     paint(upper, topLeft, BASELINE_LEFT);
                     paint(lower, botLeft, BASELINE_LEFT);
 
@@ -724,9 +692,7 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + part,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + part, ex);
         }
 
         return true;
@@ -749,7 +715,9 @@ public abstract class PagePainter
     {
         try {
             g.setColor(defaultColor);
+
             TextLine sentence = text.getSentence();
+
             if (sentence.getWords().isEmpty()) {
                 // This may occur with obsolete Text, linked to old sentence
                 // When painting between TEXTS and PAGES steps
@@ -767,60 +735,10 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + text,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + text, ex);
         }
 
         return true;
-    }
-
-    //------------------//
-    // handleVoiceColor //
-    //------------------//
-    private void handleVoiceColor (MeasureElement measureElement)
-    {
-        if (coloredVoices) {
-            g.setColor(defaultColor);
-
-            if (measureElement instanceof AbstractNotation) {
-                handleVoiceColor(measureElement.getChord());
-            }
-        }
-
-    }
-
-    //------------------//
-    // handleVoiceColor //
-    //------------------//
-    private void handleVoiceColor (Chord chord)
-    {
-        if (coloredVoices) {
-            g.setColor(defaultColor);
-
-            if (chord != null) {
-                Voice voice = chord.getVoice();
-
-                if (voice != null) {
-                    g.setColor(colorOf(voice));
-                }
-            }
-        }
-    }
-    //-----------//
-    // paintWord //
-    //-----------//
-
-    private void paintWord (TextWord word)
-    {
-        FontInfo meanFont = word.getTextLine().getMeanFont();
-
-        if (meanFont != null) {
-            Font font = new TextFont(meanFont);
-            FontRenderContext frc = g.getFontRenderContext();
-            TextLayout layout = new TextLayout(word.getValue(), font, frc);
-            paint(layout, word.getLocation(), BASELINE_LEFT);
-        }
     }
 
     //---------------------//
@@ -848,14 +766,10 @@ public abstract class PagePainter
                 paint(shape, center);
             } else {
                 // Paint numerator
-                paintTimeNumber(
-                        timeSignature.getNumerator(),
-                        new Point(center.x, center.y - dy));
+                paintTimeNumber(timeSignature.getNumerator(), new Point(center.x, center.y - dy));
 
                 // Paint denominator
-                paintTimeNumber(
-                        timeSignature.getDenominator(),
-                        new Point(center.x, center.y + dy));
+                paintTimeNumber(timeSignature.getDenominator(), new Point(center.x, center.y + dy));
             }
         } catch (InvalidTimeSignature ex) {
             logger.warn("Invalid time signature", ex);
@@ -890,9 +804,7 @@ public abstract class PagePainter
                     top = new Point(box.x + box.width, box.y);
                     bot = new Point(box.x + box.width, box.y + box.height);
                 } else {
-                    single = new Point(
-                            box.x + box.width,
-                            box.y + (box.height / 2));
+                    single = new Point(box.x + box.width, box.y + (box.height / 2));
                     top = new Point(box.x, box.y);
                     bot = new Point(box.x, box.y + box.height);
                 }
@@ -902,9 +814,7 @@ public abstract class PagePainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + wedge,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + wedge, ex);
         }
 
         return true;
@@ -923,6 +833,26 @@ public abstract class PagePainter
      */
     protected abstract Point accidentalLocation (Note note,
                                                  Glyph accidental);
+
+    //-------------//
+    // basicLayout //
+    //-------------//
+    /**
+     * Build a TextLayout from a String of BasicFont characters
+     * (transformed by the provided AffineTransform if any)
+     *
+     * @param str the string of proper codes
+     * @param fat potential affine transformation
+     * @return the (sized) TextLayout ready to be drawn
+     */
+    protected TextLayout basicLayout (String str,
+                                      AffineTransform fat)
+    {
+        FontRenderContext frc = g.getFontRenderContext();
+        Font font = (fat == null) ? basicFont : basicFont.deriveFont(fat);
+
+        return new TextLayout(str, font, frc);
+    }
 
     //----------//
     // braceBox //
@@ -957,27 +887,6 @@ public abstract class PagePainter
      * @return the location to be used for painting
      */
     protected abstract Point noteLocation (Note note);
-
-    //-------------//
-    // basicLayout //
-    //-------------//
-    /**
-     * Build a TextLayout from a String of BasicFont characters
-     * (transformed by the provided AffineTransform if any)
-     *
-     * @param str the string of proper codes
-     * @param fat potential affine transformation
-     * @return the (sized) TextLayout ready to be drawn
-     */
-    protected TextLayout basicLayout (String str,
-                                      AffineTransform fat)
-    {
-        FontRenderContext frc = g.getFontRenderContext();
-        Font font = (fat == null) ? basicFont
-                : basicFont.deriveFont(fat);
-
-        return new TextLayout(str, font, frc);
-    }
 
     //-----------------//
     // getKeySigItemDx //
@@ -1026,7 +935,7 @@ public abstract class PagePainter
         } else {
             UIUtil.setAbsoluteStroke(g, 1f);
         }
-        
+
         defaultStroke = g.getStroke();
     }
 
@@ -1089,9 +998,7 @@ public abstract class PagePainter
                               Staff staff,
                               double pitch)
     {
-        return new Point(
-                sysPoint.x,
-                staff.getTopLeft().y + staff.pitchToPixels(pitch));
+        return new Point(sysPoint.x, staff.getTopLeft().y + staff.pitchToPixels(pitch));
     }
 
     //-------//
@@ -1222,7 +1129,7 @@ public abstract class PagePainter
     {
         // Compute symbol abscissa according to chord stem
         int stemX = chord.getTailLocation().x;
-        double dx = scale.getMainStem() / 2d - 2d; // slight adjustment
+        double dx = (scale.getMainStem() / 2d) - 2d; // slight adjustment
 
         if (sysPoint.x < stemX) {
             // Symbol is on left side of stem
@@ -1255,14 +1162,61 @@ public abstract class PagePainter
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //------------------//
+    // handleVoiceColor //
+    //------------------//
+    private void handleVoiceColor (MeasureElement measureElement)
+    {
+        if (coloredVoices) {
+            g.setColor(defaultColor);
+
+            if (measureElement instanceof AbstractNotation) {
+                handleVoiceColor(measureElement.getChord());
+            }
+        }
+    }
+
+    //------------------//
+    // handleVoiceColor //
+    //------------------//
+    private void handleVoiceColor (Chord chord)
+    {
+        if (coloredVoices) {
+            g.setColor(defaultColor);
+
+            if (chord != null) {
+                Voice voice = chord.getVoice();
+
+                if (voice != null) {
+                    g.setColor(colorOf(voice));
+                }
+            }
+        }
+    }
+
+    //-----------//
+    // paintWord //
+    //-----------//
+    private void paintWord (TextWord word)
+    {
+        FontInfo meanFont = word.getTextLine().getMeanFont();
+
+        if (meanFont != null) {
+            Font font = new TextFont(meanFont);
+            FontRenderContext frc = g.getFontRenderContext();
+            TextLayout layout = new TextLayout(word.getValue(), font, frc);
+            paint(layout, word.getLocation(), BASELINE_LEFT);
+        }
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Font for annotations */
         Constant.Integer basicFontSize = new Constant.Integer(
@@ -1274,6 +1228,5 @@ public abstract class PagePainter
         final Scale.Fraction keySigItemDx = new Scale.Fraction(
                 1.1,
                 "dx between items in a key signature");
-
     }
 }

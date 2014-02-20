@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               E l l i p s e                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         E l l i p s e                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -24,42 +24,42 @@ import static java.lang.Math.*;
  * Class {@code Ellipse} implements the direct algorithm of Fitzgibbon
  * et al, improved by Halir et al, to find the ellipse which best
  * approximates a collection of points.
+ * <p>
  * The ellipse is defined through the 6 coefficients of its algebraic equation:
- *
- * <p> A*x**2 + B*x*y + C*y**2 + D*x + E*y + F = 0
- *
- * <p>It can also compute the ellipse characteristics (center, theta, major,
- * minor) from its algebraic equation.
+ * <pre>
+ * A*x**2 + B*x*y + C*y**2 + D*x + E*y + F = 0
+ * </pre>
+ * It can also compute the ellipse characteristics (center, theta, major, minor) from its algebraic
+ * equation.
  *
  * @author Hervé Bitteur
  */
 public class Ellipse
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Ellipse.class);
 
     /** Contraint such that 4*A*C - B**2 = 1 */
     private static final Matrix C1 = new Matrix(
             new double[][]{
-        {0, 0, 2},
-        {0, -1, 0},
-        {2, 0, 0}
-    });
+                {0, 0, 2},
+                {0, -1, 0},
+                {2, 0, 0}
+            });
 
     /** Inverse of Constraint */
     private static final Matrix C1inv = new Matrix(
             new double[][]{
-        {0, 0, 0.5},
-        {0, -1, 0},
-        {0.5, 0, 0}
-    });
+                {0, 0, 0.5},
+                {0, -1, 0},
+                {0.5, 0, 0}
+            });
 
     /** Epsilon value for vertical or horizontal ellipses */
     private static final double EPSILON = 1.0e-15;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Array of coefficients that define ellipse algebraic equation
      */
@@ -99,7 +99,7 @@ public class Ellipse
     /** 1/2 Minor axis */
     protected Double minor;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------//
     // Ellipse //
     //---------//
@@ -123,7 +123,7 @@ public class Ellipse
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getAngle //
     //----------//
@@ -219,35 +219,6 @@ public class Ellipse
         }
 
         return minor;
-    }
-
-    //-------//
-    // print //
-    //-------//
-    protected static void print (Matrix m,
-                                 String title)
-    {
-        StringBuilder sb = new StringBuilder();
-
-        if (title != null) {
-            sb.append(String.format("%s%n", title));
-        } else {
-            sb.append(String.format("%n"));
-        }
-
-        for (int row = 0; row < m.getRowDimension(); row++) {
-            sb.append("    ");
-
-            for (int col = 0; col < m.getColumnDimension(); col++) {
-                sb.append(String.format("%15g  ", m.get(row, col)));
-            }
-
-            sb.append(String.format("%n"));
-        }
-
-        sb.append(String.format("%n"));
-
-        logger.info(sb.toString());
     }
 
     //---------------------//
@@ -415,8 +386,7 @@ public class Ellipse
 
         // Check input
         if (x.length != y.length) {
-            throw new IllegalArgumentException(
-                    "x & y arrays have different lengths");
+            throw new IllegalArgumentException("x & y arrays have different lengths");
         }
 
         if (x.length < 6) {
@@ -454,7 +424,6 @@ public class Ellipse
 
         ///print(D1, "D1");
         ///print(D2, "D2");
-
         /**
          * Scatter matrix S is decomposed in 4 matrices
          * (S1 | S2)
@@ -462,21 +431,17 @@ public class Ellipse
          * (S2'| S3)
          */
         /** S1 = D1'.D1 */
-        Matrix S1 = D1.transpose()
-                .times(D1);
+        Matrix S1 = D1.transpose().times(D1);
 
         /** S2 = D1'.D2 */
-        Matrix S2 = D1.transpose()
-                .times(D2);
+        Matrix S2 = D1.transpose().times(D2);
 
         /** S3 = D2'.D2 */
-        Matrix S3 = D2.transpose()
-                .times(D2);
+        Matrix S3 = D2.transpose().times(D2);
 
         ///print(S2, "S2");
         ///print(S1, "S1");
         ///print(S3, "S3");
-
         /**
          * Initial equation S.A = lambda.C.A can be rewritten :
          *
@@ -503,11 +468,9 @@ public class Ellipse
          * A1'.C1.A1 = 1
          * A2 = -S3inv.S2'.A1
          */
-        Matrix M = C1inv.times(
-                S1.minus(S2.times(S3.inverse()).times(S2.transpose())));
+        Matrix M = C1inv.times(S1.minus(S2.times(S3.inverse()).times(S2.transpose())));
 
         ///print(M, "M");
-
         /** Retrieve eigen vectors and values for A1 */
         EigenvalueDecomposition ed = new EigenvalueDecomposition(M);
         Matrix eigenVectors = ed.getV();
@@ -519,7 +482,6 @@ public class Ellipse
         ///    System.out.print(String.format(" %g", v));
         ///}
         ///System.out.println();
-
         /**
          * Evaluate A1'.C1.A1 for each eigenvector,
          * and keep the one with positive result
@@ -532,9 +494,7 @@ public class Ellipse
             A1 = eigenVectors.getMatrix(0, 2, i, i);
 
             ///print(A1, "vector " + i);
-            Matrix R = A1.transpose()
-                    .times(C1)
-                    .times(A1);
+            Matrix R = A1.transpose().times(C1).times(A1);
 
             ///print(R, "R");
             if (R.get(0, 0) > 0) {
@@ -553,10 +513,7 @@ public class Ellipse
         }
 
         /** Copy the 3 other coefficients from A2 = -S3inv.S2'.A1 */
-        Matrix A2 = S3.inverse()
-                .times(S2.transpose())
-                .times(A1)
-                .uminus();
+        Matrix A2 = S3.inverse().times(S2.transpose()).times(A1).uminus();
 
         print(A2, "A2");
 
@@ -605,5 +562,34 @@ public class Ellipse
         }
 
         ///System.out.println("distance: " + distance);
+    }
+
+    //-------//
+    // print //
+    //-------//
+    protected static void print (Matrix m,
+                                 String title)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        if (title != null) {
+            sb.append(String.format("%s%n", title));
+        } else {
+            sb.append(String.format("%n"));
+        }
+
+        for (int row = 0; row < m.getRowDimension(); row++) {
+            sb.append("    ");
+
+            for (int col = 0; col < m.getColumnDimension(); col++) {
+                sb.append(String.format("%15g  ", m.get(row, col)));
+            }
+
+            sb.append(String.format("%n"));
+        }
+
+        sb.append(String.format("%n"));
+
+        logger.info(sb.toString());
     }
 }

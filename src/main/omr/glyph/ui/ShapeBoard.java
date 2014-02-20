@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            S h a p e B o a r d                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      S h a p e B o a r d                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
@@ -64,11 +64,10 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 
 /**
- * Class {@code ShapeBoard} hosts a palette of shapes for insertion and
- * assignment of glyph.
+ * Class {@code ShapeBoard} hosts a palette of shapes for insertion and assignment of
+ * glyph.
  * <ul>
- * <li>Direct insertion is performed by drag and drop to the target score
- * view or sheet view</li>
+ * <li>Direct insertion is performed by drag and drop to the target score view or sheet view</li>
  * <li>Assignment of existing glyph is performed by a double-click</li>
  * </ul>
  *
@@ -77,12 +76,10 @@ import javax.swing.JFrame;
 public class ShapeBoard
         extends Board
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(ShapeBoard.class);
 
     /** To force the width of the various panels */
@@ -91,7 +88,7 @@ public class ShapeBoard
     /**
      * To force the height of the various shape panels (just a dirty hack)
      */
-    private static final Map<ShapeSet, Integer> heights = new HashMap<>();
+    private static final Map<ShapeSet, Integer> heights = new HashMap<ShapeSet, Integer>();
 
     static {
         heights.put(ShapeSet.Accidentals, 40);
@@ -112,7 +109,7 @@ public class ShapeBoard
         heights.put(ShapeSet.Physicals, 150);
     }
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet */
     private final Sheet sheet;
 
@@ -129,8 +126,7 @@ public class ShapeBoard
         public void actionPerformed (ActionEvent e)
         {
             // Remove panel of ranges
-            getBody()
-                    .remove(rangesPanel);
+            getBody().remove(rangesPanel);
 
             // Replace by proper panel of range shapes
             String rangeName = ((JButton) e.getSource()).getName();
@@ -142,12 +138,10 @@ public class ShapeBoard
                 shapesPanels.put(range, shapesPanel = defineShapesPanel(range));
             }
 
-            getBody()
-                    .add(shapesPanel);
+            getBody().add(shapesPanel);
 
             // Perhaps this is too much ... TODO
-            JFrame frame = Main.getGui()
-                    .getFrame();
+            JFrame frame = Main.getGui().getFrame();
             frame.invalidate();
             frame.validate();
             frame.repaint();
@@ -165,16 +159,13 @@ public class ShapeBoard
         public void actionPerformed (ActionEvent e)
         {
             // Remove current panel of shapes
-            getBody()
-                    .remove(shapesPanel);
+            getBody().remove(shapesPanel);
 
             // Replace by panel of ranges
-            getBody()
-                    .add(rangesPanel);
+            getBody().add(rangesPanel);
 
             // Perhaps this is too much ... TODO
-            JFrame frame = Main.getGui()
-                    .getFrame();
+            JFrame frame = Main.getGui().getFrame();
             frame.invalidate();
             frame.validate();
             frame.repaint();
@@ -191,8 +182,7 @@ public class ShapeBoard
         public void mouseClicked (MouseEvent e)
         {
             if (e.getClickCount() == 2) {
-                Glyph glyph = sheet.getNest()
-                        .getSelectedGlyph();
+                Glyph glyph = sheet.getNest().getSelectedGlyph();
 
                 if (glyph != null) {
                     ShapeButton button = (ShapeButton) e.getSource();
@@ -211,27 +201,24 @@ public class ShapeBoard
     private final Panel rangesPanel;
 
     /** Map of shape panels */
-    private final Map<ShapeSet, Panel> shapesPanels = new HashMap<>();
+    private final Map<ShapeSet, Panel> shapesPanels = new HashMap<ShapeSet, Panel>();
 
     /** Current panel of shapes */
     private Panel shapesPanel;
 
     /** GlassPane */
-    private GhostGlassPane glassPane = Main.getGui()
-            .getGlassPane();
+    private GhostGlassPane glassPane = Main.getGui().getGlassPane();
 
     // Update image and forward mouse location
-    private final MyMotionAdapter motionAdapter = new MyMotionAdapter(
-            glassPane);
+    private final MyMotionAdapter motionAdapter = new MyMotionAdapter(glassPane);
 
     // When symbol is dropped
     private final GhostDropListener<Shape> dropListener = new MyDropListener();
 
     // When mouse pressed (start) and released (stop)
-    private final GhostDropAdapter<Shape> dropAdapter = new MyDropAdapter(
-            glassPane);
+    private final GhostDropAdapter<Shape> dropAdapter = new MyDropAdapter(glassPane);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // ShapeBoard //
     //------------//
@@ -252,11 +239,10 @@ public class ShapeBoard
 
         dropAdapter.addDropListener(dropListener);
 
-        getBody()
-                .add(rangesPanel = defineRangesPanel());
+        getBody().add(rangesPanel = defineRangesPanel());
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // onEvent //
     //---------//
@@ -355,26 +341,24 @@ public class ShapeBoard
      */
     private BufferedImage getIconImage (Shape shape)
     {
-        ShapeSymbol symbol = (shape == Shape.BEAM_HOOK)
-                ? shape.getPhysicalShape()
-                .getSymbol() : shape.getDecoratedSymbol();
+        ShapeSymbol symbol = (shape == Shape.BEAM_HOOK) ? shape.getPhysicalShape().getSymbol()
+                : shape.getDecoratedSymbol();
 
         return symbol.getIconImage();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Boolean publishLocationWhileDragging = new Constant.Boolean(
                 false,
                 "Should we publish the current location while dragging a shape?");
-
     }
 
     //-------------//
@@ -386,11 +370,11 @@ public class ShapeBoard
     private static class ShapeButton
             extends JButton
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Shape shape;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public ShapeButton (Shape shape)
         {
             this.shape = shape;
@@ -411,14 +395,14 @@ public class ShapeBoard
     private class MyDropAdapter
             extends GhostDropAdapter<Shape>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public MyDropAdapter (GhostGlassPane glassPane)
         {
             super(glassPane, null);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /** Start of DnD, set pay load */
         @Override
         public void mousePressed (MouseEvent e)
@@ -435,8 +419,7 @@ public class ShapeBoard
                 image = getIconImage(shape);
             } else {
                 action = Shape.NON_DRAGGABLE;
-                image = Shape.NON_DRAGGABLE.getSymbol()
-                        .getIconImage();
+                image = Shape.NON_DRAGGABLE.getSymbol().getIconImage();
             }
 
             super.mousePressed(e);
@@ -452,7 +435,7 @@ public class ShapeBoard
     private class MyDropListener
             extends AbstractGhostDropListener<Shape>
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public MyDropListener ()
         {
@@ -460,7 +443,7 @@ public class ShapeBoard
             super(null);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void dropped (GhostDropEvent<Shape> e)
         {
@@ -470,23 +453,18 @@ public class ShapeBoard
                 ScreenPoint screenPoint = e.getDropLocation();
 
                 // The (zoomed) sheet view
-                ScrollView scrollView = sheet.getAssembly()
-                        .getSelectedView();
+                ScrollView scrollView = sheet.getAssembly().getSelectedView();
 
-                if (screenPoint.isInComponent(
-                        scrollView.getComponent().getViewport())) {
+                if (screenPoint.isInComponent(scrollView.getComponent().getViewport())) {
                     RubberPanel view = scrollView.getView();
                     Point localPt = screenPoint.getLocalPoint(view);
-                    view.getZoom()
-                            .unscale(localPt);
+                    view.getZoom().unscale(localPt);
 
                     // Asynchronously insert the desired shape at proper location
                     new InsertTask(
                             sheet,
                             shape,
-                            Collections.singleton(
-                            new Point(localPt.x, localPt.y))).launch(
-                            sheet);
+                            Collections.singleton(new Point(localPt.x, localPt.y))).launch(sheet);
                 }
             }
         }
@@ -502,19 +480,19 @@ public class ShapeBoard
     private class MyMotionAdapter
             extends GhostMotionAdapter
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // Optimization: remember the latest component on target
         private WeakReference<Component> prevComponent;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public MyMotionAdapter (GhostGlassPane glassPane)
         {
             super(glassPane);
             reset();
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * In this specific implementation, we update the size of the
          * shape image according to the interline scale and to the
@@ -531,10 +509,8 @@ public class ShapeBoard
             ScreenPoint screenPoint = new ScreenPoint(absPt.x, absPt.y);
 
             // The (zoomed) sheet view
-            ScrollView scrollView = sheet.getAssembly()
-                    .getSelectedView();
-            Component component = scrollView.getComponent()
-                    .getViewport();
+            ScrollView scrollView = sheet.getAssembly().getSelectedView();
+            Component component = scrollView.getComponent().getViewport();
 
             if (screenPoint.isInComponent(component)) {
                 RubberPanel view = scrollView.getView();
@@ -542,8 +518,7 @@ public class ShapeBoard
                 // Publish the current location?
                 if (constants.publishLocationWhileDragging.getValue()) {
                     Point localPt = screenPoint.getLocalPoint(view);
-                    view.getZoom()
-                            .unscale(localPt);
+                    view.getZoom().unscale(localPt);
                     view.pointSelected(localPt, MouseMovement.DRAGGING);
                 }
 
@@ -554,8 +529,7 @@ public class ShapeBoard
                     // Try to use full image size, adapted to current zoom
                     int zoomedInterline = (int) Math.rint(
                             view.getZoom().getRatio() * sheet.getScale().getInterline());
-                    Shape displayedShape = shape.isDraggable() ? shape
-                            : Shape.NON_DRAGGABLE;
+                    Shape displayedShape = shape.isDraggable() ? shape : Shape.NON_DRAGGABLE;
                     BufferedImage image = MusicFont.buildImage(
                             displayedShape,
                             zoomedInterline,
@@ -566,7 +540,7 @@ public class ShapeBoard
                         glassPane.setImage(image);
                     }
 
-                    prevComponent = new WeakReference<>(component);
+                    prevComponent = new WeakReference<Component>(component);
                 }
             } else if (prevComponent.get() != null) {
                 // No longer on a droppable target, reuse initial image & size
@@ -581,7 +555,7 @@ public class ShapeBoard
 
         public final void reset ()
         {
-            prevComponent = new WeakReference<>(null);
+            prevComponent = new WeakReference<Component>(null);
         }
     }
 }

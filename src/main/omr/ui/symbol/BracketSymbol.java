@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         B r a c k e t S y m b o l                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   B r a c k e t S y m b o l                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -29,7 +29,7 @@ import java.awt.geom.Rectangle2D;
 public class BracketSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     // The upper serif
     private static final BasicSymbol upperSymbol = Symbols.SYMBOL_BRACKET_UPPER_SERIF;
@@ -37,7 +37,7 @@ public class BracketSymbol
     // The lower serif
     private static final BasicSymbol lowerSymbol = Symbols.SYMBOL_BRACKET_LOWER_SERIF;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // BracketSymbol //
     //---------------//
@@ -51,7 +51,7 @@ public class BracketSymbol
         super(isIcon, Shape.BRACE, false);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -79,9 +79,7 @@ public class BracketSymbol
         Rectangle2D lowerRect = p.lowerLayout.getBounds();
         p.rect = new Rectangle(
                 (int) Math.ceil(upperRect.getWidth()),
-                (int) Math.floor(
-                upperRect.getHeight() + trunkRect.getHeight()
-                + lowerRect.getHeight()));
+                (int) Math.floor(upperRect.getHeight() + trunkRect.getHeight() + lowerRect.getHeight()));
 
         return p;
     }
@@ -104,18 +102,17 @@ public class BracketSymbol
         MusicFont.paint(g, p.lowerLayout, loc, BOTTOM_LEFT);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         TextLayout upperLayout;
 
         TextLayout lowerLayout;
-
     }
 }

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     C l u s t e r s R e t r i e v e r                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               C l u s t e r s R e t r i e v e r                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -52,21 +52,18 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 /**
- * Class {@code ClustersRetriever} performs vertical samplings of the
- * horizontal filaments in order to detect regular patterns of a
- * preferred interline value and aggregate the filaments into clusters
- * of lines.
+ * Class {@code ClustersRetriever} performs vertical samplings of the horizontal
+ * filaments in order to detect regular patterns of a preferred interline value and
+ * aggregate the filaments into clusters of lines.
  *
  * @author Hervé Bitteur
  */
 public class ClustersRetriever
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             ClustersRetriever.class);
 
@@ -102,7 +99,7 @@ public class ClustersRetriever
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Comparator on cluster ordinate. */
     public Comparator<LineCluster> byOrdinate = new Comparator<LineCluster>()
     {
@@ -189,7 +186,7 @@ public class ClustersRetriever
     /** Collection of clusters */
     private final List<LineCluster> clusters = new ArrayList<LineCluster>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------------//
     // ClustersRetriever //
     //-------------------//
@@ -220,7 +217,7 @@ public class ClustersRetriever
         params = new Parameters(scale);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // buildInfo //
     //-----------//
@@ -234,10 +231,7 @@ public class ClustersRetriever
 
         // Check relevance
         if ((popSize < 4) || (popSize > 6)) {
-            logger.info(
-                    "{}Giving up spurious line comb size: {}",
-                    sheet.getLogPrefix(),
-                    popSize);
+            logger.info("{}Giving up spurious line comb size: {}", sheet.getLogPrefix(), popSize);
 
             return discardedFilaments;
         }
@@ -324,12 +318,7 @@ public class ClustersRetriever
             int x = colX[col];
 
             for (FilamentComb comb : entry.getValue()) {
-                g.draw(
-                        new Line2D.Double(
-                                x,
-                                comb.getY(0),
-                                x,
-                                comb.getY(comb.getCount() - 1)));
+                g.draw(new Line2D.Double(x, comb.getY(0), x, comb.getY(comb.getCount() - 1)));
             }
         }
 
@@ -423,13 +412,10 @@ public class ClustersRetriever
         if (gap <= 0) {
             // Overlap: use middle of common part
             final int xMid = (maxLeft + minRight) / 2;
-            final double slope = sheet.getSkew()
-                    .getSlope();
+            final double slope = sheet.getSkew().getSlope();
             dist = bestMatch(
-                    ordinatesOf(
-                            one.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
-                    ordinatesOf(
-                    two.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
+                    ordinatesOf(one.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
+                    ordinatesOf(two.getPointsAt(xMid, params.maxExpandDx, interline, slope)),
                     deltaPos);
         } else if (gap > params.maxMergeDx) {
             logger.debug("Gap too wide between {} & {}", one, two);
@@ -492,13 +478,11 @@ public class ClustersRetriever
                     Orientation.HORIZONTAL)) {
                 ///logger.info("Inclusion " + twoAnc + " into " + oneAnc);
                 oneAnc.include(twoAnc);
-                oneAnc.getCombs()
-                        .putAll(twoAnc.getCombs());
+                oneAnc.getCombs().putAll(twoAnc.getCombs());
             } else {
                 ///logger.info("Inclusion " + oneAnc + " into " + twoAnc);
                 twoAnc.include(oneAnc);
-                twoAnc.getCombs()
-                        .putAll(oneAnc.getCombs());
+                twoAnc.getCombs().putAll(oneAnc.getCombs());
             }
         }
     }
@@ -508,15 +492,12 @@ public class ClustersRetriever
     //----------------//
     private void createClusters ()
     {
-        Collections.sort(
-                filaments,
-                Glyphs.byReverseLength(Orientation.HORIZONTAL));
+        Collections.sort(filaments, Glyphs.byReverseLength(Orientation.HORIZONTAL));
 
         for (LineFilament fil : filaments) {
             fil = (LineFilament) fil.getAncestor();
 
-            if ((fil.getCluster() == null) && !fil.getCombs()
-                    .isEmpty()) {
+            if ((fil.getCluster() == null) && !fil.getCombs().isEmpty()) {
                 LineCluster cluster = new LineCluster(interline, fil);
                 clusters.add(cluster);
             }
@@ -582,8 +563,7 @@ public class ClustersRetriever
     private void expandCluster (LineCluster cluster,
                                 List<LineFilament> fils)
     {
-        final double slope = sheet.getSkew()
-                .getSlope();
+        final double slope = sheet.getSkew().getSlope();
         Rectangle clusterBox = null;
 
         for (LineFilament fil : fils) {
@@ -631,9 +611,7 @@ public class ClustersRetriever
                         int index = points.indexOf(point);
 
                         if (cluster.includeFilamentByIndex(fil, index)) {
-                            if (logger.isDebugEnabled()
-                                || fil.isVip()
-                                || cluster.isVip()) {
+                            if (logger.isDebugEnabled() || fil.isVip() || cluster.isVip()) {
                                 logger.info(
                                         "VIP aggregated F{} to C{} at index {}",
                                         fil.getId(),
@@ -651,11 +629,7 @@ public class ClustersRetriever
                         }
                     } else {
                         if (areVips) {
-                            logger.info(
-                                    "VIP {}dy={} vs {}",
-                                    vips,
-                                    dy,
-                                    params.maxExpandDy);
+                            logger.info("VIP {}dy={} vs {}", vips, dy, params.maxExpandDy);
                         }
                     }
                 }
@@ -756,8 +730,7 @@ public class ClustersRetriever
 
             for (LineCluster cl : clusters.subList(idx + 1, clusters.size())) {
                 // Check dy
-                if (skew.deskewed(cl.getCenter())
-                        .getY() > yMax) {
+                if (skew.deskewed(cl.getCenter()).getY() > yMax) {
                     break;
                 }
 
@@ -770,10 +743,7 @@ public class ClustersRetriever
                 }
 
                 // Merge
-                logger.info(
-                        "Pairing clusters C{} & C{}",
-                        cluster.getId(),
-                        cl.getId());
+                logger.info("Pairing clusters C{} & C{}", cluster.getId(), cl.getId());
                 cluster.mergeWith(cl, 0);
                 clusters.remove(cl);
 
@@ -859,9 +829,7 @@ public class ClustersRetriever
     private Double ordinateOf (Point2D point)
     {
         if (point != null) {
-            return sheet.getSkew()
-                    .deskewed(point)
-                    .getY();
+            return sheet.getSkew().deskewed(point).getY();
         } else {
             return null;
         }
@@ -979,9 +947,7 @@ public class ClustersRetriever
         int dMax = scale.getMaxInterline();
 
         /** Number of vertical samples to collect */
-        int sampleCount = -1
-                          + (int) Math.rint(
-                (double) pictureWidth / params.samplingDx);
+        int sampleCount = -1 + (int) Math.rint((double) pictureWidth / params.samplingDx);
 
         /** Exact columns abscissae */
         colX = new int[sampleCount + 1];
@@ -1015,10 +981,7 @@ public class ClustersRetriever
                             comb.append(prevFily.filament, prevFily.y);
 
                             if (prevFily.filament.isVip()) {
-                                logger.info(
-                                        "VIP created {} with {}",
-                                        comb,
-                                        prevFily.filament);
+                                logger.info("VIP created {} with {}", comb, prevFily.filament);
                             }
                         }
 
@@ -1026,10 +989,7 @@ public class ClustersRetriever
                         comb.append(fily.filament, fily.y);
 
                         if (fily.filament.isVip()) {
-                            logger.info(
-                                    "VIP appended {} to {}",
-                                    fily.filament,
-                                    comb);
+                            logger.info("VIP appended {} to {}", fily.filament, comb);
                         }
                     } else {
                         // No comb active
@@ -1057,10 +1017,8 @@ public class ClustersRetriever
         List<FilY> list = new ArrayList<FilY>();
 
         for (LineFilament fil : filaments) {
-            if ((x >= fil.getStartPoint(HORIZONTAL)
-                    .getX())
-                && (x <= fil.getStopPoint(HORIZONTAL)
-                    .getX())) {
+            if ((x >= fil.getStartPoint(HORIZONTAL).getX())
+                && (x <= fil.getStopPoint(HORIZONTAL).getX())) {
                 list.add(new FilY(fil, fil.getPositionAt(x, HORIZONTAL)));
             }
         }
@@ -1112,14 +1070,14 @@ public class ClustersRetriever
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction samplingDx = new Scale.Fraction(
                 1,
@@ -1133,13 +1091,9 @@ public class ClustersRetriever
                 0.175,
                 "Maximum dy to aggregate a filament to a cluster");
 
-        Scale.Fraction maxMergeDx = new Scale.Fraction(
-                10,
-                "Maximum dx to merge two clusters");
+        Scale.Fraction maxMergeDx = new Scale.Fraction(10, "Maximum dx to merge two clusters");
 
-        Scale.Fraction maxMergeDy = new Scale.Fraction(
-                0.4,
-                "Maximum dy to merge two clusters");
+        Scale.Fraction maxMergeDy = new Scale.Fraction(0.4, "Maximum dy to merge two clusters");
 
         Scale.Fraction maxMergeCenterDy = new Scale.Fraction(
                 1.0,
@@ -1153,14 +1107,11 @@ public class ClustersRetriever
                 2,
                 "Rough margin around cluster ordinate");
 
-        Constant.Ratio maxJitter = new Constant.Ratio(
-                0.1,
-                "Maximum gap from standard comb dy");
+        Constant.Ratio maxJitter = new Constant.Ratio(0.1, "Maximum gap from standard comb dy");
 
         Constant.Ratio minClusterLengthRatio = new Constant.Ratio(
                 0.3,
                 "Minimum cluster length (as ratio of median length)");
-
     }
 
     //------//
@@ -1173,13 +1124,13 @@ public class ClustersRetriever
     private static class FilY
             implements Comparable<FilY>
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final LineFilament filament;
 
         final double y;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public FilY (LineFilament filament,
                      double y)
         {
@@ -1187,7 +1138,7 @@ public class ClustersRetriever
             this.y = y;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int compareTo (FilY that)
         {
@@ -1210,7 +1161,7 @@ public class ClustersRetriever
      */
     private static class Parameters
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final int samplingDx;
 
@@ -1228,7 +1179,7 @@ public class ClustersRetriever
 
         final int clusterYMargin;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new Parameters object.
          *

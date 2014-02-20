@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             P a g e E r a s e r                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       P a g e E r a s e r                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.ui;
 
@@ -53,31 +53,31 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Class {@code PageEraser} erases selected shapes on the provided
- * graphics environment.
+ * Class {@code PageEraser} erases selected shapes on the provided graphics environment.
  *
  * @author Hervé Bitteur
  */
 public class PageEraser
-        extends AbstractScoreVisitor
-        implements InterVisitor
+    extends AbstractScoreVisitor
+    implements InterVisitor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
+
     // Graphic context
     private final Graphics2D g;
 
     // Related sheet
-    private final Sheet sheet;
+    private final Sheet     sheet;
 
     // Specific font for music symbols
     private final MusicFont musicFont;
 
     // Vertical margin added above and below any staff DMZ
-    private final int dmzDyMargin;
+    private final int    dmzDyMargin;
 
     // Original stroke
     private final Stroke defaultStroke;
@@ -85,7 +85,8 @@ public class PageEraser
     // Stroke for stems
     private final Stroke stemStroke;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new PageEraser object.
      *
@@ -93,33 +94,32 @@ public class PageEraser
      * @param sheet related sheet
      */
     public PageEraser (Graphics2D g,
-                       Sheet sheet)
+                       Sheet      sheet)
     {
         this.g = g;
         this.sheet = sheet;
 
         // Properly scaled font
         Scale scale = sheet.getScale();
-        int symbolSize = scale.toPixels(constants.symbolSize);
+        int   symbolSize = scale.toPixels(constants.symbolSize);
         musicFont = MusicFont.getFont(symbolSize);
 
         dmzDyMargin = scale.toPixels(constants.staffVerticalMargin);
 
         defaultStroke = g.getStroke();
         stemStroke = new BasicStroke(
-                (float) scale.getMainStem(),
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND);
+            (float) scale.getMainStem(),
+            BasicStroke.CAP_ROUND,
+            BasicStroke.JOIN_ROUND);
 
         g.setColor(Color.WHITE);
 
         // Anti-aliasing
-        g.setRenderingHint(
-                RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_OFF);
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+
     //-------//
     // erase //
     //-------//
@@ -131,17 +131,15 @@ public class PageEraser
     public void erase (final Collection<Shape> shapes)
     {
         for (SystemInfo system : sheet.getSystems()) {
-            SIGraph sig = system.getSig();
+            SIGraph           sig = system.getSig();
 
             final List<Inter> goodies = sig.inters(
-                    new Predicate<Inter>()
-                    {
+                new Predicate<Inter>() {
                         @Override
                         public boolean check (Inter inter)
                         {
-                            return !inter.isDeleted()
-                                   && shapes.contains(inter.getShape())
-                                   && inter.isGood();
+                            return !inter.isDeleted() && shapes.contains(inter.getShape()) &&
+                                   inter.isGood();
                         }
                     });
 
@@ -160,9 +158,9 @@ public class PageEraser
     public void visit (Inter inter)
     {
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
-        Glyph glyph = inter.getGlyph();
-        Point center = (glyph != null) ? glyph.getCentroid()
-                : GeoUtil.centerOf(inter.getBounds());
+        Glyph       glyph = inter.getGlyph();
+        Point       center = (glyph != null) ? glyph.getCentroid()
+                             : GeoUtil.centerOf(inter.getBounds());
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
     }
 
@@ -220,21 +218,19 @@ public class PageEraser
         g.fillRect(0, top, dmzEnd, bot - top + 1);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
+
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        final Scale.Fraction symbolSize = new Scale.Fraction(
-                1.1,
-                "Symbols size to use for eraser");
-
+        final Scale.Fraction symbolSize = new Scale.Fraction(1.1, "Symbols size to use for eraser");
         final Scale.Fraction staffVerticalMargin = new Scale.Fraction(
-                2.0,
-                "Margin erased above & below staff DMZ area");
+            2.0,
+            "Margin erased above & below staff DMZ area");
     }
 }

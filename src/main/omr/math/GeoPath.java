@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               G e o P a t h                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         G e o P a t h                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -27,7 +27,7 @@ import java.awt.geom.Rectangle2D;
 public class GeoPath
         extends Path2D.Double
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //---------//
     // GeoPath //
@@ -67,39 +67,7 @@ public class GeoPath
         super(s, at);
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //---------//
-    // labelOf //
-    //---------//
-    /**
-     * Report the kind label of a segment.
-     *
-     * @param segmentKind the int-based segment kind
-     * @return the label for the curve
-     */
-    public static String labelOf (int segmentKind)
-    {
-        switch (segmentKind) {
-        case SEG_MOVETO:
-            return "SEG_MOVETO";
-
-        case SEG_LINETO:
-            return "SEG_LINETO";
-
-        case SEG_QUADTO:
-            return "SEG_QUADTO";
-
-        case SEG_CUBICTO:
-            return "SEG_CUBICTO";
-
-        case SEG_CLOSE:
-            return "SEG_CLOSE";
-
-        default:
-            throw new RuntimeException("Illegal segmentKind " + segmentKind);
-        }
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getFirstPoint //
     //---------------//
@@ -177,8 +145,7 @@ public class GeoPath
         double x1 = 0;
         double y1 = 0;
 
-        for (PathIterator it = getPathIterator(null, flatness); !it.isDone();
-                it.next()) {
+        for (PathIterator it = getPathIterator(null, flatness); !it.isDone(); it.next()) {
             int segmentKind = it.currentSegment(buffer);
             int count = countOf(segmentKind);
             final double x2 = buffer[count - 2];
@@ -203,12 +170,43 @@ public class GeoPath
                 break;
 
             default:
-                throw new RuntimeException(
-                        "Illegal segmentKind " + segmentKind);
+                throw new RuntimeException("Illegal segmentKind " + segmentKind);
             }
         }
 
         return false;
+    }
+
+    //---------//
+    // labelOf //
+    //---------//
+    /**
+     * Report the kind label of a segment.
+     *
+     * @param segmentKind the int-based segment kind
+     * @return the label for the curve
+     */
+    public static String labelOf (int segmentKind)
+    {
+        switch (segmentKind) {
+        case SEG_MOVETO:
+            return "SEG_MOVETO";
+
+        case SEG_LINETO:
+            return "SEG_LINETO";
+
+        case SEG_QUADTO:
+            return "SEG_QUADTO";
+
+        case SEG_CUBICTO:
+            return "SEG_CUBICTO";
+
+        case SEG_CLOSE:
+            return "SEG_CLOSE";
+
+        default:
+            throw new RuntimeException("Illegal segmentKind " + segmentKind);
+        }
     }
 
     //----------//
@@ -222,13 +220,10 @@ public class GeoPath
 
         double[] buffer = new double[6];
 
-        for (PathIterator it = getPathIterator(null); !it.isDone();
-                it.next()) {
+        for (PathIterator it = getPathIterator(null); !it.isDone(); it.next()) {
             int segmentKind = it.currentSegment(buffer);
 
-            sb.append(" ")
-                    .append(labelOf(segmentKind))
-                    .append("(");
+            sb.append(" ").append(labelOf(segmentKind)).append("(");
 
             int coords = countOf(segmentKind);
             boolean firstCoord = true;
@@ -239,11 +234,8 @@ public class GeoPath
                     firstCoord = false;
                 }
 
-                sb.append("[")
-                        .append((float) buffer[ic])
-                        .append(",")
-                        .append((float) buffer[ic + 1])
-                        .append("]");
+                sb.append("[").append((float) buffer[ic]).append(",").append(
+                        (float) buffer[ic + 1]).append("]");
             }
 
             sb.append(")");
@@ -287,8 +279,8 @@ public class GeoPath
             double cpx1 = coords[0];
             double cpx2 = coords[2];
 
-            return (p1.x * u * u * u) + (3 * cpx1 * t * u * u)
-                   + (3 * cpx2 * t * t * u) + (p2.x * t * t * t);
+            return (p1.x * u * u * u) + (3 * cpx1 * t * u * u) + (3 * cpx2 * t * t * u)
+                   + (p2.x * t * t * t);
         }
 
         default:
@@ -355,8 +347,8 @@ public class GeoPath
             double cpy1 = coords[1];
             double cpy2 = coords[3];
 
-            return (p1.y * u * u * u) + (3 * cpy1 * t * u * u)
-                   + (3 * cpy2 * t * t * u) + (p2.y * t * t * t);
+            return (p1.y * u * u * u) + (3 * cpy1 * t * u * u) + (3 * cpy2 * t * t * u)
+                   + (p2.y * t * t * t);
         }
 
         default:
@@ -448,9 +440,7 @@ public class GeoPath
             final double x2 = coords[count - 2];
             final double y2 = coords[count - 1];
 
-            if ((segmentKind == SEG_MOVETO)
-                || (segmentKind == SEG_CLOSE)
-                || (x > x2)) {
+            if ((segmentKind == SEG_MOVETO) || (segmentKind == SEG_CLOSE) || (x > x2)) {
                 // Move to next segment
                 x1 = x2;
                 y1 = y2;
@@ -473,7 +463,7 @@ public class GeoPath
     // getYSegment //
     //-------------//
     /**
-     * Retrieve the first segment of the curve that contains the 
+     * Retrieve the first segment of the curve that contains the
      * provided ordinate.
      *
      * @param y      the provided ordinate
@@ -497,9 +487,7 @@ public class GeoPath
             final double x2 = coords[count - 2];
             final double y2 = coords[count - 1];
 
-            if ((segmentKind == SEG_MOVETO)
-                || (segmentKind == SEG_CLOSE)
-                || (y > y2)) {
+            if ((segmentKind == SEG_MOVETO) || (segmentKind == SEG_CLOSE) || (y > y2)) {
                 // Move to next segment
                 x1 = x2;
                 y1 = y2;

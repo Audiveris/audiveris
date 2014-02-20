@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            S y s t e m P a r t                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      S y s t e m P a r t                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -41,9 +41,8 @@ import java.util.List;
 public class SystemPart
         extends PartNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(SystemPart.class);
 
     /** For comparing (TreeNode) SystemPart instances according to their id */
@@ -59,13 +58,12 @@ public class SystemPart
 
                 return Integer.signum(p1.getId() - p2.getId());
             } else {
-                throw new RuntimeException(
-                        "Comparing illegal SystemPart instances");
+                throw new RuntimeException("Comparing illegal SystemPart instances");
             }
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Id of this part within the system, starting at 1 */
     private int id;
 
@@ -102,7 +100,7 @@ public class SystemPart
     /** Flag to indicate this system part is just a placeholder */
     private boolean dummy;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // SystemPart //
     //------------//
@@ -127,7 +125,7 @@ public class SystemPart
         texts = new Container(this, "Texts");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -183,6 +181,28 @@ public class SystemPart
         return false; // Not found
     }
 
+    //----------------------//
+    // checkSlurConnections //
+    //----------------------//
+    public void checkSlurConnections ()
+    {
+        List<Slur> orphans = getSlurs(Slur.isOrphan);
+
+        // Discard the slurs on each end for the time being
+        orphans.removeAll(getSlurs(Slur.isBeginningOrphan));
+        orphans.removeAll(getSlurs(Slur.isEndingOrphan));
+
+        for (Slur slur : orphans) {
+            if ((slur.getLeftNote() == null) && (slur.getLeftExtension() == null)) {
+                slur.addError("Non left-connected slur");
+            }
+
+            if ((slur.getRightNote() == null) && (slur.getRightExtension() == null)) {
+                slur.addError("Non right-connected slur");
+            }
+        }
+    }
+
     //-------------//
     // cleanupNode //
     //-------------//
@@ -215,8 +235,7 @@ public class SystemPart
                 slur.resetLeftExtension();
             }
 
-            List<Slur> precedingOrphans = precedingPart.getSlurs(
-                    Slur.isEndingOrphan);
+            List<Slur> precedingOrphans = precedingPart.getSlurs(Slur.isEndingOrphan);
             Collections.sort(precedingOrphans, Slur.verticalComparator);
 
             for (Slur slur : precedingOrphans) {
@@ -242,9 +261,61 @@ public class SystemPart
             // Check previous orphans
             for (Slur prevSlur : precedingOrphans) {
                 if (prevSlur.getRightExtension() == null) {
-                    prevSlur.addError(
-                            " Could not right-connect slur #" + prevSlur.getId());
+                    prevSlur.addError(" Could not right-connect slur #" + prevSlur.getId());
                 }
+            }
+        }
+    }
+
+    //-------------------//
+    // connectTiedVoices //
+    //-------------------//
+    /**
+     * Make sure that notes tied across measures keep the same voice.
+     * This is performed for all ties in this part.
+     */
+    public void connectTiedVoices ()
+    {
+        for (TreeNode tn : getSlurs()) {
+            Slur slur = (Slur) tn;
+
+            if (!slur.isTie()) {
+                continue;
+            }
+
+            // Voice on left (perhaps in a previous measure / system / page)
+            Note leftNote = slur.getLeftNote();
+
+            if (leftNote == null) {
+                Slur leftExtension = slur.getLeftExtension();
+
+                if (leftExtension == null) {
+                    continue;
+                }
+
+                leftNote = leftExtension.getLeftNote();
+
+                if (leftNote == null) {
+                    continue;
+                }
+            }
+
+            Chord leftChord = leftNote.getChord();
+            Voice leftVoice = leftChord.getVoice();
+
+            // Voice on right
+            Note rightNote = slur.getRightNote();
+
+            if (rightNote == null) {
+                continue;
+            }
+
+            Chord rightChord = rightNote.getChord();
+            Voice rightVoice = rightChord.getVoice();
+
+            if (leftVoice.getId() != rightVoice.getId()) {
+                logger.debug("Tie to map {} and {}", leftChord, rightChord);
+                rightChord.getMeasure().swapVoiceId(rightVoice, leftVoice.getId());
             }
         }
     }
@@ -311,16 +382,11 @@ public class SystemPart
                     dummyStaff.setDummy(true);
 
                     // Create dummy Clef
-                    Clef nextClef = nextMeasure.getFirstMeasureClef(
-                            nextStaff.getId());
+                    Clef nextClef = nextMeasure.getFirstMeasureClef(nextStaff.getId());
 
                     if (nextClef != null) {
-                        Clef dummyClef = new Clef(
-                                dummyMeasure,
-                                dummyStaff,
-                                nextClef);
+                        Clef dummyClef = new Clef(dummyMeasure, dummyStaff, nextClef);
                     }
-
                 } else {
                     dummyStaff = (Staff) dummyPart.getStaves().get(staffIndex);
                 }
@@ -349,10 +415,10 @@ public class SystemPart
 
             dummyMeasure.setBox(
                     new Rectangle(
-                    measure.getBox().x,
-                    getSystem().getBox().y + yOffset,
-                    measure.getBox().width,
-                    refPart.getBox().height));
+                            measure.getBox().x,
+                            getSystem().getBox().y + yOffset,
+                            measure.getBox().width,
+                            refPart.getBox().height));
 
             isFirstMeasure = false;
         }
@@ -364,58 +430,6 @@ public class SystemPart
         }
 
         return dummyPart;
-    }
-
-    //-------------//
-    // findRefPart //
-    //-------------//
-    /**
-     * Look in following systems, then in previous systems, for a real
-     * part with the provided ID.
-     *
-     * @param id the desired part ID
-     * @return the first real part with this ID, either in following systems
-     *         or in preceding systems.
-     */
-    private SystemPart findRefPart (int id)
-    {
-        // First look in the following systems in the same page
-        ScoreSystem nextSystem = getSystem();
-        while (true) {
-            nextSystem = (ScoreSystem) nextSystem.getNextSibling();
-
-            if (nextSystem != null) {
-                SystemPart part = nextSystem.getPart(id);
-
-                if (part != null && !part.isDummy()) {
-                    return part;
-                }
-            } else {
-                break;
-            }
-        }
-
-
-        // Then look in the preceding systems in the same page
-        ScoreSystem prevSystem = getSystem();
-        while (true) {
-            prevSystem = (ScoreSystem) prevSystem.getPreviousSibling();
-
-            if (prevSystem != null) {
-                SystemPart part = prevSystem.getPart(id);
-
-                if (part != null && !part.isDummy()) {
-                    return part;
-                }
-            } else {
-                break;
-            }
-        }
-
-        logger.warn("{} Cannot find real system part with id {}",
-                getContextString(), id);
-
-        return null;
     }
 
     //----------//
@@ -480,6 +494,19 @@ public class SystemPart
     public int getId ()
     {
         return id;
+    }
+
+    //---------//
+    // getInfo //
+    //---------//
+    /**
+     * Report the corresponding info within sheet structure
+     *
+     * @return the info
+     */
+    public PartInfo getInfo ()
+    {
+        return info;
     }
 
     //----------------//
@@ -632,7 +659,7 @@ public class SystemPart
      */
     public List<Slur> getSlurs (Predicate<Slur> predicate)
     {
-        List<Slur> selectedSlurs = new ArrayList<>();
+        List<Slur> selectedSlurs = new ArrayList<Slur>();
 
         for (TreeNode sNode : getSlurs()) {
             Slur slur = (Slur) sNode;
@@ -657,8 +684,9 @@ public class SystemPart
      */
     public Staff getStaffAt (Point point)
     {
-        // This may fail 
+        // This may fail
         StaffInfo staffInfo = getSystem().getInfo().getStaffAt(point);
+
         if (staffInfo == null) {
             return null;
         }
@@ -689,7 +717,8 @@ public class SystemPart
     {
         Staff pointStaff = getStaffAt(point);
         double pitch = pointStaff.pitchPositionOf(point);
-        if (pitch < 0 && pointStaff != getFirstStaff()) {
+
+        if ((pitch < 0) && (pointStaff != getFirstStaff())) {
             return (Staff) pointStaff.getPreviousSibling();
         } else {
             return pointStaff;
@@ -709,7 +738,8 @@ public class SystemPart
     {
         Staff pointStaff = getStaffAt(point);
         double pitch = pointStaff.pitchPositionOf(point);
-        if (pitch > 0 && pointStaff != getLastStaff()) {
+
+        if ((pitch > 0) && (pointStaff != getLastStaff())) {
             return (Staff) pointStaff.getNextSibling();
         } else {
             return pointStaff;
@@ -837,8 +867,7 @@ public class SystemPart
         for (TreeNode node : getLyrics()) {
             LyricsLine line = (LyricsLine) node;
             line.setId(lyrics.getChildren().indexOf(line) + 1);
-            line.setStaff(
-                    getSystem().getStaffAbove(new Point(0, line.getY())));
+            line.setStaff(getSystem().getStaffAbove(new Point(0, line.getY())));
         }
     }
 
@@ -854,53 +883,6 @@ public class SystemPart
         for (TreeNode node : getLyrics()) {
             LyricsLine line = (LyricsLine) node;
             line.refineLyricSyllables();
-        }
-    }
-
-    //-------------------//
-    // connectTiedVoices //
-    //-------------------//
-    /**
-     * Make sure that notes tied across measures keep the same voice.
-     * This is performed for all ties in this part.
-     */
-    public void connectTiedVoices ()
-    {
-        for (TreeNode tn : getSlurs()) {
-            Slur slur = (Slur) tn;
-
-            if (!slur.isTie()) {
-                continue;
-            }
-
-            // Voice on left (perhaps in a previous measure / system / page)
-            Note leftNote = slur.getLeftNote();
-            if (leftNote == null) {
-                Slur leftExtension = slur.getLeftExtension();
-                if (leftExtension == null) {
-                    continue;
-                }
-                leftNote = leftExtension.getLeftNote();
-                if (leftNote == null) {
-                    continue;
-                }
-            }
-            Chord leftChord = leftNote.getChord();
-            Voice leftVoice = leftChord.getVoice();
-
-            // Voice on right
-            Note rightNote = slur.getRightNote();
-            if (rightNote == null) {
-                continue;
-            }
-            Chord rightChord = rightNote.getChord();
-            Voice rightVoice = rightChord.getVoice();
-
-
-            if (leftVoice.getId() != rightVoice.getId()) {
-                logger.debug("Tie to map {} and {}", leftChord, rightChord);
-                rightChord.getMeasure().swapVoiceId(rightVoice, leftVoice.getId());
-            }
         }
     }
 
@@ -1049,38 +1031,55 @@ public class SystemPart
         setBox(newBox);
     }
 
-    //---------//
-    // getInfo //
-    //---------//
+    //-------------//
+    // findRefPart //
+    //-------------//
     /**
-     * Report the corresponding info within sheet structure
+     * Look in following systems, then in previous systems, for a real
+     * part with the provided ID.
      *
-     * @return the info
+     * @param id the desired part ID
+     * @return the first real part with this ID, either in following systems
+     *         or in preceding systems.
      */
-    public PartInfo getInfo ()
+    private SystemPart findRefPart (int id)
     {
-        return info;
-    }
+        // First look in the following systems in the same page
+        ScoreSystem nextSystem = getSystem();
 
-    //----------------------//
-    // checkSlurConnections //
-    //----------------------//
-    public void checkSlurConnections ()
-    {
-        List<Slur> orphans = getSlurs(Slur.isOrphan);
+        while (true) {
+            nextSystem = (ScoreSystem) nextSystem.getNextSibling();
 
-        // Discard the slurs on each end for the time being
-        orphans.removeAll(getSlurs(Slur.isBeginningOrphan));
-        orphans.removeAll(getSlurs(Slur.isEndingOrphan));
+            if (nextSystem != null) {
+                SystemPart part = nextSystem.getPart(id);
 
-        for (Slur slur : orphans) {
-            if (slur.getLeftNote() == null && slur.getLeftExtension() == null) {
-                slur.addError("Non left-connected slur");
-            }
-
-            if (slur.getRightNote() == null && slur.getRightExtension() == null) {
-                slur.addError("Non right-connected slur");
+                if ((part != null) && !part.isDummy()) {
+                    return part;
+                }
+            } else {
+                break;
             }
         }
+
+        // Then look in the preceding systems in the same page
+        ScoreSystem prevSystem = getSystem();
+
+        while (true) {
+            prevSystem = (ScoreSystem) prevSystem.getPreviousSibling();
+
+            if (prevSystem != null) {
+                SystemPart part = prevSystem.getPart(id);
+
+                if ((part != null) && !part.isDummy()) {
+                    return part;
+                }
+            } else {
+                break;
+            }
+        }
+
+        logger.warn("{} Cannot find real system part with id {}", getContextString(), id);
+
+        return null;
     }
 }

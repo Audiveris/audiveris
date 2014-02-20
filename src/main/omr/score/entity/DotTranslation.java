@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        D o t T r a n s l a t i o n                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  D o t T r a n s l a t i o n                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -33,21 +33,19 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * Class {@code DotTranslation} is a set of functions forassigning a dot
- * glyph, since a dot can be an augmentation dot, part of a repeat sign,
- * a staccato sign.
+ * Class {@code DotTranslation} is a set of functions for assigning a dot glyph, since
+ * a dot can be an augmentation dot, part of a repeat sign, a staccato sign.
  *
  * @author Hervé Bitteur
  */
 public class DotTranslation
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(DotTranslation.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            DotTranslation.class);
 
     /** Sequence of dot trials */
     private static final List<? extends Trial> trials = Arrays.asList(
@@ -55,7 +53,7 @@ public class DotTranslation
             new RepeatTrial(),
             new AugmentationTrial());
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------------//
     // DotTranslation //
@@ -64,7 +62,7 @@ public class DotTranslation
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //-------------//
     // populateDot //
@@ -80,8 +78,7 @@ public class DotTranslation
                                     Measure measure,
                                     Point dotCenter)
     {
-        logger.debug("{} populateDot {}",
-                measure.getContextString(), glyph);
+        logger.debug("{} populateDot {}", measure.getContextString(), glyph);
 
         // Keep specific shape only if manually assigned
         if (!glyph.isManualShape()) {
@@ -91,7 +88,7 @@ public class DotTranslation
         Shape shape = glyph.getShape();
 
         /** To remember results of trials */
-        SortedSet<Trial.Result> results = new TreeSet<>();
+        SortedSet<Trial.Result> results = new TreeSet<Trial.Result>();
 
         // Try the various possibilities
         for (Trial trial : trials) {
@@ -128,7 +125,7 @@ public class DotTranslation
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------------//
     // AugmentationTrial //
     //-------------------//
@@ -138,25 +135,23 @@ public class DotTranslation
     private static class AugmentationTrial
             extends Trial
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public AugmentationTrial ()
         {
             super(AUGMENTATION_DOT);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         Result process (Glyph glyph,
                         Measure measure,
                         Point dotCenter)
         {
             Scale scale = measure.getScale();
-            final int maxDx = scale.toPixels(
-                    constants.maxAugmentationDotDx);
-            final int maxDy = scale.toPixels(
-                    constants.maxAugmentationDotDy);
-            SortedMap<Double, Note> distances = new TreeMap<>();
+            final int maxDx = scale.toPixels(constants.maxAugmentationDotDx);
+            final int maxDy = scale.toPixels(constants.maxAugmentationDotDy);
+            SortedMap<Double, Note> distances = new TreeMap<Double, Note>();
 
             // Check for a note/rest nearby:
             // - on the left w/ same even pitch (note w/ even pitch)
@@ -170,16 +165,12 @@ public class DotTranslation
 
                     if (!note.getShape().isMeasureRest()) {
                         Point noteRef = note.getCenterRight();
-                        Point toDot = new Point(
-                                dotCenter.x - noteRef.x,
-                                dotCenter.y - noteRef.y);
+                        Point toDot = new Point(dotCenter.x - noteRef.x, dotCenter.y - noteRef.y);
 
                         logger.debug("Augmentation {} {}", toDot, note);
 
-                        if (((glyph.getShape() == getTargetShape())
-                             && glyph.isManualShape())
-                            || ((toDot.x > 0) && (toDot.x <= maxDx)
-                                && (Math.abs(toDot.y) <= maxDy))) {
+                        if (((glyph.getShape() == getTargetShape()) && glyph.isManualShape())
+                            || ((toDot.x > 0) && (toDot.x <= maxDx) && (Math.abs(toDot.y) <= maxDy))) {
                             distances.put(toDot.distanceSq(0, 0), note);
                         } else if (toDot.x < (-2 * maxDx)) {
                             break ChordLoop; // Speed up
@@ -197,8 +188,7 @@ public class DotTranslation
                 Note mirror = note.getMirroredNote();
 
                 if ((mirror == null)
-                    || (note.getChord().getDuration().compareTo(mirror.
-                        getChord().getDuration()) > 0)) {
+                    || (note.getChord().getDuration().compareTo(mirror.getChord().getDuration()) > 0)) {
                     return new AugmentationResult(note, firstKey);
                 } else {
                     return new AugmentationResult(mirror, firstKey);
@@ -208,15 +198,15 @@ public class DotTranslation
             }
         }
 
-        //~ Inner Classes ------------------------------------------------------
+        //~ Inner Classes --------------------------------------------------------------------------
         public class AugmentationResult
                 extends Result
         {
-            //~ Instance fields ------------------------------------------------
+            //~ Instance fields --------------------------------------------------------------------
 
             final Note note;
 
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
             public AugmentationResult (Note note,
                                        double dist)
             {
@@ -224,7 +214,7 @@ public class DotTranslation
                 this.note = note;
             }
 
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void commit (Glyph glyph,
                                 Measure measure,
@@ -236,8 +226,11 @@ public class DotTranslation
                 glyph.setTranslation(note);
                 note.getChord().setDotsNumber((second != null) ? 2 : 1);
 
-                logger.debug("{} dot#{} Augmented {}",
-                        note.getContextString(), glyph.getId(), note);
+                logger.debug(
+                        "{} dot#{} Augmented {}",
+                        note.getContextString(),
+                        glyph.getId(),
+                        note);
             }
 
             @Override
@@ -251,10 +244,8 @@ public class DotTranslation
                                      Point dotCenter)
             {
                 Scale scale = measure.getScale();
-                final int maxDx = scale.toPixels(
-                        constants.maxAugmentationDoubleDotsDx);
-                final int maxDy = scale.toPixels(
-                        constants.maxAugmentationDoubleDotsDy);
+                final int maxDx = scale.toPixels(constants.maxAugmentationDoubleDotsDx);
+                final int maxDy = scale.toPixels(constants.maxAugmentationDoubleDotsDy);
 
                 boolean started = false;
 
@@ -271,8 +262,7 @@ public class DotTranslation
                     }
 
                     if (!g.isTranslated()
-                        && ((g.getShape() == DOT_set)
-                            || (g.getShape() == AUGMENTATION_DOT))) {
+                        && ((g.getShape() == DOT_set) || (g.getShape() == AUGMENTATION_DOT))) {
                         // Check relative position
                         Point gCenter = g.getLocation();
                         int dx = gCenter.x - dotCenter.x;
@@ -311,14 +301,14 @@ public class DotTranslation
     private static class RepeatTrial
             extends Trial
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public RepeatTrial ()
         {
             super(REPEAT_DOT);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         RepeatResult process (Glyph glyph,
                               Measure measure,
@@ -328,7 +318,7 @@ public class DotTranslation
                 logger.info("RepeatTrial. process {}", glyph.idString());
             }
 
-            SortedMap<Double, Barline> distances = new TreeMap<>();
+            SortedMap<Double, Barline> distances = new TreeMap<Double, Barline>();
 
             // Check vertical pitch position within the staff: close to +1 or -1
             double pitchDif = Math.abs(Math.abs(glyph.getPitchPosition()) - 1);
@@ -342,6 +332,7 @@ public class DotTranslation
 
             // Check wrt inside/starting barline on left & ending barline on right
             Barline leftBar;
+
             if (measure.getInsideBarline() != null) {
                 leftBar = measure.getInsideBarline();
             } else {
@@ -349,18 +340,17 @@ public class DotTranslation
                 leftBar = (prevMeasure != null) ? prevMeasure.getBarline()
                         : measure.getPart().getStartingBarline();
             }
+
             Barline rightBar = measure.getBarline();
 
             for (Barline bar : Arrays.asList(leftBar, rightBar)) {
                 if (bar != null) {
-                    final int dx = (bar == leftBar)
-                            ? (dotCenter.x - bar.getRightX())
+                    final int dx = (bar == leftBar) ? (dotCenter.x - bar.getRightX())
                             : (bar.getLeftX() - dotCenter.x);
 
                     logger.debug("Repeat dx:{} {}", dx, bar);
 
-                    if (((glyph.getShape() == getTargetShape())
-                         && glyph.isManualShape())
+                    if (((glyph.getShape() == getTargetShape()) && glyph.isManualShape())
                         || ((dx > 0) && (dx <= maxDx))) {
                         distances.put(new Double(dx * dx), bar);
                     }
@@ -377,15 +367,15 @@ public class DotTranslation
             }
         }
 
-        //~ Inner Classes ------------------------------------------------------
+        //~ Inner Classes --------------------------------------------------------------------------
         public class RepeatResult
                 extends Trial.Result
         {
-            //~ Instance fields ------------------------------------------------
+            //~ Instance fields --------------------------------------------------------------------
 
             final Barline barline;
 
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
             public RepeatResult (Barline barline,
                                  double dist)
             {
@@ -393,7 +383,7 @@ public class DotTranslation
                 this.barline = barline;
             }
 
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void commit (Glyph glyph,
                                 Measure measure,
@@ -401,8 +391,11 @@ public class DotTranslation
             {
                 barline.addGlyph(glyph);
 
-                logger.debug("{} dot#{} Repeat dot for {}",
-                        barline.getContextString(), glyph.getId(), barline);
+                logger.debug(
+                        "{} dot#{} Repeat dot for {}",
+                        barline.getContextString(),
+                        glyph.getId(),
+                        barline);
             }
 
             @Override
@@ -422,25 +415,23 @@ public class DotTranslation
     private static class StaccatoTrial
             extends Trial
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public StaccatoTrial ()
         {
             super(STACCATO);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         StaccatoResult process (Glyph glyph,
                                 Measure measure,
                                 Point dotCenter)
         {
             Scale scale = measure.getScale();
-            final int maxDx = scale.toPixels(
-                    constants.maxStaccatoDotDx);
-            final int maxDy = scale.toPixels(
-                    constants.maxStaccatoDotDy);
-            SortedMap<Double, Chord> distances = new TreeMap<>();
+            final int maxDx = scale.toPixels(constants.maxStaccatoDotDx);
+            final int maxDy = scale.toPixels(constants.maxStaccatoDotDy);
+            SortedMap<Double, Chord> distances = new TreeMap<Double, Chord>();
 
             ChordLoop:
             for (TreeNode node : measure.getChords()) {
@@ -460,10 +451,8 @@ public class DotTranslation
 
                             logger.debug("Staccato {} {}", toDot, note);
 
-                            if (((glyph.getShape() == getTargetShape())
-                                 && glyph.isManualShape())
-                                || ((Math.abs(toDot.x) <= maxDx)
-                                    && (Math.abs(toDot.y) <= maxDy))) {
+                            if (((glyph.getShape() == getTargetShape()) && glyph.isManualShape())
+                                || ((Math.abs(toDot.x) <= maxDx) && (Math.abs(toDot.y) <= maxDy))) {
                                 distances.put(toDot.distanceSq(0, 0), chord);
                             } else if (toDot.x < (-2 * maxDx)) {
                                 break ChordLoop; // Speed up
@@ -482,15 +471,15 @@ public class DotTranslation
             }
         }
 
-        //~ Inner Classes ------------------------------------------------------
+        //~ Inner Classes --------------------------------------------------------------------------
         private class StaccatoResult
                 extends Result
         {
-            //~ Instance fields ------------------------------------------------
+            //~ Instance fields --------------------------------------------------------------------
 
             final Chord chord;
 
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
             public StaccatoResult (Chord chord,
                                    double dist)
             {
@@ -498,17 +487,19 @@ public class DotTranslation
                 this.chord = chord;
             }
 
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void commit (Glyph glyph,
                                 Measure measure,
                                 Point dotCenter)
             {
-                glyph.setTranslation(
-                        new Articulation(measure, dotCenter, chord, glyph));
+                glyph.setTranslation(new Articulation(measure, dotCenter, chord, glyph));
 
-                logger.debug("{} dot#{} Staccato {}",
-                        chord.getContextString(), glyph.getId(), chord);
+                logger.debug(
+                        "{} dot#{} Staccato {}",
+                        chord.getContextString(),
+                        glyph.getId(),
+                        chord);
             }
 
             @Override
@@ -524,17 +515,17 @@ public class DotTranslation
     //-------//
     private abstract static class Trial
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         public final Shape targetShape;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Trial (Shape targetShape)
         {
             this.targetShape = targetShape;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public Shape getTargetShape ()
         {
             return targetShape;
@@ -544,25 +535,25 @@ public class DotTranslation
                                  Measure measure,
                                  Point dotCenter);
 
-        //~ Inner Classes ------------------------------------------------------
+        //~ Inner Classes --------------------------------------------------------------------------
         /**
          * Remember information about possible assignment of a dot
          */
         public abstract class Result
                 implements Comparable<Result>
         {
-            //~ Instance fields ------------------------------------------------
+            //~ Instance fields --------------------------------------------------------------------
 
             /* The measured distance to the related entity */
             final double dist;
 
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
             public Result (double dist)
             {
                 this.dist = dist;
             }
 
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
             public abstract void commit (Glyph glyph,
                                          Measure measure,
                                          Point dotCenter);
@@ -581,8 +572,8 @@ public class DotTranslation
             @Override
             public String toString ()
             {
-                return "{" + getClass().getSimpleName() + " dist:" + (float) dist
-                       + " " + internals() + "}";
+                return "{" + getClass().getSimpleName() + " dist:" + (float) dist + " "
+                       + internals() + "}";
             }
 
             protected String internals ()
@@ -598,7 +589,7 @@ public class DotTranslation
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction maxAugmentationDotDx = new Scale.Fraction(
                 1.7d,
@@ -631,6 +622,5 @@ public class DotTranslation
         Scale.Fraction maxStaccatoDotDx = new Scale.Fraction(
                 0.75d,
                 "Maximum dx between note and staccato dot");
-
     }
 }

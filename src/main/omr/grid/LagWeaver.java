@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             L a g W e a v e r                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       L a g W e a v e r                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -45,31 +45,28 @@ import java.util.ListIterator;
  */
 public class LagWeaver
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            LagWeaver.class);
+    private static final Logger logger = LoggerFactory.getLogger(LagWeaver.class);
 
     /** Table dx/dy -> Heading */
     private static final Heading[][] headings = {
         {null, Heading.NORTH, null},
-        {
-            Heading.WEST, null,
-            Heading.EAST
-        },
+        {Heading.WEST, null, Heading.EAST},
         {null, Heading.SOUTH, null}
     };
 
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
     private static enum Heading
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
-        NORTH, EAST, SOUTH,
+        NORTH,
+        EAST,
+        SOUTH,
         WEST;
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public boolean insideCornerTo (Heading next)
         {
             switch (this) {
@@ -90,7 +87,7 @@ public class LagWeaver
         }
     }
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet */
     private final Sheet sheet;
 
@@ -112,7 +109,7 @@ public class LagWeaver
     /** Points to check for target sections below in hLag */
     private final List<Point> pointsBelow = new ArrayList<Point>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // LagWeaver //
     //-----------//
@@ -129,7 +126,7 @@ public class LagWeaver
         hLag = sheet.getLag(Lags.HLAG);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // buildInfo //
     //-----------//
@@ -350,8 +347,7 @@ public class LagWeaver
             final int sectLeft = lSect.getStartCoord();
             final int sectBottom = lSect.getLastPos();
             final double[] coords = new double[2];
-            final boolean[] occupied = new boolean[lSect.getLength(
-                    Orientation.HORIZONTAL)];
+            final boolean[] occupied = new boolean[lSect.getLength(Orientation.HORIZONTAL)];
             Point prevPt = null;
             Point pt;
             Heading prevHeading = null;
@@ -443,9 +439,7 @@ public class LagWeaver
                             for (Section adj : lSect.getTargets()) {
                                 Run run = adj.getFirstRun();
                                 int left = Math.max(run.getStart() - 1, xStart);
-                                int right = Math.min(
-                                        run.getStop() + 1,
-                                        xBreak - 1);
+                                int right = Math.min(run.getStop() + 1, xBreak - 1);
 
                                 for (int x = left; x <= right; x++) {
                                     occupied[x - sectLeft] = true;
@@ -485,8 +479,7 @@ public class LagWeaver
             final int sectLeft = vSect.getFirstPos();
             final int sectRight = vSect.getLastPos();
             final double[] coords = new double[2];
-            final boolean[] occupied = new boolean[vSect.getLength(
-                    Orientation.VERTICAL)];
+            final boolean[] occupied = new boolean[vSect.getLength(Orientation.VERTICAL)];
             Point prevPt = null;
             Point pt;
             Heading prevHeading = null;
@@ -566,9 +559,7 @@ public class LagWeaver
                             for (Section adj : vSect.getTargets()) {
                                 Run run = adj.getFirstRun();
                                 int top = Math.max(run.getStart() - 1, yStart);
-                                int bot = Math.min(
-                                        run.getStop() + 1,
-                                        yBreak - 1);
+                                int bot = Math.min(run.getStop() + 1, yBreak - 1);
 
                                 for (int y = top; y <= bot; y++) {
                                     occupied[y - sectTop] = true;
@@ -664,8 +655,7 @@ public class LagWeaver
                     {
                         Glyph glyph = section.getGlyph();
 
-                        if ((glyph != null)
-                            && (glyph.getShape() == Shape.STAFF_LINE)) {
+                        if ((glyph != null) && (glyph.getShape() == Shape.STAFF_LINE)) {
                             /**
                              * Narrow horizontal section can be kept to avoid
                              * over-segmentation between vertical sections.
@@ -675,9 +665,7 @@ public class LagWeaver
                             if ((section.getLength(Orientation.HORIZONTAL) == 1)
                                 && (section.getLength(Orientation.VERTICAL) > 1)) {
                                 if (section.isVip() || logger.isDebugEnabled()) {
-                                    logger.info(
-                                            "Keeping staffline section {}",
-                                            section);
+                                    logger.info("Keeping staffline section {}", section);
                                 }
 
                                 section.setGlyph(null);

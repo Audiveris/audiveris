@@ -26,7 +26,7 @@ import java.awt.image.RenderedImage;
  */
 public abstract class AbstractGrayFilter
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     //--------//
     // filter //
@@ -53,13 +53,11 @@ public abstract class AbstractGrayFilter
     public BufferedImage filter (final BufferedImage input)
     {
         if (!(input instanceof RenderedImage)) {
-            throw new IllegalArgumentException(
-                    "Input image is not a RenderedImage");
+            throw new IllegalArgumentException("Input image is not a RenderedImage");
         }
 
         if (input.getType() != BufferedImage.TYPE_BYTE_GRAY) {
-            throw new IllegalArgumentException(
-                    "Input image is not of type TYPE_BYTE_GRAY");
+            throw new IllegalArgumentException("Input image is not of type TYPE_BYTE_GRAY");
         }
 
         final BufferedImage output = new BufferedImage(
@@ -83,9 +81,7 @@ public abstract class AbstractGrayFilter
      */
     public ByteProcessor filter (final ByteProcessor input)
     {
-        final ByteProcessor output = new ByteProcessor(
-                input.getWidth(),
-                input.getHeight());
+        final ByteProcessor output = new ByteProcessor(input.getWidth(), input.getHeight());
         StopWatch watch = new StopWatch(getClass().getSimpleName());
         watch.start("filter");
 

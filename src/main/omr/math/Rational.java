@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              R a t i o n a l                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        R a t i o n a l                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -21,13 +21,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 /**
  * Class {@code Rational} implements non-mutable rational numbers
  * (composed of a numerator and a denominator).
- *
- * <p>Invariants:<ol>
+ * <p>
+ * Invariants:<ol>
  * <li>The rational data is always kept in reduced form : gcd(num,den)==1</li>
  * <li>The denominator value is always kept positive : den >= 1</li>
  * </ol></p>
- *
- * <p>It is (un)marshallable through JAXB.</p>
+ * <p>
+ * It is (un)marshallable through JAXB.</p>
  *
  * @author Hervé Bitteur
  */
@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class Rational
         implements Comparable<Rational>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** The zero rational instance */
     public static final Rational ZERO = new Rational(0, 1);
@@ -47,7 +47,7 @@ public class Rational
     /** Max rational value */
     public static final Rational MAX_VALUE = new Rational(Integer.MAX_VALUE, 1);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Final denominator value */
     @XmlAttribute
     public final int den;
@@ -56,7 +56,7 @@ public class Rational
     @XmlAttribute
     public final int num;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // Rational //
     //----------//
@@ -99,7 +99,34 @@ public class Rational
         num = den = 1;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //-----//
+    // gcd //
+    //-----//
+    public static Rational gcd (Rational a,
+                                Rational b)
+    {
+        if (a.num == 0) {
+            return b;
+        } else {
+            return new Rational(1, GCD.lcm(a.den, b.den));
+        }
+    }
+
+    //-----//
+    // gcd //
+    //-----//
+    public static Rational gcd (Rational... vals)
+    {
+        Rational s = Rational.ZERO;
+
+        for (Rational val : vals) {
+            s = gcd(s, val);
+        }
+
+        return s;
+    }
+
     //-----//
     // abs //
     //-----//
@@ -193,33 +220,6 @@ public class Rational
         }
     }
 
-    //-----//
-    // gcd //
-    //-----//
-    public static Rational gcd (Rational a,
-                                Rational b)
-    {
-        if (a.num == 0) {
-            return b;
-        } else {
-            return new Rational(1, GCD.lcm(a.den, b.den));
-        }
-    }
-
-    //-----//
-    // gcd //
-    //-----//
-    public static Rational gcd (Rational... vals)
-    {
-        Rational s = Rational.ZERO;
-
-        for (Rational val : vals) {
-            s = gcd(s, val);
-        }
-
-        return s;
-    }
-
     //----------//
     // hashCode //
     //----------//
@@ -307,9 +307,7 @@ public class Rational
             return this;
         }
 
-        return new Rational(
-                (this.num * that.den) + (this.den * that.num),
-                this.den * that.den);
+        return new Rational((this.num * that.den) + (this.den * that.num), this.den * that.den);
     }
 
     //------//

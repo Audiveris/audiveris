@@ -29,7 +29,7 @@ public class PluginsCompanion
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
             PluginsCompanion.class);
 

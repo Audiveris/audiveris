@@ -1,19 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           S e c t i o n S e t s                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     S e c t i o n S e t s                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
 import omr.glyph.facets.Glyph;
 
 import omr.lag.Lag;
+import omr.lag.Lags;
 import omr.lag.Section;
 import omr.lag.Sections;
 
@@ -33,23 +34,22 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import omr.lag.Lags;
 
 /**
  * Class {@code SectionSets} handles a collection of section sets,
- * with the ability to (un)marshall its content using the sections ids.
+ * with the ability to (un)marshal its content using the sections ids.
  *
  * @author Hervé Bitteur
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class SectionSets
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(SectionSets.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            SectionSets.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The collection of sections sets */
     protected Collection<Collection<Section>> sets;
 
@@ -57,7 +57,7 @@ public class SectionSets
     @XmlElement(name = "sections")
     private Collection<SectionDescSet> descSets;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // SectionSets //
     //-------------//
@@ -78,7 +78,7 @@ public class SectionSets
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // createFromGlyphs //
     //------------------//
@@ -92,10 +92,10 @@ public class SectionSets
     public static SectionSets createFromGlyphs (Collection<Glyph> glyphs)
     {
         SectionSets sectionSets = new SectionSets();
-        sectionSets.sets = new ArrayList<>();
+        sectionSets.sets = new ArrayList<Collection<Section>>();
 
         for (Glyph glyph : glyphs) {
-            sectionSets.sets.add(new ArrayList<>(glyph.getMembers()));
+            sectionSets.sets.add(new ArrayList<Section>(glyph.getMembers()));
         }
 
         return sectionSets;
@@ -114,7 +114,7 @@ public class SectionSets
     public static SectionSets createFromSections (Collection<Section> sections)
     {
         SectionSets sectionSets = new SectionSets();
-        sectionSets.sets = new ArrayList<>();
+        sectionSets.sets = new ArrayList<Collection<Section>>();
         sectionSets.sets.add(sections);
 
         return sectionSets;
@@ -132,20 +132,19 @@ public class SectionSets
     public Collection<Collection<Section>> getSets (Sheet sheet)
     {
         if (sets == null) {
-            sets = new ArrayList<>();
+            sets = new ArrayList<Collection<Section>>();
 
             for (SectionDescSet idSet : descSets) {
-                List<Section> sectionSet = new ArrayList<>();
+                List<Section> sectionSet = new ArrayList<Section>();
 
                 for (SectionDesc sectionId : idSet.sections) {
-                    Lag lag = sheet.getLag(sectionId.orientation == Orientation.VERTICAL
-                            ? Lags.VLAG
-                            : Lags.HLAG);
+                    Lag lag = sheet.getLag(
+                            (sectionId.orientation == Orientation.VERTICAL) ? Lags.VLAG : Lags.HLAG);
                     Section section = lag.getVertexById(sectionId.id);
 
                     if (section == null) {
-                        logger.warn(sheet.getLogPrefix()
-                                    + "Cannot find section for " + sectionId,
+                        logger.warn(
+                                sheet.getLogPrefix() + "Cannot find section for " + sectionId,
                                 new Throwable());
                     } else {
                         sectionSet.add(section);
@@ -194,16 +193,14 @@ public class SectionSets
     {
         // Convert sections -> ids
         if (sets != null) {
-            descSets = new ArrayList<>();
+            descSets = new ArrayList<SectionDescSet>();
 
             for (Collection<Section> set : sets) {
                 SectionDescSet descSet = new SectionDescSet();
 
                 for (Section section : set) {
                     descSet.sections.add(
-                            new SectionDesc(
-                            section.getId(),
-                            section.getOrientation()));
+                            new SectionDesc(section.getId(), section.getOrientation()));
                 }
 
                 descSets.add(descSet);
@@ -211,7 +208,7 @@ public class SectionSets
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // SectionDesc //
     //-------------//
@@ -220,7 +217,7 @@ public class SectionSets
      */
     private static class SectionDesc
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // Annotation to get all ids, space-separated, in one single element:
         //@XmlList
@@ -235,7 +232,7 @@ public class SectionSets
         @XmlAttribute(name = "orientation")
         Orientation orientation;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         // For JAXB
         public SectionDesc ()
         {
@@ -248,15 +245,13 @@ public class SectionSets
             this.orientation = orientation;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
             StringBuilder sb = new StringBuilder("{SectionDesc");
-            sb.append(" ")
-                    .append(orientation);
-            sb.append(" ")
-                    .append(id);
+            sb.append(" ").append(orientation);
+            sb.append(" ").append(id);
             sb.append("}");
 
             return super.toString();
@@ -273,14 +268,13 @@ public class SectionSets
      */
     private static class SectionDescSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         //        // Annotation to get all ids, space-separated, in one single element:
         //        @XmlList
         //        // Annotation to avoid any wrapper:
         //        @XmlValue
         @XmlElement(name = "section")
-        private Collection<SectionDesc> sections = new ArrayList<>();
-
+        private Collection<SectionDesc> sections = new ArrayList<SectionDesc>();
     }
 }

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              S h a p e S e t                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        S h a p e S e t                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -33,22 +33,18 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 
 /**
- * Class {@code ShapeSet} defines a set of related shapes,
- * for example the "Rests" set gathers all rest shapes from
- * MULTI_REST down to ONE_128TH_REST.
- *
+ * Class {@code ShapeSet} defines a set of related shapes, for example the "Rests" set
+ * gathers all rest shapes from MULTI_REST down to ONE_128TH_REST.
  * <p>
- * It handles additional properties over a simple EnumSet, especially
- * assigned colors and its automatic insertion in shape menu hierarchy.
- * So don't remove any of the ShapeSet's, unless you know what you are doing.
+ * It handles additional properties over a simple EnumSet, especially assigned colors and its
+ * automatic insertion in shape menu hierarchy. So don't remove any of the ShapeSet's, unless you
+ * know what you are doing.
  */
 public class ShapeSet
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ShapeSet.class);
+    private static final Logger logger = LoggerFactory.getLogger(ShapeSet.class);
 
     /** Specific single symbol for part of time signature (such as 4) */
     public static final List<Shape> PartialTimes = Arrays.asList(
@@ -165,24 +161,12 @@ public class ShapeSet
     public static final ShapeSet Articulations = new ShapeSet(
             ARPEGGIATO,
             new Color(0xff6699),
-            shapesOf(
-            ACCENT,
-            TENUTO,
-            STACCATO,
-            STACCATISSIMO,
-            STRONG_ACCENT,
-            ARPEGGIATO));
+            shapesOf(ACCENT, TENUTO, STACCATO, STACCATISSIMO, STRONG_ACCENT, ARPEGGIATO));
 
     public static final ShapeSet Attributes = new ShapeSet(
             PEDAL_MARK,
             new Color(0x000000),
-            shapesOf(
-            OTTAVA_ALTA,
-            OTTAVA_BASSA,
-            PEDAL_MARK,
-            PEDAL_UP_MARK,
-            TUPLET_THREE,
-            TUPLET_SIX));
+            shapesOf(OTTAVA_ALTA, OTTAVA_BASSA, PEDAL_MARK, PEDAL_UP_MARK, TUPLET_THREE, TUPLET_SIX));
 
     public static final ShapeSet Barlines = new ShapeSet(
             LEFT_REPEAT_SIGN,
@@ -266,15 +250,7 @@ public class ShapeSet
     public static final ShapeSet Markers = new ShapeSet(
             CODA,
             new Color(0x888888),
-            shapesOf(
-            DAL_SEGNO,
-            DA_CAPO,
-            SEGNO,
-            CODA,
-            BREATH_MARK,
-            CAESURA,
-            BRACE,
-            BRACKET));
+            shapesOf(DAL_SEGNO, DA_CAPO, SEGNO, CODA, BREATH_MARK, CAESURA, BRACE, BRACKET));
 
     public static final ShapeSet Notes = new ShapeSet(
             BREVE,
@@ -344,14 +320,10 @@ public class ShapeSet
             shapesOf(NoteHeads.getShapes(), Flags.getShapes(), Beams.getShapes()));
 
     /** Pedals */
-    public static final EnumSet<Shape> Pedals = EnumSet.of(
-            PEDAL_MARK,
-            PEDAL_UP_MARK);
+    public static final EnumSet<Shape> Pedals = EnumSet.of(PEDAL_MARK, PEDAL_UP_MARK);
 
     /** Tuplets */
-    public static final EnumSet<Shape> Tuplets = EnumSet.of(
-            TUPLET_THREE,
-            TUPLET_SIX);
+    public static final EnumSet<Shape> Tuplets = EnumSet.of(TUPLET_THREE, TUPLET_SIX);
 
     /** All variants of dot */
     public static final EnumSet<Shape> Dots = EnumSet.of(
@@ -375,7 +347,7 @@ public class ShapeSet
         ///dumpShapeColors();
     }
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Name of the set */
     private String name;
@@ -395,7 +367,7 @@ public class ShapeSet
     /** Related color constant */
     private Constant.Color constantColor;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // ShapeSet //
     //----------//
@@ -428,7 +400,7 @@ public class ShapeSet
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // addAllShapeSets //
     //-----------------//
@@ -504,14 +476,87 @@ public class ShapeSet
     {
         // All shapes in the given range
         for (Shape shape : set.getSortedShapes()) {
-            JMenuItem menuItem = new JMenuItem(
-                    shape.toString(),
-                    shape.getDecoratedSymbol());
+            JMenuItem menuItem = new JMenuItem(shape.toString(), shape.getDecoratedSymbol());
             addColoredItem(top, menuItem, shape.getColor());
 
             menuItem.setToolTipText(shape.getDescription());
             menuItem.addActionListener(listener);
         }
+    }
+
+    //
+    //-----------------------//
+    // getPhysicalShapeNames //
+    //-----------------------//
+    /**
+     * Report the names of all the physical shapes.
+     *
+     * @return the array of names for shapes up to LAST_PHYSICAL_SHAPE
+     */
+    public static String[] getPhysicalShapeNames ()
+    {
+        int shapeCount = 1 + LAST_PHYSICAL_SHAPE.ordinal();
+        String[] names = new String[shapeCount];
+
+        for (Shape shape : allPhysicalShapes) {
+            names[shape.ordinal()] = shape.name();
+        }
+
+        return names;
+    }
+
+    //----------//
+    // contains //
+    //----------//
+    /**
+     * Convenient method to check if encapsulated shapes set does
+     * contain the provided object.
+     *
+     * @param shape the Shape object to check for inclusion
+     * @return true if contained, false otherwise
+     */
+    public boolean contains (Shape shape)
+    {
+        return shapes.contains(shape);
+    }
+
+    //----------//
+    // getColor //
+    //----------//
+    /**
+     * Report the color currently assigned to the range, if any.
+     *
+     * @return the related color, or null
+     */
+    public Color getColor ()
+    {
+        return color;
+    }
+
+    //---------//
+    // getName //
+    //---------//
+    /**
+     * Report the name of the set.
+     *
+     * @return the set name
+     */
+    public String getName ()
+    {
+        return name;
+    }
+
+    //--------//
+    // getRep //
+    //--------//
+    /**
+     * Report the representative shape of the set, if any.
+     *
+     * @return the rep shape, or null
+     */
+    public Shape getRep ()
+    {
+        return rep;
     }
 
     //-------------//
@@ -528,6 +573,100 @@ public class ShapeSet
     public static List<ShapeSet> getShapeSets ()
     {
         return Sets.setList;
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    /**
+     * Convenient way to build a collection of shapes.
+     *
+     * @param col a collection of shapes
+     * @return a single collection
+     */
+    public static Collection<Shape> shapesOf (Collection<Shape> col)
+    {
+        Collection<Shape> shapes = (col instanceof List) ? new ArrayList<Shape>()
+                : EnumSet.noneOf(Shape.class);
+
+        shapes.addAll(col);
+
+        return shapes;
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    /**
+     * Convenient way to build a collection of shapes.
+     *
+     * @param col1 a first collection of shapes
+     * @param col2 a second collection of shapes
+     * @return a single collection
+     */
+    public static Collection<Shape> shapesOf (Collection<Shape> col1,
+                                              Collection<Shape> col2)
+    {
+        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<Shape>()
+                : EnumSet.noneOf(Shape.class);
+
+        shapes.addAll(col1);
+        shapes.addAll(col2);
+
+        return shapes;
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    /**
+     * Convenient way to build a collection of shapes.
+     *
+     * @param col1 a first collection of shapes
+     * @param col2 a second collection of shapes
+     * @param col3 a third collection of shapes
+     * @return a single collection
+     */
+    public static Collection<Shape> shapesOf (Collection<Shape> col1,
+                                              Collection<Shape> col2,
+                                              Collection<Shape> col3)
+    {
+        Collection<Shape> shapes = (col1 instanceof List) ? new ArrayList<Shape>()
+                : EnumSet.noneOf(Shape.class);
+
+        shapes.addAll(col1);
+        shapes.addAll(col2);
+        shapes.addAll(col3);
+
+        return shapes;
+    }
+
+    //----------//
+    // shapesOf //
+    //----------//
+    /**
+     * Convenient way to build a collection of shapes.
+     *
+     * @param shapes an array of shapes
+     * @return a single collection
+     */
+    public static Collection<Shape> shapesOf (Shape... shapes)
+    {
+        return Arrays.asList(shapes);
+    }
+
+    //---------//
+    // valueOf //
+    //---------//
+    /**
+     * Retrieve a set knowing its name (just like an enumeration).
+     *
+     * @param str the provided set name
+     * @return the range found, or null otherwise
+     */
+    public static ShapeSet valueOf (String str)
+    {
+        return Sets.map.get(str);
     }
 
     //-----------//
@@ -572,178 +711,6 @@ public class ShapeSet
     {
         constantColor.setValue(color);
         setColor(color);
-    }
-
-    //----------//
-    // shapesOf //
-    //----------//
-    /**
-     * Convenient way to build a collection of shapes.
-     *
-     * @param col a collection of shapes
-     * @return a single collection
-     */
-    public static Collection<Shape> shapesOf (Collection<Shape> col)
-    {
-        Collection<Shape> shapes = (col instanceof List)
-                ? new ArrayList<Shape>()
-                : EnumSet.noneOf(Shape.class);
-
-        shapes.addAll(col);
-
-        return shapes;
-    }
-
-    //----------//
-    // shapesOf //
-    //----------//
-    /**
-     * Convenient way to build a collection of shapes.
-     *
-     * @param col1 a first collection of shapes
-     * @param col2 a second collection of shapes
-     * @return a single collection
-     */
-    public static Collection<Shape> shapesOf (Collection<Shape> col1,
-                                              Collection<Shape> col2)
-    {
-        Collection<Shape> shapes = (col1 instanceof List)
-                ? new ArrayList<Shape>()
-                : EnumSet.noneOf(Shape.class);
-
-        shapes.addAll(col1);
-        shapes.addAll(col2);
-
-        return shapes;
-    }
-
-    //----------//
-    // shapesOf //
-    //----------//
-    /**
-     * Convenient way to build a collection of shapes.
-     *
-     * @param col1 a first collection of shapes
-     * @param col2 a second collection of shapes
-     * @param col3 a third collection of shapes
-     * @return a single collection
-     */
-    public static Collection<Shape> shapesOf (Collection<Shape> col1,
-                                              Collection<Shape> col2,
-                                              Collection<Shape> col3)
-    {
-        Collection<Shape> shapes = (col1 instanceof List)
-                ? new ArrayList<Shape>()
-                : EnumSet.noneOf(Shape.class);
-
-        shapes.addAll(col1);
-        shapes.addAll(col2);
-        shapes.addAll(col3);
-
-        return shapes;
-    }
-
-    //----------//
-    // shapesOf //
-    //----------//
-    /**
-     * Convenient way to build a collection of shapes.
-     *
-     * @param shapes an array of shapes
-     * @return a single collection
-     */
-    public static Collection<Shape> shapesOf (Shape... shapes)
-    {
-        return Arrays.asList(shapes);
-    }
-
-    //---------//
-    // valueOf //
-    //---------//
-    /**
-     * Retrieve a set knowing its name (just like an enumeration).
-     *
-     * @param str the provided set name
-     * @return the range found, or null otherwise
-     */
-    public static ShapeSet valueOf (String str)
-    {
-        return Sets.map.get(str);
-    }
-
-    //----------//
-    // contains //
-    //----------//
-    /**
-     * Convenient method to check if encapsulated shapes set does
-     * contain the provided object.
-     *
-     * @param shape the Shape object to check for inclusion
-     * @return true if contained, false otherwise
-     */
-    public boolean contains (Shape shape)
-    {
-        return shapes.contains(shape);
-    }
-
-    //----------//
-    // getColor //
-    //----------//
-    /**
-     * Report the color currently assigned to the range, if any.
-     *
-     * @return the related color, or null
-     */
-    public Color getColor ()
-    {
-        return color;
-    }
-
-    //---------//
-    // getName //
-    //---------//
-    /**
-     * Report the name of the set.
-     *
-     * @return the set name
-     */
-    public String getName ()
-    {
-        return name;
-    }
-
-    //
-    //-----------------------//
-    // getPhysicalShapeNames //
-    //-----------------------//
-    /**
-     * Report the names of all the physical shapes.
-     *
-     * @return the array of names for shapes up to LAST_PHYSICAL_SHAPE
-     */
-    public static String[] getPhysicalShapeNames ()
-    {
-        int shapeCount = 1 + LAST_PHYSICAL_SHAPE.ordinal();
-        String[] names = new String[shapeCount];
-
-        for (Shape shape : allPhysicalShapes) {
-            names[shape.ordinal()] = shape.name();
-        }
-
-        return names;
-    }
-
-    //--------//
-    // getRep //
-    //--------//
-    /**
-     * Report the representative shape of the set, if any.
-     *
-     * @return the rep shape, or null
-     */
-    public Shape getRep ()
-    {
-        return rep;
     }
 
     //----------------------//
@@ -837,14 +804,14 @@ public class ShapeSet
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Sets //
     //------//
     /** Build the set map in a lazy way */
     private static class Sets
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         static final Map<String, ShapeSet> map = new HashMap<String, ShapeSet>();
 
@@ -864,7 +831,7 @@ public class ShapeSet
             }
         }
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         private Sets ()
         {
         }

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            S h e e t B e n c h                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      S h e e t B e n c h                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -32,13 +32,11 @@ import java.util.Date;
 public class SheetBench
         extends Bench
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SheetBench.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetBench.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The related sheet. */
     private final Sheet sheet;
 
@@ -54,7 +52,7 @@ public class SheetBench
     /** Starting date. */
     private final Date date = new Date(startTime);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // SheetBench //
     //------------//
@@ -70,14 +68,12 @@ public class SheetBench
         sheetPrefix = String.format("p%02d.", sheet.getPage().getIndex());
         score = sheet.getScore();
 
-        addProp(
-                "image",
-                score.getImagePath() + "#" + sheet.getPage().getIndex());
+        addProp("image", score.getImagePath() + "#" + sheet.getPage().getIndex());
 
         flushBench();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getSheet //
     //----------//
@@ -191,8 +187,7 @@ public class SheetBench
     protected final void addProp (String radix,
                                   String value)
     {
-        score.getBench()
-                .addProp(sheetPrefix + radix, value);
+        score.getBench().addProp(sheetPrefix + radix, value);
     }
 
     //------------//
@@ -204,7 +199,6 @@ public class SheetBench
     @Override
     protected final void flushBench ()
     {
-        score.getBench()
-                .flushBench();
+        score.getBench().flushBench();
     }
 }

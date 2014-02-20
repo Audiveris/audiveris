@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          N u m D e n S y m b o l                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    N u m D e n S y m b o l                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -21,18 +21,18 @@ import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 
 /**
- * Class {@code NumDenSymbol} displays a time sig, with numerator & denominator
+ * Class {@code NumDenSymbol} displays a time sig, with numerator & denominator.
  */
 public class NumDenSymbol
         extends ShapeSymbol
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final int[] numCodes;
 
     private final int[] denCodes;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // NumDenSymbol //
     //--------------//
@@ -47,10 +47,7 @@ public class NumDenSymbol
                          int numerator,
                          int denominator)
     {
-        this(
-                shape,
-                ShapeSymbol.numberCodes(numerator),
-                ShapeSymbol.numberCodes(denominator));
+        this(shape, ShapeSymbol.numberCodes(numerator), ShapeSymbol.numberCodes(denominator));
     }
 
     //--------------//
@@ -93,7 +90,7 @@ public class NumDenSymbol
         this.denCodes = denCodes;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -115,8 +112,7 @@ public class NumDenSymbol
         Rectangle2D denRect = p.denLayout.getBounds();
         p.rect = new Rectangle(
                 (int) Math.rint(Math.max(numRect.getWidth(), denRect.getWidth())),
-                p.dy
-                + (int) Math.rint(Math.max(numRect.getHeight(), denRect.getHeight())));
+                p.dy + (int) Math.rint(Math.max(numRect.getHeight(), denRect.getHeight())));
 
         return p;
     }
@@ -131,10 +127,7 @@ public class NumDenSymbol
                           Alignment alignment)
     {
         MyParams p = (MyParams) params;
-        Point center = alignment.translatedPoint(
-                AREA_CENTER,
-                p.rect,
-                location);
+        Point center = alignment.translatedPoint(AREA_CENTER, p.rect, location);
 
         Point top = new Point(center.x, center.y - (p.dy / 2));
         OmrFont.paint(g, p.numLayout, top, AREA_CENTER);
@@ -143,14 +136,14 @@ public class NumDenSymbol
         OmrFont.paint(g, p.denLayout, bot, AREA_CENTER);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final int dy;
 
@@ -158,7 +151,7 @@ public class NumDenSymbol
 
         final TextLayout denLayout;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public MyParams (MusicFont font)
         {
             dy = (int) Math.rint(2 * font.getFontInterline());

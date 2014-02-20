@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              F o n t I n f o                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        F o n t I n f o                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.text;
 
@@ -16,12 +16,12 @@ package omr.text;
  */
 public class FontInfo
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** A default FontInfo instance when we absolutely need one. */
     public static final FontInfo DEFAULT = createDefault(36);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** True if bold. */
     public final boolean isBold;
 
@@ -46,7 +46,7 @@ public class FontInfo
     /** Font name. */
     public final String fontName;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------//
     // FontInfo //
@@ -82,7 +82,7 @@ public class FontInfo
         this.fontName = fontName;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //---------------//
     // createDefault //
@@ -95,15 +95,7 @@ public class FontInfo
      */
     public static FontInfo createDefault (int fontSize)
     {
-        return new FontInfo(
-                false,
-                false,
-                false,
-                false,
-                true,
-                false,
-                fontSize,
-                "Serif");
+        return new FontInfo(false, false, false, false, true, false, fontSize, "Serif");
     }
 
     //----------//
@@ -113,8 +105,7 @@ public class FontInfo
     public String toString ()
     {
         StringBuilder sb = new StringBuilder("{");
-        sb.append(fontName)
-                .append(' ');
+        sb.append(fontName).append(' ');
 
         if (isBold) {
             sb.append('B');
@@ -140,8 +131,7 @@ public class FontInfo
             sb.append('C');
         }
 
-        sb.append('-')
-                .append(pointsize);
+        sb.append('-').append(pointsize);
         sb.append("}");
 
         return sb.toString();

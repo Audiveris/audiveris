@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               A c t i o n s                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         A c t i o n s                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.action;
 
@@ -40,18 +40,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "actions")
 public class Actions
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Actions.class);
 
     /** Context for JAXB unmarshalling */
     private static volatile JAXBContext jaxbContext;
 
     /** The collection of all actions loaded so far */
-    private static final Set<ActionDescriptor> allDescriptors = new LinkedHashSet<>();
+    private static final Set<ActionDescriptor> allDescriptors = new LinkedHashSet<ActionDescriptor>();
 
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
     /**
      * Predefined list of domain names.
      * Through the action list files, the user will be able to add new domain
@@ -60,7 +59,7 @@ public class Actions
      */
     public static enum Domain
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** Domain of file actions */
         FILE,
@@ -80,13 +79,13 @@ public class Actions
         HELP;
     }
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Collection of descriptors loaded by unmarshalling one file. */
     @XmlElement(name = "action")
-    private List<ActionDescriptor> descriptors = new ArrayList<>();
+    private List<ActionDescriptor> descriptors = new ArrayList<ActionDescriptor>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //---------//
     // Actions //
@@ -96,13 +95,14 @@ public class Actions
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //-------------------//
     // getAllDescriptors //
     //-------------------//
     /**
      * Report the collection of descriptors loaded so far.
+     *
      * @return all the loaded action descriptors
      */
     public static Set<ActionDescriptor> getAllDescriptors ()
@@ -114,13 +114,14 @@ public class Actions
     // getDomainNames //
     //----------------//
     /**
-     * Report the whole collection of domain names, starting with the 
+     * Report the whole collection of domain names, starting with the
      * predefined ones.
+     *
      * @return the collection of domain names
      */
     public static Set<String> getDomainNames ()
     {
-        Set<String> names = new LinkedHashSet<>();
+        Set<String> names = new LinkedHashSet<String>();
 
         // Predefined ones, except HELP
         for (Domain domain : Domain.values()) {
@@ -148,11 +149,12 @@ public class Actions
     /**
      * Report the whole collection of sections, the predefined ones
      * and the added ones.
+     *
      * @return the collection of sections
      */
     public static SortedSet<Integer> getSections ()
     {
-        SortedSet<Integer> sections = new TreeSet<>();
+        SortedSet<Integer> sections = new TreeSet<Integer>();
 
         for (ActionDescriptor desc : allDescriptors) {
             sections.add(desc.section);
@@ -167,10 +169,10 @@ public class Actions
     /**
      * Unmarshal the provided XML stream to allocate the corresponding
      * collection of action descriptors.
-     * 
+     *
      * @param in the input stream that contains the collection of action
-     * descriptors in XML format. The stream is not closed by this method
-     * @throws javax.xml.bind.JAXBException 
+     *           descriptors in XML format. The stream is not closed by this method
+     * @throws javax.xml.bind.JAXBException
      */
     public static void loadActionsFrom (InputStream in)
             throws JAXBException
@@ -187,8 +189,7 @@ public class Actions
         }
 
         // Verify that all actions have a domain and a section assigned
-        for (Iterator<ActionDescriptor> it = actions.descriptors.iterator();
-                it.hasNext();) {
+        for (Iterator<ActionDescriptor> it = actions.descriptors.iterator(); it.hasNext();) {
             ActionDescriptor desc = it.next();
 
             if (desc.domain == null) {

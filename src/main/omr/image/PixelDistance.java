@@ -1,26 +1,25 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          P i x e l D i s t a n c e                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    P i x e l D i s t a n c e                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
 /**
- * Class {@code PixelDistance} records a distance at a given pixel
- * location.
+ * Class {@code PixelDistance} records a distance at a given pixel location.
  *
  * @author Hervé Bitteur
  */
 public class PixelDistance
         implements Comparable<PixelDistance>
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Location abscissa. */
     public final int x;
@@ -31,7 +30,7 @@ public class PixelDistance
     /** Distance. */
     public final double d;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // PixelDistance //
     //---------------//
@@ -51,7 +50,7 @@ public class PixelDistance
         this.d = d;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // compareTo //
     //-----------//

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                W o r k e r                                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                          W o r k e r                                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -20,16 +20,16 @@ import org.slf4j.LoggerFactory;
  *
  * This is actually derived from the standard SwingWorker class, with the Swing
  * part removed. The worker thread is always assigned the minimum priority.
- *
- * <p>Usage:<ol>
+ * <p>
+ * Usage:<ol>
  * <li>To get a concrete Worker, you only have to subclass this abstract class
  * with a concrete definition of the construct() method.</li>
  * <li>Then use start() to actually start the Worker, and use get() to [wait for
  * completion if needed and] retrieve the result of the work if any.</li>
  * <li>The interrupt() method allows to interrupt the worker.</li>
  * </ol>
- *
- * <p>Nota: This class is now <b>deprecated</b> in favor of the use of
+ * <p>
+ * Nota: This class is now <b>deprecated</b> in favor of the use of
  * {@link omr.util.OmrExecutors#getCachedLowExecutor()} which provides similar
  * functionality plus has its lifecycle managed correctly when shutting down the
  * application.</p>
@@ -41,13 +41,11 @@ import org.slf4j.LoggerFactory;
 @Deprecated
 public abstract class Worker<T>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    protected static final Logger logger = LoggerFactory.getLogger(
-            Worker.class);
+    protected static final Logger logger = LoggerFactory.getLogger(Worker.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The work result, accessed only via getValue() and setValue() */
     private T value;
 
@@ -57,7 +55,7 @@ public abstract class Worker<T>
     /** Start time */
     private long startTime = System.currentTimeMillis();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------//
     // Worker //
     //--------//
@@ -105,7 +103,7 @@ public abstract class Worker<T>
         this(0L);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // construct //
     //-----------//
@@ -138,8 +136,7 @@ public abstract class Worker<T>
             try {
                 t.join();
             } catch (InterruptedException e) {
-                Thread.currentThread()
-                        .interrupt(); // propagate
+                Thread.currentThread().interrupt(); // propagate
                 logger.debug("{} interrupted", getClass().getName());
 
                 return null;
@@ -208,7 +205,7 @@ public abstract class Worker<T>
         this.value = value;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // ThreadVar //
     //-----------//
@@ -218,17 +215,17 @@ public abstract class Worker<T>
      */
     private static class ThreadVar
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private Thread thread;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         ThreadVar (Thread t)
         {
             thread = t;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         synchronized void clear ()
         {
             thread = null;

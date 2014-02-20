@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    S e p a r a b l e P o p u p M e n u                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              S e p a r a b l e P o p u p M e n u                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.util;
 
@@ -15,15 +15,16 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 
 /**
- * Class {@code SeparablePopupMenu} is a popup menu which is able to
- * collapse unneeded separators. This is derived from {link SeparableMenu}.
+ * Class {@code SeparablePopupMenu} is a popup menu which is able to collapse unneeded
+ * separators.
+ * This is derived from {link SeparableMenu}.
  *
  * @author Hervé Bitteur
  */
 public class SeparablePopupMenu
         extends JPopupMenu
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new SeparablePopupMenu object.
@@ -43,7 +44,7 @@ public class SeparablePopupMenu
         super(s);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // addSeparator //
     //--------------//

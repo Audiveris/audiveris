@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         L o c a t i o n E v e n t                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   L o c a t i o n E v e n t                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.selection;
 
@@ -17,29 +17,26 @@ import org.slf4j.LoggerFactory;
 import java.awt.Rectangle;
 
 /**
- * Class {@code LocationEvent} is UI Event that represents a new
- * location (a rectangle, perhaps degenerated to a point) within the
- * Sheet coordinates space.
+ * Class {@code LocationEvent} is UI Event that represents a new location (a rectangle,
+ * perhaps degenerated to a point) within the Sheet coordinates space.
  *
  * @author Hervé Bitteur
  */
 public class LocationEvent
         extends UserEvent
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            LocationEvent.class);
+    private static final Logger logger = LoggerFactory.getLogger(LocationEvent.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * The location rectangle, which can be degenerated to a point when both
      * width and height values equal zero
      */
     private final Rectangle rectangle;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new LocationEvent object.
      *
@@ -57,7 +54,7 @@ public class LocationEvent
         this.rectangle = rectangle;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//

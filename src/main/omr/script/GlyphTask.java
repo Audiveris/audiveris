@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             G l y p h T a s k                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       G l y p h T a s k                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.script;
 
@@ -17,6 +17,7 @@ import omr.glyph.facets.Glyph;
 
 import omr.sheet.Sheet;
 import omr.sheet.SystemInfo;
+import omr.sheet.SystemManager;
 
 import omr.step.Stepping;
 import omr.step.Steps;
@@ -29,7 +30,6 @@ import java.util.TreeSet;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import omr.sheet.SystemManager;
 
 /**
  * Class {@code GlyphTask} handles a collection of glyphs.
@@ -46,7 +46,7 @@ import omr.sheet.SystemManager;
 public abstract class GlyphTask
         extends SheetTask
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The collection of glyphs which are concerned by this task */
     protected Set<Glyph> glyphs;
@@ -54,7 +54,7 @@ public abstract class GlyphTask
     /** The set of (pre) impacted systems, using status before action */
     protected SortedSet<SystemInfo> initialSystems;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // GlyphTask //
     //-----------//
@@ -75,7 +75,7 @@ public abstract class GlyphTask
                     getClass().getSimpleName() + " needs at least one glyph");
         }
 
-        this.glyphs = new TreeSet<>(Glyph.byAbscissa);
+        this.glyphs = new TreeSet<Glyph>(Glyph.byAbscissa);
         this.glyphs.addAll(glyphs);
     }
 
@@ -100,7 +100,7 @@ public abstract class GlyphTask
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // epilog //
     //--------//
@@ -125,7 +125,7 @@ public abstract class GlyphTask
      */
     public SortedSet<SystemInfo> getImpactedSystems (Sheet sheet)
     {
-        SortedSet<SystemInfo> impactedSystems = new TreeSet<>();
+        SortedSet<SystemInfo> impactedSystems = new TreeSet<SystemInfo>();
         impactedSystems.addAll(initialSystems);
         impactedSystems.addAll(retrieveCurrentImpact(sheet));
 
@@ -173,6 +173,15 @@ public abstract class GlyphTask
         initialSystems = retrieveCurrentImpact(sheet);
     }
 
+    //----------------//
+    // retrieveGlyphs //
+    //----------------//
+    /**
+     * This method is in charge of retrieving the glyphs to be handled, using
+     * either their composing sections ids or their shape and locations.
+     */
+    protected abstract void retrieveGlyphs ();
+
     //-----------------//
     // internalsString //
     //-----------------//
@@ -182,8 +191,7 @@ public abstract class GlyphTask
         StringBuilder sb = new StringBuilder(super.internalsString());
 
         if (glyphs != null) {
-            sb.append(" ")
-                    .append(Glyphs.toString(glyphs));
+            sb.append(" ").append(Glyphs.toString(glyphs));
         } else {
             sb.append(" no-glyphs");
         }
@@ -219,7 +227,7 @@ public abstract class GlyphTask
      */
     protected SortedSet<SystemInfo> retrieveCurrentImpact (Sheet sheet)
     {
-        SortedSet<SystemInfo> impactedSystems = new TreeSet<>();
+        SortedSet<SystemInfo> impactedSystems = new TreeSet<SystemInfo>();
         SystemManager systemManager = sheet.getSystemManager();
 
         for (Glyph glyph : glyphs) {
@@ -239,13 +247,4 @@ public abstract class GlyphTask
 
         return impactedSystems;
     }
-
-    //----------------//
-    // retrieveGlyphs //
-    //----------------//
-    /**
-     * This method is in charge of retrieving the glyphs to be handled, using
-     * either their composing sections ids or their shape and locations.
-     */
-    protected abstract void retrieveGlyphs ();
 }

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             S c o r e T r e e                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       S c o r e T r e e                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.ui;
 
@@ -59,26 +59,23 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 /**
- * Class {@code ScoreTree} provides a user interface (a frame) where the
- * whole score hierarchy can be browsed as a tree.
+ * Class {@code ScoreTree} provides a user interface (a frame) where the whole score
+ * hierarchy can be browsed as a tree.
  *
  * @author Hervé Bitteur
  */
 public class ScoreTree
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(ScoreTree.class);
 
     /** The filter for relevant classes and fields */
-    private static final Relevance filter = new PackageRelevance(
-            Main.class.getPackage());
+    private static final Relevance filter = new PackageRelevance(Main.class.getPackage());
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Concrete UI component */
     private final JPanel component;
 
@@ -89,7 +86,7 @@ public class ScoreTree
     private final Score score;
 
     /** Cache to avoid recomputing sets of children */
-    private final HashMap<Object, List<Object>> nodeMap = new HashMap<>();
+    private final HashMap<Object, List<Object>> nodeMap = new HashMap<Object, List<Object>>();
 
     /** The tree model */
     private final Model model;
@@ -97,7 +94,7 @@ public class ScoreTree
     /** The enclosing frame */
     private JFrame frame;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // ScoreTree //
     //-----------//
@@ -116,7 +113,6 @@ public class ScoreTree
         model = new Model(score);
 
         ///model.addTreeModelListener(new ModelListener()); // Debug
-
         /** The tree entity */
         JTree tree = new JTree(model);
 
@@ -130,8 +126,7 @@ public class ScoreTree
         JScrollPane htmlView = new JScrollPane(htmlPane);
 
         // Allow only single selections
-        tree.getSelectionModel().setSelectionMode(
-                TreeSelectionModel.SINGLE_TREE_SELECTION);
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
         // Display lines to explicit relationships
         tree.putClientProperty("JTree.lineStyle", "Angled");
@@ -143,12 +138,8 @@ public class ScoreTree
 
         // To be notified of expansion / collapse actions (debug ...)
         ///tree.addTreeExpansionListener(new ExpansionListener());
-
         // Build split-pane view
-        JSplitPane splitPane = new JSplitPane(
-                JSplitPane.HORIZONTAL_SPLIT,
-                treeView,
-                htmlView);
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treeView, htmlView);
         splitPane.setName("treeHtmlSplitPane");
         splitPane.setContinuousLayout(true);
         splitPane.setBorder(null);
@@ -159,7 +150,7 @@ public class ScoreTree
         component.add("Center", splitPane);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // close //
     //-------//
@@ -194,23 +185,21 @@ public class ScoreTree
             // Set up the views, and display it all
             JButton refreshButton = new JButton(
                     new AbstractAction()
-            {
-                @Override
-                public void actionPerformed (ActionEvent e)
-                {
-                    refresh();
-                }
-            });
+                    {
+                        @Override
+                        public void actionPerformed (ActionEvent e)
+                        {
+                            refresh();
+                        }
+                    });
             refreshButton.setName("refreshButton");
             toolBar.add(refreshButton);
             frame.add(component);
 
             // Resources injection
-            ResourceMap resource = MainGui.getInstance().getContext().
-                    getResourceMap(getClass());
+            ResourceMap resource = MainGui.getInstance().getContext().getResourceMap(getClass());
             resource.injectComponents(frame);
-            frame.setTitle(
-                    resource.getString("frameTitleMask", score.getRadix()));
+            frame.setTitle(resource.getString("frameTitleMask", score.getRadix()));
         }
 
         return frame;
@@ -227,20 +216,19 @@ public class ScoreTree
         model.refreshAll();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Should we hide empty dummy containers */
         Constant.Boolean hideEmptyDummies = new Constant.Boolean(
                 false,
                 "Should we hide empty dummy containers");
-
     }
 
     //-----------------//
@@ -248,13 +236,13 @@ public class ScoreTree
     //-----------------//
     private static class NamedCollection
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final String name;
 
         private final Collection<?> collection;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public NamedCollection (String name,
                                 Collection<?> collection)
         {
@@ -262,7 +250,7 @@ public class ScoreTree
             this.collection = collection;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -275,13 +263,13 @@ public class ScoreTree
     //-----------//
     private static class NamedData
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final String name;
 
         private final Object data;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public NamedData (String name,
                           Object data)
         {
@@ -289,7 +277,7 @@ public class ScoreTree
             this.data = data;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -304,13 +292,13 @@ public class ScoreTree
     private class Model
             implements TreeModel
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        private List<TreeModelListener> listeners = new ArrayList<>();
+        private List<TreeModelListener> listeners = new ArrayList<TreeModelListener>();
 
         private Score score;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         //---------//
         // Model //
         //---------//
@@ -319,7 +307,7 @@ public class ScoreTree
             this.score = score;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //----------------------//
         // addTreeModelListener //
         //----------------------//
@@ -359,8 +347,7 @@ public class ScoreTree
         {
             int i = 0;
 
-            for (Iterator<Object> it = getRelevantChildren(parent).iterator();
-                    it.hasNext();) {
+            for (Iterator<Object> it = getRelevantChildren(parent).iterator(); it.hasNext();) {
                 if (it.next() == child) {
                     return i;
                 }
@@ -368,8 +355,7 @@ public class ScoreTree
                 i++;
             }
 
-            throw new RuntimeException(
-                    "'" + child + "' not child of '" + parent + "'");
+            throw new RuntimeException("'" + child + "' not child of '" + parent + "'");
         }
 
         //---------//
@@ -401,9 +387,7 @@ public class ScoreTree
         {
             nodeMap.clear();
 
-            TreeModelEvent modelEvent = new TreeModelEvent(
-                    this,
-                    new Object[]{score});
+            TreeModelEvent modelEvent = new TreeModelEvent(this, new Object[]{score});
 
             for (TreeModelListener listener : listeners) {
                 listener.treeStructureChanged(modelEvent);
@@ -465,14 +449,13 @@ public class ScoreTree
             }
 
             // Not found, so let's build it
-            logger.debug("Retrieving relevants of {} {}",
-                    node, node.getClass());
+            logger.debug("Retrieving relevants of {} {}", node, node.getClass());
 
             // Case of Named Collection
             if (node instanceof NamedCollection) {
                 ///logger.info("named collection: " + node);
                 NamedCollection nc = (NamedCollection) node;
-                relevants = new ArrayList<>();
+                relevants = new ArrayList<Object>();
                 nodeMap.put(node, relevants);
 
                 for (Object n : nc.collection) {
@@ -502,7 +485,7 @@ public class ScoreTree
             }
 
             Class<?> classe = node.getClass();
-            relevants = new ArrayList<>();
+            relevants = new ArrayList<Object>();
             nodeMap.put(node, relevants);
 
             // Walk up the inheritance tree
@@ -551,9 +534,7 @@ public class ScoreTree
                             Collection<?> coll = (Collection<?>) object;
 
                             if (!coll.isEmpty()) {
-                                relevants.add(
-                                        new NamedCollection(field.getName(),
-                                        coll));
+                                relevants.add(new NamedCollection(field.getName(), coll));
                             }
 
                             continue;
@@ -596,8 +577,7 @@ public class ScoreTree
 
             // We display dummy containers only when they are not empty
             if (constants.hideEmptyDummies.getValue()
-                && (node instanceof NamedCollection
-                    || (node instanceof Container))) {
+                && (node instanceof NamedCollection || (node instanceof Container))) {
                 return getChildCount(node) > 0;
             } else {
                 return true;
@@ -611,7 +591,7 @@ public class ScoreTree
     private class SelectionListener
             implements TreeSelectionListener
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void valueChanged (TreeSelectionEvent e)

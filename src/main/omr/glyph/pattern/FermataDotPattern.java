@@ -1,20 +1,19 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     F e r m a t a D o t P a t t e r n                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//--------------------------------------------------------------------------------------------------------------------//
+//                                                                                                                    //
+//                                         F e r m a t a D o t P a t t e r n                                          //
+//                                                                                                                    //
+//--------------------------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//--------------------------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
 import omr.glyph.*;
 import omr.glyph.Shape;
 import omr.glyph.facets.Glyph;
-import omr.glyph.facets.GlyphComposition;
 
 import omr.sheet.SystemInfo;
 
@@ -29,20 +28,17 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Class {@code FermataDotPattern} looks for FERMATA & FERMATA_BELOW
- * shaped-glyphs to make sure that the "associated" dot is not
- * assigned anything else (such as staccato).
+ * Class {@code FermataDotPattern} looks for FERMATA & FERMATA_BELOW shaped-glyphs to
+ * make sure that the "associated" dot is not assigned anything else (such as staccato).
  *
  * @author Hervé Bitteur
  */
 public class FermataDotPattern
         extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            FermataDotPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(FermataDotPattern.class);
 
     /** Dot avatars */
     private static final List<Shape> dots = Arrays.asList(
@@ -50,7 +46,7 @@ public class FermataDotPattern
             Shape.AUGMENTATION_DOT,
             Shape.STACCATO);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------------//
     // FermataDotPattern //
     //-------------------//
@@ -64,7 +60,7 @@ public class FermataDotPattern
         super("FermataDot", system);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // runPattern //
     //------------//
@@ -80,10 +76,7 @@ public class FermataDotPattern
             }
 
             if (fermata.isVip() || logger.isDebugEnabled()) {
-                logger.info(
-                        "Checking fermata #{} {}",
-                        fermata.getId(),
-                        fermata.getEvaluation());
+                logger.info("Checking fermata #{} {}", fermata.getId(), fermata.getEvaluation());
             }
 
             // Find related dot within glyph box
@@ -96,31 +89,23 @@ public class FermataDotPattern
                 @Override
                 public boolean check (Glyph glyph)
                 {
-                    return (glyph != fermata)
-                           && glyph.getBounds()
-                            .intersects(box)
+                    return (glyph != fermata) && glyph.getBounds().intersects(box)
                            && dots.contains(glyph.getShape());
                 }
                     });
 
             for (Glyph candidate : candidates) {
-                if (fermata.isVip()
-                    || candidate.isVip()
-                    || logger.isDebugEnabled()) {
+                if (fermata.isVip() || candidate.isVip() || logger.isDebugEnabled()) {
                     logger.info("Dot candidate #{}", candidate);
                 }
 
-                GlyphNest nest = system.getSheet()
-                        .getNest();
+                GlyphNest nest = system.getSheet().getNest();
                 Glyph compound = nest.buildGlyph(
                         Arrays.asList(fermata, candidate),
                         false,
                         Glyph.Linking.NO_LINK);
                 Evaluation eval = GlyphNetwork.getInstance()
-                        .vote(
-                                compound,
-                                system,
-                                Grades.noMinGrade);
+                        .vote(compound, system, Grades.noMinGrade);
 
                 if (eval != null) {
                     // Assign and insert into system & nest environments

@@ -29,7 +29,7 @@ public class DescriptorFactory
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
             DescriptorFactory.class);
 

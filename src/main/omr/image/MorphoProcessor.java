@@ -1,17 +1,18 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          M o r p h o P r o c e s s o r                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    M o r p h o P r o c e s s o r                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
 import ij.process.ByteProcessor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,11 +24,9 @@ import org.slf4j.LoggerFactory;
 public class MorphoProcessor
         implements MorphoConstants
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            MorphoProcessor.class);
+    private static final Logger logger = LoggerFactory.getLogger(MorphoProcessor.class);
 
     private static final int ORIG = 0;
 
@@ -37,7 +36,7 @@ public class MorphoProcessor
 
     public static final int BINF = -256;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     private StructureElement se; //, down_se, up_se;
 
     private StructureElement minus_se; //, down_se, up_se;
@@ -60,7 +59,7 @@ public class MorphoProcessor
 
     int height;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /** Creates a new instance of MorphoProcessor */
     public MorphoProcessor (StructureElement se)
     {
@@ -77,7 +76,7 @@ public class MorphoProcessor
         pg_minus = minus_se.getVect();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------//
     // close //
     //-------//

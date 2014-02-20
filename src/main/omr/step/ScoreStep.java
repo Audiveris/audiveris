@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             S c o r e S t e p                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       S c o r e S t e p                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -28,21 +28,19 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 
 /**
- * Class {@code ScoreStep} implements the <b>SCORE</b> step, which
- * merges all pages into one score.
+ * Class {@code ScoreStep} implements the <b>SCORE</b> step, which merges all pages
+ * into one score.
  *
  * @author Hervé Bitteur
  */
 public class ScoreStep
         extends AbstractStep
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ScoreStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScoreStep.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // ScoreStep //
     //-----------//
@@ -59,15 +57,14 @@ public class ScoreStep
                 "Build the final score");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
     @Override
     public void displayUI (Sheet sheet)
     {
-        Steps.valueOf(Steps.SYMBOLS)
-                .displayUI(sheet);
+        Steps.valueOf(Steps.SYMBOLS).displayUI(sheet);
     }
 
     //--------//
@@ -85,8 +82,7 @@ public class ScoreStep
         super.doStep(systems, sheet);
 
         // Set completion for all sheets of the score
-        for (TreeNode pn : sheet.getScore()
-                .getPages()) {
+        for (TreeNode pn : sheet.getScore().getPages()) {
             Page page = (Page) pn;
             done(page.getSheet());
         }
@@ -122,8 +118,7 @@ public class ScoreStep
             page.accept(new MeasureFixer());
 
             // Connect slurs across pages
-            page.getFirstSystem()
-                    .connectPageInitialSlurs();
+            page.getFirstSystem().connectPageInitialSlurs();
         }
     }
 }

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    C u s t o m N u m D e n S y m b o l                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              C u s t o m N u m D e n S y m b o l                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -20,13 +20,13 @@ import java.awt.Rectangle;
 import java.awt.font.TextLayout;
 
 /**
- * Class {@code CustomNumDenSymbol} displays a custom time signature, with
- * just the N and D letters
+ * Class {@code CustomNumDenSymbol} displays a custom time signature, with just the N
+ * and D letters.
  */
 public class CustomNumDenSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //--------------------//
     // CustomNumDenSymbol //
@@ -52,7 +52,7 @@ public class CustomNumDenSymbol
         super(isIcon, Shape.CUSTOM_TIME, true);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -70,8 +70,7 @@ public class CustomNumDenSymbol
     {
         MyParams p = new MyParams();
 
-        TextFont textFont = new TextFont(
-                (int) Math.rint(font.getSize2D() * 0.62));
+        TextFont textFont = new TextFont((int) Math.rint(font.getSize2D() * 0.62));
         p.nLayout = textFont.layout("N");
         p.dLayout = textFont.layout("D");
         p.rect = new Rectangle(
@@ -99,14 +98,14 @@ public class CustomNumDenSymbol
         OmrFont.paint(g, p.dLayout, loc, BOTTOM_CENTER);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // layout not used
         // rect for global image
@@ -115,6 +114,5 @@ public class CustomNumDenSymbol
 
         // Layout for D
         TextLayout dLayout;
-
     }
 }

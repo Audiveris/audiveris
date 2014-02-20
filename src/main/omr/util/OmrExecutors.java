@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          O m r E x e c u t o r s                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    O m r E x e c u t o r s                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -39,21 +39,19 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class OmrExecutors
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            OmrExecutors.class);
+    
+    private static final Logger logger = LoggerFactory.getLogger(OmrExecutors.class);
 
-    /** Specific application parameters */
+    
     private static final Constants constants = new Constants();
 
     /** Default parameter. */
     public static final Param<Boolean> defaultParallelism = new Default();
 
     /** Number of processors available. */
-    private static final int cpuCount = Runtime.getRuntime()
-            .availableProcessors();
+    private static final int cpuCount = Runtime.getRuntime().availableProcessors();
 
     static {
         if (constants.printEnvironment.isSet()) {
@@ -72,15 +70,12 @@ public class OmrExecutors
     private static final Pool cachedLows = new CachedLows();
 
     /** To handle all the pools as a whole */
-    private static Collection<Pool> allPools = Arrays.asList(
-            cachedLows,
-            lows,
-            highs);
+    private static Collection<Pool> allPools = Arrays.asList(cachedLows, lows, highs);
 
     /** To prevent parallel creation of pools when closing */
     private static volatile boolean creationAllowed = true;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Not meant to be instantiated
      */
@@ -88,7 +83,7 @@ public class OmrExecutors
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // getCachedLowExecutor //
     //----------------------//
@@ -179,18 +174,18 @@ public class OmrExecutors
         logger.debug("OmrExecutors closed");
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Pool //
     //------//
     private abstract static class Pool
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** The underlying pool of threads */
         protected ExecutorService pool;
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Name the pool.
          */
@@ -206,19 +201,14 @@ public class OmrExecutors
                 return;
             }
 
-            logger.debug(
-                    "Closing pool {}{}",
-                    getName(),
-                    immediately ? " immediately" : "");
+            logger.debug("Closing pool {}{}", getName(), immediately ? " immediately" : "");
 
             if (!immediately) {
                 pool.shutdown(); // Disable new tasks from being submitted
 
                 try {
                     // Wait a while for existing tasks to terminate
-                    if (!pool.awaitTermination(
-                            constants.graceDelay.getValue(),
-                            TimeUnit.SECONDS)) {
+                    if (!pool.awaitTermination(constants.graceDelay.getValue(), TimeUnit.SECONDS)) {
                         // Cancel currently executing tasks
                         pool.shutdownNow();
                         logger.warn("Pool {} did not terminate", getName());
@@ -227,8 +217,7 @@ public class OmrExecutors
                     // (Re-)Cancel if current thread also got interrupted
                     pool.shutdownNow();
                     // Preserve interrupt status
-                    Thread.currentThread()
-                            .interrupt();
+                    Thread.currentThread().interrupt();
                 }
             } else {
                 // Cancel currently executing tasks
@@ -280,7 +269,7 @@ public class OmrExecutors
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Boolean printEnvironment = new Constant.Boolean(
                 false,
@@ -296,7 +285,6 @@ public class OmrExecutors
                 "seconds",
                 60, //15,
                 "Time to wait for terminating tasks");
-
     }
 
     //
@@ -307,7 +295,7 @@ public class OmrExecutors
     private static class CachedLows
             extends Pool
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String getName ()
@@ -318,8 +306,7 @@ public class OmrExecutors
         @Override
         protected ExecutorService createPool ()
         {
-            return Executors.newCachedThreadPool(
-                    new Factory(getName(), Thread.MIN_PRIORITY, 0));
+            return Executors.newCachedThreadPool(new Factory(getName(), Thread.MIN_PRIORITY, 0));
         }
     }
 
@@ -329,7 +316,7 @@ public class OmrExecutors
     private static class Default
             extends Param<Boolean>
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Boolean getSpecific ()
@@ -340,12 +327,9 @@ public class OmrExecutors
         @Override
         public boolean setSpecific (Boolean specific)
         {
-            if (!getSpecific()
-                    .equals(specific)) {
+            if (!getSpecific().equals(specific)) {
                 constants.useParallelism.setValue(specific);
-                logger.info(
-                        "Parallelism is {} allowed",
-                        specific ? "now" : "no longer");
+                logger.info("Parallelism is {} allowed", specific ? "now" : "no longer");
 
                 return true;
             } else {
@@ -360,7 +344,7 @@ public class OmrExecutors
     private static class Factory
             implements ThreadFactory
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final ThreadGroup group;
 
@@ -372,21 +356,19 @@ public class OmrExecutors
 
         private final AtomicInteger threadNumber = new AtomicInteger(0);
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         Factory (String threadPrefix,
                  int threadPriority,
                  long stackSize)
         {
             SecurityManager s = System.getSecurityManager();
-            group = (s != null) ? s.getThreadGroup()
-                    : Thread.currentThread()
-                    .getThreadGroup();
+            group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
             this.threadPrefix = threadPrefix;
             this.threadPriority = threadPriority;
             this.stackSize = stackSize;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Thread newThread (Runnable r)
         {
@@ -416,7 +398,7 @@ public class OmrExecutors
     private static class Highs
             extends Pool
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String getName ()
@@ -440,7 +422,7 @@ public class OmrExecutors
     private static class Lows
             extends Pool
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public String getName ()

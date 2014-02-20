@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           R e l a t i o n M e n u                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     R e l a t i o n M e n u                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig.ui;
 
@@ -25,20 +25,19 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingConstants;
 
 /**
- * Class {@code RelationMenu} builds a menu with all relations around
- * a given inter.
+ * Class {@code RelationMenu} builds a menu with all relations around a given inter.
  *
  * @author Hervé Bitteur
  */
 public class RelationMenu
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final JMenu menu;
 
     private final Listener listener = new Listener();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // RelationMenu //
     //--------------//
@@ -54,8 +53,7 @@ public class RelationMenu
         menu = new JMenu(new InterAction(inter, null));
 
         // Show the originating inter
-        JMenuItem interItem = new JMenuItem(
-                new InterAction(inter, "Relations of " + inter + ":"));
+        JMenuItem interItem = new JMenuItem(new InterAction(inter, "Relations of " + inter + ":"));
         interItem.setHorizontalAlignment(SwingConstants.CENTER);
         interItem.addMouseListener(listener);
         menu.add(interItem);
@@ -63,7 +61,6 @@ public class RelationMenu
 
         // Look for a BeamStem relation around a stem
         ///BeamStemRelation beamStemRel = null;
-
         //            if (inter instanceof StemInter) {
         //                for (Relation relation : rels) {
         //                    if (relation instanceof BeamStemRelation) {
@@ -73,7 +70,6 @@ public class RelationMenu
         //                    }
         //                }
         //            }
-
         // Show each relation
         for (Relation relation : rels) {
             JMenuItem item = new JMenuItem(new RelationAction(inter, relation));
@@ -82,7 +78,7 @@ public class RelationMenu
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getMenu //
     //---------//
@@ -94,14 +90,14 @@ public class RelationMenu
         return menu;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Listener //
     //----------//
     private class Listener
             extends AbstractMouseListener
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void mouseEntered (MouseEvent e)

@@ -1,37 +1,36 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      S h a p e D e s c r i p t i o n                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                S h a p e D e s c r i p t i o n                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
 import omr.glyph.facets.Glyph;
 
 /**
- * Class {@code ShapeDescription} builds the glyphs features to be used
- * by an evaluator.
+ * Class {@code ShapeDescription} builds the glyphs features to be used by an evaluator.
  *
  * @author Hervé Bitteur
  */
 public abstract class ShapeDescription
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Descriptor INSTANCE = new ShapeDescriptorGeo();
-    ///private static final Descriptor INSTANCE = new ShapeDescriptorART();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
+    ///private static final Descriptor INSTANCE = new ShapeDescriptorART();
     private ShapeDescription ()
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // boolAsDouble //
     //--------------//
@@ -94,14 +93,14 @@ public abstract class ShapeDescription
         return INSTANCE.length();
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //
     //------------//
     // Descriptor //
     //------------//
     public static interface Descriptor
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Key method which gathers the various features meant to

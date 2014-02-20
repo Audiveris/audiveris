@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                   P a g e P h y s i c a l P a i n t e r                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                             P a g e P h y s i c a l P a i n t e r                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.ui;
 
@@ -37,7 +37,6 @@ import omr.score.entity.SystemPart;
 
 import omr.sheet.Sheet;
 import omr.sheet.Skew;
-import omr.sheet.SlurInfo;
 import omr.sheet.SystemInfo;
 
 import omr.sig.AbstractBeamInter;
@@ -76,9 +75,8 @@ import java.awt.geom.Point2D;
 import java.util.ConcurrentModificationException;
 
 /**
- * Class {@code PagePhysicalPainter} paints the recognized page
- * entities at the location of their image counterpart, so that
- * discrepancies between them can be easily seen.
+ * Class {@code PagePhysicalPainter} paints the recognized page entities at the location
+ * of their image counterpart, so that discrepancies between them can be easily seen.
  *
  * <p>
  * TODO:
@@ -87,17 +85,14 @@ import java.util.ConcurrentModificationException;
  * @author Hervé Bitteur
  */
 public class PagePhysicalPainter
-    extends PagePainter
-    implements InterVisitor
+        extends PagePainter
+        implements InterVisitor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-        PagePhysicalPainter.class);
+    private static final Logger logger = LoggerFactory.getLogger(PagePhysicalPainter.class);
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------------//
     // PagePhysicalPainter //
     //---------------------//
@@ -110,15 +105,14 @@ public class PagePhysicalPainter
      * @param annotated     true if annotations are to be drawn
      */
     public PagePhysicalPainter (Graphics graphics,
-                                boolean  coloredVoices,
-                                boolean  linePainting,
-                                boolean  annotated)
+                                boolean coloredVoices,
+                                boolean linePainting,
+                                boolean annotated)
     {
         super(graphics, coloredVoices, linePainting, annotated);
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // drawSlot //
     //----------//
@@ -131,11 +125,11 @@ public class PagePhysicalPainter
      * @param color       the color to use in drawing
      */
     public void drawSlot (boolean wholeSystem,
-                          Slot    slot,
-                          Color   color)
+                          Slot slot,
+                          Color color)
     {
         final Measure measure = slot.getMeasure();
-        final Color   oldColor = g.getColor();
+        final Color oldColor = g.getColor();
         g.setColor(color);
         UIUtil.setAbsoluteStroke(g, 1);
 
@@ -146,19 +140,15 @@ public class PagePhysicalPainter
                 // Draw for the whole system height
                 system = measure.getSystem();
 
-                int top = system.getFirstPart().getFirstStaff().getInfo()
-                                .getFirstLine().yAt(x);
-                int bottom = system.getLastPart().getLastStaff().getInfo()
-                                   .getLastLine().yAt(x);
+                int top = system.getFirstPart().getFirstStaff().getInfo().getFirstLine().yAt(x);
+                int bottom = system.getLastPart().getLastStaff().getInfo().getLastLine().yAt(x);
 
                 g.drawLine(x, top, x, bottom);
             } else {
                 // Draw for just the part height
                 SystemPart part = measure.getPart();
-                int        top = part.getFirstStaff().getInfo().getFirstLine().yAt(
-                    x);
-                int        bottom = part.getLastStaff().getInfo().getLastLine().yAt(
-                    x);
+                int top = part.getFirstStaff().getInfo().getFirstLine().yAt(x);
+                int bottom = part.getLastStaff().getInfo().getLastLine().yAt(x);
                 g.drawLine(x, top, x, bottom);
 
                 // Draw slot start time (with a maximum font size)
@@ -166,27 +156,20 @@ public class PagePhysicalPainter
 
                 if (slotStartTime != null) {
                     TextLayout layout;
-                    double     zoom = g.getTransform().getScaleX();
+                    double zoom = g.getTransform().getScaleX();
 
                     if (zoom <= 2) {
                         layout = basicLayout(slotStartTime.toString(), halfAT);
                     } else {
-                        AffineTransform at = AffineTransform.getScaleInstance(
-                            1 / zoom,
-                            1 / zoom);
+                        AffineTransform at = AffineTransform.getScaleInstance(1 / zoom, 1 / zoom);
                         layout = basicLayout(slotStartTime.toString(), at);
                     }
 
-                    paint(
-                        layout,
-                        new Point(x, top - annotationDy),
-                        BOTTOM_CENTER);
+                    paint(layout, new Point(x, top - annotationDy), BOTTOM_CENTER);
                 }
             }
         } catch (Exception ex) {
-            logger.warn(
-                getClass().getSimpleName() + " Error drawing " + slot,
-                ex);
+            logger.warn(getClass().getSimpleName() + " Error drawing " + slot, ex);
         }
 
         g.setStroke(defaultStroke);
@@ -227,8 +210,8 @@ public class PagePhysicalPainter
     @Override
     public boolean visit (Barline barline)
     {
-        if (!barline.getBox().intersects(oldClip) ||
-            systemInfo.getSheet().getStaffManager().getStaves().isEmpty()) {
+        if (!barline.getBox().intersects(oldClip)
+            || systemInfo.getSheet().getStaffManager().getStaves().isEmpty()) {
             return false;
         }
 
@@ -236,26 +219,25 @@ public class PagePhysicalPainter
 
         try {
             // This drawing is driven by the barline shape
-            Shape      shape = barline.getShape();
-            Rectangle  box = barline.getBox();
-            Point      center = barline.getCenter();
+            Shape shape = barline.getShape();
+            Rectangle box = barline.getBox();
+            Point center = barline.getCenter();
             SystemPart part = barline.getPart();
 
             // Top and bottom limits of the barline, using staff lines
             StaffInfo topStaff = systemInfo.getStaffAt(box.getLocation());
-            LineInfo  topLine = topStaff.getFirstLine();
-            StaffInfo botStaff = systemInfo.getStaffAt(
-                new Point(box.x, box.y + box.height));
-            LineInfo  botLine = botStaff.getLastLine();
+            LineInfo topLine = topStaff.getFirstLine();
+            StaffInfo botStaff = systemInfo.getStaffAt(new Point(box.x, box.y + box.height));
+            LineInfo botLine = botStaff.getLastLine();
 
-            Skew      skew = systemInfo.getSkew();
+            Skew skew = systemInfo.getSkew();
 
             if (skew == null) { // Safer
 
                 return false;
             }
 
-            double    slope = skew.getSlope();
+            double slope = skew.getSlope();
             BasicLine bar = new BasicLine();
             bar.includePoint(center.x, center.y);
             bar.includePoint(center.x - (100 * slope), center.y + 100);
@@ -301,9 +283,7 @@ public class PagePhysicalPainter
         } catch (ConcurrentModificationException ignored) {
             return false;
         } catch (Exception ex) {
-            logger.warn(
-                getClass().getSimpleName() + " Error visiting " + barline,
-                ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + barline, ex);
         }
 
         return true;
@@ -349,9 +329,7 @@ public class PagePhysicalPainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                getClass().getSimpleName() + " Error visiting " + chord,
-                ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + chord, ex);
         }
 
         return true;
@@ -366,7 +344,7 @@ public class PagePhysicalPainter
         if (annotated) {
             if (!measure.isDummy()) {
                 final SystemPart part = measure.getPart();
-                final Color      oldColor = g.getColor();
+                final Color oldColor = g.getColor();
 
                 // Write the score-based measure id, on first real part only
                 if (part == measure.getSystem().getFirstRealPart()) {
@@ -375,19 +353,16 @@ public class PagePhysicalPainter
                     if (mid != null) {
                         g.setColor(Colors.ANNOTATION);
 
-                        StaffInfo staff = measure.getPart().getFirstStaff()
-                                                 .getInfo();
-                        Point     loc = new Point(
-                            measure.getLeftX(),
-                            staff.getFirstLine().yAt(measure.getLeftX()) -
-                            annotationDy);
+                        StaffInfo staff = measure.getPart().getFirstStaff().getInfo();
+                        Point loc = new Point(
+                                measure.getLeftX(),
+                                staff.getFirstLine().yAt(measure.getLeftX()) - annotationDy);
                         paint(basicLayout(mid, null), loc, BOTTOM_CENTER);
                     }
                 }
 
                 // Draw slot vertical lines ?
-                if (parameters.isSlotPainting() &&
-                    (measure.getSlots() != null)) {
+                if (parameters.isSlotPainting() && (measure.getSlots() != null)) {
                     for (Slot slot : measure.getSlots()) {
                         drawSlot(false, slot, Colors.SLOT);
                     }
@@ -436,9 +411,7 @@ public class PagePhysicalPainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                getClass().getSimpleName() + " Error visiting " + note,
-                ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + note, ex);
         }
 
         return true;
@@ -479,9 +452,7 @@ public class PagePhysicalPainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                getClass().getSimpleName() + " Error visiting " + page,
-                ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + page, ex);
         }
 
         return false;
@@ -506,14 +477,13 @@ public class PagePhysicalPainter
             g.setColor(Colors.ANNOTATION);
 
             Point ul = new Point(
-                systemInfo.getBounds().x,
-                systemInfo.getTop() + (systemInfo.getDeltaY() / 2) +
-                scale.getInterline());
+                    systemInfo.getBounds().x,
+                    systemInfo.getTop() + (systemInfo.getDeltaY() / 2) + scale.getInterline());
 
             paint(
-                basicLayout("S" + system.getId(), null),
-                new Point(ul.x + annotationDx, ul.y + annotationDy),
-                TOP_LEFT);
+                    basicLayout("S" + system.getId(), null),
+                    new Point(ul.x + annotationDx, ul.y + annotationDy),
+                    TOP_LEFT);
 
             // System area
             g.setColor(new Color(255, 0, 0, 50));
@@ -553,9 +523,7 @@ public class PagePhysicalPainter
             staff.getInfo().render(g);
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                getClass().getSimpleName() + " Error visiting " + staff,
-                ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + staff, ex);
         }
 
         return true;
@@ -570,8 +538,7 @@ public class PagePhysicalPainter
             // Check that this system is visible
             Rectangle bounds = systemInfo.getBounds();
 
-            if ((bounds == null) ||
-                ((oldClip != null) && !(oldClip.intersects(bounds)))) {
+            if ((bounds == null) || ((oldClip != null) && !(oldClip.intersects(bounds)))) {
                 return false;
             }
 
@@ -590,9 +557,7 @@ public class PagePhysicalPainter
             }
         } catch (ConcurrentModificationException ignored) {
         } catch (Exception ex) {
-            logger.warn(
-                getClass().getSimpleName() + " Error visiting " + systemInfo,
-                ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + systemInfo, ex);
         }
 
         return true;
@@ -607,9 +572,9 @@ public class PagePhysicalPainter
         setColor(inter);
 
         ShapeSymbol symbol = Symbols.getSymbol(inter.getShape());
-        Glyph       glyph = inter.getGlyph();
-        Point       center = (glyph != null) ? glyph.getCentroid()
-                             : GeoUtil.centerOf(inter.getBounds());
+        Glyph glyph = inter.getGlyph();
+        Point center = (glyph != null) ? glyph.getCentroid()
+                : GeoUtil.centerOf(inter.getBounds());
         symbol.paintSymbol(g, musicFont, center, Alignment.AREA_CENTER);
     }
 
@@ -637,11 +602,10 @@ public class PagePhysicalPainter
     {
         setColor(ledger);
         g.setStroke(
-            new BasicStroke(
-                (float) ledger.getGlyph()
-                              .getMeanThickness(Orientation.HORIZONTAL),
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND));
+                new BasicStroke(
+                        (float) ledger.getGlyph().getMeanThickness(Orientation.HORIZONTAL),
+                        BasicStroke.CAP_ROUND,
+                        BasicStroke.JOIN_ROUND));
 
         ledger.getGlyph().renderLine(g);
         g.setStroke(defaultStroke);
@@ -697,7 +661,7 @@ public class PagePhysicalPainter
     // accidentalLocation //
     //--------------------//
     @Override
-    protected Point accidentalLocation (Note  note,
+    protected Point accidentalLocation (Note note,
                                         Glyph accidental)
     {
         return new Point(accidental.getAreaCenter().x, note.getCenter().y);
@@ -734,13 +698,12 @@ public class PagePhysicalPainter
         // This assumes we are close to left side (or the slope is small).
         // Another way would be to impose the slope to the bracket line
         // as we do with barlines.
-        Point2D top = part.getFirstStaff().getInfo().getFirstLine()
-                          .getLeftPoint();
+        Point2D top = part.getFirstStaff().getInfo().getFirstLine().getLeftPoint();
         Point2D bot = part.getLastStaff().getInfo().getLastLine().getLeftPoint();
 
         return new Line2D.Double(
-            new Point2D.Double(line.xAtY(top.getY()), top.getY()),
-            new Point2D.Double(line.xAtY(bot.getY()), bot.getY()));
+                new Point2D.Double(line.xAtY(top.getY()), top.getY()),
+                new Point2D.Double(line.xAtY(bot.getY()), bot.getY()));
     }
 
     //--------------//

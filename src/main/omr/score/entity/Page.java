@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  P a g e                                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            P a g e                                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -32,9 +32,8 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 
 /**
- * Class {@code Page} represents a page in the score hierarchy,
- * and corresponds to a {@link Sheet} with its specific scale, skew,
- * dimension, etc.
+ * Class {@code Page} represents a page in the score hierarchy, and corresponds to a
+ * {@link Sheet} with its specific scale, skew, dimension, etc.
  * Page instances compose a {@link Score}.
  *
  * @author Hervé Bitteur
@@ -42,12 +41,11 @@ import java.util.List;
 public class Page
         extends PageNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Page.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Index of page, counted from 1, in the image file. */
     private final int index;
 
@@ -75,7 +73,7 @@ public class Page
     /** Param for text language. */
     private final LiveParam<String> textContext;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------//
     // Page //
     //------//
@@ -100,29 +98,13 @@ public class Page
             id = score.getRadix();
         }
 
-        filterContext = new LiveParam<>(score.getFilterParam());
-        textContext = new LiveParam<>(score.getTextParam());
+        filterContext = new LiveParam<FilterDescriptor>(score.getFilterParam());
+        textContext = new LiveParam<String>(score.getTextParam());
 
         sheet = new Sheet(this, image);
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //----------------//
-    // getFilterParam //
-    //----------------//
-    public LiveParam<FilterDescriptor> getFilterParam ()
-    {
-        return filterContext;
-    }
-
-    //--------------//
-    // getTextParam //
-    //--------------//
-    public LiveParam<String> getTextParam ()
-    {
-        return textContext;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -144,9 +126,7 @@ public class Page
 
         for (TreeNode sn : getSystems()) {
             ScoreSystem system = (ScoreSystem) sn;
-            count += system.getFirstPart()
-                    .getMeasures()
-                    .size();
+            count += system.getFirstPart().getMeasures().size();
         }
 
         measureCount = count;
@@ -171,11 +151,8 @@ public class Page
                 sb.append(", ");
             }
 
-            sb.append(part.getMeasures().size())
-                    .append(" in ")
-                    .append(sys.getInfo().idString());
-            count += part.getMeasures()
-                    .size();
+            sb.append(part.getMeasures().size()).append(" in ").append(sys.getInfo().idString());
+            count += part.getMeasures().size();
         }
 
         StringBuilder msg = new StringBuilder();
@@ -186,9 +163,7 @@ public class Page
             msg.append('s');
         }
 
-        msg.append(": [")
-                .append(sb)
-                .append("]");
+        msg.append(": [").append(sb).append("]");
 
         logger.info("{}{}", sheet.getLogPrefix(), msg.toString());
     }
@@ -217,6 +192,14 @@ public class Page
     public Dimension getDimension ()
     {
         return sheet.getDimension();
+    }
+
+    //----------------//
+    // getFilterParam //
+    //----------------//
+    public LiveParam<FilterDescriptor> getFilterParam ()
+    {
+        return filterContext;
     }
 
     //----------------//
@@ -366,8 +349,7 @@ public class Page
      */
     public ScoreSystem getSystemById (int id)
     {
-        return (ScoreSystem) getSystems()
-                .get(id - 1);
+        return (ScoreSystem) getSystems().get(id - 1);
     }
 
     //------------//
@@ -384,6 +366,14 @@ public class Page
     }
 
     //--------------//
+    // getTextParam //
+    //--------------//
+    public LiveParam<String> getTextParam ()
+    {
+        return textContext;
+    }
+
+    //--------------//
     // resetSystems //
     //--------------//
     /**
@@ -392,8 +382,7 @@ public class Page
     public void resetSystems ()
     {
         // Discard systems
-        getSystems()
-                .clear();
+        getSystems().clear();
 
         // Discard partlists
         if (partList != null) {

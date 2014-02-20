@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          S p l i t P a t t e r n                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur 2000-2010. All rights reserved.               //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    S p l i t P a t t e r n                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright (C) Hervé Bitteur 2000-2010. All ri4hts reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
@@ -35,7 +35,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 /**
- * Class {@code SplitPattern} tries to split large unknown glyphs into
+ * Class {@code SplitPattern} tries to split large unknown glyph instances into
  * two valid chunks.
  *
  * @author Hervé Bitteur
@@ -43,26 +43,22 @@ import java.util.Map.Entry;
 public class SplitPattern
         extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(SplitPattern.class);
 
     /** Set of shapes not accepted for glyph chunks. TODO: expand the set */
-    private static final EnumSet<Shape> invalidShapes = EnumSet.of(
-            Shape.CLUTTER,
-            Shape.NOISE);
+    private static final EnumSet<Shape> invalidShapes = EnumSet.of(Shape.CLUTTER, Shape.NOISE);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     // Scale-dependent parameters
     private final double minGlyphWeight;
 
     private final double minChunkWeight;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // SplitPattern //
     //--------------//
@@ -79,7 +75,7 @@ public class SplitPattern
         minChunkWeight = scale.toPixels(constants.minChunkWeight);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // runPattern //
     //------------//
@@ -134,7 +130,6 @@ public class SplitPattern
         glyph.addSection(section, Glyph.Linking.NO_LINK);
 
         // Check recursively all sections linked to this one...
-
         // Incoming ones
         for (Section source : section.getSources()) {
             expand(glyph, source, master);
@@ -167,7 +162,7 @@ public class SplitPattern
             logger.info("Trying to split G#{}", master.getId());
         }
 
-        List<Split> splits = new ArrayList<>();
+        List<Split> splits = new ArrayList<Split>();
 
         // Retrieve all binary splits of this glyph
         for (Section seed : master.getMembers()) {
@@ -178,7 +173,7 @@ public class SplitPattern
             seed.setProcessed(true); // To not use this one
 
             Split split = new Split(master, seed);
-            List<Section> others = new ArrayList<>();
+            List<Section> others = new ArrayList<Section>();
             others.addAll(seed.getSources());
             others.addAll(seed.getTargets());
             others.addAll(seed.getOppositeSections());
@@ -232,10 +227,7 @@ public class SplitPattern
                 continue;
             }
 
-            Evaluation vote = GlyphNetwork.getInstance().vote(
-                    chunk,
-                    system,
-                    Grades.partMinGrade);
+            Evaluation vote = GlyphNetwork.getInstance().vote(chunk, system, Grades.partMinGrade);
 
             if ((vote == null) || invalidShapes.contains(vote.shape)) {
                 if (master.isVip() || logger.isDebugEnabled()) {
@@ -262,14 +254,14 @@ public class SplitPattern
         return true;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.AreaFraction minGlyphWeight = new Scale.AreaFraction(
                 1.0,
@@ -279,7 +271,6 @@ public class SplitPattern
         Scale.AreaFraction minChunkWeight = new Scale.AreaFraction(
                 0.025,
                 "Minimum normalized weight of a chunk to be part of a split");
-
     }
 
     //-------//
@@ -291,7 +282,7 @@ public class SplitPattern
     private static class Split
             implements Comparable<Split>
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // Master glyph
         private final Glyph master;
@@ -300,9 +291,9 @@ public class SplitPattern
         private final Section seed;
 
         // The resulting glyph chunks, kept sorted by (increasing) weight
-        private final SortedMap<GlyphSignature, Glyph> sigs = new TreeMap<>();
+        private final SortedMap<GlyphSignature, Glyph> sigs = new TreeMap<GlyphSignature, Glyph>();
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create a split information.
          *
@@ -316,13 +307,12 @@ public class SplitPattern
             this.seed = seed;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int compareTo (Split that)
         {
             // Bigger first!
-            return Integer.signum(
-                    that.getLowerWeight() - this.getLowerWeight());
+            return Integer.signum(that.getLowerWeight() - this.getLowerWeight());
         }
 
         public void register (SystemInfo system)
@@ -335,7 +325,7 @@ public class SplitPattern
             sigs.put(smallerGlyph.getSignature(), smallerGlyph);
 
             // Register the chunks (copy needed to avoid concurrent modifs)
-            Set<Entry<GlyphSignature, Glyph>> entries = new HashSet<>(
+            Set<Entry<GlyphSignature, Glyph>> entries = new HashSet<Entry<GlyphSignature, Glyph>>(
                     sigs.entrySet());
 
             for (Entry<GlyphSignature, Glyph> entry : entries) {
@@ -355,8 +345,7 @@ public class SplitPattern
         {
             StringBuilder sb = new StringBuilder("{SplitOf#");
             sb.append(master.getId());
-            sb.append(" @S").append(seed.isVertical() ? "V" : "H").append(seed.
-                    getId());
+            sb.append(" @S").append(seed.isVertical() ? "V" : "H").append(seed.getId());
 
             for (Entry<GlyphSignature, Glyph> entry : sigs.entrySet()) {
                 Glyph glyph = entry.getValue();

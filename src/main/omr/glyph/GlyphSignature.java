@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        G l y p h S i g n a t u r e                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  G l y p h S i g n a t u r e                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -18,15 +18,15 @@ import omr.moments.GeometricMoments;
 /**
  * Class {@code GlyphSignature} is used to implement a map of glyphs,
  * based only on their physical properties.
- *
- * <p>The signature is implemented using the glyph moments.</p>
+ * <p>
+ * The signature is implemented using the glyph moments.</p>
  *
  * @author Hervé Bitteur
  */
 public class GlyphSignature
         implements Comparable<GlyphSignature>
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Glyph absolute weight */
     private final int weight;
@@ -34,7 +34,7 @@ public class GlyphSignature
     /** Glyph normalized moments */
     private GeometricMoments moments;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------------//
     // GlyphSignature //
     //----------------//
@@ -61,7 +61,7 @@ public class GlyphSignature
         moments = null;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // compareTo //
     //-----------//
@@ -133,11 +133,9 @@ public class GlyphSignature
     {
         StringBuilder sb = new StringBuilder("{GSig");
 
-        sb.append(" weight=")
-                .append(weight);
+        sb.append(" weight=").append(weight);
 
-        sb.append(" moments=")
-                .append(moments);
+        sb.append(" moments=").append(moments);
         sb.append("}");
 
         return sb.toString();

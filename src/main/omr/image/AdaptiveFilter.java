@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        A d a p t i v e F i l t e r                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  A d a p t i v e F i l t e r                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -24,26 +24,21 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 
 /**
- * Class {@code AdaptiveFilter} is an abstract implementation of
- * {@code PixelFilter} which provides foreground information based on
- * mean value and standard deviation in pixel neighborhood.
- *
+ * Class {@code AdaptiveFilter} is an abstract implementation of {@code PixelFilter}
+ * which provides foreground information based on mean value and standard deviation in
+ * pixel neighborhood.
  * <p>
  * See work of Sauvola et al.<a
  * href="http://www.mediateam.oulu.fi/publications/pdf/24.p">
  * here</a>.
- *
  * <p>
- * The mean value and the standard deviation value are provided thanks to
- * underlying integrals {@link Tile} instances.
- * The precise tile size and behavior is the responsibility of subclasses of
- * this class.
- *
+ * The mean value and the standard deviation value are provided thanks to underlying integrals
+ * {@link Tile} instances.
+ * The precise tile size and behavior is the responsibility of subclasses of this class.
  * <p>
  * See work of Shafait et al. <a
  * href="http://www.dfki.uni-kl.de/~shafait/papers/Shafait-efficient-binarization-SPIE08.pdf">
  * here</a>.
- *
  * <pre>
  * 0---------------------------------------------+---------------+
  * |                                             |               |
@@ -63,14 +58,11 @@ import java.util.Arrays;
  * <ul>
  * <li>Assumption: The integral of any rectangle with origin at (0,0) is stored
  * in the bottom right cell of the rectangle.</li>
- *
- * <li>As a consequence the integral of any rectangle, whatever its origin,
- * can be simply computed as:
- * <code>a + d - b - c</code>
- * </li>
- *
+ * <li>As a consequence the integral of any rectangle, whatever its origin, can be simply computed
+ * as: <code>a + d - b - c</code> </li>
  * <li>In particular if lower right rectangle is reduced to a single cell, then
- * <code>d = pixel_value + top + left - topLeft</code><br/>
+ * <code>d = pixel_value + top + left - topLeft</code>
+ * <br/>
  * This property is used to incrementally populate the table.</li>
  * </ul>
  *
@@ -81,16 +73,13 @@ public abstract class AdaptiveFilter
         extends SourceWrapper
         implements PixelFilter
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            AdaptiveFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AdaptiveFilter.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Default value for (half of) window size. */
     protected final int HALF_WINDOW_SIZE = constants.halfWindowSize.getValue();
@@ -107,7 +96,7 @@ public abstract class AdaptiveFilter
     /** Table for integrals of squared values. */
     protected Tile sqrTile;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //----------------//
     // AdaptiveFilter //
@@ -129,16 +118,46 @@ public abstract class AdaptiveFilter
         this.STD_DEV_COEFF = stdDevCoeff;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //---------------------//
+    // getDefaultMeanCoeff //
+    //---------------------//
+    public static double getDefaultMeanCoeff ()
+    {
+        return constants.meanCoeff.getValue();
+    }
+
+    //-----------------------//
+    // getDefaultStdDevCoeff //
+    //-----------------------//
+    public static double getDefaultStdDevCoeff ()
+    {
+        return constants.stdDevCoeff.getValue();
+    }
+
+    //---------------------//
+    // setDefaultMeanCoeff //
+    //---------------------//
+    public static void setDefaultMeanCoeff (double meanCoeff)
+    {
+        constants.meanCoeff.setValue(meanCoeff);
+    }
+
+    //-----------------------//
+    // setDefaultStdDevCoeff //
+    //-----------------------//
+    public static void setDefaultStdDevCoeff (double stdDevCoeff)
+    {
+        constants.stdDevCoeff.setValue(stdDevCoeff);
+    }
+
     //---------------//
     // filteredImage //
     //---------------//
     @Override
     public ByteProcessor filteredImage ()
     {
-        ByteProcessor ip = new ByteProcessor(
-                source.getWidth(),
-                source.getHeight());
+        ByteProcessor ip = new ByteProcessor(source.getWidth(), source.getHeight());
 
         for (int x = 0, w = ip.getWidth(); x < w; x++) {
             for (int y = 0, h = ip.getHeight(); y < h; y++) {
@@ -189,22 +208,6 @@ public abstract class AdaptiveFilter
         }
     }
 
-    //---------------------//
-    // getDefaultMeanCoeff //
-    //---------------------//
-    public static double getDefaultMeanCoeff ()
-    {
-        return constants.meanCoeff.getValue();
-    }
-
-    //-----------------------//
-    // getDefaultStdDevCoeff //
-    //-----------------------//
-    public static double getDefaultStdDevCoeff ()
-    {
-        return constants.stdDevCoeff.getValue();
-    }
-
     //
     // -------//
     // isFore //
@@ -224,22 +227,6 @@ public abstract class AdaptiveFilter
         boolean isFore = pixValue <= threshold;
 
         return isFore;
-    }
-
-    //---------------------//
-    // setDefaultMeanCoeff //
-    //---------------------//
-    public static void setDefaultMeanCoeff (double meanCoeff)
-    {
-        constants.meanCoeff.setValue(meanCoeff);
-    }
-
-    //-----------------------//
-    // setDefaultStdDevCoeff //
-    //-----------------------//
-    public static void setDefaultStdDevCoeff (double stdDevCoeff)
-    {
-        constants.stdDevCoeff.setValue(stdDevCoeff);
     }
 
     //------------------//
@@ -268,14 +255,14 @@ public abstract class AdaptiveFilter
         return (MEAN_COEFF * mean) + (STD_DEV_COEFF * stdDev);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------------//
     // AdaptiveContext //
     //-----------------//
     public static class AdaptiveContext
             extends Context
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Mean pixel value in the neighborhood. */
         public final double mean;
@@ -283,7 +270,7 @@ public abstract class AdaptiveFilter
         /** Standard deviation of pixel values in the neighborhood. */
         public final double standardDeviation;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public AdaptiveContext (double mean,
                                 double standardDeviation,
                                 double threshold)
@@ -303,7 +290,7 @@ public abstract class AdaptiveFilter
      */
     protected class Tile
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Width of the tile circular buffer. */
         protected final int TILE_WIDTH;
@@ -320,7 +307,7 @@ public abstract class AdaptiveFilter
         /** Circular buffer for integrals. */
         protected final long[][] sums;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create a tile instance.
          *
@@ -343,7 +330,7 @@ public abstract class AdaptiveFilter
             Arrays.fill(sums[TILE_WIDTH - 1], 0);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Make sure that the sliding window is positioned around the
          * provided location, and return mean data.
@@ -443,7 +430,7 @@ public abstract class AdaptiveFilter
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Integer halfWindowSize = new Constant.Integer(
                 "Pixels",

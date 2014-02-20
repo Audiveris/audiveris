@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       D i m e n s i o n F a c a d e                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 D i m e n s i o n F a c a d e                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -19,9 +19,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code DimensionFacade} is a (hopefully temporary) fix
- * to allow Xml binding of standard class Dimension that we cannot
- * annotate.
+ * Class {@code DimensionFacade} is a (hopefully temporary) fix to allow Xml binding of
+ * standard class Dimension that we cannot annotate.
  *
  * @author Hervé Bitteur
  */
@@ -29,12 +28,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "dimension")
 public class DimensionFacade
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The interfaced Dimension instance */
     private Dimension dimension;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------------//
     // DimensionFacade //
     //-----------------//
@@ -58,7 +57,7 @@ public class DimensionFacade
         this.dimension = dimension;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // getDimension //
     //--------------//

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                  S l o t                                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                            S l o t                                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -31,12 +31,12 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code Slot} represents a roughly defined time slot within a
- * measure, to gather all chords that start at the same time.
- *
- * <p>On the diagram shown, slots are indicated by vertical blue lines.</p>
- *
- * <p>The slot embraces all the staves of its part measure. Perhaps we should
+ * Class {@code Slot} represents a roughly defined time slot within a measure,
+ * to gather all chords that start at the same time.
+ * <p>
+ * On the diagram shown, slots are indicated by vertical blue lines.</p>
+ * <p>
+ * The slot embraces all the staves of its part measure. Perhaps we should
  * consider merging slots between parts as well?
  *
  * <div style="float: right;">
@@ -48,12 +48,11 @@ import java.util.TreeMap;
 public class Slot
         implements Comparable<Slot>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Slot.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The containing measure. */
     @Navigable(false)
@@ -66,12 +65,12 @@ public class Slot
     private Point refPoint;
 
     /** Chords incoming into this slot, sorted by staff then ordinate. */
-    private List<Chord> incomings = new ArrayList<>();
+    private List<Chord> incomings = new ArrayList<Chord>();
 
     /** Time offset since measure start. */
     private Rational startTime;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //------//
     // Slot //
@@ -88,21 +87,7 @@ public class Slot
         id = 1 + measure.getSlots().size();
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //
-    //------------//
-    // getMeasure //
-    //------------//
-    /**
-     * Report the measure that contains this slot
-     *
-     * @return the containing measure
-     */
-    public Measure getMeasure ()
-    {
-        return measure;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // dumpSystemSlots //
     //-----------------//
@@ -128,32 +113,6 @@ public class Slot
         }
     }
 
-    //-----------//
-    // setChords //
-    //-----------//
-    public void setChords (Collection<Chord> chords)
-    {
-        this.incomings.addAll(chords);
-
-        for (Chord chord : chords) {
-            chord.setSlot(this);
-        }
-
-        // Compute slot refPoint as average of chords centers
-        Population xPop = new Population();
-        Population yPop = new Population();
-
-        for (Chord chord : chords) {
-            Point center = chord.getCenter();
-            xPop.includeValue(center.x);
-            yPop.includeValue(center.y);
-        }
-
-        refPoint = new Point(
-                (int) Math.rint(xPop.getMeanValue()),
-                (int) Math.rint(yPop.getMeanValue()));
-    }
-
     //-------------//
     // buildVoices //
     //-------------//
@@ -172,8 +131,8 @@ public class Slot
         Collections.sort(incomings, Chord.byOrdinate);
 
         // Some chords already have the voice assigned
-        List<Chord> endings = new ArrayList<>(endingChords);
-        List<Chord> rookies = new ArrayList<>();
+        List<Chord> endings = new ArrayList<Chord>(endingChords);
+        List<Chord> rookies = new ArrayList<Chord>();
 
         for (Chord ch : incomings) {
             if (ch.getVoice() != null) {
@@ -183,12 +142,13 @@ public class Slot
                 // Remove the ending chord with the same voice
                 for (Iterator<Chord> it = endings.iterator(); it.hasNext();) {
                     Chord c = it.next();
+
                     if (c.getVoice() == ch.getVoice()) {
                         it.remove();
+
                         break;
                     }
                 }
-
             } else {
                 rookies.add(ch);
             }
@@ -213,8 +173,7 @@ public class Slot
                 // Map new chord to an ending chord?
                 if (index < endings.size()) {
                     Voice voice = endings.get(index).getVoice();
-                    logger.debug("Slot#{} Reusing voice#{}",
-                            getId(), voice.getId());
+                    logger.debug("Slot#{} Reusing voice#{}", getId(), voice.getId());
 
                     Chord ch = rookies.get(i);
 
@@ -249,19 +208,6 @@ public class Slot
         return Integer.compare(getX(), other.getX());
     }
 
-    //------//
-    // getX //
-    //------//
-    /**
-     * Report the abscissa of this slot.
-     *
-     * @return the slot abscissa (page-based, not measure-based)
-     */
-    public int getX ()
-    {
-        return refPoint.x;
-    }
-
     //-------------------//
     // getChordJustAbove //
     //-------------------//
@@ -282,7 +228,8 @@ public class Slot
         // We look for the chord just above
         for (Chord chord : getChords()) {
             Point head = chord.getHeadLocation();
-            if (head != null && head.y < point.y) {
+
+            if ((head != null) && (head.y < point.y)) {
                 if (chord.getStaff() == targetStaff) {
                     chordAbove = chord;
                 }
@@ -312,8 +259,8 @@ public class Slot
         // We look for the chord just below
         for (Chord chord : getChords()) {
             Point head = chord.getHeadLocation();
-            if (head != null && head.y > point.y
-                && chord.getStaff() == targetStaff) {
+
+            if ((head != null) && (head.y > point.y) && (chord.getStaff() == targetStaff)) {
                 return chord;
             }
         }
@@ -348,7 +295,7 @@ public class Slot
     public List<Chord> getEmbracedChords (Point top,
                                           Point bottom)
     {
-        List<Chord> embracedChords = new ArrayList<>();
+        List<Chord> embracedChords = new ArrayList<Chord>();
 
         for (Chord chord : getChords()) {
             if (chord.isEmbracedBy(top, bottom)) {
@@ -372,6 +319,20 @@ public class Slot
         return id;
     }
 
+    //
+    //------------//
+    // getMeasure //
+    //------------//
+    /**
+     * Report the measure that contains this slot
+     *
+     * @return the containing measure
+     */
+    public Measure getMeasure ()
+    {
+        return measure;
+    }
+
     //--------------//
     // getStartTime //
     //--------------//
@@ -384,6 +345,45 @@ public class Slot
     public Rational getStartTime ()
     {
         return startTime;
+    }
+
+    //------//
+    // getX //
+    //------//
+    /**
+     * Report the abscissa of this slot.
+     *
+     * @return the slot abscissa (page-based, not measure-based)
+     */
+    public int getX ()
+    {
+        return refPoint.x;
+    }
+
+    //-----------//
+    // setChords //
+    //-----------//
+    public void setChords (Collection<Chord> chords)
+    {
+        this.incomings.addAll(chords);
+
+        for (Chord chord : chords) {
+            chord.setSlot(this);
+        }
+
+        // Compute slot refPoint as average of chords centers
+        Population xPop = new Population();
+        Population yPop = new Population();
+
+        for (Chord chord : chords) {
+            Point center = chord.getCenter();
+            xPop.includeValue(center.x);
+            yPop.includeValue(center.y);
+        }
+
+        refPoint = new Point(
+                (int) Math.rint(xPop.getMeanValue()),
+                (int) Math.rint(yPop.getMeanValue()));
     }
 
     //--------------//
@@ -422,8 +422,8 @@ public class Slot
         } else {
             if (!this.startTime.equals(startTime)) {
                 getChords().get(0).addError(
-                        "Reassigning startTime from " + this.startTime + " to "
-                        + startTime + " in " + this);
+                        "Reassigning startTime from " + this.startTime + " to " + startTime + " in "
+                        + this);
             }
         }
     }
@@ -482,9 +482,11 @@ public class Slot
         }
 
         sb.append(" incomings=[");
+
         for (Chord chord : incomings) {
             sb.append("#").append(chord.getId());
         }
+
         sb.append("]");
 
         sb.append("}");
@@ -503,10 +505,10 @@ public class Slot
     public String toVoiceString ()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append("slot#").append(getId()).append(" start=").append(String.
-                format("%5s", getStartTime())).append(" [");
+        sb.append("slot#").append(getId()).append(" start=")
+                .append(String.format("%5s", getStartTime())).append(" [");
 
-        SortedMap<Integer, Chord> voiceChords = new TreeMap<>();
+        SortedMap<Integer, Chord> voiceChords = new TreeMap<Integer, Chord>();
 
         for (Chord chord : getChords()) {
             voiceChords.put(chord.getVoice().getId(), chord);
@@ -528,8 +530,7 @@ public class Slot
                 sb.append("V").append(chord.getVoice().getId());
                 sb.append(" Ch#").append(String.format("%02d", chord.getId()));
                 sb.append(" St").append(chord.getStaff().getId());
-                sb.append(" Dur=").append(String.format("%5s",
-                        chord.getDuration()));
+                sb.append(" Dur=").append(String.format("%5s", chord.getDuration()));
             } else {
                 sb.append("----------------------");
             }
@@ -563,20 +564,26 @@ public class Slot
                         // avoid migrating a voice from one staff to another
                         if (incomings.size() > 1) {
                             Chord latestVoiceChord = voice.getChordBefore(this);
-                            if (latestVoiceChord != null
-                                && latestVoiceChord.getStaff() != chord.getStaff()) {
+
+                            if ((latestVoiceChord != null)
+                                && (latestVoiceChord.getStaff() != chord.getStaff())) {
                                 continue;
                             }
                         }
+
                         chord.setVoice(voice);
+
                         break;
                     }
                 }
 
                 // No compatible voice found, let's create a new one
                 if (chord.getVoice() == null) {
-                    logger.debug("{} Slot#{} creating voice for Ch#{}",
-                            chord.getContextString(), id, chord.getId());
+                    logger.debug(
+                            "{} Slot#{} creating voice for Ch#{}",
+                            chord.getContextString(),
+                            id,
+                            chord.getId());
 
                     // Add a new voice
                     new Voice(chord);
@@ -585,7 +592,7 @@ public class Slot
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //------------//
     // MyDistance //
@@ -593,7 +600,7 @@ public class Slot
     private static final class MyDistance
             implements InjectionSolver.Distance
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final int NO_LINK = 20;
 
@@ -601,12 +608,12 @@ public class Slot
 
         private static final int INCOMPATIBLE_VOICES = 10000; // Forbidden
 
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
         private final List<Chord> news;
 
         private final List<Chord> olds;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public MyDistance (List<Chord> news,
                            List<Chord> olds)
         {
@@ -614,7 +621,7 @@ public class Slot
             this.olds = olds;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public int getDistance (int in,
                                 int ip)
@@ -634,12 +641,9 @@ public class Slot
             } else if (newChord.getStaff() != oldChord.getStaff()) {
                 return STAFF_DIFF;
             } else {
-                int dy = Math.abs(
-                        newChord.getHeadLocation().y
-                        - oldChord.getHeadLocation().y) / newChord.getScale().
-                        getInterline();
-                int dStem = Math.abs(
-                        newChord.getStemDir() - oldChord.getStemDir());
+                int dy = Math.abs(newChord.getHeadLocation().y - oldChord.getHeadLocation().y) / newChord.getScale()
+                        .getInterline();
+                int dStem = Math.abs(newChord.getStemDir() - oldChord.getStemDir());
 
                 return dy + (2 * dStem);
             }

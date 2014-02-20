@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 S h e e t                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           S h e e t                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -23,6 +23,9 @@ import omr.glyph.ui.SymbolsEditor;
 import omr.grid.GridBuilder;
 import omr.grid.StaffManager;
 
+import omr.image.DistanceTable;
+import omr.image.ImageFormatException;
+
 import omr.lag.Lag;
 import omr.lag.Lags;
 
@@ -33,8 +36,8 @@ import omr.score.ScoresManager;
 import omr.score.entity.Page;
 import omr.score.entity.SystemNode;
 
-import omr.selection.InterListEvent;
 import omr.selection.InterIdEvent;
+import omr.selection.InterListEvent;
 import omr.selection.LocationEvent;
 import omr.selection.MouseMovement;
 import omr.selection.PixelLevelEvent;
@@ -42,19 +45,16 @@ import omr.selection.SelectionHint;
 import omr.selection.SelectionService;
 import omr.selection.UserEvent;
 
-import omr.image.DistanceTable;
-import omr.image.ImageFormatException;
-import omr.sheet.ui.PictureView;
-
 import omr.sheet.ui.BinarizationBoard;
+import omr.sheet.ui.PictureView;
 import omr.sheet.ui.PixelBoard;
 import omr.sheet.ui.RunsViewer;
 import omr.sheet.ui.SheetAssembly;
 import omr.sheet.ui.SheetsController;
 
 import omr.sig.Inter;
-import omr.sig.SigManager;
 import omr.sig.SIGraph;
+import omr.sig.SigManager;
 
 import omr.step.Step;
 import omr.step.StepException;
@@ -87,36 +87,31 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
- * Class {@code Sheet} is the central hub for Sheet processing,
- * keeping pointers to all processing related to the image, and to
- * their results.
+ * Class {@code Sheet} is the central hub for Sheet processing, keeping pointers to all
+ * processing related to the image, and to their results.
  *
  * @author Hervé Bitteur
  */
 public class Sheet
         implements EventSubscriber<UserEvent>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Sheet.class);
 
     /** Events that can be published on sheet location service. */
     public static final Class<?>[] allowedEvents = new Class<?>[]{
-        LocationEvent.class,
-        PixelLevelEvent.class,
-        InterListEvent.class,
-        InterIdEvent.class
+        LocationEvent.class, PixelLevelEvent.class,
+        InterListEvent.class, InterIdEvent.class
     };
 
     /** Events read by sheet on location service. */
     public static final Class<?>[] eventsRead = new Class<?>[]{
-        LocationEvent.class,
-        InterListEvent.class,
+        LocationEvent.class, InterListEvent.class,
         InterIdEvent.class
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Corresponding page. */
     private final Page page;
@@ -140,7 +135,7 @@ public class Sheet
     private final ErrorsEditor errorsEditor;
 
     /** Retrieved systems. */
-    private final List<SystemInfo> systems = new ArrayList<>();
+    private final List<SystemInfo> systems = new ArrayList<SystemInfo>();
 
     /** SIG manager for all systems. */
     private final SigManager sigManager = new SigManager();
@@ -154,7 +149,7 @@ public class Sheet
     private Picture picture;
 
     /** All steps already done on this sheet */
-    private Set<Step> doneSteps = new HashSet<>();
+    private Set<Step> doneSteps = new HashSet<Step>();
 
     /** The step being done on this sheet */
     private Step currentStep;
@@ -207,12 +202,12 @@ public class Sheet
     private int lastLongHSectionId = -1;
 
     /** Registered item renderers, if any */
-    private final Set<ItemRenderer> itemRenderers = new HashSet<>();
+    private final Set<ItemRenderer> itemRenderers = new HashSet<ItemRenderer>();
 
     /** Display of runs tables. */
     private final RunsViewer runsViewer;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //-------//
     // Sheet //
@@ -236,6 +231,7 @@ public class Sheet
         sheetSig = new SIGraph(this);
 
         locationService = new SelectionService("sheet", allowedEvents);
+
         for (Class<?> eventClass : eventsRead) {
             locationService.subscribeStrongly(eventClass, this);
         }
@@ -259,107 +255,7 @@ public class Sheet
         logger.debug("Created {}", this);
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //---------------//
-    // getRunsViewer //
-    //---------------//
-    public RunsViewer getRunsViewer ()
-    {
-        return runsViewer;
-    }
-
-    //-----------------//
-    // addItemRenderer //
-    //-----------------//
-    /**
-     * Register an items renderer to renderAttachments items.
-     *
-     * @param renderer the additional renderer
-     */
-    public void addItemRenderer (ItemRenderer renderer)
-    {
-        itemRenderers.add(new WeakItemRenderer(renderer));
-    }
-
-    //------------------//
-    // getItemRenderers //
-    //------------------//
-    /**
-     * Report the (live) collection of item renderers
-     *
-     * @return the live set if item renderers
-     */
-    public Set<ItemRenderer> getItemRenderers ()
-    {
-        return itemRenderers;
-    }
-
-    //---------------//
-    // getSheetDelta //
-    //---------------//
-    /**
-     * @return the sheetDelta
-     */
-    public SheetDiff getSheetDelta ()
-    {
-        return sheetDelta;
-    }
-
-    //---------------//
-    // setSheetDelta //
-    //---------------//
-    /**
-     * @param sheetDelta the sheetDelta to set
-     */
-    public void setSheetDelta (SheetDiff sheetDelta)
-    {
-        this.sheetDelta = sheetDelta;
-    }
-
-    //-------------//
-    // renderItems //
-    //-------------//
-    /**
-     * Render all the registered items
-     *
-     * @param g the graphics environment
-     */
-    public void renderItems (Graphics2D g)
-    {
-        for (ItemRenderer renderer : itemRenderers) {
-            renderer.renderItems(g);
-        }
-    }
-
-    //------------//
-    // getSystems //
-    //------------//
-    /**
-     * Report an unmodifiable view on current systems.
-     *
-     * @return a view on systems list
-     */
-    public List<SystemInfo> getSystems ()
-    {
-        return Collections.unmodifiableList(systems);
-    }
-
-    //------------//
-    // setSystems //
-    //------------//
-    /**
-     * Assign the whole sequence of systems
-     *
-     * @param systems the (new) systems
-     */
-    public void setSystems (Collection<SystemInfo> systems)
-    {
-        if (this.systems != systems) {
-            this.systems.clear();
-            this.systems.addAll(systems);
-        }
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // done //
     //------//
@@ -372,6 +268,37 @@ public class Sheet
     {
         if (step.isMandatory()) {
             doneSteps.add(step);
+        }
+    }
+
+    //----------//
+    // setImage //
+    //----------//
+    public final void setImage (BufferedImage image)
+            throws StepException
+    {
+        // Reset most of members
+        reset(Steps.valueOf(Steps.LOAD));
+
+        try {
+            picture = new Picture(this, image, locationService);
+            setPicture(picture);
+            getBench().recordImageDimension(picture.getWidth(), picture.getHeight());
+
+            done(Steps.valueOf(Steps.LOAD));
+        } catch (ImageFormatException ex) {
+            String msg = "Unsupported image format in file " + getScore().getImagePath() + "\n"
+                         + ex.getMessage();
+
+            if (Main.getGui() != null) {
+                Main.getGui().displayWarning(msg);
+            } else {
+                logger.warn(msg);
+            }
+
+            throw new StepException(ex);
+        } catch (Throwable ex) {
+            logger.warn("Error loading image", ex);
         }
     }
 
@@ -392,6 +319,32 @@ public class Sheet
         if (Main.getGui() != null) {
             getErrorsEditor().addError(container, glyph, text);
         }
+    }
+
+    //-----------------//
+    // addItemRenderer //
+    //-----------------//
+    /**
+     * Register an items renderer to renderAttachments items.
+     *
+     * @param renderer the additional renderer
+     */
+    public void addItemRenderer (ItemRenderer renderer)
+    {
+        itemRenderers.add(new WeakItemRenderer(renderer));
+    }
+
+    //------------//
+    // createNest //
+    //------------//
+    public GlyphNest createNest ()
+    {
+        // Beware: Glyph nest must subscribe to location before any lag,
+        // to allow cleaning up of glyph data, before publication by a lag
+        nest = new BasicNest("gNest", this);
+        nest.setServices(locationService);
+
+        return nest;
     }
 
     //----------------------------------//
@@ -433,6 +386,19 @@ public class Sheet
         }
 
         System.out.println("--- SystemInfos end ---");
+    }
+
+    //------------//
+    // getAllLags //
+    //------------//
+    /**
+     * Report all currently registered lags at this sheet instance.
+     *
+     * @return the collection of all registered lags, some of which may be null
+     */
+    public Collection<Lag> getAllLags ()
+    {
+        return lagMap.values();
     }
 
     //-------------//
@@ -487,12 +453,40 @@ public class Sheet
         return picture.getDimension();
     }
 
+    //------------------//
+    // getDistanceImage //
+    //------------------//
+    /**
+     * Get access to the distance transform image
+     *
+     * @return the image of distances (to foreground)
+     */
+    public DistanceTable getDistanceImage ()
+    {
+        return distanceImage;
+    }
+
     //-----------------//
     // getErrorsEditor //
     //-----------------//
     public ErrorsEditor getErrorsEditor ()
     {
         return errorsEditor;
+    }
+
+    //----------------//
+    // getGridBuilder //
+    //----------------//
+    /**
+     * @return the gridBuilder
+     */
+    public GridBuilder getGridBuilder ()
+    {
+        if (gridBuilder == null) {
+            gridBuilder = new GridBuilder(this);
+        }
+
+        return gridBuilder;
     }
 
     //-----------//
@@ -506,57 +500,6 @@ public class Sheet
     public int getHeight ()
     {
         return picture.getHeight();
-    }
-
-    //--------//
-    // getLag //
-    //--------//
-    /**
-     * Report the desired lag.
-     *
-     * @param key the lag name
-     * @return the lag if already registered, null otherwise
-     */
-    public Lag getLag (String key)
-    {
-        return lagMap.get(key);
-    }
-
-    //------------//
-    // getAllLags //
-    //------------//
-    /**
-     * Report all currently registered lags at this sheet instance.
-     *
-     * @return the collection of all registered lags, some of which may be null
-     */
-    public Collection<Lag> getAllLags ()
-    {
-        return lagMap.values();
-    }
-
-    //--------//
-    // setLag //
-    //--------//
-    /**
-     * Register the provided lag.
-     *
-     * @param key the registered key for the lag
-     * @param lag the lag to register, perhaps null
-     */
-    public void setLag (String key,
-                        Lag lag)
-    {
-        Lag oldLag = getLag(key);
-        if (oldLag != null) {
-            oldLag.cutServices();
-        }
-
-        lagMap.put(key, lag);
-
-        if (lag != null) {
-            lag.setServices(locationService);
-        }
     }
 
     //-------//
@@ -578,6 +521,33 @@ public class Sheet
     public int getInterline ()
     {
         return scale.getInterline();
+    }
+
+    //------------------//
+    // getItemRenderers //
+    //------------------//
+    /**
+     * Report the (live) collection of item renderers
+     *
+     * @return the live set if item renderers
+     */
+    public Set<ItemRenderer> getItemRenderers ()
+    {
+        return itemRenderers;
+    }
+
+    //--------//
+    // getLag //
+    //--------//
+    /**
+     * Report the desired lag.
+     *
+     * @param key the lag name
+     * @return the lag if already registered, null otherwise
+     */
+    public Lag getLag (String key)
+    {
+        return lagMap.get(key);
     }
 
     //--------------------//
@@ -640,19 +610,6 @@ public class Sheet
         return nest;
     }
 
-    //------------//
-    // createNest //
-    //------------//
-    public GlyphNest createNest ()
-    {
-        // Beware: Glyph nest must subscribe to location before any lag,
-        // to allow cleaning up of glyph data, before publication by a lag
-        nest = new BasicNest("gNest", this);
-        nest.setServices(locationService);
-
-        return nest;
-    }
-
     //---------//
     // getPage //
     //---------//
@@ -675,6 +632,14 @@ public class Sheet
     public Picture getPicture ()
     {
         return picture;
+    }
+
+    //---------------//
+    // getRunsViewer //
+    //---------------//
+    public RunsViewer getRunsViewer ()
+    {
+        return runsViewer;
     }
 
     //----------//
@@ -706,6 +671,20 @@ public class Sheet
         return scaleBuilder;
     }
 
+    //----------//
+    // getScore //
+    //----------//
+    /**
+     * Return the eventual Score that gathers in a score the information
+     * retrieved from this sheet.
+     *
+     * @return the related score, or null if not available
+     */
+    public Score getScore ()
+    {
+        return score;
+    }
+
     //----------------------//
     // getSelectedInterList //
     //----------------------//
@@ -717,8 +696,52 @@ public class Sheet
     @SuppressWarnings("unchecked")
     public List<Inter> getSelectedInterList ()
     {
-        return (List<Inter>) locationService
-                .getSelection(InterListEvent.class);
+        return (List<Inter>) locationService.getSelection(InterListEvent.class);
+    }
+
+    //---------------//
+    // getSheetDelta //
+    //---------------//
+    /**
+     * @return the sheetDelta
+     */
+    public SheetDiff getSheetDelta ()
+    {
+        return sheetDelta;
+    }
+
+    //-------------//
+    // getSheetSig //
+    //-------------//
+    public SIGraph getSheetSig ()
+    {
+        return sheetSig;
+    }
+
+    //---------------//
+    // getSigManager //
+    //---------------//
+    /**
+     * Report the SIG manager for this sheet
+     *
+     * @return the sheet SIG's manager
+     */
+    public SigManager getSigManager ()
+    {
+        return sigManager;
+    }
+
+    //---------//
+    // getSkew //
+    //---------//
+    /**
+     * Report the skew information for this sheet.
+     *
+     * @return the skew information
+     */
+    public Skew getSkew ()
+    {
+        return skew;
     }
 
     //-----------------//
@@ -734,61 +757,6 @@ public class Sheet
         }
 
         return spotsBuilder;
-    }
-
-    //----------------//
-    // getGridBuilder //
-    //----------------//
-    /**
-     * @return the gridBuilder
-     */
-    public GridBuilder getGridBuilder ()
-    {
-        if (gridBuilder == null) {
-            gridBuilder = new GridBuilder(this);
-        }
-
-        return gridBuilder;
-    }
-
-    //----------//
-    // getScore //
-    //----------//
-    /**
-     * Return the eventual Score that gathers in a score the information
-     * retrieved from this sheet.
-     *
-     * @return the related score, or null if not available
-     */
-    public Score getScore ()
-    {
-        return score;
-    }
-
-    //---------------//
-    // getSigManager //
-    //---------------//
-    /**
-     * Report the SIG manager for this sheet
-     *
-     * @return the sheet SIG's manager
-     */
-    public SigManager getSigManager ()
-    {
-        return sigManager;
-    }
-    //---------//
-    // getSkew //
-    //---------//
-
-    /**
-     * Report the skew information for this sheet.
-     *
-     * @return the skew information
-     */
-    public Skew getSkew ()
-    {
-        return skew;
     }
 
     //-----------------//
@@ -859,6 +827,32 @@ public class Sheet
         return systemManager;
     }
 
+    //------------//
+    // getSystems //
+    //------------//
+    /**
+     * Report an unmodifiable view on current systems.
+     *
+     * @return a view on systems list
+     */
+    public List<SystemInfo> getSystems ()
+    {
+        return Collections.unmodifiableList(systems);
+    }
+
+    //-----------------------//
+    // getWholeVerticalTable //
+    //-----------------------//
+    /**
+     * Get access to the whole table of vertical runs.
+     *
+     * @return the wholeVerticalTable
+     */
+    public RunsTable getWholeVerticalTable ()
+    {
+        return wholeVerticalTable;
+    }
+
     //----------//
     // getWidth //
     //----------//
@@ -899,6 +893,33 @@ public class Sheet
         return Stepping.getLatestStep(this) == Steps.valueOf(Steps.SYMBOLS);
     }
 
+    //---------//
+    // onEvent //
+    //---------//
+    @Override
+    public void onEvent (UserEvent event)
+    {
+        try {
+            // Ignore RELEASING
+            if (event.movement == MouseMovement.RELEASING) {
+                return;
+            }
+
+            if (event instanceof LocationEvent) {
+                // Location => InterList
+                handleEvent((LocationEvent) event);
+            } else if (event instanceof InterListEvent) {
+                // InterList => contour
+                handleEvent((InterListEvent) event);
+            } else if (event instanceof InterIdEvent) {
+                // InterId => inter
+                handleEvent((InterIdEvent) event);
+            }
+        } catch (Throwable ex) {
+            logger.warn(getClass().getName() + " onEvent error", ex);
+        }
+    }
+
     //--------//
     // remove //
     //--------//
@@ -921,11 +942,81 @@ public class Sheet
         // If no sheet is left, force score closing
         if (!closing) {
             if (!score.getPages().isEmpty()) {
-                logger.info("{}Removed page #{}",
-                            page.getScore().getLogPrefix(), page.getIndex());
+                logger.info("{}Removed page #{}", page.getScore().getLogPrefix(), page.getIndex());
             } else {
                 score.close();
             }
+        }
+    }
+
+    //-------------//
+    // renderItems //
+    //-------------//
+    /**
+     * Render all the registered items
+     *
+     * @param g the graphics environment
+     */
+    public void renderItems (Graphics2D g)
+    {
+        for (ItemRenderer renderer : itemRenderers) {
+            renderer.renderItems(g);
+        }
+    }
+
+    //-------//
+    // reset //
+    //-------//
+    /**
+     * Reinitialize the sheet members, according to step needs.
+     *
+     * @param step the starting step
+     */
+    public void reset (Step step)
+    {
+        switch (step.getName()) {
+        case Steps.LOAD:
+            picture = null;
+            doneSteps = new HashSet<Step>();
+            currentStep = null;
+
+        // Fall-through!
+        case Steps.BINARY:
+        case Steps.SCALE:
+            scaleBuilder = null;
+            scale = null;
+            wholeVerticalTable = null;
+
+        // Fall-through!
+        case Steps.GRID:
+
+            if (nest != null) {
+                nest.cutServices(locationService);
+                nest = null;
+            }
+
+            skew = null;
+
+            setLag(Lags.HLAG, null);
+            setLag(Lags.VLAG, null);
+
+            systems.clear();
+            gridBuilder = null;
+
+            staffManager.reset();
+            systemManager = null;
+            symbolsController = null;
+            symbolsEditor = null;
+
+        // Fall-through!
+        case Steps.LEDGERS:
+            setLag(Lags.FULL_HLAG, null);
+
+        // Fall-through!
+        case Steps.BEAMS:
+            setLag(Lags.SPOT_LAG, null);
+
+        default:
         }
     }
 
@@ -942,35 +1033,44 @@ public class Sheet
         currentStep = step;
     }
 
-    //----------//
-    // setImage //
-    //----------//
-    public final void setImage (BufferedImage image)
-            throws StepException
+    //------------------//
+    // setDistanceImage //
+    //------------------//
+    /**
+     * Remember the distance transform image
+     *
+     * @param distanceImage the image of distances (to foreground)
+     */
+    public void setDistanceImage (DistanceTable distanceImage)
     {
-        // Reset most of members
-        reset(Steps.valueOf(Steps.LOAD));
+        this.distanceImage = distanceImage;
 
-        try {
-            picture = new Picture(this, image, locationService);
-            setPicture(picture);
-            getBench().recordImageDimension(picture.getWidth(), picture.
-                    getHeight());
+        // Save this distance image on disk for visual check
+        //TableUtil.store(getId() + ".dist", distanceImage);
+    }
 
-            done(Steps.valueOf(Steps.LOAD));
-        } catch (ImageFormatException ex) {
-            String msg = "Unsupported image format in file "
-                         + getScore().getImagePath() + "\n" + ex.getMessage();
+    //--------//
+    // setLag //
+    //--------//
+    /**
+     * Register the provided lag.
+     *
+     * @param key the registered key for the lag
+     * @param lag the lag to register, perhaps null
+     */
+    public void setLag (String key,
+                        Lag lag)
+    {
+        Lag oldLag = getLag(key);
 
-            if (Main.getGui() != null) {
-                Main.getGui().displayWarning(msg);
-            } else {
-                logger.warn(msg);
-            }
+        if (oldLag != null) {
+            oldLag.cutServices();
+        }
 
-            throw new StepException(ex);
-        } catch (Throwable ex) {
-            logger.warn("Error loading image", ex);
+        lagMap.put(key, lag);
+
+        if (lag != null) {
+            lag.setServices(locationService);
         }
     }
 
@@ -1003,6 +1103,17 @@ public class Sheet
         page.setScale(scale);
     }
 
+    //---------------//
+    // setSheetDelta //
+    //---------------//
+    /**
+     * @param sheetDelta the sheetDelta to set
+     */
+    public void setSheetDelta (SheetDiff sheetDelta)
+    {
+        this.sheetDelta = sheetDelta;
+    }
+
     //---------//
     // setSkew //
     //---------//
@@ -1016,6 +1127,35 @@ public class Sheet
         this.skew = skew;
     }
 
+    //------------//
+    // setSystems //
+    //------------//
+    /**
+     * Assign the whole sequence of systems
+     *
+     * @param systems the (new) systems
+     */
+    public void setSystems (Collection<SystemInfo> systems)
+    {
+        if (this.systems != systems) {
+            this.systems.clear();
+            this.systems.addAll(systems);
+        }
+    }
+
+    //-----------------------//
+    // setWholeVerticalTable //
+    //-----------------------//
+    /**
+     * Remember the whole table of vertical runs.
+     *
+     * @param wholeVerticalTable the wholeVerticalTable to set
+     */
+    public void setWholeVerticalTable (RunsTable wholeVerticalTable)
+    {
+        this.wholeVerticalTable = wholeVerticalTable;
+    }
+
     //----------//
     // toString //
     //----------//
@@ -1025,60 +1165,90 @@ public class Sheet
         return "{Sheet " + page.getId() + "}";
     }
 
-    //-------//
-    // reset //
-    //-------//
+    //-------------//
+    // handleEvent //
+    //-------------//
     /**
-     * Reinitialize the sheet members, according to step needs.
+     * Interest in sheet location => interpretation(s)
      *
-     * @param step the starting step
+     * @param locationEvent
      */
-    public void reset (Step step)
+    private void handleEvent (LocationEvent locationEvent)
     {
-        switch (step.getName()) {
+        SelectionHint hint = locationEvent.hint;
+        MouseMovement movement = locationEvent.movement;
+        Rectangle rect = locationEvent.getData();
 
-        case Steps.LOAD:
-            picture = null;
-            doneSteps = new HashSet<>();
-            currentStep = null;
-        // Fall-through!
-
-        case Steps.BINARY:
-        case Steps.SCALE:
-            scaleBuilder = null;
-            scale = null;
-            wholeVerticalTable = null;
-        // Fall-through!
-
-        case Steps.GRID:
-            if (nest != null) {
-                nest.cutServices(locationService);
-                nest = null;
-            }
-
-            skew = null;
-
-            setLag(Lags.HLAG, null);
-            setLag(Lags.VLAG, null);
-
-            systems.clear();
-            gridBuilder = null;
-
-            staffManager.reset();
-            systemManager = null;
-            symbolsController = null;
-            symbolsEditor = null;
-        // Fall-through!
-
-        case Steps.LEDGERS:
-            setLag(Lags.FULL_HLAG, null);
-        // Fall-through!
-
-        case Steps.BEAMS:
-            setLag(Lags.SPOT_LAG, null);
-
-        default:
+        if (!hint.isLocation() && !hint.isContext()) {
+            return;
         }
+
+        if ((rect == null) || (systemManager == null)) {
+            return;
+        }
+
+        final Set<Inter> inters = new LinkedHashSet<Inter>();
+
+        for (SystemInfo system : systemManager.getSystemsOf(rect.getLocation())) {
+            SIGraph sig = system.getSig();
+
+            if ((rect.width > 0) && (rect.height > 0)) {
+                // This is a non-degenerated rectangle
+                // Look for contained interpretations
+                inters.addAll(sig.containedInters(rect));
+            } else {
+                // This is just a point
+                // Look for intersected interpretations
+                inters.addAll(sig.containingInters(rect.getLocation()));
+            }
+        }
+
+        // Publish inters found (perhaps none)
+        locationService.publish(
+                new InterListEvent(this, hint, movement, new ArrayList<Inter>(inters)));
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in Inter => inter contour
+     *
+     * @param interListEvent
+     */
+    private void handleEvent (InterListEvent interListEvent)
+    {
+        SelectionHint hint = interListEvent.hint;
+        MouseMovement movement = interListEvent.movement;
+        List<Inter> inters = interListEvent.getData();
+
+        if (hint == SelectionHint.INTER_INIT) {
+            // Display (last) inter contour
+            if ((inters != null) && !inters.isEmpty()) {
+                Inter inter = inters.get(inters.size() - 1);
+                Rectangle box = inter.getBounds();
+                locationService.publish(new LocationEvent(this, hint, movement, box));
+            }
+        }
+    }
+
+    //-------------//
+    // handleEvent //
+    //-------------//
+    /**
+     * Interest in InterId => inter
+     *
+     * @param interIdEvent
+     */
+    private void handleEvent (InterIdEvent interIdEvent)
+    {
+        SelectionHint hint = interIdEvent.hint;
+        MouseMovement movement = interIdEvent.movement;
+        int id = interIdEvent.getData();
+
+        Inter inter = sigManager.getInter(id);
+        locationService.publish(
+                new InterListEvent(this, hint, movement, (inter != null) ? Arrays.asList(inter) : null));
     }
 
     //------------//
@@ -1101,186 +1271,7 @@ public class Sheet
             assembly.addViewTab(
                     Step.PICTURE_TAB,
                     pictureView,
-                    new BoardsPane(
-                    new PixelBoard(this),
-                    new BinarizationBoard(this)));
+                    new BoardsPane(new PixelBoard(this), new BinarizationBoard(this)));
         }
-    }
-
-    //-----------------------//
-    // getWholeVerticalTable //
-    //-----------------------//
-    /**
-     * Get access to the whole table of vertical runs.
-     *
-     * @return the wholeVerticalTable
-     */
-    public RunsTable getWholeVerticalTable ()
-    {
-        return wholeVerticalTable;
-    }
-
-    //-----------------------//
-    // setWholeVerticalTable //
-    //-----------------------//
-    /**
-     * Remember the whole table of vertical runs.
-     *
-     * @param wholeVerticalTable the wholeVerticalTable to set
-     */
-    public void setWholeVerticalTable (RunsTable wholeVerticalTable)
-    {
-        this.wholeVerticalTable = wholeVerticalTable;
-    }
-
-    //------------------//
-    // getDistanceImage //
-    //------------------//
-    /**
-     * Get access to the distance transform image
-     *
-     * @return the image of distances (to foreground)
-     */
-    public DistanceTable getDistanceImage ()
-    {
-        return distanceImage;
-    }
-
-    //------------------//
-    // setDistanceImage //
-    //------------------//
-    /**
-     * Remember the distance transform image
-     *
-     * @param distanceImage the image of distances (to foreground)
-     */
-    public void setDistanceImage (DistanceTable distanceImage)
-    {
-        this.distanceImage = distanceImage;
-
-        // Save this distance image on disk for visual check
-        //TableUtil.store(getId() + ".dist", distanceImage);
-    }
-
-    //---------//
-    // onEvent //
-    //---------//
-    @Override
-    public void onEvent (UserEvent event)
-    {
-        try {
-            // Ignore RELEASING
-            if (event.movement == MouseMovement.RELEASING) {
-                return;
-            }
-
-            if (event instanceof LocationEvent) {
-                // Location => InterList
-                handleEvent((LocationEvent) event);
-            } else if (event instanceof InterListEvent) {
-                // InterList => contour
-                handleEvent((InterListEvent) event);
-            } else if (event instanceof InterIdEvent) {
-                // InterId => inter
-                handleEvent((InterIdEvent) event);
-            }
-        } catch (Throwable ex) {
-            logger.warn(getClass().getName() + " onEvent error", ex);
-        }
-    }
-
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Interest in sheet location => interpretation(s)
-     *
-     * @param locationEvent
-     */
-    private void handleEvent (LocationEvent locationEvent)
-    {
-        SelectionHint hint = locationEvent.hint;
-        MouseMovement movement = locationEvent.movement;
-        Rectangle rect = locationEvent.getData();
-
-        if (!hint.isLocation() && !hint.isContext()) {
-            return;
-        }
-
-        if (rect == null || systemManager == null) {
-            return;
-        }
-
-        final Set<Inter> inters = new LinkedHashSet<Inter>();
-        for (SystemInfo system : systemManager.getSystemsOf(rect.getLocation())) {
-            SIGraph sig = system.getSig();
-
-            if ((rect.width > 0) && (rect.height > 0)) {
-                // This is a non-degenerated rectangle
-                // Look for contained interpretations
-                inters.addAll(sig.containedInters(rect));
-            } else {
-                // This is just a point
-                // Look for intersected interpretations
-                inters.addAll(sig.containingInters(rect.getLocation()));
-            }
-        }
-
-        // Publish inters found (perhaps none)
-        locationService.publish(new InterListEvent(this, hint, movement,
-                                                   new ArrayList<Inter>(inters)));
-    }
-
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Interest in Inter => inter contour
-     *
-     * @param interListEvent
-     */
-    private void handleEvent (InterListEvent interListEvent)
-    {
-        SelectionHint hint = interListEvent.hint;
-        MouseMovement movement = interListEvent.movement;
-        List<Inter> inters = interListEvent.getData();
-
-        if (hint == SelectionHint.INTER_INIT) {
-            // Display (last) inter contour
-            if (inters != null && !inters.isEmpty()) {
-                Inter inter = inters.get(inters.size() - 1);
-                Rectangle box = inter.getBounds();
-                locationService.publish(new LocationEvent(this, hint, movement, box));
-            }
-        }
-
-    }
-
-    //-------------//
-    // handleEvent //
-    //-------------//
-    /**
-     * Interest in InterId => inter
-     *
-     * @param interIdEvent
-     */
-    private void handleEvent (InterIdEvent interIdEvent)
-    {
-        SelectionHint hint = interIdEvent.hint;
-        MouseMovement movement = interIdEvent.movement;
-        int id = interIdEvent.getData();
-
-        Inter inter = sigManager.getInter(id);
-        locationService.publish(new InterListEvent(this, hint, movement,
-                                                   inter != null ? Arrays.asList(inter) : null));
-
-    }
-
-    //-------------//
-    // getSheetSig //
-    //-------------//
-    public SIGraph getSheetSig ()
-    {
-        return sheetSig;
     }
 }

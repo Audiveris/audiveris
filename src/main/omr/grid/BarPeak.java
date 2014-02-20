@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                B a r P e a k                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                          B a r P e a k                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
@@ -20,14 +20,14 @@ import omr.util.VerticalSide;
 import java.awt.Rectangle;
 
 /**
- * Class {@code BarPeak} records a peak in staff projection, likely
- * to indicating a bar line crossing the staff.
+ * Class {@code BarPeak} records a peak in staff projection, likely to indicate a bar
+ * line crossing the staff.
  *
  * @author Hervé Bitteur
  */
 public class BarPeak
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Containing staff. */
     private final StaffInfo staff;
@@ -65,8 +65,7 @@ public class BarPeak
     /** Does the related glyph get below the staff?. */
     private boolean isBelow;
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BarPeak object.
      *
@@ -80,14 +79,14 @@ public class BarPeak
      * @param chunk   count in excess of standard staff lines
      * @param impacts evaluation details
      */
-    public BarPeak (StaffInfo    staff,
-                    int          top,
-                    int          bottom,
-                    int          start,
-                    int          stop,
-                    boolean      isThin,
-                    int          value,
-                    int          chunk,
+    public BarPeak (StaffInfo staff,
+                    int top,
+                    int bottom,
+                    int start,
+                    int stop,
+                    boolean isThin,
+                    int value,
+                    int chunk,
                     GradeImpacts impacts)
     {
         this.staff = staff;
@@ -101,8 +100,7 @@ public class BarPeak
         this.impacts = impacts;
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * @return the bottom
      */
@@ -275,8 +273,7 @@ public class BarPeak
         sb.append(")");
 
         if (glyph != null) {
-            sb.append(" glyph#")
-              .append(glyph.getId());
+            sb.append(" glyph#").append(glyph.getId());
         }
 
         if (isAbove) {

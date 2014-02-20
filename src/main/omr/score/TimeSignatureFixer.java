@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    T i m e S i g n a t u r e F i x e r                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              T i m e S i g n a t u r e F i x e r                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -34,18 +34,16 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
- * Class {@code TimeSignatureFixer} can visit the score hierarchy to
- * check whether each of the time signatures is consistent with most of
- * measures intrinsic time signature.
+ * Class {@code TimeSignatureFixer} can visit the score hierarchy to check whether each
+ * of the time signatures is consistent with most of measures intrinsic time signature.
  *
  * @author Hervé Bitteur
  */
 public class TimeSignatureFixer
         extends AbstractScoreVisitor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(
             TimeSignatureFixer.class);
 
@@ -60,7 +58,7 @@ public class TimeSignatureFixer
         }
     };
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------------//
     // TimeSignatureFixer //
     //--------------------//
@@ -71,7 +69,7 @@ public class TimeSignatureFixer
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // visit Page //
     //------------//
@@ -129,7 +127,8 @@ public class TimeSignatureFixer
                 }
             } else {
                 // Whole page without explicit time signature
-                checkTimeSigs(part.getFirstMeasure(),
+                checkTimeSigs(
+                        part.getFirstMeasure(),
                         page.getLastSystem().getFirstPart().getLastMeasure());
             }
         } catch (Exception ex) {
@@ -167,16 +166,19 @@ public class TimeSignatureFixer
     private void checkTimeSigs (Measure startMeasure,
                                 Measure stopMeasure)
     {
-        logger.debug("checkTimeSigs on measure range {}..{}",
-                startMeasure.getPageId(), stopMeasure.getPageId());
+        logger.debug(
+                "checkTimeSigs on measure range {}..{}",
+                startMeasure.getPageId(),
+                stopMeasure.getPageId());
 
         // Retrieve the best possible time signature(s)
-        SortedMap<Integer, TimeRational> bestSigs = retrieveBestSigs(
-                startMeasure,
-                stopMeasure);
-        logger.debug("{}Best inferred time sigs in [M#{},M#{}]: {}",
+        SortedMap<Integer, TimeRational> bestSigs = retrieveBestSigs(startMeasure, stopMeasure);
+        logger.debug(
+                "{}Best inferred time sigs in [M#{},M#{}]: {}",
                 startMeasure.getPage().getSheet().getLogPrefix(),
-                startMeasure.getIdValue(), stopMeasure.getIdValue(), bestSigs);
+                startMeasure.getIdValue(),
+                stopMeasure.getIdValue(),
+                bestSigs);
 
         if (!bestSigs.isEmpty()) {
             TimeRational bestRational = bestSigs.get(bestSigs.firstKey());
@@ -190,8 +192,7 @@ public class TimeSignatureFixer
             logger.debug("Best sig: {}", bestRational);
 
             // Loop on every staff in the vertical startMeasure
-            for (Staff.SystemIterator sit = new Staff.SystemIterator(
-                    startMeasure); sit.hasNext();) {
+            for (Staff.SystemIterator sit = new Staff.SystemIterator(startMeasure); sit.hasNext();) {
                 Staff staff = sit.next();
                 Measure measure = sit.getMeasure();
                 TimeSignature sig = measure.getTimeSignature(staff);
@@ -199,17 +200,21 @@ public class TimeSignatureFixer
                 if (sig != null) {
                     try {
                         TimeRational timeRational = sig.getTimeRational();
-                        if (timeRational == null
-                            || !timeRational.equals(bestRational)) {
-                            logger.info("{}Measure#{} {}T{} {}->{}",
+
+                        if ((timeRational == null) || !timeRational.equals(bestRational)) {
+                            logger.info(
+                                    "{}Measure#{} {}T{} {}->{}",
                                     measure.getPage().getSheet().getLogPrefix(),
                                     measure.getPageId(),
                                     staff.getContextString(),
-                                    staff.getId(), timeRational, bestRational);
+                                    staff.getId(),
+                                    timeRational,
+                                    bestRational);
                             sig.modify(null, bestRational);
                         }
                     } catch (Exception ex) {
-                        sig.addError(sig.getGlyphs().iterator().next(),
+                        sig.addError(
+                                sig.getGlyphs().iterator().next(),
                                 "Could not check time signature " + ex);
                     }
                 }
@@ -237,15 +242,17 @@ public class TimeSignatureFixer
 
         boolean found = false;
 
-        for (Staff.SystemIterator sit = new Staff.SystemIterator(measure);
-                sit.hasNext();) {
+        for (Staff.SystemIterator sit = new Staff.SystemIterator(measure); sit.hasNext();) {
             Staff staff = sit.next();
             TimeSignature sig = sit.getMeasure().getTimeSignature(staff);
 
             if (sig != null) {
-                logger.debug("Measure#{} {}T{} {}",
-                        measure.getPageId(), staff.getContextString(),
-                        staff.getId(), sig);
+                logger.debug(
+                        "Measure#{} {}T{} {}",
+                        measure.getPageId(),
+                        staff.getContextString(),
+                        staff.getId(),
+                        sig);
 
                 if (sig.isManual()) {
                     isManual.set(true);
@@ -269,20 +276,18 @@ public class TimeSignatureFixer
      * @param stopMeasure  end of the measure range
      * @return a map, sorted by decreasing count, of possible time signatures
      */
-    private SortedMap<Integer, TimeRational> retrieveBestSigs (
-            Measure startMeasure,
-            Measure stopMeasure)
+    private SortedMap<Integer, TimeRational> retrieveBestSigs (Measure startMeasure,
+                                                               Measure stopMeasure)
     {
         // Retrieve the significant measure informations
-        Map<TimeRational, Integer> sigs = new LinkedHashMap<>();
+        Map<TimeRational, Integer> sigs = new LinkedHashMap<TimeRational, Integer>();
         Measure m = startMeasure;
         int mIndex = m.getParent().getChildren().indexOf(m);
 
         // Loop on measure range
         while (true) {
             // Retrieve info
-            logger.debug("Checking measure#{} idx:{}",
-                    m.getPageId(), m.getChildIndex());
+            logger.debug("Checking measure#{} idx:{}", m.getPageId(), m.getChildIndex());
 
             ScoreSystem system = m.getSystem();
 
@@ -296,8 +301,7 @@ public class TimeSignatureFixer
 
                 for (Voice voice : measure.getVoices()) {
                     TimeRational timeRational = voice.getInferredTimeSignature();
-                    logger.debug("Voice#{} time inferred: {}",
-                            voice.getId(), timeRational);
+                    logger.debug("Voice#{} time inferred: {}", voice.getId(), timeRational);
 
                     if (timeRational != null) {
                         // Update histogram
@@ -325,7 +329,7 @@ public class TimeSignatureFixer
         }
 
         // Sort info by decreasing counts
-        SortedMap<Integer, TimeRational> bestSigs = new TreeMap<>(
+        SortedMap<Integer, TimeRational> bestSigs = new TreeMap<Integer, TimeRational>(
                 reverseIntComparator);
 
         for (Map.Entry<TimeRational, Integer> entry : sigs.entrySet()) {

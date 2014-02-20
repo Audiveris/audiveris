@@ -1,18 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               S l u r I n f o                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         S l u r I n f o                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
 import omr.glyph.ui.AttachmentHolder;
 import omr.glyph.ui.BasicAttachmentHolder;
+
+import omr.grid.FilamentLine;
 
 import omr.math.Circle;
 import omr.math.LineUtil;
@@ -38,7 +40,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import omr.grid.FilamentLine;
 
 /**
  * Class {@code SlursInfo} gathers physical description of a slur.
@@ -54,15 +55,13 @@ import omr.grid.FilamentLine;
  * @author Hervé Bitteur
  */
 public class SlurInfo
-    implements AttachmentHolder
+        implements AttachmentHolder
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-        SlurInfo.class);
+    private static final Logger logger = LoggerFactory.getLogger(SlurInfo.class);
 
-    //~ Instance fields --------------------------------------------------------
-
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Unique slur id (in page). */
     private final int id;
 
@@ -113,12 +112,11 @@ public class SlurInfo
 
     /** Potential attachments, lazily allocated. */
     private AttachmentHolder attachments;
-    
+
     /** Staff line most recently crossed. */
     private FilamentLine crossedLine;
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SlurInfo object.
      *
@@ -127,10 +125,10 @@ public class SlurInfo
      * @param circle     The approximating circle, perhaps null
      * @param sideLength length of side circles
      */
-    public SlurInfo (int       id,
+    public SlurInfo (int id,
                      List<Arc> arcs,
-                     Circle    circle,
-                     int       sideLength)
+                     Circle circle,
+                     int sideLength)
     {
         this.id = id;
         this.arcs.addAll(arcs);
@@ -138,13 +136,12 @@ public class SlurInfo
         this.sideLength = sideLength;
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // addAttachment //
     //---------------//
     @Override
-    public void addAttachment (String         id,
+    public void addAttachment (String id,
                                java.awt.Shape attachment)
     {
         assert attachment != null : "Adding a null attachment";
@@ -181,19 +178,18 @@ public class SlurInfo
      * @param arc     the arc to check
      * @param reverse orientation of slur extension
      */
-    public void checkArcOrientation (Arc     arc,
+    public void checkArcOrientation (Arc arc,
                                      boolean reverse)
     {
         if (reverse) {
             // Normal orientation, check at slur start
             if (firstJunction != null) {
-                if ((arc.getJunction(true) != null) &&
-                    arc.getJunction(true).equals(firstJunction)) {
+                if ((arc.getJunction(true) != null) && arc.getJunction(true).equals(firstJunction)) {
                     arc.reverse();
                 }
             } else {
                 // Slur with free ending, use shortest distance
-                Point  slurEnd = getEnd(reverse);
+                Point slurEnd = getEnd(reverse);
                 double toStart = slurEnd.distanceSq(arc.getEnd(true));
                 double toStop = slurEnd.distanceSq(arc.getEnd(false));
 
@@ -205,13 +201,13 @@ public class SlurInfo
             // Normal orientation, check at slur stop
             if (lastJunction != null) {
                 // Slur ending at pivot
-                if ((arc.getJunction(false) != null) &&
-                    arc.getJunction(false).equals(lastJunction)) {
+                if ((arc.getJunction(false) != null)
+                    && arc.getJunction(false).equals(lastJunction)) {
                     arc.reverse();
                 }
             } else {
                 // Slur with free ending, use shortest distance
-                Point  slurEnd = getEnd(reverse);
+                Point slurEnd = getEnd(reverse);
                 double toStart = slurEnd.distanceSq(arc.getEnd(true));
                 double toStop = slurEnd.distanceSq(arc.getEnd(false));
 
@@ -234,7 +230,7 @@ public class SlurInfo
      * @return the side circle, or null if unsuccessful
      */
     public Circle computeSideCircle (List<Point> points,
-                                     boolean     reverse)
+                                     boolean reverse)
     {
         int np = points.size();
 
@@ -250,9 +246,9 @@ public class SlurInfo
 
         np = points.size();
 
-        Point  p0 = points.get(0);
-        Point  p1 = points.get(np / 2);
-        Point  p2 = points.get(np - 1);
+        Point p0 = points.get(0);
+        Point p1 = points.get(np / 2);
+        Point p2 = points.get(np - 1);
 
         Circle rough = new Circle(p0, p1, p2);
 
@@ -274,7 +270,7 @@ public class SlurInfo
      * @param reverse desired side
      * @return proper sequence of all arcs
      */
-    public List<Arc> getAllArcs (Arc     arc,
+    public List<Arc> getAllArcs (Arc arc,
                                  boolean reverse)
     {
         List<Arc> allArcs = new ArrayList<Arc>(arcs);
@@ -345,7 +341,7 @@ public class SlurInfo
      * @return the point, a few positions before slur end, or null if there is
      *         not enough points available.
      */
-    public Point getBackupPoint (int     count,
+    public Point getBackupPoint (int count,
                                  boolean reverse)
     {
         int idx = -1;
@@ -361,12 +357,11 @@ public class SlurInfo
                 }
             }
         } else {
-            for (ListIterator<Arc> it = arcs.listIterator(arcs.size());
-                 it.hasPrevious();) {
+            for (ListIterator<Arc> it = arcs.listIterator(arcs.size()); it.hasPrevious();) {
                 Arc arc = it.previous();
 
-                for (ListIterator<Point> itp = arc.points.listIterator(
-                    arc.points.size()); itp.hasPrevious();) {
+                for (ListIterator<Point> itp = arc.points.listIterator(arc.points.size());
+                        itp.hasPrevious();) {
                     Point p = itp.previous();
                     idx++;
 
@@ -412,14 +407,6 @@ public class SlurInfo
         return crossedLine;
     }
 
-    /**
-     * @param crossedLine the last crossed Line to set
-     */
-    public void setCrossedLine (FilamentLine crossedLine)
-    {
-        this.crossedLine = crossedLine;
-    }
-
     //----------//
     // getCurve //
     //----------//
@@ -459,36 +446,34 @@ public class SlurInfo
             if (left == right) {
                 curve = left;
             } else {
-                double      x1 = left.getX1();
-                double      y1 = left.getY1();
-                double      cx1 = left.getCtrlX1();
-                double      cy1 = left.getCtrlY1();
-                double      cx2 = right.getCtrlX2();
-                double      cy2 = right.getCtrlY2();
-                double      x2 = right.getX2();
-                double      y2 = right.getY2();
+                double x1 = left.getX1();
+                double y1 = left.getY1();
+                double cx1 = left.getCtrlX1();
+                double cy1 = left.getCtrlY1();
+                double cx2 = right.getCtrlX2();
+                double cy2 = right.getCtrlY2();
+                double x2 = right.getX2();
+                double y2 = right.getY2();
 
                 // Compute affinity ratio out of mid point translation
                 List<Point> points = pointsOf(arcs);
-                Point       midPt = points.get(points.size() / 2); // Approximately
-                double      mx = (x1 + x2 + (3 * (cx1 + cx2))) / 8;
-                double      my = (y1 + y2 + (3 * (cy1 + cy2))) / 8;
-                double      deltaM = Math.hypot(midPt.x - mx, midPt.y - my);
-                double      pc = Math.hypot(
-                    (cx1 + cx2) - (x1 + x2),
-                    (cy1 + cy2) - (y1 + y2)) / 2;
-                double      ratio = 1 + ((4 * deltaM) / (3 * pc));
+                Point midPt = points.get(points.size() / 2); // Approximately
+                double mx = (x1 + x2 + (3 * (cx1 + cx2))) / 8;
+                double my = (y1 + y2 + (3 * (cy1 + cy2))) / 8;
+                double deltaM = Math.hypot(midPt.x - mx, midPt.y - my);
+                double pc = Math.hypot((cx1 + cx2) - (x1 + x2), (cy1 + cy2) - (y1 + y2)) / 2;
+                double ratio = 1 + ((4 * deltaM) / (3 * pc));
 
                 // Apply ratio on vectors to control points
                 curve = new CubicCurve2D.Double(
-                    x1,
-                    y1,
-                    x1 + (ratio * (cx1 - x1)), // cx1'
-                    y1 + (ratio * (cy1 - y1)), // cy1'
-                    x2 + (ratio * (cx2 - x2)), // cx2'
-                    y2 + (ratio * (cy2 - y2)), // cy2'
-                    x2,
-                    y2);
+                        x1,
+                        y1,
+                        x1 + (ratio * (cx1 - x1)), // cx1'
+                        y1 + (ratio * (cy1 - y1)), // cy1'
+                        x2 + (ratio * (cx2 - x2)), // cx2'
+                        y2 + (ratio * (cy2 - y2)), // cy2'
+                        x2,
+                        y2);
             }
         }
 
@@ -657,7 +642,7 @@ public class SlurInfo
      * @return the sequence of defining points
      */
     public List<Point> getSidePoints (List<Arc> arcs,
-                                      boolean   reverse)
+                                      boolean reverse)
     {
         Point[] seq = new Point[sideLength];
 
@@ -665,7 +650,7 @@ public class SlurInfo
         if (reverse) {
             // Walk foreward
             int n = -1;
-            Loop: 
+            Loop:
             for (Arc arc : arcs) {
                 for (Point point : arc.points) {
                     if (++n < sideLength) {
@@ -678,13 +663,12 @@ public class SlurInfo
         } else {
             // Walk backward
             int n = sideLength;
-            Loop: 
-            for (ListIterator<Arc> ita = arcs.listIterator(arcs.size());
-                 ita.hasPrevious();) {
+            Loop:
+            for (ListIterator<Arc> ita = arcs.listIterator(arcs.size()); ita.hasPrevious();) {
                 Arc arc = ita.previous();
 
-                for (ListIterator<Point> itp = arc.points.listIterator(
-                    arc.points.size()); itp.hasPrevious();) {
+                for (ListIterator<Point> itp = arc.points.listIterator(arc.points.size());
+                        itp.hasPrevious();) {
                     Point point = itp.previous();
 
                     if (--n >= 0) {
@@ -756,7 +740,7 @@ public class SlurInfo
      * @param reverse       desired side
      * @return the sequence of points (arcs & junctions)
      */
-    public List<Point> pointsOf (Arc     additionalArc,
+    public List<Point> pointsOf (Arc additionalArc,
                                  boolean reverse)
     {
         return pointsOf(getAllArcs(additionalArc, reverse));
@@ -824,12 +808,11 @@ public class SlurInfo
         // Check orientation of all arcs
         if (arcs.size() > 1) {
             for (int i = 0; i < (arcs.size() - 1); i++) {
-                Arc   a0 = arcs.get(i);
-                Arc   a1 = arcs.get(i + 1);
+                Arc a0 = arcs.get(i);
+                Arc a1 = arcs.get(i + 1);
                 Point common = junctionOf(a0, a1);
 
-                if ((a1.getJunction(false) != null) &&
-                    a1.getJunction(false).equals(common)) {
+                if ((a1.getJunction(false) != null) && a1.getJunction(false).equals(common)) {
                     a1.reverse();
                 }
             }
@@ -852,8 +835,7 @@ public class SlurInfo
         // Reverse arc list
         List<Arc> rev = new ArrayList<Arc>(arcs.size());
 
-        for (ListIterator<Arc> it = arcs.listIterator(arcs.size());
-             it.hasPrevious();) {
+        for (ListIterator<Arc> it = arcs.listIterator(arcs.size()); it.hasPrevious();) {
             rev.add(it.previous());
         }
 
@@ -873,7 +855,7 @@ public class SlurInfo
      * @param area    the Area to set
      * @param reverse desired end
      */
-    public void setArea (Area    area,
+    public void setArea (Area area,
                          boolean reverse)
     {
         if (reverse) {
@@ -895,6 +877,14 @@ public class SlurInfo
         }
     }
 
+    /**
+     * @param crossedLine the last crossed Line to set
+     */
+    public void setCrossedLine (FilamentLine crossedLine)
+    {
+        this.crossedLine = crossedLine;
+    }
+
     //------------//
     // setExtArea //
     //------------//
@@ -904,7 +894,7 @@ public class SlurInfo
      * @param area    the extension area on 'reverse' side
      * @param reverse which end
      */
-    public void setExtArea (Area    area,
+    public void setExtArea (Area area,
                             boolean reverse)
     {
         if (reverse) {
@@ -928,7 +918,7 @@ public class SlurInfo
     //---------------//
     // setSideCircle //
     //---------------//
-    public void setSideCircle (Circle  circle,
+    public void setSideCircle (Circle circle,
                                boolean reverse)
     {
         if (reverse) {
@@ -960,8 +950,7 @@ public class SlurInfo
                 Point j = arc.getJunction(true);
 
                 if (j != null) {
-                    sb.append(" <").append(j.x).append(",").append(j.y)
-                      .append(">");
+                    sb.append(" <").append(j.x).append(",").append(j.y).append(">");
                 }
             }
 
@@ -982,12 +971,12 @@ public class SlurInfo
     private Point2D.Double computeBisector ()
     {
         boolean ccw = circle.ccw() == 1;
-        Line2D  bisector = LineUtil.bisector(getEnd(!ccw), getEnd(ccw));
-        double  length = bisector.getP1().distance(bisector.getP2());
+        Line2D bisector = LineUtil.bisector(getEnd(!ccw), getEnd(ccw));
+        double length = bisector.getP1().distance(bisector.getP2());
 
         return new Point2D.Double(
-            (bisector.getX2() - bisector.getX1()) / length,
-            (bisector.getY2() - bisector.getY1()) / length);
+                (bisector.getX2() - bisector.getX1()) / length,
+                (bisector.getY2() - bisector.getY1()) / length);
     }
 
     //---------------//
@@ -997,8 +986,7 @@ public class SlurInfo
     {
         Arc firstArc = getEndArc(true);
 
-        return (firstArc.getLength() > 0) ? firstArc.getEnd(true)
-               : firstArc.getJunction(false);
+        return (firstArc.getLength() > 0) ? firstArc.getEnd(true) : firstArc.getJunction(false);
     }
 
     //--------------//
@@ -1008,8 +996,7 @@ public class SlurInfo
     {
         Arc lastArc = getEndArc(false);
 
-        return (lastArc.getLength() > 0) ? lastArc.getEnd(false)
-               : lastArc.getJunction(true);
+        return (lastArc.getLength() > 0) ? lastArc.getEnd(false) : lastArc.getJunction(true);
     }
 
     //------------//
@@ -1041,8 +1028,7 @@ public class SlurInfo
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----//
     // Arc //
     //-----//
@@ -1058,14 +1044,14 @@ public class SlurInfo
      */
     public static class Arc
     {
-        //~ Enumerations -------------------------------------------------------
+        //~ Enumerations ---------------------------------------------------------------------------
 
         /**
          * Shape detected for arc.
          */
-        public static enum ArcShape {
-            //~ Enumeration constant initializers ------------------------------
-
+        public static enum ArcShape
+        {
+            //~ Enumeration constant initializers --------------------------------------------------
 
             /**
              * Not yet known.
@@ -1075,34 +1061,34 @@ public class SlurInfo
              * Short arc.
              * Can be tested as slur or wedge extension.
              */
-            SHORT(true, true), 
+            SHORT(true, true),
             /**
              * Long portion of slur.
              * Can be part of slur only.
              */
-            SLUR(true, false), 
+            SLUR(true, false),
             /**
              * Long straight line.
              * Can be part of wedge (and slur).
              */
-            LINE(true, true), 
+            LINE(true, true),
             /**
              * Short portion of staff line.
              * Can be part of slur only.
              */
-            STAFF_ARC(true, false), 
+            STAFF_ARC(true, false),
             /**
              * Long arc, but no shape detected.
              * Cannot be part of slur/wedge
              */
             IRRELEVANT(false, false);
-            //~ Instance fields ------------------------------------------------
+            //~ Instance fields --------------------------------------------------------------------
 
             private final boolean forSlur; // OK for slur
+
             private final boolean forWedge; // OK for wedge
 
-            //~ Constructors ---------------------------------------------------
-
+            //~ Constructors -----------------------------------------------------------------------
             ArcShape (boolean forSlur,
                       boolean forWedge)
             {
@@ -1110,8 +1096,7 @@ public class SlurInfo
                 this.forWedge = forWedge;
             }
 
-            //~ Methods --------------------------------------------------------
-
+            //~ Methods ----------------------------------------------------------------------------
             public boolean isSlurRelevant ()
             {
                 return forSlur;
@@ -1123,10 +1108,9 @@ public class SlurInfo
             }
         }
 
-        //~ Instance fields ----------------------------------------------------
-
+        //~ Instance fields ------------------------------------------------------------------------
         /** Sequence of arc points so far. */
-        List<Point>   points = new ArrayList<Point>();
+        List<Point> points = new ArrayList<Point>();
 
         /** Junction point, if any, at beginning of points. */
         private Point firstJunction;
@@ -1143,8 +1127,7 @@ public class SlurInfo
         /** Assigned to a slur?. */
         boolean assigned;
 
-        //~ Constructors -------------------------------------------------------
-
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create an arc with perhaps a firstJunction.
          *
@@ -1172,8 +1155,7 @@ public class SlurInfo
             shape = ArcShape.SHORT;
         }
 
-        //~ Methods ------------------------------------------------------------
-
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Make sure arc goes from left to right.
          * (This is checked only for arcs with sufficient length).
@@ -1237,11 +1219,11 @@ public class SlurInfo
          * @return the sequence of desired points, perhaps limited by the arc
          *         length itself.
          */
-        public List<Point> getSidePoints (int     count,
+        public List<Point> getSidePoints (int count,
                                           boolean reverse)
         {
             List<Point> seq = new ArrayList<Point>();
-            int         n = 0;
+            int n = 0;
 
             if (reverse) {
                 for (Point p : points) {
@@ -1252,8 +1234,8 @@ public class SlurInfo
                     seq.add(p);
                 }
             } else {
-                for (ListIterator<Point> itp = points.listIterator(
-                    points.size()); itp.hasPrevious();) {
+                for (ListIterator<Point> itp = points.listIterator(points.size());
+                        itp.hasPrevious();) {
                     Point p = itp.previous();
 
                     if (++n > count) {
@@ -1280,8 +1262,7 @@ public class SlurInfo
             // Reverse points list
             List<Point> rev = new ArrayList<Point>(points.size());
 
-            for (ListIterator<Point> it = points.listIterator(points.size());
-                 it.hasPrevious();) {
+            for (ListIterator<Point> it = points.listIterator(points.size()); it.hasPrevious();) {
                 rev.add(it.previous());
             }
 
@@ -1300,7 +1281,7 @@ public class SlurInfo
          * @param junction the point to set
          * @param reverse  desired side
          */
-        public void setJunction (Point   junction,
+        public void setJunction (Point junction,
                                  boolean reverse)
         {
             if (reverse) {
@@ -1318,13 +1299,11 @@ public class SlurInfo
 
             if (!points.isEmpty()) {
                 Point p0 = points.get(0);
-                sb.append("[").append(p0.x).append(",").append(p0.y).append(
-                    "]");
+                sb.append("[").append(p0.x).append(",").append(p0.y).append("]");
 
                 if (points.size() > 1) {
                     Point p2 = points.get(points.size() - 1);
-                    sb.append("[").append(p2.x).append(",").append(p2.y)
-                      .append("]");
+                    sb.append("[").append(p2.x).append(",").append(p2.y).append("]");
                 }
             } else {
                 sb.append(" VOID");

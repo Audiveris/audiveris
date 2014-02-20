@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           N o t e s B u i l d e r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     N o t e s B u i l d e r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -79,12 +79,11 @@ import java.util.Set;
 import java.util.SortedSet;
 
 /**
- * Class {@code NotesBuilder} retrieves the void note heads, the black
- * note heads, the grace notes and the whole notes for a system.
+ * Class {@code NotesBuilder} retrieves the void note heads, the black note heads,
+ * the grace notes and the whole notes for a system.
  * <p>
- * It uses a distance matching approach which works well for such symbols that
- * exhibit a fixed shape, with a combination of foreground and background
- * information.
+ * It uses a distance matching approach which works well for such symbols that exhibit a fixed
+ * shape, with a combination of foreground and background information.
  * <p>
  * We don't need to check each and every location in the system, but only the
  * locations where such note kind is possible:<ul>
@@ -100,26 +99,25 @@ import java.util.SortedSet;
  */
 public class NotesBuilder
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Constants            constants = new Constants();
-    private static final Logger               logger = LoggerFactory.getLogger(
-        NotesBuilder.class);
+    private static final Constants constants = new Constants();
+
+    private static final Logger logger = LoggerFactory.getLogger(NotesBuilder.class);
 
     /** Shapes of note competitors. */
     private static final Set<Shape> competingShapes = EnumSet.copyOf(
-        Arrays.asList(
-            Shape.THICK_BARLINE,
-            Shape.THIN_BARLINE,
-            Shape.THICK_CONNECTION,
-            Shape.THIN_CONNECTION,
-            Shape.BEAM,
-            Shape.BEAM_HOOK,
-            Shape.BEAM_SMALL,
-            Shape.BEAM_HOOK_SMALL));
+            Arrays.asList(
+                    Shape.THICK_BARLINE,
+                    Shape.THIN_BARLINE,
+                    Shape.THICK_CONNECTION,
+                    Shape.THIN_CONNECTION,
+                    Shape.BEAM,
+                    Shape.BEAM_HOOK,
+                    Shape.BEAM_SMALL,
+                    Shape.BEAM_HOOK_SMALL));
 
-    //~ Instance fields --------------------------------------------------------
-
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The dedicated system. */
     @Navigable(false)
     private final SystemInfo system;
@@ -154,8 +152,7 @@ public class NotesBuilder
     /** The vertical (stem) seeds for the system. */
     private List<Glyph> systemSeeds;
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // NotesBuilder //
     //--------------//
@@ -179,8 +176,7 @@ public class NotesBuilder
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // buildNotes //
     //------------//
@@ -199,10 +195,8 @@ public class NotesBuilder
             logger.debug("Staff #{}", staff.getId());
             watch.start("Staff #" + staff.getId());
 
-            final int interline = staff.getSpecificScale()
-                                       .getInterline();
-            catalog = TemplateFactory.getInstance()
-                                     .getCatalog(interline);
+            final int interline = staff.getSpecificScale().getInterline();
+            catalog = TemplateFactory.getInstance().getCatalog(interline);
 
             List<Inter> ch = new ArrayList<Inter>();
 
@@ -245,7 +239,7 @@ public class NotesBuilder
 
             for (Aggregate ag : aggregates) {
                 Point loc = GeoUtil.centerOf(inter.getBounds());
-                int   dx = loc.x - ag.point.x;
+                int dx = loc.x - ag.point.x;
 
                 if (Math.abs(dx) <= params.maxTemplateDx) {
                     aggregate = ag;
@@ -284,17 +278,15 @@ public class NotesBuilder
      * @return the inter created, if any
      */
     private Inter createInter (PixelDistance loc,
-                               Anchor        anchor,
-                               Shape         shape,
-                               int           pitch)
+                               Anchor anchor,
+                               Shape shape,
+                               int pitch)
     {
         final ShapeDescriptor desc = catalog.getDescriptor(shape);
-        final Rectangle       box = desc.getSymbolBoundsAt(loc.x, loc.y, anchor);
-        final double          distImpact = 1 -
-                                           (loc.d / params.maxMatchingDistance);
-        final GradeImpacts    impacts = new AbstractNoteInter.Impacts(
-            distImpact);
-        final double          grade = impacts.getGrade();
+        final Rectangle box = desc.getSymbolBoundsAt(loc.x, loc.y, anchor);
+        final double distImpact = 1 - (loc.d / params.maxMatchingDistance);
+        final GradeImpacts impacts = new AbstractNoteInter.Impacts(distImpact);
+        final double grade = impacts.getGrade();
 
         // Is grade acceptable?
         if (grade < AbstractInter.getMinGrade()) {
@@ -302,22 +294,22 @@ public class NotesBuilder
         }
 
         switch (desc.getShape()) {
-        case NOTEHEAD_BLACK :
+        case NOTEHEAD_BLACK:
             return new BlackHeadInter(desc, box, impacts, pitch);
 
-        case NOTEHEAD_BLACK_SMALL :
+        case NOTEHEAD_BLACK_SMALL:
             return new SmallBlackHeadInter(desc, box, impacts, pitch);
 
-        case NOTEHEAD_VOID :
+        case NOTEHEAD_VOID:
             return new VoidHeadInter(desc, box, impacts, pitch);
 
-        case NOTEHEAD_VOID_SMALL :
+        case NOTEHEAD_VOID_SMALL:
             return new SmallVoidHeadInter(desc, box, impacts, pitch);
 
-        case WHOLE_NOTE :
+        case WHOLE_NOTE:
             return new WholeInter(desc, box, impacts, pitch);
 
-        case WHOLE_NOTE_SMALL :
+        case WHOLE_NOTE_SMALL:
             return new SmallWholeInter(desc, box, impacts, pitch);
         }
 
@@ -363,10 +355,10 @@ public class NotesBuilder
     private void flagOverlaps (List<Inter> inters)
     {
         for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
-            Inter       left = inters.get(i);
-            Rectangle   box = left.getBounds();
+            Inter left = inters.get(i);
+            Rectangle box = left.getBounds();
             Rectangle2D smallBox = AbstractNoteInter.shrink(box);
-            double      xMax = smallBox.getMaxX();
+            double xMax = smallBox.getMaxX();
 
             for (Inter right : inters.subList(i + 1, inters.size())) {
                 Rectangle rightBox = right.getBounds();
@@ -392,10 +384,7 @@ public class NotesBuilder
      */
     private List<Inter> getCompetitorsSlice (Area area)
     {
-        List<Inter> rawComps = sig.intersectedInters(
-            systemCompetitors,
-            GeoOrder.BY_ORDINATE,
-            area);
+        List<Inter> rawComps = sig.intersectedInters(systemCompetitors, GeoOrder.BY_ORDINATE, area);
 
         // Keep only the "good" interpretations
         List<Inter> kept = new ArrayList<Inter>();
@@ -436,7 +425,7 @@ public class NotesBuilder
         // Check for ledgers
         final int dir = Integer.signum(pitch);
         final int targetPitch = pitch + dir;
-        int       p = dir * 4;
+        int p = dir * 4;
 
         for (int i = dir;; i += dir) {
             SortedSet<LedgerInter> set = staff.getLedgers(i);
@@ -471,8 +460,7 @@ public class NotesBuilder
      */
     private List<Glyph> getSeedsSlice (Area area)
     {
-        List<Glyph> seeds = new ArrayList<Glyph>(
-            Glyphs.intersectedGlyphs(systemSeeds, area));
+        List<Glyph> seeds = new ArrayList<Glyph>(Glyphs.intersectedGlyphs(systemSeeds, area));
         Collections.sort(seeds, Glyph.byAbscissa);
 
         return seeds;
@@ -490,12 +478,12 @@ public class NotesBuilder
     private List<Inter> getSystemCompetitors ()
     {
         List<Inter> comps = sig.inters(
-            new Predicate<Inter>() {
+                new Predicate<Inter>()
+                {
                     @Override
                     public boolean check (Inter inter)
                     {
-                        return inter.isGood() &&
-                               competingShapes.contains(inter.getShape());
+                        return inter.isGood() && competingShapes.contains(inter.getShape());
                     }
                 });
 
@@ -548,8 +536,7 @@ public class NotesBuilder
             }
 
             if (comp.getArea() != null) {
-                if (comp.getArea()
-                        .intersects(box)) {
+                if (comp.getArea().intersects(box)) {
                     return true;
                 }
             } else {
@@ -578,13 +565,12 @@ public class NotesBuilder
      *                    seed-based inter instances
      * @return true if real conflict found
      */
-    private boolean overlapSeed (Inter       inter,
+    private boolean overlapSeed (Inter inter,
                                  List<Inter> competitors)
     {
         final Rectangle box = inter.getBounds();
-        final double    loweredGrade = inter.getGrade() * (1 -
-                                                          constants.gradeMargin.getValue());
-        final double    xMax = box.getMaxX();
+        final double loweredGrade = inter.getGrade() * (1 - constants.gradeMargin.getValue());
+        final double xMax = box.getMaxX();
 
         for (Inter comp : competitors) {
             if (!(comp instanceof AbstractNoteInter)) {
@@ -619,14 +605,14 @@ public class NotesBuilder
      * @return the list of created notes
      */
     private List<Inter> processStaff (StaffInfo staff,
-                                      boolean   seeds)
+                                      boolean seeds)
     {
         List<Inter> ch = new ArrayList<Inter>(); // Created heads
 
         // Use all staff lines
-        int         pitch = -5; // Current pitch
+        int pitch = -5; // Current pitch
         LineAdapter prevAdapter = null;
-        Scanner     scanner;
+        Scanner scanner;
 
         for (FilamentLine line : staff.getLines()) {
             LineAdapter adapter = new StaffLineAdapter(staff, line);
@@ -649,7 +635,7 @@ public class NotesBuilder
         }
 
         // Use all ledgers, above staff, then below staff
-        for (int dir : new int[] { -1, 1 }) {
+        for (int dir : new int[]{-1, 1}) {
             pitch = dir * 4;
 
             for (int i = dir;; i += dir) {
@@ -663,8 +649,8 @@ public class NotesBuilder
                 pitch += (2 * dir);
 
                 for (LedgerInter ledger : set) {
-                    String      p = "" + c++;
-                    Glyph       glyph = ledger.getGlyph();
+                    String p = "" + c++;
+                    Glyph glyph = ledger.getGlyph();
                     LineAdapter adapter = new LedgerAdapter(staff, p, glyph);
                     // Look right on ledger, then just further from staff
                     scanner = new Scanner(adapter, null, 0, pitch, seeds);
@@ -689,9 +675,9 @@ public class NotesBuilder
         List<Inter> toRemove = new ArrayList<Inter>();
 
         for (int i = 0, iBreak = inters.size() - 1; i < iBreak; i++) {
-            Inter     left = inters.get(i);
+            Inter left = inters.get(i);
             Rectangle leftBox = left.getBounds();
-            int       xMax = (leftBox.x + leftBox.width) - 1;
+            int xMax = (leftBox.x + leftBox.width) - 1;
 
             for (Inter right : inters.subList(i + 1, inters.size())) {
                 Rectangle rightBox = right.getBounds();
@@ -711,10 +697,7 @@ public class NotesBuilder
 
             for (Inter inter : toRemove) {
                 if (inter.isVip()) {
-                    logger.info(
-                        "VIP purging {} at {}",
-                        inter,
-                        inter.getBounds());
+                    logger.info("VIP purging {} at {}", inter, inter.getBounds());
                 }
 
                 sig.removeVertex(inter);
@@ -722,109 +705,7 @@ public class NotesBuilder
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
-    //-------------//
-    // LineAdapter //
-    //-------------//
-    /**
-     * Such adapter is needed to interact with staff LineInfo or ledger
-     * glyph line in a consistent way.
-     */
-    private abstract static class LineAdapter
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        private final StaffInfo staff;
-        private final String    prefix;
-
-        //~ Constructors -------------------------------------------------------
-
-        public LineAdapter (StaffInfo staff,
-                            String    prefix)
-        {
-            this.staff = staff;
-            this.prefix = prefix;
-        }
-
-        //~ Methods ------------------------------------------------------------
-
-        /**
-         * Report the competitors lookup area, according to limits above
-         * and below, defined as ordinate shifts relative to the
-         * reference line.
-         *
-         * @param above offset (positive or negative) from line to top limit.
-         * @param below offset (positive or negative) from line to bottom limit.
-         */
-        public abstract Area getArea (double above,
-                                      double below);
-
-        /** Report the abscissa at beginning of line. */
-        public abstract int getLeftAbscissa ();
-
-        /** Report the abscissa at end of line. */
-        public abstract int getRightAbscissa ();
-
-        /** Report the ordinate at provided abscissa. */
-        public abstract int yAt (int x);
-
-        /** Report the precise ordinate at provided precise abscissa. */
-        public abstract double yAt (double x);
-
-        /** Needed to allow various attachments on the same staff. */
-        public String getPrefix ()
-        {
-            return prefix;
-        }
-
-        public StaffInfo getStaff ()
-        {
-            return staff;
-        }
-    }
-
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-        extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        final Constant.Boolean printWatch = new Constant.Boolean(
-            false,
-            "Should we print out the stop watch?");
-        final Constant.Boolean printParameters = new Constant.Boolean(
-            false,
-            "Should we print out the class parameters?");
-        final Constant.Boolean allowAttachments = new Constant.Boolean(
-            false,
-            "Should we allow staff attachments for created areas?");
-        final Constant.Double  maxMatchingDistance = new Constant.Double(
-            "distance",
-            0.08,
-            "Maximum matching distance");
-        final Scale.Fraction   maxTemplateDx = new Scale.Fraction(
-            0.375,
-            "Maximum dx between similar template instances");
-        final Scale.Fraction   maxClosedDy = new Scale.Fraction(
-            0.2,
-            "Extension allowed in y for closed lines");
-        final Scale.Fraction   maxOpenDy = new Scale.Fraction(
-            0.25,
-            "Extension allowed in y for open lines");
-        final Constant.Ratio   shrinkHoriRatio = new Constant.Ratio(
-            0.7,
-            "Shrink horizontal ratio to apply when checking for overlap");
-        final Constant.Ratio   shrinkVertRatio = new Constant.Ratio(
-            0.5,
-            "Shrink vertical ratio to apply when checking for overlap");
-        final Constant.Ratio   gradeMargin = new Constant.Ratio(
-            0.1,
-            "Grade margin to boost seed-based competitors");
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Aggregate //
     //-----------//
@@ -833,13 +714,13 @@ public class NotesBuilder
      */
     private static class Aggregate
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        Point       point;
+        Point point;
+
         List<Inter> matches = new ArrayList<Inter>();
 
-        //~ Methods ------------------------------------------------------------
-
+        //~ Methods --------------------------------------------------------------------------------
         public void add (Inter inter)
         {
             if (point == null) {
@@ -861,16 +742,10 @@ public class NotesBuilder
             sb.append(getClass().getSimpleName());
 
             if (point != null) {
-                sb.append(" point:(")
-                  .append(point.x)
-                  .append(",")
-                  .append(point.y)
-                  .append(")");
+                sb.append(" point:(").append(point.x).append(",").append(point.y).append(")");
             }
 
-            sb.append(" ")
-              .append(matches.size())
-              .append(" matches: ");
+            sb.append(" ").append(matches.size()).append(" matches: ");
 
             for (Inter match : matches) {
                 sb.append(match);
@@ -882,35 +757,54 @@ public class NotesBuilder
         }
     }
 
-    //------------//
-    // Parameters //
-    //------------//
-    /**
-     * Class {@code Parameters} gathers all pre-scaled constants.
-     */
-    private static class Parameters
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        final double maxMatchingDistance;
-        final int    maxTemplateDx;
-        final int    maxClosedDy;
-        final int    maxOpenDy;
+        final Constant.Boolean printWatch = new Constant.Boolean(
+                false,
+                "Should we print out the stop watch?");
 
-        //~ Constructors -------------------------------------------------------
+        final Constant.Boolean printParameters = new Constant.Boolean(
+                false,
+                "Should we print out the class parameters?");
 
-        /**
-         * Creates a new Parameters object.
-         *
-         * @param scale the scaling factor
-         */
-        public Parameters (Scale scale)
-        {
-            maxMatchingDistance = constants.maxMatchingDistance.getValue();
-            maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
-            maxClosedDy = Math.max(1, scale.toPixels(constants.maxClosedDy));
-            maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
-        }
+        final Constant.Boolean allowAttachments = new Constant.Boolean(
+                false,
+                "Should we allow staff attachments for created areas?");
+
+        final Constant.Double maxMatchingDistance = new Constant.Double(
+                "distance",
+                0.08,
+                "Maximum matching distance");
+
+        final Scale.Fraction maxTemplateDx = new Scale.Fraction(
+                0.375,
+                "Maximum dx between similar template instances");
+
+        final Scale.Fraction maxClosedDy = new Scale.Fraction(
+                0.2,
+                "Extension allowed in y for closed lines");
+
+        final Scale.Fraction maxOpenDy = new Scale.Fraction(
+                0.25,
+                "Extension allowed in y for open lines");
+
+        final Constant.Ratio shrinkHoriRatio = new Constant.Ratio(
+                0.7,
+                "Shrink horizontal ratio to apply when checking for overlap");
+
+        final Constant.Ratio shrinkVertRatio = new Constant.Ratio(
+                0.5,
+                "Shrink vertical ratio to apply when checking for overlap");
+
+        final Constant.Ratio gradeMargin = new Constant.Ratio(
+                0.1,
+                "Grade margin to boost seed-based competitors");
     }
 
     //---------------//
@@ -920,19 +814,20 @@ public class NotesBuilder
      * Adapter for Ledger.
      */
     private class LedgerAdapter
-        extends LineAdapter
+            extends LineAdapter
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        private final Glyph   ledger;
+        private final Glyph ledger;
+
         private final Point2D left;
+
         private final Point2D right;
 
-        //~ Constructors -------------------------------------------------------
-
+        //~ Constructors ---------------------------------------------------------------------------
         public LedgerAdapter (StaffInfo staff,
-                              String    prefix,
-                              Glyph     ledger)
+                              String prefix,
+                              Glyph ledger)
         {
             super(staff, prefix);
             this.ledger = ledger;
@@ -940,8 +835,7 @@ public class NotesBuilder
             right = ledger.getStopPoint(Orientation.HORIZONTAL);
         }
 
-        //~ Methods ------------------------------------------------------------
-
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Area getArea (double above,
                              double below)
@@ -977,8 +871,99 @@ public class NotesBuilder
         @Override
         public double yAt (double x)
         {
-            return LineUtil.intersectionAtX(left, right, x)
-                           .getY();
+            return LineUtil.intersectionAtX(left, right, x).getY();
+        }
+    }
+
+    //-------------//
+    // LineAdapter //
+    //-------------//
+    /**
+     * Such adapter is needed to interact with staff LineInfo or ledger
+     * glyph line in a consistent way.
+     */
+    private abstract static class LineAdapter
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        private final StaffInfo staff;
+
+        private final String prefix;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        public LineAdapter (StaffInfo staff,
+                            String prefix)
+        {
+            this.staff = staff;
+            this.prefix = prefix;
+        }
+
+        //~ Methods --------------------------------------------------------------------------------
+        /**
+         * Report the competitors lookup area, according to limits above
+         * and below, defined as ordinate shifts relative to the
+         * reference line.
+         *
+         * @param above offset (positive or negative) from line to top limit.
+         * @param below offset (positive or negative) from line to bottom limit.
+         */
+        public abstract Area getArea (double above,
+                                      double below);
+
+        /** Report the abscissa at beginning of line. */
+        public abstract int getLeftAbscissa ();
+
+        /** Needed to allow various attachments on the same staff. */
+        public String getPrefix ()
+        {
+            return prefix;
+        }
+
+        /** Report the abscissa at end of line. */
+        public abstract int getRightAbscissa ();
+
+        public StaffInfo getStaff ()
+        {
+            return staff;
+        }
+
+        /** Report the ordinate at provided abscissa. */
+        public abstract int yAt (int x);
+
+        /** Report the precise ordinate at provided precise abscissa. */
+        public abstract double yAt (double x);
+    }
+
+    //------------//
+    // Parameters //
+    //------------//
+    /**
+     * Class {@code Parameters} gathers all pre-scaled constants.
+     */
+    private static class Parameters
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        final double maxMatchingDistance;
+
+        final int maxTemplateDx;
+
+        final int maxClosedDy;
+
+        final int maxOpenDy;
+
+        //~ Constructors ---------------------------------------------------------------------------
+        /**
+         * Creates a new Parameters object.
+         *
+         * @param scale the scaling factor
+         */
+        public Parameters (Scale scale)
+        {
+            maxMatchingDistance = constants.maxMatchingDistance.getValue();
+            maxTemplateDx = scale.toPixels(constants.maxTemplateDx);
+            maxClosedDy = Math.max(1, scale.toPixels(constants.maxClosedDy));
+            maxOpenDy = Math.max(1, scale.toPixels(constants.maxOpenDy));
         }
     }
 
@@ -987,24 +972,35 @@ public class NotesBuilder
     //---------//
     private class Scanner
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        private final LineAdapter         line;
-        private final LineAdapter         line2;
-        private final int                 dir;
-        private final int                 pitch;
-        private final boolean             useSeeds;
-        private final boolean             hasLine;
-        private final boolean             isOpen;
-        private final Area                area;
-        private final List<Inter>         competitors;
+        private final LineAdapter line;
+
+        private final LineAdapter line2;
+
+        private final int dir;
+
+        private final int pitch;
+
+        private final boolean useSeeds;
+
+        private final boolean hasLine;
+
+        private final boolean isOpen;
+
+        private final Area area;
+
+        private final List<Inter> competitors;
+
         private final List<LedgerAdapter> ledgers;
-        private final int[]               yClosed = new int[params.maxClosedDy];
-        private final int[]               yOpen = new int[params.maxOpenDy];
-        private List<Inter>               inters = new ArrayList<Inter>();
 
-        //~ Constructors -------------------------------------------------------
+        private final int[] yClosed = new int[params.maxClosedDy];
 
+        private final int[] yOpen = new int[params.maxOpenDy];
+
+        private List<Inter> inters = new ArrayList<Inter>();
+
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create a Scanner, dedicated to a staff line or ledger.
          *
@@ -1016,9 +1012,9 @@ public class NotesBuilder
          */
         public Scanner (LineAdapter line,
                         LineAdapter line2,
-                        int         dir,
-                        int         pitch,
-                        boolean     useSeeds)
+                        int dir,
+                        int pitch,
+                        boolean useSeeds)
         {
             this.line = line;
             this.line2 = line2;
@@ -1030,8 +1026,7 @@ public class NotesBuilder
             hasLine = (pitch % 2) == 0;
 
             // Open line?
-            isOpen = ((pitch % 2) != 0) &&
-                     ((line2 == null) || (Math.abs(pitch) == 5));
+            isOpen = ((pitch % 2) != 0) && ((line2 == null) || (Math.abs(pitch) == 5));
 
             final StaffInfo staff = line.getStaff();
             ledgers = getLedgerAdapters(staff, pitch);
@@ -1049,8 +1044,7 @@ public class NotesBuilder
             competitors = getCompetitorsSlice(area);
         }
 
-        //~ Methods ------------------------------------------------------------
-
+        //~ Methods --------------------------------------------------------------------------------
         public List<Inter> lookup ()
         {
             return useSeeds ? lookupSeeds() : lookupRange();
@@ -1059,13 +1053,13 @@ public class NotesBuilder
         //------//
         // eval //
         //------//
-        private Inter eval (Shape  shape,
-                            int    x,
-                            int    y,
+        private Inter eval (Shape shape,
+                            int x,
+                            int y,
                             Anchor anchor)
         {
             final ShapeDescriptor desc = catalog.getDescriptor(shape);
-            final Rectangle       tplBox = desc.getTemplateBoundsAt(x, y, anchor);
+            final Rectangle tplBox = desc.getTemplateBoundsAt(x, y, anchor);
 
             // Skip if location already used by good object (beam, etc)
             //TODO: perhaps use a slightly fattened box?
@@ -1107,30 +1101,25 @@ public class NotesBuilder
                     //TODO: refine using width of template?
                     if (Math.abs(pitch) > 5) {
                         for (LedgerAdapter ledger : ledgers) {
-                            if ((x >= ledger.getLeftAbscissa()) &&
-                                (x <= ledger.getRightAbscissa())) {
+                            if ((x >= ledger.getLeftAbscissa())
+                                && (x <= ledger.getRightAbscissa())) {
                                 return (int) Math.rint(
-                                    (line.yAt((double) x) +
-                                                                        ledger.yAt(
-                                        (double) x)) / 2);
+                                        (line.yAt((double) x) + ledger.yAt((double) x)) / 2);
                             }
                         }
                     }
 
                     if (pitch > 0) {
-                        return (int) Math.rint(
-                            line.yAt((double) x) + (scale.getInterline() / 2d));
+                        return (int) Math.rint(line.yAt((double) x) + (scale.getInterline() / 2d));
                     } else {
                         // Bottom is always present
-                        return (int) Math.rint(
-                            line.yAt((double) x) - (scale.getInterline() / 2d));
+                        return (int) Math.rint(line.yAt((double) x) - (scale.getInterline() / 2d));
                     }
                 }
             } else {
                 // Within staff lines, compute ordinate precisely
                 if (line2 != null) {
-                    return (int) Math.rint(
-                        (line.yAt((double) x) + line2.yAt((double) x)) / 2d);
+                    return (int) Math.rint((line.yAt((double) x) + line2.yAt((double) x)) / 2d);
                 } else {
                     return line.yAt(x);
                 }
@@ -1147,8 +1136,8 @@ public class NotesBuilder
 
             // Abscissa range for scan
             final int scanLeft = Math.max(
-                line.getLeftAbscissa(),
-                (int) line.getStaff().getDmzEnd());
+                    line.getLeftAbscissa(),
+                    (int) line.getStaff().getDmzEnd());
             final int scanRight = line.getRightAbscissa() - minTemplateWidth;
 
             // Scan from left to right
@@ -1188,13 +1177,13 @@ public class NotesBuilder
             final List<Glyph> seeds = getSeedsSlice(area);
 
             // Use one anchor for each horizontal side of the stem seed
-            final Anchor[] anchors = new Anchor[] { LEFT_STEM, RIGHT_STEM };
+            final Anchor[] anchors = new Anchor[]{LEFT_STEM, RIGHT_STEM};
 
             for (Glyph seed : seeds) {
                 // Compute precise stem link point
                 // x value is imposed by seed alignment, y value by line
-                int           x = GeoUtil.centerOf(seed.getBounds()).x; // Rough x value
-                int           y0 = line.yAt(x); // Rather good y value
+                int x = GeoUtil.centerOf(seed.getBounds()).x; // Rough x value
+                int y0 = line.yAt(x); // Rather good y value
                 final Point2D top = seed.getStartPoint(Orientation.VERTICAL);
                 final Point2D bot = seed.getStopPoint(Orientation.VERTICAL);
                 final Point2D pt = LineUtil.intersectionAtY(top, bot, y0);
@@ -1211,8 +1200,8 @@ public class NotesBuilder
                             Inter inter = eval(shape, x, y, anchor);
 
                             if (inter != null) {
-                                if ((bestInter == null) ||
-                                    (bestInter.getGrade() < inter.getGrade())) {
+                                if ((bestInter == null)
+                                    || (bestInter.getGrade() < inter.getGrade())) {
                                     bestInter = inter;
                                 }
                             }
@@ -1267,33 +1256,29 @@ public class NotesBuilder
      * Adapter for staff line.
      */
     private class StaffLineAdapter
-        extends LineAdapter
+            extends LineAdapter
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final LineInfo line;
 
-        //~ Constructors -------------------------------------------------------
-
+        //~ Constructors ---------------------------------------------------------------------------
         public StaffLineAdapter (StaffInfo staff,
-                                 LineInfo  line)
+                                 LineInfo line)
         {
             super(staff, "");
             this.line = line;
         }
 
-        //~ Methods ------------------------------------------------------------
-
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Area getArea (double above,
                              double below)
         {
-            FilamentLine    fLine = (FilamentLine) line;
-            NaturalSpline   spline = fLine.getFilament()
-                                          .getAlignment()
-                                          .getLine();
+            FilamentLine fLine = (FilamentLine) line;
+            NaturalSpline spline = fLine.getFilament().getAlignment().getLine();
 
-            GeoPath         path = new GeoPath();
+            GeoPath path = new GeoPath();
             AffineTransform at;
 
             // Top line
@@ -1302,9 +1287,7 @@ public class NotesBuilder
 
             // Bottom line (reversed)
             at = AffineTransform.getTranslateInstance(0, below + 1);
-            path.append(
-                ReversePathIterator.getReversePathIterator(spline, at),
-                true);
+            path.append(ReversePathIterator.getReversePathIterator(spline, at), true);
 
             path.closePath();
 

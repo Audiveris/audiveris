@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            P l u g i n S t e p                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      P l u g i n S t e p                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -33,18 +33,16 @@ import java.util.Collection;
 public class PluginStep
         extends AbstractStep
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            PluginStep.class);
+    private static final Logger logger = LoggerFactory.getLogger(PluginStep.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The current default plugin. */
     private Plugin plugin;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // PluginStep //
     //------------//
@@ -63,7 +61,7 @@ public class PluginStep
         this.plugin = plugin;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // doit //
     //------//
@@ -76,8 +74,7 @@ public class PluginStep
 
         // Interactive or Batch?
         if (Main.getGui() != null) {
-            plugin.getTask(score)
-                    .execute();
+            plugin.getTask(score).execute();
         } else {
             plugin.runPlugin(score);
         }
@@ -112,9 +109,7 @@ public class PluginStep
 
         if (oldPlugin != null) {
             // Update step tooltip with this new plugin
-            Main.getGui()
-                    .getStepMenu()
-                    .updateMenu();
+            Main.getGui().getStepMenu().updateMenu();
         }
     }
 }

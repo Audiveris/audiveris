@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          T i m e R a t i o n a l                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    T i m e R a t i o n a l                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -19,17 +19,16 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code TimeRational} is a marshallable and non-mutable
- * structure, meant to carry the actual rational members of a
- * TimeSignature.
- * <p>Note for example that (3/4) and (6/8) share the same rational value,
- * but with different actual members.
+ * Class {@code TimeRational} is a marshallable and non-mutable structure,
+ * meant to carry the actual rational members of a TimeSignature.
+ * <p>
+ * For example, (3/4) and (6/8) share the same rational value, but with different actual members.
  */
 @XmlAccessorType(XmlAccessType.NONE)
 @XmlRootElement(name = "rational")
 public class TimeRational
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The actual denominator */
     @XmlAttribute
@@ -39,7 +38,7 @@ public class TimeRational
     @XmlAttribute
     public final int num;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // TimeRational //
     //--------------//
@@ -65,7 +64,7 @@ public class TimeRational
         den = num = 0;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // equals //
     //--------//

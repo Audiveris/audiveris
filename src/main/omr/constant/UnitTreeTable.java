@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         U n i t T r e e T a b l e                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   U n i t T r e e T a b l e                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.constant;
 
@@ -37,30 +37,28 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.tree.TreePath;
 
 /**
- * Class {@code UnitTreeTable} is a user interface that combines a tree
- * to display the hierarchy of Units, that contains ConstantSets, 
- * and a table to display and edit the various Constants in
- * each ConstantSet.
+ * Class {@code UnitTreeTable} is a user interface that combines a tree to display the
+ * hierarchy of Units, that contains ConstantSets, and a table to display and edit the
+ * various Constants in each ConstantSet.
  *
  * @author Hervé Bitteur
  */
 public class UnitTreeTable
         extends JTreeTable
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(UnitTreeTable.class);
 
     /** Alternate color for zebra appearance */
     private static final Color zebraColor = new Color(248, 248, 255);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     private TableCellRenderer valueRenderer = new ValueRenderer();
 
     private TableCellRenderer pixelRenderer = new PixelRenderer();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // UnitTreeTable //
     //---------------//
@@ -82,7 +80,6 @@ public class UnitTreeTable
 
         // Show grid?
         //setShowGrid(true);
-
         // Specify column widths
         adjustColumns();
 
@@ -94,7 +91,7 @@ public class UnitTreeTable
         preExpandPackages();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // getCellEditor //
     //---------------//
@@ -214,7 +211,7 @@ public class UnitTreeTable
      */
     public List<Integer> setNodesSelection (Collection<Object> matches)
     {
-        List<TreePath> paths = new ArrayList<>();
+        List<TreePath> paths = new ArrayList<TreePath>();
 
         for (Object object : matches) {
             if (object instanceof Constant) {
@@ -234,7 +231,7 @@ public class UnitTreeTable
         // Selection on table side
         clearSelection();
 
-        List<Integer> rows = new ArrayList<>();
+        List<Integer> rows = new ArrayList<Integer>();
 
         for (TreePath path : paths) {
             int row = tree.getRowForPath(path);
@@ -276,7 +273,7 @@ public class UnitTreeTable
                               String fullName)
     {
         UnitManager unitManager = UnitManager.getInstance();
-        List<Object> objects = new ArrayList<>();
+        List<Object> objects = new ArrayList<Object>();
         objects.add(unitManager.getRoot());
 
         int dotPos = -1;
@@ -323,15 +320,14 @@ public class UnitTreeTable
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // PixelRenderer //
     //---------------//
     private static class PixelRenderer
             extends DefaultTableCellRenderer
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Component getTableCellRendererComponent (JTable table,
@@ -341,13 +337,7 @@ public class UnitTreeTable
                                                         int row,
                                                         int column)
         {
-            super.getTableCellRendererComponent(
-                    table,
-                    value,
-                    isSelected,
-                    hasFocus,
-                    row,
-                    column);
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
             // Use right alignment
             setHorizontalAlignment(SwingConstants.RIGHT);
@@ -362,7 +352,7 @@ public class UnitTreeTable
     private static class ValueRenderer
             extends DefaultTableCellRenderer
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Component getTableCellRendererComponent (JTable table,
@@ -372,13 +362,7 @@ public class UnitTreeTable
                                                         int row,
                                                         int column)
         {
-            super.getTableCellRendererComponent(
-                    table,
-                    value,
-                    isSelected,
-                    hasFocus,
-                    row,
-                    column);
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
             // Use a bold font
             setFont(table.getFont().deriveFont(Font.BOLD).deriveFont(12.0f));

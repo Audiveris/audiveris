@@ -43,7 +43,7 @@ public class BasicCompanionView
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
         BasicCompanionView.class);
 

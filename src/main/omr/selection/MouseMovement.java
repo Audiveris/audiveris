@@ -1,22 +1,22 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         M o u s e M o v e m e n t                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   M o u s e M o v e m e n t                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.selection;
 
 /**
  * Class {@code MouseMovement} defines which phase of user action
  * generated the event.
- * For example, we may decide to update minimal information while the
- * user is moving the mouse, and launch expensive processing only when the user
- * is releasing the mouse.
+ * <p>
+ * For example, we may decide to update minimal information while the user is moving the mouse, and
+ * launch expensive processing only when the user is releasing the mouse.
  *
  * @author Hervé Bitteur
  */
@@ -36,5 +36,4 @@ public enum MouseMovement
      * User releases the mouse button.
      */
     RELEASING;
-
 }

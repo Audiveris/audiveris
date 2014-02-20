@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        S h e e t D e p e n d e n t                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  S h e e t D e p e n d e n t                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet.ui;
 
@@ -24,8 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code SheetDependent} handles the dependency on sheet
- * availability.
+ * Class {@code SheetDependent} handles the dependency on sheet availability.
  *
  * @author Hervé Bitteur
  */
@@ -33,20 +32,18 @@ public abstract class SheetDependent
         extends AbstractBean
         implements EventSubscriber<SheetEvent>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SheetDependent.class);
+    private static final Logger logger = LoggerFactory.getLogger(SheetDependent.class);
 
     /** Name of property linked to sheet availability */
     public static final String SHEET_AVAILABLE = "sheetAvailable";
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Indicates whether there is a current sheet */
     protected boolean sheetAvailable = false;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------------//
     // SheetDependent //
     //----------------//
@@ -57,11 +54,10 @@ public abstract class SheetDependent
     {
         // Stay informed on sheet status, in order to enable or disable all
         // sheet-dependent actions accordingly
-        SheetsController.getInstance()
-                .subscribe(this);
+        SheetsController.getInstance().subscribe(this);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------------//
     // isSheetAvailable //
     //------------------//

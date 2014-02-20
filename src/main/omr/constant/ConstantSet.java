@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           C o n s t a n t S e t                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     C o n s t a n t S e t                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.constant;
 
@@ -23,24 +23,24 @@ import java.util.TreeMap;
 
 /**
  * This abstract class handles a set of Constants as a whole.
- * In particular, this allows a user interface (such as {@link UnitTreeTable})
- * to present an editing table of the whole set of constants.
- *
  * <p>
- * We recommend to define only one such static ConstantSet per class/unit as
- * a subclass of this (abstract) ConstantSet. </p>
+ * In particular, this allows a user interface (such as {@link UnitTreeTable}) to present an
+ * editing table of the whole set of constants.
+ * <p>
+ * We recommend to define only one such static ConstantSet per class/unit as a subclass of this
+ * (abstract) ConstantSet. </p>
  *
  * @author Hervé Bitteur
  */
 @ThreadSafe
 public abstract class ConstantSet
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(ConstantSet.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            ConstantSet.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Name of the containing unit/class */
     private final String unit;
 
@@ -54,7 +54,7 @@ public abstract class ConstantSet
      */
     private volatile SortedMap<String, Constant> map;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // ConstantSet //
     //-------------//
@@ -74,7 +74,7 @@ public abstract class ConstantSet
         UnitManager.getInstance().addSet(this);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // dumpOf //
     //--------//
@@ -91,20 +91,23 @@ public abstract class ConstantSet
 
         for (Constant constant : getMap().values()) {
             String origin = constant.getValueOrigin();
+
             if (origin.equals("SRC")) {
                 origin = "";
             } else {
                 origin = "[" + origin + "]";
             }
-            sb.append(String.format(
-                    "%-25s %12s %-14s =%5s %-25s\t%s%n",
-                    constant.getName(),
-                    constant.getShortTypeName(),
-                    (constant.getQuantityUnit() != null)
-                    ? ("(" + constant.getQuantityUnit() + ")") : "",
-                    origin,
-                    constant.getCurrentString(),
-                    constant.getDescription()));
+
+            sb.append(
+                    String.format(
+                            "%-25s %12s %-14s =%5s %-25s\t%s%n",
+                            constant.getName(),
+                            constant.getShortTypeName(),
+                            (constant.getQuantityUnit() != null) ? ("(" + constant.getQuantityUnit() + ")")
+                            : "",
+                            origin,
+                            constant.getCurrentString(),
+                            constant.getDescription()));
         }
 
         return sb.toString();
@@ -137,8 +140,7 @@ public abstract class ConstantSet
      */
     public Constant getConstant (int i)
     {
-        return Collections.list(Collections.enumeration(getMap().values())).get(
-                i);
+        return Collections.list(Collections.enumeration(getMap().values())).get(i);
     }
 
     //---------//
@@ -158,7 +160,7 @@ public abstract class ConstantSet
     // initialize //
     //------------//
     /**
-     * Make sure this ConstantSet has properly been initialized 
+     * Make sure this ConstantSet has properly been initialized
      * (its map of constants has been built)
      *
      * @return true if initialized correctly, false otherwise
@@ -172,7 +174,7 @@ public abstract class ConstantSet
     // isModified //
     //------------//
     /**
-     * Predicate to check whether at least one of the constant of the 
+     * Predicate to check whether at least one of the constant of the
      * set has been modified
      *
      * @return the modification status of the whole set
@@ -246,12 +248,12 @@ public abstract class ConstantSet
     // initMap //
     //---------//
     /**
-     * Now that the enclosed constants of this set have been 
+     * Now that the enclosed constants of this set have been
      * constructed, let's assign them their unit and name parameters.
      */
     private void initMap ()
     {
-        SortedMap<String, Constant> tempMap = new TreeMap<>();
+        SortedMap<String, Constant> tempMap = new TreeMap<String, Constant>();
 
         // Retrieve values of all fields
         Class<?> cl = getClass();
@@ -279,14 +281,15 @@ public abstract class ConstantSet
                     logger.error(
                             "ConstantSet in unit ''{}'' contains a non"
                             + " Constant field ''{}'' obj= {}",
-                            unit, name, obj);
+                            unit,
+                            name,
+                            obj);
                 }
             }
 
             // Assign the constructed map atomically
             map = tempMap;
-        } catch (SecurityException | IllegalArgumentException |
-                IllegalAccessException ex) {
+        } catch (Exception ex) {
             logger.warn("Error initializing map of ConstantSet " + this, ex);
         }
     }

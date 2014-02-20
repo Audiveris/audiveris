@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              G l y p h M e n u                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        G l y p h M e n u                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig.ui;
 
@@ -34,17 +34,16 @@ import javax.swing.JMenuItem;
  */
 public class GlyphMenu
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            GlyphMenu.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlyphMenu.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     private final JMenu menu;
 
     private GlyphListener glyphListener = new GlyphListener();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // GlyphMenu //
     //----------//
@@ -56,7 +55,7 @@ public class GlyphMenu
         menu = new JMenu("Pile ...");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getMenu //
     //---------//
@@ -71,7 +70,7 @@ public class GlyphMenu
     public int updateMenu (Collection<Glyph> glyphs)
     {
         // We rebuild the menu items on each update, since the set of glyphs
-        // is brand new. 
+        // is brand new.
         menu.removeAll();
 
         if (!glyphs.isEmpty()) {
@@ -97,7 +96,7 @@ public class GlyphMenu
         return glyphs.size();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // GlyphListener //
     //---------------//
@@ -107,7 +106,7 @@ public class GlyphMenu
     private class GlyphListener
             extends AbstractMouseListener
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void mouseEntered (MouseEvent e)

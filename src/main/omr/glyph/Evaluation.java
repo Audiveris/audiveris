@@ -1,28 +1,28 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            E v a l u a t i o n                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      E v a l u a t i o n                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
 import omr.constant.Constant;
 
 /**
- * Class {@code Evaluation} gathers a glyph shape, its grade and,
- * if any, details about its failure (name of the check that failed).
+ * Class {@code Evaluation} gathers a glyph shape, its grade and, if any, details about
+ * its failure (name of the check that failed).
  *
  * @author Hervé Bitteur
  */
 public class Evaluation
         implements Comparable<Evaluation>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Absolute confidence in shape manually assigned by the user. */
     public static final double MANUAL = 300;
@@ -30,7 +30,7 @@ public class Evaluation
     /** Confidence for in structurally assigned. */
     public static final double ALGORITHM = 200;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The evaluated shape. */
     public Shape shape;
 
@@ -43,7 +43,7 @@ public class Evaluation
     /** The specific check that failed, if any. */
     public Failure failure;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // Evaluation //
     //------------//
@@ -60,7 +60,7 @@ public class Evaluation
         this.grade = grade;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // compareTo //
     //-----------//
@@ -103,8 +103,7 @@ public class Evaluation
         }
 
         if (failure != null) {
-            sb.append(" failure:")
-                    .append(failure);
+            sb.append(" failure:").append(failure);
         }
 
         sb.append(")");
@@ -112,7 +111,7 @@ public class Evaluation
         return sb.toString();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Failure //
     //---------//
@@ -122,18 +121,18 @@ public class Evaluation
      */
     public static class Failure
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** The name of the test that failed. */
         public final String test;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Failure (String test)
         {
             this.test = test;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public String toString ()
         {
@@ -150,7 +149,7 @@ public class Evaluation
     public static class Grade
             extends Constant.Double
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where unit & name are assigned later.

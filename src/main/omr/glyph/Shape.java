@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 S h a p e                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           S h a p e                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -27,45 +27,36 @@ import java.util.List;
 
 /**
  * Class {@code Shape} defines the comprehensive list of glyph shapes.
- * It is organized according to the Unicode Standard 4.0, with a few addition
- * for convenience only.
- *
  * <p>
- * The enumeration begins with physical shapes (which are the
- * only ones usable for training) and ends with the logical shapes.
- * The method {@link #isTrainable()} can be used to disambiguate between
- * physical and logical shapes.</p>
- *
+ * It is organized according to the Unicode Standard 4.0, with a few addition for convenience only.
  * <p>
- * <b>Nota</b>: All the physical shapes <b>MUST</b> have different
- * characteristics for the training to work correctly.
+ * The enumeration begins with physical shapes (which are the only ones usable for training) and
+ * ends with the logical shapes. The method {@link #isTrainable()} can be used to disambiguate
+ * between physical and logical shapes.
+ * <p>
+ * <b>Nota</b>: All the physical shapes <b>MUST</b> have different characteristics for the training
+ * to work correctly.
  * The ART evaluator uses moments that are invariant to translation, scaling
  * and rotation (and to symmetry as well).
- * Shapes that exhibit some symmetry (like FERMATA vs FERMATA_BELOW) would
- * be considered as the same shape by the ART evaluator.
- * Therefore, the strategy is to define a single shape (FERMATA_set) for the
- * evaluator, leaving the final disambiguation between FERMATA_BELOW and
- * FERMATA to tests performed beyond the ART evaluator.
- * FERMATA_set belongs to the physical shapes, while FERMATA_BELOW and
- * FERMATA belong to the logical shapes.
- * All shapes whose name ends with "_set" are in this case.</p>
- *
+ * Shapes that exhibit some symmetry (like FERMATA vs FERMATA_BELOW) would be considered as the same
+ * shape by the ART evaluator.
+ * Therefore, the strategy is to define a single shape (FERMATA_set) for the evaluator, leaving the
+ * final disambiguation between FERMATA_BELOW and FERMATA to tests performed beyond the ART
+ * evaluator.
+ * FERMATA_set belongs to the physical shapes, while FERMATA_BELOW and FERMATA belong to the logical
+ * shapes.
+ * All shapes whose name ends with "_set" are in this case.
  * <p>
- * TODO: Perhaps we could simply combine the ART moments and some of the GEO
- * moments (at least n11, n12, n21), plus perhaps aspect, for a more
- * comprehensive set of features but a simpler approach.
- *
+ * TODO: Perhaps we could simply combine the ART moments and some of the GEO moments (at least n11,
+ * n12, n21), plus perhaps aspect, for a more comprehensive set of features but a simpler approach.
  * <p>
- * As far as possible, a symbol should be generated for every shape.</p>
- *
+ * As far as possible, a symbol should be generated for every shape.
  * <p>
- * A shape may have a related "decorated" symbol. For example the BREVE_REST
- * is similar to a black rectangle which is used for training / recognition and
- * the related symbol is used for drawing in score view. However, in menu items,
- * it is displayed as a black rectangle surrounded by a staff line above and a
- * staff line below.
- * The method {@link #getDecoratedSymbol()} returns the symbol to use in menu
- * items.</p>
+ * A shape may have a related "decorated" symbol. For example the BREVE_REST is similar to a black
+ * rectangle which is used for training / recognition and the related symbol is used for drawing in
+ * score view. However, in menu items, it is displayed as a black rectangle surrounded by a staff
+ * line above and a staff line below.
+ * The method {@link #getDecoratedSymbol()} returns the symbol to use in menu items.
  *
  * @author Hervé Bitteur
  */
@@ -93,6 +84,7 @@ public enum Shape
     FLAG_5_set("Quintuple flag set"),
     WEDGE_set("Crescendo & Decrescendo set"),
     TURN_set("Turn set"),
+
     //
     // Bars --------------------------------------------------------------------
     //
@@ -104,6 +96,7 @@ public enum Shape
     CAESURA("Caesura"),
     BRACE("Brace"),
     BRACKET("Bracket"),
+
     //
     // Clefs -------------------------------------------------------------------
     //
@@ -141,6 +134,7 @@ public enum Shape
     CUT_TIME("Semi-Alpha = 2/2"),
     OTTAVA_ALTA("8 va", new Color(0xcc66ff)),
     OTTAVA_BASSA("8 vb", new Color(0xcc66ff)),
+
     //
     // Key signatures ----------------------------------------------------------
     //
@@ -156,6 +150,7 @@ public enum Shape
     KEY_SHARP_5("Five Sharps"),
     KEY_SHARP_6("Six Sharps"),
     KEY_SHARP_7("Seven Sharps"),
+
     //
     // Rests -------------------------------------------------------------------
     //
@@ -167,6 +162,7 @@ public enum Shape
     ONE_32ND_REST("Rest for a 1/32"),
     ONE_64TH_REST("Rest for a 1/64"),
     ONE_128TH_REST("Rest for a 1/128"),
+
     //
     // Noteheads ---------------------------------------------------------------
     //
@@ -174,12 +170,14 @@ public enum Shape
     NOTEHEAD_VOID_SMALL("Small hollow note head for grace or cue", new Color(0xff4400)),
     NOTEHEAD_BLACK("Filled node head for quarters and less", new Color(0xffcc00)),
     NOTEHEAD_BLACK_SMALL("Small filled note head for grace or cue", new Color(0xff4400)),
+
     //
     // Notes -------------------------------------------------------------------
     //
     BREVE("Double Whole"),
     WHOLE_NOTE("Hollow node head for wholes"),
     WHOLE_NOTE_SMALL("Small hollow node head for grace or cue wholes"),
+
     //
     // Beams and slurs ---------------------------------------------------------
     //
@@ -196,6 +194,7 @@ public enum Shape
     STACCATISSIMO,
     STRONG_ACCENT("Marcato"),
     ARPEGGIATO,
+
     //
     // Dynamics ----------------------------------------------------------------
     //
@@ -220,6 +219,7 @@ public enum Shape
     DYNAMICS_SFP("Subito fortepiano"),
     DYNAMICS_SFPP,
     DYNAMICS_SFZ("Sforzando"),
+
     //
     // Ornaments ---------------------------------------------------------------
     //
@@ -229,6 +229,7 @@ public enum Shape
     TURN_SLASH("Turn with a Slash"),
     MORDENT("Mordent"),
     INVERTED_MORDENT("Mordent with a Slash"),
+
     //
     // Tuplets -----------------------------------------------------------------
     //
@@ -236,12 +237,14 @@ public enum Shape
     TUPLET_SIX("6", new Color(0xcc00cc)),
     PEDAL_MARK("Pedal down", new Color(0x009999)),
     PEDAL_UP_MARK("Pedal downup", new Color(0x009999)),
+
     //
     // Miscellaneous -----------------------------------------------------------
     //
     CLUTTER("Pure clutter", new Color(0x999900)),
     CHARACTER("A letter"),
     TEXT("Sequence of letters & spaces", new Color(0x9999ff)),
+
     //
     // =========================================================================
     // This is the end of physical shapes.
@@ -249,7 +252,6 @@ public enum Shape
     // their physical characteristics.
     // =========================================================================
     //
-
     //
     // Shapes from shape sets --------------------------------------------------
     //
@@ -277,6 +279,7 @@ public enum Shape
     TURN("Turn", TURN_set),
     INVERTED_TURN("Inverted Turn", TURN_set),
     TURN_UP("Turn Up", TURN_set),
+
     //
     // Bars --------------------------------------------------------------------
     //
@@ -301,11 +304,13 @@ public enum Shape
     LEDGER("Ledger", new Color(0xaaaaaa)),
     ENDING_HORIZONTAL("Horizontal part of ending"),
     ENDING_VERTICAL("Vertical part of ending"),
+
     //
     // Stems
     //
     STEM("Stem", new Color(0xccff66)),
     VERTICAL_SEED("Vertical seed", new Color(0xccffcc)),
+
     //
     // Key signatures ----------------------------------------------------------
     //
@@ -320,13 +325,12 @@ public enum Shape
     CUSTOM_TIME("Time signature defined by user"),
     NO_LEGAL_TIME("No Legal Time Shape"),
     BEAM_SPOT("Beam-oriented spot", new Color(0xaaaaaa));
+
     //
     // =========================================================================
     // This is the end of shape enumeration
     // =========================================================================
     //
-
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Shape.class);
 
     /** Last physical shape */
@@ -339,12 +343,10 @@ public enum Shape
         public int compare (Shape o1,
                             Shape o2)
         {
-            return o1.name()
-                    .compareTo(o2.name());
+            return o1.name().compareTo(o2.name());
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
     //
     /** Explanation of the glyph shape */
     private final String description;
@@ -421,7 +423,7 @@ public enum Shape
         constantColor = new Constant.Color(
                 getClass().getName(), // Unit
                 name() + ".color", // Name
-                Constant.Color.encodeColor(color != null ? color : Color.BLACK),
+                Constant.Color.encodeColor((color != null) ? color : Color.BLACK),
                 "Color for shape " + name());
     }
 
@@ -437,8 +439,7 @@ public enum Shape
      */
     public boolean isMeasureRest ()
     {
-        return (this == WHOLE_REST) || (this == BREVE_REST)
-               || (this == LONG_REST);
+        return (this == WHOLE_REST) || (this == BREVE_REST) || (this == LONG_REST);
     }
 
     //--------------//
@@ -511,6 +512,7 @@ public enum Shape
     {
         return ShapeSet.SmallNotes.contains(this);
     }
+
     //-------------//
     // isTrainable //
     //-------------//
@@ -535,8 +537,7 @@ public enum Shape
      */
     public boolean isWellKnown ()
     {
-        return (this != NO_LEGAL_TIME) && (this != GLYPH_PART)
-               && (this != NOISE);
+        return (this != NO_LEGAL_TIME) && (this != GLYPH_PART) && (this != NOISE);
     }
 
     //----------------//
@@ -717,8 +718,7 @@ public enum Shape
      */
     public boolean isDraggable ()
     {
-        return getPhysicalShape()
-                .getSymbol() != null;
+        return getPhysicalShape().getSymbol() != null;
     }
 
     //-----------------//
@@ -729,11 +729,10 @@ public enum Shape
      */
     public static void dumpShapeColors ()
     {
-        List<String> names = new ArrayList<>();
+        List<String> names = new ArrayList<String>();
 
         for (Shape shape : Shape.values()) {
-            names.add(
-                    shape + " " + Constant.Color.encodeColor(shape.getColor()));
+            names.add(shape + " " + Constant.Color.encodeColor(shape.getColor()));
         }
 
         Collections.sort(names);

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              S l u r I n t e r                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        S l u r I n t e r                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
@@ -25,12 +25,12 @@ import java.util.Map.Entry;
 public class SlurInter
         extends AbstractInter
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Physical characteristics. */
     private final SlurInfo info;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new SlurInter object.
      *
@@ -45,13 +45,12 @@ public class SlurInter
         this.info = info;
 
         // To debug attachments
-        for (Entry<String, java.awt.Shape> entry : info.getAttachments()
-                .entrySet()) {
+        for (Entry<String, java.awt.Shape> entry : info.getAttachments().entrySet()) {
             addAttachment(entry.getKey(), entry.getValue());
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -82,23 +81,22 @@ public class SlurInter
         return info;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------//
     // Impacts //
     //---------//
     public static class Impacts
             extends BasicImpacts
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         private static final String[] NAMES = new String[]{
-            "dist", "width", "height",
-            "angle", "vert"
+            "dist", "width", "height", "angle", "vert"
         };
 
         private static final double[] WEIGHTS = new double[]{3, 1, 1, 1, 1};
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Impacts (double dist,
                         double width,
                         double height,

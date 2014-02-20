@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             B i n a r y S t e p                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       B i n a r y S t e p                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -18,16 +18,15 @@ import omr.sheet.SystemInfo;
 import java.util.Collection;
 
 /**
- * Class {@code BinaryStep} implements <b>BINARY</b> step,
- * which binarizes the initial sheet image, using proper filter,
- * to come up with a black & white image.
+ * Class {@code BinaryStep} implements <b>BINARY</b> step, which binarizes the initial
+ * sheet image, using proper filter, to come up with a black & white image.
  *
  * @author Hervé Bitteur
  */
 public class BinaryStep
         extends AbstractStep
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //------------//
     // BinaryStep //
@@ -45,7 +44,7 @@ public class BinaryStep
                 "Binarize the initial sheet image");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------//
     // doit //
     //------//
@@ -55,7 +54,6 @@ public class BinaryStep
             throws StepException
     {
         // Trigger the binarization, and cache the resulting source
-        sheet.getPicture()
-                .getSource(Picture.SourceKey.BINARY);
+        sheet.getPicture().getSource(Picture.SourceKey.BINARY);
     }
 }

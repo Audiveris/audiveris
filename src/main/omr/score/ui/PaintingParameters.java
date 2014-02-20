@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    P a i n t i n g P a r a m e t e r s                     //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              P a i n t i n g P a r a m e t e r s                               //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.ui;
 
@@ -35,22 +35,19 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 /**
- * Class {@code PaintingParameters} handles the dynamic parameters
- * related to the painting of any score (layers, slots, voices, ...)
+ * Class {@code PaintingParameters} handles the dynamic parameters related to the
+ * painting of any score (layers, slots, voices, ...)
  *
  * @author Hervé Bitteur
  */
 public class PaintingParameters
         extends AbstractBean
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            PaintingParameters.class);
+    private static final Logger logger = LoggerFactory.getLogger(PaintingParameters.class);
 
     /** Should the annotations be painted */
     public static final String ANNOTATION_PAINTING = "annotationPainting";
@@ -67,7 +64,7 @@ public class PaintingParameters
     /** Should the voices be painted */
     public static final String VOICE_PAINTING = "voicePainting";
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Icons for layers combinations. (Must be lazily computed) */
     private Map<PaintingLayer, Icon> layerIcons;
@@ -81,7 +78,7 @@ public class PaintingParameters
     /** Layer painting is chosen to be not persistent. */
     private PaintingLayer paintingLayer = INPUT;
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getInstance //
     //-------------//
@@ -154,10 +151,7 @@ public class PaintingParameters
     {
         boolean oldValue = constants.annotationPainting.getValue();
         constants.annotationPainting.setValue(value);
-        firePropertyChange(
-                ANNOTATION_PAINTING,
-                oldValue,
-                constants.annotationPainting.getValue());
+        firePropertyChange(ANNOTATION_PAINTING, oldValue, constants.annotationPainting.getValue());
     }
 
     //-----------------//
@@ -167,10 +161,7 @@ public class PaintingParameters
     {
         boolean oldValue = constants.markPainting.getValue();
         constants.markPainting.setValue(value);
-        firePropertyChange(
-                MARK_PAINTING,
-                oldValue,
-                constants.markPainting.getValue());
+        firePropertyChange(MARK_PAINTING, oldValue, constants.markPainting.getValue());
     }
 
     //------------------//
@@ -191,10 +182,7 @@ public class PaintingParameters
     {
         boolean oldValue = constants.slotPainting.getValue();
         constants.slotPainting.setValue(value);
-        firePropertyChange(
-                SLOT_PAINTING,
-                oldValue,
-                constants.slotPainting.getValue());
+        firePropertyChange(SLOT_PAINTING, oldValue, constants.slotPainting.getValue());
     }
 
     //------------------//
@@ -225,14 +213,12 @@ public class PaintingParameters
     public void switchLayers (ActionEvent e)
     {
         // Compute new layer
-        int oldOrd = getPaintingLayer()
-                .ordinal();
+        int oldOrd = getPaintingLayer().ordinal();
         int ord = (oldOrd + 1) % PaintingLayer.values().length;
         PaintingLayer layer = PaintingLayer.values()[ord];
 
         // Update toolbar/menu icon
-        Icon icon = getLayerIcons()
-                .get(layer);
+        Icon icon = getLayerIcons().get(layer);
         ApplicationAction action = getLayerAction();
         action.putValue(AbstractAction.LARGE_ICON_KEY, icon); // toolbar
         action.putValue(AbstractAction.SMALL_ICON, icon); // menu
@@ -305,8 +291,7 @@ public class PaintingParameters
     private ApplicationAction getLayerAction ()
     {
         if (layerAction == null) {
-            layerAction = ActionManager.getInstance()
-                    .getActionInstance(this, "switchLayers");
+            layerAction = ActionManager.getInstance().getActionInstance(this, "switchLayers");
         }
 
         return layerAction;
@@ -325,41 +310,37 @@ public class PaintingParameters
         if (layerIcons == null) {
             layerIcons = new HashMap<PaintingLayer, Icon>();
 
-            final String root = Main.getGui()
-                    .getIconsRoot();
+            final String root = Main.getGui().getIconsRoot();
 
             for (PaintingLayer layer : PaintingLayer.values()) {
                 layerIcons.put(
                         layer,
-                        new ImageIcon(
-                                getClass().getResource(
-                                        root + "/apps/" + layer.getImageName())));
+                        new ImageIcon(getClass().getResource(root + "/apps/" + layer.getImageName())));
             }
         }
 
         return layerIcons;
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //--------//
     // Holder //
     //--------//
     private static interface Holder
     {
-        //~ Static fields/initializers -----------------------------------------
+        //~ Static fields/initializers -------------------------------------------------------------
 
         public static final PaintingParameters INSTANCE = new PaintingParameters();
-
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Should the annotations be painted */
         final Constant.Boolean annotationPainting = new Constant.Boolean(

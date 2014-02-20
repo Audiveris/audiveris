@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             F i l t e r K i n d                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       F i l t e r K i n d                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -15,16 +15,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code FilterKind} handles the various kinds of
- * {@link PixelFilter} implementations.
+ * Class {@code FilterKind} handles the various kinds of {@link PixelFilter}
+ * implementations.
  */
 public enum FilterKind
 {
 
     GLOBAL("Basic filter using a global threshold", GlobalFilter.class),
-    ADAPTIVE(
-    "Adaptive filter using a local threshold",
-    AdaptiveFilter.getImplementationClass());
+    ADAPTIVE("Adaptive filter using a local threshold", AdaptiveFilter.getImplementationClass());
 
     /** Description. */
     public final String description;
@@ -32,8 +30,7 @@ public enum FilterKind
     /** Implementing class. */
     public final Class<?> classe;
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            FilterKind.class);
+    private static final Logger logger = LoggerFactory.getLogger(FilterKind.class);
 
     //------------//
     // FilterKind //

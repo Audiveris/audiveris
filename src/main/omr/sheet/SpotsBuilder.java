@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            S p o t s B u i l d e r                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      S p o t s B u i l d e r                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -64,24 +64,23 @@ import java.util.List;
  */
 public class SpotsBuilder
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SpotsBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(SpotsBuilder.class);
 
     /** Orientation chosen for spot runs. */
     public static final Orientation SPOT_ORIENTATION = Orientation.VERTICAL;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related sheet. */
     private final Sheet sheet;
 
     /** Spots lag. */
     private final Lag spotLag;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // SpotsBuilder //
     //--------------//
@@ -99,7 +98,7 @@ public class SpotsBuilder
         sheet.setLag(Lags.SPOT_LAG, spotLag);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // buildPageSpots //
     //----------------//
@@ -114,10 +113,9 @@ public class SpotsBuilder
         try {
             watch.start("gaussianBuffer");
 
-            // We need a copy of image that we can overwrite. 
+            // We need a copy of image that we can overwrite.
             Picture picture = sheet.getPicture();
-            ByteProcessor buffer = picture.getSource(
-                    Picture.SourceKey.GAUSSIAN);
+            ByteProcessor buffer = picture.getSource(Picture.SourceKey.GAUSSIAN);
 
             // Retrieve major spots
             watch.start("buildSpots");
@@ -131,9 +129,7 @@ public class SpotsBuilder
 
             // Display on all spot glyphs
             if (Main.getGui() != null) {
-                SpotsController spotController = new SpotsController(
-                        sheet,
-                        spotLag);
+                SpotsController spotController = new SpotsController(sheet, spotLag);
                 spotController.refresh();
             }
         } catch (Exception ex) {
@@ -175,8 +171,7 @@ public class SpotsBuilder
         new MorphoProcessor(se).close(buffer);
 
         // Visual check
-        final String pageId = sheet.getPage()
-                .getId();
+        final String pageId = sheet.getPage().getId();
 
         if (cueId == null) {
             BufferedImage img = buffer.getBufferedImage();
@@ -188,11 +183,10 @@ public class SpotsBuilder
 
             // Display the gray-level view of all spots
             if (Main.getGui() != null) {
-                sheet.getAssembly()
-                        .addViewTab(
-                                "SpotView",
-                                new ScrollImageView(sheet, new ImageView(img)),
-                                new BoardsPane(new PixelBoard(sheet)));
+                sheet.getAssembly().addViewTab(
+                        "SpotView",
+                        new ScrollImageView(sheet, new ImageView(img)),
+                        new BoardsPane(new PixelBoard(sheet)));
             }
         } else {
             if (constants.keepCueSpots.isSet()) {
@@ -205,18 +199,12 @@ public class SpotsBuilder
         buffer.threshold(constants.binarizationThreshold.getValue());
 
         // Runs
-        RunsTable spotTable = new RunsTableFactory(
-                SPOT_ORIENTATION,
-                buffer,
-                0).createTable("spot");
+        RunsTable spotTable = new RunsTableFactory(SPOT_ORIENTATION, buffer, 0).createTable(
+                "spot");
 
         // Sections
-        SectionsBuilder sectionsBuilder = new SectionsBuilder(
-                spotLag,
-                new JunctionRatioPolicy());
-        List<Section> sections = sectionsBuilder.createSections(
-                spotTable,
-                false);
+        SectionsBuilder sectionsBuilder = new SectionsBuilder(spotLag, new JunctionRatioPolicy());
+        List<Section> sections = sectionsBuilder.createSections(spotTable, false);
 
         if (offset != null) {
             for (Section section : sections) {
@@ -259,8 +247,7 @@ public class SpotsBuilder
 
             for (SystemInfo system : relevants) {
                 // Check glyph is within system abscissa boundaries
-                if ((center.x >= system.getLeft())
-                    && (center.x <= system.getRight())) {
+                if ((center.x >= system.getLeft()) && (center.x <= system.getRight())) {
                     glyph.setShape(Shape.BEAM_SPOT);
                     system.registerGlyph(glyph);
                     created = true;
@@ -275,14 +262,14 @@ public class SpotsBuilder
         logger.info("{}Spots retrieved: {}", sheet.getLogPrefix(), count);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Constant.Boolean printWatch = new Constant.Boolean(
                 false,

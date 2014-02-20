@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      B a c k T o B a c k S y m b o l                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                B a c k T o B a c k S y m b o l                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -29,7 +29,7 @@ import java.awt.geom.Rectangle2D;
 public class BackToBackSymbol
         extends ShapeSymbol
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     // Total width, computed from width of RIGHT_REPEAT_SIGN symbol
     private static final double WIDTH_RATIO = 1.6;
@@ -37,10 +37,9 @@ public class BackToBackSymbol
     // Abscissa of thin barline, computed from width of RIGHT_REPEAT_SIGN symbol
     private static final double DX_RATIO = 1.15;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     // The RIGHT_REPEAT_SIGN symbol
-    private final ShapeSymbol rightSymbol = Symbols.getSymbol(
-            RIGHT_REPEAT_SIGN);
+    private final ShapeSymbol rightSymbol = Symbols.getSymbol(RIGHT_REPEAT_SIGN);
 
     // The THIN_BARLINE symbol
     private final ShapeSymbol thinSymbol = Symbols.getSymbol(THIN_BARLINE);
@@ -48,7 +47,7 @@ public class BackToBackSymbol
     // The REPEAT_DOT_PAIR symbol
     private final ShapeSymbol dotsSymbol = Symbols.getSymbol(REPEAT_DOT_PAIR);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------//
     // BackToBackSymbol //
     //------------------//
@@ -62,7 +61,7 @@ public class BackToBackSymbol
         super(isIcon, Shape.DOUBLE_BARLINE, false);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -113,20 +112,19 @@ public class BackToBackSymbol
         MusicFont.paint(g, p.dotsLayout, loc, MIDDLE_RIGHT);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // MyParams //
     //----------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         TextLayout thinLayout;
 
         TextLayout dotsLayout;
 
         int dx;
-
     }
 }

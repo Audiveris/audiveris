@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             U s e r E v e n t                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       U s e r E v e n t                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.selection;
 
@@ -18,7 +18,8 @@ import org.slf4j.LoggerFactory;
  * Interface {@code UserEvent} defines the common behavior of user
  * events that are stored as selections, and handled by the EventBus.
  *
- * <p>All events are subclasses of this abstract class, and managed by proper
+ * <p>
+ * All events are subclasses of this abstract class, and managed by proper
  * EventService instances: <ul>
  *
  * <li>SheetManager event service: a singleton which handles THE currently
@@ -43,13 +44,11 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class UserEvent
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            UserEvent.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserEvent.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The entity which created this event */
     public final Object source;
 
@@ -59,7 +58,7 @@ public abstract class UserEvent
     /** Precise user mouse action (can be null) */
     public MouseMovement movement;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // UserEvent //
     //-----------//
@@ -86,7 +85,7 @@ public abstract class UserEvent
         //            ClassUtil.nameOf(this) + " created by:" + source);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // getData //
     //---------//
@@ -105,21 +104,17 @@ public abstract class UserEvent
     {
         StringBuilder sb = new StringBuilder("{");
         sb.append(getClass().getSimpleName());
-        sb.append(" src:")
-                .append(source);
+        sb.append(" src:").append(source);
 
         if (hint != null) {
-            sb.append(" ")
-                    .append(hint);
+            sb.append(" ").append(hint);
         }
 
         if (movement != null) {
-            sb.append(" ")
-                    .append(movement);
+            sb.append(" ").append(movement);
         }
 
-        sb.append(" ")
-                .append(internalString());
+        sb.append(" ").append(internalString());
         sb.append("}");
 
         return sb.toString();
@@ -136,8 +131,7 @@ public abstract class UserEvent
     protected String internalString ()
     {
         if (getData() != null) {
-            return getData()
-                    .toString();
+            return getData().toString();
         } else {
             return "";
         }

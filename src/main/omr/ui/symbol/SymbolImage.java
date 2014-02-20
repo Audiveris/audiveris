@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           S y m b o l I m a g e                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     S y m b o l I m a g e                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -15,21 +15,20 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 
 /**
- * Class {@code SymbolImage} is a {@link BufferedImage} with the
- * ability to define a reference point, specified as a translation
- * from the area center.
+ * Class {@code SymbolImage} is a {@link BufferedImage} with the ability to define a
+ * reference point, specified as a translation from the area center.
  *
  * @author Hervé Bitteur
  */
 public class SymbolImage
         extends BufferedImage
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The reference point for this image. */
     private final Point refPoint;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // SymbolImage //
     //-------------//
@@ -49,7 +48,7 @@ public class SymbolImage
         this.refPoint = refPoint;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // getRefPoint //
     //-------------//

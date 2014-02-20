@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     A b s t r a c t A c t i o n M e n u                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               A b s t r a c t A c t i o n M e n u                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
@@ -29,11 +29,11 @@ import javax.swing.JMenuItem;
 
 /**
  * Class {@code AbstractActionMenu}
- *
- * <p>In a menu, actions are physically grouped by semantic tag and
+ * <p>
+ * In a menu, actions are physically grouped by semantic tag and
  * separators are inserted between such groups.</p>
- *
- * <p>Actions are also organized according to their target menu level,
+ * <p>
+ * Actions are also organized according to their target menu level,
  * to allow actions to be dispatched into a hierarchy of menus.
  * Although currently all levels are set to 0.</p>
  *
@@ -42,7 +42,7 @@ import javax.swing.JMenuItem;
 public abstract class AbstractActionMenu
         extends AbstractGlyphMenu
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Map action -> tag to update according to context */
     private final Map<DynAction, Integer> dynActions = new LinkedHashMap<DynAction, Integer>();
@@ -50,7 +50,7 @@ public abstract class AbstractActionMenu
     /** Map action -> menu level */
     private final Map<DynAction, Integer> levels = new LinkedHashMap<DynAction, Integer>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new AbstractActionMenu object.
      *
@@ -63,7 +63,7 @@ public abstract class AbstractActionMenu
         super(sheet, text);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // updateMenu //
     //------------//
@@ -102,13 +102,11 @@ public abstract class AbstractActionMenu
         JMenu prevMenu = getMenu();
 
         for (int level = 0; level <= maxLevel; level++) {
-            JMenu currentMenu = (level == 0) ? getMenu()
-                    : new SeparableMenu("Continued ...");
+            JMenu currentMenu = (level == 0) ? getMenu() : new SeparableMenu("Continued ...");
 
             for (Integer tag : tags) {
                 for (Map.Entry<DynAction, Integer> entry : dynActions.entrySet()) {
-                    if (entry.getValue()
-                            .equals(tag)) {
+                    if (entry.getValue().equals(tag)) {
                         DynAction action = entry.getKey();
 
                         if (levels.get(action) == level) {
@@ -149,7 +147,7 @@ public abstract class AbstractActionMenu
         dynActions.put(action, action.tag);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // DynAction //
     //-----------//
@@ -160,23 +158,18 @@ public abstract class AbstractActionMenu
     protected abstract class DynAction
             extends AbstractAction
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Semantic tag */
         protected final int tag;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public DynAction (int tag)
         {
             this.tag = tag;
         }
 
-        //~ Methods ------------------------------------------------------------
-        /**
-         * Method to update the action according to the current context
-         */
-        public abstract void update ();
-
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Report which item class should be used to the related menu item
          *
@@ -186,5 +179,10 @@ public abstract class AbstractActionMenu
         {
             return new JMenuItem(this);
         }
+
+        /**
+         * Method to update the action according to the current context
+         */
+        public abstract void update ();
     }
 }

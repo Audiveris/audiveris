@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            G l y p h V a l u e                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      G l y p h V a l u e                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -22,16 +22,15 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Class {@code GlyphValue} is used to map a Glyph with its XML
- * representation as handled by JAXB, to allow the decoupling between
- * in-memory layout and XML layout.
+ * Class {@code GlyphValue} is used to map a Glyph with its XML representation as
+ * handled by JAXB, to allow the decoupling between in-memory layout and XML layout.
  *
  * @author Hervé Bitteur
  */
 @XmlRootElement(name = "glyph")
 public class GlyphValue
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Id */
     @XmlAttribute(name = "id")
@@ -61,7 +60,7 @@ public class GlyphValue
     @XmlElement(name = "section")
     final SortedSet<Section> members;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // GlyphValue //
     //------------//
@@ -101,8 +100,7 @@ public class GlyphValue
     public GlyphValue (Glyph glyph)
     {
         this(
-                (glyph.getShape() != null) ? glyph.getShape().getPhysicalShape()
-                : null,
+                (glyph.getShape() != null) ? glyph.getShape().getPhysicalShape() : null,
                 glyph.getInterline(),
                 glyph.getId(),
                 glyph.getStemNumber(),

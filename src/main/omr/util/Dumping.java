@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               D u m p i n g                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         D u m p i n g                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -22,8 +22,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class {@code Dumping} is a Dumping service, for which Package
- * dependency can be injected at construction time.
+ * Class {@code Dumping} is a Dumping service, for which Package dependency can be
+ * injected at construction time.
  *
  * @author Hervé Bitteur
  */
@@ -38,8 +38,7 @@ public class Dumping
     /**
      * Creates a new Dumping service.
      *
-     * @param rootPackages The collection of root packages used to filter which
-     *                     classes are relevant.
+     * @param rootPackages Collection of root packages used to filter which classes are relevant.
      */
     public Dumping (Collection<Package> rootPackages)
     {

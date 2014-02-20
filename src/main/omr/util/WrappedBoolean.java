@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        W r a p p e d B o o l e a n                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  W r a p p e d B o o l e a n                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.util;
 
@@ -20,7 +20,7 @@ package omr.util;
 public class WrappedBoolean
         extends Wrapper<Boolean>
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //----------------//
     // WrappedBoolean //
@@ -35,20 +35,7 @@ public class WrappedBoolean
         set(value);
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //-------//
-    // isSet //
-    //-------//
-    /**
-     * Report the current boolean value
-     *
-     * @return the current value
-     */
-    public boolean isSet ()
-    {
-        return value;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // set //
     //-----//
@@ -60,5 +47,18 @@ public class WrappedBoolean
     public final void set (boolean value)
     {
         this.value = value;
+    }
+
+    //-------//
+    // isSet //
+    //-------//
+    /**
+     * Report the current boolean value
+     *
+     * @return the current value
+     */
+    public boolean isSet ()
+    {
+        return value;
     }
 }

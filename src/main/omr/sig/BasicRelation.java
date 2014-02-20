@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         B a s i c R e l a t i o n                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   B a s i c R e l a t i o n                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
@@ -19,7 +19,7 @@ package omr.sig;
 public class BasicRelation
         implements Relation
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new BasicRelation object.
@@ -28,7 +28,7 @@ public class BasicRelation
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public String getDetails ()
     {
@@ -51,14 +51,12 @@ public class BasicRelation
             final Inter source = sig.getEdgeSource(this);
 
             if (source != inter) {
-                sb.append("<-")
-                        .append(source);
+                sb.append("<-").append(source);
             } else {
                 final Inter target = sig.getEdgeTarget(this);
 
                 if (target != inter) {
-                    sb.append("->")
-                            .append(target);
+                    sb.append("->").append(target);
                 }
             }
         }
@@ -72,7 +70,7 @@ public class BasicRelation
         final Inter source = sig.getEdgeSource(this);
         final Inter target = sig.getEdgeTarget(this);
         final StringBuilder sb = new StringBuilder();
-        
+
         sb.append(source);
         sb.append("-");
         sb.append(getName());

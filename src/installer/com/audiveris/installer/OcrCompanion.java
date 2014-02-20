@@ -41,7 +41,7 @@ public class OcrCompanion
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(
             OcrCompanion.class);
 

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         R e s o l u t i o n S t e p                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   R e s o l u t i o n S t e p                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -19,15 +19,15 @@ import omr.sheet.SystemInfo;
 import java.util.Collection;
 
 /**
- * Class {@code ResolutionStep} implements <b>RESOLUTION</b> step,
- * which tries to reduce the SIG incrementally.
+ * Class {@code ResolutionStep} implements <b>RESOLUTION</b> step, which tries to reduce
+ * the SIG incrementally.
  *
  * @author Hervé Bitteur
  */
 public class ResolutionStep
         extends AbstractSystemStep
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /**
      * Creates a new ResolutionStep object.
@@ -42,7 +42,7 @@ public class ResolutionStep
                 "Resolve interpretations");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // doSystem //
     //----------//
@@ -64,6 +64,7 @@ public class ResolutionStep
         // picture.disposeSource(BINARY);
         picture.disposeSource(GAUSSIAN);
         picture.disposeSource(MEDIAN);
+
         ///picture.disposeSource(STAFF_LINE_FREE);
     }
 }

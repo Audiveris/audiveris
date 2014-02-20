@@ -1,27 +1,26 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                V e r t e x                                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                          V e r t e x                                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.graph;
 
 import java.util.List;
 
 /**
- * Interface {@code Vertex} encapsulates a Vertex (or Node) in a
- * directed graph.
- * Any vertex can have incoming edges from other vertices and outgoing
- * edges to other vertices.
- *
- * <p>The Vertex can have a list of related {@code VertexView}'s.
- * All the vertices in the graph have parallel lists of {@code VertexView}'s as
- * the Digraph itself which has a parallel list of {@code DigraphView}'s.
+ * Interface {@code Vertex} encapsulates a Vertex (or Node) in a directed graph.
+ * <p>
+ * Any vertex can have incoming edges from other vertices and outgoing edges to other vertices.
+ * <p>
+ * The Vertex can have a list of related {@code VertexView}'s.
+ * All the vertices in the graph have parallel lists of {@code VertexView}'s as the Digraph itself
+ * which has a parallel list of {@code DigraphView}'s.
  *
  * @param <D> type for enclosing digraph precise subtype
  * @param <V> type for Vertex precise subtype
@@ -30,7 +29,7 @@ import java.util.List;
  */
 public interface Vertex<D extends Digraph, V extends Vertex<D, V>>
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Create an edge between this vertex and the target vertax

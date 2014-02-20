@@ -1,26 +1,26 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           B a s i c I m p a c t s                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     B a s i c I m p a c t s                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
 /**
- * Class {@code BasicImpacts} is an array-based implementation of
- * {@link GradeImpacts} interface.
+ * Class {@code BasicImpacts} is an array-based implementation of {@link GradeImpacts}
+ * interface.
  *
  * @author Hervé Bitteur
  */
 public class BasicImpacts
         extends AbstractImpacts
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final String[] names;
 
@@ -30,7 +30,7 @@ public class BasicImpacts
 
     private double grade = -1;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BasicImpacts object.
      *
@@ -41,8 +41,7 @@ public class BasicImpacts
                          double[] weights)
     {
         if (names.length != weights.length) {
-            throw new IllegalArgumentException(
-                    "Arrays for names & weights have different lengths");
+            throw new IllegalArgumentException("Arrays for names & weights have different lengths");
         }
 
         this.names = names;
@@ -51,7 +50,7 @@ public class BasicImpacts
         impacts = new double[names.length];
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     @Override
     public double getGrade ()
     {

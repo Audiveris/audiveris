@@ -1,32 +1,28 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               D i g r a p h                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         D i g r a p h                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.graph;
 
 import java.util.Collection;
 
 /**
- * Class {@code Digraph} handles a directed graph, a structure
- * containing an <b>homogeneous</b> collection of instances of Vertex
- * (or a collection of homogeneous types derived from Vertex),
- * potentially linked by directed edges.
- * <p/>
- *
- * <p> Vertices can exist in isolation, but an edge can exist only from a vertex
- * to another vertex. Thus, removing a vertex implies removing all its incoming
- * and outgoing edges.
- *
- * <p><b>NOTA</b>: Since we have no data to carry in edges, there is no
- * {@code Edge} type per se, links between vertices are implemented simply
- * by Lists of Vertex.
+ * Class {@code Digraph} handles a directed graph, a structure containing an
+ * <b>homogeneous</b> collection of instances of Vertex (or a collection of homogeneous
+ * types derived from Vertex), potentially linked by directed edges.
+ * <p>
+ * Vertices can exist in isolation, but an edge can exist only from a vertex to another vertex.
+ * Thus, removing a vertex implies removing all its incoming and outgoing edges.
+ * <p>
+ * <b>NOTA</b>: Since we have no data to carry in edges, there is no {@code Edge} type per se, links
+ * between vertices are implemented simply by Lists of Vertex.
  *
  * @param <D> precise type for digraph (which is pointed back by vertex)
  * @param <V> precise type for vertices handled by this digraph
@@ -35,7 +31,7 @@ import java.util.Collection;
  */
 public interface Digraph<D extends Digraph<D, V>, V extends Vertex>
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Add a vertex in the graph, the vertex is being assigned a

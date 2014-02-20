@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           B a s s P a t t e r n                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     B a s s P a t t e r n                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
@@ -41,16 +41,13 @@ import java.awt.Rectangle;
 public class BassPattern
         extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            BassPattern.class);
+    private static final Logger logger = LoggerFactory.getLogger(BassPattern.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // BassPattern //
     //-------------//
@@ -64,7 +61,7 @@ public class BassPattern
         super("Bass", system);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // runPattern //
     //------------//
@@ -78,9 +75,7 @@ public class BassPattern
         final double maxBassDotDx = scale.toPixels(constants.maxBassDotDx);
 
         // Specific adapter definition for bass clefs
-        CompoundAdapter bassAdapter = new BassAdapter(
-                system,
-                Grades.clefMinGrade);
+        CompoundAdapter bassAdapter = new BassAdapter(system, Grades.clefMinGrade);
 
         for (Glyph top : system.getGlyphs()) {
             // Look for top dot
@@ -108,16 +103,9 @@ public class BassPattern
                 }
 
                 // Here we have a couple
-                logger.debug(
-                        "Got bass dots #{} & #{}",
-                        top.getId(),
-                        bot.getId());
+                logger.debug("Got bass dots #{} & #{}", top.getId(), bot.getId());
 
-                Glyph compound = system.buildCompound(
-                        top,
-                        true,
-                        system.getGlyphs(),
-                        bassAdapter);
+                Glyph compound = system.buildCompound(top, true, system.getGlyphs(), bassAdapter);
 
                 if (compound != null) {
                     successNb++;
@@ -128,26 +116,7 @@ public class BassPattern
         return successNb;
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-    //-----------//
-    // Constants //
-    //-----------//
-    private static final class Constants
-            extends ConstantSet
-    {
-        //~ Instance fields ----------------------------------------------------
-
-        Scale.Fraction maxBassDotDx = new Scale.Fraction(
-                0.25,
-                "Tolerance on Bass dot abscissae");
-
-        Constant.Double maxBassDotPitchDy = new Constant.Double(
-                "pitch",
-                0.5,
-                "Ordinate tolerance on a Bass dot pitch position");
-
-    }
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-------------//
     // BassAdapter //
     //-------------//
@@ -157,7 +126,7 @@ public class BassPattern
     private class BassAdapter
             extends CompoundBuilder.TopShapeAdapter
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public BassAdapter (SystemInfo system,
                             double minGrade)
@@ -165,20 +134,19 @@ public class BassPattern
             super(system, minGrade, ShapeSet.BassClefs);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public Rectangle computeReferenceBox ()
         {
             if (seed == null) {
-                throw new NullPointerException(
-                        "Compound seed has not been set");
+                throw new NullPointerException("Compound seed has not been set");
             }
 
             Rectangle pixRect = new Rectangle(seed.getCentroid());
             pixRect.add(
                     new Point(
-                    pixRect.x - (2 * scale.getInterline()),
-                    pixRect.y + (3 * scale.getInterline())));
+                            pixRect.x - (2 * scale.getInterline()),
+                            pixRect.y + (3 * scale.getInterline())));
 
             return pixRect;
         }
@@ -186,8 +154,23 @@ public class BassPattern
         @Override
         public boolean isCandidateSuitable (Glyph glyph)
         {
-            return !glyph.isManualShape()
-                   || ShapeSet.BassClefs.contains(glyph.getShape());
+            return !glyph.isManualShape() || ShapeSet.BassClefs.contains(glyph.getShape());
         }
+    }
+
+    //-----------//
+    // Constants //
+    //-----------//
+    private static final class Constants
+            extends ConstantSet
+    {
+        //~ Instance fields ------------------------------------------------------------------------
+
+        Scale.Fraction maxBassDotDx = new Scale.Fraction(0.25, "Tolerance on Bass dot abscissae");
+
+        Constant.Double maxBassDotPitchDy = new Constant.Double(
+                "pitch",
+                0.5,
+                "Ordinate tolerance on a Bass dot pitch position");
     }
 }

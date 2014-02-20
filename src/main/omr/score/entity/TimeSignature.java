@@ -1,19 +1,20 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         T i m e S i g n a t u r e                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   T i m e S i g n a t u r e                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
 import omr.constant.ConstantSet;
 
 import omr.glyph.Evaluation;
+import omr.glyph.GlyphNest;
 import omr.glyph.Glyphs;
 import omr.glyph.Shape;
 import static omr.glyph.Shape.*;
@@ -36,27 +37,25 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import omr.glyph.GlyphNest;
 
 /**
- * Class {@code TimeSignature} encapsulates a time signature,
- * which may be composed of one or several glyphs.
+ * Class {@code TimeSignature} encapsulates a time signature, which may be composed of
+ * one or several glyph instances.
  *
  * @author Hervé Bitteur
  */
 public class TimeSignature
         extends MeasureNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(TimeSignature.class);
+    private static final Logger logger = LoggerFactory.getLogger(
+            TimeSignature.class);
 
     /** Rational value of each (full) time sig shape */
-    private static final Map<Shape, TimeRational> rationals = new EnumMap<>(
+    private static final Map<Shape, TimeRational> rationals = new EnumMap<Shape, TimeRational>(
             Shape.class);
 
     static {
@@ -74,7 +73,7 @@ public class TimeSignature
     }
 
     /** Set of acceptable N/D values for programmatic recognition */
-    private static final Set<TimeRational> acceptables = new HashSet<>();
+    private static final Set<TimeRational> acceptables = new HashSet<TimeRational>();
 
     static {
         // Predefined
@@ -90,7 +89,7 @@ public class TimeSignature
         acceptables.add(new TimeRational(5, 4));
     }
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Flag a time sig not created out of its glyphs. */
     private final boolean isDummy;
@@ -112,7 +111,7 @@ public class TimeSignature
     /** Actual TimeRational components. */
     private TimeRational timeRational;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //---------------//
     // TimeSignature //
@@ -159,9 +158,9 @@ public class TimeSignature
             if (!staff.isDummy()) {
                 setCenter(
                         new Point(
-                        other.getCenter().x,
-                        other.getCenter().y - other.getStaff().getTopLeft().y
-                        + staff.getTopLeft().y));
+                                other.getCenter().x,
+                                other.getCenter().y - other.getStaff().getTopLeft().y
+                                + staff.getTopLeft().y));
             }
         } catch (InvalidTimeSignature ex) {
             logger.error("Cannot duplicate TimeSignature", ex);
@@ -170,7 +169,7 @@ public class TimeSignature
         logger.debug("Created TS copy");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //--------------//
     // isAcceptable //
@@ -410,8 +409,7 @@ public class TimeSignature
 
             SystemInfo systemInfo = getSystem().getInfo();
             GlyphNest nest = systemInfo.getSheet().getNest();
-            Glyph compound = nest.buildGlyph(
-                    getGlyphs(), false, Glyph.Linking.NO_LINK);
+            Glyph compound = nest.buildGlyph(getGlyphs(), false, Glyph.Linking.NO_LINK);
             compound = systemInfo.registerGlyph(compound);
             compound.setShape(shape, Evaluation.ALGORITHM);
 
@@ -447,8 +445,7 @@ public class TimeSignature
         int unitDx = center.x - measure.getLeftX();
 
         if (unitDx < measure.getScale().toPixels(constants.minTimeOffset)) {
-            logger.debug("Too small offset for time signature" + " (glyph #{})",
-                    glyph.getId());
+            logger.debug("Too small offset for time signature" + " (glyph #{})", glyph.getId());
 
             return false;
         }
@@ -492,8 +489,9 @@ public class TimeSignature
 
             return true;
         } else {
-            logger.debug("Second whole time signature ({}" + ")"
-                         + " in the same measure", glyph.idString());
+            logger.debug(
+                    "Second whole time signature ({}" + ")" + " in the same measure",
+                    glyph.idString());
 
             return false;
         }
@@ -586,8 +584,7 @@ public class TimeSignature
 
         try {
             if (getNumerator() != null) {
-                sb.append(" ").append(getNumerator()).append("/").append(
-                        getDenominator());
+                sb.append(" ").append(getNumerator()).append("/").append(getDenominator());
             }
 
             if (getShape() != null) {
@@ -721,7 +718,7 @@ public class TimeSignature
     //-----------//
     private List<Shape> getShapes (int val)
     {
-        List<Shape> shapes = new ArrayList<>();
+        List<Shape> shapes = new ArrayList<Shape>();
 
         for (; val > 0; val /= 10) {
             int digit = val % 10;
@@ -757,12 +754,12 @@ public class TimeSignature
             // Check we are not too far from this first time signature part
             Point center = measure.computeGlyphCenter(glyph);
             double dist = center.distance(ts.getCenter());
-            double max = measure.getScale().toPixelsDouble(
-                    constants.maxTimeDistance);
+            double max = measure.getScale().toPixelsDouble(constants.maxTimeDistance);
 
             if (dist > max) {
-                logger.debug("Time signature part ({}" + ")"
-                             + " too far from previous one", glyph.idString());
+                logger.debug(
+                        "Time signature part ({}" + ")" + " too far from previous one",
+                        glyph.idString());
 
                 return false;
             }
@@ -775,90 +772,6 @@ public class TimeSignature
         glyph.setTranslation(ts);
 
         return true;
-    }
-
-    //---------------------//
-    // computeTimeRational //
-    //---------------------//
-    /**
-     * Compute the actual members of time rational.
-     *
-     * @throws InvalidTimeSignature
-     */
-    private void computeTimeRational ()
-            throws InvalidTimeSignature
-    {
-        if (glyphs == null) {
-            throw new InvalidTimeSignature();
-        }
-
-        if (!glyphs.isEmpty()) {
-            if (glyphs.size() == 1) {
-                // Just one symbol
-                Glyph theGlyph = glyphs.first();
-                Shape theShape = theGlyph.getShape();
-
-                if (theShape != null) {
-                    if (ShapeSet.FullTimes.contains(theShape)) {
-                        TimeRational theRational = (theShape == CUSTOM_TIME)
-                                ? theGlyph.getTimeRational()
-                                : rationalOf(theShape);
-
-                        if (theRational != null) {
-                            shape = theShape;
-                            this.timeRational = theRational;
-                        }
-
-                        return;
-                    }
-
-                    addError(glyphs.first(), "Weird single time component");
-
-                    return;
-                }
-            } else {
-                // Several symbols
-                // Dispatch symbols on top and bottom parts
-                timeRational = null;
-
-                int numerator = 0;
-                int denominator = 0;
-
-                for (Glyph glyph : glyphs) {
-                    int pitch = (int) Math.rint(
-                            getStaff().pitchPositionOf(computeGlyphCenter(glyph)));
-                    Integer value = getNumericValue(glyph);
-                    logger.debug("pitch={} value={} glyph={}",
-                            pitch, value, glyph);
-
-                    if (value != null) {
-                        if (pitch < 0) {
-                            numerator = (10 * numerator) + value;
-                        } else if (pitch > 0) {
-                            denominator = (10 * denominator) + value;
-                        } else {
-                            addError(
-                                    glyph,
-                                    "Multi-symbol time signature"
-                                    + " with a component of pitch position 0");
-                        }
-                    } else {
-                        addError(
-                                glyph,
-                                "Time signature component with no numeric value");
-                    }
-                }
-
-                if ((numerator != 0) && (denominator != 0)) {
-                    timeRational = new TimeRational(numerator, denominator);
-                }
-
-                // Try to assign a predefined shape
-                shape = predefinedShape();
-            }
-
-            logger.debug("time rational: {}", timeRational);
-        }
     }
 
     //-----------------//
@@ -890,6 +803,87 @@ public class TimeSignature
         return null;
     }
 
+    //---------------------//
+    // computeTimeRational //
+    //---------------------//
+    /**
+     * Compute the actual members of time rational.
+     *
+     * @throws InvalidTimeSignature
+     */
+    private void computeTimeRational ()
+            throws InvalidTimeSignature
+    {
+        if (glyphs == null) {
+            throw new InvalidTimeSignature();
+        }
+
+        if (!glyphs.isEmpty()) {
+            if (glyphs.size() == 1) {
+                // Just one symbol
+                Glyph theGlyph = glyphs.first();
+                Shape theShape = theGlyph.getShape();
+
+                if (theShape != null) {
+                    if (ShapeSet.FullTimes.contains(theShape)) {
+                        TimeRational theRational = (theShape == CUSTOM_TIME)
+                                ? theGlyph.getTimeRational() : rationalOf(
+                                        theShape);
+
+                        if (theRational != null) {
+                            shape = theShape;
+                            this.timeRational = theRational;
+                        }
+
+                        return;
+                    }
+
+                    addError(glyphs.first(), "Weird single time component");
+
+                    return;
+                }
+            } else {
+                // Several symbols
+                // Dispatch symbols on top and bottom parts
+                timeRational = null;
+
+                int numerator = 0;
+                int denominator = 0;
+
+                for (Glyph glyph : glyphs) {
+                    int pitch = (int) Math.rint(
+                            getStaff().pitchPositionOf(computeGlyphCenter(glyph)));
+                    Integer value = getNumericValue(glyph);
+                    logger.debug("pitch={} value={} glyph={}", pitch, value, glyph);
+
+                    if (value != null) {
+                        if (pitch < 0) {
+                            numerator = (10 * numerator) + value;
+                        } else if (pitch > 0) {
+                            denominator = (10 * denominator) + value;
+                        } else {
+                            addError(
+                                    glyph,
+                                    "Multi-symbol time signature"
+                                    + " with a component of pitch position 0");
+                        }
+                    } else {
+                        addError(glyph, "Time signature component with no numeric value");
+                    }
+                }
+
+                if ((numerator != 0) && (denominator != 0)) {
+                    timeRational = new TimeRational(numerator, denominator);
+                }
+
+                // Try to assign a predefined shape
+                shape = predefinedShape();
+            }
+
+            logger.debug("time rational: {}", timeRational);
+        }
+    }
+
     //-----------------//
     // predefinedShape //
     //-----------------//
@@ -911,7 +905,7 @@ public class TimeSignature
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------------------//
     // InvalidTimeSignature //
     //----------------------//
@@ -923,7 +917,7 @@ public class TimeSignature
     public static class InvalidTimeSignature
             extends Exception
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public InvalidTimeSignature ()
         {
@@ -937,17 +931,14 @@ public class TimeSignature
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Scale.Fraction maxTimeDistance = new Scale.Fraction(
                 4d,
-                "Maximum euclidian distance between two"
-                + " parts of a time signature");
+                "Maximum euclidian distance between two" + " parts of a time signature");
 
         Scale.Fraction minTimeOffset = new Scale.Fraction(
                 1d,
-                "Minimum horizontal offset for a time"
-                + " signature since start of measure");
-
+                "Minimum horizontal offset for a time" + " signature since start of measure");
     }
 }

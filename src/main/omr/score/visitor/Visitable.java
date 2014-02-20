@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             V i s i t a b l e                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       V i s i t a b l e                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.visitor;
 
@@ -19,15 +19,15 @@ package omr.score.visitor;
  */
 public interface Visitable
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * General entry for any visiting
      *
      * @param visitor concrete visitor object to define the actual processing
      * @return true if children must be visited also, false otherwise.
-     * <b>Nota</b>: Unless there is a compelling reason, it's safer
-     * to return true to let the visitor work normally.
+     * <b>Nota</b>: Unless there is a compelling reason, it's safer to return true to let the
+     * visitor work normally.
      */
     boolean accept (ScoreVisitor visitor);
 }

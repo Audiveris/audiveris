@@ -1,28 +1,27 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           P i x e l F i l t e r                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     P i x e l F i l t e r                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
 import ij.process.ByteProcessor;
 
 /**
- * Interface {@code PixelFilter} reports the foreground pixels of a
- * {@link PixelSource}.
+ * Interface {@code PixelFilter} reports the foreground pixels of a {@link PixelSource}.
  *
  * @author Hervé Bitteur
  */
 public interface PixelFilter
         extends PixelSource
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Run the filter on source image and report the filtered image.
@@ -56,19 +55,19 @@ public interface PixelFilter
     boolean isFore (int x,
                     int y);
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     /**
      * Structure used to report precise context of the source.
      * It can be extended for more specialized data.
      */
     class Context
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Threshold used on pixel value. */
         public final double threshold;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Context (double threshold)
         {
             this.threshold = threshold;

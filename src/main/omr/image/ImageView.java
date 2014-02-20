@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              I ma g e V i e w                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        I ma g e V i e w                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -26,28 +26,26 @@ import java.awt.image.BufferedImage;
  * @author Hervé Bitteur
  */
 public class ImageView
-    extends ScrollView
+        extends ScrollView
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     private final BufferedImage image;
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new ImageView object.
      *
      * @param image the underlying image
      */
-    public ImageView (Sheet         sheet,
+    public ImageView (Sheet sheet,
                       BufferedImage image)
     {
         this.image = image;
 
         view = new MyView();
         view.setName("Image-View");
-        view.setPreferredSize(
-            new Dimension(image.getWidth(), image.getHeight()));
+        view.setPreferredSize(new Dimension(image.getWidth(), image.getHeight()));
 
         // Inject dependency of pixel location
         view.setLocationService(sheet.getLocationService());
@@ -56,15 +54,14 @@ public class ImageView
         setView(view);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//
     private class MyView
-        extends RubberPanel
+            extends RubberPanel
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void render (Graphics2D g)

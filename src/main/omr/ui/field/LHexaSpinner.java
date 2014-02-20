@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          L H e x a S p i n n e r                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright ® Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    L H e x a S p i n n e r                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright ® Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.field;
 
@@ -20,15 +20,14 @@ import javax.swing.text.DefaultFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 
 /**
- * Class {@code LHexaSpinner} is an LIntegerSpinner with values
- * displayed in hexadecimal.
+ * Class {@code LHexaSpinner} is an LIntegerSpinner with values displayed in hexadecimal.
  *
  * @author Hervé Bitteur
  */
 public class LHexaSpinner
         extends LIntegerSpinner
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //--------------//
     // LHexaSpinner //
@@ -47,14 +46,14 @@ public class LHexaSpinner
         spinner.setEditor(new HexaEditor(spinner));
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------------//
     // HexaEditor //
     //------------//
     private static class HexaEditor
             extends JSpinner.NumberEditor
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         HexaEditor (JSpinner spinner)
         {
@@ -65,13 +64,12 @@ public class LHexaSpinner
             ftf.setFormatterFactory(new HexaFormatterFactory());
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public void stateChanged (ChangeEvent e)
         {
             JSpinner spinner = (JSpinner) (e.getSource());
-            getTextField()
-                    .setValue(spinner.getValue());
+            getTextField().setValue(spinner.getValue());
         }
     }
 
@@ -81,7 +79,7 @@ public class LHexaSpinner
     private static class HexaFormatter
             extends DefaultFormatter
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public Object stringToValue (String string)
@@ -97,8 +95,7 @@ public class LHexaSpinner
                     return Long.valueOf(string, 16);
                 } else {
                     throw new IllegalArgumentException(
-                            "Illegal Number class for HexaFormatter "
-                            + value.getClass());
+                            "Illegal Number class for HexaFormatter " + value.getClass());
                 }
             } catch (NumberFormatException ex) {
                 throw new ParseException(string, 0);
@@ -123,7 +120,7 @@ public class LHexaSpinner
     private static class HexaFormatterFactory
             extends DefaultFormatterFactory
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public HexaFormatterFactory ()
         {

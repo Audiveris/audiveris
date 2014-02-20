@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                B a s i c L e g e n d r e E x t r a c t o r                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                          B a s i c L e g e n d r e E x t r a c t o r                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.moments;
 
@@ -17,15 +17,14 @@ import static omr.moments.LegendreMoments.*;
 import java.awt.image.WritableRaster;
 
 /**
- * Class {@code BasicLegendreExtractor} implements extraction of
- * Legendre moments.
+ * Class {@code BasicLegendreExtractor} implements extraction of Legendre moments.
  *
  * @author Hervé Bitteur
  */
 public class BasicLegendreExtractor
         extends AbstractExtractor<LegendreMoments>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Legendre polynomials. */
     private static final Polynomial[] P = generatePolynomials();
@@ -57,7 +56,7 @@ public class BasicLegendreExtractor
         ///checkOrthogonal();
     }
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------------------//
     // BasicLegendreExtractor //
     //------------------------//
@@ -68,7 +67,7 @@ public class BasicLegendreExtractor
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // reconstruct //
     //-------------//
@@ -92,8 +91,7 @@ public class BasicLegendreExtractor
 
                 for (int m = 0; m <= ORDER; m++) {
                     for (int n = 0; n <= (ORDER - m); n++) {
-                        double tau = Math.sqrt(
-                                (((2 * m) + 1) * ((2 * n) + 1)) / 4d);
+                        double tau = Math.sqrt((((2 * m) + 1) * ((2 * n) + 1)) / 4d);
                         double moment = descriptor.getMoment(m, n);
                         double pm = P[m].evaluate(tx);
                         double pn = P[n].evaluate(ty);
@@ -119,9 +117,7 @@ public class BasicLegendreExtractor
                 minVal = Math.min(minVal, val);
                 maxVal = Math.max(maxVal, val);
 
-                int gray = Math.min(
-                        255,
-                        Math.max(0, (int) Math.rint(val * 256)));
+                int gray = Math.min(255, Math.max(0, (int) Math.rint(val * 256)));
                 ia[0] = 255 - gray;
                 raster.setPixel(x, y, ia);
             }
@@ -191,60 +187,6 @@ public class BasicLegendreExtractor
         }
     }
 
-    //------------------------//
-    // extractMomentsDirectly // Not using LUT (so rather slow...)
-    //------------------------//
-    private void extractMomentsDirectly ()
-    {
-        final double area = 1.0 / (radius * radius);
-        final double centerX = center.getX();
-        final double centerY = center.getY();
-
-        for (int m = 0; m <= ORDER; m++) {
-            double mNorm = Math.sqrt(((2 * m) + 1) / 2.0);
-
-            for (int n = 0; n <= (ORDER - m); n++) {
-                double nNorm = Math.sqrt(((2 * n) + 1) / 2.0);
-                double val = 0;
-
-                for (int i = 0; i < mass; i++) {
-                    // Map image coordinate to basis function coordinate
-                    double x = xx[i] - centerX;
-                    double y = yy[i] - centerY;
-
-                    double ix = x / radius; // [-1 .. +1]
-                    ix = Math.min(1, Math.max(ix, -1));
-
-                    double iy = y / radius; // [-1 .. +1]
-                    iy = Math.min(1, Math.max(iy, -1));
-
-                    // Summation of basis function
-                    double inc = P[m].evaluate(ix) * P[n].evaluate(iy);
-                    inc *= (mNorm * nNorm);
-                    val += inc;
-                }
-
-                // Fake image, using a filled square (to be removed)
-                //                                int r = 10;
-                //                                area = 1.0 / (r * r);
-                //                
-                //                                for (int x = -r; x <= r; x++) {
-                //                                    double ix = x / r;
-                //                
-                //                                    for (int y = -r; y <= r; y++) {
-                //                                        double iy = y / r;
-                //                                        double inc = P[m].evaluate(ix) * P[n].evaluate(iy);
-                //                                        inc *= mNorm * nNorm;
-                //                                        val += inc;
-                //                                    }
-                //                                }
-
-                // Save to descriptor
-                descriptor.setMoment(m, n, val * area);
-            }
-        }
-    }
-
     //---------------------//
     // generatePolynomials //
     //---------------------//
@@ -261,10 +203,8 @@ public class BasicLegendreExtractor
         Q[1] = new Polynomial(1, 1);
 
         for (int n = 2; n <= ORDER; n++) {
-            Q[n] = Q[1].times(Q[n - 1])
-                    .times((2 * n) - 1)
-                    .minus(Q[n - 2].times(n - 1))
-                    .times(1d / n);
+            Q[n] = Q[1].times(Q[n - 1]).times((2 * n) - 1).minus(Q[n - 2].times(n - 1)).times(
+                    1d / n);
         }
 
         if (false) {
@@ -304,6 +244,60 @@ public class BasicLegendreExtractor
             }
         }
     }
+
+    //------------------------//
+    // extractMomentsDirectly // Not using LUT (so rather slow...)
+    //------------------------//
+    private void extractMomentsDirectly ()
+    {
+        final double area = 1.0 / (radius * radius);
+        final double centerX = center.getX();
+        final double centerY = center.getY();
+
+        for (int m = 0; m <= ORDER; m++) {
+            double mNorm = Math.sqrt(((2 * m) + 1) / 2.0);
+
+            for (int n = 0; n <= (ORDER - m); n++) {
+                double nNorm = Math.sqrt(((2 * n) + 1) / 2.0);
+                double val = 0;
+
+                for (int i = 0; i < mass; i++) {
+                    // Map image coordinate to basis function coordinate
+                    double x = xx[i] - centerX;
+                    double y = yy[i] - centerY;
+
+                    double ix = x / radius; // [-1 .. +1]
+                    ix = Math.min(1, Math.max(ix, -1));
+
+                    double iy = y / radius; // [-1 .. +1]
+                    iy = Math.min(1, Math.max(iy, -1));
+
+                    // Summation of basis function
+                    double inc = P[m].evaluate(ix) * P[n].evaluate(iy);
+                    inc *= (mNorm * nNorm);
+                    val += inc;
+                }
+
+                // Fake image, using a filled square (to be removed)
+                //                                int r = 10;
+                //                                area = 1.0 / (r * r);
+                //
+                //                                for (int x = -r; x <= r; x++) {
+                //                                    double ix = x / r;
+                //
+                //                                    for (int y = -r; y <= r; y++) {
+                //                                        double iy = y / r;
+                //                                        double inc = P[m].evaluate(ix) * P[n].evaluate(iy);
+                //                                        inc *= mNorm * nNorm;
+                //                                        val += inc;
+                //                                    }
+                //                                }
+                // Save to descriptor
+                descriptor.setMoment(m, n, val * area);
+            }
+        }
+    }
+
     //    //-----------------//
     //    // checkOrthogonal //
     //    //-----------------//

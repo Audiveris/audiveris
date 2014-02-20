@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          S c a l e B u i l d e r                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    S c a l e B u i l d e r                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -56,36 +56,33 @@ import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
 /**
- * Class {@code ScaleBuilder} encapsulates the computation of a sheet
- * scale, by adding the most frequent foreground run length to the most
- * frequent background run length, since this gives the average
- * interline value.
+ * Class {@code ScaleBuilder} encapsulates the computation of a sheet scale, by adding
+ * the most frequent foreground run length to the most frequent background run length,
+ * since this gives the average interline value.
  * <p>
  * A second foreground peak usually gives the average beam thickness.
  * And similarly, a second background peak may indicate a series of staves
  * with a different interline than the main series.</p>
  * <p>
  * Internally, additional validity checks are performed:<ol>
- * <li>Method {@link #checkStaves} looks at foreground and background
- * peak populations.
+ * <li>Method {@link #checkStaves} looks at foreground and background peak populations.
  * <p>
  * If these counts are below quorum values (see constants.quorumRatio),
  * we can suspect that the page does not contain regularly spaced staff lines.
  * </p></li>
- * <li>Method {@link #checkResolution} looks at foreground and background
- * peak keys.
+ * <li>Method {@link #checkResolution} looks at foreground and background peak keys.
  * <p>
- * If we have not been able to retrieve the main run length for background
- * or for foreground, then we suspect a wrong image format. In that case,
- * the safe action is to stop the processing, by throwing a StepException.
- * If the main interline value is below a certain threshold
- * (see constants.minResolution), then we suspect that the picture is not
- * a music sheet (it may rather be an image, a page of text, ...).</p></li>
+ * If we have not been able to retrieve the main run length for background or for foreground, then
+ * we suspect a wrong image format. In that case, the safe action is to stop the processing, by
+ * throwing a StepException.
+ * If the main interline value is below a certain threshold (see constants.minResolution), then we
+ * suspect that the picture is not a music sheet (it may rather be an image, a page of text, etc).
+ * </p></li>
  * </ol>
  * <p>
- * If we have doubts about the page at hand and if this page is part of a
- * multi-page score, we propose to simply discard this sheet. In batch, the
- * page is discarded without asking for confirmation.</p>
+ * If we have doubts about the page at hand and if this page is part of a multi-page score, we
+ * propose to simply discard this sheet. In batch, the page is discarded without asking for
+ * confirmation.</p>
  *
  * @see Scale
  *
@@ -93,16 +90,13 @@ import javax.swing.WindowConstants;
  */
 public class ScaleBuilder
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ScaleBuilder.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScaleBuilder.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related sheet. */
     private final Sheet sheet;
@@ -149,7 +143,7 @@ public class ScaleBuilder
     /** Resulting scale, if everything goes well. */
     private Scale scale;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------------//
     // ScaleBuilder //
     //--------------//
@@ -163,7 +157,7 @@ public class ScaleBuilder
         this.sheet = sheet;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // displayChart //
     //--------------//
@@ -197,15 +191,13 @@ public class ScaleBuilder
     public void retrieveScale ()
             throws StepException
     {
-        StopWatch watch = new StopWatch(
-                "Scale builder for " + sheet.getPage().getId());
+        StopWatch watch = new StopWatch("Scale builder for " + sheet.getPage().getId());
 
         try {
             Picture picture = sheet.getPicture();
 
             // Retrieve the whole table of foreground runs
-            ByteProcessor binaryFilter = picture.getSource(
-                    Picture.SourceKey.BINARY);
+            ByteProcessor binaryFilter = picture.getSource(Picture.SourceKey.BINARY);
 
             watch.start("Global vertical lag");
 
@@ -213,8 +205,7 @@ public class ScaleBuilder
                     Orientation.VERTICAL,
                     binaryFilter,
                     0);
-            RunsTable wholeVertTable = vertFactory.createTable(
-                    "vertBinary");
+            RunsTable wholeVertTable = vertFactory.createTable("vertBinary");
             sheet.setWholeVerticalTable(wholeVertTable);
             vertFactory = null; // To allow garbage collection ASAP
 
@@ -264,8 +255,7 @@ public class ScaleBuilder
 
             logger.info("{}{}", sheet.getLogPrefix(), scale);
             sheet.setScale(scale);
-            sheet.getBench()
-                    .recordScale(scale);
+            sheet.getBench().recordScale(scale);
         } finally {
             if (constants.printWatch.isSet()) {
                 watch.print();
@@ -297,10 +287,9 @@ public class ScaleBuilder
 
         if (interline < constants.minResolution.getValue()) {
             makeDecision(
-                    sheet.getId() + LINE_SEPARATOR + "With an interline value of "
-                    + interline + " pixels," + LINE_SEPARATOR
-                    + "either this page contains no staves," + LINE_SEPARATOR
-                    + "or the picture resolution is too low (try 300 DPI).");
+                    sheet.getId() + LINE_SEPARATOR + "With an interline value of " + interline
+                    + " pixels," + LINE_SEPARATOR + "either this page contains no staves,"
+                    + LINE_SEPARATOR + "or the picture resolution is too low (try 300 DPI).");
         }
     }
 
@@ -342,12 +331,9 @@ public class ScaleBuilder
         }
 
         if (backPeak != null) {
-            logger.info(
-                    "{}No beam peak found, computing a default value",
-                    sheet.getLogPrefix());
+            logger.info("{}No beam peak found, computing a default value", sheet.getLogPrefix());
 
-            return (int) Math.rint(
-                    constants.beamAsBackRatio.getValue() * backPeak.getKey().best);
+            return (int) Math.rint(constants.beamAsBackRatio.getValue() * backPeak.getKey().best);
         }
 
         return -1;
@@ -359,12 +345,9 @@ public class ScaleBuilder
     private Scale.Range computeInterline ()
     {
         if ((forePeak != null) && (backPeak != null)) {
-            int min = (int) Math.rint(
-                    forePeak.getKey().first + backPeak.getKey().first);
-            int best = (int) Math.rint(
-                    forePeak.getKey().best + backPeak.getKey().best);
-            int max = (int) Math.rint(
-                    forePeak.getKey().second + backPeak.getKey().second);
+            int min = (int) Math.rint(forePeak.getKey().first + backPeak.getKey().first);
+            int best = (int) Math.rint(forePeak.getKey().best + backPeak.getKey().best);
+            int max = (int) Math.rint(forePeak.getKey().second + backPeak.getKey().second);
 
             return new Scale.Range(min, best, max);
         } else {
@@ -401,12 +384,9 @@ public class ScaleBuilder
     private Scale.Range computeSecondInterline ()
     {
         if (secondBackPeak != null) {
-            int min = (int) Math.rint(
-                    forePeak.getKey().first + secondBackPeak.getKey().first);
-            int best = (int) Math.rint(
-                    forePeak.getKey().best + secondBackPeak.getKey().best);
-            int max = (int) Math.rint(
-                    forePeak.getKey().second + secondBackPeak.getKey().second);
+            int min = (int) Math.rint(forePeak.getKey().first + secondBackPeak.getKey().first);
+            int best = (int) Math.rint(forePeak.getKey().best + secondBackPeak.getKey().best);
+            int max = (int) Math.rint(forePeak.getKey().second + secondBackPeak.getKey().second);
 
             return new Scale.Range(min, best, max);
         } else {
@@ -424,12 +404,9 @@ public class ScaleBuilder
         }
 
         if (forePeak != null) {
-            logger.info(
-                    "{}No stem peak found, computing a default value",
-                    sheet.getLogPrefix());
+            logger.info("{}No stem peak found, computing a default value", sheet.getLogPrefix());
 
-            return (int) Math.rint(
-                    constants.stemAsForeRatio.getValue() * forePeak.getKey().best);
+            return (int) Math.rint(constants.stemAsForeRatio.getValue() * forePeak.getKey().best);
         }
 
         return -1;
@@ -445,16 +422,14 @@ public class ScaleBuilder
         PeakEntry<Double> peak = null;
 
         // Find peak(s) using quorum threshold
-        List<PeakEntry<Double>> peaks = histo.getDoublePeaks(
-                histo.getQuorumValue(quorumRatio));
+        List<PeakEntry<Double>> peaks = histo.getDoublePeaks(histo.getQuorumValue(quorumRatio));
 
         if (index < peaks.size()) {
             peak = peaks.get(index);
 
             // Refine peak using spread threshold?
             if (spreadRatio != null) {
-                peaks = histo.getDoublePeaks(
-                        histo.getQuorumValue(peak.getValue() * spreadRatio));
+                peaks = histo.getDoublePeaks(histo.getQuorumValue(peak.getValue() * spreadRatio));
 
                 if (index < peaks.size()) {
                     peak = peaks.get(index);
@@ -484,14 +459,12 @@ public class ScaleBuilder
 
         if (Main.getGui() != null) {
             // Make sheet visible to the user
-            SheetsController.getInstance()
-                    .showAssembly(sheet);
+            SheetsController.getInstance().showAssembly(sheet);
         }
 
         if ((Main.getGui() == null)
             || (Main.getGui()
-                .displayModelessConfirm(
-                        msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
+                .displayModelessConfirm(msg + LINE_SEPARATOR + "OK for discarding this sheet?") == JOptionPane.OK_OPTION)) {
             if (score.isMultiPage()) {
                 sheet.remove(false);
                 throw new StepException("Sheet removed");
@@ -528,12 +501,10 @@ public class ScaleBuilder
         StringBuilder sb = new StringBuilder(sheet.getLogPrefix());
         // Foreground peak
         forePeak = getPeak(foreHisto, foreSpreadRatio, 0);
-        sb.append("fore:")
-                .append(forePeak);
+        sb.append("fore:").append(forePeak);
 
         if (forePeak.getValue() == 1d) {
-            String msg = "All image pixels are foreground."
-                         + " Check binarization parameters";
+            String msg = "All image pixels are foreground." + " Check binarization parameters";
             logger.warn(msg);
             throw new StepException(msg);
         }
@@ -542,8 +513,7 @@ public class ScaleBuilder
         backPeak = getPeak(backHisto, backSpreadRatio, 0);
 
         if (backPeak.getValue() == 1d) {
-            String msg = "All image pixels are background."
-                         + " Check binarization parameters";
+            String msg = "All image pixels are background." + " Check binarization parameters";
             logger.warn(msg);
             throw new StepException(msg);
         }
@@ -570,25 +540,21 @@ public class ScaleBuilder
                 // Check whether this second background peak can be an interline
                 // We check that p2 is not too large, compared with p1
                 if (p2.best > (p1.best * constants.maxSecondRatio.getValue())) {
-                    logger.info(
-                            "Second background peak too large {}, ignored",
-                            p2.best);
+                    logger.info("Second background peak too large {}, ignored", p2.best);
                     secondBackPeak = null;
                 }
             }
         }
 
-        sb.append(" back:")
-                .append(backPeak);
+        sb.append(" back:").append(backPeak);
 
         if (secondBackPeak != null) {
-            sb.append(" secondBack:")
-                    .append(secondBackPeak);
+            sb.append(" secondBack:").append(secondBackPeak);
         }
 
         // Second foreground peak (beam)?
         if ((forePeak != null) && (backPeak != null)) {
-            // Take most frequent local max for which key (beam thickness) is 
+            // Take most frequent local max for which key (beam thickness) is
             // larger than about twice the mean line thickness and smaller than
             // mean white gap between staff lines.
             List<MaxEntry<Integer>> foreMaxima = foreHisto.getLocalMaxima();
@@ -599,8 +565,7 @@ public class ScaleBuilder
             for (MaxEntry<Integer> max : foreMaxima) {
                 if ((max.getKey() >= minHeight) && (max.getKey() <= maxHeight)) {
                     beamEntry = max;
-                    sb.append(" beam:")
-                            .append(beamEntry);
+                    sb.append(" beam:").append(beamEntry);
 
                     break;
                 }
@@ -610,14 +575,14 @@ public class ScaleBuilder
         logger.debug(sb.toString());
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Constant.Boolean printWatch = new Constant.Boolean(
                 false,
@@ -673,14 +638,14 @@ public class ScaleBuilder
      */
     private class HoriHistoKeeper
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final int[] fore; // (black) foreground runs
 
         // We are not interested of horizontal runs longer than this value
         private final int maxFore = 20;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create an instance of histoKeeper.
          *
@@ -695,21 +660,15 @@ public class ScaleBuilder
             Arrays.fill(fore, 0);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //
         //-----------//
         // writePlot //
         //-----------//
         public void writePlot ()
         {
-            new Plotter(
-                    "horizontal black",
-                    fore,
-                    horiHisto,
-                    null,
-                    stemEntry,
-                    null,
-                    maxFore).plot(new Point(80, 80));
+            new Plotter("horizontal black", fore, horiHisto, null, stemEntry, null, maxFore).plot(
+                    new Point(80, 80));
         }
 
         //-----------------//
@@ -763,7 +722,7 @@ public class ScaleBuilder
      */
     private class Plotter
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final String name;
 
@@ -781,7 +740,7 @@ public class ScaleBuilder
 
         private final XYSeriesCollection dataset = new XYSeriesCollection();
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Plotter (String name,
                         int[] values,
                         Histogram<Integer> histo,
@@ -799,7 +758,7 @@ public class ScaleBuilder
             this.upper = upper;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public void plot (Point upperLeft)
         {
             // All values, quorum line & spread line
@@ -828,10 +787,7 @@ public class ScaleBuilder
             );
 
             // Hosting frame
-            ChartFrame frame = new ChartFrame(
-                    sheet.getId() + " - " + name + " runs",
-                    chart,
-                    true);
+            ChartFrame frame = new ChartFrame(sheet.getId() + " - " + name + " runs", chart, true);
             frame.pack();
             frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             frame.setLocation(upperLeft);
@@ -852,11 +808,9 @@ public class ScaleBuilder
                                      PeakEntry<Double> peak)
         {
             if (peak != null) {
-                int threshold = histo.getQuorumValue(
-                        peak.getValue() * spreadRatio);
+                int threshold = histo.getQuorumValue(peak.getValue() * spreadRatio);
                 String pc = (int) (spreadRatio * 100) + "%";
-                XYSeries series = new XYSeries(
-                        prefix + "Spread@" + pc + ":" + threshold);
+                XYSeries series = new XYSeries(prefix + "Spread@" + pc + ":" + threshold);
                 series.add((double) peak.getKey().first, threshold);
                 series.add((double) peak.getKey().second, threshold);
                 dataset.addSeries(series);
@@ -869,8 +823,7 @@ public class ScaleBuilder
             Integer secKey = null;
 
             if (peak != null) {
-                double mainKey = peak.getBest()
-                        .doubleValue();
+                double mainKey = peak.getBest().doubleValue();
                 key = (int) mainKey;
             }
 
@@ -911,13 +864,13 @@ public class ScaleBuilder
      */
     private class VertHistoKeeper
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private final int[] fore; // (black) foreground runs
 
         private final int[] back; // (white) background runs
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Create an instance of histoKeeper.
          *
@@ -934,7 +887,7 @@ public class ScaleBuilder
             Arrays.fill(back, 0);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //
         //-----------//
         // writePlot //
@@ -945,14 +898,8 @@ public class ScaleBuilder
                     fore.length,
                     ((backPeak != null) ? ((backPeak.getKey().best * 3) / 2) : 20));
 
-            new Plotter(
-                    "vertical black",
-                    fore,
-                    foreHisto,
-                    foreSpreadRatio,
-                    forePeak,
-                    null,
-                    upper).plot(new Point(0, 0));
+            new Plotter("vertical black", fore, foreHisto, foreSpreadRatio, forePeak, null, upper).plot(
+                    new Point(0, 0));
             new Plotter(
                     "vertical white",
                     back,

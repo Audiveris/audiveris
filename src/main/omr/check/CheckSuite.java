@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            C h e c k S u i t e                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright � Herv� Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      C h e c k S u i t e                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright � Herv� Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.check;
 
@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class {@code CheckSuite} represents a suite of homogeneous checks,
- * meaning that all checks in the suite work on the same object type.
+ * Class {@code CheckSuite} represents a suite of homogeneous checks, meaning that all
+ * checks in the suite work on the same object type.
  * <p>
  * A check suite is typically applied on a candidate to evaluate the
  * <b>intrinsic</b> quality (grade) of this candidate that depends on the
@@ -45,12 +45,12 @@ import java.util.List;
  */
 public class CheckSuite<C extends Checkable>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            CheckSuite.class);
+    private static final Logger  logger = LoggerFactory.getLogger(CheckSuite.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
+
     /** Name of this suite. */
     protected final String name;
 
@@ -69,7 +69,8 @@ public class CheckSuite<C extends Checkable>
     /** Total checks weight. */
     private double totalWeight = 0.0d;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
+
     //------------//
     // CheckSuite //
     //------------//
@@ -102,7 +103,8 @@ public class CheckSuite<C extends Checkable>
         this.goodThreshold = goodThreshold;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+
     //-----//
     // add //
     //-----//
@@ -112,7 +114,7 @@ public class CheckSuite<C extends Checkable>
      * @param weight the weight of this check in the suite
      * @param check  the check to add to the suite
      */
-    public void add (double weight,
+    public void add (double   weight,
                      Check<C> check)
     {
         checks.add(check);
@@ -156,32 +158,24 @@ public class CheckSuite<C extends Checkable>
             sb.append(name);
         }
 
-        sb.append(
-                String.format(
-                        " Check Suite: min=%f good=%f\n",
-                        minThreshold,
-                        goodThreshold));
+        sb.append(String.format(" Check Suite: min=%f good=%f\n", minThreshold, goodThreshold));
 
         dumpSpecific(sb);
 
-        sb.append(
-                String.format(
-                        "Weight    Name             Covariant    Low       High\n"));
-        sb.append(
-                String.format(
-                        "------    ----                ------    ---       ----\n"));
+        sb.append(String.format("Weight    Name             Covariant    Low       High\n"));
+        sb.append(String.format("------    ----                ------    ---       ----\n"));
 
         int index = 0;
 
         for (Check<C> check : checks) {
             sb.append(
-                    String.format(
-                            "%4.1f      %-19s  %5b  % 6.2f    % 6.2f \n",
-                            weights.get(index++),
-                            check.getName(),
-                            check.isCovariant(),
-                            check.getLow(),
-                            check.getHigh()));
+                String.format(
+                    "%4.1f      %-19s  %5b  % 6.2f    % 6.2f \n",
+                    weights.get(index++),
+                    check.getName(),
+                    check.isCovariant(),
+                    check.getLow(),
+                    check.getHigh()));
         }
 
         logger.info(sb.toString());
@@ -295,12 +289,12 @@ public class CheckSuite<C extends Checkable>
      * @param impacts   the suite impacts if any, to record detailed results
      * @return the computed grade.
      */
-    public double pass (C checkable,
+    public double pass (C            checkable,
                         SuiteImpacts impacts)
     {
         final CheckResult result = new CheckResult();
-        double grade = 1d;
-        int index = 0;
+        double            grade = 1d;
+        int               index = 0;
 
         for (Check<C> check : checks) {
             check.pass(checkable, result, true);

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                   B a s i c A d m i n i s t r a t i o n                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                             B a s i c A d m i n i s t r a t i o n                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
@@ -24,7 +24,7 @@ class BasicAdministration
         extends BasicFacet
         implements GlyphAdministration
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The precise layer. */
     protected final GlyphLayer layer;
@@ -44,7 +44,7 @@ class BasicAdministration
     /** Related id string. (pre-built once for all) */
     protected String idString = "glyph#" + 0;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------------//
     // BasicAdministration //
     //---------------------//
@@ -60,7 +60,16 @@ class BasicAdministration
         this.layer = layer;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //----------//
+    // idString //
+    //----------//
+    @Override
+    public final String idString ()
+    {
+        return idString;
+    }
+
     //--------//
     // dumpOf //
     //--------//
@@ -111,15 +120,6 @@ class BasicAdministration
     public GlyphNest getNest ()
     {
         return nest;
-    }
-
-    //----------//
-    // idString //
-    //----------//
-    @Override
-    public final String idString ()
-    {
-        return idString;
     }
 
     //-------------//

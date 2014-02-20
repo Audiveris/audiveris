@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         S c o r e R e d u c t o r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   S c o r e R e d u c t o r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score;
 
@@ -25,24 +25,23 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 /**
- * Class {@code ScoreReductor} can visit the score hierarchy to simplify
- * all duration values.
+ * Class {@code ScoreReductor} can visit the score hierarchy to simplify all duration
+ * values.
  *
  * @author Hervé Bitteur
  */
 public class ScoreReductor
         extends AbstractScoreVisitor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(ScoreReductor.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Set of all different duration values */
-    private final SortedSet<Rational> durations = new TreeSet<>();
+    private final SortedSet<Rational> durations = new TreeSet<Rational>();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // ScoreReductor //
     //---------------//
@@ -53,7 +52,7 @@ public class ScoreReductor
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-------------//
     // visit Chord //
     //-------------//
@@ -76,9 +75,7 @@ public class ScoreReductor
         } catch (InvalidTimeSignature ex) {
             // Ignored here (TBC)
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + chord,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + chord, ex);
         }
 
         return false;
@@ -97,9 +94,7 @@ public class ScoreReductor
             // Compute and remember greatest duration divisor for the score
             score.setDurationDivisor(computeDurationDivisor());
         } catch (Exception ex) {
-            logger.warn(
-                    getClass().getSimpleName() + " Error visiting " + score,
-                    ex);
+            logger.warn(getClass().getSimpleName() + " Error visiting " + score, ex);
         }
 
         return false;
@@ -110,11 +105,9 @@ public class ScoreReductor
     //------------------------//
     private int computeDurationDivisor ()
     {
-        Rational[] durationArray = durations.toArray(
-                new Rational[durations.size()]);
+        Rational[] durationArray = durations.toArray(new Rational[durations.size()]);
         Rational divisor = Rational.gcd(durationArray);
-        logger.debug("durations={} divisor={}",
-                Arrays.deepToString(durationArray), divisor);
+        logger.debug("durations={} divisor={}", Arrays.deepToString(durationArray), divisor);
 
         return divisor.den;
     }

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 S t a f f                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           S t a f f                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -26,6 +26,7 @@ import java.util.Iterator;
 
 /**
  * Class {@code Staff} handles a staff in a system part.
+ * <p>
  * It is useful for its geometric parameters (topLeft corner, width and height,
  * ability to convert between a Point ordinate and a staff-based
  * pitchPosition.
@@ -38,17 +39,16 @@ import java.util.Iterator;
 public class Staff
         extends PartNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Staff.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Top left corner of the staff (relative to the page top left corner) */
     private final Point topLeft;
 
     /** Related info from sheet analysis */
-    private StaffInfo info;
+    private final StaffInfo info;
 
     /** Id of staff in containing system part */
     private final int id;
@@ -56,7 +56,7 @@ public class Staff
     /** Flag an artificial staff */
     private boolean dummy;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------//
     // Staff //
     //-------//
@@ -94,7 +94,7 @@ public class Staff
         id = 1 + getChildIndex();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -194,8 +194,7 @@ public class Staff
     //---------------//
     public int pitchToPixels (double pitchPosition)
     {
-        int interline = getScale()
-                .getInterline();
+        int interline = getScale().getInterline();
 
         return (int) Math.rint(((pitchPosition + 4) * interline) / 2.0);
     }
@@ -236,12 +235,9 @@ public class Staff
                 sb.append(" dummy");
             }
 
-            sb.append(" topLeft=")
-                    .append(topLeft);
-            sb.append(" width=")
-                    .append(getWidth());
-            sb.append(" size=")
-                    .append(getHeight());
+            sb.append(" topLeft=").append(topLeft);
+            sb.append(" width=").append(getWidth());
+            sb.append(" size=").append(getHeight());
         } catch (NullPointerException e) {
             sb.append("NONE");
         }
@@ -251,7 +247,7 @@ public class Staff
         return sb.toString();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------------//
     // PartIterator //
     //--------------//
@@ -262,20 +258,18 @@ public class Staff
     public static class PartIterator
             implements Iterator<Staff>
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // Constant
         private final Iterator<TreeNode> staffIterator;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public PartIterator (Measure measure)
         {
-            staffIterator = measure.getPart()
-                    .getStaves()
-                    .iterator();
+            staffIterator = measure.getPart().getStaves().iterator();
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean hasNext ()
         {
@@ -306,7 +300,7 @@ public class Staff
     public static class SystemIterator
             implements Iterator<Staff>
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // Constant
         private final int measureIndex;
@@ -320,22 +314,18 @@ public class Staff
 
         private PartIterator partStaffIterator;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public SystemIterator (Measure measure)
         {
-            measureIndex = measure.getParent()
-                    .getChildren()
-                    .indexOf(measure);
-            partIterator = measure.getSystem()
-                    .getParts()
-                    .iterator();
+            measureIndex = measure.getParent().getChildren().indexOf(measure);
+            partIterator = measure.getSystem().getParts().iterator();
 
             if (partIterator.hasNext()) {
                 toNextPart();
             }
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public Measure getMeasure ()
         {
             return measure;
@@ -385,8 +375,7 @@ public class Staff
         private void toNextPart ()
         {
             part = (SystemPart) partIterator.next();
-            measure = (Measure) part.getMeasures()
-                    .get(measureIndex);
+            measure = (Measure) part.getMeasures().get(measureIndex);
             partStaffIterator = new PartIterator(measure);
         }
     }

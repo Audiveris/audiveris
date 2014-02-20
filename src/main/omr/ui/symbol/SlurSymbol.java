@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            S l u r S y m b o l                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      S l u r S y m b o l                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -25,9 +25,9 @@ import java.awt.geom.CubicCurve2D;
  * @author Hervé Bitteur
  */
 public class SlurSymbol
-        extends ShapeSymbol
+    extends ShapeSymbol
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //------------//
     // SlurSymbol //
@@ -53,7 +53,8 @@ public class SlurSymbol
         super(isIcon, Shape.SLUR, true); // Decorated
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+
     //------------//
     // createIcon //
     //------------//
@@ -70,7 +71,7 @@ public class SlurSymbol
     protected Params getParams (MusicFont font)
     {
         Params p = new Params();
-        int il = font.getFontInterline();
+        int    il = font.getFontInterline();
         p.rect = new Rectangle(2 * il, (4 * il) / 3);
 
         return p;
@@ -81,24 +82,21 @@ public class SlurSymbol
     //-------//
     @Override
     protected void paint (Graphics2D g,
-                          Params p,
-                          Point location,
-                          Alignment alignment)
+                          Params     p,
+                          Point      location,
+                          Alignment  alignment)
     {
-        Point loc = alignment.translatedPoint(
-                TOP_LEFT,
-                p.rect,
-                location);
+        Point        loc = alignment.translatedPoint(TOP_LEFT, p.rect, location);
 
         CubicCurve2D curve = new CubicCurve2D.Double(
-                loc.x,
-                loc.y + p.rect.height,
-                loc.x + ((3 * p.rect.width) / 10),
-                loc.y + (p.rect.height / 5),
-                loc.x + (p.rect.width / 2),
-                loc.y,
-                loc.x + p.rect.width,
-                loc.y);
+            loc.x,
+            loc.y + p.rect.height,
+            loc.x + ((3 * p.rect.width) / 10),
+            loc.y + (p.rect.height / 5),
+            loc.x + (p.rect.width / 2),
+            loc.y,
+            loc.x + p.rect.width,
+            loc.y);
 
         // Slur
         g.draw(curve);

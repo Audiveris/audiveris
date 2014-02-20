@@ -1,17 +1,18 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                      G l o b a l D e s c r i p t o r                       //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                G l o b a l D e s c r i p t o r                                 //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
 import ij.process.ByteProcessor;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -27,13 +28,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class GlobalDescriptor
         extends FilterDescriptor
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The threshold value for the whole pixel source. */
     @XmlAttribute(name = "threshold")
     public final int threshold;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //------------------//
     // GlobalDescriptor //
@@ -56,7 +57,15 @@ public class GlobalDescriptor
         threshold = 0;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //------------//
+    // getDefault //
+    //------------//
+    public static GlobalDescriptor getDefault ()
+    {
+        return new GlobalDescriptor(GlobalFilter.getDefaultThreshold());
+    }
+
     //--------//
     // equals //
     //--------//
@@ -70,14 +79,6 @@ public class GlobalDescriptor
         }
 
         return false;
-    }
-
-    //------------//
-    // getDefault //
-    //------------//
-    public static GlobalDescriptor getDefault ()
-    {
-        return new GlobalDescriptor(GlobalFilter.getDefaultThreshold());
     }
 
     //-----------//
@@ -118,8 +119,7 @@ public class GlobalDescriptor
     protected String internalsString ()
     {
         StringBuilder sb = new StringBuilder(super.internalsString());
-        sb.append(" threshold: ")
-                .append(threshold);
+        sb.append(" threshold: ").append(threshold);
 
         return sb.toString();
     }

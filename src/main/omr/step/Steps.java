@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                 S t e p s                                  //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                           S t e p s                                            //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -39,9 +39,8 @@ import java.util.TreeSet;
  */
 public class Steps
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Steps.class);
 
     // Mandatory step names
@@ -128,8 +127,7 @@ public class Steps
         addStep(new ExportStep());
 
         // Plugin step depends on default plugin
-        Plugin plugin = PluginsManager.getInstance()
-                .getDefaultPlugin();
+        Plugin plugin = PluginsManager.getInstance().getDefaultPlugin();
 
         if (plugin != null) {
             addStep(new PluginStep(plugin));
@@ -151,7 +149,7 @@ public class Steps
     /** First step */
     public static final Step FIRST_STEP = steps.get(0);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------//
     // Steps // Not meant to be instantiated
     //-------//
@@ -159,7 +157,7 @@ public class Steps
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------//
     // compare //
     //---------//
@@ -312,7 +310,7 @@ public class Steps
         stepMap.put(step.getName(), step);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //----------//
     // Constant //
     //----------//
@@ -323,7 +321,7 @@ public class Steps
     public static class Constant
             extends omr.constant.Constant
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Specific constructor, where 'unit' and 'name' are assigned later
@@ -337,7 +335,7 @@ public class Steps
             super(null, defaultValue.toString(), description);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Retrieve the current constant value
          *
@@ -377,14 +375,14 @@ public class Steps
     private static class NoStep
             extends AbstractStep
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public NoStep ()
         {
             super(null, null, null, null, null);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         protected void doit (Collection<SystemInfo> systems,
                              Sheet sheet)

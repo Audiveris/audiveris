@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                T e m p l a t e                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                          T e m p l a t e                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -32,28 +32,21 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 /**
- * Class {@code Template} implements a template to be used for
- * matching evaluation on a distance transform image.
- *
+ * Class {@code Template} implements a template to be used for matching evaluation on a
+ * distance transform image.
  * <p>
- * There are several topics to consider in a template specification
- * (see {@link Key} class):<dl>
- *
+ * There are several topics to consider in a template specification (see {@link Key} class):<dl>
  * <dt><b>Base shape</b></dt>
- * <dd>Supported shapes are NOTEHEAD_BLACK, NOTEHEAD_VOID and WHOLE_NOTE and
- * their small (cue) counterparts</dd>
- *
+ * <dd>Supported shapes are NOTEHEAD_BLACK, NOTEHEAD_VOID and WHOLE_NOTE and their small (cue)
+ * counterparts</dd>
  * <dt><b>Lines</b></dt>
- * <dd>Staff lines and/or ledgers can cross the symbol in the middle, so regions
- * for top or bottom lines are disabled for template matching. </dd>
- *
+ * <dd>Staff lines and/or ledgers can cross the symbol in the middle, so regions for top or bottom
+ * lines are disabled for template matching. </dd>
  * <dt><b>Stems</b></dt>
- * <dd>Experience has shown that stem presence or absence is not reliable, so
- * potential stem regions are disabled for template matching.</dd>
- *
+ * <dd>Experience has shown that stem presence or absence is not reliable, so potential stem regions
+ * are disabled for template matching.</dd>
  * <dt><b>Size</b></dt>
  * <dd>Either standard size or small size (for cues and grace notes).</dd>
- *
  * </dl>
  *
  * @author Hervé Bitteur
@@ -61,17 +54,16 @@ import java.util.Objects;
 public class Template
         implements Anchored
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            Template.class);
+    private static final Logger logger = LoggerFactory.getLogger(Template.class);
 
     /** Ratio applied to small symbols (cue / grace). */
     public static final double smallRatio = constants.smallRatio.getValue();
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Template key. */
     private final Key key;
 
@@ -92,10 +84,9 @@ public class Template
      * An offset is defined as the translation from template upper left corner
      * to the precise anchor location in the symbol.
      */
-    private final Map<Anchor, Point> offsets = new EnumMap<Anchor, Point>(
-            Anchor.class);
+    private final Map<Anchor, Point> offsets = new EnumMap<Anchor, Point>(Anchor.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // Template //
     //----------//
@@ -121,7 +112,7 @@ public class Template
         this.symbolBounds = new Rectangle(symbolBounds);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // addAnchor //
     //-----------//
@@ -132,9 +123,7 @@ public class Template
     {
         offsets.put(
                 anchor,
-                new Point(
-                (int) Math.rint(xRatio * width),
-                (int) Math.rint(yRatio * height)));
+                new Point((int) Math.rint(xRatio * width), (int) Math.rint(yRatio * height)));
     }
 
     //------//
@@ -207,10 +196,7 @@ public class Template
                 x -= offset.x;
                 y -= offset.y;
             } else {
-                logger.warn(
-                        "No {} anchor defined for {} template",
-                        anchor,
-                        key);
+                logger.warn("No {} anchor defined for {} template", anchor, key);
             }
         }
 
@@ -283,10 +269,7 @@ public class Template
         Point offset = offsets.get(anchor);
 
         if (offset == null) {
-            logger.error(
-                    "No offset defined for anchor {} in template {}",
-                    anchor,
-                    key);
+            logger.error("No offset defined for anchor {} in template {}", anchor, key);
         }
 
         return offset;
@@ -345,38 +328,27 @@ public class Template
     {
         StringBuilder sb = new StringBuilder("{Template");
 
-        sb.append(" ")
-                .append(key);
+        sb.append(" ").append(key);
 
-        sb.append(" w:")
-                .append(width)
-                .append(",h:")
-                .append(height);
+        sb.append(" w:").append(width).append(",h:").append(height);
 
         if ((symbolBounds.width != width) || (symbolBounds.height != height)) {
-            sb.append(" sym:")
-                    .append(symbolBounds);
+            sb.append(" sym:").append(symbolBounds);
         }
 
         for (Entry<Anchor, Point> entry : offsets.entrySet()) {
-            sb.append(" ")
-                    .append(entry.getKey())
-                    .append(":(")
-                    .append(entry.getValue().x)
-                    .append(",")
-                    .append(entry.getValue().y)
-                    .append(")");
+            sb.append(" ").append(entry.getKey()).append(":(").append(entry.getValue().x).append(
+                    ",").append(entry.getValue().y).append(")");
         }
 
-        sb.append(" keyPoints:")
-                .append(keyPoints.size());
+        sb.append(" keyPoints:").append(keyPoints.size());
 
         sb.append("}");
 
         return sb.toString();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----//
     // Key //
     //-----//
@@ -385,14 +357,14 @@ public class Template
      */
     public static class Key
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         public final Shape shape;
 
         /** Middle hasLine or not. */
         public final boolean hasLine;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Key (Shape shape,
                     boolean line)
         {
@@ -400,7 +372,7 @@ public class Template
             this.hasLine = line;
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         @Override
         public boolean equals (Object obj)
         {
@@ -449,7 +421,7 @@ public class Template
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         final Constant.Ratio smallRatio = new Constant.Ratio(
                 0.67,

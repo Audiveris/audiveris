@@ -1,36 +1,35 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                   J u n c t i o n D e l t a P o l i c y                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                             J u n c t i o n D e l t a P o l i c y                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.lag;
 
 import omr.run.Run;
 
 /**
- * Class {@code JunctionDeltaPolicy} defines a junction policy based
- * on the delta between the length of the candidate run and the length
- * of the last run of the section.
+ * Class {@code JunctionDeltaPolicy} defines a junction policy based on the delta
+ * between the length of the candidate run and the length of the last run of the section.
  *
  * @author Hervé Bitteur
  */
 public class JunctionDeltaPolicy
         implements JunctionPolicy
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /**
      * Maximum value acceptable for delta length.
      */
     private final int maxDeltaLength;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------------//
     // JunctionDeltaPolicy //
     //---------------------//
@@ -45,7 +44,7 @@ public class JunctionDeltaPolicy
         this.maxDeltaLength = maxDeltaLength;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // consistentRun //
     //---------------//
@@ -74,7 +73,6 @@ public class JunctionDeltaPolicy
     @Override
     public String toString ()
     {
-        return "{JunctionDeltaPolicy" + " maxDeltaLength=" + maxDeltaLength
-               + "}";
+        return "{JunctionDeltaPolicy" + " maxDeltaLength=" + maxDeltaLength + "}";
     }
 }

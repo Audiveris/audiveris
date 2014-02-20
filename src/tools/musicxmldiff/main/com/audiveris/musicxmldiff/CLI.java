@@ -44,7 +44,7 @@ public class CLI
 {
     //~ Static fields/initializers ---------------------------------------------
 
-    /** Usual logger utility */
+    
     private static final Logger logger = LoggerFactory.getLogger(CLI.class);
 
     //~ Enumerations -----------------------------------------------------------

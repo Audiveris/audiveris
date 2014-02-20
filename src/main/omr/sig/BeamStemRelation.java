@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       B e a m S t e m R e l a t i o n                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 B e a m S t e m R e l a t i o n                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
@@ -22,22 +22,21 @@ import org.slf4j.LoggerFactory;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code BeamStemRelation} implements the geographic link
- * between a beam (or beam hook) and a stem.
+ * Class {@code BeamStemRelation} implements the geographic link between a beam
+ * (or beam hook) and a stem.
  *
  * @author Hervé Bitteur
  */
 public class BeamStemRelation
         extends AbstractConnection
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            BeamStemRelation.class);
+    private static final Logger logger = LoggerFactory.getLogger(BeamStemRelation.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Which portion of beam is used?. */
     private BeamPortion beamPortion;
 
@@ -47,7 +46,7 @@ public class BeamStemRelation
     /** Precise point where the stem crosses the beam. */
     private Point2D crossPoint;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BeamStemRelation object.
      */
@@ -55,31 +54,7 @@ public class BeamStemRelation
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //------------------//
-    // getXInGapMaximum //
-    //------------------//
-    public static Scale.Fraction getXInGapMaximum ()
-    {
-        return constants.xInGapMax;
-    }
-
-    //-------------------//
-    // getXOutGapMaximum //
-    //-------------------//
-    public static Scale.Fraction getXOutGapMaximum ()
-    {
-        return constants.xOutGapMax;
-    }
-
-    //----------------//
-    // getYGapMaximum //
-    //----------------//
-    public static Scale.Fraction getYGapMaximum ()
-    {
-        return constants.yGapMax;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * @return the beamPortion
      */
@@ -108,6 +83,30 @@ public class BeamStemRelation
     public StemPortion getStemPortion ()
     {
         return stemPortion;
+    }
+
+    //------------------//
+    // getXInGapMaximum //
+    //------------------//
+    public static Scale.Fraction getXInGapMaximum ()
+    {
+        return constants.xInGapMax;
+    }
+
+    //-------------------//
+    // getXOutGapMaximum //
+    //-------------------//
+    public static Scale.Fraction getXOutGapMaximum ()
+    {
+        return constants.xOutGapMax;
+    }
+
+    //----------------//
+    // getYGapMaximum //
+    //----------------//
+    public static Scale.Fraction getYGapMaximum ()
+    {
+        return constants.yGapMax;
     }
 
     /**
@@ -174,35 +173,27 @@ public class BeamStemRelation
     protected String internals ()
     {
         StringBuilder sb = new StringBuilder(super.internals());
-        sb.append(" ")
-                .append(beamPortion);
+        sb.append(" ").append(beamPortion);
 
         if (crossPoint != null) {
-            sb.append(
-                    String.format(
-                            "[x:%.0f,y:%.0f]",
-                            crossPoint.getX(),
-                            crossPoint.getY()));
+            sb.append(String.format("[x:%.0f,y:%.0f]", crossPoint.getX(), crossPoint.getY()));
         }
 
-        sb.append(",")
-                .append(stemPortion);
+        sb.append(",").append(stemPortion);
 
         return sb.toString();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        final Constant.Ratio minGrade = new Constant.Ratio(
-                0.1,
-                "Minimum interpretation grade");
+        final Constant.Ratio minGrade = new Constant.Ratio(0.1, "Minimum interpretation grade");
 
         final Constant.Ratio supportCoeff = new Constant.Ratio(
                 5,
@@ -219,6 +210,5 @@ public class BeamStemRelation
         final Scale.Fraction xOutGapMax = new Scale.Fraction(
                 0.1,
                 "Maximum horizontal gap between stem & beam");
-
     }
 }

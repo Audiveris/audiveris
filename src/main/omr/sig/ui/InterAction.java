@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            I n t e r A c t i o n                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      I n t e r A c t i o n                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig.ui;
 
@@ -29,24 +29,22 @@ import javax.swing.AbstractAction;
 import static javax.swing.Action.SHORT_DESCRIPTION;
 
 /**
- * Class {@code InterAction} is the base for Inter actions,
- * with or without relations.
+ * Class {@code InterAction} is the base for Inter actions, with or without relations.
  *
  * @author Hervé Bitteur
  */
 public class InterAction
         extends AbstractAction
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            InterAction.class);
+    private static final Logger logger = LoggerFactory.getLogger(InterAction.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying interpretation. */
     private final Inter inter;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // InterAction //
     //-------------//
@@ -85,7 +83,7 @@ public class InterAction
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------------//
     // actionPerformed //
     //-----------------//
@@ -102,12 +100,11 @@ public class InterAction
     //---------//
     public void publish ()
     {
-        inter.getSig()
-                .publish(
+        inter.getSig().publish(
                 new InterListEvent(
-                this,
-                SelectionHint.INTER_INIT,
-                MouseMovement.PRESSING,
-                Arrays.asList(inter)));
+                        this,
+                        SelectionHint.INTER_INIT,
+                        MouseMovement.PRESSING,
+                        Arrays.asList(inter)));
     }
 }

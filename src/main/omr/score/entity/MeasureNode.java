@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           M e a s u r e N o d e                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     M e a s u r e N o d e                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -19,15 +19,15 @@ import java.util.Comparator;
 
 /**
  * Class {@code MeasureNode} is an abstract class that is subclassed for
- * any PartNode with a containing measure. So this class encapsulates a direct
- * link to the enclosing measure.
+ * any PartNode with a containing measure.
+ * So this class encapsulates a direct link to the enclosing measure.
  *
  * @author Hervé Bitteur
  */
 public abstract class MeasureNode
         extends PartNode
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /**
      * Specific comparator to sort collections of MeasureNode instances,
@@ -41,9 +41,7 @@ public abstract class MeasureNode
         {
             MeasureNode mn1 = (MeasureNode) tn1;
             MeasureNode mn2 = (MeasureNode) tn2;
-            int deltaStaff = mn1.getStaff()
-                    .getId() - mn2.getStaff()
-                    .getId();
+            int deltaStaff = mn1.getStaff().getId() - mn2.getStaff().getId();
 
             if (deltaStaff != 0) {
                 // Staves are different
@@ -55,7 +53,7 @@ public abstract class MeasureNode
         }
     };
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // MeasureNode //
     //-------------//
@@ -69,7 +67,7 @@ public abstract class MeasureNode
         super(container);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -86,12 +84,10 @@ public abstract class MeasureNode
     public String getContextString ()
     {
         StringBuilder sb = new StringBuilder(super.getContextString());
-        sb.append("M")
-                .append(getMeasure().getPageId());
+        sb.append("M").append(getMeasure().getPageId());
 
         if (getStaff() != null) {
-            sb.append("F")
-                    .append(getStaff().getId());
+            sb.append("F").append(getStaff().getId());
         }
 
         return sb.toString();

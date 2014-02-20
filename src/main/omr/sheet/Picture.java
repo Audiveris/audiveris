@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               P i c t u r e                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright (C) Hervé Bitteur and Brenton Partridge 2000-2013.              //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         P i c t u r e                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright (C) Hervé Bitteur and Brenton Partr4dge 2000-2013.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet;
 
@@ -51,24 +51,24 @@ import java.util.Map;
 import javax.media.jai.JAI;
 
 /**
- * Class {@code Picture} starts from the original BufferedImage to
- * provide all {@link PixelSource} instances derived from it.
+ * Class {@code Picture} starts from the original BufferedImage to provide all {@link
+ * PixelSource} instances derived from it.
  * <p>
- * The {@code Picture} constructor takes a provided original image, whatever
- * its format and color model, and converts it if necessary to come up with a
- * usable gray-level PixelSource: the INITIAL source.
+ * The {@code Picture} constructor takes a provided original image, whatever its format and color
+ * model, and converts it if necessary to come up with a usable gray-level PixelSource: the INITIAL
+ * source.
  * <p>
- * Besides the INITIAL source, this class handles a collection of sources, all
- * of the same dimension, with the ability to retrieve them on demand or dispose
- * them, via {@link #getSource} and {@link #disposeSource} methods.
+ * Besides the INITIAL source, this class handles a collection of sources, all of the same
+ * dimension, with the ability to retrieve them on demand or dispose them, via {@link #getSource}
+ * and {@link #disposeSource} methods.
  * <p>
- * Any instance of this class is registered on the related Sheet location
- * service, so that each time a location event is received, the corresponding
- * pixel gray value of the INITIAL sources is published.
+ * Any instance of this class is registered on the related Sheet location service, so that each time
+ * a location event is received, the corresponding pixel gray value of the INITIAL sources is
+ * published.
  *
  * <p>
- * TODO: When an alpha channel is involved, perform the alpha multiplication
- * if the components are not yet premultiplied.
+ * TODO: When an alpha channel is involved, perform the alpha multiplication if the components are
+ * not yet premultiplied.
  *
  * <h4>Overview of transforms:<br/>
  * <img src="doc-files/transforms.jpg"/>
@@ -78,41 +78,37 @@ import javax.media.jai.JAI;
  * @author Brenton Partridge
  */
 public class Picture
-    implements EventSubscriber<LocationEvent>
+        implements EventSubscriber<LocationEvent>
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Picture.class);
 
-    //~ Enumerations -----------------------------------------------------------
-
+    //~ Enumerations -------------------------------------------------------------------------------
     /**
      * The set of handled sources, to be extended as needed.
      */
-    public static enum SourceKey {
-        //~ Enumeration constant initializers ----------------------------------
-
+    public static enum SourceKey
+    {
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** The initial gray-level source. */
         INITIAL,
         /** The binarized black &
          * white source. */
-        BINARY, 
+        BINARY,
         /** The Gaussian-filtered source. */
-        GAUSSIAN, 
+        GAUSSIAN,
         /** The Median-filtered source. */
-        MEDIAN, 
+        MEDIAN,
         /** The source with staff
          * lines removed. */
         STAFF_LINE_FREE;
     }
 
-    //~ Instance fields --------------------------------------------------------
-
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Related sheet. */
     private final Sheet sheet;
@@ -128,7 +124,7 @@ public class Picture
 
     /** Map of all handled sources. */
     private final Map<SourceKey, ByteProcessor> sources = new EnumMap<SourceKey, ByteProcessor>(
-        SourceKey.class);
+            SourceKey.class);
 
     /** The initial (gray-level) image. */
     private BufferedImage initialImage;
@@ -136,8 +132,7 @@ public class Picture
     /** The initial (gray-level) source. (for onEvent only) */
     private ByteProcessor initialSource;
 
-    //~ Constructors -----------------------------------------------------------
-
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //---------//
     // Picture //
@@ -150,10 +145,10 @@ public class Picture
      * @param levelService service where pixel events are to be written
      * @throws ImageFormatException
      */
-    public Picture (Sheet            sheet,
-                    BufferedImage    image,
+    public Picture (Sheet sheet,
+                    BufferedImage image,
                     SelectionService levelService)
-        throws ImageFormatException
+            throws ImageFormatException
     {
         this.sheet = sheet;
         this.levelService = levelService;
@@ -167,8 +162,7 @@ public class Picture
         initialImage = image;
     }
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // disposeSource //
     //---------------//
@@ -208,11 +202,11 @@ public class Picture
      * @param yMax  y last ordinate
      */
     public void dumpRectangle (SourceKey key,
-                               String    title,
-                               int       xMin,
-                               int       xMax,
-                               int       yMin,
-                               int       yMax)
+                               String title,
+                               int xMin,
+                               int xMax,
+                               int yMin,
+                               int yMax)
     {
         ByteProcessor source = getSource(key);
         StringBuilder sb = new StringBuilder();
@@ -273,9 +267,9 @@ public class Picture
 
             final int radius = constants.gaussianRadius.getValue();
             logger.info(
-                "{}Image blurred with gaussian kernel radius: {}",
-                sheet.getLogPrefix(),
-                radius);
+                    "{}Image blurred with gaussian kernel radius: {}",
+                    sheet.getLogPrefix(),
+                    radius);
 
             GaussianGrayFilter gaussianFilter = new GaussianGrayFilter(radius);
 
@@ -339,7 +333,7 @@ public class Picture
             watch.start("convertToByteProcessor");
 
             ColorProcessor cp = new ColorProcessor(initialImage);
-            ByteProcessor  bp = cp.convertToByteProcessor();
+            ByteProcessor bp = cp.convertToByteProcessor();
             watch.print();
 
             return bp;
@@ -386,26 +380,26 @@ public class Picture
 
                 if (src == null) {
                     switch (key) {
-                    case BINARY :
+                    case BINARY:
                         src = binarized(getInitialSource());
 
                         break;
 
-                    case GAUSSIAN :
+                    case GAUSSIAN:
                         src = gaussianFiltered(getSource(SourceKey.MEDIAN));
 
                         break;
 
-                    case MEDIAN :
+                    case MEDIAN:
                         src = medianFiltered(getSource(SourceKey.BINARY));
 
                         break;
 
-                    case STAFF_LINE_FREE :
+                    case STAFF_LINE_FREE:
                         src = Lags.buildBuffer(
-                            dimension,
-                            sheet.getLag(Lags.HLAG),
-                            sheet.getLag(Lags.VLAG));
+                                dimension,
+                                sheet.getLag(Lags.HLAG),
+                                sheet.getLag(Lags.VLAG));
 
                         break;
                     }
@@ -459,7 +453,7 @@ public class Picture
                 return;
             }
 
-            Integer   level = null;
+            Integer level = null;
 
             // Compute and forward pixel gray level
             Rectangle rect = event.getData();
@@ -468,16 +462,12 @@ public class Picture
                 Point pt = rect.getLocation();
 
                 // Check that we are not pointing outside the image
-                if ((pt.x >= 0) &&
-                    (pt.x < getWidth()) &&
-                    (pt.y >= 0) &&
-                    (pt.y < getHeight())) {
+                if ((pt.x >= 0) && (pt.x < getWidth()) && (pt.y >= 0) && (pt.y < getHeight())) {
                     level = initialSource.get(pt.x, pt.y);
                 }
             }
 
-            levelService.publish(
-                new PixelLevelEvent(this, event.hint, event.movement, level));
+            levelService.publish(new PixelLevelEvent(this, event.hint, event.movement, level));
         } catch (Exception ex) {
             logger.warn(getClass().getName() + " onEvent error", ex);
         }
@@ -502,15 +492,15 @@ public class Picture
      * @throws ImageFormatException is the format is not supported
      */
     private BufferedImage adjustImageFormat (BufferedImage img)
-        throws ImageFormatException
+            throws ImageFormatException
     {
         ColorModel colorModel = img.getColorModel();
-        boolean    hasAlpha = colorModel.hasAlpha();
+        boolean hasAlpha = colorModel.hasAlpha();
         logger.debug("{}", colorModel);
 
         // Check nb of bands
         SampleModel sampleModel = img.getSampleModel();
-        int         numBands = sampleModel.getNumBands();
+        int numBands = sampleModel.getNumBands();
         logger.debug("numBands={}", numBands);
 
         if (numBands == 1) {
@@ -519,8 +509,7 @@ public class Picture
         } else if ((numBands == 2) && hasAlpha) {
             // Pixel + alpha
             // Discard alpha
-            return JAI.create("bandselect", img, new int[] { 0 })
-                      .getAsBufferedImage();
+            return JAI.create("bandselect", img, new int[]{0}).getAsBufferedImage();
         } else if ((numBands == 3) && !hasAlpha) {
             // RGB
             return ImageUtil.maxRgbToGray(img);
@@ -529,8 +518,7 @@ public class Picture
             return ImageUtil.maxRgbaToGray(img);
         } else {
             throw new ImageFormatException(
-                "Unsupported sample model numBands=" + numBands + " hasAlpha=" +
-                hasAlpha);
+                    "Unsupported sample model numBands=" + numBands + " hasAlpha=" + hasAlpha);
         }
     }
 
@@ -539,13 +527,9 @@ public class Picture
     //-----------//
     private ByteProcessor binarized (ByteProcessor src)
     {
-        FilterDescriptor desc = sheet.getPage()
-                                     .getFilterParam()
-                                     .getTarget();
+        FilterDescriptor desc = sheet.getPage().getFilterParam().getTarget();
         logger.info("{}{} {}", sheet.getLogPrefix(), "Binarization", desc);
-        sheet.getPage()
-             .getFilterParam()
-             .setActual(desc);
+        sheet.getPage().getFilterParam().setActual(desc);
 
         PixelFilter filter = desc.getFilter(src);
 
@@ -556,14 +540,14 @@ public class Picture
     // checkImage //
     //------------//
     private BufferedImage checkImage (BufferedImage img)
-        throws ImageFormatException
+            throws ImageFormatException
     {
         // Check image format
         img = adjustImageFormat(img);
 
         // Check pixel size and compute grayFactor accordingly
         ColorModel colorModel = img.getColorModel();
-        int        pixelSize = colorModel.getPixelSize();
+        int pixelSize = colorModel.getPixelSize();
         logger.debug("colorModel={} pixelSize={}", colorModel, pixelSize);
 
         //        if (pixelSize == 1) {
@@ -592,9 +576,9 @@ public class Picture
 
             final int radius = constants.medianRadius.getValue();
             logger.info(
-                "{}Image filtered with median kernel radius: {}",
-                sheet.getLogPrefix(),
-                radius);
+                    "{}Image filtered with median kernel radius: {}",
+                    sheet.getLogPrefix(),
+                    radius);
 
             MedianGrayFilter medianFilter = new MedianGrayFilter(radius);
 
@@ -606,32 +590,35 @@ public class Picture
         }
     }
 
-    //~ Inner Classes ----------------------------------------------------------
-
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-        extends ConstantSet
+            extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Boolean printWatch = new Constant.Boolean(
-            false,
-            "Should we print out the stop watch?");
+                false,
+                "Should we print out the stop watch?");
+
         Constant.Boolean useMaxChannelInColorToGray = new Constant.Boolean(
-            true,
-            "Should we use max channel rather than standard luminance?");
+                true,
+                "Should we use max channel rather than standard luminance?");
+
         Constant.Boolean filterImage = new Constant.Boolean(
-            true,
-            "Should we slightly filter the source image?");
+                true,
+                "Should we slightly filter the source image?");
+
         Constant.Integer gaussianRadius = new Constant.Integer(
-            "pixels",
-            2,
-            "Radius of Gaussian filtering kernel (1 for 3x3, 2 for 5x5, etc)");
+                "pixels",
+                2,
+                "Radius of Gaussian filtering kernel (1 for 3x3, 2 for 5x5, etc)");
+
         Constant.Integer medianRadius = new Constant.Integer(
-            "pixels",
-            1,
-            "Radius of Median filtering kernel (1 for 3x3, 2 for 5x5)");
+                "pixels",
+                1,
+                "Radius of Median filtering kernel (1 for 3x3, 2 for 5x5)");
     }
 }

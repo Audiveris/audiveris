@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                        S h a p e E v a l u a t o r                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                  S h a p e E v a l u a t o r                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
@@ -20,34 +20,31 @@ import omr.util.Predicate;
 import java.util.EnumSet;
 
 /**
- * Interface {@code ShapeEvaluator} defines the features of a glyph
- * shape evaluator.
+ * Interface {@code ShapeEvaluator} defines the features of a glyph shape evaluator.
  *
  * @author Hervé Bitteur
  */
 public interface ShapeEvaluator
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Empty conditions set */
-    public static final EnumSet<Condition> NO_CONDITIONS = EnumSet.noneOf(
-            Condition.class);
+    public static final EnumSet<Condition> NO_CONDITIONS = EnumSet.noneOf(Condition.class);
 
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
     /** Conditions for evaluation */
     public static enum Condition
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** Make sure the shape is not blacklisted by the glyph at hand */
         ALLOWED,
         /** Make
          * sure all specific checks are successfully passed */
         CHECKED;
-
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the sorted sequence of best evaluation(s) found by the
      * evaluator on the provided glyph.

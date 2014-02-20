@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           W o r d S c a n n e r                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     W o r d S c a n n e r                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.text;
 
@@ -17,21 +17,18 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Class {@code WordScanner} is a scanner to retrieve words out of
- * a string content, while mapping each word to a sequence of TextChar
- * instances.
+ * Class {@code WordScanner} is a scanner to retrieve words out of a string content,
+ * while mapping each word to a sequence of TextChar instances.
  *
  * @author Hervé Bitteur
  */
 public abstract class WordScanner
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            WordScanner.class);
+    private static final Logger logger = LoggerFactory.getLogger(WordScanner.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     private final boolean bySyllable;
 
     /** The content string */
@@ -41,7 +38,7 @@ public abstract class WordScanner
     private int strIndex = -1;
 
     /** Precise description of each (non blank) character */
-    private List<TextChar> chars;
+    private final List<TextChar> chars;
 
     /** Current word and its positions in chars sequence */
     private String currentWord = null;
@@ -57,7 +54,7 @@ public abstract class WordScanner
 
     private int nextWordStop = -1;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------//
     // WordScanner //
     //-------------//
@@ -76,7 +73,7 @@ public abstract class WordScanner
         this.chars = chars;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //--------------//
     // getWordChars //
@@ -125,18 +122,6 @@ public abstract class WordScanner
 
         return currentWord;
     }
-
-    //--------------//
-    // stringToDesc //
-    //--------------//
-    /**
-     * Knowing the char strIndex in string content, determine the
-     * related position in the sequence of TextChar instances
-     *
-     * @param strIndex strIndex in contant
-     * @return position in sequence of TextChar instances
-     */
-    protected abstract int stringToDesc (int strIndex);
 
     //-------------//
     // getNextWord //
@@ -204,7 +189,19 @@ public abstract class WordScanner
         nextWord = getNextWord();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //--------------//
+    // stringToDesc //
+    //--------------//
+    /**
+     * Knowing the char strIndex in string content, determine the
+     * related position in the sequence of TextChar instances
+     *
+     * @param strIndex strIndex in contant
+     * @return position in sequence of TextChar instances
+     */
+    protected abstract int stringToDesc (int strIndex);
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //---------------//
     // ManualScanner //
     //---------------//
@@ -216,12 +213,12 @@ public abstract class WordScanner
     public static class ManualScanner
             extends WordScanner
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         /** Ratio of number of TextChar instances / content length. */
         private final double ratio;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         /**
          * Creates a new ManualScanner object.
          *
@@ -240,7 +237,7 @@ public abstract class WordScanner
             logger.debug("ManualScanner on ''{}''", content);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * Compute charPos proportionally to strIndex.
          */
@@ -263,7 +260,7 @@ public abstract class WordScanner
     public static class OcrScanner
             extends WordScanner
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         /**
          * Creates a new OcrScanner object.
@@ -281,7 +278,7 @@ public abstract class WordScanner
             logger.debug("OcrScanner on ''{}''", content);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         /**
          * CharPos and strIndex are always equal.
          */

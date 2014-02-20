@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               L i n e U t i l                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         L i n e U t i l                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -15,21 +15,20 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
 /**
- * Class {@code LineUtil} is a collection of utilities related to
- * lines.
+ * Class {@code LineUtil} is a collection of utilities related to lines.
  *
  * @author Hervé Bitteur
  */
 public class LineUtil
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /** Not meant to be instantiated. */
     private LineUtil ()
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // bisector //
     //----------//
@@ -254,9 +253,7 @@ public class LineUtil
                                                   double slope,
                                                   double x)
     {
-        Point2D p2 = new Point2D.Double(
-                p1.getX() + 1000,
-                p1.getY() + (1000 * slope));
+        Point2D p2 = new Point2D.Double(p1.getX() + 1000, p1.getY() + (1000 * slope));
         Point2D p3 = new Point2D.Double(x, 0);
         Point2D p4 = new Point2D.Double(x, 1000);
 
@@ -302,9 +299,7 @@ public class LineUtil
                                                   double invertedSlope,
                                                   double y)
     {
-        Point2D p2 = new Point2D.Double(
-                p1.getX() + (1000 * invertedSlope),
-                p1.getY() + 1000);
+        Point2D p2 = new Point2D.Double(p1.getX() + (1000 * invertedSlope), p1.getY() + 1000);
         Point2D p3 = new Point2D.Double(0, y);
         Point2D p4 = new Point2D.Double(1000, y);
 

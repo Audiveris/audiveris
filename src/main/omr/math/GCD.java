@@ -1,34 +1,34 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                   G C D                                    //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                             G C D                                              //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
 import java.util.Collection;
 
 /**
- * Class {@code GCD} gathers several functions to compute Greatest
- * Common Divisor of a ensemble of integer values.
+ * Class {@code GCD} gathers several functions to compute Greatest Common Divisor
+ * of a ensemble of integer values.
  *
  * @author Hervé Bitteur
  */
 public class GCD
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     /** Not meant to be instantiated */
     private GCD ()
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----//
     // gcd //
     //-----//

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              G r i d S t e p                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        G r i d S t e p                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -21,15 +21,15 @@ import omr.sheet.SystemInfo;
 import java.util.Collection;
 
 /**
- * Class {@code GridStep} implements <b>GRID</b> step, which
- * retrieves all staves and systems of a sheet.
+ * Class {@code GridStep} implements <b>GRID</b> step, which retrieves all staves and
+ * systems of a sheet.
  *
  * @author Hervé Bitteur
  */
 public class GridStep
         extends AbstractStep
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //----------//
     // GridStep //
@@ -47,7 +47,7 @@ public class GridStep
                 "Retrieve the grid of all systems");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // displayUI //
     //-----------//
@@ -70,8 +70,7 @@ public class GridStep
             throws StepException
     {
         sheet.createNest();
-        sheet.getGridBuilder()
-                .buildInfo();
+        sheet.getGridBuilder().buildInfo();
 
         // Purge sections & runs of staff lines from hLag
         // Cross-connect vertical & remaining horizontal sections
@@ -79,7 +78,6 @@ public class GridStep
 
         // Populate systems
         sheet.createSystemManager();
-        sheet.getSystemManager()
-                .populateSystems();
+        sheet.getSystemManager().populateSystems();
     }
 }

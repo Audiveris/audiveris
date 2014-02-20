@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              D e l t a V i e w                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        D e l t a V i e w                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet.ui;
 
@@ -45,16 +45,15 @@ public class DeltaView
         extends ScrollView
         implements PropertyChangeListener
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            DeltaView.class);
+    private static final Logger logger = LoggerFactory.getLogger(DeltaView.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Underlying sheet. */
     private final Sheet sheet;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // DeltaView //
     //-----------//
@@ -76,14 +75,13 @@ public class DeltaView
 
         // Listen to all painting parameters
         PaintingParameters.getInstance()
-                .addPropertyChangeListener(
-                        new WeakPropertyChangeListener(this));
+                .addPropertyChangeListener(new WeakPropertyChangeListener(this));
 
         // Insert view
         setView(view);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------//
     // propertyChange //
     //----------------//
@@ -93,21 +91,21 @@ public class DeltaView
         view.repaint();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // MyView //
     //--------//
     private class MyView
             extends RubberPanel
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public MyView ()
         {
             setModelSize(sheet.getDimension());
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         //--------//
         // render //
         //--------//
@@ -178,8 +176,7 @@ public class DeltaView
 
         private void renderOutput (Graphics2D g)
         {
-            sheet.getPage()
-                    .accept(new PagePhysicalPainter(g, false, true, false));
+            sheet.getPage().accept(new PagePhysicalPainter(g, false, true, false));
         }
     }
 }

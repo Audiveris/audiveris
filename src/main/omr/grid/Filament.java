@@ -1,18 +1,19 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              F i l a m e n t                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        F i l a m e n t                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
 import omr.Main;
 
+import omr.glyph.GlyphLayer;
 import omr.glyph.facets.BasicGlyph;
 import omr.glyph.facets.GlyphComposition.Linking;
 
@@ -26,21 +27,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
-import omr.glyph.GlyphLayer;
 
 /**
- * Class {@code Filament} represents a long glyph that can be far from
- * being a straight line.
+ * Class {@code Filament} represents a long glyph that can be far from being a straight.
  * It is used to handle candidate staff lines and bar lines.
  */
 public class Filament
         extends BasicGlyph
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            Filament.class);
+    private static final Logger logger = LoggerFactory.getLogger(Filament.class);
 
     /**
      * For comparing Filament instances on their top ordinate
@@ -56,11 +53,11 @@ public class Filament
         }
     };
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Related scale */
     private final Scale scale;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //----------//
     // Filament //
     //----------//
@@ -93,7 +90,7 @@ public class Filament
         this.scale = scale;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // addSection //
     //------------//
@@ -109,8 +106,7 @@ public class Filament
     public void addSection (Section section,
                             Linking link)
     {
-        getComposition()
-                .addSection(section, link);
+        getComposition().addSection(section, link);
     }
 
     //----------//
@@ -127,8 +123,7 @@ public class Filament
     //------------------//
     public double getMeanCurvature ()
     {
-        return getAlignment()
-                .getMeanCurvature();
+        return getAlignment().getMeanCurvature();
     }
 
     //----------//
@@ -153,8 +148,7 @@ public class Filament
      */
     public void polishCurvature ()
     {
-        getAlignment()
-                .polishCurvature();
+        getAlignment().polishCurvature();
     }
 
     //---------------//
@@ -170,8 +164,7 @@ public class Filament
     public double positionAt (double coord,
                               Orientation orientation)
     {
-        return getAlignment()
-                .getPositionAt(coord, orientation);
+        return getAlignment().getPositionAt(coord, orientation);
     }
 
     //---------//
@@ -180,8 +173,7 @@ public class Filament
     public double slopeAt (double coord,
                            Orientation orientation)
     {
-        return getAlignment()
-                .slopeAt(coord, orientation);
+        return getAlignment().slopeAt(coord, orientation);
     }
 
     //------------//
@@ -215,13 +207,11 @@ public class Filament
         StringBuilder sb = new StringBuilder();
 
         if (getPartOf() != null) {
-            sb.append(" anc:")
-                    .append(getAncestor());
+            sb.append(" anc:").append(getAncestor());
         }
 
         if (getShape() != null) {
-            sb.append(" ")
-                    .append(getShape());
+            sb.append(" ").append(getShape());
         }
 
         return sb.toString();

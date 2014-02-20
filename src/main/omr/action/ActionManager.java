@@ -1,20 +1,17 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         A c t i o n M a n a g e r                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   A c t i o n M a n a g e r                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.action;
 
 import omr.WellKnowns;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import omr.ui.MainGui;
 import omr.ui.util.SeparableMenu;
@@ -25,10 +22,12 @@ import omr.util.UriUtil;
 import org.jdesktop.application.ApplicationAction;
 import org.jdesktop.application.ResourceMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
-import java.io.InputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URI;
@@ -49,36 +48,33 @@ import javax.swing.JToolBar;
 import javax.xml.bind.JAXBException;
 
 /**
- * Class {@code ActionManager} handles the instantiation and dressing
- * of actions, their organization in the menus and the tool bar, and
- * their enabling.
+ * Class {@code ActionManager} handles the instantiation and dressing of actions,
+ * their organization in the menus and the tool bar, and their enabling.
  *
  * @author Hervé Bitteur
  */
 public class ActionManager
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(ActionManager.class);
 
     /** Class loader */
-    private static final ClassLoader classLoader = ActionManager.class.
-            getClassLoader();
+    private static final ClassLoader classLoader = ActionManager.class.getClassLoader();
 
     /** Singleton */
     private static volatile ActionManager INSTANCE;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The map of all menus, so that we can directly provide some. */
-    private final Map<String, JMenu> menuMap = new HashMap<>();
+    private final Map<String, JMenu> menuMap = new HashMap<String, JMenu>();
 
     /** Collection of actions enabled only when a sheet is selected. */
-    private final Collection<Action> sheetDependentActions = new ArrayList<>();
+    private final Collection<Action> sheetDependentActions = new ArrayList<Action>();
 
     /** Collection of actions enabled only when current score is available. */
-    private final Collection<Action> scoreDependentActions = new ArrayList<>();
+    private final Collection<Action> scoreDependentActions = new ArrayList<Action>();
 
     /** The tool bar that hosts some actions. */
     private final JToolBar toolBar = new JToolBar();
@@ -86,7 +82,7 @@ public class ActionManager
     /** The menu bar for all actions. */
     private final JMenuBar menuBar = new JMenuBar();
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //---------------//
     // ActionManager //
@@ -98,7 +94,25 @@ public class ActionManager
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //-------------------//
+    // getActionInstance //
+    //-------------------//
+    /**
+     * Retrieve an action knowing its methodName.
+     *
+     * @param instance   the instance of the hosting class
+     * @param methodName the method name
+     * @return the action found, or null if none
+     */
+    public ApplicationAction getActionInstance (Object instance,
+                                                String methodName)
+    {
+        ActionMap actionMap = MainGui.getInstance().getContext().getActionMap(instance);
+
+        return (ApplicationAction) actionMap.get(methodName);
+    }
+
     //-------------//
     // getInstance //
     //-------------//
@@ -114,25 +128,6 @@ public class ActionManager
         }
 
         return INSTANCE;
-    }
-
-    //-------------------//
-    // getActionInstance //
-    //-------------------//
-    /**
-     * Retrieve an action knowing its methodName.
-     *
-     * @param instance   the instance of the hosting class
-     * @param methodName the method name
-     * @return the action found, or null if none
-     */
-    public ApplicationAction getActionInstance (Object instance,
-                                                String methodName)
-    {
-        ActionMap actionMap = MainGui.getInstance().getContext().getActionMap(
-                instance);
-
-        return (ApplicationAction) actionMap.get(methodName);
     }
 
     //---------//
@@ -215,10 +210,12 @@ public class ActionManager
         // Load classes first for system actions, then for user actions
         URI[] uris = new URI[]{
             UriUtil.toURI(WellKnowns.RES_URI, "system-actions.xml"),
-            new File(WellKnowns.CONFIG_FOLDER, "user-actions.xml").toURI().normalize()};
+            new File(WellKnowns.CONFIG_FOLDER, "user-actions.xml").toURI().normalize()
+        };
 
         for (int i = 0; i < uris.length; i++) {
             URI uri = uris[i];
+
             try {
                 URL url = uri.toURL();
                 InputStream input = url.openStream();
@@ -261,8 +258,7 @@ public class ActionManager
             }
 
             // Proper menu decoration
-            ResourceMap resource = MainGui.getInstance().getContext().
-                    getResourceMap(Actions.class);
+            ResourceMap resource = MainGui.getInstance().getContext().getResourceMap(Actions.class);
             menu.setText(domain); // As default
             menu.setName(domain);
 
@@ -308,9 +304,7 @@ public class ActionManager
 
             // Reuse existing instance through a 'getInstance()' method if any
             try {
-                Method getInstance = classe.getDeclaredMethod(
-                        "getInstance",
-                        (Class[]) null);
+                Method getInstance = classe.getDeclaredMethod("getInstance", (Class[]) null);
 
                 if (Modifier.isStatic(getInstance.getModifiers())) {
                     instance = getInstance.invoke(null);
@@ -330,9 +324,8 @@ public class ActionManager
             if (action != null) {
                 // Insertion of a button on Tool Bar?
                 if (desc.buttonClassName != null) {
-                    Class<? extends AbstractButton> buttonClass =
-                            (Class<? extends AbstractButton>) classLoader.
-                            loadClass(desc.buttonClassName);
+                    Class<? extends AbstractButton> buttonClass = (Class<? extends AbstractButton>) classLoader.loadClass(
+                            desc.buttonClassName);
                     AbstractButton button = buttonClass.newInstance();
                     button.setAction(action);
                     toolBar.add(button);
@@ -340,12 +333,9 @@ public class ActionManager
                     button.setText("");
                 }
             } else {
-                logger.error("Unknown action {} in class {}",
-                        desc.methodName, desc.className);
+                logger.error("Unknown action {} in class {}", desc.methodName, desc.className);
             }
-        } catch (ClassNotFoundException | SecurityException |
-                IllegalAccessException | IllegalArgumentException |
-                InvocationTargetException | InstantiationException ex) {
+        } catch (Exception ex) {
             logger.warn("Error while registering " + desc, ex);
         }
 
@@ -367,16 +357,14 @@ public class ActionManager
             menu.addSeparator();
 
             for (ActionDescriptor desc : Actions.getAllDescriptors()) {
-                if (desc.domain.equalsIgnoreCase(domain)
-                    && (desc.section == section)) {
+                if (desc.domain.equalsIgnoreCase(domain) && (desc.section == section)) {
                     logger.debug("Registering {}", desc);
 
                     try {
                         Class<? extends JMenuItem> itemClass;
 
                         if (desc.itemClassName != null) {
-                            itemClass = (Class<? extends JMenuItem>) classLoader.
-                                    loadClass(
+                            itemClass = (Class<? extends JMenuItem>) classLoader.loadClass(
                                     desc.itemClassName);
                         } else {
                             itemClass = JMenuItem.class;
@@ -394,8 +382,7 @@ public class ActionManager
                         } else {
                             logger.warn("Could not register {}", desc);
                         }
-                    } catch (ClassNotFoundException | InstantiationException |
-                            IllegalAccessException ex) {
+                    } catch (Exception ex) {
                         logger.warn("Error with " + desc.itemClassName, ex);
                     }
                 }

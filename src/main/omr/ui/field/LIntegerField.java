@@ -1,26 +1,26 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         L I n t e g e r F i e l d                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   L I n t e g e r F i e l d                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.field;
 
 /**
- * Class {@code LIntegerField} is an {@link LTextField}, whose field is
- * meant to handle an integer value.
+ * Class {@code LIntegerField} is an {@link LTextField}, whose field is meant to handle
+ * an integer value.
  *
  * @author Hervé Bitteur
  */
 public class LIntegerField
         extends LTextField
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //---------------//
     // LIntegerField //
@@ -54,7 +54,7 @@ public class LIntegerField
         super(editable, label, tip);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getValue //
     //----------//
@@ -66,9 +66,7 @@ public class LIntegerField
      */
     public int getValue ()
     {
-        String str = getField()
-                .getText()
-                .trim();
+        String str = getField().getText().trim();
 
         if (str.length() == 0) {
             return 0;
@@ -87,7 +85,6 @@ public class LIntegerField
      */
     public void setValue (int val)
     {
-        getField()
-                .setText(Integer.toString(val));
+        getField().setText(Integer.toString(val));
     }
 }

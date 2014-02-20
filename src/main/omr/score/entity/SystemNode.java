@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            S y s t e m N o d e                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      S y s t e m N o d e                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -27,9 +27,8 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * Class {@code SystemNode} is an abstract class that is subclassed
- * for any Node that is contained in a system, beginning by the system
- * itself.
+ * Class {@code SystemNode} is an abstract class that is sub-classed for any Node that
+ * is contained in a system, beginning by the system itself.
  * So this class encapsulates a direct link to the enclosing system.
  *
  * @author Hervé Bitteur
@@ -37,13 +36,13 @@ import java.util.Collections;
 public abstract class SystemNode
         extends PageNode
 {
-    //~ Enumerations -----------------------------------------------------------
+    //~ Enumerations -------------------------------------------------------------------------------
 
     /** Relative vertical position with respect to the staves of the system
      * or part at hand */
     public enum StaffPosition
     {
-        //~ Enumeration constant initializers ----------------------------------
+        //~ Enumeration constant initializers ------------------------------------------------------
 
         /** Above the first real staff of this entity */
         ABOVE_STAVES,
@@ -53,10 +52,9 @@ public abstract class SystemNode
         /** Below the last staff of
          * this entity */
         BELOW_STAVES;
-
     }
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Containing system */
     @Navigable(false)
     private final ScoreSystem system;
@@ -67,7 +65,7 @@ public abstract class SystemNode
     /** Location of the center of this entity, WRT page top-left corner */
     protected Point center;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //------------//
     // SystemNode //
     //------------//
@@ -92,7 +90,7 @@ public abstract class SystemNode
         system = null;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -128,11 +126,8 @@ public abstract class SystemNode
     public void addError (Glyph glyph,
                           String text)
     {
-        if ((getPage() != null) && (getPage()
-                .getSheet() != null)) {
-            getPage()
-                    .getSheet()
-                    .addError(this, glyph, text);
+        if ((getPage() != null) && (getPage().getSheet() != null)) {
+            getPage().getSheet().addError(this, glyph, text);
         }
     }
 
@@ -199,8 +194,7 @@ public abstract class SystemNode
     public String getContextString ()
     {
         StringBuilder sb = new StringBuilder(super.getContextString());
-        sb.append("S")
-                .append(system.getId());
+        sb.append("S").append(system.getId());
 
         return sb.toString();
     }
@@ -248,8 +242,7 @@ public abstract class SystemNode
      */
     protected void computeBox ()
     {
-        throw new RuntimeException(
-                "computeBox() not implemented in " + getClass().getName());
+        throw new RuntimeException("computeBox() not implemented in " + getClass().getName());
     }
 
     //---------------//
@@ -318,9 +311,7 @@ public abstract class SystemNode
             return null;
         }
 
-        return new Point(
-                glyphsBox.x + (glyphsBox.width / 2),
-                glyphsBox.y + (glyphsBox.height / 2));
+        return new Point(glyphsBox.x + (glyphsBox.width / 2), glyphsBox.y + (glyphsBox.height / 2));
     }
 
     //-------//

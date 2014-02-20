@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       R e g r e s s i o n P a n e l                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 R e g r e s s i o n P a n e l                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui.panel;
 
@@ -20,22 +20,20 @@ import org.slf4j.LoggerFactory;
 import javax.swing.JButton;
 
 /**
- * Class {@code RegressionPanel} is the user interface that handles the
- * training of the linear engine. It is a dedicated companion of class
- * {@link GlyphTrainer}.
+ * Class {@code RegressionPanel} is the user interface that handles the training of the
+ * linear engine.
+ * It is a dedicated companion of class {@link GlyphTrainer}.
  *
  * @author Hervé Bitteur
  */
 class RegressionPanel
         extends TrainingPanel
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            RegressionPanel.class);
+    private static final Logger logger = LoggerFactory.getLogger(RegressionPanel.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------------//
     // RegressionPanel //
     //-----------------//
@@ -50,12 +48,7 @@ class RegressionPanel
                             String standardWidth,
                             SelectionPanel selectionPanel)
     {
-        super(
-                task,
-                standardWidth,
-                GlyphRegression.getInstance(),
-                selectionPanel,
-                4);
+        super(task, standardWidth, GlyphRegression.getInstance(), selectionPanel, 4);
         task.addObserver(this);
 
         trainAction = new TrainAction("Train");
@@ -63,7 +56,7 @@ class RegressionPanel
         defineSpecificLayout();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------------------//
     // defineSpecificLayout //
     //----------------------//

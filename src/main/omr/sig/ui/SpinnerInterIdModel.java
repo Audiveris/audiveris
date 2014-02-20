@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                    S p i n n e r I n t e r I d M o d e l                   //
-//                                                                            //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                              S p i n n e r I n t e r I d M o d e l                             //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
 // <editor-fold defaultstate="collapsed" desc="hdr">
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
 //  This software is released under the GNU General Public License.
 //  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig.ui;
 
@@ -21,27 +21,28 @@ import org.slf4j.LoggerFactory;
 import javax.swing.AbstractSpinnerModel;
 
 /**
- * Class {@code SpinnerInterIdModel} is a spinner model backed by a
- * {@link SigManager} instance.
+ * Class {@code SpinnerInterIdModel} is a spinner model backed by a {@link SigManager}
+ * instance.
  *
  * @author Hervé Bitteur
  */
 public class SpinnerInterIdModel
-        extends AbstractSpinnerModel
+    extends AbstractSpinnerModel
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            SpinnerInterIdModel.class);
+    private static final Logger logger = LoggerFactory.getLogger(SpinnerInterIdModel.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
+
     /** Underlying SIG manager. */
     private final SigManager sigManager;
 
     /** Current inter id. */
     private int currentId = NO_VALUE;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
+
     /**
      * Creates a new SpinnerInterIdModel object.
      *
@@ -52,7 +53,8 @@ public class SpinnerInterIdModel
         this.sigManager = sigManager;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+
     @Override
     public Object getNextValue ()
     {

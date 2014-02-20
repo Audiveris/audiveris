@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     B i n a r i z a t i o n B o a r d                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               B i n a r i z a t i o n B o a r d                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sheet.ui;
 
@@ -48,31 +48,23 @@ import java.awt.Rectangle;
 public class BinarizationBoard
         extends Board
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            BinarizationBoard.class);
+    private static final Logger logger = LoggerFactory.getLogger(BinarizationBoard.class);
 
     /** Events this entity is interested in */
-    private static final Class<?>[] eventClasses = new Class<?>[]{
-        LocationEvent.class
-    };
+    private static final Class<?>[] eventClasses = new Class<?>[]{LocationEvent.class};
 
     /** Format used for every double field. */
     private static final String format = "%.2f";
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** The related sheet. */
     private final Sheet sheet;
 
     /** Mean level in neighborhood. */
-    private final LDoubleField mean = new LDoubleField(
-            false,
-            "Mean",
-            "Mean value",
-            format);
+    private final LDoubleField mean = new LDoubleField(false, "Mean", "Mean value", format);
 
     /** Standard deviation in neighborhood. */
     private final LDoubleField stdDev = new LDoubleField(
@@ -82,13 +74,9 @@ public class BinarizationBoard
             format);
 
     /** Computed threshold. */
-    private final LDoubleField threshold = new LDoubleField(
-            false,
-            "Thres.",
-            "Threshold",
-            format);
+    private final LDoubleField threshold = new LDoubleField(false, "Thres.", "Threshold", format);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     /**
      * Creates a new BinarizationBoard object.
      *
@@ -96,20 +84,14 @@ public class BinarizationBoard
      */
     public BinarizationBoard (Sheet sheet)
     {
-        super(
-                "Binarization",
-                150,
-                sheet.getLocationService(),
-                eventClasses,
-                false,
-                false);
+        super("Binarization", 150, sheet.getLocationService(), eventClasses, false, false);
 
         this.sheet = sheet;
 
         defineLayout();
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //---------//
     // onEvent //
@@ -131,12 +113,9 @@ public class BinarizationBoard
                 Rectangle rect = sheetLocation.getData();
 
                 if (rect != null) {
-                    FilterDescriptor desc = sheet.getPage()
-                            .getFilterParam()
-                            .getTarget();
-                    ByteProcessor source = sheet.getPicture()
-                            .getSource(
-                                    Picture.SourceKey.INITIAL);
+                    FilterDescriptor desc = sheet.getPage().getFilterParam().getTarget();
+                    ByteProcessor source = sheet.getPicture().getSource(
+                            Picture.SourceKey.INITIAL);
                     PixelFilter filter = desc.getFilter(source);
 
                     if (filter == null) {
@@ -146,9 +125,7 @@ public class BinarizationBoard
                                 AdaptiveFilter.getDefaultStdDevCoeff());
                     }
 
-                    PixelFilter.Context context = filter.getContext(
-                            rect.x,
-                            rect.y);
+                    PixelFilter.Context context = filter.getContext(rect.x, rect.y);
 
                     if (context != null) {
                         if (context instanceof AdaptiveContext) {

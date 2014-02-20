@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          A b s t r a c t I n t e r                         //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Herve Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    A b s t r a c t I n t e r                                   //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Herve Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.sig;
 
@@ -29,20 +29,19 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * Class {@code AbstractInter} is the abstract implementation basis
- * for Interpretation interface.
+ * Class {@code AbstractInter} is the abstract implementation basis for Interpretation
+ * interface.
  *
  * @author Hervé Bitteur
  */
 public abstract class AbstractInter
         implements Inter
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            AbstractInter.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractInter.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The underlying glyph, if any. */
     protected final Glyph glyph;
 
@@ -79,7 +78,7 @@ public abstract class AbstractInter
     /** Potential attachments, lazily allocated. */
     private AttachmentHolder attachments;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // AbstractInter //
     //---------------//
@@ -145,33 +144,7 @@ public abstract class AbstractInter
         }
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //--------------//
-    // getGoodGrade //
-    //--------------//
-    /**
-     * Report the minimum grade to consider an interpretation as good.
-     *
-     * @return the minimum grade value for a good interpretation
-     */
-    public static double getGoodGrade ()
-    {
-        return goodGrade;
-    }
-
-    //-------------//
-    // getMinGrade //
-    //-------------//
-    /**
-     * Report the minimum grade for an acceptable interpretation
-     *
-     * @return the minimum grade for keeping an Inter instance
-     */
-    public static double getMinGrade ()
-    {
-        return minGrade;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //--------//
     // accept //
     //--------//
@@ -215,8 +188,7 @@ public abstract class AbstractInter
             }
 
             if (glyph != null) {
-                glyph.getInterpretations()
-                        .remove(this);
+                glyph.getInterpretations().remove(this);
             }
         }
     }
@@ -236,8 +208,7 @@ public abstract class AbstractInter
                         Integer.toHexString(this.hashCode())));
         sb.append(String.format("   %s%n", this));
 
-        if (!getDetails()
-                .isEmpty()) {
+        if (!getDetails().isEmpty()) {
             sb.append(String.format("   %s", getDetails()));
         }
 
@@ -313,8 +284,7 @@ public abstract class AbstractInter
         StringBuilder sb = new StringBuilder();
 
         if (glyph != null) {
-            sb.append("g#")
-                    .append(glyph.getId());
+            sb.append("g#").append(glyph.getId());
         }
 
         if (impacts != null) {
@@ -322,9 +292,7 @@ public abstract class AbstractInter
                 sb.append(" ");
             }
 
-            sb.append("(")
-                    .append(impacts)
-                    .append(")");
+            sb.append("(").append(impacts).append(")");
         }
 
         return sb.toString();
@@ -337,6 +305,19 @@ public abstract class AbstractInter
     public Glyph getGlyph ()
     {
         return glyph;
+    }
+
+    //--------------//
+    // getGoodGrade //
+    //--------------//
+    /**
+     * Report the minimum grade to consider an interpretation as good.
+     *
+     * @return the minimum grade value for a good interpretation
+     */
+    public static double getGoodGrade ()
+    {
+        return goodGrade;
     }
 
     //----------//
@@ -364,6 +345,19 @@ public abstract class AbstractInter
     public GradeImpacts getImpacts ()
     {
         return impacts;
+    }
+
+    //-------------//
+    // getMinGrade //
+    //-------------//
+    /**
+     * Report the minimum grade for an acceptable interpretation
+     *
+     * @return the minimum grade for keeping an Inter instance
+     */
+    public static double getMinGrade ()
+    {
+        return minGrade;
     }
 
     //----------//
@@ -430,11 +424,9 @@ public abstract class AbstractInter
         if (this.area != null) {
             return this.area.intersects(that.getCoreBounds());
         } else if (that.getArea() != null) {
-            return that.getArea()
-                    .intersects(this.getCoreBounds());
+            return that.getArea().intersects(this.getCoreBounds());
         } else {
-            return this.getCoreBounds()
-                    .intersects(that.getCoreBounds());
+            return this.getCoreBounds().intersects(that.getCoreBounds());
         }
     }
 
@@ -531,8 +523,7 @@ public abstract class AbstractInter
         sb.append(shape);
 
         if (getId() != 0) {
-            sb.append("#")
-                    .append(getId());
+            sb.append("#").append(getId());
         }
 
         sb.append(String.format("(%.2f", grade));

@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                           S t e p M o n i t o r                            //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                     S t e p M o n i t o r                                      //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.step;
 
@@ -21,21 +21,19 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 
 /**
- * Class {@code StepMonitor} is the user interface entity that allows
- * to monitor step progression, and to require manually that a step be
- * performed.
+ * Class {@code StepMonitor} is the user interface entity that allows to monitor step
+ * progression, and to require manually that a step be performed.
  *
  * @author Hervé Bitteur
  * @author Brenton Partridge
  */
 public class StepMonitor
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Progress bar for actions performed on sheet */
     private final JProgressBar bar = new MyJProgressBar();
@@ -43,7 +41,7 @@ public class StepMonitor
     /** Total active demands */
     private int actives = 0;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //-------------//
     // StepMonitor //
@@ -63,7 +61,7 @@ public class StepMonitor
         bar.setString("");
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //--------------//
     // getComponent //
@@ -90,45 +88,13 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                bar.setString(msg);
-            }
-        });
-    }
-
-    //---------//
-    // animate //
-    //---------//
-    /**
-     * Sets the progress bar to show a percentage a certain amount above
-     * the previous percentage value (or above 0 if the bar had been
-     * indeterminate).
-     * This method is called on every message logged (see LogStepMonitorHandler)
-     */
-    void animate ()
-    {
-        SwingUtilities.invokeLater(
-                new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                if (!constants.useIndeterminate.isSet()) {
-                    int old = bar.getValue();
-
-                    if (old > bar.getMinimum()) {
-                        int diff = bar.getMaximum() - old;
-                        int increment = (int) Math.round(
-                                diff * constants.ratio.getValue());
-
-                        bar.setValue(old + increment);
+                {
+                    @Override
+                    public void run ()
+                    {
+                        bar.setString(msg);
                     }
-                }
-            }
-        });
+                });
     }
 
     //------------------//
@@ -162,6 +128,37 @@ public class StepMonitor
         }
     }
 
+    //---------//
+    // animate //
+    //---------//
+    /**
+     * Sets the progress bar to show a percentage a certain amount above
+     * the previous percentage value (or above 0 if the bar had been
+     * indeterminate).
+     * This method is called on every message logged (see LogStepMonitorHandler)
+     */
+    void animate ()
+    {
+        SwingUtilities.invokeLater(
+                new Runnable()
+                {
+                    @Override
+                    public void run ()
+                    {
+                        if (!constants.useIndeterminate.isSet()) {
+                            int old = bar.getValue();
+
+                            if (old > bar.getMinimum()) {
+                                int diff = bar.getMaximum() - old;
+                                int increment = (int) Math.round(diff * constants.ratio.getValue());
+
+                                bar.setValue(old + increment);
+                            }
+                        }
+                    }
+                });
+    }
+
     //--------//
     // setBar //
     //--------//
@@ -174,28 +171,28 @@ public class StepMonitor
     {
         SwingUtilities.invokeLater(
                 new Runnable()
-        {
-            @Override
-            public void run ()
-            {
-                int divisions = constants.divisions.getValue();
-                bar.setMinimum(0);
-                bar.setMaximum(divisions);
+                {
+                    @Override
+                    public void run ()
+                    {
+                        int divisions = constants.divisions.getValue();
+                        bar.setMinimum(0);
+                        bar.setMaximum(divisions);
 
-                int val = (int) Math.round(divisions * amount);
-                bar.setValue(val);
-            }
-        });
+                        int val = (int) Math.round(divisions * amount);
+                        bar.setValue(val);
+                    }
+                });
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Integer divisions = new Constant.Integer(
                 "divisions",
@@ -209,7 +206,6 @@ public class StepMonitor
         Constant.Boolean useIndeterminate = new Constant.Boolean(
                 true,
                 "Should we use an indeterminate step progress bar?");
-
     }
 
     //----------------//
@@ -218,7 +214,7 @@ public class StepMonitor
     private static class MyJProgressBar
             extends JProgressBar
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         @Override
         public void paintComponent (Graphics g)

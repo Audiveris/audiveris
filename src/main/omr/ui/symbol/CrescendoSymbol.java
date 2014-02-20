@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                       C r e s c e n d o S y m b o l                        //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                 C r e s c e n d o S y m b o l                                  //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.symbol;
 
@@ -26,7 +26,7 @@ import java.awt.Stroke;
 public class CrescendoSymbol
         extends ShapeSymbol
 {
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
 
     //-----------------//
     // CrescendoSymbol //
@@ -43,7 +43,7 @@ public class CrescendoSymbol
         super(isIcon, shape, false);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // createIcon //
     //------------//
@@ -62,9 +62,7 @@ public class CrescendoSymbol
         MyParams p = new MyParams();
 
         double interline = font.getFontInterline();
-        p.rect = new Rectangle(
-                (int) Math.ceil(5 * interline),
-                (int) Math.ceil(1.5 * interline));
+        p.rect = new Rectangle((int) Math.ceil(5 * interline), (int) Math.ceil(1.5 * interline));
         p.stroke = new BasicStroke(
                 Math.max(1f, (float) interline / 7f),
                 BasicStroke.CAP_ROUND,
@@ -87,29 +85,20 @@ public class CrescendoSymbol
 
         Stroke oldStroke = g.getStroke();
         g.setStroke(p.stroke);
-        g.drawLine(
-                loc.x,
-                loc.y,
-                loc.x + p.rect.width,
-                loc.y - (p.rect.height / 2));
-        g.drawLine(
-                loc.x,
-                loc.y,
-                loc.x + p.rect.width,
-                loc.y + (p.rect.height / 2));
+        g.drawLine(loc.x, loc.y, loc.x + p.rect.width, loc.y - (p.rect.height / 2));
+        g.drawLine(loc.x, loc.y, loc.x + p.rect.width, loc.y + (p.rect.height / 2));
         g.setStroke(oldStroke);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //--------//
     // Params //
     //--------//
     protected class MyParams
             extends Params
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Stroke stroke;
-
     }
 }

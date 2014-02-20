@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                         N e u r a l N e t w o r k                          //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                   N e u r a l N e t w o r k                                    //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.math;
 
@@ -32,11 +32,11 @@ import javax.xml.bind.annotation.XmlRootElement;
  * Class {@code NeuralNetwork} implements a back-propagation neural
  * network, with one input layer, one hidden layer and one output layer.
  * The transfer function is the sigmoid.
- *
- * <p>This neuralNetwork class can be stored on disk in XML form (through
+ * <p>
+ * This neuralNetwork class can be stored on disk in XML form (through
  * the {@link #marshal} and {@link #unmarshal} methods).
- *
- * <p>The class also allows in-memory {@link #backup} and {@link #restore}
+ * <p>
+ * The class also allows in-memory {@link #backup} and {@link #restore}
  * operation, mainly used to save the most performant weight values during the
  * network training.
  *
@@ -46,16 +46,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "neural-network")
 public class NeuralNetwork
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            NeuralNetwork.class);
+    private static final Logger logger = LoggerFactory.getLogger(NeuralNetwork.class);
 
     /** Un/marshalling context for use with JAXB */
     private static volatile JAXBContext jaxbContext;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     //
     /** Size of input layer. */
     @XmlAttribute(name = "input-size")
@@ -104,7 +102,7 @@ public class NeuralNetwork
     /** Number of epochs when training. */
     private transient volatile int epochs = 1000;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------------//
     // NeuralNetwork //
     //---------------//
@@ -116,14 +114,15 @@ public class NeuralNetwork
      * @param hiddenSize   number of cells in hidden layer
      * @param outputSize   number of cells in output layer
      * @param amplitude    amplitude ( <= 1.0) for initial random values
-     *                     @param inputLabels array
-     * o      f
-     *                                                                                                                                                                                                                                                                                                                                                                                                                       labels
-     *                                                                                                                                                                                                                                                                                                                                                                                                                       for
-     *                                                                                                                                                                                                                                                                                                                                                                                                                       input
-     *                                                                                                                                                                                                                                                                                                                                                                                                                       cells,
-     *                                                                                                                                                                                                                                                                                                                                                                                                                       or
-     *                                                                                                                                                                                                                                                                                                                                                                                                                       null
+     *                     @para
+     * m inputLabels array
+     * o f
+     * labels
+     * for
+     * input
+     * cells,
+     * or
+     * null
      * @param outputLabels array of labels for output cells, or null
      */
     public NeuralNetwork (int inputSize,
@@ -151,8 +150,7 @@ public class NeuralNetwork
 
         if ((inputLabels != null) && (inputLabels.length != inputSize)) {
             throw new IllegalArgumentException(
-                    "Inconsistent input labels " + inputLabels + " vs "
-                    + inputSize);
+                    "Inconsistent input labels " + inputLabels + " vs " + inputSize);
         }
 
         // Labels for output, if any
@@ -160,8 +158,7 @@ public class NeuralNetwork
 
         if ((outputLabels != null) && (outputLabels.length != outputSize)) {
             throw new IllegalArgumentException(
-                    "Inconsistent output labels " + outputLabels + " vs "
-                    + outputSize);
+                    "Inconsistent output labels " + outputLabels + " vs " + outputSize);
         }
 
         logger.debug("Network created");
@@ -178,14 +175,15 @@ public class NeuralNetwork
      * @param hiddenSize   number of cells in hidden layer
      * @param outputSize   number of cells in output layer
      * @param amplitude    amplitude ( <= 1.0) for initial random values
-     *                     @param inputLabels array
-     * o      f
-     *                                                                                                                                                                                                                                                                                                                                                                                                                           labels
-     *                                                                                                                                                                                                                                                                                                                                                                                                                           for
-     *                                                                                                                                                                                                                                                                                                                                                                                                                           input
-     *                                                                                                                                                                                                                                                                                                                                                                                                                           cells,
-     *                                                                                                                                                                                                                                                                                                                                                                                                                           or
-     *                                                                                                                                                                                                                                                                                                                                                                                                                           null
+     *                     @para
+     * m inputLabels array
+     * o f
+     * labels
+     * for
+     * input
+     * cells,
+     * or
+     * null
      * @param outputLabels array of labels for output cells, or null
      * @param learningRate learning rate factor
      * @param momentum     momentum from last adjustment
@@ -203,13 +201,7 @@ public class NeuralNetwork
                           double maxError,
                           int epochs)
     {
-        this(
-                inputSize,
-                hiddenSize,
-                outputSize,
-                amplitude,
-                inputLabels,
-                outputLabels);
+        this(inputSize, hiddenSize, outputSize, amplitude, inputLabels, outputLabels);
 
         // Cache parameters
         this.learningRate = learningRate;
@@ -231,31 +223,7 @@ public class NeuralNetwork
         outputLabels = null;
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //-----------//
-    // unmarshal //
-    //-----------//
-    /**
-     * Unmarshal the provided XML stream to allocate the corresponding
-     * NeuralNetwork.
-     *
-     * @param in the input stream that contains the network definition in XML
-     *           format. The stream is not closed by this method
-     *
-     * @return the allocated network.
-     * @exception JAXBException raised when unmarshalling goes wrong
-     */
-    public static NeuralNetwork unmarshal (InputStream in)
-            throws JAXBException
-    {
-        Unmarshaller um = getJaxbContext()
-                .createUnmarshaller();
-        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
-        logger.debug("Network unmarshalled");
-
-        return nn;
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //
     //--------//
     // backup //
@@ -380,8 +348,7 @@ public class NeuralNetwork
     public void marshal (OutputStream os)
             throws JAXBException
     {
-        Marshaller m = getJaxbContext()
-                .createMarshaller();
+        Marshaller m = getJaxbContext().createMarshaller();
         m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.marshal(this, os);
         logger.debug("Network marshalled");
@@ -441,8 +408,7 @@ public class NeuralNetwork
             logger.error("run method. inputs array is null");
         } else if (inputs.length != inputSize) {
             logger.error(
-                    "run method. input size {} not consistent with"
-                    + " network input layer {}",
+                    "run method. input size {} not consistent with" + " network input layer {}",
                     inputs.length,
                     inputSize);
         }
@@ -460,8 +426,7 @@ public class NeuralNetwork
             outputs = new double[outputSize];
         } else if (outputs.length != outputSize) {
             logger.error(
-                    "run method. output size {} not consistent with"
-                    + " network output layer {}",
+                    "run method. output size {} not consistent with" + " network output layer {}",
                     outputs.length,
                     outputSize);
         }
@@ -650,8 +615,7 @@ public class NeuralNetwork
                     }
 
                     // Bias
-                    double dw = (learningRate * outputGrads[o])
-                                + (momentum * outputDeltas[o][0]);
+                    double dw = (learningRate * outputGrads[o]) + (momentum * outputDeltas[o][0]);
                     outputWeights[o][0] += dw;
                     outputDeltas[o][0] = dw;
                 }
@@ -666,8 +630,7 @@ public class NeuralNetwork
                     }
 
                     // Bias
-                    double dw = (learningRate * hiddenGrads[h])
-                                + (momentum * hiddenDeltas[h][0]);
+                    double dw = (learningRate * hiddenGrads[h]) + (momentum * hiddenDeltas[h][0]);
                     hiddenWeights[h][0] += dw;
                     hiddenDeltas[h][0] = dw;
                 }
@@ -694,8 +657,7 @@ public class NeuralNetwork
             }
 
             if (mse <= maxError) {
-                logger.info(
-                        "Network exiting training, remaining error limit reached");
+                logger.info("Network exiting training, remaining error limit reached");
                 logger.info("Network remaining error was : {}", mse);
 
                 break;
@@ -706,13 +668,36 @@ public class NeuralNetwork
             long stopTime = System.currentTimeMillis();
             logger.debug(
                     String.format(
-                    "Duration  %,d seconds, %d epochs on %d patterns",
-                    (stopTime - startTime) / 1000,
-                    ie,
-                    patternNb));
+                            "Duration  %,d seconds, %d epochs on %d patterns",
+                            (stopTime - startTime) / 1000,
+                            ie,
+                            patternNb));
         }
 
         return mse;
+    }
+
+    //-----------//
+    // unmarshal //
+    //-----------//
+    /**
+     * Unmarshal the provided XML stream to allocate the corresponding
+     * NeuralNetwork.
+     *
+     * @param in the input stream that contains the network definition in XML
+     *           format. The stream is not closed by this method
+     *
+     * @return the allocated network.
+     * @exception JAXBException raised when unmarshalling goes wrong
+     */
+    public static NeuralNetwork unmarshal (InputStream in)
+            throws JAXBException
+    {
+        Unmarshaller um = getJaxbContext().createUnmarshaller();
+        NeuralNetwork nn = (NeuralNetwork) um.unmarshal(in);
+        logger.debug("Network unmarshalled");
+
+        return nn;
     }
 
     //-------------//
@@ -767,6 +752,20 @@ public class NeuralNetwork
         }
 
         return matrix;
+    }
+
+    //----------------//
+    // getJaxbContext //
+    //----------------//
+    private static JAXBContext getJaxbContext ()
+            throws JAXBException
+    {
+        // Lazy creation
+        if (jaxbContext == null) {
+            jaxbContext = JAXBContext.newInstance(NeuralNetwork.class);
+        }
+
+        return jaxbContext;
     }
 
     //------------//
@@ -834,20 +833,6 @@ public class NeuralNetwork
         }
     }
 
-    //----------------//
-    // getJaxbContext //
-    //----------------//
-    private static JAXBContext getJaxbContext ()
-            throws JAXBException
-    {
-        // Lazy creation
-        if (jaxbContext == null) {
-            jaxbContext = JAXBContext.newInstance(NeuralNetwork.class);
-        }
-
-        return jaxbContext;
-    }
-
     //---------//
     // sigmoid //
     //---------//
@@ -862,7 +847,7 @@ public class NeuralNetwork
         return 1.0d / (1.0d + Math.exp(-val));
     }
 
-    //~ Inner Interfaces -------------------------------------------------------
+    //~ Inner Interfaces ---------------------------------------------------------------------------
     //
     //---------//
     // Monitor //
@@ -874,7 +859,7 @@ public class NeuralNetwork
      */
     public static interface Monitor
     {
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
 
         /**
          * Entry called at end of each epoch during the training phase.
@@ -896,7 +881,7 @@ public class NeuralNetwork
                               final double mse);
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //
     //--------//
     // Backup //
@@ -911,13 +896,13 @@ public class NeuralNetwork
      */
     public static class Backup
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         private double[][] hiddenWeights;
 
         private double[][] outputWeights;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         // Private constructor
         private Backup (double[][] hiddenWeights,
                         double[][] outputWeights)

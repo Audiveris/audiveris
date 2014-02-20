@@ -1,29 +1,28 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                G r a d e s                                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                          G r a d e s                                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph;
 
 import omr.constant.ConstantSet;
 
 /**
- * Class {@code Grades} gathers in one class all the various
- * evaluation grades used throughout the application.
+ * Class {@code Grades} gathers in one class all the various evaluation grades used
+ * throughout the application.
  *
  * @author Hervé Bitteur
  */
 public class Grades
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
     // Maximum values
@@ -81,19 +80,19 @@ public class Grades
     /** No minimum grade */
     public static final double noMinGrade = 0;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     private Grades ()
     {
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Evaluation.Grade compoundPartMaxGrade = new Evaluation.Grade(
                 90,
@@ -107,9 +106,7 @@ public class Grades
                 "Minimum grade for a validation");
 
         //
-        Evaluation.Grade symbolMinGrade = new Evaluation.Grade(
-                77,
-                "Minimum grade for a symbol");
+        Evaluation.Grade symbolMinGrade = new Evaluation.Grade(77, "Minimum grade for a symbol");
 
         //
         Evaluation.Grade patternsMinGrade = new Evaluation.Grade(
@@ -122,9 +119,7 @@ public class Grades
                 "Minimum grade for a part of a split glyph");
 
         //
-        Evaluation.Grade bassMinGrade = new Evaluation.Grade(
-                33,
-                "Minimum grade for a bass clef");
+        Evaluation.Grade bassMinGrade = new Evaluation.Grade(33, "Minimum grade for a bass clef");
 
         //
         Evaluation.Grade hookMinGrade = new Evaluation.Grade(
@@ -147,9 +142,7 @@ public class Grades
                 "Minimum grade for a ledger note");
 
         //
-        Evaluation.Grade clefMinGrade = new Evaluation.Grade(
-                0.3,
-                "Minimum grade for a clef");
+        Evaluation.Grade clefMinGrade = new Evaluation.Grade(0.3, "Minimum grade for a clef");
 
         //
         Evaluation.Grade consistentNoteMinGrade = new Evaluation.Grade(
@@ -172,9 +165,6 @@ public class Grades
                 "Minimum grade for a text symbol");
 
         //
-        Evaluation.Grade timeMinGrade = new Evaluation.Grade(
-                0,
-                "Minimum grade for a time sig");
-
+        Evaluation.Grade timeMinGrade = new Evaluation.Grade(0, "Minimum grade for a time sig");
     }
 }

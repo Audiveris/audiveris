@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            W e l l K n o w n s                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      W e l l K n o w n s                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr;
 
@@ -32,14 +32,15 @@ import java.util.jar.JarFile;
  * Class {@code WellKnowns} gathers top public static final data to be
  * shared within Audiveris application.
  *
- * <p>Note that a few initial operations are performed here, because they need
+ * <p>
+ * Note that a few initial operations are performed here, because they need
  * to take place before any other class is loaded.
  *
  * @author Hervé Bitteur
  */
 public class WellKnowns
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     //----------//
     // IDENTITY //
@@ -55,23 +56,20 @@ public class WellKnowns
     public static final String TOOL_NAME = ProgramId.NAME;
 
     /** Application reference: {@value}. */
-    public static final String TOOL_REF = ProgramId.VERSION + "."
-                                          + ProgramId.REVISION;
+    public static final String TOOL_REF = ProgramId.VERSION + "." + ProgramId.REVISION;
 
     /** Application build: {@value}. */
     public static final String TOOL_BUILD = ProgramId.BUILD;
 
     /** Specific prefix for application folders: {@value} */
-    private static final String TOOL_PREFIX = "/" + COMPANY_ID + "/"
-                                              + TOOL_NAME;
+    private static final String TOOL_PREFIX = "/" + COMPANY_ID + "/" + TOOL_NAME;
 
     //----------//
     // PLATFORM //
     //----------//
     //
     /** Name of operating system */
-    private static final String OS_NAME = System.getProperty("os.name")
-            .toLowerCase(Locale.ENGLISH);
+    private static final String OS_NAME = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
 
     /** Are we using a Linux OS?. */
     public static final boolean LINUX = OS_NAME.startsWith("linux");
@@ -87,19 +85,16 @@ public class WellKnowns
 
     /** Are we using Windows on 64 bit architecture?. */
     public static final boolean WINDOWS_64 = WINDOWS
-                                             && (System.getenv(
-            "ProgramFiles(x86)") != null);
+                                             && (System.getenv("ProgramFiles(x86)") != null);
 
     /** File character encoding. */
     public static final String FILE_ENCODING = getFileEncoding();
 
     /** File separator for the current platform. */
-    public static final String FILE_SEPARATOR = System.getProperty(
-            "file.separator");
+    public static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     /** Line separator for the current platform. */
-    public static final String LINE_SEPARATOR = System.getProperty(
-            "line.separator");
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     /** Redirection, if any, of standard out and err streams. */
     public static final String STD_OUT_ERR = System.getProperty("stdouterr");
@@ -107,7 +102,7 @@ public class WellKnowns
     //---------//
     // PROGRAM // This is a read-only area
     //---------//
-    //    
+    //
     /** The container from which the application classes were loaded. */
     public static final URI CLASS_CONTAINER = getClassContainer();
 
@@ -128,35 +123,29 @@ public class WellKnowns
 
     /** The uri where resource data is stored. */
     public static final URI RES_URI = RUNNING_FROM_JAR
-            ? toURI(
-            WellKnowns.class.getClassLoader().getResource("res"))
-            : Paths.get("res")
-            .toUri();
+            ? toURI(WellKnowns.class.getClassLoader().getResource("res"))
+            : Paths.get("res").toUri();
 
     /** The folder where Tesseract OCR material is stored. */
     public static final File OCR_FOLDER = getOcrFolder();
 
     //-------------// read-write area
     // USER CONFIG // Configuration files the user can edit on his own
-    //-------------// 
+    //-------------//
     //
     /** The config folder where global configuration data is stored. */
-    public static final File CONFIG_FOLDER = RUNNING_FROM_JAR
-            ? getConfigFolder()
-            : new File("config");
+    public static final File CONFIG_FOLDER = RUNNING_FROM_JAR ? getConfigFolder() : new File(
+            "config");
 
     /** The folder where plugin scripts are found. */
-    public static final File PLUGINS_FOLDER = new File(
-            CONFIG_FOLDER,
-            "plugins");
+    public static final File PLUGINS_FOLDER = new File(CONFIG_FOLDER, "plugins");
 
     //-----------// read-write area
     // USER DATA // User-specific data, except configuration stuff
     //-----------//
     //
     /** Base folder for data */
-    public static final File DATA_FOLDER = RUNNING_FROM_JAR ? getDataFolder()
-            : new File("data");
+    public static final File DATA_FOLDER = RUNNING_FROM_JAR ? getDataFolder() : new File("data");
 
     /**
      * The folder where documentations files are installed.
@@ -168,9 +157,7 @@ public class WellKnowns
      * The folder where examples files are installed.
      * Installation takes place when .jar is run for the first time
      */
-    public static final File EXAMPLES_FOLDER = new File(
-            DATA_FOLDER,
-            "examples");
+    public static final File EXAMPLES_FOLDER = new File(DATA_FOLDER, "examples");
 
     /** The folder where temporary data can be stored. */
     public static final File TEMP_FOLDER = new File(DATA_FOLDER, "temp");
@@ -185,24 +172,16 @@ public class WellKnowns
     public static final File SYMBOLS_FOLDER = new File(TRAIN_FOLDER, "symbols");
 
     /** The default folder where benches data is stored. */
-    public static final File DEFAULT_BENCHES_FOLDER = new File(
-            DATA_FOLDER,
-            "benches");
+    public static final File DEFAULT_BENCHES_FOLDER = new File(DATA_FOLDER, "benches");
 
     /** The default folder where PDF data is stored. */
-    public static final File DEFAULT_PRINT_FOLDER = new File(
-            DATA_FOLDER,
-            "print");
+    public static final File DEFAULT_PRINT_FOLDER = new File(DATA_FOLDER, "print");
 
     /** The default folder where scripts data is stored. */
-    public static final File DEFAULT_SCRIPTS_FOLDER = new File(
-            DATA_FOLDER,
-            "scripts");
+    public static final File DEFAULT_SCRIPTS_FOLDER = new File(DATA_FOLDER, "scripts");
 
     /** The default folder where scores data is stored. */
-    public static final File DEFAULT_SCORES_FOLDER = new File(
-            DATA_FOLDER,
-            "scores");
+    public static final File DEFAULT_SCORES_FOLDER = new File(DATA_FOLDER, "scores");
 
     static {
         /** Logging configuration. */
@@ -222,7 +201,7 @@ public class WellKnowns
         disableDirectDraw();
     }
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //------------//
     // WellKnowns // Not meant to be instantiated
@@ -231,7 +210,7 @@ public class WellKnowns
     {
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //--------------//
     // ensureLoaded //
     //--------------//
@@ -282,8 +261,7 @@ public class WellKnowns
     //-------------------//
     private static URI getClassContainer ()
     {
-        return toURI(
-                WellKnowns.class.getProtectionDomain().getCodeSource().getLocation());
+        return toURI(WellKnowns.class.getProtectionDomain().getCodeSource().getLocation());
     }
 
     //-----------------//
@@ -298,8 +276,7 @@ public class WellKnowns
                 return new File(appdata + TOOL_PREFIX + "/config");
             }
 
-            throw new RuntimeException(
-                    "APPDATA environment variable is not set");
+            throw new RuntimeException("APPDATA environment variable is not set");
         } else if (MAC_OS_X) {
             String config = System.getenv("XDG_CONFIG_HOME");
 
@@ -345,8 +322,7 @@ public class WellKnowns
                 return new File(appdata + TOOL_PREFIX + "/data");
             }
 
-            throw new RuntimeException(
-                    "APPDATA environment variable is not set");
+            throw new RuntimeException("APPDATA environment variable is not set");
         } else if (MAC_OS_X) {
             String data = System.getenv("XDG_DATA_HOME");
 
@@ -399,11 +375,8 @@ public class WellKnowns
     private static JarFile getJarFile ()
     {
         try {
-            String rn = WellKnowns.class.getName()
-                    .replace('.', '/')
-                        + ".class";
-            Enumeration<URL> en = WellKnowns.class.getClassLoader()
-                    .getResources(rn);
+            String rn = WellKnowns.class.getName().replace('.', '/') + ".class";
+            Enumeration<URL> en = WellKnowns.class.getClassLoader().getResources(rn);
 
             if (en.hasMoreElements()) {
                 URL url = en.nextElement();
@@ -426,8 +399,7 @@ public class WellKnowns
     //------------//
     private static FileTime getJarTime ()
     {
-        long millis = JAR_FILE.getEntry("META-INF/MANIFEST.MF")
-                .getTime();
+        long millis = JAR_FILE.getEntry("META-INF/MANIFEST.MF").getTime();
 
         return FileTime.fromMillis(millis);
     }
@@ -454,8 +426,7 @@ public class WellKnowns
         if (LINUX) {
             return new File("/usr/share/tesseract-ocr");
         } else if (WINDOWS) {
-            final String pf32 = OS_ARCH.equals("x86") ? "ProgramFiles"
-                    : "ProgramFiles(x86)";
+            final String pf32 = OS_ARCH.equals("x86") ? "ProgramFiles" : "ProgramFiles(x86)";
 
             return new File(new File(System.getenv(pf32)), "tesseract-ocr");
         } else {
@@ -477,10 +448,7 @@ public class WellKnowns
             logger.info("[Not running from jar]");
         } else {
             // Debug, to identify this jar
-            logger.debug(
-                    "JarTime: {} JarFile: {}",
-                    JAR_TIME,
-                    JAR_FILE.getName());
+            logger.debug("JarTime: {} JarFile: {}", JAR_TIME, JAR_FILE.getName());
         }
 
         if (logger.isDebugEnabled()) {
@@ -499,12 +467,10 @@ public class WellKnowns
     //----------------//
     private static boolean runningFromJar ()
     {
-        return CLASS_CONTAINER.toString()
-                .toLowerCase()
-                .endsWith(".jar");
+        return CLASS_CONTAINER.toString().toLowerCase().endsWith(".jar");
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------------------//
     // InstallationException //
     //-----------------------//
@@ -514,7 +480,7 @@ public class WellKnowns
     public static class InstallationException
             extends RuntimeException
     {
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
 
         public InstallationException (String message)
         {

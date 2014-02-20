@@ -1,18 +1,19 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                              L i n e I n f o                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                        L i n e I n f o                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.grid;
 
 import omr.lag.Section;
 
+import omr.math.GeoPath;
 import omr.math.Line;
 
 import omr.util.HorizontalSide;
@@ -21,7 +22,6 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.util.Collection;
-import omr.math.GeoPath;
 
 /**
  * Interface {@code LineInfo} describes the handling of one staff line.
@@ -30,7 +30,7 @@ import omr.math.GeoPath;
  */
 public interface LineInfo
 {
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
 
     /**
      * Report the absolute contour rectangle
@@ -62,13 +62,6 @@ public interface LineInfo
     Point2D getLeftPoint ();
 
     /**
-     * Report the line path
-     *
-     * @return the path
-     */
-    GeoPath toPath();
-
-    /**
      * Selector for the right point of the line
      *
      * @return right point
@@ -88,6 +81,13 @@ public interface LineInfo
      * @param g the graphics context
      */
     void render (Graphics2D g);
+
+    /**
+     * Report the line path
+     *
+     * @return the path
+     */
+    GeoPath toPath ();
 
     /**
      * Retrieve the precise intersection with a rather vertical line.

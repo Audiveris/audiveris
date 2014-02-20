@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                L F i e l d                                 //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                          L F i e l d                                           //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.ui.field;
 
@@ -16,8 +16,8 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 
 /**
- * Class {@code LField} is a kind of "Labeled Field", a logical
- * composition of a label and a component, which are handled as a whole.
+ * Class {@code LField} is a kind of "Labeled Field", a logical composition of a label
+ * and a component, which are handled as a whole.
  *
  * @param <C> the precise subtype of the JComponent field
  * <img src="doc-files/Fields.jpg" />
@@ -26,7 +26,7 @@ import javax.swing.SwingConstants;
  */
 public class LField<C extends JComponent>
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** The label */
     private final JLabel label;
@@ -34,7 +34,7 @@ public class LField<C extends JComponent>
     /** The field */
     private final C field;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //--------//
     // LField //
     //--------//
@@ -58,7 +58,7 @@ public class LField<C extends JComponent>
         this.field = field;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //----------//
     // getField //
     //----------//

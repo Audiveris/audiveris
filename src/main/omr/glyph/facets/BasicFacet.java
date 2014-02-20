@@ -1,34 +1,34 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            B a s i c F a c e t                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      B a s i c F a c e t                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.facets;
 
 import omr.util.Navigable;
 
 /**
- * Class {@code BasicFacet} is the root for implementation on any
- * glyph facet.
+ * Class {@code BasicFacet} is the root for implementation on any glyph facet.
  *
  * @author Hervé Bitteur
  */
 public class BasicFacet
-        implements GlyphFacet
+    implements GlyphFacet
 {
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
 
     /** Our glyph */
     @Navigable(false)
     protected final Glyph glyph;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
+
     //------------//
     // BasicFacet //
     //------------//
@@ -42,7 +42,8 @@ public class BasicFacet
         this.glyph = glyph;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+
     //--------//
     // dumpOf //
     //--------//

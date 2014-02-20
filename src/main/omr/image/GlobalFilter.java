@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                          G l o b a l F i l t e r                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                    G l o b a l F i l t e r                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
@@ -19,8 +19,8 @@ import ij.process.ByteProcessor;
 import net.jcip.annotations.ThreadSafe;
 
 /**
- * Class {@code GlobalFilter} implements Interface
- * {@code PixelFilter} by using a global threshold on pixel value.
+ * Class {@code GlobalFilter} implements Interface {@code PixelFilter} by using a
+ * global threshold on pixel value.
  *
  * @author Hervé Bitteur
  */
@@ -29,15 +29,15 @@ public class GlobalFilter
         extends SourceWrapper
         implements PixelFilter
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     private static final Constants constants = new Constants();
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** Global threshold. */
     private final int threshold;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //
     //--------------//
     // GlobalFilter //
@@ -55,50 +55,14 @@ public class GlobalFilter
         this.threshold = threshold;
     }
 
-    //~ Methods ----------------------------------------------------------------
-    //----------------------//
-    // getDefaultDescriptor //
-    //----------------------//
-    public static FilterDescriptor getDefaultDescriptor ()
-    {
-        return GlobalDescriptor.getDefault();
-    }
-
-    //---------------------//
-    // getDefaultThreshold //
-    //---------------------//
-    public static int getDefaultThreshold ()
-    {
-        return constants.defaultThreshold.getValue();
-    }
-
-    // -------//
-    // isFore //
-    // -------//
-    @Override
-    public boolean isFore (int x,
-                           int y)
-    {
-        return source.get(x, y) <= threshold;
-    }
-
-    //---------------------//
-    // setDefaultThreshold //
-    //---------------------//
-    public static void setDefaultThreshold (int threshold)
-    {
-        constants.defaultThreshold.setValue(threshold);
-    }
-
+    //~ Methods ------------------------------------------------------------------------------------
     //---------------//
     // filteredImage //
     //---------------//
     @Override
     public ByteProcessor filteredImage ()
     {
-        ByteProcessor ip = new ByteProcessor(
-                source.getWidth(),
-                source.getHeight());
+        ByteProcessor ip = new ByteProcessor(source.getWidth(), source.getHeight());
 
         for (int y = 0, h = ip.getHeight(); y < h; y++) {
             for (int x = 0, w = ip.getWidth(); x < w; x++) {
@@ -123,14 +87,48 @@ public class GlobalFilter
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //----------------------//
+    // getDefaultDescriptor //
+    //----------------------//
+    public static FilterDescriptor getDefaultDescriptor ()
+    {
+        return GlobalDescriptor.getDefault();
+    }
+
+    //---------------------//
+    // getDefaultThreshold //
+    //---------------------//
+    public static int getDefaultThreshold ()
+    {
+        return constants.defaultThreshold.getValue();
+    }
+
+    //---------------------//
+    // setDefaultThreshold //
+    //---------------------//
+    public static void setDefaultThreshold (int threshold)
+    {
+        constants.defaultThreshold.setValue(threshold);
+    }
+
+    // -------//
+    // isFore //
+    // -------//
+    @Override
+    public boolean isFore (int x,
+                           int y)
+    {
+        return source.get(x, y) <= threshold;
+    }
+
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         Constant.Integer defaultThreshold = new Constant.Integer(
                 "GrayLevel",

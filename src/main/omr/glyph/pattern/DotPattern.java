@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            D o t P a t t e r n                             //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      D o t P a t t e r n                                       //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.pattern;
 
@@ -44,18 +44,15 @@ import java.util.Set;
  * @author Hervé Bitteur
  */
 public class DotPattern
-        extends GlyphPattern
+    extends GlyphPattern
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
+    private static final Logger    logger = LoggerFactory.getLogger(DotPattern.class);
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            DotPattern.class);
+    //~ Instance fields ----------------------------------------------------------------------------
 
-    //~ Instance fields --------------------------------------------------------
     //
     /** Max dx from sentence end to dot. */
     private final int maxLineDx;
@@ -63,7 +60,8 @@ public class DotPattern
     /** Max dy from sentence baseline to dot. */
     private final int maxLineDy;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
+
     //
     //------------//
     // DotPattern //
@@ -82,7 +80,8 @@ public class DotPattern
         maxLineDy = scale.toPixels(constants.maxLineDy);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+
     //
     //------------//
     // runPattern //
@@ -95,11 +94,8 @@ public class DotPattern
     @Override
     public int runPattern ()
     {
-        int nb = 0;
-        String language = system.getSheet()
-                .getPage()
-                .getTextParam()
-                .getTarget();
+        int    nb = 0;
+        String language = system.getSheet().getPage().getTextParam().getTarget();
 
         for (Glyph glyph : getQuestionableDots()) {
             // Check alignment with a TextLine
@@ -158,8 +154,7 @@ public class DotPattern
 
             // Check in abscissa: not overlapping any sentence word
             for (TextWord word : sentence.getWords()) {
-                if (word.getBounds()
-                        .intersects(glyphBox)) {
+                if (word.getBounds().intersects(glyphBox)) {
                     continue;
                 }
             }
@@ -190,25 +185,23 @@ public class DotPattern
     private Set<Glyph> getQuestionableDots ()
     {
         Set<Glyph> dots = Glyphs.lookupGlyphs(
-                system.getGlyphs(),
-                new Predicate<Glyph>()
-        {
-            @Override
-            public boolean check (Glyph glyph)
-            {
-                Shape shape = glyph.getShape();
+            system.getGlyphs(),
+            new Predicate<Glyph>() {
+                    @Override
+                    public boolean check (Glyph glyph)
+                    {
+                        Shape shape = glyph.getShape();
 
-                return (shape != null)
-                       && ShapeSet.Dots.contains(shape)
-                       && !glyph.isManualShape() && glyph.isActive();
-            }
-        });
+                        return (shape != null) && ShapeSet.Dots.contains(shape) &&
+                               !glyph.isManualShape() && glyph.isActive();
+                    }
+                });
 
         if (logger.isDebugEnabled()) {
             logger.debug(
-                    "{} Questionable {}",
-                    system.getLogPrefix(),
-                    Glyphs.toString("dots", dots));
+                "{} Questionable {}",
+                system.getLogPrefix(),
+                Glyphs.toString("dots", dots));
         }
 
         return dots;
@@ -228,27 +221,23 @@ public class DotPattern
         return glyph.getAspect(Orientation.HORIZONTAL) >= constants.minAspect.getValue();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
+
     //
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
-            extends ConstantSet
+        extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
-        Constant.Ratio minAspect = new Constant.Ratio(
-                2,
-                "Minimum width / height ratio for a dash");
-
+        Constant.Ratio minAspect = new Constant.Ratio(2, "Minimum width / height ratio for a dash");
         Scale.Fraction maxLineDx = new Scale.Fraction(
-                10,
-                "Maximum abscissa offset from line to dash");
-
+            10,
+            "Maximum abscissa offset from line to dash");
         Scale.Fraction maxLineDy = new Scale.Fraction(
-                2,
-                "Maximum ordinate offset from line to dash");
-
+            2,
+            "Maximum ordinate offset from line to dash");
     }
 }

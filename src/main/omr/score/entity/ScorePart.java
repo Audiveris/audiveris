@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                             S c o r e P a r t                              //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                       S c o r e P a r t                                        //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -18,27 +18,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class {@code ScorePart} defines a part at score level. It is
- * instantiated in each System by a SystemPart.
- *
- * <p>There is an intermediate ScorePart instance at Page level, which records
- * the merge of system parts at page level, and which is then used when merging
- * the part information from pages to score.</p>
+ * Class {@code ScorePart} defines a part at score level.
+ * It is instantiated in each System by a SystemPart.
+ * <p>
+ * There is an intermediate ScorePart instance at Page level, which records the merge of system
+ * parts at page level, and which is then used when merging the part information from pages to
+ * score.</p>
  *
  * @author Hervé Bitteur
  */
 public class ScorePart
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Specific application parameters */
     private static final Constants constants = new Constants();
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ScorePart.class);
+    private static final Logger logger = LoggerFactory.getLogger(ScorePart.class);
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /**
      * Distinguished id for this part (the same id is used by the corresponding
      * SystemPart in each System)
@@ -57,7 +54,7 @@ public class ScorePart
     /** Instrument MIDI program, if any */
     private Integer midiProgram;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-----------//
     // ScorePart //
     //-----------//
@@ -81,7 +78,20 @@ public class ScorePart
         staffCount = 0;
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //-------//
+    // getId //
+    //-------//
+    /**
+     * Set the id of this part
+     *
+     * @param id the distinguished part id
+     */
+    public final void setId (int id)
+    {
+        this.id = id;
+    }
+
     //-----------------//
     // getAbbreviation //
     //-----------------//
@@ -211,19 +221,6 @@ public class ScorePart
         this.abbreviation = abbreviation;
     }
 
-    //-------//
-    // getId //
-    //-------//
-    /**
-     * Set the id of this part
-     *
-     * @param id the distinguished part id
-     */
-    public final void setId (int id)
-    {
-        this.id = id;
-    }
-
     //----------------//
     // setMidiProgram //
     //----------------//
@@ -254,35 +251,31 @@ public class ScorePart
         StringBuilder sb = new StringBuilder();
         sb.append("{ScorePart");
 
-        sb.append(" id=")
-                .append(id);
+        sb.append(" id=").append(id);
 
         if (name != null) {
-            sb.append(" name=")
-                    .append(name);
+            sb.append(" name=").append(name);
         }
 
         if (abbreviation != null) {
-            sb.append(" abrv=")
-                    .append(abbreviation);
+            sb.append(" abrv=").append(abbreviation);
         }
 
-        sb.append(" staffCount:")
-                .append(staffCount);
+        sb.append(" staffCount:").append(staffCount);
 
         sb.append("}");
 
         return sb.toString();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //-----------//
     // Constants //
     //-----------//
     private static final class Constants
             extends ConstantSet
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         // Default Part names
         Constant.String defaultSingleStaffPartName = new Constant.String(
@@ -312,6 +305,5 @@ public class ScorePart
                 "MidiProgram",
                 1,
                 "Default program number for a part with more than two staves");
-
     }
 }

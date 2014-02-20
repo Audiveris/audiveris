@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                                L o g U t i l                               //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                          L o g U t i l                                         //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.log;
 
@@ -28,14 +28,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Class {@code LogUtil} handles logging features that depend on
- * underlying LogBack binding.
+ * Class {@code LogUtil} handles logging features based on underlying LogBack binding.
  *
  * @author Hervé Bitteur
  */
 public class LogUtil
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** System property for LogBack configuration. */
     private static final String LOGBACK_LOGGING_KEY = "logback.configurationFile";
@@ -43,7 +42,7 @@ public class LogUtil
     /** File name for LogBack configuration. */
     private static final String LOGBACK_FILE_NAME = "logback.xml";
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //------------//
     // initialize //
     //------------//
@@ -69,13 +68,10 @@ public class LogUtil
 
                 return;
             } else {
-                System.out.println(
-                        "File " + configFile.getAbsolutePath()
-                        + " does not exist.");
+                System.out.println("File " + configFile.getAbsolutePath() + " does not exist.");
             }
         } else {
-            System.out.println(
-                    "Property " + LOGBACK_LOGGING_KEY + " not defined.");
+            System.out.println("Property " + LOGBACK_LOGGING_KEY + " not defined.");
         }
 
         // 2/ Look for well-known location
@@ -117,11 +113,8 @@ public class LogUtil
         fileAppender.setContext(loggerContext);
         fileAppender.setAppend(false);
 
-        String now = new SimpleDateFormat("yyyyMMdd'T'HHmmss").format(
-                new Date());
-        logFile = Paths.get(
-                System.getProperty("java.io.tmpdir"),
-                "audiveris-" + now + ".log")
+        String now = new SimpleDateFormat("yyyyMMdd'T'HHmmss").format(new Date());
+        logFile = Paths.get(System.getProperty("java.io.tmpdir"), "audiveris-" + now + ".log")
                 .toFile();
         fileAppender.setFile(logFile.getAbsolutePath());
         fileEncoder.setContext(loggerContext);

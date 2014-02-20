@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                               F e r m a t a                                //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                         F e r m a t a                                          //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.score.entity;
 
@@ -22,20 +22,18 @@ import org.slf4j.LoggerFactory;
 import java.awt.Point;
 
 /**
- * Class {@code Fermata} represents a fermata event (upright or
- * inverted)
+ * Class {@code Fermata} represents a fermata event (upright or inverted)
  *
  * @author Hervé Bitteur
  */
 public class Fermata
         extends AbstractNotation
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
     private static final Logger logger = LoggerFactory.getLogger(Fermata.class);
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //---------//
     // Fermata //
     //---------//
@@ -55,7 +53,16 @@ public class Fermata
         super(measure, point, chord, glyph);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
+    //--------//
+    // accept //
+    //--------//
+    @Override
+    public boolean accept (ScoreVisitor visitor)
+    {
+        return visitor.visit(this);
+    }
+
     //----------//
     // populate //
     //----------//
@@ -78,7 +85,7 @@ public class Fermata
         // With placement depending on fermata upright / inverted.
         // Beware of whole rests which are handled separately.
         //
-        // TODO: Fermata is said to apply to barline as well, but this feature 
+        // TODO: Fermata is said to apply to barline as well, but this feature
         // is not yet implemented.
         Chord chord;
 
@@ -101,14 +108,5 @@ public class Fermata
         if (chord != null) {
             glyph.setTranslation(new Fermata(measure, point, chord, glyph));
         }
-    }
-
-    //--------//
-    // accept //
-    //--------//
-    @Override
-    public boolean accept (ScoreVisitor visitor)
-    {
-        return visitor.visit(this);
     }
 }

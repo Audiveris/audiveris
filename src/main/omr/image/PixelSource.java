@@ -1,29 +1,29 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                            P i x e l S o u r c e                           //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                                      P i x e l S o u r c e                                     //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.image;
 
-
 /**
- * Interface {@code PixelSource} defines the operations expected
- * from a rectangular pixel source.
- * <p>It is a <b>raw</b> pixel source, because just the pixel gray value
- * is returned, with no interpretation as foreground or background.
+ * Interface {@code PixelSource} defines the operations expected from a rectangular
+ * pixel source.
+ * <p>
+ * It is a <b>raw</b> pixel source, because just the pixel gray value is returned, with no
+ * interpretation as foreground or background.
  * This additional interpretation is reported by a {@link PixelSource}.
  *
  * @author Hervé Bitteur
  */
 public interface PixelSource
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
     /** Default value for background pixel. */
     public static final int BACKGROUND = 255;
@@ -31,8 +31,7 @@ public interface PixelSource
     /** Default value for foreground pixel. */
     public static final int FOREGROUND = 0;
 
-    //~ Methods ----------------------------------------------------------------
-
+    //~ Methods ------------------------------------------------------------------------------------
     /**
      * Report the pixel element, as read at location (x, y) in the
      * source.

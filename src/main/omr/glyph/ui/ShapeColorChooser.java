@@ -1,13 +1,13 @@
-//----------------------------------------------------------------------------//
-//                                                                            //
-//                     S h a p e C o l o r C h o o s e r                      //
-//                                                                            //
-//----------------------------------------------------------------------------//
-// <editor-fold defaultstate="collapsed" desc="hdr">                          //
-//  Copyright © Hervé Bitteur and others 2000-2013. All rights reserved.      //
-//  This software is released under the GNU General Public License.           //
-//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.   //
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------------------------//
+//                                                                                                //
+//                               S h a p e C o l o r C h o o s e r                                //
+//                                                                                                //
+//------------------------------------------------------------------------------------------------//
+// <editor-fold defaultstate="collapsed" desc="hdr">
+//  Copyright © Hervé Bitteur and others 2000-2014. All rights reserved.
+//  This software is released under the GNU General Public License.
+//  Goto http://kenai.com/projects/audiveris to report bugs or suggestions.
+//------------------------------------------------------------------------------------------------//
 // </editor-fold>
 package omr.glyph.ui;
 
@@ -44,35 +44,32 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * Class {@code ShapeColorChooser} offers a convenient user interface
- * to choose proper color for each glyph shape.
+ * Class {@code ShapeColorChooser} offers a convenient user interface to choose proper
+ * color for each glyph shape.
  * It is derived from the Sun Java tutorial ColorChooserDemo.
- *
- * <p>The right part of the panel is used by a classic color chooser
- *
- * <p>The left part of the panel is used by the shape at hand, with a way to
+ * <p>
+ * The right part of the panel is used by a classic color chooser
+ * <p>
+ * The left part of the panel is used by the shape at hand, with a way to
  * browse through the various defined shapes.
- *
- * <p>The strategy is the following: First the predefined shape ranges (such as
- * "Physicals", "Bars", "Clefs", ...) have their own color defined. Then, each
- * individual shape within these shape ranges has its color assigned by default
- * to the color of the containing range, unless a color is specifically assigned
- * to this individual shape.
+ * <p>
+ * The strategy is the following: First the predefined shape ranges (such as "Physicals", "Bars",
+ * "Clefs", ...) have their own color defined. Then, each individual shape within these shape ranges
+ * has its color assigned by default of the containing range, unless a color is specifically
+ * assigned to this individual shape.
  *
  * @author Hervé Bitteur
  */
 public class ShapeColorChooser
         implements ChangeListener
 {
-    //~ Static fields/initializers ---------------------------------------------
+    //~ Static fields/initializers -----------------------------------------------------------------
 
-    /** Usual logger utility */
-    private static final Logger logger = LoggerFactory.getLogger(
-            ShapeColorChooser.class);
+    private static final Logger logger = LoggerFactory.getLogger(ShapeColorChooser.class);
 
     private static JFrame frame;
 
-    //~ Instance fields --------------------------------------------------------
+    //~ Instance fields ----------------------------------------------------------------------------
     /** The classic color chooser utility */
     private JColorChooser colorChooser;
 
@@ -88,7 +85,7 @@ public class ShapeColorChooser
     /** To select shape (within selected range) */
     private ShapesPane shapes;
 
-    //~ Constructors -----------------------------------------------------------
+    //~ Constructors -------------------------------------------------------------------------------
     //-------------------//
     // ShapeColorChooser //
     //-------------------//
@@ -112,16 +109,14 @@ public class ShapeColorChooser
 
         // Color chooser
         colorChooser = new JColorChooser();
-        colorChooser.getSelectionModel()
-                .addChangeListener(this);
-        colorChooser.setBorder(
-                BorderFactory.createTitledBorder("Choose Shape Color"));
+        colorChooser.getSelectionModel().addChangeListener(this);
+        colorChooser.setBorder(BorderFactory.createTitledBorder("Choose Shape Color"));
 
         component.add(globalPanel, BorderLayout.CENTER);
         component.add(colorChooser, BorderLayout.EAST);
     }
 
-    //~ Methods ----------------------------------------------------------------
+    //~ Methods ------------------------------------------------------------------------------------
     //-----------//
     // showFrame //
     //-----------//
@@ -138,15 +133,12 @@ public class ShapeColorChooser
             frame.add(new ShapeColorChooser().component);
 
             // Resources injection
-            ResourceMap resource = Application.getInstance()
-                    .getContext()
-                    .getResourceMap(
+            ResourceMap resource = Application.getInstance().getContext().getResourceMap(
                     ShapeColorChooser.class);
             resource.injectComponents(frame);
         }
 
-        MainGui.getInstance()
-                .show(frame);
+        MainGui.getInstance().show(frame);
     }
 
     //--------------//
@@ -166,20 +158,20 @@ public class ShapeColorChooser
         shapes.colorChanged();
     }
 
-    //~ Inner Classes ----------------------------------------------------------
+    //~ Inner Classes ------------------------------------------------------------------------------
     //------//
     // Pane //
     //------//
     private abstract class Pane
             extends JPanel
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         public JLabel banner = new JLabel("", JLabel.CENTER);
 
         public JPopupMenu menu = new JPopupMenu();
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public Pane (String title)
         {
             setLayout(new BorderLayout());
@@ -192,7 +184,7 @@ public class ShapeColorChooser
             add(banner, BorderLayout.CENTER);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         public abstract void colorChanged ();
 
         protected abstract void refreshBanner ();
@@ -204,7 +196,7 @@ public class ShapeColorChooser
     private class RangesPane
             extends Pane
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         public ShapeSet current;
 
@@ -245,7 +237,7 @@ public class ShapeColorChooser
 
         private JButton pasteButton = new JButton(paste);
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public RangesPane ()
         {
             super("Shape Range");
@@ -258,7 +250,7 @@ public class ShapeColorChooser
             buildRangesMenu();
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         // When color chooser selection has been made
         @Override
         public void colorChanged ()
@@ -282,18 +274,18 @@ public class ShapeColorChooser
             ShapeSet.addAllShapeSets(menu, selectionListener);
         }
 
-        //~ Inner Classes ------------------------------------------------------
+        //~ Inner Classes --------------------------------------------------------------------------
         private class PasteAction
                 extends AbstractAction
         {
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
 
             public PasteAction ()
             {
                 super("Paste");
             }
 
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -310,14 +302,14 @@ public class ShapeColorChooser
         private class SelectAction
                 extends AbstractAction
         {
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
 
             public SelectAction ()
             {
                 super("Select");
             }
 
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -333,7 +325,7 @@ public class ShapeColorChooser
     private class ShapesPane
             extends Pane
     {
-        //~ Instance fields ----------------------------------------------------
+        //~ Instance fields ------------------------------------------------------------------------
 
         public Shape current;
 
@@ -372,7 +364,7 @@ public class ShapeColorChooser
 
         private boolean isSpecific;
 
-        //~ Constructors -------------------------------------------------------
+        //~ Constructors ---------------------------------------------------------------------------
         public ShapesPane ()
         {
             super("Individual Shape");
@@ -395,7 +387,7 @@ public class ShapeColorChooser
             paste.setEnabled(false);
         }
 
-        //~ Methods ------------------------------------------------------------
+        //~ Methods --------------------------------------------------------------------------------
         // When color chooser selection has been made
         @Override
         public void colorChanged ()
@@ -409,8 +401,7 @@ public class ShapeColorChooser
             buildShapesMenu();
 
             select.setEnabled(true);
-            selectButton.setText(
-                    "-- Select Shape from " + ranges.current.getName() + " --");
+            selectButton.setText("-- Select Shape from " + ranges.current.getName() + " --");
 
             current = null;
             banner.setText("");
@@ -466,18 +457,18 @@ public class ShapeColorChooser
             }
         }
 
-        //~ Inner Classes ------------------------------------------------------
+        //~ Inner Classes --------------------------------------------------------------------------
         private class CopyAction
                 extends AbstractAction
         {
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
 
             public CopyAction ()
             {
                 super("Copy");
             }
 
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -488,14 +479,14 @@ public class ShapeColorChooser
         private class CutAction
                 extends AbstractAction
         {
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
 
             public CutAction ()
             {
                 super("Cut");
             }
 
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -512,14 +503,14 @@ public class ShapeColorChooser
         private class PasteAction
                 extends AbstractAction
         {
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
 
             public PasteAction ()
             {
                 super("Paste");
             }
 
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
@@ -536,14 +527,14 @@ public class ShapeColorChooser
         private class SelectAction
                 extends AbstractAction
         {
-            //~ Constructors ---------------------------------------------------
+            //~ Constructors -----------------------------------------------------------------------
 
             public SelectAction ()
             {
                 super("Select");
             }
 
-            //~ Methods --------------------------------------------------------
+            //~ Methods ----------------------------------------------------------------------------
             @Override
             public void actionPerformed (ActionEvent e)
             {
